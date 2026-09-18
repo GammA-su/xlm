@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "kind": "model_preset",
+  "id": "300m",
+  "architecture": "transformer_baseline",
+  "architecture_version": "1",
+  "vocab_size": 32768,
+  "num_layers": 24,
+  "hidden_size": 1024,
+  "num_attention_heads": 16,
+  "intermediate_size": 2240,
+  "tie_embeddings": true,
+  "bias": false,
+  "dropout": 0.0,
+  "normalization": "rmsnorm",
+  "position_encoding": "rope",
+  "ffn": "swiglu",
+  "expected_unique_parameters": 299418624,
+  "max_deployed_parameters": 300000000,
+  "context_length": 512,
+  "attention_backend": "profile_required",
+  "initialization_policy": "baseline_v1"
+}

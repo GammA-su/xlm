@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "kind": "mixture_preset",
+  "id": "m2_more_synth",
+  "status": "draft_unvalidated",
+  "description": "M2: SYNTH 30%; Essential-Web 10%",
+  "weight_unit": "valid_target_tokens",
+  "weights": {
+    "essential_science": 0.04,
+    "essential_practical": 0.04,
+    "essential_prose": 0.02,
+    "nemotron_organic_high": 0.15,
+    "nemotron_organic_medium_high": 0.05,
+    "finepdfs_en": 0.15,
+    "synth_en_explanations": 0.3,
+    "nemotron_wiki_rewrite": 0.08,
+    "finewiki_en": 0.05,
+    "ifm_behaviors_general_planning": 0.05,
+    "common_pile_prose": 0.05,
+    "simple_stories": 0.02
+  },
+  "missing_source_policy": "error",
+  "exhaustion_policy": "error",
+  "allow_silent_renormalization": false,
+  "max_document_exposures": 1,
+  "scheduler": "token_deficit_v1",
+  "source_seed": 20260918,
+  "pool_artifact": null,
+  "tokenizer_artifact": null
+}
