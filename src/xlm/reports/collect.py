@@ -230,10 +230,36 @@ def collect_run_report(
                 "acc_norm": task.get("acc_norm"),
                 "scored": task.get("scored_items"),
                 "total": task.get("total_items"),
+                "expected": task.get("expected_items"),
                 "omitted": task.get("omitted_items", 0),
             }
-        benchmarks["index"] = (evidence.get("index") or {}).get("index")
-        benchmarks["coverage_note"] = "; ".join(evidence.get("notes", [])) or "full coverage"
+        index_payload = evidence.get("index") or {}
+        coverage = evidence.get("coverage")
+        # An index is republished only when the evidence itself states that the
+        # declared scope was covered. Silence in the notes is not evidence of
+        # full coverage, which is exactly what this used to assume (D05).
+        complete = bool(index_payload.get("complete")) and bool(
+            (coverage or {}).get("complete", False)
+        )
+        benchmarks["index"] = index_payload.get("index") if complete else None
+        benchmarks["scope_label"] = (coverage or {}).get("scope_label", "undeclared")
+        benchmarks["scope_kind"] = (coverage or {}).get("scope_kind", "undeclared")
+        benchmarks["coverage_status"] = (coverage or {}).get("status", "legacy_unverified")
+        benchmarks["coverage_complete"] = complete
+        benchmarks["research_eligible"] = bool((coverage or {}).get("research_eligible", False))
+        reasons = list((coverage or {}).get("eligibility_reasons", []))
+        if coverage is None:
+            reasons.append("evidence predates coverage recording; completeness is unverified")
+            missing.append("evaluation evidence carries no coverage record (legacy)")
+        elif not complete:
+            missing.append(
+                "evaluation coverage incomplete for scope "
+                f"'{benchmarks['scope_label']}'; suite index withheld"
+            )
+        parts = [(coverage or {}).get("scope_statement", "coverage unverified")]
+        parts.extend(reasons)
+        parts.extend(evidence.get("notes", []))
+        benchmarks["coverage_note"] = "; ".join(part for part in parts if part)
 
     compute: dict[str, Any] = {
         "measured_seconds": record.get("compute_seconds"),
