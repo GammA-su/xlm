@@ -194,29 +194,68 @@ class PrepareBounds:
         )
 
         def drain(stream: Any, path: Path) -> None:
+            # Pipe-read accounting contract. Two separate guarantees:
+            #
+            # 1. Hard read-consumption limit: each blocking read requests at most
+            #    the live remaining shared allowance (capped at 8192 bytes), and
+            #    holds no reservation while blocked, so an idle pipe waiting for
+            #    EOF cannot starve the active pipe. Bytes are committed to the
+            #    transfer/disk account only when retained to the owned spool.
+            # 2. Bounded overflow lookahead: when no allowance remains, at most
+            #    one probe byte per pipe is read to distinguish genuine overflow
+            #    (extra bytes exist) from EOF. Probe bytes are counted as
+            #    discarded_child_probe_bytes.
+            #
+            # A read sized from stale remaining allowance can still return more
+            # than currently fits (the sibling committed concurrently). That
+            # in-memory remainder (at most one 8192-byte chunk per pipe per
+            # attempt) is never retained and is counted by actual length as
+            # discarded_child_overflow_bytes. Retained transfer bytes plus both
+            # discarded categories therefore exhaustively cover every byte the
+            # pipe returned to the application; bytes still sitting in the OS
+            # pipe buffer when the over-limit child is killed were never
+            # returned and are not counted as transfer.
             try:
                 with path.open("xb") as output:
                     while True:
                         if errors:
                             break
-                        # Read without holding shared allowance so an idle pipe
-                        # blocked waiting for EOF cannot starve the active pipe.
-                        # RAM is bounded to one 8192-byte chunk per worker.
-                        chunk = stream.read1(8192)
+                        headroom = min(
+                            self.capacity.remaining("transfer"),
+                            self.capacity.remaining("temp"),
+                        )
+                        if headroom <= 0:
+                            if stream.read(1):
+                                self.capacity.record_units(
+                                    "discarded_child_probe_bytes", 1, 2 * self.limits.max_attempts
+                                )
+                                raise ValueError("aggregate child output limit exceeded")
+                            break
+                        chunk = stream.read1(min(8192, headroom))
                         if not chunk:
                             break
                         while chunk:
                             if errors:
-                                break
-                            remaining_transfer = self.capacity.remaining("transfer")
-                            remaining_temp = self.capacity.remaining("temp")
-                            allow = min(len(chunk), remaining_transfer, remaining_temp)
-                            if allow <= 0:
-                                # Shared cap is filled and this chunk proves extra
-                                # bytes exist beyond it. Retain nothing more; count
-                                # one discarded probe byte per overflowing pipe.
+                                # The sibling already declared overflow; this
+                                # bounded remainder was returned but will not be
+                                # retained. Count its actual length.
                                 self.capacity.record_units(
-                                    "discarded_child_probe_bytes", 1, 2 * self.limits.max_attempts
+                                    "discarded_child_overflow_bytes",
+                                    len(chunk),
+                                    2 * self.limits.max_attempts * 8192,
+                                )
+                                chunk = b""
+                                break
+                            allow = min(
+                                len(chunk),
+                                self.capacity.remaining("transfer"),
+                                self.capacity.remaining("temp"),
+                            )
+                            if allow <= 0:
+                                self.capacity.record_units(
+                                    "discarded_child_overflow_bytes",
+                                    len(chunk),
+                                    2 * self.limits.max_attempts * 8192,
                                 )
                                 raise ValueError("aggregate child output limit exceeded")
                             head = chunk[:allow]
@@ -237,10 +276,12 @@ class PrepareBounds:
                             self.capacity.settle("temp", disk, len(head))
                             chunk = chunk[allow:]
                             if chunk:
-                                # Remainder in memory already proves overflow beyond
-                                # the shared cap; never retain it.
+                                # Remainder beyond the live allowance; count its
+                                # actual length rather than a single probe byte.
                                 self.capacity.record_units(
-                                    "discarded_child_probe_bytes", 1, 2 * self.limits.max_attempts
+                                    "discarded_child_overflow_bytes",
+                                    len(chunk),
+                                    2 * self.limits.max_attempts * 8192,
                                 )
                                 raise ValueError("aggregate child output limit exceeded")
             except BaseException as exc:

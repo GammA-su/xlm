@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="8" time="13.035" timestamp="2026-09-20T17:11:43.519927+02:00" hostname="BetA-C1"><testcase classname="tests.test_prepare_bounds" name="test_child_output_categorizes_every_returned_byte_under_tiny_allowance" time="1.639"><failure message="AssertionError: assert 32 == 33&#10; +  where 32 = sum(dict_values([16, 16]))&#10; +    where dict_values([16, 16]) = &lt;built-in method values of dict object at 0x00000243BE738EC0&gt;()&#10; +      where &lt;built-in method values of dict object at 0x00000243BE738EC0&gt; = {'stdout': 16, 'stderr': 16}.values">tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after05/co03-tmp/test_child_output_categorizes_0')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x00000243BD851940&gt;
+
+    def test_child_output_categorizes_every_returned_byte_under_tiny_allowance(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -&gt; None:
+        """Allowance (16) &lt;&lt; returned chunk: every returned byte has a category.
+    
+        Two scripted pipes each return 8192 bytes against a 16-byte aggregate cap,
+        synchronized so both first reads land before either commits. Retained
+        transfer bytes plus discarded probe/overflow bytes must exactly equal the
+        recorded returned total; spool stays capped; no reservation leaks; the
+        durable journal reloads identical totals.
+        """
+        import io
+        import subprocess
+        import threading
+        from typing import Any
+    
+        barrier = threading.Barrier(2)
+        returned = {"stdout": 0, "stderr": 0}
+    
+        class ScriptedPipe(io.BytesIO):
+            def __init__(self, kind: str) -&gt; None:
+                super().__init__(b"A" * 8192 if kind == "stdout" else b"B" * 8192)
+                self._kind = kind
+                self._gated = True
+    
+            def read1(self, n: int) -&gt; bytes:
+                data = super().read1(n)
+                if self._gated:
+                    self._gated = False
+                    try:
+                        barrier.wait(timeout=10)
+                    except threading.BrokenBarrierError:
+                        pass
+                returned[self._kind] += len(data)
+                return data
+    
+            def read(self, n: int = -1) -&gt; bytes:
+                data = super().read(n)
+                returned[self._kind] += len(data)
+                return data
+    
+        class FakeProcess:
+            def __init__(self, *args: Any, **kwargs: Any) -&gt; None:
+                self.stdout = ScriptedPipe("stdout")
+                self.stderr = ScriptedPipe("stderr")
+                self.pid = -1
+                self.returncode: int | None = None
+    
+            def poll(self) -&gt; int | None:
+                return None
+    
+            def kill(self) -&gt; None:
+                pass
+    
+            def wait(self, timeout: float | None = None) -&gt; int:
+                self.returncode = 0
+                return 0
+    
+        class FakePsProcess:
+            def __init__(self, pid: int) -&gt; None:
+                self.pid = pid
+    
+            def children(self, recursive: bool = False) -&gt; list[Any]:
+                return []
+    
+        monkeypatch.setattr(subprocess, "Popen", FakeProcess)
+        monkeypatch.setattr("psutil.Process", FakePsProcess)
+    
+        config = config_for(tmp_path, max_subprocess_output_bytes=16)
+        bounds = PrepareBounds(config, tmp_path / "out", tmp_path / "home")
+        with pytest.raises(ValueError, match="output limit"):
+            bounds.run(["child", "argv", "ignored"], tmp_path, 5)
+&gt;       assert sum(returned.values()) == 33
+E       AssertionError: assert 32 == 33
+E        +  where 32 = sum(dict_values([16, 16]))
+E        +    where dict_values([16, 16]) = &lt;built-in method values of dict object at 0x00000243BE738EC0&gt;()
+E        +      where &lt;built-in method values of dict object at 0x00000243BE738EC0&gt; = {'stdout': 16, 'stderr': 16}.values
+
+tests\test_prepare_bounds.py:147: AssertionError</failure></testcase><testcase classname="tests.test_prepare_bounds" name="test_child_stdout_and_stderr_are_bounded_and_accounted" time="1.325" /><testcase classname="tests.test_prepare_bounds" name="test_child_output_accounting_covers_write_orders[import os; os.write(1,b'A'*8192); os.write(2,b'B'*8192)]" time="1.341" /><testcase classname="tests.test_prepare_bounds" name="test_child_output_accounting_covers_write_orders[import os; os.write(2,b'B'*8192); os.write(1,b'A'*8192)]" time="1.365" /><testcase classname="tests.test_prepare_bounds" name="test_child_output_accounting_covers_write_orders[import os; [(os.write(1,b'A'*512), os.write(2,b'B'*512)) for _ in range(16)]]" time="1.507" /><testcase classname="tests.test_prepare_bounds" name="test_child_output_accounting_covers_write_orders[import os; os.write(1,b'A'*8192)]" time="1.266" /><testcase classname="tests.test_prepare_bounds" name="test_child_output_tiny_allowance_over_real_pipes" time="1.349" /><testcase classname="tests.test_prepare_bounds" name="test_stale_rerun_keeps_cumulative_account_without_reuse" time="2.599" /></testsuite></testsuites>

@@ -1,0 +1,109 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0
+collecting ... collected 8 items
+
+tests/test_prepare_bounds.py::test_child_output_categorizes_every_returned_byte_under_tiny_allowance FAILED [ 12%]
+tests/test_prepare_bounds.py::test_child_stdout_and_stderr_are_bounded_and_accounted PASSED [ 25%]
+tests/test_prepare_bounds.py::test_child_output_accounting_covers_write_orders[import os; os.write(1,b'A'*8192); os.write(2,b'B'*8192)] PASSED [ 37%]
+tests/test_prepare_bounds.py::test_child_output_accounting_covers_write_orders[import os; os.write(2,b'B'*8192); os.write(1,b'A'*8192)] PASSED [ 50%]
+tests/test_prepare_bounds.py::test_child_output_accounting_covers_write_orders[import os; [(os.write(1,b'A'*512), os.write(2,b'B'*512)) for _ in range(16)]] PASSED [ 62%]
+tests/test_prepare_bounds.py::test_child_output_accounting_covers_write_orders[import os; os.write(1,b'A'*8192)] PASSED [ 75%]
+tests/test_prepare_bounds.py::test_child_output_tiny_allowance_over_real_pipes PASSED [ 87%]
+tests/test_prepare_bounds.py::test_stale_rerun_keeps_cumulative_account_without_reuse PASSED [100%]
+
+================================== FAILURES ===================================
+___ test_child_output_categorizes_every_returned_byte_under_tiny_allowance ____
+
+tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after05/co05-tmp/test_child_output_categorizes_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000002C9D7144260>
+
+    def test_child_output_categorizes_every_returned_byte_under_tiny_allowance(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Allowance (16) << returned chunk: every returned byte has a category.
+    
+        Two scripted pipes each return 8192 bytes against a 16-byte aggregate cap,
+        synchronized so both first reads land before either commits. Retained
+        transfer bytes plus discarded probe/overflow bytes must exactly equal the
+        recorded returned total; spool stays capped; no reservation leaks; the
+        durable journal reloads identical totals.
+        """
+        import io
+        import subprocess
+        import threading
+        from typing import Any
+    
+        barrier = threading.Barrier(2)
+        returned = {"stdout": 0, "stderr": 0}
+    
+        class ScriptedPipe(io.BytesIO):
+            def __init__(self, kind: str) -> None:
+                super().__init__(b"A" * 8192 if kind == "stdout" else b"B" * 8192)
+                self._kind = kind
+                self._gated = True
+    
+            def read1(self, n: int) -> bytes:
+                data = super().read1(n)
+                if self._gated:
+                    self._gated = False
+                    try:
+                        barrier.wait(timeout=10)
+                    except threading.BrokenBarrierError:
+                        pass
+                returned[self._kind] += len(data)
+                return data
+    
+            def read(self, n: int = -1) -> bytes:
+                data = super().read(n)
+                returned[self._kind] += len(data)
+                return data
+    
+        class FakeProcess:
+            def __init__(self, *args: Any, **kwargs: Any) -> None:
+                self.stdout = ScriptedPipe("stdout")
+                self.stderr = ScriptedPipe("stderr")
+                self.pid = -1
+                self.returncode: int | None = None
+    
+            def poll(self) -> int | None:
+                return None
+    
+            def kill(self) -> None:
+                pass
+    
+            def wait(self, timeout: float | None = None) -> int:
+                self.returncode = 0
+                return 0
+    
+        class FakePsProcess:
+            def __init__(self, pid: int) -> None:
+                self.pid = pid
+    
+            def children(self, recursive: bool = False) -> list[Any]:
+                return []
+    
+        monkeypatch.setattr(subprocess, "Popen", FakeProcess)
+        monkeypatch.setattr("psutil.Process", FakePsProcess)
+    
+        config = config_for(tmp_path, max_subprocess_output_bytes=16)
+        bounds = PrepareBounds(config, tmp_path / "out", tmp_path / "home")
+        with pytest.raises(ValueError, match="output limit"):
+            bounds.run(["child", "argv", "ignored"], tmp_path, 5)
+>       assert sum(returned.values()) == 33
+E       AssertionError: assert 32 == 33
+E        +  where 32 = sum(dict_values([16, 16]))
+E        +    where dict_values([16, 16]) = <built-in method values of dict object at 0x000002C9D9058F40>()
+E        +      where <built-in method values of dict object at 0x000002C9D9058F40> = {'stdout': 16, 'stderr': 16}.values
+
+tests\test_prepare_bounds.py:147: AssertionError
+- generated xml file: D:\Project\xlm\data\audit\p23-remediation\stage04\after05\co05.xml -
+=========================== short test summary info ===========================
+FAILED tests/test_prepare_bounds.py::test_child_output_categorizes_every_returned_byte_under_tiny_allowance - AssertionError: assert 32 == 33
+ +  where 32 = sum(dict_values([16, 16]))
+ +    where dict_values([16, 16]) = <built-in method values of dict object at 0x000002C9D9058F40>()
+ +      where <built-in method values of dict object at 0x000002C9D9058F40> = {'stdout': 16, 'stderr': 16}.values
+======================== 1 failed, 7 passed in 12.11s =========================

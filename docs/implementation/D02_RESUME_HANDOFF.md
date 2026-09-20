@@ -65,6 +65,26 @@ Latest changes after after02:
 3. Discarded overflow probes (at most one byte per child pipe) are explicitly
    counted separately as `discarded_child_probe_bytes`; retained logs remain capped.
 
+**Closeout corrections (after05, separate commit on `fix/d02`):**
+
+1. Remainder accounting: stale over-read remainders are now counted by actual
+   length (`discarded_child_overflow_bytes`, cap `2 * max_attempts * 8192`),
+   distinct from 1-byte overflow probes. Reads are capped at live remaining
+   allowance (hard read limit, no reservation held across blocking reads);
+   the 1-byte lookahead fires only at zero allowance to separate overflow from
+   EOF. New tests prove retained + discarded == recorded returned total under a
+   16-byte cap with 8192-byte scripted pipes on both streams plus journal
+   reload, and over real pipes.
+2. Identity distinction: evidence added (no rewrite needed) that execution
+   identity (`hash_stage_inputs`) and output identity (`hash_stage_outputs` +
+   verification) still bind content and full policy, with a new test proving
+   stale verdicts, enforced/recorded limits, cumulative spending, distinct
+   attempt records, and untouched prior outputs.
+3. D06 inventory: see `reports/P23-D02.md` closeout analysis (byte-identical
+   code, 42,714 files / 949 MB, 66.3 s cold vs 14.2 s warm vs 90 s bound,
+   baseline-worktree pass vs two tip failures). Tracked BLOCKED with an
+   unapplied 300 s finite-bound proposal for D06 review.
+
 **Resolved failures (after04 on the final tree):**
 
 1. Child-output accounting: both drain workers previously reserved the full
@@ -90,14 +110,21 @@ Latest changes after after02:
 3. D03 external outputs: the two public workflow cases that failed in after02
    now pass (after04 d03public 2/2), and the full D03 group passes 82/82.
 
-**Remaining, not D02-caused:** D06 core
+**D06 inventory status (supersedes the paragraph below):** see the closeout
+analysis in `reports/P23-D02.md` — byte-identical code at `22cb60a` vs tip,
+42,714 files / 949 MB inventoried, 66.3 s cold-cache vs 14.2 s warm-cache
+measurements against the 90 s bound, one baseline-worktree pass (266.9 s,
+warm cache an hour after cold measurements) against two isolated tip failures.
+Tracked BLOCKED with an unapplied 300 s proposal for D06 review; not a pass.
+
+**Historical note (secured pause, retained):** D06 core
 `test_relocated_locked_environment_ignores_editable_hooks_and_bytecode` fails
 with `installed runtime inventory exceeds time bound` (90 s cap; isolated rerun
 also fails). D02 changes touch only `prepare/bounds.py` and
 `test_prepare_bounds.py`; the failing path (`experiments/environment.py`
 site-packages inventory hashing) is untouched. Reported as BLOCKED environmental,
-not a D02 pass. Opus D04/D05 integration still requires its final commits and a
-separate instruction.
+not a D02 pass. Opus delivered D04/D05 at `55c8c72` (`fix/d04-d05` in
+`D:\Project\xlm-d0405`); integration proceeds separately after closeout.
 
 ## Resume
 

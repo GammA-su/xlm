@@ -1,0 +1,28 @@
+unformatted: File would be reformatted
+   --> tests\test_prepare_bounds.py:156:12
+    |
+155 |     assert consumed.get("transfer", 0) == 16
+    -     assert (
+    -         consumed.get("transfer", 0)
+    -         + consumed.get("discarded_child_overflow_bytes", 0)
+    -         + consumed.get("discarded_child_probe_bytes", 0)
+    -         == sum(returned.values())
+    -     )
+156 +     assert consumed.get("transfer", 0) + consumed.get(
+157 +         "discarded_child_overflow_bytes", 0
+158 +     ) + consumed.get("discarded_child_probe_bytes", 0) == sum(returned.values())
+159 |     assert sum(returned.values()) - consumed.get("transfer", 0) >= 1
+--------------------------------------------------------------------------------
+188 |     assert consumed.get("transfer", 0) == 16
+    -     assert consumed.get("discarded_child_probe_bytes", 0) + consumed.get(
+    -         "discarded_child_overflow_bytes", 0
+    -     ) >= 1
+189 +     assert (
+190 +         consumed.get("discarded_child_probe_bytes", 0)
+191 +         + consumed.get("discarded_child_overflow_bytes", 0)
+192 +         >= 1
+193 +     )
+194 |     assert sum(p.stat().st_size for p in bounds.spool.glob("*.log")) == 16
+    |
+
+1 file would be reformatted, 278 files already formatted

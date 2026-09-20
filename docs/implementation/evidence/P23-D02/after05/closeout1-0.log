@@ -1,0 +1,14 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0
+collecting ... collected 3 items
+
+tests/test_prepare_bounds.py::test_child_output_categorizes_every_returned_byte_under_tiny_allowance PASSED [ 33%]
+tests/test_prepare_bounds.py::test_child_output_tiny_allowance_over_real_pipes PASSED [ 66%]
+tests/test_prepare_bounds.py::test_stale_rerun_keeps_cumulative_account_without_reuse PASSED [100%]
+
+- generated xml file: D:\Project\xlm\data\audit\p23-remediation\stage04\after05\closeout1.xml -
+============================== 3 passed in 5.67s ==============================
