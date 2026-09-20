@@ -7,7 +7,7 @@ import json
 from collections.abc import Iterator
 from datetime import UTC
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any
 
 import typer
 import yaml
@@ -373,6 +373,13 @@ def probe_source(
         bool,
         typer.Option("--json", help="Output evidence record as JSON."),
     ] = False,
+    probe_id: Annotated[
+        str,
+        typer.Option(
+            "--probe-id",
+            help="Explicit discovery attempt identity; reruns share its spent allowance.",
+        ),
+    ] = "default",
 ) -> None:
     """Inspect and probe a candidate source snapshot within bounded discovery limits."""
     try:
@@ -394,10 +401,46 @@ def probe_source(
         )
         raise typer.Exit(code=1)
 
-    budget = TransportBudget(max_bytes=int(min(budget_mib, 32.0) * 1024 * 1024))
+    if not 0 < budget_mib <= 32:
+        raise ValueError("discovery --budget-mib must be greater than zero and at most 32")
+    budget = TransportBudget(max_bytes=int(budget_mib * 1024 * 1024))
     transport: DiscoveryTransport
 
     if live:
+        import hashlib
+
+        from xlm.artifacts.manifest import validate_component
+        from xlm.data.acquisition.disk import StorageCapacityManager
+
+        validate_component(probe_id)
+        identity = hashlib.sha256(
+            json.dumps(
+                {
+                    "candidate": candidate.model_dump(),
+                    "view": view_id,
+                    "budget_bytes": budget.max_bytes,
+                    "probe_id": probe_id,
+                },
+                sort_keys=True,
+            ).encode()
+        ).hexdigest()
+        paths = ArtifactPaths.from_env()
+        journal = ProgressJournal(
+            paths.root / "discovery" / f"{source_id}_{view_id}_{probe_id}.json",
+            f"probe_{source_id}_{view_id}_{probe_id}",
+            identity,
+        )
+        capacity = StorageCapacityManager(
+            budget.max_bytes,
+            budget.max_decompressed_bytes,
+            16 * 1024**2,
+            16 * 1024**2,
+            journal=journal,
+        )
+        capacity.bind_deadline(budget.deadline_seconds)
+        budget.capacity = capacity
+        budget.bytes_transferred = journal.state.transferred_bytes
+        budget.requests_made = journal.state.requests_made
         if candidate.provider == "huggingface":
             transport = HuggingFaceTransport(budget)
         elif candidate.provider == "https":
@@ -416,7 +459,10 @@ def probe_source(
         store = ArtifactStore(paths)
         existing_evidence = load_probe_evidence(candidate.source_id, view_id, store)
         if existing_evidence is not None:
-            typer.echo(f"Found saved probe evidence in artifact store for {source_id}:{view_id}.")
+            typer.echo(
+                f"Found saved probe evidence in artifact store for {source_id}:{view_id}.",
+                err=as_json,
+            )
             if as_json:
                 typer.echo(json.dumps(existing_evidence.to_canonical_dict(), indent=2))
             else:
@@ -449,9 +495,10 @@ def probe_source(
         store = ArtifactStore(paths)
         try:
             art_dir = save_probe_evidence(evidence, store)
-            typer.echo(f"Persisted probe evidence artifact to: {art_dir}")
+            typer.echo(f"Persisted probe evidence artifact to: {art_dir}", err=as_json)
         except Exception as e:
-            typer.echo(f"Warning: Could not persist probe evidence artifact: {e}", err=True)
+            typer.echo(f"Error: Could not persist probe evidence artifact: {e}", err=True)
+            raise typer.Exit(code=1) from e
 
     if as_json:
         typer.echo(json.dumps(evidence.to_canonical_dict(), indent=2))
@@ -678,6 +725,26 @@ def plan_cmd(
         str | None,
         typer.Option("--authorization-hash", help="Authorization hash for production plan."),
     ] = None,
+    row_ranges_path: Annotated[
+        Path | None,
+        typer.Option(
+            "--row-ranges",
+            help="JSON mapping original filenames to zero-based [start, stop) record ranges.",
+        ),
+    ] = None,
+    limits_path: Annotated[
+        Path | None,
+        typer.Option(
+            "--limits", help="JSON AcquisitionLimits; replaces the three convenience limit flags."
+        ),
+    ] = None,
+    expected_digests_path: Annotated[
+        Path | None,
+        typer.Option(
+            "--expected-digests",
+            help="JSON original filename to independently reviewed SHA-256 mapping.",
+        ),
+    ] = None,
 ) -> None:
     """Generate and validate an acquisition plan adhering to Contracts C01 and C04."""
     try:
@@ -717,6 +784,18 @@ def plan_cmd(
         max_records=max_records,
         max_output_disk_bytes=max_output_disk,
     )
+
+    def bounded_json(path: Path | None) -> Any:
+        if path is None:
+            return None
+        if path.stat().st_size > 1024**2:
+            raise ValueError("plan input JSON exceeds 1 MiB")
+        return json.loads(path.read_text(encoding="utf-8"))
+
+    if limits_path is not None:
+        if (max_bytes, max_records, max_output_disk) != (256 * 1024**2, 25000, 2 * 1024**3):
+            raise ValueError("use either --limits or the convenience limit flags, not both")
+        limits = AcquisitionLimits.model_validate(bounded_json(limits_path))
     sampling = SamplingFrame(
         selected_files=selected_files,
         selection_seed=seed,
@@ -728,9 +807,9 @@ def plan_cmd(
 
     # Build initial plan to compute its behavioral hash
     is_pilot = not (
-        max_bytes > 256 * 1024 * 1024
-        or max_records > 25_000
-        or max_output_disk > 2 * 1024 * 1024 * 1024
+        limits.max_transferred_bytes > 256 * 1024 * 1024
+        or limits.max_records > 25_000
+        or limits.max_output_disk_bytes > 2 * 1024 * 1024 * 1024
     )
     initial_plan = AcquisitionPlan(
         plan_id=plan_id,
@@ -745,6 +824,15 @@ def plan_cmd(
         limits=limits,
         output_artifact_id=output_artifact_id,
         is_pilot=is_pilot,
+        row_ranges=bounded_json(row_ranges_path),
+        expected_file_digests=bounded_json(expected_digests_path) or {},
+    )
+    identity_suffix = initial_plan.compute_behavioral_hash()[:20]
+    initial_plan = initial_plan.model_copy(
+        update={
+            "plan_id": f"{plan_id}_{identity_suffix}",
+            "output_artifact_id": f"{output_artifact_id}_{identity_suffix}",
+        }
     )
     b_hash = initial_plan.compute_behavioral_hash()
 
@@ -772,7 +860,7 @@ def plan_cmd(
 
     resolved_plan = initial_plan.model_copy(update={"authorization": auth, "plan_hash": b_hash})
 
-    out_file = output_path or Path(f"plans/plan_{source_id}_{view_id}.json")
+    out_file = output_path or Path(f"plans/{initial_plan.plan_id}.json")
     save_acquisition_plan(resolved_plan, out_file)
 
     typer.echo("============================================================")
@@ -834,8 +922,9 @@ def fetch_cmd(
         )
         plan = plan.model_copy(update={"authorization": auth})
 
-    target_output = output_dir or Path(f"data/raw/{plan.source_id}_{plan.view_id}")
-    target_scratch = scratch_dir or Path(f"data/scratch/{plan.plan_id}")
+    paths = ArtifactPaths.from_env()
+    target_output = output_dir or paths.root / "acquisition" / plan.plan_id / "raw"
+    target_scratch = scratch_dir or paths.root / "acquisition" / plan.plan_id / "scratch"
 
     try:
         fetcher = BoundedFetcher(plan, scratch_dir=target_scratch, output_dir=target_output)
@@ -846,6 +935,7 @@ def fetch_cmd(
             f"Transferred: {state.transferred_bytes:,} bytes ({state.requests_made} requests)"
         )
         typer.echo(f"Cache Hits:  {state.cache_hits}")
+        typer.echo(f"Corpus records: {state.records_acquired} (opaque files are not counted)")
         typer.echo(f"Output dir:  {target_output}")
     except Exception as e:
         typer.echo(f"Acquisition failed: {e}", err=True)
@@ -874,7 +964,9 @@ def status_cmd(
         typer.echo(f"Error loading plan: {e}", err=True)
         raise typer.Exit(code=1) from e
 
-    target_scratch = scratch_dir or Path(f"data/scratch/{plan.plan_id}")
+    target_scratch = (
+        scratch_dir or ArtifactPaths.from_env().root / "acquisition" / plan.plan_id / "scratch"
+    )
     journal_path = target_scratch / "journals" / f"{plan.plan_id}.progress.json"
 
     if not journal_path.exists():
@@ -921,6 +1013,10 @@ def verify_cmd(
         bool,
         typer.Option("--json", help="Output verification receipt as structured JSON."),
     ] = False,
+    scratch_dir: Annotated[
+        Path | None,
+        typer.Option("--scratch-dir", help="Original acquisition scratch/journal directory."),
+    ] = None,
 ) -> None:
     """Verify integrity of acquired files and publish immutable raw_dataset artifact."""
     try:
@@ -929,7 +1025,18 @@ def verify_cmd(
         typer.echo(f"Error loading plan: {e}", err=True)
         raise typer.Exit(code=1) from e
 
-    verifier = AcquisitionVerifier(plan, output_dir=output_dir)
+    target_scratch = (
+        scratch_dir or ArtifactPaths.from_env().root / "acquisition" / plan.plan_id / "scratch"
+    )
+    journal_path = target_scratch / "journals" / f"{plan.plan_id}.progress.json"
+    if not journal_path.is_file():
+        typer.echo(
+            "Verification requires the original journal; missing provenance remains unresolved.",
+            err=True,
+        )
+        raise typer.Exit(code=1)
+    journal = ProgressJournal(journal_path, plan.plan_id, plan.compute_behavioral_hash())
+    verifier = AcquisitionVerifier(plan, output_dir=output_dir, journal=journal)
     try:
         receipt = verifier.verify()
     except Exception as e:
@@ -940,7 +1047,7 @@ def verify_cmd(
         paths = ArtifactPaths.from_env()
         store = ArtifactStore(paths)
         art_dir = verifier.publish_artifact(store, receipt)
-        typer.echo(f"Successfully published raw_dataset artifact to: {art_dir}")
+        typer.echo(f"Successfully published raw_dataset artifact to: {art_dir}", err=as_json)
 
     if as_json:
         typer.echo(json.dumps(receipt.model_dump(), indent=2))

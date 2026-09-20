@@ -1,0 +1,47 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0
+collecting ... collected 36 items
+
+tests/test_acquisition_bounds.py::test_original_valid_transfer_and_restart_consumption PASSED [  2%]
+tests/test_acquisition_bounds.py::test_completed_original_is_never_repaired[same_length] PASSED [  5%]
+tests/test_acquisition_bounds.py::test_completed_original_is_never_repaired[missing] PASSED [  8%]
+tests/test_acquisition_bounds.py::test_completed_original_is_never_repaired[incomplete] PASSED [ 11%]
+tests/test_acquisition_bounds.py::test_whole_original_over_record_limit_is_refused PASSED [ 13%]
+tests/test_acquisition_bounds.py::test_original_concurrent_reservations_share_allowance PASSED [ 16%]
+tests/test_acquisition_bounds.py::test_fresh_process_reservations_and_killed_owner_remain_spent PASSED [ 19%]
+tests/test_acquisition_bounds.py::test_redirect_retry_bodies_and_requests_are_charged[redirect.jsonl-redirect body] PASSED [ 22%]
+tests/test_acquisition_bounds.py::test_redirect_retry_bodies_and_requests_are_charged[retry.jsonl-retry body] PASSED [ 25%]
+tests/test_acquisition_bounds.py::test_metadata_uses_the_same_body_and_request_budget PASSED [ 27%]
+tests/test_acquisition_bounds.py::test_selected_records_have_exact_original_locators[rows.jsonl-interval0-texts0] PASSED [ 30%]
+tests/test_acquisition_bounds.py::test_selected_records_have_exact_original_locators[rows.parquet-interval1-texts1] PASSED [ 33%]
+tests/test_acquisition_bounds.py::test_ignored_parquet_range_has_no_whole_shard_fallback PASSED [ 36%]
+tests/test_acquisition_bounds.py::test_compressed_corpus_expansion_is_refused PASSED [ 38%]
+tests/test_acquisition_bounds.py::test_deadline_and_plan_identity_cannot_be_reset PASSED [ 41%]
+tests/test_acquisition_fetcher.py::test_fetcher_dropouts_and_range_resumption PASSED [ 44%]
+tests/test_acquisition_fetcher.py::test_fetcher_ignored_range_handling PASSED [ 47%]
+tests/test_acquisition_fetcher.py::test_fetcher_source_drift_412_blocks PASSED [ 50%]
+tests/test_acquisition_fetcher.py::test_fetcher_rate_limit_429_backoff PASSED [ 52%]
+tests/test_acquisition_fetcher.py::test_fetcher_inconsistent_content_range_fails PASSED [ 55%]
+tests/test_acquisition_fetcher.py::test_fetcher_oversized_payload_halts_budget PASSED [ 58%]
+tests/test_acquisition_fetcher.py::test_fetcher_malicious_redirect_blocked PASSED [ 61%]
+tests/test_acquisition_fetcher.py::test_fetcher_cache_hits_and_zero_network PASSED [ 63%]
+tests/test_acquisition_fetcher.py::test_fetcher_decompression_bomb_guard PASSED [ 66%]
+tests/test_acquisition_fetcher.py::test_fetcher_crash_consistency_reconciliation PASSED [ 69%]
+tests/test_acquisition_plan.py::test_plan_behavioral_hash_invariance PASSED [ 72%]
+tests/test_acquisition_plan.py::test_plan_pilot_approval_enforcement PASSED [ 75%]
+tests/test_acquisition_plan.py::test_plan_production_authorization_enforcement PASSED [ 77%]
+tests/test_acquisition_plan.py::test_plan_denied_fineweb_policy PASSED   [ 80%]
+tests/test_acquisition_plan.py::test_plan_serialization_roundtrip PASSED [ 83%]
+tests/test_acquisition_verifier.py::test_verifier_independent_checksum_positive PASSED [ 86%]
+tests/test_acquisition_verifier.py::test_verifier_corrupted_jsonl_mismatch PASSED [ 88%]
+tests/test_acquisition_verifier.py::test_verifier_parquet_format_verification PASSED [ 91%]
+tests/test_acquisition_verifier.py::test_verifier_missing_file_fails PASSED [ 94%]
+tests/test_acquisition_verifier.py::test_verifier_artifact_store_publication_and_post_corruption PASSED [ 97%]
+tests/test_acquisition_verifier.py::test_base_environment_zero_torch_isolation PASSED [100%]
+
+- generated xml file: D:\Project\xlm\data\audit\p23-remediation\stage04\after01\bounds-probe.xml -
+======================== 36 passed in 88.19s (0:01:28) ========================

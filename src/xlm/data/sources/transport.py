@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import hashlib
 import json
-import time
 import threading
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -79,17 +79,22 @@ class TransportBudget:
             self.capacity.journal.record_request(self.max_requests)
             self.requests_made = self.capacity.journal.state.requests_made
             return
-        if self.requests_made >= self.max_requests:
-            raise BudgetExhaustedError(
-                f"Exceeded maximum discovery request allowance of {self.max_requests} requests."
-            )
-        self.requests_made += 1
+        with self._lock:
+            if self.requests_made >= self.max_requests:
+                raise BudgetExhaustedError(
+                    f"Exceeded maximum discovery request allowance of {self.max_requests} requests."
+                )
+            self.requests_made += 1
 
     def read_chunk(self, response: Any, maximum: int = 65536) -> bytes:
         """Reserve before a bounded body read; interrupted reads retain their allowance."""
         self.check_deadline()
         with self._lock:
-            remaining = self.capacity.remaining("transfer") if self.capacity else self.max_bytes - self.bytes_transferred - self._reserved_bytes
+            remaining = (
+                self.capacity.remaining("transfer")
+                if self.capacity
+                else self.max_bytes - self.bytes_transferred - self._reserved_bytes
+            )
             amount = min(maximum, remaining)
             if amount <= 0:
                 raise BudgetExhaustedError("response-body byte allowance exhausted")
@@ -119,7 +124,12 @@ class TransportBudget:
         while expected is None or consumed < expected:
             if consumed == limit:
                 raise BudgetExhaustedError("unframed response reached body limit before EOF")
-            chunk = self.read_chunk(response, min(65536, limit - consumed, expected - consumed if expected is not None else limit))
+            chunk = self.read_chunk(
+                response,
+                min(
+                    65536, limit - consumed, expected - consumed if expected is not None else limit
+                ),
+            )
             if not chunk:
                 if expected is not None and consumed != expected:
                     raise OSError("response ended before declared length")
@@ -131,6 +141,10 @@ class TransportBudget:
 
     def record_bytes(self, n: int) -> None:
         self.check_deadline()
+        if self.capacity:
+            self.capacity.record_transfer(n)
+            self.bytes_transferred = self.capacity.snapshot()["transferred_bytes"]
+            return
         self.bytes_transferred += n
         if self.bytes_transferred > self.max_bytes:
             raise BudgetExhaustedError(
@@ -140,6 +154,10 @@ class TransportBudget:
 
     def record_decompressed_bytes(self, n: int) -> None:
         self.check_deadline()
+        if self.capacity:
+            self.capacity.record_decompressed(n)
+            self.decompressed_bytes_produced = self.capacity.snapshot()["decompressed_bytes"]
+            return
         self.decompressed_bytes_produced += n
         if self.decompressed_bytes_produced > self.max_decompressed_bytes:
             raise BudgetExhaustedError(
@@ -153,6 +171,10 @@ class TransportBudget:
             "decompressed_bytes": self.decompressed_bytes_produced,
             "requests_made": self.requests_made,
             "elapsed_seconds": round(time.monotonic() - self.start_time, 3),
+            "measurement": "application response-body bytes; no TCP/TLS wire accounting",
+            "outstanding_reservations": self.capacity.snapshot()
+            if self.capacity
+            else {"response_body_bytes": self._reserved_bytes},
         }
 
 
@@ -160,6 +182,12 @@ def validate_host(url: str) -> None:
     """Validate that the given URL's hostname is on the strict allowlist."""
     parsed = urllib.parse.urlparse(url)
     hostname = (parsed.hostname or "").lower()
+    if parsed.username or parsed.password or parsed.scheme not in ("http", "https"):
+        raise HostNotAllowlistedError(
+            "only explicit HTTP(S) endpoints without credentials are allowed"
+        )
+    if parsed.scheme == "http" and hostname not in ("127.0.0.1", "localhost"):
+        raise HostNotAllowlistedError("cleartext HTTP is restricted to loopback fixtures")
     if hostname not in ALLOWLISTED_HOSTS:
         raise HostNotAllowlistedError(
             f"Host '{hostname}' in URL '{url}' is not in the allowlist {sorted(ALLOWLISTED_HOSTS)}."
@@ -325,6 +353,8 @@ class HuggingFaceTransport:
                 immutable_revision="",
                 error_reason=f"Provider returned HTTP error {e.code}: {e.reason}",
             )
+        except (BudgetExhaustedError, DeadlineExceededError, TimeoutError, HostNotAllowlistedError):
+            raise
         except Exception as e:
             return SnapshotInfo(
                 provider="huggingface",
@@ -360,6 +390,8 @@ class HuggingFaceTransport:
                     )
             # HF tree endpoint does not always provide pagination cursor in body
             return files, None, len(files)
+        except (BudgetExhaustedError, DeadlineExceededError, TimeoutError, HostNotAllowlistedError):
+            raise
         except Exception:
             return [], None, None
 
@@ -408,6 +440,8 @@ class HttpsManifestTransport:
                 card_data=manifest_data.get("metadata", {}),
             )
         except urllib.error.HTTPError as e:
+            with e:
+                self.budget.read_body(e, self.budget.max_bytes, retain=False)
             return SnapshotInfo(
                 provider="https",
                 target=target,
@@ -415,6 +449,8 @@ class HttpsManifestTransport:
                 is_not_found=(e.code == 404),
                 error_reason=f"HTTP Error {e.code}: {e.reason}",
             )
+        except (BudgetExhaustedError, DeadlineExceededError, TimeoutError, HostNotAllowlistedError):
+            raise
         except Exception as e:
             return SnapshotInfo(
                 provider="https",
@@ -478,6 +514,8 @@ class LocalManifestTransport:
                 error_reason=f"Local manifest not found: {manifest_path}",
             )
 
+        if manifest_path.stat().st_size > 1024**2:
+            raise BudgetExhaustedError("local discovery manifest exceeds 1 MiB")
         content = manifest_path.read_bytes()
         digest = hashlib.sha256(content).hexdigest()
 
@@ -509,16 +547,20 @@ class LocalManifestTransport:
         try:
             import yaml
 
+            if manifest_path.stat().st_size > 1024**2:
+                raise BudgetExhaustedError("local discovery manifest exceeds 1 MiB")
             data: Any = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
             if isinstance(data, dict):
                 raw_files = data.get("files", [])
                 out_files: list[dict[str, Any]] = []
                 for rf in raw_files:
                     if isinstance(rf, dict):
-                        f_path = manifest_path.parent / rf.get("path", "")
+                        f_path = self._validate_path(manifest_path.parent / rf.get("path", ""))
                         f_size = f_path.stat().st_size if f_path.is_file() else 0
                         out_files.append({"path": rf.get("path"), "size": f_size})
                 return out_files, None, len(out_files)
+        except (BudgetExhaustedError, InsecurePathError):
+            raise
         except Exception:
             pass
         return [], None, 0

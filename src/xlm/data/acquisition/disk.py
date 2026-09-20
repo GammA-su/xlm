@@ -1,4 +1,5 @@
 """Shared reservations, measured consumption and separately reconciled storage occupancy."""
+
 from __future__ import annotations
 
 import hashlib
@@ -29,10 +30,17 @@ class StorageCapacityManager:
     are released only after measuring the owned tree under the plan execution lock.
     """
 
-    def __init__(self, max_transferred_bytes: int, max_decompressed_bytes: int,
-                 max_temp_disk_bytes: int, max_output_disk_bytes: int,
-                 min_free_headroom_bytes: int = 50 * 1024 * 1024, *,
-                 journal: ProgressJournal | None = None) -> None:
+    def __init__(
+        self,
+        max_transferred_bytes: int,
+        max_decompressed_bytes: int,
+        max_temp_disk_bytes: int,
+        max_output_disk_bytes: int,
+        min_free_headroom_bytes: int = 50 * 1024 * 1024,
+        *,
+        journal: ProgressJournal | None = None,
+        extra_limits: dict[str, int] | None = None,
+    ) -> None:
         self.max_transferred_bytes = max_transferred_bytes
         self.max_decompressed_bytes = max_decompressed_bytes
         self.max_temp_disk_bytes = max_temp_disk_bytes
@@ -42,8 +50,13 @@ class StorageCapacityManager:
         self._lock = threading.RLock()
         self._account = ResourceAccount()
         self._cache_hits = 0
-        limits = {"transfer": max_transferred_bytes, "decompressed": max_decompressed_bytes,
-                  "temp": max_temp_disk_bytes, "output": max_output_disk_bytes}
+        limits = {
+            "transfer": max_transferred_bytes,
+            "decompressed": max_decompressed_bytes,
+            "temp": max_temp_disk_bytes,
+            "output": max_output_disk_bytes,
+        }
+        limits.update(extra_limits or {})
         if any(value < 1 for value in limits.values()):
             raise ValueError("resource limits must be positive")
         with self._transaction() as account:
@@ -52,12 +65,12 @@ class StorageCapacityManager:
             account.limits = limits
 
     @contextmanager
-    def _transaction(self) -> Iterator[ResourceAccount]:
+    def _transaction(self, *, persist: bool = True) -> Iterator[ResourceAccount]:
         with self._lock:
             if self.journal is None:
                 yield self._account
             else:
-                with self.journal.transaction() as state:
+                with self.journal.transaction(persist=persist) as state:
                     yield state.accounting
 
     def bind_deadline(self, seconds: float) -> None:
@@ -66,25 +79,61 @@ class StorageCapacityManager:
                 account.deadline_at = time.time() + seconds
 
     def check_deadline(self) -> None:
-        with self._transaction() as account:
+        with self._transaction(persist=False) as account:
             if account.deadline_at is not None and time.time() >= account.deadline_at:
-                raise TimeoutError("cumulative acquisition deadline reached; restart grants no new time")
+                raise TimeoutError(
+                    "cumulative acquisition deadline reached; restart grants no new time"
+                )
 
     def remaining(self, resource: str) -> int:
-        with self._transaction() as account:
-            used = account.occupancy.get(resource, 0) if resource in ("temp", "output") else account.consumed.get(resource, 0)
-            return account.limits[resource] - used - sum(account.reservations.get(resource, {}).values())
+        with self._transaction(persist=False) as account:
+            used = (
+                account.occupancy.get(resource, 0)
+                if resource in ("temp", "output")
+                else account.consumed.get(resource, 0)
+            )
+            if resource == "output":
+                used += account.occupancy.get("published", 0)
+            if resource == "temp":
+                used += account.occupancy.get("nested_temp", 0)
+            control = (
+                2 * self.journal.journal_path.stat().st_size
+                if resource == "temp" and self.journal and self.journal.journal_path.exists()
+                else 0
+            )
+            return (
+                account.limits[resource]
+                - used
+                - sum(account.reservations.get(resource, {}).values())
+                - control
+            )
 
-    def reserve(self, resource: str, amount: int) -> str:
+    def reserve(
+        self, resource: str, amount: int, *, publication: bool = False, persistent: bool = False
+    ) -> str:
         if amount < 0:
             raise ValueError("negative reservation")
         with self._transaction() as account:
             pending = account.reservations.setdefault(resource, {})
-            used = account.occupancy.get(resource, 0) if resource in ("temp", "output") else account.consumed.get(resource, 0)
+            used = (
+                account.occupancy.get(resource, 0)
+                if resource in ("temp", "output")
+                else account.consumed.get(resource, 0)
+            )
+            if resource == "output":
+                used += account.occupancy.get("published", 0)
+            if resource == "temp":
+                used += account.occupancy.get("nested_temp", 0)
             if used + sum(pending.values()) + amount > account.limits[resource]:
-                error = DiskCeilingExceededError if resource in ("temp", "output") else BudgetExhaustedError
+                error = (
+                    DiskCeilingExceededError
+                    if resource in ("temp", "output")
+                    else BudgetExhaustedError
+                )
                 raise error(f"{resource} limit reached including outstanding reservations")
-            token = uuid.uuid4().hex
+            token = (
+                "external_" if persistent else "publication_" if publication else ""
+            ) + uuid.uuid4().hex
             pending[token] = amount
             return token
 
@@ -108,7 +157,16 @@ class StorageCapacityManager:
         token = self.reserve("decompressed", bytes_count)
         self.settle("decompressed", token, bytes_count)
 
-    def reserve_disk_space(self, target_dir: Path, estimated_bytes: int, is_temp: bool = True) -> str:
+    def record_units(self, name: str, amount: int, maximum: int) -> None:
+        with self._transaction() as account:
+            used = account.consumed.get(name, 0)
+            if amount < 0 or used + amount > maximum:
+                raise BudgetExhaustedError(f"cumulative {name} limit exceeded")
+            account.consumed[name] = used + amount
+
+    def reserve_disk_space(
+        self, target_dir: Path, estimated_bytes: int, is_temp: bool = True
+    ) -> str:
         ensure_plain_path(target_dir)
         existing = target_dir
         while not existing.exists():
@@ -140,7 +198,13 @@ class StorageCapacityManager:
             if total > account.limits[resource]:
                 raise DiskCeilingExceededError(f"{resource} occupancy exceeds limit")
             account.occupancy[resource] = total
-            account.reservations[resource] = {}
+            # Publication staging is outside the fetched-file tree. A crash's
+            # unresolved publication reservation cannot be released by this scan.
+            account.reservations[resource] = {
+                key: value
+                for key, value in account.reservations.get(resource, {}).items()
+                if key.startswith(("publication_", "external_"))
+            }
         return total
 
     def release_temp_disk(self, byte_count: int) -> None:
@@ -155,14 +219,22 @@ class StorageCapacityManager:
                 state.cache_hits += 1
 
     def snapshot(self) -> dict[str, int]:
-        with self._transaction() as account:
+        with self._transaction(persist=False) as account:
             return {
                 "transferred_bytes": account.consumed.get("transfer", 0),
                 "decompressed_bytes": account.consumed.get("decompressed", 0),
                 "temp_disk_bytes": account.occupancy.get("temp", 0),
-                "output_disk_bytes": account.occupancy.get("output", 0),
+                "output_disk_bytes": account.occupancy.get("output", 0)
+                + account.occupancy.get("published", 0),
+                "published_artifact_bytes": account.occupancy.get("published", 0),
+                "journal_bytes": self.journal.journal_path.stat().st_size
+                if self.journal and self.journal.journal_path.exists()
+                else 0,
                 "cache_hits": self.journal.state.cache_hits if self.journal else self._cache_hits,
-                **{f"reserved_{key}_bytes": sum(value.values()) for key, value in account.reservations.items()},
+                **{
+                    f"reserved_{key}_bytes": sum(value.values())
+                    for key, value in account.reservations.items()
+                },
             }
 
 

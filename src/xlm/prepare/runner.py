@@ -12,14 +12,20 @@ from __future__ import annotations
 
 import hashlib
 import json
-import subprocess
+import os
 import sys
+import uuid
 from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from filelock import FileLock
+
+from xlm.artifacts.manifest import ensure_plain_path, validate_component
+from xlm.prepare.bounds import PrepareBounds
 from xlm.prepare.config import PrepareConfig
+from xlm.prepare.integrity import bounded_files
 from xlm.prepare.planner import (
     build_variable_mapping,
     find_repo_root,
@@ -81,9 +87,12 @@ def state_file_path(output_root: Path | str) -> Path:
 
 def load_prior_state(output_root: Path | str) -> dict[str, Any]:
     path = state_file_path(output_root)
+    ensure_plain_path(path)
     if not path.is_file():
         return {}
     try:
+        if path.stat().st_size > 8 * 1024**2:
+            raise PrepareRunError("preparation state exceeds 8 MiB")
         data = json.loads(path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError) as exc:
         raise PrepareRunError(f"unreadable preparation state: {path}") from exc
@@ -110,7 +119,11 @@ def _write_state(
 
 
 def _copy_bounded(
-    sources: list[str], destination: Path, max_bytes: int, variables: dict[str, str]
+    sources: list[str],
+    destination: Path,
+    max_bytes: int,
+    variables: dict[str, str],
+    bounds: PrepareBounds,
 ) -> dict[str, Any]:
     """Copy fixture inputs with a byte cap and a content manifest."""
     total = 0
@@ -119,10 +132,12 @@ def _copy_bounded(
     for raw in sources:
         resolved = resolve_variables(raw, variables, where="local_copy inputs")
         source = Path(resolved)
+        ensure_plain_path(source)
         if not source.exists():
             raise PrepareRunError(f"local_copy input not found: {resolved}")
-        entries = sorted(source.rglob("*")) if source.is_dir() else [source]
+        entries = bounded_files(source)
         for entry in entries:
+            ensure_plain_path(entry)
             if not entry.is_file():
                 continue
             total += entry.stat().st_size
@@ -133,18 +148,30 @@ def _copy_bounded(
                 )
             relative = entry.relative_to(source) if source.is_dir() else Path(entry.name)
             target = destination / relative
+            ensure_plain_path(target)
             target.parent.mkdir(parents=True, exist_ok=True)
+            bounds.check()
+            reserved_size = entry.stat().st_size
+            input_reservation = bounds.capacity.reserve("input_bytes", reserved_size)
+            reservation = bounds.capacity.reserve_disk_space(
+                destination, reserved_size, is_temp=False
+            )
             digest = hashlib.sha256()
             copied = 0
-            temporary = target.with_suffix(target.suffix + ".part")
-            with entry.open("rb") as source_stream, temporary.open("wb") as output_stream:
+            temporary = target.with_name(f".{target.name}.{uuid.uuid4().hex}.part")
+            with entry.open("rb") as source_stream, temporary.open("xb") as output_stream:
                 for chunk in iter(lambda: source_stream.read(64 * 1024), b""):
                     copied += len(chunk)
-                    if copied > entry.stat().st_size or copied > max_bytes:
+                    bounds.capacity.check_deadline()
+                    if copied > reserved_size or copied > max_bytes:
                         raise PrepareRunError(f"local_copy input grew beyond its byte cap: {entry}")
                     digest.update(chunk)
                     output_stream.write(chunk)
+                output_stream.flush()
+                os.fsync(output_stream.fileno())
             temporary.replace(target)
+            bounds.capacity.settle("output", reservation, copied)
+            bounds.capacity.settle("input_bytes", input_reservation, copied)
             files.append(
                 {
                     "path": relative.as_posix(),
@@ -153,13 +180,21 @@ def _copy_bounded(
                 }
             )
     manifest = {"files": files, "total_bytes": total}
-    (destination / "copy_manifest.json").write_text(
-        json.dumps(manifest, indent=2, sort_keys=True), encoding="utf-8"
-    )
+    payload = json.dumps(manifest, indent=2, sort_keys=True).encode("utf-8")
+    reservation = bounds.capacity.reserve_disk_space(destination, len(payload), is_temp=False)
+    target = destination / "copy_manifest.json"
+    ensure_plain_path(target)
+    temporary = target.with_name(f".{target.name}.{uuid.uuid4().hex}.part")
+    with temporary.open("xb") as stream:
+        stream.write(payload)
+        stream.flush()
+        os.fsync(stream.fileno())
+    temporary.replace(target)
+    bounds.capacity.settle("output", reservation, len(payload))
     return manifest
 
 
-def run_prepare(
+def _run_prepare(
     config: PrepareConfig,
     config_path: Path | str,
     home: Path | str,
@@ -169,6 +204,7 @@ def run_prepare(
     force: bool = False,
     only: list[str] | None = None,
     stage_timeout_seconds: float = DEFAULT_STAGE_TIMEOUT_SECONDS,
+    bounds: PrepareBounds,
 ) -> PrepareResult:
     """Execute an authorized prepare run with reuse, resume and recorded force."""
     config_file = Path(config_path)
@@ -230,7 +266,9 @@ def run_prepare(
                 f"stage '{spec.stage_id}' is blocked: " + "; ".join(stage_plan.reasons)
             )
         if stage_plan.status == "check-only":
-            record = _execute_check_only(spec, stage_plan.command, root, stage_timeout_seconds)
+            record = _execute_check_only(
+                spec, stage_plan.command, root, stage_timeout_seconds, bounds
+            )
             records[spec.stage_id] = record
             result.stages.append(record)
             persist()
@@ -273,10 +311,15 @@ def run_prepare(
                         Path(destination),
                         spec.max_bytes,
                         variables,
+                        bounds,
                     )
+                bounds.check()
             else:
-                _run_command(stage_plan.command, root, stage_timeout_seconds)
-        except PrepareRunError as exc:
+                _run_command(stage_plan.command, root, stage_timeout_seconds, bounds)
+            bounds.validate_outputs(
+                [Path(resolve_variables(p, variables, where="stage outputs")) for p in spec.outputs]
+            )
+        except (PrepareRunError, ValueError, RuntimeError, OSError) as exc:
             record = StageRecord(
                 stage_id=spec.stage_id,
                 action=action,
@@ -322,9 +365,11 @@ def run_prepare(
     return result
 
 
-def _execute_check_only(spec: Any, command: list[str], root: Path, timeout: float) -> StageRecord:
+def _execute_check_only(
+    spec: Any, command: list[str], root: Path, timeout: float, bounds: PrepareBounds
+) -> StageRecord:
     try:
-        _run_command(command, root, timeout)
+        _run_command(command, root, timeout, bounds)
         note = "check passed"
         status = "succeeded"
     except PrepareRunError as exc:
@@ -339,7 +384,7 @@ def _execute_check_only(spec: Any, command: list[str], root: Path, timeout: floa
     )
 
 
-def _run_command(command: list[str], root: Path, timeout: float) -> str:
+def _run_command(command: list[str], root: Path, timeout: float, bounds: PrepareBounds) -> str:
     if not command:
         raise PrepareRunError("empty stage command")
     # Stage commands are `xlm` subcommand argv (e.g. ["data", "clean", ...]) and
@@ -351,17 +396,53 @@ def _run_command(command: list[str], root: Path, timeout: float) -> str:
         *(command[1:] if command[0] == "xlm" else command),
     ]
     try:
-        completed = subprocess.run(
-            argv,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-            cwd=str(root),
-            check=False,
+        return bounds.run(argv, root, timeout)
+    except (ValueError, RuntimeError, OSError) as exc:
+        raise PrepareRunError(str(exc)) from exc
+
+
+def run_prepare(
+    config: PrepareConfig,
+    config_path: Path | str,
+    home: Path | str,
+    repo_root: Path | str | None = None,
+    *,
+    authorize: bool = False,
+    force: bool = False,
+    only: list[str] | None = None,
+    stage_timeout_seconds: float = DEFAULT_STAGE_TIMEOUT_SECONDS,
+) -> PrepareResult:
+    if not authorize:
+        raise PrepareRunError(
+            "refusing to execute without explicit authorization: rerun with --authorize"
         )
-    except subprocess.TimeoutExpired as exc:
-        raise PrepareRunError(f"stage timed out after {timeout:.0f}s") from exc
-    tail = (completed.stdout or "")[-1500:] + (completed.stderr or "")[-500:]
-    if completed.returncode != 0:
-        raise PrepareRunError(f"command exited {completed.returncode}: {tail[-500:]}")
-    return tail
+    validate_component(config.id)
+    config = PrepareConfig.model_validate(config.model_dump())
+    root = Path(repo_root) if repo_root else find_repo_root(Path(config_path).parent)
+    variables = build_variable_mapping(config, Path(config_path), Path(home), root)
+    output = Path(variables["output_root"])
+    ensure_plain_path(output)
+    output.mkdir(parents=True, exist_ok=True)
+    try:
+        with FileLock(str(output / ".prepare.lock"), timeout=1):
+            bounds = PrepareBounds(config, output, Path(home), Path(config_path).parent)
+            bounds.journal.set_status("IN_PROGRESS")
+            try:
+                result = _run_prepare(
+                    config,
+                    config_path,
+                    home,
+                    root,
+                    authorize=authorize,
+                    force=force,
+                    only=only,
+                    stage_timeout_seconds=stage_timeout_seconds,
+                    bounds=bounds,
+                )
+            except BaseException as exc:
+                bounds.journal.set_status("FAILED", str(exc)[:500])
+                raise
+            bounds.journal.set_status("COMPLETED")
+            return result
+    except (ValueError, RuntimeError, OSError) as exc:
+        raise PrepareRunError(str(exc)) from exc

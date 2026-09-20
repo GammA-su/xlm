@@ -1,11 +1,17 @@
 # Implementation status
 
+> **D02 secured pause (2026-09-20, user usage limit): IN PROGRESS, not accepted.**
+> [Resume handoff](D02_RESUME_HANDOFF.md): prior focused 196 + D01 99 passes;
+> latest quality passes; child-output accounting failure and full reruns pending.
+> No integration occurred.
+
 > D01 remediation is **IMPLEMENTED / VERIFIED (bounded offline)** under Stage 1 approval.
 > See [reports/P23-D01.md](reports/P23-D01.md) and [REMEDIATION.md](REMEDIATION.md).
 > D06 is **IMPLEMENTED / VERIFIED (bounded Windows CPU offline)**.
 > D03 core is **IMPLEMENTED / VERIFIED (bounded Windows CPU)** for the baseline
 > pilot handoff; see [P23-D03](reports/P23-D03.md). Cross-tokenizer comparison
-> remains OPEN / DEFERRED. D02 is now approved and IN PROGRESS; later repairs
+> remains OPEN / DEFERRED. D02 is now approved and IN PROGRESS; D04/D05 is approved
+> separately for Opus in `fix/d04-d05`. Other later repairs
 > require separate approval.
 > Overall production acceptance remains BLOCKED.
 

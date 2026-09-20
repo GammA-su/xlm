@@ -1,0 +1,3 @@
+after*/** -text
+baseline-audit.json -text
+handoff-sha256.json -text

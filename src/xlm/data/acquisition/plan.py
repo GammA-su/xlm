@@ -4,14 +4,16 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
+import os
+import uuid
 from enum import StrEnum
 from pathlib import Path
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from xlm.artifacts.manifest import validate_component, validate_file_set
-
+from xlm.artifacts.manifest import ensure_plain_path, validate_component, validate_file_set
 from xlm.data.sources.policy import check_denial_policy
 
 
@@ -40,11 +42,12 @@ class AcquisitionLimits(BaseModel):
     max_workers: int = 2
     max_record_bytes: int = 1024 * 1024
     max_parser_bytes: int = 32 * 1024 * 1024
+    max_scanned_records: int = 100000
 
     @model_validator(mode="after")
     def bounded_limits(self) -> AcquisitionLimits:
         for name, value in self.model_dump().items():
-            if value < (0 if name == "max_retries" else 1):
+            if not math.isfinite(value) or value < (0 if name == "max_retries" else 1):
                 raise ValueError(f"{name} must be positive (retries may be zero)")
         if self.max_workers > 16 or self.max_retries > 20:
             raise ValueError("at most 16 workers and 20 retries are supported")
@@ -115,6 +118,8 @@ class AcquisitionPlan(BaseModel):
         for value in (self.plan_id, self.source_id, self.view_id, self.output_artifact_id):
             validate_component(value)
         validate_file_set(self.selected_files)
+        if "acquisition_receipt.json" in self.selected_files:
+            raise ValueError("source filename collides with publication receipt")
         if len(self.selected_files) > 256:
             raise ValueError("acquisition supports at most 256 selected files")
         if set(self.expected_file_digests) - set(self.selected_files):
@@ -128,7 +133,10 @@ class AcquisitionPlan(BaseModel):
             for start, stop in self.row_ranges.values():
                 if not 0 <= start < stop:
                     raise ValueError("row ranges must be nonempty zero-based half-open intervals")
-            if sum(stop - start for start, stop in self.row_ranges.values()) > self.limits.max_records:
+            if (
+                sum(stop - start for start, stop in self.row_ranges.values())
+                > self.limits.max_records
+            ):
                 raise ValueError("selected row ranges exceed record limit")
         elif self.row_ranges:
             raise ValueError("whole-file mode cannot declare selected row ranges")
@@ -193,7 +201,9 @@ def validate_plan_authorization(
     # Revalidate model_copy inputs before any filesystem or transport side effect.
     AcquisitionPlan.model_validate(plan.model_dump())
     if plan.schema_version != 2:
-        raise ValueError("legacy acquisition plans require a newly reviewed v2 plan; originals are preserved")
+        raise ValueError(
+            "legacy acquisition plans require a newly reviewed v2 plan; originals are preserved"
+        )
 
     if not plan.revision or plan.revision.lower() in ("latest", "master", "main", "head", "todo"):
         raise ValueError(
@@ -209,10 +219,11 @@ def validate_plan_authorization(
 
     if exceeds_pilot or not plan.is_pilot:
         # Production execution path
-        if not catalog_source_approved and not plan.admitted_source_reference:
+        if not catalog_source_approved:
             raise AuthorizationRequiredError(
                 f"Production acquisition for '{plan.source_id}:{plan.view_id}' requires "
-                "prior operator admission in catalog or valid admission reference artifact."
+                "prior operator admission verified by the caller; "
+                "an unresolved admission reference is insufficient."
             )
         if not plan.authorization:
             raise AuthorizationRequiredError(
@@ -239,10 +250,23 @@ def validate_plan_authorization(
 
 def save_acquisition_plan(plan: AcquisitionPlan, path: Path) -> Path:
     """Save acquisition plan to JSON or YAML file."""
-    path.parent.mkdir(parents=True, exist_ok=True)
+    ensure_plain_path(path)
     plan_with_hash = plan.with_computed_hash()
-    with path.open("w", encoding="utf-8") as f:
-        json.dump(plan_with_hash.model_dump(), f, indent=2)
+    if path.exists():
+        existing = load_acquisition_plan(path)
+        if existing.compute_behavioral_hash() != plan_with_hash.compute_behavioral_hash():
+            raise ValueError("acquisition plan conflict; use a new reviewed plan/output path")
+        return path
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(path.name + "." + uuid.uuid4().hex + ".tmp")
+    try:
+        with temporary.open("x", encoding="utf-8") as stream:
+            json.dump(plan_with_hash.model_dump(), stream, indent=2)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.link(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
     return path
 
 
@@ -250,6 +274,9 @@ def load_acquisition_plan(path: Path) -> AcquisitionPlan:
     """Load acquisition plan from file and verify schema integrity."""
     if not path.is_file():
         raise FileNotFoundError(f"Acquisition plan file not found: {path}")
+    ensure_plain_path(path)
+    if path.stat().st_size > 1024**2:
+        raise ValueError("acquisition plan exceeds 1 MiB")
     with path.open("r", encoding="utf-8") as f:
         data = json.load(f)
     plan = AcquisitionPlan.model_validate(data)

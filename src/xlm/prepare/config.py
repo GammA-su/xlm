@@ -21,6 +21,7 @@ PREPARE_CONFIG_VERSION = "1"
 
 class PrepareBudgets(StrictConfigModel):
     """Aggregate allowances persist across stages, retries, force and restarts."""
+
     fetch_max_bytes: int = Field(default=64 * 1024**2, ge=1)
     max_subprocess_output_bytes: int = Field(default=16 * 1024**2, ge=1)
     max_temp_disk_bytes: int = Field(default=64 * 1024**2, ge=1)
@@ -30,6 +31,7 @@ class PrepareBudgets(StrictConfigModel):
     max_records: int = Field(default=100000, ge=1)
     overall_deadline_seconds: float = Field(default=1800, gt=0)
     max_attempts: int = Field(default=256, ge=1, le=4096)
+    max_network_requests: int = Field(default=100, ge=1)
 
 
 class PrepareStageSpec(StrictConfigModel):
@@ -99,7 +101,9 @@ class PrepareConfig(StrictConfigModel):
 
     @model_validator(mode="after")
     def validate_stage_graph(self) -> PrepareConfig:
-        object.__setattr__(self, "budgets", PrepareBudgets.model_validate(self.budgets).model_dump())
+        object.__setattr__(
+            self, "budgets", PrepareBudgets.model_validate(self.budgets).model_dump()
+        )
         ids = [stage.stage_id for stage in self.stages]
         duplicates = sorted({i for i in ids if ids.count(i) > 1})
         if duplicates:

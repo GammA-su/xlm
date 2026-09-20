@@ -1,4 +1,5 @@
 """Bounded acquisition record inspection and explicit selected-record serialization."""
+
 from __future__ import annotations
 
 import gzip
@@ -6,7 +7,7 @@ import hashlib
 import json
 from collections.abc import Iterator
 from pathlib import Path
-from typing import Any, BinaryIO
+from typing import Any, Protocol
 
 import pyarrow.parquet as pq
 
@@ -19,19 +20,28 @@ class RecordLimitError(ValueError):
     """Record, parser or decompression bound exceeded."""
 
 
-def jsonl_records(stream: BinaryIO, limits: AcquisitionLimits,
-                  capacity: StorageCapacityManager | None = None) -> Iterator[tuple[int, int, bytes, dict[str, Any]]]:
+class RecordStream(Protocol):
+    def readline(self, size: int = -1, /) -> bytes: ...
+
+
+def jsonl_records(
+    stream: RecordStream, limits: AcquisitionLimits, capacity: StorageCapacityManager | None = None
+) -> Iterator[tuple[int, int, bytes, dict[str, Any]]]:
     offset, row = 0, 0
     while True:
         raw = stream.readline(limits.max_record_bytes + 1)
         if not raw:
             return
+        if offset + len(raw) > limits.max_decompressed_bytes:
+            raise RecordLimitError("decompression limit: decompressed byte ceiling exceeded")
         if capacity:
             capacity.check_deadline()
             capacity.record_decompressed(len(raw))
         if len(raw) > limits.max_record_bytes:
             raise RecordLimitError("record byte limit exceeded")
         if raw.strip():
+            if capacity:
+                capacity.record_units("records_scanned", 1, limits.max_scanned_records)
             value = json.loads(raw, object_pairs_hook=_pairs_hook_reject_duplicates)
             if not isinstance(value, dict):
                 raise ValueError("corpus JSONL record must be an object")
@@ -40,24 +50,43 @@ def jsonl_records(stream: BinaryIO, limits: AcquisitionLimits,
         offset += len(raw)
 
 
-def inspect_records(path: Path, name: str, limits: AcquisitionLimits,
-                    capacity: StorageCapacityManager | None = None) -> int | None:
+def inspect_records(
+    path: Path, name: str, limits: AcquisitionLimits, capacity: StorageCapacityManager | None = None
+) -> int | None:
     if name.endswith((".jsonl", ".jsonl.gz")):
+        parser_limits = limits
+        if name.endswith(".gz"):
+            parser_limits = limits.model_copy(
+                update={
+                    "max_decompressed_bytes": min(
+                        limits.max_decompressed_bytes,
+                        int(path.stat().st_size * limits.max_decompression_ratio),
+                    )
+                }
+            )
         stream = gzip.open(path, "rb") if name.endswith(".gz") else path.open("rb")
         count, produced = 0, 0
         with stream:
-            for _, offset, raw, _ in jsonl_records(stream, limits, capacity):
+            for _, offset, raw, _ in jsonl_records(stream, parser_limits, capacity):
                 count += 1
                 produced = offset + len(raw)
                 if count > limits.max_records:
-                    raise RecordLimitError("whole-file record limit exceeded; original cannot be truncated")
-                if produced > limits.max_decompressed_bytes or (name.endswith(".gz") and produced > path.stat().st_size * limits.max_decompression_ratio):
+                    raise RecordLimitError(
+                        "whole-file record limit exceeded; original cannot be truncated"
+                    )
+                if produced > limits.max_decompressed_bytes or (
+                    name.endswith(".gz")
+                    and produced > path.stat().st_size * limits.max_decompression_ratio
+                ):
                     raise RecordLimitError("decompression byte/ratio limit exceeded")
         return count
     if name.endswith(".parquet"):
-        parquet = pq.ParquetFile(path, pre_buffer=False,
-                                 thrift_string_size_limit=limits.max_parser_bytes,
-                                 thrift_container_size_limit=limits.max_parser_bytes)
+        parquet = pq.ParquetFile(
+            path,
+            pre_buffer=False,
+            thrift_string_size_limit=limits.max_parser_bytes,
+            thrift_container_size_limit=limits.max_parser_bytes,
+        )
         if parquet.metadata.num_rows > limits.max_records:
             raise RecordLimitError("whole-file record limit exceeded")
         count = 0
@@ -71,6 +100,7 @@ def inspect_records(path: Path, name: str, limits: AcquisitionLimits,
                     if capacity:
                         capacity.check_deadline()
                         capacity.record_decompressed(batch.nbytes)
+                        capacity.record_units("records_scanned", 1, limits.max_scanned_records)
                     count += 1
         return count
     # Opaque transport objects are explicitly not proof of any corpus records.
@@ -83,17 +113,30 @@ def check_row_group(parquet: pq.ParquetFile, group: int, limits: AcquisitionLimi
         raise RecordLimitError("Parquet row group exceeds parser byte bound")
     for index in range(metadata.num_columns):
         column = metadata.column(index)
-        if column.total_uncompressed_size > limits.max_decompression_ratio * max(1, column.total_compressed_size):
+        if column.total_uncompressed_size > limits.max_decompression_ratio * max(
+            1, column.total_compressed_size
+        ):
             raise RecordLimitError("Parquet decompression ratio exceeded")
 
 
 def encode_record(record: dict[str, Any]) -> bytes:
-    return (json.dumps(record, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False) + "\n").encode("utf-8")
+    return (
+        json.dumps(
+            record, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False
+        )
+        + "\n"
+    ).encode("utf-8")
 
 
 def selected_record(record: dict[str, Any], locator: dict[str, Any], raw: bytes) -> bytes:
     if "_xlm_acquisition" in record:
         raise ValueError("source record conflicts with reserved acquisition locator field")
-    return encode_record({**record, "_xlm_acquisition": {
-        **locator, "original_record_sha256": hashlib.sha256(raw).hexdigest(),
-    }})
+    return encode_record(
+        {
+            **record,
+            "_xlm_acquisition": {
+                **locator,
+                "original_record_sha256": hashlib.sha256(raw).hexdigest(),
+            },
+        }
+    )

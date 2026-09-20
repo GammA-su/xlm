@@ -1,0 +1,79 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0
+collecting ... collected 37 items
+
+tests/test_acquisition_bounds.py::test_original_valid_transfer_and_restart_consumption PASSED [  2%]
+tests/test_acquisition_bounds.py::test_completed_original_is_never_repaired[same_length] PASSED [  5%]
+tests/test_acquisition_bounds.py::test_completed_original_is_never_repaired[missing] PASSED [  8%]
+tests/test_acquisition_bounds.py::test_completed_original_is_never_repaired[incomplete] PASSED [ 10%]
+tests/test_acquisition_bounds.py::test_whole_original_over_record_limit_is_refused PASSED [ 13%]
+tests/test_acquisition_bounds.py::test_original_concurrent_reservations_share_allowance PASSED [ 16%]
+tests/test_acquisition_bounds.py::test_fresh_process_reservations_and_killed_owner_remain_spent PASSED [ 18%]
+tests/test_acquisition_bounds.py::test_redirect_retry_bodies_and_requests_are_charged[redirect.jsonl-redirect body] PASSED [ 21%]
+tests/test_acquisition_bounds.py::test_redirect_retry_bodies_and_requests_are_charged[retry.jsonl-retry body] PASSED [ 24%]
+tests/test_acquisition_bounds.py::test_metadata_uses_the_same_body_and_request_budget PASSED [ 27%]
+tests/test_acquisition_bounds.py::test_selected_records_have_exact_original_locators[rows.jsonl-interval0-texts0] PASSED [ 29%]
+tests/test_acquisition_bounds.py::test_selected_records_have_exact_original_locators[rows.parquet-interval1-texts1] PASSED [ 32%]
+tests/test_acquisition_bounds.py::test_ignored_parquet_range_has_no_whole_shard_fallback PASSED [ 35%]
+tests/test_acquisition_bounds.py::test_compressed_corpus_expansion_is_refused PASSED [ 37%]
+tests/test_acquisition_bounds.py::test_deadline_and_plan_identity_cannot_be_reset PASSED [ 40%]
+tests/test_acquisition_bounds.py::test_public_plan_fetch_status_verify_prepare PASSED [ 43%]
+tests/test_prepare_bounds.py::test_child_stdout_and_stderr_are_bounded_and_accounted PASSED [ 45%]
+tests/test_prepare_bounds.py::test_check_only_stage_consumes_aggregate_allowance PASSED [ 48%]
+tests/test_prepare_bounds.py::test_changed_prepare_budget_does_not_replenish_account PASSED [ 51%]
+tests/test_prepare_bounds.py::test_prepare_record_parser_and_expansion_caps[budget0-{"text":"a"}\n{"text":"b"}\n-record] PASSED [ 54%]
+tests/test_prepare_bounds.py::test_prepare_record_parser_and_expansion_caps[budget1-{"text":"long"}\n-record byte] PASSED [ 56%]
+tests/test_prepare_bounds.py::test_prepare_record_parser_and_expansion_caps[budget2-{"text":"long"}\n-decompressed] PASSED [ 59%]
+tests/test_prepare_bounds.py::test_prepare_aggregate_output_guard PASSED [ 62%]
+tests/test_prepare.py::test_plan_only_reports_statuses_without_executing PASSED [ 64%]
+tests/test_prepare.py::test_missing_approval_blocks_with_named_reason PASSED [ 67%]
+tests/test_prepare.py::test_unknown_variables_fail_closed PASSED         [ 70%]
+tests/test_prepare.py::test_duplicate_and_unknown_stages_are_rejected PASSED [ 72%]
+tests/test_prepare.py::test_stale_inputs_invalidate_downstream PASSED    [ 75%]
+tests/test_prepare.py::test_execution_requires_explicit_authorization PASSED [ 78%]
+tests/test_prepare.py::test_full_toy_run_reuses_on_repeat PASSED         [ 81%]
+tests/test_prepare.py::test_partial_outputs_resume_without_redo FAILED   [ 83%]
+tests/test_prepare.py::test_failed_stage_stops_with_reason_and_state PASSED [ 86%]
+tests/test_prepare.py::test_local_copy_enforces_its_byte_cap PASSED      [ 89%]
+tests/test_prepare.py::test_find_repo_root_and_config_errors PASSED      [ 91%]
+tests/test_prepare.py::test_cli_plan_only_lists_stages PASSED            [ 94%]
+tests/test_prepare.py::test_cli_prepare_refuses_without_authorize PASSED [ 97%]
+tests/test_prepare.py::test_cli_maintenance_dry_run_lists_scratch PASSED [100%]
+
+================================== FAILURES ===================================
+__________________ test_partial_outputs_resume_without_redo ___________________
+
+tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after01/public-probe-tmp/test_partial_outputs_resume_wi0')
+
+    def test_partial_outputs_resume_without_redo(tmp_path: Path) -> None:
+        config, path = _config(tmp_path)
+        home = tmp_path / "home"
+        run_prepare(config, path, home, REPO_ROOT, authorize=True)
+        # Simulate an interrupted freeze: outputs gone, earlier stages intact.
+        shutil.rmtree(tmp_path / "out" / "regime")
+        (tmp_path / "out" / "shards").mkdir(parents=True, exist_ok=True)
+        resumed = run_prepare(config, path, home, REPO_ROOT, authorize=True)
+        by_id = {s.stage_id: s.action for s in resumed.stages}
+        assert by_id["freeze"] == "resumed"
+>       assert by_id["fetch"] == "reused"
+E       AssertionError: assert 'resumed' == 'reused'
+E         
+E         - reused
+E         ?    ^
+E         + resumed
+E         ?   + ^
+
+tests\test_prepare.py:169: AssertionError
+- generated xml file: D:\Project\xlm\data\audit\p23-remediation\stage04\after01\public-probe.xml -
+=========================== short test summary info ===========================
+FAILED tests/test_prepare.py::test_partial_outputs_resume_without_redo - AssertionError: assert 'resumed' == 'reused'
+  
+  - reused
+  ?    ^
+  + resumed
+  ?   + ^
+================== 1 failed, 36 passed in 357.82s (0:05:57) ===================

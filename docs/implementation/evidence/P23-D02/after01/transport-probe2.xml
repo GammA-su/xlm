@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="5" skipped="0" tests="34" time="21.723" timestamp="2026-09-20T13:52:14.848377+02:00" hostname="BetA-C1"><testcase classname="tests.test_acquisition_fetcher" name="test_fetcher_dropouts_and_range_resumption" time="4.112" /><testcase classname="tests.test_acquisition_fetcher" name="test_fetcher_ignored_range_handling" time="0.651"><failure message="xlm.data.acquisition.progress.ProgressCorruptionError: unowned partial file; cannot infer historical consumption">local_http_server = 'http://127.0.0.1:54118'
+tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after01/transport-probe2-tmp/test_fetcher_ignored_range_han0')
+
+    def test_fetcher_ignored_range_handling(local_http_server: str, tmp_path: Path) -&gt; None:
+        """Verify that when server returns 200 (ignored Range), fetcher restarts cleanly."""
+        plan = create_authorized_plan(local_http_server, "ignore_range", tmp_path)
+        output_dir = tmp_path / "output"
+        scratch_dir = tmp_path / "scratch"
+    
+        # Pre-populate partial file with some existing data to simulate prior interrupted run
+        partial_dir = scratch_dir / "partials" / plan.plan_id
+        partial_dir.mkdir(parents=True, exist_ok=True)
+        partial_file = partial_dir / "ignore_range.part"
+        partial_file.write_bytes(b"STALE_OLD_PARTIAL_DATA")
+    
+        fetcher = BoundedFetcher(plan, scratch_dir=scratch_dir, output_dir=output_dir)
+&gt;       state = fetcher.run()
+                ^^^^^^^^^^^^^
+
+tests\test_acquisition_fetcher.py:249: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\xlm\data\acquisition\fetcher.py:269: in run
+    list(pool.map(self._fetch_file, self.plan.selected_files))
+C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\concurrent\futures\_base.py:619: in result_iterator
+    yield _result_or_cancel(fs.pop())
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\concurrent\futures\_base.py:317: in _result_or_cancel
+    return fut.result(timeout)
+           ^^^^^^^^^^^^^^^^^^^
+C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\concurrent\futures\_base.py:456: in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\concurrent\futures\_base.py:401: in __get_result
+    raise self._exception
+C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\concurrent\futures\thread.py:59: in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;xlm.data.acquisition.fetcher.BoundedFetcher object at 0x0000025C9D2FCF20&gt;
+rel_path = 'ignore_range'
+
+    def _fetch_file(self, rel_path: str) -&gt; Path:
+        final_path, partial = self.output_dir / rel_path, self.partial_dir / f"{rel_path}.part"
+        ensure_plain_path(final_path)
+        ensure_plain_path(partial)
+        self.journal.save()
+        fp = self.journal.state.file_progress.get(rel_path)
+        if final_path.exists():
+            if not fp or fp.status != "completed" or not fp.content_sha256:
+                raise ProgressCorruptionError("incomplete/untracked original exists; refusing overwrite")
+            actual = compute_file_sha256(final_path, max_bytes=self.plan.limits.max_output_disk_bytes)
+            expected = self.plan.expected_file_digests.get(rel_path, fp.content_sha256)
+            if actual != expected or actual != fp.content_sha256:
+                raise ProgressCorruptionError("completed original integrity checksum mismatch")
+            self.capacity_mgr.record_cache_hit()
+            return final_path
+        if fp and fp.status == "completed":
+            raise ProgressCorruptionError("completed original is missing; refusing repair")
+        if partial.exists() and not fp:
+&gt;           raise ProgressCorruptionError("unowned partial file; cannot infer historical consumption")
+E           xlm.data.acquisition.progress.ProgressCorruptionError: unowned partial file; cannot infer historical consumption
+
+src\xlm\data\acquisition\fetcher.py:168: ProgressCorruptionError</failure></testcase><testcase classname="tests.test_acquisition_fetcher" name="test_fetcher_source_drift_412_blocks" time="1.239"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'Source drift detected'&#10;  Actual message: 'source/range changed: HTTP 412'">local_http_server = 'http://127.0.0.1:54118'
+tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after01/transport-probe2-tmp/test_fetcher_source_drift_412_0')
+
+    def test_fetcher_source_drift_412_blocks(local_http_server: str, tmp_path: Path) -&gt; None:
+        """Verify that an upstream ETag change during resume triggers SourceDriftDetectedError."""
+        plan = create_authorized_plan(local_http_server, "changed_etag", tmp_path)
+        output_dir = tmp_path / "output"
+        scratch_dir = tmp_path / "scratch"
+    
+        # Pre-populate journal with prior ETag and partial file
+        partial_dir = scratch_dir / "partials" / plan.plan_id
+        partial_dir.mkdir(parents=True, exist_ok=True)
+        partial_file = partial_dir / "changed_etag.part"
+        partial_file.write_bytes(b"Initial content")
+    
+        journal_path = scratch_dir / "journals" / f"{plan.plan_id}.progress.json"
+        journal = ProgressJournal(journal_path, plan.plan_id, plan.compute_behavioral_hash())
+        journal.update_file_progress("changed_etag", bytes_added=15, etag='"etag-v1-original"')
+        journal.save()
+    
+        fetcher = BoundedFetcher(plan, scratch_dir=scratch_dir, output_dir=output_dir)
+&gt;       with pytest.raises(SourceDriftDetectedError, match="Source drift detected"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'Source drift detected'
+E         Actual message: 'source/range changed: HTTP 412'
+
+tests\test_acquisition_fetcher.py:277: AssertionError</failure></testcase><testcase classname="tests.test_acquisition_fetcher" name="test_fetcher_rate_limit_429_backoff" time="3.285" /><testcase classname="tests.test_acquisition_fetcher" name="test_fetcher_inconsistent_content_range_fails" time="0.667"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'Inconsistent Content-Range start'&#10;  Actual message: 'unowned partial file; cannot infer historical consumption'">local_http_server = 'http://127.0.0.1:54118'
+tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after01/transport-probe2-tmp/test_fetcher_inconsistent_cont0')
+
+    def test_fetcher_inconsistent_content_range_fails(local_http_server: str, tmp_path: Path) -&gt; None:
+        """Verify that inconsistent Content-Range header start offset raises an immediate error."""
+        plan = create_authorized_plan(local_http_server, "inconsistent_range", tmp_path)
+        output_dir = tmp_path / "output"
+        scratch_dir = tmp_path / "scratch"
+    
+        # Create partial file to trigger Range request
+        partial_dir = scratch_dir / "partials" / plan.plan_id
+        partial_dir.mkdir(parents=True, exist_ok=True)
+        (partial_dir / "inconsistent_range.part").write_bytes(b"X" * 500)
+    
+        fetcher = BoundedFetcher(plan, scratch_dir=scratch_dir, output_dir=output_dir)
+&gt;       with pytest.raises(RuntimeError, match="Inconsistent Content-Range start"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'Inconsistent Content-Range start'
+E         Actual message: 'unowned partial file; cannot infer historical consumption'
+
+tests\test_acquisition_fetcher.py:308: AssertionError</failure></testcase><testcase classname="tests.test_acquisition_fetcher" name="test_fetcher_oversized_payload_halts_budget" time="0.886"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'Transferred bytes limit'&#10;  Actual message: 'declared response exceeds remaining transfer allowance'">local_http_server = 'http://127.0.0.1:54118'
+tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after01/transport-probe2-tmp/test_fetcher_oversized_payload0')
+
+    def test_fetcher_oversized_payload_halts_budget(local_http_server: str, tmp_path: Path) -&gt; None:
+        """Verify that stream exceeding max_transferred_bytes triggers BudgetExhaustedError."""
+        # Set tight budget: 128 KiB
+        limits = AcquisitionLimits(max_transferred_bytes=128 * 1024)
+        plan = create_authorized_plan(local_http_server, "oversized", tmp_path, limits=limits)
+        output_dir = tmp_path / "output"
+        scratch_dir = tmp_path / "scratch"
+    
+        fetcher = BoundedFetcher(plan, scratch_dir=scratch_dir, output_dir=output_dir)
+&gt;       with pytest.raises(BudgetExhaustedError, match="Transferred bytes limit"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'Transferred bytes limit'
+E         Actual message: 'declared response exceeds remaining transfer allowance'
+
+tests\test_acquisition_fetcher.py:321: AssertionError</failure></testcase><testcase classname="tests.test_acquisition_fetcher" name="test_fetcher_malicious_redirect_blocked" time="5.560" /><testcase classname="tests.test_acquisition_fetcher" name="test_fetcher_cache_hits_and_zero_network" time="2.731"><failure message="AttributeError: 'StorageCapacityManager' object has no attribute 'transferred_bytes'. Did you mean: 'max_transferred_bytes'?">local_http_server = 'http://127.0.0.1:54118'
+tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after01/transport-probe2-tmp/test_fetcher_cache_hits_and_ze0')
+
+    def test_fetcher_cache_hits_and_zero_network(local_http_server: str, tmp_path: Path) -&gt; None:
+        """Verify that re-running on an already completed file records cache hit and 0 network bytes."""
+        plan = create_authorized_plan(local_http_server, "normal_file", tmp_path)
+        output_dir = tmp_path / "output"
+        scratch_dir = tmp_path / "scratch"
+    
+        # Run 1: initial download
+        fetcher1 = BoundedFetcher(plan, scratch_dir=scratch_dir, output_dir=output_dir)
+        state1 = fetcher1.run()
+        initial_transferred = state1.transferred_bytes
+        assert initial_transferred &gt; 0
+    
+        # Run 2: re-run
+        fetcher2 = BoundedFetcher(plan, scratch_dir=scratch_dir, output_dir=output_dir)
+        state2 = fetcher2.run()
+        assert state2.cache_hits == 1
+        # Zero network bytes transferred during run 2
+&gt;       assert fetcher2.capacity_mgr.transferred_bytes == 0
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'StorageCapacityManager' object has no attribute 'transferred_bytes'. Did you mean: 'max_transferred_bytes'?
+
+tests\test_acquisition_fetcher.py:356: AttributeError</failure></testcase><testcase classname="tests.test_acquisition_fetcher" name="test_fetcher_decompression_bomb_guard" time="0.006" /><testcase classname="tests.test_acquisition_fetcher" name="test_fetcher_crash_consistency_reconciliation" time="0.530" /><testcase classname="tests.test_acquisition_plan" name="test_plan_behavioral_hash_invariance" time="0.001" /><testcase classname="tests.test_acquisition_plan" name="test_plan_pilot_approval_enforcement" time="0.002" /><testcase classname="tests.test_acquisition_plan" name="test_plan_production_authorization_enforcement" time="0.002" /><testcase classname="tests.test_acquisition_plan" name="test_plan_denied_fineweb_policy" time="0.001" /><testcase classname="tests.test_acquisition_plan" name="test_plan_serialization_roundtrip" time="0.010" /><testcase classname="tests.test_acquisition_verifier" name="test_verifier_independent_checksum_positive" time="0.011" /><testcase classname="tests.test_acquisition_verifier" name="test_verifier_corrupted_jsonl_mismatch" time="0.009" /><testcase classname="tests.test_acquisition_verifier" name="test_verifier_parquet_format_verification" time="0.541" /><testcase classname="tests.test_acquisition_verifier" name="test_verifier_missing_file_fails" time="0.004" /><testcase classname="tests.test_acquisition_verifier" name="test_verifier_artifact_store_publication_and_post_corruption" time="0.085" /><testcase classname="tests.test_acquisition_verifier" name="test_base_environment_zero_torch_isolation" time="0.562" /><testcase classname="tests.test_source_discovery" name="test_source_prober_missing_repo_outcome" time="0.001" /><testcase classname="tests.test_source_discovery" name="test_source_prober_gated_repo_outcome" time="0.001" /><testcase classname="tests.test_source_discovery" name="test_source_prober_denied_fineweb_policy_block" time="0.001" /><testcase classname="tests.test_source_discovery" name="test_nested_field_schema_inspection" time="0.002" /><testcase classname="tests.test_source_discovery" name="test_missing_text_field_explicit_handling" time="0.001" /><testcase classname="tests.test_source_discovery" name="test_secret_redaction_and_preview_bounding" time="0.001" /><testcase classname="tests.test_source_discovery" name="test_probe_fingerprint_stability_and_invalidation" time="0.001" /><testcase classname="tests.test_source_discovery" name="test_transport_budget_limits_and_deadlines" time="0.022" /><testcase classname="tests.test_source_discovery" name="test_security_host_allowlist_and_local_traversal" time="0.002" /><testcase classname="tests.test_source_discovery" name="test_ambiguous_provider_error_does_not_infer_nonexistence" time="0.001" /><testcase classname="tests.test_source_discovery" name="test_malicious_redirect_blocked_by_safe_redirect_handler" time="0.001" /><testcase classname="tests.test_source_discovery" name="test_prober_budget_exhaustion_outcome" time="0.001" /><testcase classname="tests.test_source_discovery" name="test_partial_inventory_and_unresolved_requirements" time="0.001" /></testsuite></testsuites>

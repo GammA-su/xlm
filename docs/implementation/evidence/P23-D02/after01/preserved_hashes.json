@@ -1,0 +1,146 @@
+﻿[
+    {
+        "Path":  "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage04\\before-0.log",
+        "SHA256":  "cbf4d8781f40898d7f3ac494b421d7c641a07048bca226a6a86b1f58ddc53836"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage04\\before-results.json",
+        "SHA256":  "8413902afaec40561fc6b0dfd5408f98495f55d209314255ceb810d5568af370"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage04\\before-source-after.json",
+        "SHA256":  "261c590d91eb59239abdfbc64a9ded8d5ae4b4bd2e13551ef4829fa023e06078"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage04\\before-source-before.json",
+        "SHA256":  "261c590d91eb59239abdfbc64a9ded8d5ae4b4bd2e13551ef4829fa023e06078"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage04\\before.xml",
+        "SHA256":  "dd2498343cc566624775773d6aff679760ee1731a4e8a036b75ae511b7e5b426"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage04\\PLAN.md",
+        "SHA256":  "cdea72e44ad4cfb549df13d1b024d2d6d9a1b0c5a96d2e8dccb94c38b9ddb4b5"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage04\\refusals-before-0.log",
+        "SHA256":  "8f62f6727871a0357b04aa73eb91eb60437ce9989c84bcc3aafa3b1060c8f481"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage04\\refusals-before-results.json",
+        "SHA256":  "6196633a853e0b4f066bd359c6e869b8b41b431933676bf1f4037a4d61705f28"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage04\\refusals-before-source-after.json",
+        "SHA256":  "6a1cbd057a87936875170cf07794446159e17d9189fb8743cbb9b3cce9fc7867"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage04\\refusals-before-source-before.json",
+        "SHA256":  "6a1cbd057a87936875170cf07794446159e17d9189fb8743cbb9b3cce9fc7867"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage04\\refusals-before.xml",
+        "SHA256":  "efa26bfdfaced74ca46549d0c9f29c8a8dfe3fb05b24e976ec817f8d7382ebab"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage04\\run_before.py",
+        "SHA256":  "a807bc659ddd50f78452bbd154714864c325d28e35c6f735dd0a15ea400d9498"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage04\\test_d02_before.py",
+        "SHA256":  "a6a9260807afdb4be1aab6879e66be1f76996110fab2d252cbc18abeb2b35c18"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage04\\test_d02_refusals_before.py",
+        "SHA256":  "cfb1046defcad535d8206c6aa59d28a618cda6fa0618a9a58c6107bc36eb798d"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\docs\\implementation\\evidence\\P23-D02\\before-0.log",
+        "SHA256":  "cbf4d8781f40898d7f3ac494b421d7c641a07048bca226a6a86b1f58ddc53836"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\docs\\implementation\\evidence\\P23-D02\\before-results.json",
+        "SHA256":  "8413902afaec40561fc6b0dfd5408f98495f55d209314255ceb810d5568af370"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\docs\\implementation\\evidence\\P23-D02\\before-source-after.json",
+        "SHA256":  "261c590d91eb59239abdfbc64a9ded8d5ae4b4bd2e13551ef4829fa023e06078"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\docs\\implementation\\evidence\\P23-D02\\before-source-before.json",
+        "SHA256":  "261c590d91eb59239abdfbc64a9ded8d5ae4b4bd2e13551ef4829fa023e06078"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\docs\\implementation\\evidence\\P23-D02\\before.xml",
+        "SHA256":  "dd2498343cc566624775773d6aff679760ee1731a4e8a036b75ae511b7e5b426"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\docs\\implementation\\evidence\\P23-D02\\PLAN.md",
+        "SHA256":  "cdea72e44ad4cfb549df13d1b024d2d6d9a1b0c5a96d2e8dccb94c38b9ddb4b5"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\docs\\implementation\\evidence\\P23-D02\\refusals-before-0.log",
+        "SHA256":  "8f62f6727871a0357b04aa73eb91eb60437ce9989c84bcc3aafa3b1060c8f481"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\docs\\implementation\\evidence\\P23-D02\\refusals-before-results.json",
+        "SHA256":  "6196633a853e0b4f066bd359c6e869b8b41b431933676bf1f4037a4d61705f28"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\docs\\implementation\\evidence\\P23-D02\\refusals-before-source-after.json",
+        "SHA256":  "6a1cbd057a87936875170cf07794446159e17d9189fb8743cbb9b3cce9fc7867"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\docs\\implementation\\evidence\\P23-D02\\refusals-before-source-before.json",
+        "SHA256":  "6a1cbd057a87936875170cf07794446159e17d9189fb8743cbb9b3cce9fc7867"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\docs\\implementation\\evidence\\P23-D02\\refusals-before.xml",
+        "SHA256":  "efa26bfdfaced74ca46549d0c9f29c8a8dfe3fb05b24e976ec817f8d7382ebab"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\docs\\implementation\\evidence\\P23-D02\\run_before.py",
+        "SHA256":  "a807bc659ddd50f78452bbd154714864c325d28e35c6f735dd0a15ea400d9498"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\docs\\implementation\\evidence\\P23-D02\\sha256.json",
+        "SHA256":  "4e9ab4dd2e742c2628e65447e22e94107221bee859a2f695964139dfedaded1d"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\docs\\implementation\\evidence\\P23-D02\\test_d02_before.py",
+        "SHA256":  "a6a9260807afdb4be1aab6879e66be1f76996110fab2d252cbc18abeb2b35c18"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\docs\\implementation\\evidence\\P23-D02\\test_d02_refusals_before.py",
+        "SHA256":  "cfb1046defcad535d8206c6aa59d28a618cda6fa0618a9a58c6107bc36eb798d"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\CONTRACTS.md",
+        "SHA256":  "46caa6763ba09788691d118a174b375752b9394a10406379f3b8980c7ca943a3"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\ARCHITECTURE.md",
+        "SHA256":  "9e3b9a6d3679f84f8582214ab96fd3c85060b93140741ec5850286f20e96216b"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\EVALUATION_POLICY.md",
+        "SHA256":  "74ffbc03b82851665326d68510d55b34b88fe5f05258d56fc572ec6c9b83ff97"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\ACCEPTANCE_MATRIX.md",
+        "SHA256":  "58243ed30bd4432b85712b1d6d961ade298748b9f2d1e480da9703bafd6e0134"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\pyproject.toml",
+        "SHA256":  "a66458c5f227c43792047c674d23b7499e76d0e25766e9b93c9e88403981acf2"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\uv.lock",
+        "SHA256":  "3c1b906f49047dab3c27253e800083e7ecee16657882f9a89a85aff110ea9c0e"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\.python-version",
+        "SHA256":  "aa0d6581054e6e4ff3f91839deca7a854ad37221b8784d060b42d0f847ff1a3b"
+    }
+]

@@ -1,4 +1,5 @@
 """Preparation limits using the existing journal and capacity manager."""
+
 from __future__ import annotations
 
 import hashlib
@@ -22,28 +23,92 @@ from xlm.prepare.config import PrepareBudgets, PrepareConfig
 
 
 class PrepareBounds:
-    def __init__(self, config: PrepareConfig, output_root: Path, home: Path) -> None:
+    def __init__(
+        self, config: PrepareConfig, output_root: Path, home: Path, config_dir: Path | None = None
+    ) -> None:
+        from xlm.prepare.integrity import path_digest
+        from xlm.prepare.planner import resolve_variables
+
         self.limits = PrepareBudgets.model_validate(config.budgets)
         self.output_root, self.home = output_root, home
         self.control = output_root / ".accounting"
         self.spool = self.control / "logs"
         ensure_plain_path(output_root)
         ensure_plain_path(home)
-        payload = json.dumps(config.model_dump(), sort_keys=True, separators=(",", ":"))
+        repo = Path(__file__).resolve().parents[3]
+        variables = {
+            "repo": str(repo),
+            "home": str(home),
+            "output_root": str(output_root),
+            "config_dir": str(config_dir or repo),
+        }
+        inputs: dict[str, str] = {}
+        produced: list[Path] = []
+        for stage in config.stages:
+            for raw in [*stage.outputs, *([stage.copy_to] if stage.copy_to else [])]:
+                produced.append(
+                    Path(
+                        resolve_variables(raw, variables, where="prepare produced paths")
+                    ).resolve()
+                )
+        # Preserve existing explicit output declarations outside output_root by
+        # accounting for those exact paths, not by changing their destinations.
+        self.output_paths = [home, output_root, *produced]
+        for path in self.output_paths:
+            ensure_plain_path(path)
+        for stage in config.stages:
+            for raw in [*stage.copy_from, *stage.watched_inputs]:
+                path = Path(resolve_variables(raw, variables, where="prepare input identity"))
+                if not path.is_absolute():
+                    path = (config_dir or repo) / path
+                if any(path.resolve().is_relative_to(output) for output in produced):
+                    continue
+                if path.exists():
+                    inputs[str(path.resolve())] = path_digest(
+                        path, max_bytes=self.limits.fetch_max_bytes
+                    )
+        payload = json.dumps(
+            {
+                "config": config.model_dump(),
+                "copy_inputs": inputs,
+                "code": path_digest(repo / "src"),
+                "lock": path_digest(repo / "uv.lock"),
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        )
         identity = hashlib.sha256(payload.encode()).hexdigest()
         self.journal = ProgressJournal(self.control / "resources.json", config.id, identity)
-        self.journal.bind_roots(output=output_root, home=home)
-        self.capacity = StorageCapacityManager(self.limits.max_subprocess_output_bytes,
-            self.limits.max_decompressed_bytes, self.limits.max_temp_disk_bytes,
-            self.limits.max_output_disk_bytes, journal=self.journal)
+        self.journal.bind_roots(
+            output=output_root,
+            home=home,
+            **{f"declared_{i}": path for i, path in enumerate(produced)},
+        )
+        self.capacity = StorageCapacityManager(
+            self.limits.max_subprocess_output_bytes,
+            self.limits.max_decompressed_bytes,
+            self.limits.max_temp_disk_bytes,
+            self.limits.max_output_disk_bytes,
+            journal=self.journal,
+            extra_limits={
+                "input_bytes": self.limits.fetch_max_bytes,
+                "network_requests": self.limits.max_network_requests,
+            },
+        )
         self.capacity.bind_deadline(self.limits.overall_deadline_seconds)
+        self.capacity.reconcile_disk("temp", self.spool)
 
     def check(self) -> None:
         self.capacity.check_deadline()
-        self.capacity.reconcile_disk("temp", self.spool)
         # Inspect both output and artifact-store paths; overlapping roots count once.
-        roots = [self.home, self.output_root]
-        unique = [path for path in roots if not any(path != other and path.resolve().is_relative_to(other.resolve()) for other in roots)]
+        roots = self.output_paths
+        unique = [
+            path
+            for path in roots
+            if not any(
+                path != other and path.resolve().is_relative_to(other.resolve()) for other in roots
+            )
+        ]
         total, entries = 0, 0
         pending = list(set(unique))
         while pending:
@@ -67,10 +132,12 @@ class PrepareBounds:
             state.accounting.occupancy["output"] = total
 
     def validate_outputs(self, paths: list[Path]) -> None:
-        limits = AcquisitionLimits(max_records=self.limits.max_records,
+        limits = AcquisitionLimits(
+            max_records=self.limits.max_records,
             max_decompressed_bytes=self.limits.max_decompressed_bytes,
             max_record_bytes=self.limits.max_record_bytes,
-            max_parser_bytes=max(self.limits.max_record_bytes, 32 * 1024**2))
+            max_parser_bytes=max(self.limits.max_record_bytes, 32 * 1024**2),
+        )
         seen: set[Path] = set()
         pending = list(paths)
         records = 0
@@ -96,22 +163,38 @@ class PrepareBounds:
     def run(self, argv: list[str], root: Path, timeout: float) -> str:
         """Drain both pipes into bounded owned files; never capture_output in RAM."""
         self.check()
+        acquisition = self._reserve_acquisition(argv, root)
         self.journal.record_request(self.limits.max_attempts)
         self.spool.mkdir(parents=True, exist_ok=True)
         label = uuid.uuid4().hex
         errors: list[BaseException] = []
         paths = [self.spool / f"{label}.{kind}.log" for kind in ("stdout", "stderr")]
-        env = {**os.environ, "XLM_HOME": str(self.home), "TMP": str(self.spool), "TEMP": str(self.spool), "TMPDIR": str(self.spool)}
-        process = subprocess.Popen(argv, cwd=root, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        env = {
+            **os.environ,
+            "XLM_HOME": str(self.home),
+            "TMP": str(self.spool),
+            "TEMP": str(self.spool),
+            "TMPDIR": str(self.spool),
+        }
+        process = subprocess.Popen(
+            argv, cwd=root, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
 
         def drain(stream: Any, path: Path) -> None:
             try:
                 with path.open("xb") as output:
                     while True:
-                        amount = min(8192, self.capacity.remaining("transfer"), self.capacity.remaining("temp"))
+                        amount = min(
+                            8192,
+                            self.capacity.remaining("transfer"),
+                            self.capacity.remaining("temp"),
+                        )
                         if amount <= 0:
-                            # One-byte probe distinguishes EOF; never retained beyond the output cap.
+                            # Bounded EOF probe; bytes beyond the cap are never retained.
                             if stream.read(1):
+                                self.capacity.record_units(
+                                    "discarded_child_probe_bytes", 1, 2 * self.limits.max_attempts
+                                )
                                 raise ValueError("aggregate child output limit exceeded")
                             break
                         token = self.capacity.reserve_transfer(amount)
@@ -129,8 +212,10 @@ class PrepareBounds:
             finally:
                 stream.close()
 
-        threads = [threading.Thread(target=drain, args=(stream, path), daemon=True)
-                   for stream, path in zip((process.stdout, process.stderr), paths, strict=True)]
+        threads = [
+            threading.Thread(target=drain, args=(stream, path), daemon=True)
+            for stream, path in zip((process.stdout, process.stderr), paths, strict=True)
+        ]
         for thread in threads:
             thread.start()
         start = time.monotonic()
@@ -171,4 +256,81 @@ class PrepareBounds:
                     tail += stream.read(1000).decode("utf-8", errors="replace")
         if process.returncode:
             raise ValueError(f"command exited {process.returncode}: {tail[-500:]}")
+        if acquisition is not None:
+            child, before, reservations = acquisition
+            child.save()
+            if child.state.status != "COMPLETED":
+                raise ValueError("nested acquisition did not complete")
+            pending = child.state.accounting.reservations
+            if any(sum(values.values()) for values in pending.values()):
+                # Unknown child outcomes keep their complete parent reservation.
+                return tail
+            after = {
+                "input_bytes": child.state.transferred_bytes,
+                "network_requests": child.state.requests_made,
+            }
+            for resource, token in reservations.items():
+                actual = after[resource] - before[resource] if resource in after else 0
+                self.capacity.settle(resource, token, actual)
+            scratch = child.journal_path.parent.parent
+            from xlm.prepare.integrity import bounded_files
+
+            occupied = sum(path.stat().st_size for path in bounded_files(scratch))
+            with self.journal.transaction() as state:
+                state.nested_storage[str(scratch.resolve())] = occupied
+                state.accounting.occupancy["nested_temp"] = sum(state.nested_storage.values())
         return tail
+
+    def _reserve_acquisition(self, argv: list[str], root: Path) -> Any:
+        """Reserve a nested fetch's full declared bounds before it can execute."""
+        from xlm.data.acquisition.plan import load_acquisition_plan
+
+        command = argv[3:]
+        if command[:2] != ["data", "fetch"]:
+            if command[:2] == ["data", "probe"] and "--live" in command:
+                raise ValueError("run reviewed source discovery separately before preparation")
+            return None
+
+        def option(name: str, alias: str, default: Path | None = None) -> Path:
+            for flag in (name, alias):
+                if flag in command:
+                    value = Path(command[command.index(flag) + 1])
+                    return value if value.is_absolute() else root / value
+            if default is None:
+                raise ValueError(f"nested fetch requires explicit {name}")
+            return default
+
+        plan = load_acquisition_plan(option("--plan", "-p"))
+        scratch = option(
+            "--scratch-dir", "--scratch-dir", self.home / "acquisition" / plan.plan_id / "scratch"
+        )
+        output = option("--output-dir", "-o", self.home / "acquisition" / plan.plan_id / "raw")
+        if any(
+            not any(path.resolve().is_relative_to(base.resolve()) for base in self.output_paths)
+            for path in (scratch, output)
+        ):
+            raise ValueError("nested acquisition paths escape managed preparation roots")
+        child = ProgressJournal(
+            scratch / "journals" / f"{plan.plan_id}.progress.json",
+            plan.plan_id,
+            plan.compute_behavioral_hash(),
+        )
+        before = {
+            "input_bytes": child.state.transferred_bytes,
+            "network_requests": child.state.requests_made,
+        }
+        amounts = {
+            "input_bytes": plan.limits.max_transferred_bytes,
+            "network_requests": plan.limits.max_requests,
+            "temp": plan.limits.max_temp_disk_bytes,
+            "output": plan.limits.max_output_disk_bytes + plan.limits.max_temp_disk_bytes,
+        }
+        reservations: dict[str, str] = {}
+        try:
+            for resource, amount in amounts.items():
+                reservations[resource] = self.capacity.reserve(resource, amount, persistent=True)
+        except BaseException:
+            for resource, token in reservations.items():
+                self.capacity.settle(resource, token, 0)
+            raise
+        return child, before, reservations

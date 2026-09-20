@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="79" time="115.744" timestamp="2026-09-20T14:33:44.638359+02:00" hostname="BetA-C1"><testcase classname="tests.test_acquisition_bounds" name="test_original_valid_transfer_and_restart_consumption" time="2.661" /><testcase classname="tests.test_acquisition_bounds" name="test_completed_original_is_never_repaired[same_length]" time="2.646" /><testcase classname="tests.test_acquisition_bounds" name="test_completed_original_is_never_repaired[missing]" time="2.181" /><testcase classname="tests.test_acquisition_bounds" name="test_completed_original_is_never_repaired[incomplete]" time="2.265" /><testcase classname="tests.test_acquisition_bounds" name="test_whole_original_over_record_limit_is_refused" time="1.641" /><testcase classname="tests.test_acquisition_bounds" name="test_original_concurrent_reservations_share_allowance" time="0.001" /><testcase classname="tests.test_acquisition_bounds" name="test_fresh_process_reservations_and_killed_owner_remain_spent" time="0.914" /><testcase classname="tests.test_acquisition_bounds" name="test_killed_download_resumes_in_a_fresh_process_without_new_allowance" time="1.680"><failure message="PermissionError: [Errno 13] Permission denied: 'D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage04\\after01\\closure-probe-tmp\\test_killed_download_resumes_i0\\scratch\\journals\\authored_d02.progress.json'">tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after01/closure-probe-tmp/test_killed_download_resumes_i0')
+
+    def test_killed_download_resumes_in_a_fresh_process_without_new_allowance(tmp_path: Path) -&gt; None:
+        payload = (b'{"text":"' + b"A" * 40000 + b'"}\n') * 4
+        prefix_sent = threading.Event()
+        continue_response = threading.Event()
+    
+        class Handler(http.server.BaseHTTPRequestHandler):
+            def log_message(self, *_: Any) -&gt; None:
+                pass
+    
+            def do_GET(self) -&gt; None:
+                header = self.headers.get("Range")
+                start = int(header.removeprefix("bytes=").split("-")[0]) if header else 0
+                self.send_response(206 if header else 200)
+                self.send_header("Content-Length", str(len(payload) - start))
+                self.send_header("ETag", '"authored-stable"')
+                if header:
+                    self.send_header(
+                        "Content-Range", f"bytes {start}-{len(payload) - 1}/{len(payload)}"
+                    )
+                self.end_headers()
+                try:
+                    if not header:
+                        self.wfile.write(payload[:65536])
+                        self.wfile.flush()
+                        prefix_sent.set()
+                        continue_response.wait(timeout=20)
+                        self.wfile.write(payload[65536:])
+                    else:
+                        self.wfile.write(payload[start:])
+                except (BrokenPipeError, ConnectionResetError):
+                    pass
+    
+        service = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        thread = threading.Thread(target=service.serve_forever, daemon=True)
+        thread.start()
+        limits = AcquisitionLimits(
+            max_records=4,
+            max_transferred_bytes=512 * 1024,
+            max_requests=3,
+            max_retries=0,
+            overall_deadline_seconds=120,
+        )
+        plan = plan_for(f"http://127.0.0.1:{service.server_port}", limits=limits)
+        plan_path = tmp_path / "plan.json"
+        plan_path.write_text(plan.with_computed_hash().model_dump_json(), encoding="utf-8")
+        script = tmp_path / "fetch.py"
+        script.write_text(
+            """import sys
+    from pathlib import Path
+    from xlm.data.acquisition.fetcher import BoundedFetcher
+    from xlm.data.acquisition.plan import load_acquisition_plan
+    root=Path(sys.argv[1])
+    BoundedFetcher(load_acquisition_plan(root/'plan.json'), root/'scratch', root/'output').run()
+    """,
+            encoding="utf-8",
+        )
+        worker = subprocess.Popen(
+            [sys.executable, str(script), str(tmp_path)],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+        )
+        journal_path = tmp_path / "scratch/journals/authored_d02.progress.json"
+        try:
+            assert prefix_sent.wait(timeout=10)
+            end = time.monotonic() + 10
+            while time.monotonic() &lt; end:
+&gt;               state = json.loads(journal_path.read_text())
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_acquisition_bounds.py:243: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\pathlib.py:1027: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after01/closure-probe-tmp/test_killed_download_resumes_i0/scratch/journals/authored_d02.progress.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+&gt;       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       PermissionError: [Errno 13] Permission denied: 'D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage04\\after01\\closure-probe-tmp\\test_killed_download_resumes_i0\\scratch\\journals\\authored_d02.progress.json'
+
+C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\pathlib.py:1013: PermissionError</failure></testcase><testcase classname="tests.test_acquisition_bounds" name="test_paths_and_collisions_fail_before_filesystem_effects[../escape.jsonl]" time="0.002" /><testcase classname="tests.test_acquisition_bounds" name="test_paths_and_collisions_fail_before_filesystem_effects[CON]" time="0.002" /><testcase classname="tests.test_acquisition_bounds" name="test_paths_and_collisions_fail_before_filesystem_effects[a/../b]" time="0.002" /><testcase classname="tests.test_acquisition_bounds" name="test_paths_and_collisions_fail_before_filesystem_effects[A.jsonl,a.jsonl]" time="0.002" /><testcase classname="tests.test_acquisition_bounds" name="test_corrupt_journal_is_not_reset" time="2.085" /><testcase classname="tests.test_acquisition_bounds" name="test_redirect_retry_bodies_and_requests_are_charged[redirect.jsonl-redirect body]" time="3.291" /><testcase classname="tests.test_acquisition_bounds" name="test_redirect_retry_bodies_and_requests_are_charged[retry.jsonl-retry body]" time="2.734" /><testcase classname="tests.test_acquisition_bounds" name="test_metadata_uses_the_same_body_and_request_budget" time="0.526" /><testcase classname="tests.test_acquisition_bounds" name="test_selected_records_have_exact_original_locators[rows.jsonl-interval0-texts0]" time="2.536" /><testcase classname="tests.test_acquisition_bounds" name="test_selected_records_have_exact_original_locators[rows.parquet-interval1-texts1]" time="4.357" /><testcase classname="tests.test_acquisition_bounds" name="test_ignored_parquet_range_has_no_whole_shard_fallback" time="1.033" /><testcase classname="tests.test_acquisition_bounds" name="test_compressed_corpus_expansion_is_refused" time="2.216" /><testcase classname="tests.test_acquisition_bounds" name="test_deadline_and_plan_identity_cannot_be_reset" time="2.258" /><testcase classname="tests.test_acquisition_bounds" name="test_public_plan_fetch_status_verify_prepare" time="18.575" /><testcase classname="tests.test_acquisition_bounds" name="test_nested_acquisition_consumes_parent_preparation_budget" time="13.331" /><testcase classname="tests.test_acquisition_bounds" name="test_selected_private_attempt_resumes_in_new_process" time="4.755" /><testcase classname="tests.test_acquisition_bounds" name="test_blank_gzip_expansion_is_bounded" time="0.009" /><testcase classname="tests.test_acquisition_bounds" name="test_production_admission_reference_is_not_evidence" time="0.001" /><testcase classname="tests.test_acquisition_bounds" name="test_public_probe_attempt_has_durable_body_request_and_deadline_account" time="3.081" /><testcase classname="tests.test_prepare_bounds" name="test_child_stdout_and_stderr_are_bounded_and_accounted" time="2.034" /><testcase classname="tests.test_prepare_bounds" name="test_check_only_stage_consumes_aggregate_allowance" time="5.349" /><testcase classname="tests.test_prepare_bounds" name="test_changed_prepare_budget_does_not_replenish_account" time="0.519" /><testcase classname="tests.test_prepare_bounds" name="test_prepare_record_parser_and_expansion_caps[budget0-{&quot;text&quot;:&quot;a&quot;}\n{&quot;text&quot;:&quot;b&quot;}\n-record]" time="0.805" /><testcase classname="tests.test_prepare_bounds" name="test_prepare_record_parser_and_expansion_caps[budget1-{&quot;text&quot;:&quot;long&quot;}\n-record byte]" time="0.601" /><testcase classname="tests.test_prepare_bounds" name="test_prepare_record_parser_and_expansion_caps[budget2-{&quot;text&quot;:&quot;long&quot;}\n-decompressed]" time="0.329" /><testcase classname="tests.test_prepare_bounds" name="test_prepare_aggregate_output_guard" time="0.409" /><testcase classname="tests.test_prepare_bounds" name="test_timed_out_child_and_descendant_are_stopped" time="2.203" /><testcase classname="tests.test_prepare_bounds" name="test_prepare_unknown_budget_fields_fail_explicitly" time="0.003" /><testcase classname="tests.test_acquisition_plan" name="test_plan_behavioral_hash_invariance" time="0.002" /><testcase classname="tests.test_acquisition_plan" name="test_plan_pilot_approval_enforcement" time="0.002" /><testcase classname="tests.test_acquisition_plan" name="test_plan_production_authorization_enforcement" time="0.002"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'requires prior operator admission'&#10;  Actual message: &quot;Production acquisition for 'finewiki:default' requires verified prior operator admission; an unresolved admission reference is insufficient.&quot;">def test_plan_production_authorization_enforcement() -&gt; None:
+        """Verify that operations exceeding pilot limits require production admission &amp; hash."""
+        large_plan = AcquisitionPlan(
+            plan_id="plan_test_prod",
+            source_id="finewiki",
+            view_id="default",
+            provider="huggingface",
+            repository="HuggingFaceFW/finewiki",
+            revision="8bd13e72e6a002407649b3e898535f42ceb1aeb9",
+            mode=AcquisitionMode.WHOLE_FILE,
+            selected_files=["data/train-00000.parquet"],
+            output_artifact_id="raw_finewiki_default",
+            is_pilot=False,  # Production
+            limits=AcquisitionLimits(
+                max_transferred_bytes=10 * 1024 * 1024 * 1024,  # 10 GiB &gt; pilot
+            ),
+        )
+    
+        # 1. No admission reference or catalog approval
+&gt;       with pytest.raises(AuthorizationRequiredError, match="requires prior operator admission"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'requires prior operator admission'
+E         Actual message: "Production acquisition for 'finewiki:default' requires verified prior operator admission; an unresolved admission reference is insufficient."
+
+tests\test_acquisition_plan.py:117: AssertionError</failure></testcase><testcase classname="tests.test_acquisition_plan" name="test_plan_denied_fineweb_policy" time="0.001" /><testcase classname="tests.test_acquisition_plan" name="test_plan_serialization_roundtrip" time="0.043" /><testcase classname="tests.test_acquisition_fetcher" name="test_fetcher_dropouts_and_range_resumption" time="3.239" /><testcase classname="tests.test_acquisition_fetcher" name="test_fetcher_ignored_range_handling" time="1.882" /><testcase classname="tests.test_acquisition_fetcher" name="test_fetcher_source_drift_412_blocks" time="1.069" /><testcase classname="tests.test_acquisition_fetcher" name="test_fetcher_rate_limit_429_backoff" time="3.285" /><testcase classname="tests.test_acquisition_fetcher" name="test_fetcher_inconsistent_content_range_fails" time="0.756" /><testcase classname="tests.test_acquisition_fetcher" name="test_fetcher_oversized_payload_halts_budget" time="0.826" /><testcase classname="tests.test_acquisition_fetcher" name="test_fetcher_malicious_redirect_blocked" time="5.214" /><testcase classname="tests.test_acquisition_fetcher" name="test_fetcher_cache_hits_and_zero_network" time="2.854" /><testcase classname="tests.test_acquisition_fetcher" name="test_fetcher_decompression_bomb_guard" time="0.006" /><testcase classname="tests.test_acquisition_fetcher" name="test_fetcher_crash_consistency_reconciliation" time="0.302" /><testcase classname="tests.test_acquisition_verifier" name="test_verifier_independent_checksum_positive" time="0.011" /><testcase classname="tests.test_acquisition_verifier" name="test_verifier_corrupted_jsonl_mismatch" time="0.009" /><testcase classname="tests.test_acquisition_verifier" name="test_verifier_parquet_format_verification" time="0.018" /><testcase classname="tests.test_acquisition_verifier" name="test_verifier_missing_file_fails" time="0.005" /><testcase classname="tests.test_acquisition_verifier" name="test_verifier_artifact_store_publication_and_post_corruption" time="0.072" /><testcase classname="tests.test_acquisition_verifier" name="test_base_environment_zero_torch_isolation" time="0.559" /><testcase classname="tests.test_source_discovery" name="test_source_prober_missing_repo_outcome" time="0.001" /><testcase classname="tests.test_source_discovery" name="test_source_prober_gated_repo_outcome" time="0.001" /><testcase classname="tests.test_source_discovery" name="test_source_prober_denied_fineweb_policy_block" time="0.001" /><testcase classname="tests.test_source_discovery" name="test_nested_field_schema_inspection" time="0.001" /><testcase classname="tests.test_source_discovery" name="test_missing_text_field_explicit_handling" time="0.001" /><testcase classname="tests.test_source_discovery" name="test_secret_redaction_and_preview_bounding" time="0.001" /><testcase classname="tests.test_source_discovery" name="test_probe_fingerprint_stability_and_invalidation" time="0.001" /><testcase classname="tests.test_source_discovery" name="test_transport_budget_limits_and_deadlines" time="0.021" /><testcase classname="tests.test_source_discovery" name="test_security_host_allowlist_and_local_traversal" time="0.002" /><testcase classname="tests.test_source_discovery" name="test_ambiguous_provider_error_does_not_infer_nonexistence" time="0.001" /><testcase classname="tests.test_source_discovery" name="test_malicious_redirect_blocked_by_safe_redirect_handler" time="0.001" /><testcase classname="tests.test_source_discovery" name="test_prober_budget_exhaustion_outcome" time="0.001" /><testcase classname="tests.test_source_discovery" name="test_partial_inventory_and_unresolved_requirements" time="0.001" /><testcase classname="tests.test_source_admission" name="test_admission_gate_positive_path" time="0.001" /><testcase classname="tests.test_source_admission" name="test_admission_gate_synthetic_evidence_rejection" time="0.001" /><testcase classname="tests.test_source_admission" name="test_admission_gate_operator_approval_cannot_override_denial_or_missing_revision" time="0.001" /><testcase classname="tests.test_source_admission" name="test_admission_gate_stale_fingerprint_invalidation" time="0.001" /><testcase classname="tests.test_source_admission" name="test_catalog_auditor_all_twenty_candidates_unadmitted" time="0.028" /><testcase classname="tests.test_source_admission" name="test_p01_artifact_persistence" time="0.091" /><testcase classname="tests.test_source_admission" name="test_base_environment_zero_torch_isolation" time="0.428" /><testcase classname="tests.test_source_admission" name="test_admission_gate_view_mismatch" time="0.001" /><testcase classname="tests.test_source_admission" name="test_admission_gate_benchmark_risk_block" time="0.001" /></testsuite></testsuites>

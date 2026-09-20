@@ -1,0 +1,220 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0
+collecting ... collected 80 items / 1 deselected / 79 selected
+
+tests/test_acquisition_bounds.py::test_original_valid_transfer_and_restart_consumption PASSED [  1%]
+tests/test_acquisition_bounds.py::test_completed_original_is_never_repaired[same_length] PASSED [  2%]
+tests/test_acquisition_bounds.py::test_completed_original_is_never_repaired[missing] PASSED [  3%]
+tests/test_acquisition_bounds.py::test_completed_original_is_never_repaired[incomplete] PASSED [  5%]
+tests/test_acquisition_bounds.py::test_whole_original_over_record_limit_is_refused PASSED [  6%]
+tests/test_acquisition_bounds.py::test_original_concurrent_reservations_share_allowance PASSED [  7%]
+tests/test_acquisition_bounds.py::test_fresh_process_reservations_and_killed_owner_remain_spent PASSED [  8%]
+tests/test_acquisition_bounds.py::test_killed_download_resumes_in_a_fresh_process_without_new_allowance FAILED [ 10%]
+tests/test_acquisition_bounds.py::test_paths_and_collisions_fail_before_filesystem_effects[../escape.jsonl] PASSED [ 11%]
+tests/test_acquisition_bounds.py::test_paths_and_collisions_fail_before_filesystem_effects[CON] PASSED [ 12%]
+tests/test_acquisition_bounds.py::test_paths_and_collisions_fail_before_filesystem_effects[a/../b] PASSED [ 13%]
+tests/test_acquisition_bounds.py::test_paths_and_collisions_fail_before_filesystem_effects[A.jsonl,a.jsonl] PASSED [ 15%]
+tests/test_acquisition_bounds.py::test_corrupt_journal_is_not_reset PASSED [ 16%]
+tests/test_acquisition_bounds.py::test_redirect_retry_bodies_and_requests_are_charged[redirect.jsonl-redirect body] PASSED [ 17%]
+tests/test_acquisition_bounds.py::test_redirect_retry_bodies_and_requests_are_charged[retry.jsonl-retry body] PASSED [ 18%]
+tests/test_acquisition_bounds.py::test_metadata_uses_the_same_body_and_request_budget PASSED [ 20%]
+tests/test_acquisition_bounds.py::test_selected_records_have_exact_original_locators[rows.jsonl-interval0-texts0] PASSED [ 21%]
+tests/test_acquisition_bounds.py::test_selected_records_have_exact_original_locators[rows.parquet-interval1-texts1] PASSED [ 22%]
+tests/test_acquisition_bounds.py::test_ignored_parquet_range_has_no_whole_shard_fallback PASSED [ 24%]
+tests/test_acquisition_bounds.py::test_compressed_corpus_expansion_is_refused PASSED [ 25%]
+tests/test_acquisition_bounds.py::test_deadline_and_plan_identity_cannot_be_reset PASSED [ 26%]
+tests/test_acquisition_bounds.py::test_public_plan_fetch_status_verify_prepare PASSED [ 27%]
+tests/test_acquisition_bounds.py::test_nested_acquisition_consumes_parent_preparation_budget PASSED [ 29%]
+tests/test_acquisition_bounds.py::test_selected_private_attempt_resumes_in_new_process PASSED [ 30%]
+tests/test_acquisition_bounds.py::test_blank_gzip_expansion_is_bounded PASSED [ 31%]
+tests/test_acquisition_bounds.py::test_production_admission_reference_is_not_evidence PASSED [ 32%]
+tests/test_acquisition_bounds.py::test_public_probe_attempt_has_durable_body_request_and_deadline_account PASSED [ 34%]
+tests/test_prepare_bounds.py::test_child_stdout_and_stderr_are_bounded_and_accounted PASSED [ 35%]
+tests/test_prepare_bounds.py::test_check_only_stage_consumes_aggregate_allowance PASSED [ 36%]
+tests/test_prepare_bounds.py::test_changed_prepare_budget_does_not_replenish_account PASSED [ 37%]
+tests/test_prepare_bounds.py::test_prepare_record_parser_and_expansion_caps[budget0-{"text":"a"}\n{"text":"b"}\n-record] PASSED [ 39%]
+tests/test_prepare_bounds.py::test_prepare_record_parser_and_expansion_caps[budget1-{"text":"long"}\n-record byte] PASSED [ 40%]
+tests/test_prepare_bounds.py::test_prepare_record_parser_and_expansion_caps[budget2-{"text":"long"}\n-decompressed] PASSED [ 41%]
+tests/test_prepare_bounds.py::test_prepare_aggregate_output_guard PASSED [ 43%]
+tests/test_prepare_bounds.py::test_timed_out_child_and_descendant_are_stopped PASSED [ 44%]
+tests/test_prepare_bounds.py::test_prepare_unknown_budget_fields_fail_explicitly PASSED [ 45%]
+tests/test_acquisition_plan.py::test_plan_behavioral_hash_invariance PASSED [ 46%]
+tests/test_acquisition_plan.py::test_plan_pilot_approval_enforcement PASSED [ 48%]
+tests/test_acquisition_plan.py::test_plan_production_authorization_enforcement FAILED [ 49%]
+tests/test_acquisition_plan.py::test_plan_denied_fineweb_policy PASSED   [ 50%]
+tests/test_acquisition_plan.py::test_plan_serialization_roundtrip PASSED [ 51%]
+tests/test_acquisition_fetcher.py::test_fetcher_dropouts_and_range_resumption PASSED [ 53%]
+tests/test_acquisition_fetcher.py::test_fetcher_ignored_range_handling PASSED [ 54%]
+tests/test_acquisition_fetcher.py::test_fetcher_source_drift_412_blocks PASSED [ 55%]
+tests/test_acquisition_fetcher.py::test_fetcher_rate_limit_429_backoff PASSED [ 56%]
+tests/test_acquisition_fetcher.py::test_fetcher_inconsistent_content_range_fails PASSED [ 58%]
+tests/test_acquisition_fetcher.py::test_fetcher_oversized_payload_halts_budget PASSED [ 59%]
+tests/test_acquisition_fetcher.py::test_fetcher_malicious_redirect_blocked PASSED [ 60%]
+tests/test_acquisition_fetcher.py::test_fetcher_cache_hits_and_zero_network PASSED [ 62%]
+tests/test_acquisition_fetcher.py::test_fetcher_decompression_bomb_guard PASSED [ 63%]
+tests/test_acquisition_fetcher.py::test_fetcher_crash_consistency_reconciliation PASSED [ 64%]
+tests/test_acquisition_verifier.py::test_verifier_independent_checksum_positive PASSED [ 65%]
+tests/test_acquisition_verifier.py::test_verifier_corrupted_jsonl_mismatch PASSED [ 67%]
+tests/test_acquisition_verifier.py::test_verifier_parquet_format_verification PASSED [ 68%]
+tests/test_acquisition_verifier.py::test_verifier_missing_file_fails PASSED [ 69%]
+tests/test_acquisition_verifier.py::test_verifier_artifact_store_publication_and_post_corruption PASSED [ 70%]
+tests/test_acquisition_verifier.py::test_base_environment_zero_torch_isolation PASSED [ 72%]
+tests/test_source_discovery.py::test_source_prober_missing_repo_outcome PASSED [ 73%]
+tests/test_source_discovery.py::test_source_prober_gated_repo_outcome PASSED [ 74%]
+tests/test_source_discovery.py::test_source_prober_denied_fineweb_policy_block PASSED [ 75%]
+tests/test_source_discovery.py::test_nested_field_schema_inspection PASSED [ 77%]
+tests/test_source_discovery.py::test_missing_text_field_explicit_handling PASSED [ 78%]
+tests/test_source_discovery.py::test_secret_redaction_and_preview_bounding PASSED [ 79%]
+tests/test_source_discovery.py::test_probe_fingerprint_stability_and_invalidation PASSED [ 81%]
+tests/test_source_discovery.py::test_transport_budget_limits_and_deadlines PASSED [ 82%]
+tests/test_source_discovery.py::test_security_host_allowlist_and_local_traversal PASSED [ 83%]
+tests/test_source_discovery.py::test_ambiguous_provider_error_does_not_infer_nonexistence PASSED [ 84%]
+tests/test_source_discovery.py::test_malicious_redirect_blocked_by_safe_redirect_handler PASSED [ 86%]
+tests/test_source_discovery.py::test_prober_budget_exhaustion_outcome PASSED [ 87%]
+tests/test_source_discovery.py::test_partial_inventory_and_unresolved_requirements PASSED [ 88%]
+tests/test_source_admission.py::test_admission_gate_positive_path PASSED [ 89%]
+tests/test_source_admission.py::test_admission_gate_synthetic_evidence_rejection PASSED [ 91%]
+tests/test_source_admission.py::test_admission_gate_operator_approval_cannot_override_denial_or_missing_revision PASSED [ 92%]
+tests/test_source_admission.py::test_admission_gate_stale_fingerprint_invalidation PASSED [ 93%]
+tests/test_source_admission.py::test_catalog_auditor_all_twenty_candidates_unadmitted PASSED [ 94%]
+tests/test_source_admission.py::test_p01_artifact_persistence PASSED     [ 96%]
+tests/test_source_admission.py::test_base_environment_zero_torch_isolation PASSED [ 97%]
+tests/test_source_admission.py::test_admission_gate_view_mismatch PASSED [ 98%]
+tests/test_source_admission.py::test_admission_gate_benchmark_risk_block PASSED [100%]
+
+================================== FAILURES ===================================
+____ test_killed_download_resumes_in_a_fresh_process_without_new_allowance ____
+
+tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after01/closure-probe-tmp/test_killed_download_resumes_i0')
+
+    def test_killed_download_resumes_in_a_fresh_process_without_new_allowance(tmp_path: Path) -> None:
+        payload = (b'{"text":"' + b"A" * 40000 + b'"}\n') * 4
+        prefix_sent = threading.Event()
+        continue_response = threading.Event()
+    
+        class Handler(http.server.BaseHTTPRequestHandler):
+            def log_message(self, *_: Any) -> None:
+                pass
+    
+            def do_GET(self) -> None:
+                header = self.headers.get("Range")
+                start = int(header.removeprefix("bytes=").split("-")[0]) if header else 0
+                self.send_response(206 if header else 200)
+                self.send_header("Content-Length", str(len(payload) - start))
+                self.send_header("ETag", '"authored-stable"')
+                if header:
+                    self.send_header(
+                        "Content-Range", f"bytes {start}-{len(payload) - 1}/{len(payload)}"
+                    )
+                self.end_headers()
+                try:
+                    if not header:
+                        self.wfile.write(payload[:65536])
+                        self.wfile.flush()
+                        prefix_sent.set()
+                        continue_response.wait(timeout=20)
+                        self.wfile.write(payload[65536:])
+                    else:
+                        self.wfile.write(payload[start:])
+                except (BrokenPipeError, ConnectionResetError):
+                    pass
+    
+        service = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        thread = threading.Thread(target=service.serve_forever, daemon=True)
+        thread.start()
+        limits = AcquisitionLimits(
+            max_records=4,
+            max_transferred_bytes=512 * 1024,
+            max_requests=3,
+            max_retries=0,
+            overall_deadline_seconds=120,
+        )
+        plan = plan_for(f"http://127.0.0.1:{service.server_port}", limits=limits)
+        plan_path = tmp_path / "plan.json"
+        plan_path.write_text(plan.with_computed_hash().model_dump_json(), encoding="utf-8")
+        script = tmp_path / "fetch.py"
+        script.write_text(
+            """import sys
+    from pathlib import Path
+    from xlm.data.acquisition.fetcher import BoundedFetcher
+    from xlm.data.acquisition.plan import load_acquisition_plan
+    root=Path(sys.argv[1])
+    BoundedFetcher(load_acquisition_plan(root/'plan.json'), root/'scratch', root/'output').run()
+    """,
+            encoding="utf-8",
+        )
+        worker = subprocess.Popen(
+            [sys.executable, str(script), str(tmp_path)],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+        )
+        journal_path = tmp_path / "scratch/journals/authored_d02.progress.json"
+        try:
+            assert prefix_sent.wait(timeout=10)
+            end = time.monotonic() + 10
+            while time.monotonic() < end:
+>               state = json.loads(journal_path.read_text())
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_acquisition_bounds.py:243: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\pathlib.py:1027: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after01/closure-probe-tmp/test_killed_download_resumes_i0/scratch/journals/authored_d02.progress.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       PermissionError: [Errno 13] Permission denied: 'D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage04\\after01\\closure-probe-tmp\\test_killed_download_resumes_i0\\scratch\\journals\\authored_d02.progress.json'
+
+C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\pathlib.py:1013: PermissionError
+_______________ test_plan_production_authorization_enforcement ________________
+
+    def test_plan_production_authorization_enforcement() -> None:
+        """Verify that operations exceeding pilot limits require production admission & hash."""
+        large_plan = AcquisitionPlan(
+            plan_id="plan_test_prod",
+            source_id="finewiki",
+            view_id="default",
+            provider="huggingface",
+            repository="HuggingFaceFW/finewiki",
+            revision="8bd13e72e6a002407649b3e898535f42ceb1aeb9",
+            mode=AcquisitionMode.WHOLE_FILE,
+            selected_files=["data/train-00000.parquet"],
+            output_artifact_id="raw_finewiki_default",
+            is_pilot=False,  # Production
+            limits=AcquisitionLimits(
+                max_transferred_bytes=10 * 1024 * 1024 * 1024,  # 10 GiB > pilot
+            ),
+        )
+    
+        # 1. No admission reference or catalog approval
+>       with pytest.raises(AuthorizationRequiredError, match="requires prior operator admission"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'requires prior operator admission'
+E         Actual message: "Production acquisition for 'finewiki:default' requires verified prior operator admission; an unresolved admission reference is insufficient."
+
+tests\test_acquisition_plan.py:117: AssertionError
+- generated xml file: D:\Project\xlm\data\audit\p23-remediation\stage04\after01\closure-probe.xml -
+=========================== short test summary info ===========================
+FAILED tests/test_acquisition_bounds.py::test_killed_download_resumes_in_a_fresh_process_without_new_allowance - PermissionError: [Errno 13] Permission denied: 'D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage04\\after01\\closure-probe-tmp\\test_killed_download_resumes_i0\\scratch\\journals\\authored_d02.progress.json'
+FAILED tests/test_acquisition_plan.py::test_plan_production_authorization_enforcement - AssertionError: Regex pattern did not match.
+  Expected regex: 'requires prior operator admission'
+  Actual message: "Production acquisition for 'finewiki:default' requires verified prior operator admission; an unresolved admission reference is insufficient."
+=========== 2 failed, 77 passed, 1 deselected in 115.75s (0:01:55) ============

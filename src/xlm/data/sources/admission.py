@@ -321,6 +321,7 @@ def load_probe_evidence(
     if not evidence_file.is_file():
         return None
     try:
+        store.verify_artifact(artifact_dir)
         raw = json.loads(evidence_file.read_text(encoding="utf-8"))
         return ProbeEvidenceRecord.model_validate(raw)
     except Exception:
@@ -372,6 +373,7 @@ def load_admission_decision(
     if not decision_file.is_file():
         return None
     try:
+        store.verify_artifact(artifact_dir)
         raw = json.loads(decision_file.read_text(encoding="utf-8"))
         return AdmissionDecision.model_validate(raw)
     except Exception:

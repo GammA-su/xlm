@@ -1,0 +1,512 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="15" skipped="0" tests="28" time="2.274" timestamp="2026-09-20T13:46:31.229000+02:00" hostname="BetA-C1"><testcase classname="tests.test_acquisition_fetcher" name="test_fetcher_dropouts_and_range_resumption" time="0.126"><failure message="TypeError: SafeRedirectHandler() takes no arguments">local_http_server = 'http://127.0.0.1:57627'
+tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after01/transport-probe-tmp/test_fetcher_dropouts_and_rang0')
+
+    def test_fetcher_dropouts_and_range_resumption(local_http_server: str, tmp_path: Path) -&gt; None:
+        """Verify that mid-stream dropout resumes via Range and reconstructs bit-for-bit."""
+        plan = create_authorized_plan(local_http_server, "dropout", tmp_path)
+        output_dir = tmp_path / "output"
+        scratch_dir = tmp_path / "scratch"
+    
+&gt;       fetcher = BoundedFetcher(plan, scratch_dir=scratch_dir, output_dir=output_dir)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_acquisition_fetcher.py:225: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;xlm.data.acquisition.fetcher.BoundedFetcher object at 0x0000021F0675A840&gt;
+plan = AcquisitionPlan(schema_version=2, plan_id='plan_dropout', source_id='mock_source', view_id='default', provider='https'...tor', authorized_at='2026-09-19T12:00:00Z', scope='pilot', is_pilot_approved=True, bound_limits_hash=''), plan_hash='')
+scratch_dir = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after01/transport-probe-tmp/test_fetcher_dropouts_and_rang0/scratch')
+output_dir = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after01/transport-probe-tmp/test_fetcher_dropouts_and_rang0/output')
+catalog_source_approved = False
+
+    def __init__(self, plan: AcquisitionPlan, scratch_dir: Path, output_dir: Path,
+                 catalog_source_approved: bool = False) -&gt; None:
+        validate_plan_authorization(plan, catalog_source_approved)
+        for path in (scratch_dir, output_dir):
+            ensure_plain_path(path)
+        if scratch_dir.resolve() == output_dir.resolve() or scratch_dir.resolve().is_relative_to(output_dir.resolve()) or output_dir.resolve().is_relative_to(scratch_dir.resolve()):
+            raise ValueError("scratch and output directories must be disjoint")
+        self.plan, self.scratch_dir, self.output_dir = plan, scratch_dir, output_dir
+        self.partial_dir = scratch_dir / "partials" / plan.plan_id
+        self.journal_path = scratch_dir / "journals" / f"{plan.plan_id}.progress.json"
+        self.lock_dir = scratch_dir / "locks"
+        self.journal = ProgressJournal(self.journal_path, plan.plan_id, plan.compute_behavioral_hash())
+        self.journal.bind_roots(scratch=scratch_dir, output=output_dir)
+        limits = plan.limits
+        self.capacity_mgr = StorageCapacityManager(limits.max_transferred_bytes,
+            limits.max_decompressed_bytes, limits.max_temp_disk_bytes,
+            limits.max_output_disk_bytes, journal=self.journal)
+        self.budget = TransportBudget(max_bytes=limits.max_transferred_bytes,
+            max_requests=limits.max_requests, deadline_seconds=limits.overall_deadline_seconds,
+            per_request_timeout=limits.per_request_timeout_seconds, capacity=self.capacity_mgr)
+&gt;       self.opener = urllib.request.build_opener(SafeRedirectHandler(self.budget))
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: SafeRedirectHandler() takes no arguments
+
+src\xlm\data\acquisition\fetcher.py:97: TypeError</failure></testcase><testcase classname="tests.test_acquisition_fetcher" name="test_fetcher_ignored_range_handling" time="0.089"><failure message="TypeError: SafeRedirectHandler() takes no arguments">local_http_server = 'http://127.0.0.1:57627'
+tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after01/transport-probe-tmp/test_fetcher_ignored_range_han0')
+
+    def test_fetcher_ignored_range_handling(local_http_server: str, tmp_path: Path) -&gt; None:
+        """Verify that when server returns 200 (ignored Range), fetcher restarts cleanly."""
+        plan = create_authorized_plan(local_http_server, "ignore_range", tmp_path)
+        output_dir = tmp_path / "output"
+        scratch_dir = tmp_path / "scratch"
+    
+        # Pre-populate partial file with some existing data to simulate prior interrupted run
+        partial_dir = scratch_dir / "partials" / plan.plan_id
+        partial_dir.mkdir(parents=True, exist_ok=True)
+        partial_file = partial_dir / "ignore_range.part"
+        partial_file.write_bytes(b"STALE_OLD_PARTIAL_DATA")
+    
+&gt;       fetcher = BoundedFetcher(plan, scratch_dir=scratch_dir, output_dir=output_dir)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_acquisition_fetcher.py:248: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;xlm.data.acquisition.fetcher.BoundedFetcher object at 0x0000021F0687FEF0&gt;
+plan = AcquisitionPlan(schema_version=2, plan_id='plan_ignore_range', source_id='mock_source', view_id='default', provider='h...tor', authorized_at='2026-09-19T12:00:00Z', scope='pilot', is_pilot_approved=True, bound_limits_hash=''), plan_hash='')
+scratch_dir = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after01/transport-probe-tmp/test_fetcher_ignored_range_han0/scratch')
+output_dir = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after01/transport-probe-tmp/test_fetcher_ignored_range_han0/output')
+catalog_source_approved = False
+
+    def __init__(self, plan: AcquisitionPlan, scratch_dir: Path, output_dir: Path,
+                 catalog_source_approved: bool = False) -&gt; None:
+        validate_plan_authorization(plan, catalog_source_approved)
+        for path in (scratch_dir, output_dir):
+            ensure_plain_path(path)
+        if scratch_dir.resolve() == output_dir.resolve() or scratch_dir.resolve().is_relative_to(output_dir.resolve()) or output_dir.resolve().is_relative_to(scratch_dir.resolve()):
+            raise ValueError("scratch and output directories must be disjoint")
+        self.plan, self.scratch_dir, self.output_dir = plan, scratch_dir, output_dir
+        self.partial_dir = scratch_dir / "partials" / plan.plan_id
+        self.journal_path = scratch_dir / "journals" / f"{plan.plan_id}.progress.json"
+        self.lock_dir = scratch_dir / "locks"
+        self.journal = ProgressJournal(self.journal_path, plan.plan_id, plan.compute_behavioral_hash())
+        self.journal.bind_roots(scratch=scratch_dir, output=output_dir)
+        limits = plan.limits
+        self.capacity_mgr = StorageCapacityManager(limits.max_transferred_bytes,
+            limits.max_decompressed_bytes, limits.max_temp_disk_bytes,
+            limits.max_output_disk_bytes, journal=self.journal)
+        self.budget = TransportBudget(max_bytes=limits.max_transferred_bytes,
+            max_requests=limits.max_requests, deadline_seconds=limits.overall_deadline_seconds,
+            per_request_timeout=limits.per_request_timeout_seconds, capacity=self.capacity_mgr)
+&gt;       self.opener = urllib.request.build_opener(SafeRedirectHandler(self.budget))
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: SafeRedirectHandler() takes no arguments
+
+src\xlm\data\acquisition\fetcher.py:97: TypeError</failure></testcase><testcase classname="tests.test_acquisition_fetcher" name="test_fetcher_source_drift_412_blocks" time="0.190"><failure message="TypeError: SafeRedirectHandler() takes no arguments">local_http_server = 'http://127.0.0.1:57627'
+tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after01/transport-probe-tmp/test_fetcher_source_drift_412_0')
+
+    def test_fetcher_source_drift_412_blocks(local_http_server: str, tmp_path: Path) -&gt; None:
+        """Verify that an upstream ETag change during resume triggers SourceDriftDetectedError."""
+        plan = create_authorized_plan(local_http_server, "changed_etag", tmp_path)
+        output_dir = tmp_path / "output"
+        scratch_dir = tmp_path / "scratch"
+    
+        # Pre-populate journal with prior ETag and partial file
+        partial_dir = scratch_dir / "partials" / plan.plan_id
+        partial_dir.mkdir(parents=True, exist_ok=True)
+        partial_file = partial_dir / "changed_etag.part"
+        partial_file.write_bytes(b"Initial content")
+    
+        journal_path = scratch_dir / "journals" / f"{plan.plan_id}.progress.json"
+        journal = ProgressJournal(journal_path, plan.plan_id, plan.compute_behavioral_hash())
+        journal.update_file_progress("changed_etag", bytes_added=15, etag='"etag-v1-original"')
+        journal.save()
+    
+&gt;       fetcher = BoundedFetcher(plan, scratch_dir=scratch_dir, output_dir=output_dir)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_acquisition_fetcher.py:276: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;xlm.data.acquisition.fetcher.BoundedFetcher object at 0x0000021F068B2570&gt;
+plan = AcquisitionPlan(schema_version=2, plan_id='plan_changed_etag', source_id='mock_source', view_id='default', provider='h...tor', authorized_at='2026-09-19T12:00:00Z', scope='pilot', is_pilot_approved=True, bound_limits_hash=''), plan_hash='')
+scratch_dir = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after01/transport-probe-tmp/test_fetcher_source_drift_412_0/scratch')
+output_dir = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after01/transport-probe-tmp/test_fetcher_source_drift_412_0/output')
+catalog_source_approved = False
+
+    def __init__(self, plan: AcquisitionPlan, scratch_dir: Path, output_dir: Path,
+                 catalog_source_approved: bool = False) -&gt; None:
+        validate_plan_authorization(plan, catalog_source_approved)
+        for path in (scratch_dir, output_dir):
+            ensure_plain_path(path)
+        if scratch_dir.resolve() == output_dir.resolve() or scratch_dir.resolve().is_relative_to(output_dir.resolve()) or output_dir.resolve().is_relative_to(scratch_dir.resolve()):
+            raise ValueError("scratch and output directories must be disjoint")
+        self.plan, self.scratch_dir, self.output_dir = plan, scratch_dir, output_dir
+        self.partial_dir = scratch_dir / "partials" / plan.plan_id
+        self.journal_path = scratch_dir / "journals" / f"{plan.plan_id}.progress.json"
+        self.lock_dir = scratch_dir / "locks"
+        self.journal = ProgressJournal(self.journal_path, plan.plan_id, plan.compute_behavioral_hash())
+        self.journal.bind_roots(scratch=scratch_dir, output=output_dir)
+        limits = plan.limits
+        self.capacity_mgr = StorageCapacityManager(limits.max_transferred_bytes,
+            limits.max_decompressed_bytes, limits.max_temp_disk_bytes,
+            limits.max_output_disk_bytes, journal=self.journal)
+        self.budget = TransportBudget(max_bytes=limits.max_transferred_bytes,
+            max_requests=limits.max_requests, deadline_seconds=limits.overall_deadline_seconds,
+            per_request_timeout=limits.per_request_timeout_seconds, capacity=self.capacity_mgr)
+&gt;       self.opener = urllib.request.build_opener(SafeRedirectHandler(self.budget))
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: SafeRedirectHandler() takes no arguments
+
+src\xlm\data\acquisition\fetcher.py:97: TypeError</failure></testcase><testcase classname="tests.test_acquisition_fetcher" name="test_fetcher_rate_limit_429_backoff" time="0.120"><failure message="TypeError: SafeRedirectHandler() takes no arguments">local_http_server = 'http://127.0.0.1:57627'
+tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after01/transport-probe-tmp/test_fetcher_rate_limit_429_ba0')
+
+    def test_fetcher_rate_limit_429_backoff(local_http_server: str, tmp_path: Path) -&gt; None:
+        """Verify that HTTP 429 with Retry-After is respected and succeeds on retry."""
+        MockAcquisitionHTTPHandler.rate_limit_counter = 0
+        plan = create_authorized_plan(local_http_server, "rate_limit_429", tmp_path)
+        output_dir = tmp_path / "output"
+        scratch_dir = tmp_path / "scratch"
+    
+&gt;       fetcher = BoundedFetcher(plan, scratch_dir=scratch_dir, output_dir=output_dir)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_acquisition_fetcher.py:288: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;xlm.data.acquisition.fetcher.BoundedFetcher object at 0x0000021F06849B20&gt;
+plan = AcquisitionPlan(schema_version=2, plan_id='plan_rate_limit_429', source_id='mock_source', view_id='default', provider=...tor', authorized_at='2026-09-19T12:00:00Z', scope='pilot', is_pilot_approved=True, bound_limits_hash=''), plan_hash='')
+scratch_dir = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after01/transport-probe-tmp/test_fetcher_rate_limit_429_ba0/scratch')
+output_dir = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after01/transport-probe-tmp/test_fetcher_rate_limit_429_ba0/output')
+catalog_source_approved = False
+
+    def __init__(self, plan: AcquisitionPlan, scratch_dir: Path, output_dir: Path,
+                 catalog_source_approved: bool = False) -&gt; None:
+        validate_plan_authorization(plan, catalog_source_approved)
+        for path in (scratch_dir, output_dir):
+            ensure_plain_path(path)
+        if scratch_dir.resolve() == output_dir.resolve() or scratch_dir.resolve().is_relative_to(output_dir.resolve()) or output_dir.resolve().is_relative_to(scratch_dir.resolve()):
+            raise ValueError("scratch and output directories must be disjoint")
+        self.plan, self.scratch_dir, self.output_dir = plan, scratch_dir, output_dir
+        self.partial_dir = scratch_dir / "partials" / plan.plan_id
+        self.journal_path = scratch_dir / "journals" / f"{plan.plan_id}.progress.json"
+        self.lock_dir = scratch_dir / "locks"
+        self.journal = ProgressJournal(self.journal_path, plan.plan_id, plan.compute_behavioral_hash())
+        self.journal.bind_roots(scratch=scratch_dir, output=output_dir)
+        limits = plan.limits
+        self.capacity_mgr = StorageCapacityManager(limits.max_transferred_bytes,
+            limits.max_decompressed_bytes, limits.max_temp_disk_bytes,
+            limits.max_output_disk_bytes, journal=self.journal)
+        self.budget = TransportBudget(max_bytes=limits.max_transferred_bytes,
+            max_requests=limits.max_requests, deadline_seconds=limits.overall_deadline_seconds,
+            per_request_timeout=limits.per_request_timeout_seconds, capacity=self.capacity_mgr)
+&gt;       self.opener = urllib.request.build_opener(SafeRedirectHandler(self.budget))
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: SafeRedirectHandler() takes no arguments
+
+src\xlm\data\acquisition\fetcher.py:97: TypeError</failure></testcase><testcase classname="tests.test_acquisition_fetcher" name="test_fetcher_inconsistent_content_range_fails" time="0.091"><failure message="TypeError: SafeRedirectHandler() takes no arguments">local_http_server = 'http://127.0.0.1:57627'
+tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after01/transport-probe-tmp/test_fetcher_inconsistent_cont0')
+
+    def test_fetcher_inconsistent_content_range_fails(local_http_server: str, tmp_path: Path) -&gt; None:
+        """Verify that inconsistent Content-Range header start offset raises an immediate error."""
+        plan = create_authorized_plan(local_http_server, "inconsistent_range", tmp_path)
+        output_dir = tmp_path / "output"
+        scratch_dir = tmp_path / "scratch"
+    
+        # Create partial file to trigger Range request
+        partial_dir = scratch_dir / "partials" / plan.plan_id
+        partial_dir.mkdir(parents=True, exist_ok=True)
+        (partial_dir / "inconsistent_range.part").write_bytes(b"X" * 500)
+    
+&gt;       fetcher = BoundedFetcher(plan, scratch_dir=scratch_dir, output_dir=output_dir)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_acquisition_fetcher.py:307: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;xlm.data.acquisition.fetcher.BoundedFetcher object at 0x0000021F068B38C0&gt;
+plan = AcquisitionPlan(schema_version=2, plan_id='plan_inconsistent_range', source_id='mock_source', view_id='default', provi...tor', authorized_at='2026-09-19T12:00:00Z', scope='pilot', is_pilot_approved=True, bound_limits_hash=''), plan_hash='')
+scratch_dir = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after01/transport-probe-tmp/test_fetcher_inconsistent_cont0/scratch')
+output_dir = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after01/transport-probe-tmp/test_fetcher_inconsistent_cont0/output')
+catalog_source_approved = False
+
+    def __init__(self, plan: AcquisitionPlan, scratch_dir: Path, output_dir: Path,
+                 catalog_source_approved: bool = False) -&gt; None:
+        validate_plan_authorization(plan, catalog_source_approved)
+        for path in (scratch_dir, output_dir):
+            ensure_plain_path(path)
+        if scratch_dir.resolve() == output_dir.resolve() or scratch_dir.resolve().is_relative_to(output_dir.resolve()) or output_dir.resolve().is_relative_to(scratch_dir.resolve()):
+            raise ValueError("scratch and output directories must be disjoint")
+        self.plan, self.scratch_dir, self.output_dir = plan, scratch_dir, output_dir
+        self.partial_dir = scratch_dir / "partials" / plan.plan_id
+        self.journal_path = scratch_dir / "journals" / f"{plan.plan_id}.progress.json"
+        self.lock_dir = scratch_dir / "locks"
+        self.journal = ProgressJournal(self.journal_path, plan.plan_id, plan.compute_behavioral_hash())
+        self.journal.bind_roots(scratch=scratch_dir, output=output_dir)
+        limits = plan.limits
+        self.capacity_mgr = StorageCapacityManager(limits.max_transferred_bytes,
+            limits.max_decompressed_bytes, limits.max_temp_disk_bytes,
+            limits.max_output_disk_bytes, journal=self.journal)
+        self.budget = TransportBudget(max_bytes=limits.max_transferred_bytes,
+            max_requests=limits.max_requests, deadline_seconds=limits.overall_deadline_seconds,
+            per_request_timeout=limits.per_request_timeout_seconds, capacity=self.capacity_mgr)
+&gt;       self.opener = urllib.request.build_opener(SafeRedirectHandler(self.budget))
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: SafeRedirectHandler() takes no arguments
+
+src\xlm\data\acquisition\fetcher.py:97: TypeError</failure></testcase><testcase classname="tests.test_acquisition_fetcher" name="test_fetcher_oversized_payload_halts_budget" time="0.153"><failure message="TypeError: SafeRedirectHandler() takes no arguments">local_http_server = 'http://127.0.0.1:57627'
+tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after01/transport-probe-tmp/test_fetcher_oversized_payload0')
+
+    def test_fetcher_oversized_payload_halts_budget(local_http_server: str, tmp_path: Path) -&gt; None:
+        """Verify that stream exceeding max_transferred_bytes triggers BudgetExhaustedError."""
+        # Set tight budget: 128 KiB
+        limits = AcquisitionLimits(max_transferred_bytes=128 * 1024)
+        plan = create_authorized_plan(local_http_server, "oversized", tmp_path, limits=limits)
+        output_dir = tmp_path / "output"
+        scratch_dir = tmp_path / "scratch"
+    
+&gt;       fetcher = BoundedFetcher(plan, scratch_dir=scratch_dir, output_dir=output_dir)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_acquisition_fetcher.py:320: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;xlm.data.acquisition.fetcher.BoundedFetcher object at 0x0000021F0690C3E0&gt;
+plan = AcquisitionPlan(schema_version=2, plan_id='plan_oversized', source_id='mock_source', view_id='default', provider='http...tor', authorized_at='2026-09-19T12:00:00Z', scope='pilot', is_pilot_approved=True, bound_limits_hash=''), plan_hash='')
+scratch_dir = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after01/transport-probe-tmp/test_fetcher_oversized_payload0/scratch')
+output_dir = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after01/transport-probe-tmp/test_fetcher_oversized_payload0/output')
+catalog_source_approved = False
+
+    def __init__(self, plan: AcquisitionPlan, scratch_dir: Path, output_dir: Path,
+                 catalog_source_approved: bool = False) -&gt; None:
+        validate_plan_authorization(plan, catalog_source_approved)
+        for path in (scratch_dir, output_dir):
+            ensure_plain_path(path)
+        if scratch_dir.resolve() == output_dir.resolve() or scratch_dir.resolve().is_relative_to(output_dir.resolve()) or output_dir.resolve().is_relative_to(scratch_dir.resolve()):
+            raise ValueError("scratch and output directories must be disjoint")
+        self.plan, self.scratch_dir, self.output_dir = plan, scratch_dir, output_dir
+        self.partial_dir = scratch_dir / "partials" / plan.plan_id
+        self.journal_path = scratch_dir / "journals" / f"{plan.plan_id}.progress.json"
+        self.lock_dir = scratch_dir / "locks"
+        self.journal = ProgressJournal(self.journal_path, plan.plan_id, plan.compute_behavioral_hash())
+        self.journal.bind_roots(scratch=scratch_dir, output=output_dir)
+        limits = plan.limits
+        self.capacity_mgr = StorageCapacityManager(limits.max_transferred_bytes,
+            limits.max_decompressed_bytes, limits.max_temp_disk_bytes,
+            limits.max_output_disk_bytes, journal=self.journal)
+        self.budget = TransportBudget(max_bytes=limits.max_transferred_bytes,
+            max_requests=limits.max_requests, deadline_seconds=limits.overall_deadline_seconds,
+            per_request_timeout=limits.per_request_timeout_seconds, capacity=self.capacity_mgr)
+&gt;       self.opener = urllib.request.build_opener(SafeRedirectHandler(self.budget))
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: SafeRedirectHandler() takes no arguments
+
+src\xlm\data\acquisition\fetcher.py:97: TypeError</failure></testcase><testcase classname="tests.test_acquisition_fetcher" name="test_fetcher_malicious_redirect_blocked" time="0.081"><failure message="TypeError: SafeRedirectHandler() takes no arguments">local_http_server = 'http://127.0.0.1:57627'
+tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after01/transport-probe-tmp/test_fetcher_malicious_redirec0')
+
+    def test_fetcher_malicious_redirect_blocked(local_http_server: str, tmp_path: Path) -&gt; None:
+        """Verify that a redirect to an unapproved host is blocked by SafeRedirectHandler."""
+        plan = create_authorized_plan(local_http_server, "malicious_redirect", tmp_path)
+        output_dir = tmp_path / "output"
+        scratch_dir = tmp_path / "scratch"
+    
+&gt;       fetcher = BoundedFetcher(plan, scratch_dir=scratch_dir, output_dir=output_dir)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_acquisition_fetcher.py:334: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;xlm.data.acquisition.fetcher.BoundedFetcher object at 0x0000021F06849B20&gt;
+plan = AcquisitionPlan(schema_version=2, plan_id='plan_malicious_redirect', source_id='mock_source', view_id='default', provi...tor', authorized_at='2026-09-19T12:00:00Z', scope='pilot', is_pilot_approved=True, bound_limits_hash=''), plan_hash='')
+scratch_dir = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after01/transport-probe-tmp/test_fetcher_malicious_redirec0/scratch')
+output_dir = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after01/transport-probe-tmp/test_fetcher_malicious_redirec0/output')
+catalog_source_approved = False
+
+    def __init__(self, plan: AcquisitionPlan, scratch_dir: Path, output_dir: Path,
+                 catalog_source_approved: bool = False) -&gt; None:
+        validate_plan_authorization(plan, catalog_source_approved)
+        for path in (scratch_dir, output_dir):
+            ensure_plain_path(path)
+        if scratch_dir.resolve() == output_dir.resolve() or scratch_dir.resolve().is_relative_to(output_dir.resolve()) or output_dir.resolve().is_relative_to(scratch_dir.resolve()):
+            raise ValueError("scratch and output directories must be disjoint")
+        self.plan, self.scratch_dir, self.output_dir = plan, scratch_dir, output_dir
+        self.partial_dir = scratch_dir / "partials" / plan.plan_id
+        self.journal_path = scratch_dir / "journals" / f"{plan.plan_id}.progress.json"
+        self.lock_dir = scratch_dir / "locks"
+        self.journal = ProgressJournal(self.journal_path, plan.plan_id, plan.compute_behavioral_hash())
+        self.journal.bind_roots(scratch=scratch_dir, output=output_dir)
+        limits = plan.limits
+        self.capacity_mgr = StorageCapacityManager(limits.max_transferred_bytes,
+            limits.max_decompressed_bytes, limits.max_temp_disk_bytes,
+            limits.max_output_disk_bytes, journal=self.journal)
+        self.budget = TransportBudget(max_bytes=limits.max_transferred_bytes,
+            max_requests=limits.max_requests, deadline_seconds=limits.overall_deadline_seconds,
+            per_request_timeout=limits.per_request_timeout_seconds, capacity=self.capacity_mgr)
+&gt;       self.opener = urllib.request.build_opener(SafeRedirectHandler(self.budget))
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: SafeRedirectHandler() takes no arguments
+
+src\xlm\data\acquisition\fetcher.py:97: TypeError</failure></testcase><testcase classname="tests.test_acquisition_fetcher" name="test_fetcher_cache_hits_and_zero_network" time="0.092"><failure message="TypeError: SafeRedirectHandler() takes no arguments">local_http_server = 'http://127.0.0.1:57627'
+tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after01/transport-probe-tmp/test_fetcher_cache_hits_and_ze0')
+
+    def test_fetcher_cache_hits_and_zero_network(local_http_server: str, tmp_path: Path) -&gt; None:
+        """Verify that re-running on an already completed file records cache hit and 0 network bytes."""
+        plan = create_authorized_plan(local_http_server, "normal_file", tmp_path)
+        output_dir = tmp_path / "output"
+        scratch_dir = tmp_path / "scratch"
+    
+        # Run 1: initial download
+&gt;       fetcher1 = BoundedFetcher(plan, scratch_dir=scratch_dir, output_dir=output_dir)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_acquisition_fetcher.py:346: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;xlm.data.acquisition.fetcher.BoundedFetcher object at 0x0000021F068B3590&gt;
+plan = AcquisitionPlan(schema_version=2, plan_id='plan_normal_file', source_id='mock_source', view_id='default', provider='ht...tor', authorized_at='2026-09-19T12:00:00Z', scope='pilot', is_pilot_approved=True, bound_limits_hash=''), plan_hash='')
+scratch_dir = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after01/transport-probe-tmp/test_fetcher_cache_hits_and_ze0/scratch')
+output_dir = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after01/transport-probe-tmp/test_fetcher_cache_hits_and_ze0/output')
+catalog_source_approved = False
+
+    def __init__(self, plan: AcquisitionPlan, scratch_dir: Path, output_dir: Path,
+                 catalog_source_approved: bool = False) -&gt; None:
+        validate_plan_authorization(plan, catalog_source_approved)
+        for path in (scratch_dir, output_dir):
+            ensure_plain_path(path)
+        if scratch_dir.resolve() == output_dir.resolve() or scratch_dir.resolve().is_relative_to(output_dir.resolve()) or output_dir.resolve().is_relative_to(scratch_dir.resolve()):
+            raise ValueError("scratch and output directories must be disjoint")
+        self.plan, self.scratch_dir, self.output_dir = plan, scratch_dir, output_dir
+        self.partial_dir = scratch_dir / "partials" / plan.plan_id
+        self.journal_path = scratch_dir / "journals" / f"{plan.plan_id}.progress.json"
+        self.lock_dir = scratch_dir / "locks"
+        self.journal = ProgressJournal(self.journal_path, plan.plan_id, plan.compute_behavioral_hash())
+        self.journal.bind_roots(scratch=scratch_dir, output=output_dir)
+        limits = plan.limits
+        self.capacity_mgr = StorageCapacityManager(limits.max_transferred_bytes,
+            limits.max_decompressed_bytes, limits.max_temp_disk_bytes,
+            limits.max_output_disk_bytes, journal=self.journal)
+        self.budget = TransportBudget(max_bytes=limits.max_transferred_bytes,
+            max_requests=limits.max_requests, deadline_seconds=limits.overall_deadline_seconds,
+            per_request_timeout=limits.per_request_timeout_seconds, capacity=self.capacity_mgr)
+&gt;       self.opener = urllib.request.build_opener(SafeRedirectHandler(self.budget))
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: SafeRedirectHandler() takes no arguments
+
+src\xlm\data\acquisition\fetcher.py:97: TypeError</failure></testcase><testcase classname="tests.test_acquisition_fetcher" name="test_fetcher_decompression_bomb_guard" time="0.006" /><testcase classname="tests.test_acquisition_fetcher" name="test_fetcher_crash_consistency_reconciliation" time="0.348" /><testcase classname="tests.test_acquisition_plan" name="test_plan_behavioral_hash_invariance" time="0.001" /><testcase classname="tests.test_acquisition_plan" name="test_plan_pilot_approval_enforcement" time="0.001" /><testcase classname="tests.test_acquisition_plan" name="test_plan_production_authorization_enforcement" time="0.002" /><testcase classname="tests.test_acquisition_plan" name="test_plan_denied_fineweb_policy" time="0.001" /><testcase classname="tests.test_acquisition_plan" name="test_plan_serialization_roundtrip" time="0.008" /><testcase classname="tests.test_source_discovery" name="test_source_prober_missing_repo_outcome" time="0.001"><failure message="TypeError: MockStreamingTransport.__init__() got an unexpected keyword argument 'snapshot_info'">def test_source_prober_missing_repo_outcome() -&gt; None:
+        """Verify prober returns inaccessible_or_not_found for 404 missing repositories."""
+        candidate = CandidateSourceEntry(
+            candidate_number=1,
+            source_id="missing_source",
+            provider="huggingface",
+            repository="org/missing-repo",
+        )
+        snapshot = SnapshotInfo(
+            provider="huggingface",
+            target="org/missing-repo",
+            immutable_revision="",
+            is_not_found=True,
+            error_reason="Repository 'org/missing-repo' not found (HTTP 404).",
+        )
+&gt;       transport = MockStreamingTransport(snapshot_info=snapshot)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: MockStreamingTransport.__init__() got an unexpected keyword argument 'snapshot_info'
+
+tests\test_source_discovery.py:50: TypeError</failure></testcase><testcase classname="tests.test_source_discovery" name="test_source_prober_gated_repo_outcome" time="0.001"><failure message="TypeError: MockStreamingTransport.__init__() got an unexpected keyword argument 'snapshot_info'">def test_source_prober_gated_repo_outcome() -&gt; None:
+        """Verify prober returns gated and notes terms agreement required for 401/403 repos."""
+        candidate = CandidateSourceEntry(
+            candidate_number=2,
+            source_id="gated_source",
+            provider="huggingface",
+            repository="org/gated-repo",
+        )
+        snapshot = SnapshotInfo(
+            provider="huggingface",
+            target="org/gated-repo",
+            immutable_revision="",
+            is_gated=True,
+            error_reason="Access denied (403): repository is gated.",
+        )
+&gt;       transport = MockStreamingTransport(snapshot_info=snapshot)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: MockStreamingTransport.__init__() got an unexpected keyword argument 'snapshot_info'
+
+tests\test_source_discovery.py:79: TypeError</failure></testcase><testcase classname="tests.test_source_discovery" name="test_source_prober_denied_fineweb_policy_block" time="0.001"><failure message="TypeError: MockStreamingTransport.__init__() got an unexpected keyword argument 'snapshot_info'">def test_source_prober_denied_fineweb_policy_block() -&gt; None:
+        """Verify prober immediately blocks denied direct FineWeb repositories."""
+        candidate = CandidateSourceEntry(
+            candidate_number=3,
+            source_id="fineweb_bad",
+            provider="huggingface",
+            repository="HuggingFaceFW/fineweb",
+        )
+&gt;       transport = MockStreamingTransport(
+            snapshot_info=SnapshotInfo(
+                provider="huggingface", target="HuggingFaceFW/fineweb", immutable_revision="abc"
+            )
+        )
+E       TypeError: MockStreamingTransport.__init__() got an unexpected keyword argument 'snapshot_info'
+
+tests\test_source_discovery.py:101: TypeError</failure></testcase><testcase classname="tests.test_source_discovery" name="test_nested_field_schema_inspection" time="0.037" /><testcase classname="tests.test_source_discovery" name="test_missing_text_field_explicit_handling" time="0.021" /><testcase classname="tests.test_source_discovery" name="test_secret_redaction_and_preview_bounding" time="0.001" /><testcase classname="tests.test_source_discovery" name="test_probe_fingerprint_stability_and_invalidation" time="0.001" /><testcase classname="tests.test_source_discovery" name="test_transport_budget_limits_and_deadlines" time="0.021" /><testcase classname="tests.test_source_discovery" name="test_security_host_allowlist_and_local_traversal" time="0.001" /><testcase classname="tests.test_source_discovery" name="test_ambiguous_provider_error_does_not_infer_nonexistence" time="0.001"><failure message="TypeError: MockStreamingTransport.__init__() got an unexpected keyword argument 'snapshot_info'">def test_ambiguous_provider_error_does_not_infer_nonexistence() -&gt; None:
+        """Verify provider 500/503 errors produce TRANSIENT_ERROR, not INACCESSIBLE_OR_NOT_FOUND."""
+        candidate = CandidateSourceEntry(
+            candidate_number=5,
+            source_id="ambiguous_source",
+            provider="huggingface",
+            repository="org/repo-500",
+        )
+        snapshot = SnapshotInfo(
+            provider="huggingface",
+            target="org/repo-500",
+            immutable_revision="",
+            error_reason="Provider returned HTTP error 500: Internal Server Error",
+        )
+&gt;       transport = MockStreamingTransport(snapshot_info=snapshot)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: MockStreamingTransport.__init__() got an unexpected keyword argument 'snapshot_info'
+
+tests\test_source_discovery.py:295: TypeError</failure></testcase><testcase classname="tests.test_source_discovery" name="test_malicious_redirect_blocked_by_safe_redirect_handler" time="0.001"><failure message="TypeError: MockStreamingTransport.__init__() got an unexpected keyword argument 'snapshot_info'">def test_malicious_redirect_blocked_by_safe_redirect_handler() -&gt; None:
+        """Verify that redirects to un-allowlisted hosts are intercepted and blocked."""
+        candidate = CandidateSourceEntry(
+            candidate_number=6,
+            source_id="redirect_source",
+            provider="huggingface",
+            repository="org/redirect-repo",
+        )
+        # Mock transport configured with a malicious redirect target
+&gt;       transport = MockStreamingTransport(
+            snapshot_info=SnapshotInfo(
+                provider="huggingface", target="org/redirect-repo", immutable_revision="sha"
+            ),
+            redirect_target="https://attacker-controlled.site/steal",
+        )
+E       TypeError: MockStreamingTransport.__init__() got an unexpected keyword argument 'snapshot_info'
+
+tests\test_source_discovery.py:318: TypeError</failure></testcase><testcase classname="tests.test_source_discovery" name="test_prober_budget_exhaustion_outcome" time="0.001"><failure message="TypeError: MockStreamingTransport.__init__() got an unexpected keyword argument 'snapshot_info'">def test_prober_budget_exhaustion_outcome() -&gt; None:
+        """Verify prober returns BUDGET_EXHAUSTED when budget bytes ceiling is breached."""
+        candidate = CandidateSourceEntry(
+            candidate_number=7,
+            source_id="heavy_source",
+            provider="huggingface",
+            repository="org/heavy-repo",
+        )
+        snapshot = SnapshotInfo(
+            provider="huggingface", target="org/heavy-repo", immutable_revision="sha123"
+        )
+        # Budget with only 1 request allowance: get_snapshot_info takes 1, list_files will breach it
+        exhausted_budget = TransportBudget(max_requests=1)
+&gt;       transport = MockStreamingTransport(
+            snapshot_info=snapshot,
+            budget=exhausted_budget,
+        )
+E       TypeError: MockStreamingTransport.__init__() got an unexpected keyword argument 'snapshot_info'
+
+tests\test_source_discovery.py:349: TypeError</failure></testcase><testcase classname="tests.test_source_discovery" name="test_partial_inventory_and_unresolved_requirements" time="0.001"><failure message="TypeError: MockStreamingTransport.__init__() got an unexpected keyword argument 'snapshot_info'">def test_partial_inventory_and_unresolved_requirements() -&gt; None:
+        """Verify prober returns PARTIAL when files exist but adapter schema is unassigned."""
+        candidate = CandidateSourceEntry(
+            candidate_number=8,
+            source_id="partial_source",
+            provider="huggingface",
+            repository="org/partial-repo",
+        )
+        snapshot = SnapshotInfo(
+            provider="huggingface",
+            target="org/partial-repo",
+            immutable_revision="sha_part",
+        )
+        files = [{"path": "data/train-00000.parquet", "size": 1048576}]
+&gt;       transport = MockStreamingTransport(snapshot_info=snapshot, files=files)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: MockStreamingTransport.__init__() got an unexpected keyword argument 'snapshot_info'
+
+tests\test_source_discovery.py:380: TypeError</failure></testcase></testsuite></testsuites>

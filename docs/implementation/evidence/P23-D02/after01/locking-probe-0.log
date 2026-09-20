@@ -1,0 +1,14 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0
+collecting ... collected 3 items
+
+tests/test_acquisition_bounds.py::test_killed_download_resumes_in_a_fresh_process_without_new_allowance PASSED [ 33%]
+tests/test_acquisition_plan.py::test_plan_production_authorization_enforcement PASSED [ 66%]
+tests/test_acquisition_bounds.py::test_production_admission_reference_is_not_evidence PASSED [100%]
+
+- generated xml file: D:\Project\xlm\data\audit\p23-remediation\stage04\after01\locking-probe.xml -
+============================== 3 passed in 5.59s ==============================

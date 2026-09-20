@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import gzip
+import hashlib
 import http.server
 import io
 import re
@@ -244,6 +245,16 @@ def test_fetcher_ignored_range_handling(local_http_server: str, tmp_path: Path) 
     partial_dir.mkdir(parents=True, exist_ok=True)
     partial_file = partial_dir / "ignore_range.part"
     partial_file.write_bytes(b"STALE_OLD_PARTIAL_DATA")
+    journal = ProgressJournal(
+        scratch_dir / "journals" / f"{plan.plan_id}.progress.json",
+        plan.plan_id,
+        plan.compute_behavioral_hash(),
+    )
+    journal.update_file_progress(
+        "ignore_range",
+        len(b"STALE_OLD_PARTIAL_DATA"),
+        prefix_sha256=hashlib.sha256(b"STALE_OLD_PARTIAL_DATA").hexdigest(),
+    )
 
     fetcher = BoundedFetcher(plan, scratch_dir=scratch_dir, output_dir=output_dir)
     state = fetcher.run()
@@ -270,7 +281,12 @@ def test_fetcher_source_drift_412_blocks(local_http_server: str, tmp_path: Path)
 
     journal_path = scratch_dir / "journals" / f"{plan.plan_id}.progress.json"
     journal = ProgressJournal(journal_path, plan.plan_id, plan.compute_behavioral_hash())
-    journal.update_file_progress("changed_etag", bytes_added=15, etag='"etag-v1-original"')
+    journal.update_file_progress(
+        "changed_etag",
+        bytes_added=15,
+        etag='"etag-v1-original"',
+        prefix_sha256=hashlib.sha256(b"Initial content").hexdigest(),
+    )
     journal.save()
 
     fetcher = BoundedFetcher(plan, scratch_dir=scratch_dir, output_dir=output_dir)
@@ -303,6 +319,14 @@ def test_fetcher_inconsistent_content_range_fails(local_http_server: str, tmp_pa
     partial_dir = scratch_dir / "partials" / plan.plan_id
     partial_dir.mkdir(parents=True, exist_ok=True)
     (partial_dir / "inconsistent_range.part").write_bytes(b"X" * 500)
+    journal = ProgressJournal(
+        scratch_dir / "journals" / f"{plan.plan_id}.progress.json",
+        plan.plan_id,
+        plan.compute_behavioral_hash(),
+    )
+    journal.update_file_progress(
+        "inconsistent_range", 500, prefix_sha256=hashlib.sha256(b"X" * 500).hexdigest()
+    )
 
     fetcher = BoundedFetcher(plan, scratch_dir=scratch_dir, output_dir=output_dir)
     with pytest.raises(RuntimeError, match="Inconsistent Content-Range start"):
@@ -353,7 +377,8 @@ def test_fetcher_cache_hits_and_zero_network(local_http_server: str, tmp_path: P
     state2 = fetcher2.run()
     assert state2.cache_hits == 1
     # Zero network bytes transferred during run 2
-    assert fetcher2.capacity_mgr.transferred_bytes == 0
+    assert state2.transferred_bytes - initial_transferred == 0
+    assert state2.requests_made == state1.requests_made
 
 
 def test_fetcher_decompression_bomb_guard(tmp_path: Path) -> None:
@@ -390,7 +415,9 @@ def test_fetcher_crash_consistency_reconciliation(tmp_path: Path) -> None:
     # Journal only recorded 600 bytes as verified
     journal_path = scratch_dir / "journals" / "test_plan.progress.json"
     journal = ProgressJournal(journal_path, "test_plan", "hash123")
-    journal.update_file_progress("file.bin", bytes_added=600)
+    journal.update_file_progress(
+        "file.bin", bytes_added=600, prefix_sha256=hashlib.sha256(b"A" * 600).hexdigest()
+    )
     journal.save()
 
     # Run reconciliation

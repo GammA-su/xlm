@@ -1,0 +1,76 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0
+collecting ... collected 32 items
+
+tests/test_acquisition_bounds.py::test_original_valid_transfer_and_restart_consumption PASSED [  3%]
+tests/test_acquisition_bounds.py::test_completed_original_is_never_repaired[same_length] PASSED [  6%]
+tests/test_acquisition_bounds.py::test_completed_original_is_never_repaired[missing] PASSED [  9%]
+tests/test_acquisition_bounds.py::test_completed_original_is_never_repaired[incomplete] PASSED [ 12%]
+tests/test_acquisition_bounds.py::test_whole_original_over_record_limit_is_refused PASSED [ 15%]
+tests/test_acquisition_bounds.py::test_original_concurrent_reservations_share_allowance PASSED [ 18%]
+tests/test_acquisition_bounds.py::test_fresh_process_reservations_and_killed_owner_remain_spent PASSED [ 21%]
+tests/test_acquisition_bounds.py::test_killed_download_resumes_in_a_fresh_process_without_new_allowance PASSED [ 25%]
+tests/test_acquisition_bounds.py::test_paths_and_collisions_fail_before_filesystem_effects[../escape.jsonl] PASSED [ 28%]
+tests/test_acquisition_bounds.py::test_paths_and_collisions_fail_before_filesystem_effects[CON] PASSED [ 31%]
+tests/test_acquisition_bounds.py::test_paths_and_collisions_fail_before_filesystem_effects[a/../b] PASSED [ 34%]
+tests/test_acquisition_bounds.py::test_paths_and_collisions_fail_before_filesystem_effects[A.jsonl,a.jsonl] PASSED [ 37%]
+tests/test_acquisition_bounds.py::test_corrupt_journal_is_not_reset PASSED [ 40%]
+tests/test_acquisition_bounds.py::test_redirect_retry_bodies_and_requests_are_charged[redirect.jsonl-redirect body] PASSED [ 43%]
+tests/test_acquisition_bounds.py::test_redirect_retry_bodies_and_requests_are_charged[retry.jsonl-retry body] PASSED [ 46%]
+tests/test_acquisition_bounds.py::test_metadata_uses_the_same_body_and_request_budget PASSED [ 50%]
+tests/test_acquisition_bounds.py::test_selected_records_have_exact_original_locators[rows.jsonl-interval0-texts0] PASSED [ 53%]
+tests/test_acquisition_bounds.py::test_selected_records_have_exact_original_locators[rows.parquet-interval1-texts1] PASSED [ 56%]
+tests/test_acquisition_bounds.py::test_ignored_parquet_range_has_no_whole_shard_fallback PASSED [ 59%]
+tests/test_acquisition_bounds.py::test_compressed_corpus_expansion_is_refused PASSED [ 62%]
+tests/test_acquisition_bounds.py::test_deadline_and_plan_identity_cannot_be_reset PASSED [ 65%]
+tests/test_acquisition_bounds.py::test_public_plan_fetch_status_verify_prepare PASSED [ 68%]
+tests/test_acquisition_bounds.py::test_nested_acquisition_consumes_parent_preparation_budget PASSED [ 71%]
+tests/test_prepare_bounds.py::test_child_stdout_and_stderr_are_bounded_and_accounted PASSED [ 75%]
+tests/test_prepare_bounds.py::test_check_only_stage_consumes_aggregate_allowance PASSED [ 78%]
+tests/test_prepare_bounds.py::test_changed_prepare_budget_does_not_replenish_account PASSED [ 81%]
+tests/test_prepare_bounds.py::test_prepare_record_parser_and_expansion_caps[budget0-{"text":"a"}\n{"text":"b"}\n-record] PASSED [ 84%]
+tests/test_prepare_bounds.py::test_prepare_record_parser_and_expansion_caps[budget1-{"text":"long"}\n-record byte] PASSED [ 87%]
+tests/test_prepare_bounds.py::test_prepare_record_parser_and_expansion_caps[budget2-{"text":"long"}\n-decompressed] FAILED [ 90%]
+tests/test_prepare_bounds.py::test_prepare_aggregate_output_guard PASSED [ 93%]
+tests/test_prepare_bounds.py::test_timed_out_child_and_descendant_are_stopped PASSED [ 96%]
+tests/test_prepare_bounds.py::test_prepare_unknown_budget_fields_fail_explicitly PASSED [100%]
+
+================================== FAILURES ===================================
+_ test_prepare_record_parser_and_expansion_caps[budget2-{"text":"long"}\n-decompressed] _
+
+tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after01/recovery-probe-tmp/test_prepare_record_parser_and2')
+budget = {'max_decompressed_bytes': 8}, payload = b'{"text":"long"}\n'
+message = 'decompressed'
+
+    @pytest.mark.parametrize(
+        "budget, payload, message",
+        [
+            ({"max_records": 1}, b'{"text":"a"}\n{"text":"b"}\n', "record"),
+            ({"max_record_bytes": 8}, b'{"text":"long"}\n', "record byte"),
+            ({"max_decompressed_bytes": 8}, b'{"text":"long"}\n', "decompressed"),
+        ],
+    )
+    def test_prepare_record_parser_and_expansion_caps(
+        tmp_path: Path, budget: dict[str, int], payload: bytes, message: str
+    ) -> None:
+        config = config_for(tmp_path, **budget)
+        bounds = PrepareBounds(config, tmp_path / "out", tmp_path / "home")
+        data = tmp_path / "rows.jsonl"
+        data.write_bytes(payload)
+>       with pytest.raises((ValueError, RuntimeError), match=message):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'decompressed'
+E         Actual message: 'decompression byte limit exceeded'
+
+tests\test_prepare_bounds.py:80: AssertionError
+- generated xml file: D:\Project\xlm\data\audit\p23-remediation\stage04\after01\recovery-probe.xml -
+=========================== short test summary info ===========================
+FAILED tests/test_prepare_bounds.py::test_prepare_record_parser_and_expansion_caps[budget2-{"text":"long"}\n-decompressed] - AssertionError: Regex pattern did not match.
+  Expected regex: 'decompressed'
+  Actual message: 'decompression byte limit exceeded'
+=================== 1 failed, 31 passed in 83.97s (0:01:23) ===================

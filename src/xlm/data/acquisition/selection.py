@@ -1,19 +1,25 @@
 """Selected JSONL records and Parquet row groups through the existing fetcher."""
+
 from __future__ import annotations
 
 import hashlib
 import io
 import json
 import os
-from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import pyarrow.parquet as pq
 
+from xlm.artifacts.manifest import ensure_plain_path
 from xlm.artifacts.store import compute_file_sha256
 from xlm.data.acquisition.disk import AtomicFileWriter
 from xlm.data.acquisition.progress import ProgressCorruptionError
-from xlm.data.acquisition.records import RecordLimitError, check_row_group, encode_record, selected_record
+from xlm.data.acquisition.records import (
+    RecordLimitError,
+    check_row_group,
+    encode_record,
+    selected_record,
+)
 from xlm.data.adapters.jsonl import _pairs_hook_reject_duplicates
 
 if TYPE_CHECKING:
@@ -22,6 +28,7 @@ if TYPE_CHECKING:
 
 class RangeReader(io.RawIOBase):
     """Seekable Parquet input; every read is an exact bounded, charged HTTP range."""
+
     def __init__(self, fetcher: BoundedFetcher, name: str) -> None:
         self.fetcher, self.name, self.position = fetcher, name, 0
         magic, self.length, self.etag = fetcher.fetch_range(name, 0, 3)
@@ -38,7 +45,9 @@ class RangeReader(io.RawIOBase):
         return self.position
 
     def seek(self, offset: int, whence: int = 0) -> int:
-        position = offset if whence == 0 else (self.position if whence == 1 else self.length) + offset
+        position = (
+            offset if whence == 0 else (self.position if whence == 1 else self.length) + offset
+        )
         if whence not in (0, 1, 2) or not 0 <= position <= self.length:
             raise ValueError("invalid Parquet range seek")
         self.position = position
@@ -50,7 +59,9 @@ class RangeReader(io.RawIOBase):
         size = min(size, self.length - self.position)
         if size == 0:
             return b""
-        value, length, etag = self.fetcher.fetch_range(self.name, self.position, self.position + size - 1)
+        value, length, etag = self.fetcher.fetch_range(
+            self.name, self.position, self.position + size - 1
+        )
         if length != self.length or etag != self.etag:
             raise ValueError("Parquet source identity changed between ranges")
         self.position += size
@@ -59,11 +70,22 @@ class RangeReader(io.RawIOBase):
 
 def _jsonl_selection(fetcher: BoundedFetcher, name: str, start: int, stop: int) -> Any:
     with fetcher._open(name, {}) as response:
-        if response.status != 200 or response.headers.get("Content-Encoding", "identity") != "identity":
+        if (
+            response.status != 200
+            or response.headers.get("Content-Encoding", "identity") != "identity"
+        ):
             raise ValueError("selected JSONL requires uncompressed original byte offsets")
         pending = bytearray()
         row, offset = 0, 0
-        remaining = int(response.headers["Content-Length"]) if "Content-Length" in response.headers else None
+        remaining = (
+            int(response.headers["Content-Length"])
+            if "Content-Length" in response.headers
+            else None
+        )
+        etag = response.headers.get("ETag")
+        if not etag or etag.startswith("W/"):
+            raise ValueError("selected JSONL requires a stable strong ETag")
+        fetcher.journal.bind_source(name, etag, remaining)
         while row < stop:
             # Bounded lookahead is charged, but the whole shard is never fetched as fallback.
             if b"\n" not in pending and remaining != 0:
@@ -90,11 +112,24 @@ def _jsonl_selection(fetcher: BoundedFetcher, name: str, start: int, stop: int) 
             raw = bytes(pending[:size])
             del pending[:size]
             if raw.strip():
+                fetcher.capacity_mgr.record_units(
+                    "records_scanned", 1, fetcher.plan.limits.max_scanned_records
+                )
                 record = json.loads(raw, object_pairs_hook=_pairs_hook_reject_duplicates)
                 if not isinstance(record, dict):
                     raise ValueError("selected record must be a JSON object")
                 if row >= start:
-                    yield record, raw, {"row_index": row, "byte_offset": offset, "byte_length": len(raw), "format": "jsonl", "etag": response.headers.get("ETag")}
+                    yield (
+                        record,
+                        raw,
+                        {
+                            "row_index": row,
+                            "byte_offset": offset,
+                            "byte_length": len(raw),
+                            "format": "jsonl",
+                            "etag": response.headers.get("ETag"),
+                        },
+                    )
                 row += 1
             offset += len(raw)
 
@@ -102,8 +137,13 @@ def _jsonl_selection(fetcher: BoundedFetcher, name: str, start: int, stop: int) 
 def _parquet_selection(fetcher: BoundedFetcher, name: str, start: int, stop: int) -> Any:
     limits = fetcher.plan.limits
     with RangeReader(fetcher, name) as stream:
-        parquet = pq.ParquetFile(stream, pre_buffer=False, buffer_size=0,
-            thrift_string_size_limit=limits.max_parser_bytes, thrift_container_size_limit=limits.max_parser_bytes)
+        parquet = pq.ParquetFile(
+            stream,
+            pre_buffer=False,
+            buffer_size=0,
+            thrift_string_size_limit=limits.max_parser_bytes,
+            thrift_container_size_limit=limits.max_parser_bytes,
+        )
         if stop > parquet.metadata.num_rows:
             raise ValueError("selected row range extends beyond Parquet corpus")
         base = 0
@@ -112,38 +152,62 @@ def _parquet_selection(fetcher: BoundedFetcher, name: str, start: int, stop: int
             if end > start and base < stop:
                 check_row_group(parquet, group, limits)
                 # Charge whole decoded row group; skipped rows are still decoded work.
-                fetcher.capacity_mgr.record_decompressed(parquet.metadata.row_group(group).total_byte_size)
+                fetcher.capacity_mgr.record_decompressed(
+                    parquet.metadata.row_group(group).total_byte_size
+                )
                 local = 0
-                for batch in parquet.iter_batches(batch_size=1, row_groups=[group], use_threads=False):
+                for batch in parquet.iter_batches(
+                    batch_size=1, row_groups=[group], use_threads=False
+                ):
                     fetcher._check_deadline()
                     for record in batch.to_pylist():
+                        fetcher.capacity_mgr.record_units(
+                            "records_scanned", 1, limits.max_scanned_records
+                        )
                         raw = encode_record(record)
                         if len(raw) > limits.max_record_bytes:
                             raise RecordLimitError("Parquet record byte bound exceeded")
                         if start <= base + local < stop:
-                            yield record, raw, {"row_index": base + local, "row_group": group,
-                                "row_in_group": local, "format": "parquet", "etag": stream.etag,
-                                "original_record_hash_convention": "canonical JSON serialization, not original compressed bytes"}
+                            yield (
+                                record,
+                                raw,
+                                {
+                                    "row_index": base + local,
+                                    "row_group": group,
+                                    "row_in_group": local,
+                                    "format": "parquet",
+                                    "etag": stream.etag,
+                                    "original_record_hash_convention": (
+                                        "canonical JSON serialization, not compressed bytes"
+                                    ),
+                                },
+                            )
                         local += 1
             base = end
 
 
 def acquire_selection(fetcher: BoundedFetcher) -> None:
-    """A completed selection is immutable; incomplete private output is retried with spent budgets intact."""
+    """Retry private selections with spent budgets intact; completed outputs are immutable."""
     plan = fetcher.plan
     if not plan.row_ranges:
         raise ValueError("selected acquisition requires explicit row ranges")
-    unsupported = [name for name in plan.selected_files if not name.endswith((".jsonl", ".parquet"))]
+    unsupported = [
+        name for name in plan.selected_files if not name.endswith((".jsonl", ".parquet"))
+    ]
     if unsupported:
         raise ValueError("selected format unsupported; no whole-shard fallback")
     name = "selected_records.jsonl"
     destination = fetcher.output_dir / name
+    ensure_plain_path(destination)
     fetcher.journal.save()
     prior = fetcher.journal.state.file_progress.get(name)
     if destination.exists():
         if not prior or prior.status != "completed" or not prior.content_sha256:
             raise ProgressCorruptionError("incomplete selection destination; refusing replacement")
-        if compute_file_sha256(destination, max_bytes=plan.limits.max_output_disk_bytes) != prior.content_sha256:
+        if (
+            compute_file_sha256(destination, max_bytes=plan.limits.max_output_disk_bytes)
+            != prior.content_sha256
+        ):
             raise ProgressCorruptionError("selected artifact integrity checksum mismatch")
         fetcher.capacity_mgr.record_cache_hit()
         return
@@ -152,20 +216,37 @@ def acquire_selection(fetcher: BoundedFetcher) -> None:
     fetcher.partial_dir.mkdir(parents=True, exist_ok=True)
     # Exclusive fresh private attempt; earlier interrupted staging remains charged.
     import uuid
+
     temporary = fetcher.partial_dir / f"selection-{uuid.uuid4().hex}.part"
+    ensure_plain_path(temporary)
     fetcher.capacity_mgr.reconcile_disk("temp", fetcher.partial_dir)
     fetcher.capacity_mgr.reconcile_disk("output", fetcher.output_dir)
     digest, count, size = hashlib.sha256(), 0, 0
     with temporary.open("xb") as output:
         for source in plan.selected_files:
             start, stop = plan.row_ranges[source]
-            iterator = _jsonl_selection(fetcher, source, start, stop) if source.endswith(".jsonl") else _parquet_selection(fetcher, source, start, stop)
+            iterator = (
+                _jsonl_selection(fetcher, source, start, stop)
+                if source.endswith(".jsonl")
+                else _parquet_selection(fetcher, source, start, stop)
+            )
             for record, raw, locator in iterator:
-                payload = selected_record(record, {**locator, "source_id": plan.source_id,
-                    "repository": plan.repository, "revision": plan.revision, "source_file": source,
-                    "selection_hash": plan.compute_behavioral_hash()}, raw)
+                payload = selected_record(
+                    record,
+                    {
+                        **locator,
+                        "source_id": plan.source_id,
+                        "repository": plan.repository,
+                        "revision": plan.revision,
+                        "source_file": source,
+                        "selection_hash": plan.compute_behavioral_hash(),
+                    },
+                    raw,
+                )
                 if len(payload) > plan.limits.max_record_bytes + 8192:
-                    raise RecordLimitError("selected record plus locator exceeds bounded serialization")
+                    raise RecordLimitError(
+                        "selected record plus locator exceeds bounded serialization"
+                    )
                 token = fetcher.capacity_mgr.reserve_disk_space(fetcher.scratch_dir, len(payload))
                 output.write(payload)
                 output.flush()
