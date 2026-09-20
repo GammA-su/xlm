@@ -1,0 +1,40 @@
+{
+  "commands": [
+    {
+      "argv": [
+        "uv",
+        "run",
+        "--offline",
+        "--locked",
+        "--no-sync",
+        "--extra",
+        "cpu",
+        "--extra",
+        "eval",
+        "pytest",
+        "tests/test_acquisition_bounds.py",
+        "tests/test_prepare_bounds.py",
+        "tests/test_acquisition_plan.py",
+        "tests/test_acquisition_fetcher.py",
+        "tests/test_acquisition_verifier.py",
+        "tests/test_source_discovery.py",
+        "tests/test_source_admission.py",
+        "tests/test_prepare.py",
+        "tests/test_config.py",
+        "tests/test_cli_inventory.py",
+        "-vv",
+        "-m",
+        "not network and not cuda and not operator",
+        "--basetemp=D:\\Project\\xlm-integration\\data\\audit\\p23-remediation\\stage05\\int01\\focused2-tmp",
+        "--junitxml=D:\\Project\\xlm-integration\\data\\audit\\p23-remediation\\stage05\\int01\\focused2.xml"
+      ],
+      "cwd": "D:\\Project\\xlm-integration",
+      "exit_code": 0,
+      "elapsed_seconds": 294.75,
+      "sampled_peak_tree_rss_bytes": 307744768,
+      "log": "D:\\Project\\xlm-integration\\data\\audit\\p23-remediation\\stage05\\int01\\focused2-0.log",
+      "limit_reason": null
+    }
+  ],
+  "source_unchanged": true
+}

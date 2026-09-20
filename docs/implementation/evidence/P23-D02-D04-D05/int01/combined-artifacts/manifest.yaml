@@ -1,0 +1,36 @@
+manifest_version: '1'
+manifest_id: 07dcf911cf88cadde912d15e2bc2de5ec428642d6cbbf47f7709b6379a4c0352
+scope_label: integration loopback arc scope v1
+scope_kind: authored_fixture
+exposure_class: authored_fixture
+tier: search
+harness_version: 0.4.13
+task_definition_source: pinned_installed_harness
+required_blimp_subdatasets: []
+acquisition_receipts:
+- receipt_plan_authored_default_https_c52e3e60cd9e6d9c54c4
+notes:
+- D02+D04/D05 integration workflow; authored fixture, not research evidence
+selections:
+- task: arc_easy
+  leaf_task: arc_easy
+  source_repository: loopback-authored-integration
+  source_revision: authored-loopback-v1
+  source_split: train
+  record_schema_version: arc_easy.official_shape.v1
+  adapter_version: xlm_eval_json.v1
+  item_id_field: id
+  item_ids:
+  - int_arc_0000
+  - int_arc_0001
+  - int_arc_0002
+  data_file: D:\Project\xlm-integration\data\audit\p23-remediation\stage05\int01\combined\home\acquisition\plan_authored_default_https_c52e3e60cd9e6d9c54c4\raw\selected_records.jsonl
+  content_sha256: d863043d85f256602283c3918d57f987e519f91d72e2b9dbda9ef2fff60a06d5
+  content_bytes: 1680
+  subdataset: null
+  source_config: ARC-Easy
+  source_population_size: null
+  label_field: answerKey
+  notes:
+  - SYNTHETIC loopback content acquired via D02; never official data
+  namespace: arc_easy

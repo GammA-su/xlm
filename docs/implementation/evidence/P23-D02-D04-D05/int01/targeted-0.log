@@ -1,0 +1,24 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm-integration\.venv-integration\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm-integration
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0
+collecting ... collected 13 items
+
+tests/test_prepare_bounds.py::test_child_output_categorizes_every_returned_byte_under_tiny_allowance PASSED [  7%]
+tests/test_prepare_bounds.py::test_child_stdout_and_stderr_are_bounded_and_accounted PASSED [ 15%]
+tests/test_prepare_bounds.py::test_child_output_accounting_covers_write_orders[import os; os.write(1,b'A'*8192); os.write(2,b'B'*8192)] PASSED [ 23%]
+tests/test_prepare_bounds.py::test_child_output_accounting_covers_write_orders[import os; os.write(2,b'B'*8192); os.write(1,b'A'*8192)] PASSED [ 30%]
+tests/test_prepare_bounds.py::test_child_output_accounting_covers_write_orders[import os; [(os.write(1,b'A'*512), os.write(2,b'B'*512)) for _ in range(16)]] PASSED [ 38%]
+tests/test_prepare_bounds.py::test_child_output_accounting_covers_write_orders[import os; os.write(1,b'A'*8192)] PASSED [ 46%]
+tests/test_prepare_bounds.py::test_child_output_tiny_allowance_over_real_pipes PASSED [ 53%]
+tests/test_prepare_bounds.py::test_stale_rerun_keeps_cumulative_account_without_reuse PASSED [ 61%]
+tests/test_acquisition_fetcher.py::test_fetcher_ignored_range_handling PASSED [ 69%]
+tests/test_acquisition_fetcher.py::test_fetcher_source_drift_412_blocks PASSED [ 76%]
+tests/test_acquisition_fetcher.py::test_fetcher_inconsistent_content_range_fails PASSED [ 84%]
+tests/test_acquisition_fetcher.py::test_fetcher_oversized_payload_halts_budget PASSED [ 92%]
+tests/test_acquisition_fetcher.py::test_fetcher_cache_hits_and_zero_network PASSED [100%]
+
+- generated xml file: D:\Project\xlm-integration\data\audit\p23-remediation\stage05\int01\targeted.xml -
+============================= 13 passed in 19.43s =============================

@@ -1,0 +1,76 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm-integration\.venv-integration\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm-integration
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0
+collecting ... collected 1 item
+
+tests/test_recipes.py::test_readme_example_commands_are_implemented FAILED [100%]
+
+================================== FAILURES ===================================
+________________ test_readme_example_commands_are_implemented _________________
+
+tmp_path = WindowsPath('D:/Project/xlm-integration/data/audit/p23-remediation/stage05/int01/inh1-tmp/test_readme_example_commands_a0')
+
+    def test_readme_example_commands_are_implemented(tmp_path: Path) -> None:
+        """The recipes README examples must match the real CLI surface."""
+        import os
+        import subprocess
+        import sys
+    
+        readme = (REPO_ROOT / "recipes" / "README.md").read_text(encoding="utf-8")
+        assert "xlm config validate recipes/experiments/baseline_50m.yaml --mode draft" in readme
+        assert "xlm experiment plan recipes/experiments/baseline_50m.yaml" in readme
+        assert "--device cuda --max-targets 128000000" in readme
+    
+        validate = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "xlm.cli.main",
+                "config",
+                "validate",
+                "recipes/experiments/baseline_50m.yaml",
+                "--mode",
+                "draft",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+            cwd=str(REPO_ROOT),
+            timeout=120.0,
+        )
+        assert validate.returncode == 0, validate.stderr[-1000:]
+        planned = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "xlm.cli.main",
+                "experiment",
+                "plan",
+                "recipes/experiments/baseline_50m.yaml",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+            cwd=str(REPO_ROOT),
+            timeout=120.0,
+            env={**os.environ, "XLM_HOME": str(tmp_path / "home")},
+        )
+>       assert planned.returncode == 0, planned.stderr[-1000:]
+E       AssertionError: <frozen runpy>:128: RuntimeWarning: 'xlm.cli.main' found in sys.modules after import of package 'xlm.cli', but prior to execution of 'xlm.cli.main'; this may result in unpredictable behaviour
+E         Error: cannot resolve plan: immutable snapshot conflict; original is preserved
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['D:\\Project\\xlm-integration\\.venv-integration\\Scripts\\python.exe', '-m', 'xlm.cli.main', 'experiment', 'plan', 'recipes/experiments/baseline_50m.yaml'], returncode=1, stdout='', stderr="<frozen runpy>:128: RuntimeWarning: 'xlm.cli.main' found in sys.modules after import of package 'xlm.cli', but prior to execution of 'xlm.cli.main'; this may result in unpredictable behaviour\nError: cannot resolve plan: immutable snapshot conflict; original is preserved\n").returncode
+
+tests\test_recipes.py:166: AssertionError
+- generated xml file: D:\Project\xlm-integration\data\audit\p23-remediation\stage05\int01\inh1.xml -
+=========================== short test summary info ===========================
+FAILED tests/test_recipes.py::test_readme_example_commands_are_implemented - AssertionError: <frozen runpy>:128: RuntimeWarning: 'xlm.cli.main' found in sys.modules after import of package 'xlm.cli', but prior to execution of 'xlm.cli.main'; this may result in unpredictable behaviour
+  Error: cannot resolve plan: immutable snapshot conflict; original is preserved
+  
+assert 1 == 0
+ +  where 1 = CompletedProcess(args=['D:\\Project\\xlm-integration\\.venv-integration\\Scripts\\python.exe', '-m', 'xlm.cli.main', 'experiment', 'plan', 'recipes/experiments/baseline_50m.yaml'], returncode=1, stdout='', stderr="<frozen runpy>:128: RuntimeWarning: 'xlm.cli.main' found in sys.modules after import of package 'xlm.cli', but prior to execution of 'xlm.cli.main'; this may result in unpredictable behaviour\nError: cannot resolve plan: immutable snapshot conflict; original is preserved\n").returncode
+============================== 1 failed in 3.63s ==============================

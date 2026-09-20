@@ -1,0 +1,12 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm-integration\.venv-integration\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm-integration
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0
+collecting ... collected 1 item
+
+tests/test_cli.py::test_installed_entrypoint_subprocess PASSED           [100%]
+
+- generated xml file: D:\Project\xlm-integration\data\audit\p23-remediation\stage05\int01\inh3.xml -
+============================== 1 passed in 2.76s ==============================

@@ -1,0 +1,40 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm-integration\.venv-integration\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm-integration
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0
+collecting ... collected 29 items
+
+tests/test_eval_suites.py::test_official_dataset_pins_are_resolved_and_immutable PASSED [  3%]
+tests/test_eval_suites.py::test_variants_carry_the_pinned_revision_into_the_task_config PASSED [  6%]
+tests/test_eval_suites.py::test_search_and_confirmation_never_reference_final_splits PASSED [ 10%]
+tests/test_eval_suites.py::test_final_splits_are_exactly_the_policy_split PASSED [ 13%]
+tests/test_eval_suites.py::test_final_requires_operator_authorization PASSED [ 17%]
+tests/test_eval_suites.py::test_firewall_detects_a_developer_variant_pointing_at_a_final_split PASSED [ 20%]
+tests/test_eval_suites.py::test_blimp_partition_is_whole_disjoint_subdatasets PASSED [ 24%]
+tests/test_eval_suites.py::test_blimp_partition_is_deterministic_and_seed_sensitive PASSED [ 27%]
+tests/test_eval_suites.py::test_grouped_partition_keeps_groups_together_and_disjoint PASSED [ 31%]
+tests/test_eval_suites.py::test_index_requires_complete_declared_coverage PASSED [ 34%]
+tests/test_eval_suites.py::test_index_matches_the_declared_formula_and_chance_references PASSED [ 37%]
+tests/test_eval_suites.py::test_blimp_is_macro_averaged_before_weighting PASSED [ 41%]
+tests/test_eval_suites.py::test_negative_components_are_not_clipped PASSED [ 44%]
+tests/test_eval_suites.py::test_zero_scored_items_withhold_the_index PASSED [ 48%]
+tests/test_eval_suites.py::test_final_request_is_frozen_and_hashable PASSED [ 51%]
+tests/test_eval_suites.py::test_task_evidence_counts_omissions_and_truncation PASSED [ 55%]
+tests/test_eval_suites.py::test_evidence_round_trips_deterministically PASSED [ 58%]
+tests/test_eval_suites.py::test_cache_rejects_a_stale_or_foreign_identity PASSED [ 62%]
+tests/test_eval_suites.py::test_reference_registry_round_trip_and_no_silent_replacement PASSED [ 65%]
+tests/test_eval_suites.py::test_model_download_plan_requires_authorization_revision_and_caps PASSED [ 68%]
+tests/test_eval_suites.py::test_harness_identity_changes_with_every_component PASSED [ 72%]
+tests/test_eval_suites.py::test_installed_harness_version_matches_the_pin_when_present PASSED [ 75%]
+tests/test_eval_suites.py::test_harness_identity_to_dict_carries_the_fingerprint PASSED [ 79%]
+tests/test_eval_suites.py::test_harness_samples_convert_with_lowest_index_tie_break PASSED [ 82%]
+tests/test_eval_suites.py::test_incomplete_coverage_error_is_available_for_callers PASSED [ 86%]
+tests/test_eval_suites.py::test_reference_registration_measures_parameters_locally PASSED [ 89%]
+tests/test_eval_suites.py::test_cli_final_request_only_writes_a_gated_request PASSED [ 93%]
+tests/test_eval_suites.py::test_cli_final_without_authorization_refuses PASSED [ 96%]
+tests/test_eval_suites.py::test_cli_unknown_suite_refuses PASSED         [100%]
+
+- generated xml file: D:\Project\xlm-integration\data\audit\p23-remediation\stage05\int01\inh4.xml -
+============================= 29 passed in 3.08s ==============================

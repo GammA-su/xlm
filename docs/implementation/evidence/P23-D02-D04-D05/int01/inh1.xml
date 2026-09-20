@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="3.592" timestamp="2026-09-20T19:32:52.128802+02:00" hostname="BetA-C1"><testcase classname="tests.test_recipes" name="test_readme_example_commands_are_implemented" time="3.245"><failure message="AssertionError: &lt;frozen runpy&gt;:128: RuntimeWarning: 'xlm.cli.main' found in sys.modules after import of package 'xlm.cli', but prior to execution of 'xlm.cli.main'; this may result in unpredictable behaviour&#10;  Error: cannot resolve plan: immutable snapshot conflict; original is preserved&#10;  &#10;assert 1 == 0&#10; +  where 1 = CompletedProcess(args=['D:\\Project\\xlm-integration\\.venv-integration\\Scripts\\python.exe', '-m', 'xlm.cli.main', 'experiment', 'plan', 'recipes/experiments/baseline_50m.yaml'], returncode=1, stdout='', stderr=&quot;&lt;frozen runpy&gt;:128: RuntimeWarning: 'xlm.cli.main' found in sys.modules after import of package 'xlm.cli', but prior to execution of 'xlm.cli.main'; this may result in unpredictable behaviour\nError: cannot resolve plan: immutable snapshot conflict; original is preserved\n&quot;).returncode">tmp_path = WindowsPath('D:/Project/xlm-integration/data/audit/p23-remediation/stage05/int01/inh1-tmp/test_readme_example_commands_a0')
+
+    def test_readme_example_commands_are_implemented(tmp_path: Path) -&gt; None:
+        """The recipes README examples must match the real CLI surface."""
+        import os
+        import subprocess
+        import sys
+    
+        readme = (REPO_ROOT / "recipes" / "README.md").read_text(encoding="utf-8")
+        assert "xlm config validate recipes/experiments/baseline_50m.yaml --mode draft" in readme
+        assert "xlm experiment plan recipes/experiments/baseline_50m.yaml" in readme
+        assert "--device cuda --max-targets 128000000" in readme
+    
+        validate = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "xlm.cli.main",
+                "config",
+                "validate",
+                "recipes/experiments/baseline_50m.yaml",
+                "--mode",
+                "draft",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+            cwd=str(REPO_ROOT),
+            timeout=120.0,
+        )
+        assert validate.returncode == 0, validate.stderr[-1000:]
+        planned = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "xlm.cli.main",
+                "experiment",
+                "plan",
+                "recipes/experiments/baseline_50m.yaml",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+            cwd=str(REPO_ROOT),
+            timeout=120.0,
+            env={**os.environ, "XLM_HOME": str(tmp_path / "home")},
+        )
+&gt;       assert planned.returncode == 0, planned.stderr[-1000:]
+E       AssertionError: &lt;frozen runpy&gt;:128: RuntimeWarning: 'xlm.cli.main' found in sys.modules after import of package 'xlm.cli', but prior to execution of 'xlm.cli.main'; this may result in unpredictable behaviour
+E         Error: cannot resolve plan: immutable snapshot conflict; original is preserved
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['D:\\Project\\xlm-integration\\.venv-integration\\Scripts\\python.exe', '-m', 'xlm.cli.main', 'experiment', 'plan', 'recipes/experiments/baseline_50m.yaml'], returncode=1, stdout='', stderr="&lt;frozen runpy&gt;:128: RuntimeWarning: 'xlm.cli.main' found in sys.modules after import of package 'xlm.cli', but prior to execution of 'xlm.cli.main'; this may result in unpredictable behaviour\nError: cannot resolve plan: immutable snapshot conflict; original is preserved\n").returncode
+
+tests\test_recipes.py:166: AssertionError</failure></testcase></testsuite></testsuites>

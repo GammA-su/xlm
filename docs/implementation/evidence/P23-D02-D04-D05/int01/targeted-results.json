@@ -1,0 +1,42 @@
+{
+  "commands": [
+    {
+      "argv": [
+        "uv",
+        "run",
+        "--offline",
+        "--locked",
+        "--no-sync",
+        "--extra",
+        "cpu",
+        "--extra",
+        "eval",
+        "pytest",
+        "tests/test_prepare_bounds.py::test_child_output_categorizes_every_returned_byte_under_tiny_allowance",
+        "tests/test_prepare_bounds.py::test_child_stdout_and_stderr_are_bounded_and_accounted",
+        "tests/test_prepare_bounds.py::test_child_output_accounting_covers_write_orders",
+        "tests/test_prepare_bounds.py::test_child_output_tiny_allowance_over_real_pipes",
+        "tests/test_prepare_bounds.py::test_stale_rerun_keeps_cumulative_account_without_reuse",
+        "tests/test_acquisition_fetcher.py::test_fetcher_ignored_range_handling",
+        "tests/test_acquisition_fetcher.py::test_fetcher_source_drift_412_blocks",
+        "tests/test_acquisition_fetcher.py::test_fetcher_inconsistent_content_range_fails",
+        "tests/test_acquisition_fetcher.py::test_fetcher_oversized_payload_halts_budget",
+        "tests/test_acquisition_fetcher.py::test_fetcher_cache_hits_and_zero_network",
+        "-o",
+        "faulthandler_timeout=0",
+        "-vv",
+        "-m",
+        "not network and not cuda and not operator",
+        "--basetemp=D:\\Project\\xlm-integration\\data\\audit\\p23-remediation\\stage05\\int01\\targeted-tmp",
+        "--junitxml=D:\\Project\\xlm-integration\\data\\audit\\p23-remediation\\stage05\\int01\\targeted.xml"
+      ],
+      "cwd": "D:\\Project\\xlm-integration",
+      "exit_code": 0,
+      "elapsed_seconds": 22.85899999999674,
+      "sampled_peak_tree_rss_bytes": 122458112,
+      "log": "D:\\Project\\xlm-integration\\data\\audit\\p23-remediation\\stage05\\int01\\targeted-0.log",
+      "limit_reason": null
+    }
+  ],
+  "source_unchanged": true
+}

@@ -1,0 +1,75 @@
+{
+  "commands": [
+    {
+      "argv": [
+        "uv",
+        "run",
+        "--offline",
+        "--locked",
+        "--no-sync",
+        "--extra",
+        "cpu",
+        "--extra",
+        "eval",
+        "ruff",
+        "format",
+        "--check",
+        "src",
+        "tests",
+        "scripts"
+      ],
+      "cwd": "D:\\Project\\xlm-integration",
+      "exit_code": 0,
+      "elapsed_seconds": 1.0929999999971187,
+      "sampled_peak_tree_rss_bytes": 19173376,
+      "log": "D:\\Project\\xlm-integration\\data\\audit\\p23-remediation\\stage05\\int01\\quality-0.log",
+      "limit_reason": null
+    },
+    {
+      "argv": [
+        "uv",
+        "run",
+        "--offline",
+        "--locked",
+        "--no-sync",
+        "--extra",
+        "cpu",
+        "--extra",
+        "eval",
+        "ruff",
+        "check",
+        "src",
+        "tests",
+        "scripts"
+      ],
+      "cwd": "D:\\Project\\xlm-integration",
+      "exit_code": 0,
+      "elapsed_seconds": 0.21900000000096043,
+      "sampled_peak_tree_rss_bytes": 18702336,
+      "log": "D:\\Project\\xlm-integration\\data\\audit\\p23-remediation\\stage05\\int01\\quality-1.log",
+      "limit_reason": null
+    },
+    {
+      "argv": [
+        "uv",
+        "run",
+        "--offline",
+        "--locked",
+        "--no-sync",
+        "--extra",
+        "cpu",
+        "--extra",
+        "eval",
+        "mypy",
+        "src"
+      ],
+      "cwd": "D:\\Project\\xlm-integration",
+      "exit_code": 0,
+      "elapsed_seconds": 30.20300000000134,
+      "sampled_peak_tree_rss_bytes": 878538752,
+      "log": "D:\\Project\\xlm-integration\\data\\audit\\p23-remediation\\stage05\\int01\\quality-2.log",
+      "limit_reason": null
+    }
+  ],
+  "source_unchanged": true
+}

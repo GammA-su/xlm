@@ -1,0 +1,5 @@
+# Byte-pinned evaluation fixtures: manifests record exact byte digests, so these
+# files must check out as LF on every platform regardless of core.autocrlf.
+fixtures/eval/inputs/** text eol=lf
+# Frozen integration lineage bytes (digests recorded in lineage.json).
+docs/implementation/evidence/P23-D02-D04-D05/int01/combined-artifacts/** text eol=lf

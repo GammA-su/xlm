@@ -1,0 +1,31 @@
+{
+  "commands": [
+    {
+      "argv": [
+        "uv",
+        "run",
+        "--offline",
+        "--locked",
+        "--no-sync",
+        "--extra",
+        "cpu",
+        "--extra",
+        "eval",
+        "pytest",
+        "tests/test_reports.py::test_cli_runs_list_empty_and_populated",
+        "-vv",
+        "-m",
+        "not network and not cuda and not operator",
+        "--basetemp=D:\\Project\\xlm-integration\\data\\audit\\p23-remediation\\stage05\\int01\\inh2-tmp",
+        "--junitxml=D:\\Project\\xlm-integration\\data\\audit\\p23-remediation\\stage05\\int01\\inh2.xml"
+      ],
+      "cwd": "D:\\Project\\xlm-integration",
+      "exit_code": 1,
+      "elapsed_seconds": 2.437999999998283,
+      "sampled_peak_tree_rss_bytes": 109760512,
+      "log": "D:\\Project\\xlm-integration\\data\\audit\\p23-remediation\\stage05\\int01\\inh2-0.log",
+      "limit_reason": null
+    }
+  ],
+  "source_unchanged": true
+}

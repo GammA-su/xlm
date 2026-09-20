@@ -1,0 +1,11 @@
+{
+  "plan_id": "plan_authored_default_https_c52e3e60cd9e6d9c54c4",
+  "plan_hash": "bf629f3fb2549490ebb469bec8bca454d9d254bb43d7fd75c730b155af6f2ea3",
+  "receipt_id": "receipt_plan_authored_default_https_c52e3e60cd9e6d9c54c4",
+  "selection_hash": "bf629f3fb2549490ebb469bec8bca454d9d254bb43d7fd75c730b155af6f2ea3",
+  "artifact_sha256": "d863043d85f256602283c3918d57f987e519f91d72e2b9dbda9ef2fff60a06d5",
+  "manifest_id": "07dcf911cf88cadde912d15e2bc2de5ec428642d6cbbf47f7709b6379a4c0352",
+  "complete_scored": 3,
+  "complete_expected": 3,
+  "limited_complete": false
+}
