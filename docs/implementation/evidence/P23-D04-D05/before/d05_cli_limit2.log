@@ -1,0 +1,127 @@
+﻿uv : ┌───────────────────── Traceback (most recent call last) ─────────────────────┐
+At line:1 char:652
++ ... 05/before'; uv run --offline --locked --no-sync --extra cpu --extra e ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (┌──────────────...──────────────┐:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+│ D:\Project\xlm-d0405\src\xlm\cli\eval_cmd.py:392 in evaluate_command        │
+│                                                                             │
+│   389 │   │   return                                                        │
+│   390 │   from xlm.experiments.evaluation_execution import                  │
+│       launch_evaluation                                                     │
+│   391 │                                                                     │
+│ > 392 │   launch_evaluation(options)                                        │
+│   393                                                                       │
+│   394                                                                       │
+│   395 def _evaluate_in_process(                                             │
+│                                                                             │
+│ D:\Project\xlm-d0405\src\xlm\experiments\evaluation_execution.py:83 in      │
+│ launch_evaluation                                                           │
+│                                                                             │
+│    80 │   │   [] if options["suite"] in ("all", "synthetic_mc",             │
+│       "synthetic_pair") else ["eval"]                                       │
+│    81 │   )                                                                 │
+│    82 │   envelope = make_envelope(config, snapshot, extras=extras,         │
+│       purpose="evaluation")                                                 │
+│ >  83 │   result = launch_worker(                                           │
+│    84 │   │   {                                                             │
+│    85 │   │   │   "action": "evaluate",                                     │
+│    86 │   │   │   "envelope": envelope,                                     │
+│                                                                             │
+│ D:\Project\xlm-d0405\src\xlm\experiments\launcher.py:212 in launch_worker   │
+│                                                                             │
+│   209 │   )                                                                 │
+│   210 │   if exit_code != 0 or reason:                                      │
+│   211 │   │   error = (work / "stderr.log").read_text(encoding="utf-8",     │
+│       errors="replace")[-4000:]                                             │
+│ > 212 │   │   raise RuntimeError(f"frozen worker failed ({exit_code}):      │
+│       {reason or error}")                                                   │
+│   213 │   result = read_json(work / "result.json", limit=2 * 1024**2)       │
+│   214 │   if result.get("execution_hash") != envelope["execution_hash"]:    │
+│   215 │   │   raise ValueError("worker result belongs to a different        │
+│       execution envelope")                                                  │
+└─────────────────────────────────────────────────────────────────────────────┘
+RuntimeError: frozen worker failed (1): Task 'arc_easy' from 
+D:\Project\xlm-d0405\.d0405\work\repro\tasks\arc_easy.yaml overrides existing 
+task from 
+D:\Project\xlm-d0405\.venv-d0405\Lib\site-packages\lm_eval\tasks\arc\arc_easy.y
+aml
+Task 'blimp' from D:\Project\xlm-d0405\.d0405\work\repro\tasks\blimp.yaml 
+overrides existing task from 
+D:\Project\xlm-d0405\.venv-d0405\Lib\site-packages\lm_eval\tasks\blimp\_blimp.y
+aml
+Task 'hellaswag' from 
+D:\Project\xlm-d0405\.d0405\work\repro\tasks\hellaswag.yaml overrides existing 
+task from 
+D:\Project\xlm-d0405\.venv-d0405\Lib\site-packages\lm_eval\tasks\hellaswag\hell
+aswag.yaml
+Task 'piqa' from D:\Project\xlm-d0405\.d0405\work\repro\tasks\piqa.yaml 
+overrides existing task from 
+D:\Project\xlm-d0405\.venv-d0405\Lib\site-packages\lm_eval\tasks\piqa\piqa.yaml
+
+Generating train split: 0 examples [00:00, ? examples/s]
+Generating train split: 6 examples [00:00, 912.57 examples/s]
+
+Generating train split: 0 examples [00:00, ? examples/s]
+Generating train split: 6 examples [00:00, 1070.34 examples/s]
+
+Generating train split: 0 examples [00:00, ? examples/s]
+Generating train split: 6 examples [00:00, 1077.95 examples/s]
+
+Generating train split: 0 examples [00:00, ? examples/s]
+Generating train split: 4 examples [00:00, 564.40 examples/s]
+
+  0%|          | 0/2 [00:00<?, ?it/s]
+100%|##########| 2/2 [00:00<00:00, 1327.94it/s]
+
+  0%|          | 0/2 [00:00<?, ?it/s]
+100%|##########| 2/2 [00:00<00:00, 793.02it/s]
+
+  0%|          | 0/2 [00:00<?, ?it/s]
+100%|##########| 2/2 [00:00<00:00, 796.56it/s]
+
+  0%|          | 0/2 [00:00<?, ?it/s]
+100%|##########| 2/2 [00:00<00:00, 625.69it/s]
+Error: harness evaluation failed: task 'blimp' lacks metric 'acc_norm'
+Traceback (most recent call last):
+  File 
+"D:\Project\xlm-d0405\.d0405\home\runs\evaluate-8b84bc91d78348e69041a17ae7dd320
+e\snapshot\code\src\xlm\cli\eval_cmd.py", line 263, in _run_tier_suite
+    evidence = run_harness_suite(
+               ^^^^^^^^^^^^^^^^^^
+  File 
+"D:\Project\xlm-d0405\.d0405\home\runs\evaluate-8b84bc91d78348e69041a17ae7dd320
+e\snapshot\code\src\xlm\evaluation\harness_runner.py", line 176, in 
+run_harness_suite
+    raise HarnessRunError(f"task '{task_name}' lacks metric '{metric_name}'")
+xlm.evaluation.harness_runner.HarnessRunError: task 'blimp' lacks metric 
+'acc_norm'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File 
+"D:\Project\xlm-d0405\.d0405\home\runs\evaluate-8b84bc91d78348e69041a17ae7dd320
+e\snapshot\code\src\xlm\experiments\bootstrap.py", line 50, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File 
+"D:\Project\xlm-d0405\.d0405\home\runs\evaluate-8b84bc91d78348e69041a17ae7dd320
+e\snapshot\code\src\xlm\experiments\bootstrap.py", line 46, in main
+    return run_worker(request)
+           ^^^^^^^^^^^^^^^^^^^
+  File 
+"D:\Project\xlm-d0405\.d0405\home\runs\evaluate-8b84bc91d78348e69041a17ae7dd320
+e\snapshot\code\src\xlm\experiments\worker.py", line 124, in run_worker
+    _evaluate_in_process(**options, execution=context)
+  File 
+"D:\Project\xlm-d0405\.d0405\home\runs\evaluate-8b84bc91d78348e69041a17ae7dd320
+e\snapshot\code\src\xlm\cli\eval_cmd.py", line 438, in _evaluate_in_process
+    _run_tier_suite(
+  File 
+"D:\Project\xlm-d0405\.d0405\home\runs\evaluate-8b84bc91d78348e69041a17ae7dd320
+e\snapshot\code\src\xlm\cli\eval_cmd.py", line 277, in _run_tier_suite
+    raise typer.Exit(code=1) from exc
+typer.exceptions.Exit
+

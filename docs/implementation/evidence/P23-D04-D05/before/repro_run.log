@@ -1,0 +1,170 @@
+﻿python.exe : Task 'arc_easy' from D:\Project\xlm-d0405\.d0405\work\repro\tasks\arc_easy.yaml overrides existing task fr
+om D:\Project\xlm-d0405\.venv-d0405\Lib\site-packages\lm_eval\tasks\arc\arc_easy.yaml
+At line:1 char:581
++ ... 05/before'; & '.\.venv-d0405\Scripts\python.exe' "$ev/repro_d04_d05.p ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Task 'arc_easy'...c\arc_easy.yaml:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Task 'blimp' from D:\Project\xlm-d0405\.d0405\work\repro\tasks\blimp.yaml overrides existing task from D:\Project\xlm-d
+0405\.venv-d0405\Lib\site-packages\lm_eval\tasks\blimp\_blimp.yaml
+Task 'hellaswag' from D:\Project\xlm-d0405\.d0405\work\repro\tasks\hellaswag.yaml overrides existing task from D:\Proje
+ct\xlm-d0405\.venv-d0405\Lib\site-packages\lm_eval\tasks\hellaswag\hellaswag.yaml
+Task 'piqa' from D:\Project\xlm-d0405\.d0405\work\repro\tasks\piqa.yaml overrides existing task from D:\Project\xlm-d04
+05\.venv-d0405\Lib\site-packages\lm_eval\tasks\piqa\piqa.yaml
+
+  0%|          | 0/4 [00:00<?, ?it/s]
+100%|██████████| 4/4 [00:00<00:00, 722.41it/s]
+Task 'arc_easy' from D:\Project\xlm-d0405\.d0405\work\repro\tasks\arc_easy.yaml overrides existing task from D:\Project
+\xlm-d0405\.venv-d0405\Lib\site-packages\lm_eval\tasks\arc\arc_easy.yaml
+Task 'blimp' from D:\Project\xlm-d0405\.d0405\work\repro\tasks\blimp.yaml overrides existing task from D:\Project\xlm-d
+0405\.venv-d0405\Lib\site-packages\lm_eval\tasks\blimp\_blimp.yaml
+Task 'hellaswag' from D:\Project\xlm-d0405\.d0405\work\repro\tasks\hellaswag.yaml overrides existing task from D:\Proje
+ct\xlm-d0405\.venv-d0405\Lib\site-packages\lm_eval\tasks\hellaswag\hellaswag.yaml
+Task 'piqa' from D:\Project\xlm-d0405\.d0405\work\repro\tasks\piqa.yaml overrides existing task from D:\Project\xlm-d04
+05\.venv-d0405\Lib\site-packages\lm_eval\tasks\piqa\piqa.yaml
+
+  0%|          | 0/2 [00:00<?, ?it/s]
+100%|██████████| 2/2 [00:00<00:00, 796.41it/s]
+
+  0%|          | 0/2 [00:00<?, ?it/s]
+100%|██████████| 2/2 [00:00<00:00, 794.68it/s]
+
+  0%|          | 0/2 [00:00<?, ?it/s]
+100%|██████████| 2/2 [00:00<00:00, 663.71it/s]
+
+  0%|          | 0/2 [00:00<?, ?it/s]
+100%|██████████| 2/2 [00:00<00:00, 995.68it/s]
+
+  0%|          | 0/2 [00:00<?, ?it/s]
+100%|██████████| 2/2 [00:00<00:00, 796.11it/s]
+Task 'arc_easy' from D:\Project\xlm-d0405\.d0405\work\repro\tasks\arc_easy.yaml overrides existing task from D:\Project
+\xlm-d0405\.venv-d0405\Lib\site-packages\lm_eval\tasks\arc\arc_easy.yaml
+Task 'blimp' from D:\Project\xlm-d0405\.d0405\work\repro\tasks\blimp.yaml overrides existing task from D:\Project\xlm-d
+0405\.venv-d0405\Lib\site-packages\lm_eval\tasks\blimp\_blimp.yaml
+Task 'hellaswag' from D:\Project\xlm-d0405\.d0405\work\repro\tasks\hellaswag.yaml overrides existing task from D:\Proje
+ct\xlm-d0405\.venv-d0405\Lib\site-packages\lm_eval\tasks\hellaswag\hellaswag.yaml
+Task 'piqa' from D:\Project\xlm-d0405\.d0405\work\repro\tasks\piqa.yaml overrides existing task from D:\Project\xlm-d04
+05\.venv-d0405\Lib\site-packages\lm_eval\tasks\piqa\piqa.yaml
+
+  0%|          | 0/6 [00:00<?, ?it/s]
+100%|██████████| 6/6 [00:00<00:00, 791.75it/s]
+
+  0%|          | 0/6 [00:00<?, ?it/s]
+100%|██████████| 6/6 [00:00<00:00, 900.55it/s]
+
+  0%|          | 0/6 [00:00<?, ?it/s]
+100%|██████████| 6/6 [00:00<00:00, 900.29it/s]
+
+  0%|          | 0/4 [00:00<?, ?it/s]
+100%|██████████| 4/4 [00:00<00:00, 991.09it/s]
+{
+  "results": [
+    {
+      "case": "D04-1",
+      "question": "default search suite from pinned revisions",
+      "outcome": "REFUSED",
+      "error_type": "HarnessRunError",
+      "error": "official/final evaluation is BLOCKED pending split-scoped bounded acquisition and isolated operator execution; local authored fixtures remain supported",
+      "variant_revisions": {
+        "arc_easy": "210d026faf9955653af8916fad021475a3f00453",
+        "hellaswag": "218ec52e09a7e7462a5400043bb9a69a41d06b76",
+        "piqa": "142f6d7367fd9877f0fb3b5734ea6a545f54cdd1",
+        "blimp": "877fba0801ffb7cbd8c39c1ff314a46f053f6036"
+      }
+    },
+    {
+      "case": "D04-2",
+      "question": "official arc_easy definition over verified local data",
+      "outcome": "REFUSED",
+      "error_type": "HarnessUnavailableError",
+      "error": "official/remote task execution is BLOCKED: requires a bounded, split-scoped local dataset and frozen grouped membership; automatic harness downloads are disabled by the P23 audit",
+      "local_snapshot": "D:\\Project\\xlm-d0405\\.d0405\\work\\repro\\verified_local\\arc_easy_search.json",
+      "note": "no manifest/route exists to bind a verified local split to the official task"
+    },
+    {
+      "case": "D05-0",
+      "question": "BLiMP subdataset through run_harness_suite",
+      "outcome": "RAISED",
+      "error_type": "HarnessRunError",
+      "error": "task 'blimp_syn_alpha' lacks metric 'acc'",
+      "harness_metric_keys": [
+        "acc,none",
+        "acc_norm,none",
+        "acc_stderr,none",
+        "acc_norm_stderr,none"
+      ],
+      "note": "metrics.get(metric_name) misses the ',none' filter suffix that _metric_value handles"
+    },
+    {
+      "case": "D05-1",
+      "question": "four tasks, limit=2 of 6 authored items each",
+      "index_complete": true,
+      "index_value": -12.5,
+      "index_missing": [],
+      "per_task": {
+        "arc_easy": {
+          "scored": 2,
+          "total_items_reported": 2
+        },
+        "blimp": {
+          "scored": 4,
+          "total_items_reported": 4
+        },
+        "hellaswag": {
+          "scored": 2,
+          "total_items_reported": 2
+        },
+        "piqa": {
+          "scored": 2,
+          "total_items_reported": 2
+        }
+      },
+      "authored_items_per_mc_task": 6,
+      "notes": [
+        "bounded store run at limit=2: a smoke evaluation, not the official benchmark."
+      ]
+    },
+    {
+      "case": "D05-2",
+      "question": "declared BLiMP scope of 2 subdatasets, only 1 executed",
+      "index_complete": true,
+      "index_value": -29.166666666666675,
+      "index_missing": [],
+      "blimp_subdataset_scores": {
+        "blimp_syn_alpha": 0.25
+      },
+      "declared_subdatasets": [
+        "blimp_syn_alpha",
+        "blimp_syn_beta"
+      ],
+      "notes": []
+    },
+    {
+      "case": "D05-3",
+      "question": "is the expected population independent of returned predictions?",
+      "harness_runner_line": "task_evidence_from_items(..., total_items=len(items))",
+      "observed_total_items": {
+        "arc_easy": 2,
+        "blimp": 4,
+        "hellaswag": 2,
+        "piqa": 2
+      },
+      "conclusion": "expected population == returned population by construction"
+    },
+    {
+      "case": "D05-4",
+      "question": "does per-item evidence carry the declared item id?",
+      "evidence_item_ids": [
+        "0",
+        "1"
+      ],
+      "declared_item_ids_in_authored_data": [
+        "syn_arc_0",
+        "syn_arc_1",
+        "syn_arc_2"
+      ],
+      "conclusion": "item_id is the harness positional doc_id; declared ids are dropped"
+    }
+  ]
+}
