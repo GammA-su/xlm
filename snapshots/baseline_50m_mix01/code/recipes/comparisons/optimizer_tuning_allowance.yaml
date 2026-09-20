@@ -1,0 +1,21 @@
+# Optimizer comparison draft: equal tuning allowance on both arms.
+# Draft only: optimizer candidates must declare tuning trials and state
+# accounting before comparison.
+schema_version: 1
+kind: comparison_recipe
+id: optimizer_tuning_allowance
+status: draft_requires_evidence
+track: optimizer
+baseline_run: null
+candidate_run: null
+allowed_differences:
+  - optimizer_id
+  - tuning_allowance
+fixed:
+  - architecture_id
+  - tokenizer_hash
+  - mixture_id
+  - objective_id
+  - budget_targets
+notes:
+  - Tuning allowance must be equal and explicitly recorded per arm.

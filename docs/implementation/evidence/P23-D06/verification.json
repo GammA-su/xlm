@@ -1,0 +1,9 @@
+{
+  "exit_code": 0,
+  "archive_files_verified": 186,
+  "current_source_files_verified": 269,
+  "preserved_before_contract_pin_files_verified": 13,
+  "d03_proposal_files_verified": 8,
+  "final_test_count": 262,
+  "scope": "Windows CPU offline D06 only; full platform acceptance remains BLOCKED"
+}

@@ -1,0 +1,30 @@
+{
+  "commands": [
+    {
+      "argv": [
+        "uv",
+        "run",
+        "--offline",
+        "--locked",
+        "--extra",
+        "cpu",
+        "--extra",
+        "eval",
+        "pytest",
+        "data/audit/p23-remediation/stage02/after02/test_crash_boundary.py",
+        "-vv",
+        "-m",
+        "not network and not cuda and not operator",
+        "--basetemp=D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage02\\after02\\crash-before2-tmp",
+        "--junitxml=D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage02\\after02\\crash-before2.xml"
+      ],
+      "cwd": "D:\\Project\\xlm",
+      "exit_code": 1,
+      "elapsed_seconds": 95.46900000004098,
+      "sampled_peak_tree_rss_bytes": 861712384,
+      "log": "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage02\\after02\\crash-before2-0.log",
+      "limit_reason": null
+    }
+  ],
+  "source_unchanged": true
+}

@@ -1,0 +1,62 @@
+{
+  "pins_unchanged": {
+    "pyproject.toml": true,
+    "uv.lock": true,
+    ".python-version": true,
+    "CONTRACTS.md": true,
+    "EVALUATION_POLICY.md": true,
+    "ACCEPTANCE_MATRIX.md": true,
+    "ARCHITECTURE.md": true
+  },
+  "changed_python_files": [
+    "src\\xlm\\artifacts\\ledger.py",
+    "src\\xlm\\artifacts\\manifest.py",
+    "src\\xlm\\artifacts\\store.py",
+    "src\\xlm\\cli\\compare_cmd.py",
+    "src\\xlm\\cli\\eval_cmd.py",
+    "src\\xlm\\cli\\export_cmd.py",
+    "src\\xlm\\cli\\generate_cmd.py",
+    "src\\xlm\\cli\\train_cmd.py",
+    "src\\xlm\\comparison\\bootstrap.py",
+    "src\\xlm\\data\\acquisition\\fetcher.py",
+    "src\\xlm\\data\\acquisition\\progress.py",
+    "src\\xlm\\data\\tokens.py",
+    "src\\xlm\\evaluation\\harness.py",
+    "src\\xlm\\evaluation\\harness_runner.py",
+    "src\\xlm\\experiments\\queue.py",
+    "src\\xlm\\models\\serialization.py",
+    "src\\xlm\\prepare\\config.py",
+    "src\\xlm\\prepare\\integrity.py",
+    "src\\xlm\\prepare\\planner.py",
+    "src\\xlm\\prepare\\runner.py",
+    "src\\xlm\\tokenizers\\loading.py",
+    "src\\xlm\\training\\checkpoint.py",
+    "src\\xlm\\training\\inputs.py",
+    "tests\\test_checkpoint.py",
+    "tests\\test_cli_inventory.py",
+    "tests\\test_cli_train_demo.py",
+    "tests\\test_comparison.py",
+    "tests\\test_eval_suites.py",
+    "tests\\test_export.py",
+    "tests\\test_final_acceptance.py",
+    "tests\\test_offline_workflow.py",
+    "scripts\\audit_p23.py"
+  ],
+  "root_vs_tested_python": [
+    {
+      "path": "tests\\test_cli_inventory.py",
+      "ast_equal": true
+    }
+  ],
+  "wheel": {
+    "path": "D:\\Project\\xlm\\data\\audit\\p23\\final-evidence\\dist\\xlm-0.1.0-py3-none-any.whl",
+    "required_modules": {
+      "xlm/artifacts/store.py": true,
+      "xlm/artifacts/ledger.py": true,
+      "xlm/artifacts/manifest.py": true,
+      "xlm/training/inputs.py": true,
+      "xlm/tokenizers/loading.py": true
+    },
+    "entries": 195
+  }
+}

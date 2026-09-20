@@ -1,0 +1,487 @@
+{
+  "focused": {
+    "commands": [
+      {
+        "argv": [
+          "uv",
+          "run",
+          "--offline",
+          "--locked",
+          "--extra",
+          "cpu",
+          "--extra",
+          "eval",
+          "pytest",
+          "tests/test_configurable_training.py",
+          "tests/test_configurable_workflow.py",
+          "tests/test_training_resolution.py",
+          "tests/test_packing_scheduling.py",
+          "tests/test_mixture_stream.py",
+          "tests/test_mixture_planning.py",
+          "tests/test_trainer_mixture.py",
+          "tests/test_token_shards.py",
+          "-o",
+          "faulthandler_timeout=0",
+          "-vv",
+          "-m",
+          "not network and not cuda and not operator",
+          "--basetemp=D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\after04\\focused-tmp",
+          "--junitxml=D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\after04\\focused.xml"
+        ],
+        "cwd": "D:\\Project\\xlm",
+        "exit_code": 0,
+        "elapsed_seconds": 457.0470000000005,
+        "sampled_peak_tree_rss_bytes": 943841280,
+        "log": "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\after04\\focused-0.log",
+        "limit_reason": null
+      }
+    ],
+    "source_unchanged": false,
+    "out_of_scope_test_only_changes_before": [
+      "tests/test_cli_train_demo.py",
+      "tests/test_training_vocabulary.py"
+    ],
+    "out_of_scope_test_only_changes_after": [],
+    "product_and_executed_test_scope_unchanged": true,
+    "evidence_directory": "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\after04",
+    "passed": 115
+  },
+  "core": {
+    "commands": [
+      {
+        "argv": [
+          "uv",
+          "run",
+          "--offline",
+          "--locked",
+          "--extra",
+          "cpu",
+          "--extra",
+          "eval",
+          "pytest",
+          "tests/test_frozen_execution.py",
+          "tests/test_frozen_recovery.py",
+          "tests/test_queue.py",
+          "tests/test_experiment_plans.py",
+          "-vv",
+          "-m",
+          "not network and not cuda and not operator",
+          "-o",
+          "faulthandler_timeout=0",
+          "--basetemp=D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\after04\\core-tmp",
+          "--junitxml=D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\after04\\core.xml"
+        ],
+        "cwd": "D:\\Project\\xlm",
+        "exit_code": 0,
+        "elapsed_seconds": 1285.5320000000002,
+        "sampled_peak_tree_rss_bytes": 710283264,
+        "log": "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\after04\\core-0.log",
+        "limit_reason": null
+      }
+    ],
+    "source_unchanged": false,
+    "out_of_scope_test_only_changes_before": [
+      "tests/test_cli_train_demo.py",
+      "tests/test_training_vocabulary.py"
+    ],
+    "out_of_scope_test_only_changes_after": [],
+    "product_and_executed_test_scope_unchanged": true,
+    "evidence_directory": "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\after04",
+    "passed": 53
+  },
+  "callers": {
+    "commands": [
+      {
+        "argv": [
+          "uv",
+          "run",
+          "--offline",
+          "--locked",
+          "--extra",
+          "cpu",
+          "--extra",
+          "eval",
+          "pytest",
+          "tests/test_checkpoint.py",
+          "tests/test_cli_train_demo.py",
+          "tests/test_cli_eval_gen.py",
+          "tests/test_offline_workflow.py",
+          "tests/test_final_acceptance.py",
+          "-vv",
+          "-m",
+          "not network and not cuda and not operator",
+          "-o",
+          "faulthandler_timeout=0",
+          "--basetemp=D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\after05\\callers-tmp",
+          "--junitxml=D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\after05\\callers.xml"
+        ],
+        "cwd": "D:\\Project\\xlm",
+        "exit_code": 0,
+        "elapsed_seconds": 591.719,
+        "sampled_peak_tree_rss_bytes": 1020633088,
+        "log": "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\after05\\callers-0.log",
+        "limit_reason": null
+      }
+    ],
+    "source_unchanged": true,
+    "out_of_scope_test_only_changes_before": [],
+    "out_of_scope_test_only_changes_after": [],
+    "product_and_executed_test_scope_unchanged": true,
+    "evidence_directory": "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\after05",
+    "passed": 27
+  },
+  "d01": {
+    "commands": [
+      {
+        "argv": [
+          "uv",
+          "run",
+          "--offline",
+          "--locked",
+          "--extra",
+          "cpu",
+          "--extra",
+          "eval",
+          "pytest",
+          "tests/test_artifact_identity.py",
+          "tests/test_artifacts.py",
+          "tests/test_ledger.py",
+          "data/audit/p23-remediation/stage01/test_d01_before.py",
+          "-vv",
+          "-m",
+          "not network and not cuda and not operator",
+          "-o",
+          "faulthandler_timeout=0",
+          "--basetemp=D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\after04\\d01-tmp",
+          "--junitxml=D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\after04\\d01.xml"
+        ],
+        "cwd": "D:\\Project\\xlm",
+        "exit_code": 0,
+        "elapsed_seconds": 22.609999999999673,
+        "sampled_peak_tree_rss_bytes": 239153152,
+        "log": "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\after04\\d01-0.log",
+        "limit_reason": null
+      }
+    ],
+    "source_unchanged": true,
+    "out_of_scope_test_only_changes_before": [
+      "tests/test_cli_train_demo.py",
+      "tests/test_training_vocabulary.py"
+    ],
+    "out_of_scope_test_only_changes_after": [
+      "tests/test_cli_train_demo.py",
+      "tests/test_training_vocabulary.py"
+    ],
+    "product_and_executed_test_scope_unchanged": true,
+    "evidence_directory": "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\after04",
+    "passed": 99
+  },
+  "regressions": {
+    "commands": [
+      {
+        "argv": [
+          "uv",
+          "run",
+          "--offline",
+          "--locked",
+          "--extra",
+          "cpu",
+          "--extra",
+          "eval",
+          "pytest",
+          "tests/test_trainer.py",
+          "tests/test_continuation.py",
+          "tests/test_continuation_p05.py",
+          "tests/test_trainer_mixture.py",
+          "tests/test_harness_adapter.py",
+          "tests/test_evaluation_fixtures.py",
+          "tests/test_eval_suites.py",
+          "tests/test_research.py",
+          "-vv",
+          "-m",
+          "not network and not cuda and not operator",
+          "-o",
+          "faulthandler_timeout=0",
+          "--basetemp=D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\after04\\regressions-tmp",
+          "--junitxml=D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\after04\\regressions.xml"
+        ],
+        "cwd": "D:\\Project\\xlm",
+        "exit_code": 0,
+        "elapsed_seconds": 199.60999999999967,
+        "sampled_peak_tree_rss_bytes": 744357888,
+        "log": "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\after04\\regressions-0.log",
+        "limit_reason": null
+      }
+    ],
+    "source_unchanged": true,
+    "out_of_scope_test_only_changes_before": [
+      "tests/test_cli_train_demo.py",
+      "tests/test_training_vocabulary.py"
+    ],
+    "out_of_scope_test_only_changes_after": [
+      "tests/test_cli_train_demo.py",
+      "tests/test_training_vocabulary.py"
+    ],
+    "product_and_executed_test_scope_unchanged": true,
+    "evidence_directory": "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\after04",
+    "passed": 83
+  },
+  "prepare-config": {
+    "commands": [
+      {
+        "argv": [
+          "uv",
+          "run",
+          "--offline",
+          "--locked",
+          "--extra",
+          "cpu",
+          "--extra",
+          "eval",
+          "pytest",
+          "tests/test_prepare.py",
+          "tests/test_config.py",
+          "tests/test_registry.py",
+          "-o",
+          "faulthandler_timeout=0",
+          "-vv",
+          "-m",
+          "not network and not cuda and not operator",
+          "--basetemp=D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\after04\\prepare-config-tmp",
+          "--junitxml=D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\after04\\prepare-config.xml"
+        ],
+        "cwd": "D:\\Project\\xlm",
+        "exit_code": 0,
+        "elapsed_seconds": 59.4380000000001,
+        "sampled_peak_tree_rss_bytes": 231026688,
+        "log": "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\after04\\prepare-config-0.log",
+        "limit_reason": null
+      }
+    ],
+    "source_unchanged": true,
+    "out_of_scope_test_only_changes_before": [
+      "tests/test_cli_train_demo.py",
+      "tests/test_training_vocabulary.py"
+    ],
+    "out_of_scope_test_only_changes_after": [
+      "tests/test_cli_train_demo.py",
+      "tests/test_training_vocabulary.py"
+    ],
+    "product_and_executed_test_scope_unchanged": true,
+    "evidence_directory": "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\after04",
+    "passed": 28
+  },
+  "quality": {
+    "commands": [
+      {
+        "argv": [
+          "uv",
+          "run",
+          "--offline",
+          "--locked",
+          "--extra",
+          "cpu",
+          "--extra",
+          "eval",
+          "ruff",
+          "format",
+          "--check",
+          "src",
+          "tests"
+        ],
+        "cwd": "D:\\Project\\xlm",
+        "exit_code": 0,
+        "elapsed_seconds": 0.23500000000058208,
+        "sampled_peak_tree_rss_bytes": 21557248,
+        "log": "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\after05\\quality-0.log",
+        "limit_reason": null
+      },
+      {
+        "argv": [
+          "uv",
+          "run",
+          "--offline",
+          "--locked",
+          "--extra",
+          "cpu",
+          "--extra",
+          "eval",
+          "ruff",
+          "check",
+          "src",
+          "tests"
+        ],
+        "cwd": "D:\\Project\\xlm",
+        "exit_code": 0,
+        "elapsed_seconds": 0.23399999999946886,
+        "sampled_peak_tree_rss_bytes": 26210304,
+        "log": "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\after05\\quality-1.log",
+        "limit_reason": null
+      },
+      {
+        "argv": [
+          "uv",
+          "run",
+          "--offline",
+          "--locked",
+          "--extra",
+          "cpu",
+          "--extra",
+          "eval",
+          "mypy",
+          "src"
+        ],
+        "cwd": "D:\\Project\\xlm",
+        "exit_code": 0,
+        "elapsed_seconds": 2.266000000000531,
+        "sampled_peak_tree_rss_bytes": 118644736,
+        "log": "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\after05\\quality-2.log",
+        "limit_reason": null
+      }
+    ],
+    "source_unchanged": true,
+    "out_of_scope_test_only_changes_before": [],
+    "out_of_scope_test_only_changes_after": [],
+    "product_and_executed_test_scope_unchanged": true,
+    "evidence_directory": "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\after05"
+  },
+  "vocabulary": {
+    "commands": [
+      {
+        "argv": [
+          "uv",
+          "run",
+          "--offline",
+          "--locked",
+          "--extra",
+          "cpu",
+          "--extra",
+          "eval",
+          "pytest",
+          "tests/test_training_vocabulary.py",
+          "-o",
+          "faulthandler_timeout=0",
+          "-vv",
+          "-m",
+          "not network and not cuda and not operator",
+          "--basetemp=D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\after05\\vocabulary-tmp",
+          "--junitxml=D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\after05\\vocabulary.xml"
+        ],
+        "cwd": "D:\\Project\\xlm",
+        "exit_code": 0,
+        "elapsed_seconds": 5.640000000000327,
+        "sampled_peak_tree_rss_bytes": 264613888,
+        "log": "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\after05\\vocabulary-0.log",
+        "limit_reason": null
+      }
+    ],
+    "source_unchanged": true,
+    "out_of_scope_test_only_changes_before": [],
+    "out_of_scope_test_only_changes_after": [],
+    "product_and_executed_test_scope_unchanged": true,
+    "evidence_directory": "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\after05",
+    "passed": 1
+  },
+  "distinct_test_cases": 400,
+  "test_case_executions": 406,
+  "preserved_originals": 15,
+  "final_source_entries": 278,
+  "changed_source_and_tests": {
+    "src/xlm/cli/experiment_cmd.py": {
+      "before": "1a8bdefa08569e1fd51679b4a2b2a308060946d6d6f517c7bdd423acb8cb8455",
+      "after": "b9a71f16c9ac80c6ef0edf9a07267b569ee714d01beb77bf822fb84c52d30ff6"
+    },
+    "src/xlm/cli/train_cmd.py": {
+      "before": "3d47a1db417b2064ac6c94f95b73159c2a5a9114d13c30e08ac8c40126c91b75",
+      "after": "8f57be11722e20a088f4b2bbea9bcbd5fb698a6b4f2d66994770b05b5cb8ff7a"
+    },
+    "src/xlm/config/schemas.py": {
+      "before": "700def47d07aec201335744226906b5c4df5868d1699d79225ad1db264263b6f",
+      "after": "ab2ddc629dddc284a3aaf26e4e184bca1c4798a1aceff256a72142969665ff87"
+    },
+    "src/xlm/data/tokens.py": {
+      "before": "fde5cc1be12bad76debe898d720ba252ca3c66fee3256f94b4f21497e570c163",
+      "after": "e988f5fb96838c97aaff83d90c3c46e3d0a63658e8fd904699e14a88c20baad9"
+    },
+    "src/xlm/experiments/direct.py": {
+      "before": "f6f60a2e26f872e467f94ff51fc11ece24fe428c028613f6d545b4ca99274d6e",
+      "after": "0ed71a43dc82cbd736bc71294e4aec11bad5888adf70beff21ba223ac5e5b5ff"
+    },
+    "src/xlm/experiments/execution.py": {
+      "before": "21a0a5b5fec8ddf5d97c2b724a7017a50ff7753a78c787310c530c855d0f1660",
+      "after": "45533747031485e4e1af0b675e6d1e7e7b16feda606be9c8f30e4bba5d9ef7fe"
+    },
+    "src/xlm/experiments/launcher.py": {
+      "before": "a49e9a321bd458273b1fc5486f9c66c2d564d4ab224728df4d37b896b018887c",
+      "after": "97b75578aa80c9440e9041d7e2e905822b91febe0bfd3e7e6262c2e5b4de32f0"
+    },
+    "src/xlm/experiments/plans.py": {
+      "before": "fa52bad1b766109d15076e3ddeee378fd9a920d5b38825df1b5d72b8f60a4c63",
+      "after": "00b378f1edda6220434379ccdf8a35e7890960f0a3b56683fd74125719f60d0a"
+    },
+    "src/xlm/experiments/queue.py": {
+      "before": "6a3febe9830181933248be641a2441238ea1a778cd6755b9a7decbd64af32eba",
+      "after": "e8411c6af83357baa7bd42b2424665887f585979b673e8b6633e41c564e451b9"
+    },
+    "src/xlm/training/checkpoint.py": {
+      "before": "dc0b81a5b378e47338105e137a33b16476c02b2349f8d0f823148576c2aa2477",
+      "after": "c48f2e45e7d317bc717b99e02ef9c34794d38809b2bb1859f5bf3d6ef1df0feb"
+    },
+    "src/xlm/training/components.py": {
+      "before": null,
+      "after": "2058c8afc3b1c245df590bd7f1d84a9d8b795802ab3003b357e9c792d1866fd4"
+    },
+    "src/xlm/training/inputs.py": {
+      "before": "3ce978309058bd7c047fb39db22c0a84f3cad35955888c09c18e4e1b20957dd4",
+      "after": "4141617bc8d2ec531b965d985d1a1634fa6cd9d5d8881dfb7be16093507853d5"
+    },
+    "src/xlm/training/trainer.py": {
+      "before": "d7f783cca8979449808e146ab7be428adec3eb5ed9570aa92f31c10ec7fc2070",
+      "after": "70179fb8fcce347f2d20f38fad82611077a0c1c524c144c16f1662f89263e872"
+    },
+    "src/xlm/data/sampling/mixture.py": {
+      "before": "263c7177d797d7fa8b3f1ee0c4d8fe165969786f4a635aa640c76c8db8edb199",
+      "after": "c9285ed9bfb79cb8d9447dff489f8b9c88641d9e44f72ceb793e9a0bb0604647"
+    },
+    "src/xlm/data/sampling/packing.py": {
+      "before": "0ebd25d13339b6420eccfec5c638b029ffa97a2a267e4f781a6fb4ded2a291bc",
+      "after": "e506e66866011bc2f9fadf7abc1a09341ad751e029e04fdb09e1158b0e03618e"
+    },
+    "src/xlm/data/sampling/plan.py": {
+      "before": "dee6059d338b871e07a5a82fcdd6e87fcfe5d687d5bd53b9362c442c9ba921ba",
+      "after": "b9baa161e7799e1d85c98dea13d2af611a1f4cbfa425efc801f6cc71e14c9030"
+    },
+    "src/xlm/data/sampling/scheduler.py": {
+      "before": "ca5253df8f27362ff6c9d8ceb31590c0efd86ce242e8f8562d5f2132149c22eb",
+      "after": "d4105809e3c063c1f3b6c1144c1684b16d6c4c50607489dc72f46bca28aa4af1"
+    },
+    "src/xlm/data/sampling/stream.py": {
+      "before": "ce3afb721fac08bb4846180d72211307aaf9d6d1f44318d9c8b7b00c855f8d21",
+      "after": "deb4e0fa915b6b9e324ad8b8399d9ac419765e36c56304019a6088494a5c5821"
+    },
+    "tests/test_cli_train_demo.py": {
+      "before": "7c2d6342b05c71e9a5aee74af0de84ff666c051d8be5116cec101a92f2596ff5",
+      "after": "833f1f3120ada50d41833636fe618eec9c9d1edea3ba6b58414acda184246622"
+    },
+    "tests/test_configurable_training.py": {
+      "before": null,
+      "after": "b9cb95f1110f1ac24c319751d82bdd54d9ebf589680db3b2d1f615888188ad7c"
+    },
+    "tests/test_configurable_workflow.py": {
+      "before": null,
+      "after": "ed56401e1610e87334001c04d21411eb128b2e1eb4e6b22b69c4abbda0805855"
+    },
+    "tests/test_packing_scheduling.py": {
+      "before": "e95dd3adcc6dfc3bfdf9b7f6732a82cf575f65c99dc81e840f1543d824c25a4e",
+      "after": "3a54208cc09d097edff0428dc9082a9c86df14e2d8c87faf18f13cde96222fb9"
+    },
+    "tests/test_training_resolution.py": {
+      "before": null,
+      "after": "50ee0f1b096f4fff4c275ab430536905bbf5b22fa16d16b9029689adfbf1b650"
+    },
+    "tests/test_training_vocabulary.py": {
+      "before": null,
+      "after": "5ce71e41037fb86a9d0b36efcbb31f679c8cd84255bf5dc69585a5b76622cb1b"
+    }
+  }
+}

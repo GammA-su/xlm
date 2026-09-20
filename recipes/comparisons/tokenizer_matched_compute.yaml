@@ -1,0 +1,18 @@
+# Tokenizer comparison draft: matched compute with byte exposure reported.
+# Draft only: equal-token comparisons are ineligible on this track.
+schema_version: 1
+kind: comparison_recipe
+id: tokenizer_matched_compute
+status: draft_requires_evidence
+track: tokenizer
+baseline_run: null
+candidate_run: null
+allowed_differences:
+  - tokenizer_hash
+  - vocab_size
+  - total_params
+required_evidence:
+  - matched_compute
+  - canonical_byte_exposure
+notes:
+  - An equal-token comparison on this track is a contract violation, not a result.

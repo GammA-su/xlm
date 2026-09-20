@@ -1,0 +1,29 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0
+collecting ... collected 27 items
+
+tests/test_checkpoint.py::test_checksum_valid_checkpoint_still_refuses_pickle_globals PASSED [  3%]
+tests/test_checkpoint.py::test_checkpoint_save_and_reload_roundtrip PASSED [  7%]
+tests/test_checkpoint.py::test_checkpoint_checksum_corruption_detection PASSED [ 11%]
+tests/test_checkpoint.py::test_checkpoint_plan_compatibility_validation PASSED [ 14%]
+tests/test_checkpoint.py::test_checkpoint_tied_weights_mismatch_detected PASSED [ 18%]
+tests/test_checkpoint.py::test_checkpoint_fork_lineage PASSED            [ 22%]
+tests/test_cli_train_demo.py::test_cli_demo_subprocess PASSED            [ 25%]
+tests/test_cli_train_demo.py::test_cli_run_inspect_subprocess PASSED     [ 29%]
+tests/test_cli_train_demo.py::test_cli_train_and_resume_subprocess PASSED [ 33%]
+tests/test_cli_eval_gen.py::test_cli_demo_complete_vertical_slice_subprocess PASSED [ 37%]
+tests/test_cli_eval_gen.py::test_cli_evaluate_and_generate_subprocess PASSED [ 40%]
+tests/test_offline_workflow.py::test_offline_workflow_from_clean_environment Timeout (0:04:00)!
+Thread 0x00016e70 (most recent call first):
+  File "C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\pathlib.py", line 835 in stat
+  File Windows fatal exception: access violation
+
+Thread 0x00016e70 (most recent call first):
+  File "C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\pathlib.py", line 835 in stat
+  File Windows fatal exception: access violation
+
+PASSED [ 44%]

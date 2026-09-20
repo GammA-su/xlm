@@ -1,0 +1,4 @@
+{"context": "Moss grows on the north side of trees in damp forests.", "question": "Why does moss favor one side?", "explanation": "Less direct sunlight keeps that side moist, which moss needs to survive.", "language": "en"}
+{"context": "", "question": "What happens without context?", "explanation": "This record must fail: context is required.", "language": "en"}
+{"context": "Bridges expand in summer heat.", "question": "Why do bridges have expansion joints?", "explanation": "Joints absorb thermal expansion so the deck does not buckle.", "reasoning_trace": "First I consider thermodynamics...", "language": "en"}
+{"context": "La pluie mouille les pierres.", "question": "Pourquoi les pierres sont-elles froides ?", "explanation": "La pierre conduit bien la chaleur.", "language": "fr"}

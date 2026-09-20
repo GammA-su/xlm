@@ -1,0 +1,39 @@
+============================================================
+XLM Milestone Demo: Complete Offline Vertical Slice (P00-P06)
+============================================================
+1. Preparing synthetic canonical documents...
+2. Writing token shard using ByteTokenizer...
+   Wrote 1015 tokens into shard 'demo_shard_01'
+3. Initializing tiny TransformerBaseline model and components...
+4. Executing Part 1: Training to 100 targets (2 updates x 50 targets)...
+   Part 1 completed: 100 targets, steps=2
+   Step 1 loss: 5.5695 -> Step 2 loss: 5.1827
+   Published checkpoint at: demo_chk_step_2_100
+5. Executing Part 2: Reconstructing fresh components and resuming to 200 targets...
+   Loaded checkpoint: step=2, committed_targets=100
+   Part 2 completed: 200 targets, steps=4
+   Final loss: 4.5018
+   Published final checkpoint at: demo_chk_step_4_200
+6. Executing Part 3: Evaluating offline diagnostic fixtures & document metrics...
+   Multiple Choice Acc: 50.00%, Acc_Norm: 50.00%
+   Minimal Pair Acc: 33.33%, Margin: 4.2217
+   Synthetic Document Text BPB: 6.3714, Perplexity: 82.79
+7. Executing Part 4: Autoregressive text generation...
+   Greedy Completion: 'The quick brown                ' (finish: max_new_tokens)
+   Sampled Completion: 'The quick brownntts rs s t rs s' (finish: max_new_tokens)
+8. Executing Part 5: Emitting structured vertical slice summary report...
+------------------------------------------------------------
+Summary of Milestone Verification (P00 - P06):
+  - Training Targets Committed : 200 / 200
+  - Total Optimizer Steps      : 4
+  - Step 1 Loss -> Step 4 Loss : 5.5695 -> 4.5018
+  - Offline MC Accuracy        : 50.00% (norm: 50.00%)
+  - Minimal Pair Accuracy      : 33.33%
+  - Document Text BPB          : 6.3714
+  - Generated Tokens (Greedy)  : 16
+  - Generated Tokens (Sampled) : 16
+------------------------------------------------------------
+============================================================
+Demo Successfully Completed: 200 Valid Targets Reached!
+Complete Offline Vertical Slice Successfully Completed (P00-P06)!
+============================================================

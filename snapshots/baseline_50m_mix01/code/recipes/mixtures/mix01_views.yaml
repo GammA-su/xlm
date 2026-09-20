@@ -1,0 +1,237 @@
+# Mix01 source-view registry (data-only; validated by xlm.data.sources.mix01).
+#
+# Each entry binds ONE mixture component id to its upstream family, the exact
+# upstream subset/config observed live, the adapter that renders it, and the
+# selector the pool/packing layers evaluate. Conceptual category names are NEVER
+# upstream fields: `upstream_selector` records the probed field names and values.
+#
+# Live-discovery snapshot (metadata only, 2026-09-19; ~2.8 MiB / ~28 requests):
+#   data/probe/p13_mix01_snapshot.json and data/probe/p13_mix01_configs.json
+# `live_verified: false` everywhere: no adapter has been tested against live rows
+# and no operator admission exists. Nothing here authorizes a production run.
+schema_version: 1
+kind: mix01_view_registry
+registry_id: mix01_views_v1
+views:
+  - component_id: essential_science
+    source_id: essential_web
+    repository: EssentialAI/essential-web-v1.0
+    observed_revision: null
+    observed_license: null
+    observed_configs: []
+    adapter_id: essential_web
+    upstream_selector:
+      description: "Science/explanation slice via real taxonomy and quality fields."
+      taxonomy_values: [science, explanation]
+      quality_field: quality_tier
+    english_only: true
+    live_verified: false
+    notes:
+      - "Snapshot API response exceeded the 512 KiB metadata cap; revision unresolved."
+      - "Missing taxonomy or quality metadata is rejected fail-closed (no silent pass)."
+
+  - component_id: essential_practical
+    source_id: essential_web
+    repository: EssentialAI/essential-web-v1.0
+    observed_revision: null
+    observed_license: null
+    observed_configs: []
+    adapter_id: essential_web
+    upstream_selector:
+      description: "Practical-procedure slice via real taxonomy and quality fields."
+      taxonomy_values: [practical, procedure, howto]
+      quality_field: quality_tier
+    english_only: true
+    live_verified: false
+    notes:
+      - "Snapshot API response exceeded the 512 KiB metadata cap; revision unresolved."
+
+  - component_id: essential_prose
+    source_id: essential_web
+    repository: EssentialAI/essential-web-v1.0
+    observed_revision: null
+    observed_license: null
+    observed_configs: []
+    adapter_id: essential_web
+    upstream_selector:
+      description: "Varied-prose slice via real taxonomy and quality fields."
+      taxonomy_values: [prose, general]
+      quality_field: quality_tier
+    english_only: true
+    live_verified: false
+    notes:
+      - "Snapshot API response exceeded the 512 KiB metadata cap; revision unresolved."
+
+  - component_id: nemotron_organic_high
+    source_id: nemotron_cc21
+    repository: nvidia/Nemotron-CC-v2.1
+    observed_revision: ba6f2aaef7ada865bb08fc08640ca292150097db
+    observed_license: other
+    observed_configs:
+      - High-Quality
+      - Medium-High-Quality
+      - Medium-Quality
+      - High-Quality-Translated-To-English
+      - Medium-High-Quality-Translated-To-English
+      - High-Quality-Synthetic
+      - Medium-High-Quality-Synthetic
+      - High-Quality-DQA
+      - High-Quality-Translated-To-English-Synthetic
+    adapter_id: nemotron_organic
+    upstream_selector:
+      description: "Organic High-Quality config ONLY; synthetic variants excluded."
+      config_name: High-Quality
+      exclude_configs_matching: "*-Synthetic"
+    english_only: true
+    live_verified: false
+    notes:
+      - "Repository is GATED (license 'other'); operator terms agreement required."
+      - "Organic/synthetic separation is by exact config name, not by sampling."
+
+  - component_id: nemotron_organic_medium_high
+    source_id: nemotron_cc21
+    repository: nvidia/Nemotron-CC-v2.1
+    observed_revision: ba6f2aaef7ada865bb08fc08640ca292150097db
+    observed_license: other
+    observed_configs:
+      - High-Quality
+      - Medium-High-Quality
+      - Medium-Quality
+      - High-Quality-Translated-To-English
+      - Medium-High-Quality-Translated-To-English
+      - High-Quality-Synthetic
+      - Medium-High-Quality-Synthetic
+      - High-Quality-DQA
+      - High-Quality-Translated-To-English-Synthetic
+    adapter_id: nemotron_organic
+    upstream_selector:
+      description: "Organic Medium-High-Quality config ONLY; synthetic variants excluded."
+      config_name: Medium-High-Quality
+      exclude_configs_matching: "*-Synthetic"
+    english_only: true
+    live_verified: false
+    notes:
+      - "Repository is GATED (license 'other'); operator terms agreement required."
+
+  - component_id: finepdfs_en
+    source_id: finepdfs_edu
+    repository: HuggingFaceFW/finepdfs-edu
+    observed_revision: 9cfabe2127faca99b3d5c4dc6d1fcb397399ebde
+    observed_license: odc-by
+    observed_configs: [eng_Latn]
+    adapter_id: finepdfs_en
+    upstream_selector:
+      description: "English publisher-extracted educational PDF text; no OCR fallback."
+      config_name: eng_Latn
+    english_only: true
+    live_verified: false
+    notes:
+      - "Publisher-extracted text only; OCR is never substituted silently."
+
+  - component_id: synth_en_explanations
+    source_id: synth
+    repository: PleIAs/SYNTH
+    observed_revision: 0d6813a2966662c39f22f0b9af28a0c1c9f7a437
+    observed_license: cc-by-4.0
+    observed_configs: [default]
+    adapter_id: synth_en
+    upstream_selector:
+      description: "English self-contained explanations with required context."
+      config_name: default
+      requires_context: true
+    english_only: true
+    live_verified: false
+    notes:
+      - "Upstream holds 500 synth_001..synth_500.parquet files (observed file tree)."
+      - "Reasoning traces are a separate treatment and are rejected here."
+
+  - component_id: nemotron_wiki_rewrite
+    source_id: nemotron_specialized
+    repository: nvidia/Nemotron-Pretraining-Specialized-v1
+    observed_revision: 9ed3718b5f2ae29074c5e34e64115432b7c4320f
+    observed_license: cc-by-4.0
+    observed_configs: [Nemotron-Pretraining-Wiki-Rewrite]
+    adapter_id: wiki_rewrite
+    upstream_selector:
+      description: "Only the specialized Wiki-Rewrite component, nothing else."
+      config_name: Nemotron-Pretraining-Wiki-Rewrite
+    english_only: true
+    live_verified: false
+    notes: []
+
+  - component_id: finewiki_en
+    source_id: finewiki
+    repository: HuggingFaceFW/finewiki
+    observed_revision: 8bd13e72e6a002407649b3e898535f42ceb1aeb9
+    observed_license: cc-by-sa-4.0
+    observed_configs: [en]
+    adapter_id: finewiki_en
+    upstream_selector:
+      description: "English article prose."
+      config_name: en
+    english_only: true
+    live_verified: false
+    notes: []
+
+  - component_id: ifm_behaviors_general_planning
+    source_id: ifm_behaviors
+    repository: IFM/Pretrain-Behaviors
+    observed_revision: 3345e13d7f3f6d0ecb5fdd67b37aed289f3191f5
+    observed_license: apache-2.0
+    observed_configs: [general, planning]
+    adapter_id: ifm_general
+    extra_adapter_ids: [ifm_planning]
+    upstream_selector:
+      description: "IFM general/planning subsets with independent per-subset adapters."
+      config_names: [general, planning]
+    english_only: true
+    live_verified: false
+    notes:
+      - "Subsets carry different schemas; general and planning use independent adapters."
+      - "Full config list also includes reasoning, data-science, games, other, format-rewrites."
+
+  - component_id: common_pile_prose
+    source_id: common_pile
+    repository: common-pile/comma_v0.1_training_dataset
+    observed_revision: 5afc546db324e7f39f297ba757c9a60547151e7c
+    observed_license: null
+    observed_configs: []
+    adapter_id: common_pile
+    upstream_selector:
+      description: "Selected complementary prose; license and subset naming unresolved."
+      config_name: null
+    english_only: true
+    live_verified: false
+    notes:
+      - "Declared license unresolved in snapshot metadata; license review pending."
+      - "No config list in card metadata; subset naming unresolved."
+
+  - component_id: simple_stories
+    source_id: simple_stories
+    repository: SimpleStories/SimpleStories
+    observed_revision: e63b8adc3b1a1bdc7cac5b500d150b71346b0628
+    observed_license: mit
+    observed_configs: [default]
+    adapter_id: simple_stories
+    upstream_selector:
+      description: "Small coherent-story component."
+      config_name: default
+    english_only: true
+    live_verified: false
+    notes:
+      - "Upstream file processed.parquet observed in file tree."
+
+  - component_id: txt360_web
+    source_id: txt360_v2
+    repository: IFM/TxT360-v2
+    observed_revision: 63d6dbf4d469058a8c7868909be18a5ada487be1
+    observed_license: cc-by-4.0
+    observed_configs: [web-high-medium, web-high-nltk-qa, txt360-qa]
+    adapter_id: txt360_web
+    upstream_selector:
+      description: "TxT360 web replacement view used only by the M4 treatment."
+      config_name: web-high-medium
+    english_only: true
+    live_verified: false
+    notes:
+      - "M4 cannot run until this web view is verified and admitted."

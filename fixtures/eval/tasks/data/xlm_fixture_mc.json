@@ -1,0 +1,6 @@
+{"id": "mc_0", "question": "Which number is two plus two?", "choices": ["four", "five", "six", "seven"], "answer": 0}
+{"id": "mc_1", "question": "Which color is the daytime sky?", "choices": ["blue", "green", "orange", "violet"], "answer": 0}
+{"id": "mc_2", "question": "Which animal barks?", "choices": ["dog", "cat", "cow", "hen"], "answer": 0}
+{"id": "mc_3", "question": "Which number is ten minus three?", "choices": ["seven", "eight", "nine", "ten"], "answer": 0}
+{"id": "mc_4", "question": "Which drink is made from beans?", "choices": ["coffee", "tea", "milk", "juice"], "answer": 0}
+{"id": "mc_5", "question": "Which planet do we live on?", "choices": ["earth", "mars", "venus", "pluto"], "answer": 0}

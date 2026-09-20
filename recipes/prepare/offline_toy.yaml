@@ -1,0 +1,111 @@
+# Offline toy preparation: fixture shards to a mixture plan, no network.
+# Every path supports {repo} (repository root), {home} (XLM_HOME) and
+# {output_root} (this file's output_root, expanded first). All budgets are
+# fixture-scale; nothing here authorizes production acquisition or training.
+schema_version: 1
+kind: prepare_config
+id: offline_toy
+output_root: "{home}/prepare/offline_toy"
+approvals:
+  pilot_approved: false
+budgets:
+  fetch_max_bytes: 1048576
+stages:
+  - stage_id: admit-check
+    kind: run
+    check_only: true
+    command: [data, audit, --catalog, "{repo}/manifests/datasets.catalog.yaml"]
+    approvals: []
+    outputs: []
+    watched_inputs: []
+    invalidates: []
+
+  - stage_id: fetch
+    kind: local_copy
+    copy_from: ["{repo}/fixtures/cleaning/shards"]
+    copy_to: "{output_root}/raw"
+    max_bytes: 1048576
+    approvals: []
+    outputs: ["{output_root}/raw", "{output_root}/raw/copy_manifest.json"]
+    watched_inputs: []
+    invalidates: [clean, dedup, split, pool, freeze, tokenize, mixture-validate, mixture-plan]
+
+  - stage_id: clean
+    kind: run
+    command: [data, clean, --input, "{output_root}/raw", --output-dir, "{output_root}/clean",
+      --preset, educational_prose]
+    approvals: []
+    outputs: ["{output_root}/clean/documents.jsonl"]
+    watched_inputs: []
+    invalidates: [dedup, split, pool, freeze, tokenize, mixture-validate, mixture-plan]
+
+  - stage_id: dedup
+    kind: run
+    command: [data, dedup, --input, "{output_root}/clean/documents.jsonl", --output-dir,
+      "{output_root}/dedup", --work-dir, "{output_root}/work"]
+    approvals: []
+    outputs: ["{output_root}/dedup/documents.jsonl", "{output_root}/dedup/dedup_report.json"]
+    watched_inputs: []
+    invalidates: [split, pool, freeze, tokenize, mixture-validate, mixture-plan]
+
+  - stage_id: split
+    kind: run
+    command: [data, split, --input, "{output_root}/dedup/documents.jsonl", --dedup-report,
+      "{output_root}/dedup/dedup_report.json", --output-dir, "{output_root}/split",
+      --val-bytes, "500", --quick-bytes, "200", --audit-bytes, "0"]
+    approvals: []
+    outputs: ["{output_root}/split/documents.jsonl", "{output_root}/split/split_assignment.json",
+      "{output_root}/split/pool_freeze.json"]
+    watched_inputs: []
+    invalidates: [pool, freeze, tokenize, mixture-validate, mixture-plan]
+
+  - stage_id: pool
+    kind: run
+    command: [data, pool, build, --input, "{output_root}/split/documents.jsonl", --views,
+      "{repo}/fixtures/pools/views.yaml", --binding, "{repo}/fixtures/pools/binding.yaml",
+      --split-assignment, "{output_root}/split/split_assignment.json", --output-dir,
+      "{output_root}/pool", --budget-tokens, "200000"]
+    approvals: []
+    outputs: ["{output_root}/pool/documents.jsonl", "{output_root}/pool/pool_manifest.json"]
+    watched_inputs: ["{repo}/fixtures/pools/views.yaml", "{repo}/fixtures/pools/binding.yaml"]
+    invalidates: [freeze, tokenize, mixture-validate, mixture-plan]
+
+  - stage_id: freeze
+    kind: run
+    command: [data, freeze, --pool-manifest, "{output_root}/pool/pool_manifest.json", --input,
+      "{output_root}/split/documents.jsonl", --output-dir, "{output_root}/regime",
+      --vocab-size, "300", --fit-sample-bytes, "1500", --fit]
+    approvals: []
+    outputs: ["{output_root}/regime/tokenizer", "{output_root}/regime/research_regime.json"]
+    watched_inputs: ["{output_root}/pool/pool_manifest.json"]
+    invalidates: [tokenize, mixture-validate, mixture-plan]
+
+  - stage_id: tokenize
+    kind: run
+    command: [data, tokenize, --input, "{output_root}/split/documents.jsonl", --tokenizer,
+      "{output_root}/regime/tokenizer", --output-dir, "{output_root}/shards",
+      --pool-id, toy_pool, --split, train]
+    approvals: []
+    outputs: ["{output_root}/shards/fixture_cleaning"]
+    watched_inputs: []
+    invalidates: [mixture-validate, mixture-plan]
+
+  - stage_id: mixture-validate
+    kind: run
+    check_only: true
+    command: [mixture, validate, --recipe, "{repo}/recipes/prepare/toy_mixture.yaml",
+      --shards, "{output_root}/shards"]
+    approvals: []
+    outputs: []
+    watched_inputs: ["{repo}/recipes/prepare/toy_mixture.yaml"]
+    invalidates: []
+
+  - stage_id: mixture-plan
+    kind: run
+    command: [mixture, plan, --recipe, "{repo}/recipes/prepare/toy_mixture.yaml", --shards,
+      "{output_root}/shards", --budget-targets, "1000", --block-size, "64", --output,
+      "{output_root}/mixture_plan.json"]
+    approvals: []
+    outputs: ["{output_root}/mixture_plan.json"]
+    watched_inputs: ["{repo}/recipes/prepare/toy_mixture.yaml"]
+    invalidates: []

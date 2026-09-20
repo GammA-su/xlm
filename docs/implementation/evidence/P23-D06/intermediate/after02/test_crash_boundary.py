@@ -1,0 +1,68 @@
+"""Real parent/worker crash after a committed authored checkpoint, before recovery."""
+from __future__ import annotations
+
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+import time
+
+import psutil
+import torch
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[5] / "tests"))
+from test_frozen_execution import frozen_fixture
+from xlm.experiments.queue import QueueJob
+
+
+def test_real_crash_preserves_committed_boundary_on_retry(tmp_path: Path) -> None:
+    plan, queue, job_id, _, _ = frozen_fixture(
+        tmp_path,
+        'if self.committed_valid_targets == 8 and '
+        'self.checkpoint_manager.execution["observations"]["work_dir"].endswith("worker-1"):\n'
+        '            __import__("time").sleep(30)',
+    )
+    # Retry authority is explicit and bound at admission, never changed after it.
+    job = queue.get_job(job_id)
+    assert job is not None
+    snapshot = Path(job.snapshot_dir)
+    job_id, _ = queue.submit(plan, tmp_path / "plan.json", snapshot, "cpu", "smoke", max_retries=1, allow_duplicate=True)
+    job = queue.get_job(job_id)
+    assert job is not None
+    # Cancel the unused fixture admission so the public runner takes the crash case.
+    queue.cancel(queue.list_jobs()[0].job_id)
+    step = Path(job.work_dir) / f"artifacts/checkpoints/{job_id}_step_1_ckpt"
+    with (tmp_path / "crashed-parent.log").open("wb") as output:
+        proc = subprocess.Popen([sys.executable, "-m", "xlm.cli.main", "queue", "run", "--once"],
+            env={**os.environ, "XLM_HOME": str(queue.paths.root)}, stdout=output, stderr=output)
+        try:
+            deadline = time.monotonic() + 140
+            while not (step / "_COMPLETED").is_file() and proc.poll() is None and time.monotonic() < deadline:
+                time.sleep(0.1)
+            assert (step / "_COMPLETED").is_file(), (tmp_path / "crashed-parent.log").read_text()
+        finally:
+            if proc.poll() is None:
+                descendants = psutil.Process(proc.pid).children(recursive=True)
+                proc.kill()
+                for child in descendants:
+                    try:
+                        child.kill()
+                    except psutil.NoSuchProcess:
+                        pass
+            proc.wait(timeout=10)
+    original = (step / "manifest.json").read_bytes()
+    current = queue.get_job(job_id)
+    assert current is not None and current.state == "RUNNING"
+    queue._write_job_row(QueueJob(**{**current.to_dict(), "heartbeat_at": "2000-01-01T00:00:00+00:00"}))
+    assert queue.recover_stale_jobs() == [job_id]
+    result = queue.run_job(job_id)
+    (tmp_path / "recovery.json").write_text(json.dumps(result, indent=2))
+    assert result["state"] == "SUCCEEDED", result
+    assert result["committed_valid_targets"] == 8
+    final = Path(job.work_dir) / "artifacts/checkpoints" / result["checkpoint_id"]
+    before = torch.load(step / "model.pt", weights_only=True)
+    after = torch.load(final / "model.pt", weights_only=True)
+    assert all(torch.equal(before[k], after[k]) for k in before)
+    assert (step / "manifest.json").read_bytes() == original
+    assert [item["state"] for item in queue.attempts(job_id)] == ["INTERRUPTED", "SUCCEEDED"]

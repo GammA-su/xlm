@@ -1,0 +1,91 @@
+"""Mixture recipes, deterministic exposure plans, quota scheduling and packing."""
+
+from __future__ import annotations
+
+from xlm.data.sampling.mixture import (
+    MIXTURE_SCHEMA_VERSION,
+    WEIGHT_SUM_TOLERANCE,
+    ExhaustionPolicy,
+    MixtureComponent,
+    MixtureRecipe,
+    MixtureValidation,
+    MixtureValidationError,
+    PackingPolicy,
+    SourceAvailability,
+    validate_mixture,
+)
+from xlm.data.sampling.packing import (
+    CausalStreamPacker,
+    DocumentSpan,
+    IsolatedDocumentPacker,
+    PackedWindow,
+    build_packer,
+    shift_window,
+)
+from xlm.data.sampling.plan import (
+    EXPOSURE_PLAN_VERSION,
+    MATCHED_BASES,
+    MATCHED_PLAN_VERSION,
+    ExposureBlock,
+    ExposurePlan,
+    MatchedExposurePlan,
+    MatchedSourceProjection,
+    SourceProjection,
+    compile_exposure_plan,
+    compile_matched_plan,
+    iter_exposure_blocks,
+    summarize_plan_blocks,
+)
+from xlm.data.sampling.scheduler import (
+    QuotaScheduler,
+    RepeatBudgetExceededError,
+    ScheduleState,
+    ShareReport,
+    SourceCounters,
+    SourceExhaustedError,
+)
+from xlm.data.sampling.stream import (
+    STREAM_STATE_VERSION,
+    MixtureBatcher,
+    MixtureStreamError,
+)
+
+__all__ = [
+    "EXPOSURE_PLAN_VERSION",
+    "MATCHED_BASES",
+    "MATCHED_PLAN_VERSION",
+    "MIXTURE_SCHEMA_VERSION",
+    "STREAM_STATE_VERSION",
+    "WEIGHT_SUM_TOLERANCE",
+    "CausalStreamPacker",
+    "DocumentSpan",
+    "ExhaustionPolicy",
+    "ExposureBlock",
+    "ExposurePlan",
+    "IsolatedDocumentPacker",
+    "MatchedExposurePlan",
+    "MatchedSourceProjection",
+    "MixtureBatcher",
+    "MixtureComponent",
+    "MixtureRecipe",
+    "MixtureStreamError",
+    "MixtureValidation",
+    "MixtureValidationError",
+    "PackedWindow",
+    "PackingPolicy",
+    "QuotaScheduler",
+    "RepeatBudgetExceededError",
+    "ScheduleState",
+    "ShareReport",
+    "SourceAvailability",
+    "SourceCounters",
+    "SourceExhaustedError",
+    "SourceProjection",
+    "build_packer",
+    "compile_exposure_plan",
+    "compile_matched_plan",
+    "iter_exposure_blocks",
+    "shift_window",
+    "summarize_plan_blocks",
+    "validate_mixture",
+]

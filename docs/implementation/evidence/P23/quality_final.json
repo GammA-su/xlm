@@ -1,0 +1,6 @@
+﻿{
+    "format_exit_code":  0,
+    "cwd":  "D:\\Project\\xlm",
+    "lint_exit_code":  0,
+    "note":  "Final root formatting; only test_cli_inventory.py differs from full-suite snapshot by formatting (AST identical)."
+}

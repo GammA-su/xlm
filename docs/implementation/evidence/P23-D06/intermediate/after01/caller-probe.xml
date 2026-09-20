@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="8" time="114.796" timestamp="2026-09-20T10:18:35.991582+02:00" hostname="BetA-C1"><testcase classname="tests.test_cli_train_demo" name="test_cli_train_and_resume_subprocess" time="102.013" /><testcase classname="tests.test_cli_eval_gen" name="test_cli_evaluate_and_generate_subprocess" time="3.564"><failure message="AssertionError: Evaluate failed:&#10;  &lt;frozen runpy&gt;:128: RuntimeWarning: 'xlm.cli.main' found in sys.modules after import of package 'xlm.cli', but prior to execution of 'xlm.cli.main'; this may result in unpredictable behaviour&#10;  +--------------------- Traceback (most recent call last) ---------------------+&#10;  | D:\Project\xlm\src\xlm\cli\eval_cmd.py:389 in evaluate_command              |&#10;  |                                                                             |&#10;  |   386         return                                                        |&#10;  |   387     from xlm.experiments.evaluation_execution import                  |&#10;  |       launch_evaluation                                                     |&#10;  |   388                                                                       |&#10;  | &gt; 389     launch_evaluation(options)                                        |&#10;  |   390                                                                       |&#10;  |   391                                                                       |&#10;  |   392 def _evaluate_in_process(                                             |&#10;  |                                                                             |&#10;  | D:\Project\xlm\src\xlm\experiments\evaluation_execution.py:66 in            |&#10;  | launch_evaluation                                                           |&#10;  |                                                                             |&#10;  |   63     extras = [options[&quot;device&quot;]] + (                                   |&#10;  |   64         [] if options[&quot;suite&quot;] in (&quot;all&quot;, &quot;synthetic_mc&quot;,              |&#10;  |      &quot;synthetic_pair&quot;) else [&quot;eval&quot;]                                        |&#10;  |   65     )                                                                  |&#10;  | &gt; 66     envelope = make_envelope(config, snapshot, extras=extras,          |&#10;  |      purpose=&quot;evaluation&quot;)                                                  |&#10;  |   67     result = launch_worker(                                            |&#10;  |   68         {                                                              |&#10;  |   69             &quot;action&quot;: &quot;evaluate&quot;,                                      |&#10;  |                                                                             |&#10;  | D:\Project\xlm\src\xlm\experiments\execution.py:128 in make_envelope        |&#10;  |                                                                             |&#10;  |   125         resolver = resolve_evaluation_config                          |&#10;  |   126     elif purpose != &quot;training&quot;:                                       |&#10;  |   127         raise ValueError(&quot;unsupported execution purpose&quot;)             |&#10;  | &gt; 128     resolved, bindings = resolver(config)                             |&#10;  |   129     lock = snapshot_dir / &quot;code/uv.lock&quot;                              |&#10;  |   130     payload = {                                                       |&#10;  |   131         &quot;version&quot;: 1,                                                 |&#10;  |                                                                             |&#10;  | D:\Project\xlm\src\xlm\experiments\evaluation_execution.py:25 in            |&#10;  | resolve_evaluation_config                                                   |&#10;  |                                                                             |&#10;  |   22     from xlm.tokenizers.loading import checkpoint_weights_hash,        |&#10;  |      load_inference_tokenizer                                               |&#10;  |   23                                                                        |&#10;  |   24     checkpoint = Path(config[&quot;checkpoint&quot;])                            |&#10;  | &gt; 25     manifest =                                                         |&#10;  |      ArtifactStore(ArtifactPaths.from_env()).verify_artifact(checkpoint)    |&#10;  |   26     training: dict[str, Any] = {&quot;status&quot;: &quot;legacy-unresolved&quot;}         |&#10;  |   27     context_path = checkpoint / &quot;execution.json&quot;                       |&#10;  |   28     if context_path.is_file():                                         |&#10;  |                                                                             |&#10;  | D:\Project\xlm\src\xlm\artifacts\store.py:273 in verify_artifact            |&#10;  |                                                                             |&#10;  |   270         marker = artifact_dir / &quot;_COMPLETED&quot;                          |&#10;  |   271         ensure_plain_path(marker)                                     |&#10;  |   272         if not marker.is_file():                                      |&#10;  | &gt; 273             raise ValueError(f&quot;Artifact at '{artifact_dir}' is        |&#10;  |       incomplete (missing '_COMPLETED')&quot;)                                   |&#10;  |   274         manifest = self.load_manifest(artifact_dir)                   |&#10;  |   275         if manifest.status != &quot;completed&quot;:                            |&#10;  |   276             raise ValueError(f&quot;Artifact status is                     |&#10;  |       '{manifest.status}', expected 'completed'&quot;)                           |&#10;  +-----------------------------------------------------------------------------+&#10;  ValueError: Artifact at &#10;  'D:\Project\xlm\data\audit\p23-remediation\stage02\after01\caller-probe-tmp\tes&#10;  t_cli_evaluate_and_generate0\model_ckpt' is incomplete (missing '_COMPLETED')&#10;  &#10;  &#10;assert 1 == 0&#10; +  where 1 = CompletedProcess(args=['D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage01\\after01\\.venv\\Scripts\\python.exe',...\\after01\\caller-probe-tmp\\tes\nt_cli_evaluate_and_generate0\\model_ckpt\' is incomplete (missing \'_COMPLETED\')\n').returncode">tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage02/after01/caller-probe-tmp/test_cli_evaluate_and_generate0')
+
+    def test_cli_evaluate_and_generate_subprocess(tmp_path: Path) -&gt; None:
+        """Verify xlm evaluate and xlm generate commands run cleanly on a saved checkpoint."""
+    
+        from xlm.config.schemas import TransformerBaselineConfig
+        from xlm.models.serialization import save_model_to_directory
+        from xlm.models.transformer import TransformerBaseline
+    
+        # 1. Author a small model artifact
+        cfg = TransformerBaselineConfig(
+            architecture="transformer_baseline",
+            vocab_size=260,
+            context_length=128,
+            hidden_size=64,
+            intermediate_size=128,
+            num_layers=2,
+            num_attention_heads=4,
+            attention_backend="eager",
+        )
+        model = TransformerBaseline(cfg, seed=42)
+        model_dir = tmp_path / "model_ckpt"
+        save_model_to_directory(model, model_dir)
+    
+        env = dict(os.environ)
+        env["XLM_HOME"] = str(tmp_path / "xlm_home")
+    
+        # 2. Test xlm evaluate
+        eval_res = subprocess.run(
+            [sys.executable, "-m", "xlm.cli.main", "evaluate", str(model_dir), "--device", "cpu"],
+            capture_output=True,
+            text=True,
+            check=False,
+            env=env,
+        )
+&gt;       assert eval_res.returncode == 0, f"Evaluate failed:\n{eval_res.stderr}\n{eval_res.stdout}"
+E       AssertionError: Evaluate failed:
+E         &lt;frozen runpy&gt;:128: RuntimeWarning: 'xlm.cli.main' found in sys.modules after import of package 'xlm.cli', but prior to execution of 'xlm.cli.main'; this may result in unpredictable behaviour
+E         +--------------------- Traceback (most recent call last) ---------------------+
+E         | D:\Project\xlm\src\xlm\cli\eval_cmd.py:389 in evaluate_command              |
+E         |                                                                             |
+E         |   386         return                                                        |
+E         |   387     from xlm.experiments.evaluation_execution import                  |
+E         |       launch_evaluation                                                     |
+E         |   388                                                                       |
+E         | &gt; 389     launch_evaluation(options)                                        |
+E         |   390                                                                       |
+E         |   391                                                                       |
+E         |   392 def _evaluate_in_process(                                             |
+E         |                                                                             |
+E         | D:\Project\xlm\src\xlm\experiments\evaluation_execution.py:66 in            |
+E         | launch_evaluation                                                           |
+E         |                                                                             |
+E         |   63     extras = [options["device"]] + (                                   |
+E         |   64         [] if options["suite"] in ("all", "synthetic_mc",              |
+E         |      "synthetic_pair") else ["eval"]                                        |
+E         |   65     )                                                                  |
+E         | &gt; 66     envelope = make_envelope(config, snapshot, extras=extras,          |
+E         |      purpose="evaluation")                                                  |
+E         |   67     result = launch_worker(                                            |
+E         |   68         {                                                              |
+E         |   69             "action": "evaluate",                                      |
+E         |                                                                             |
+E         | D:\Project\xlm\src\xlm\experiments\execution.py:128 in make_envelope        |
+E         |                                                                             |
+E         |   125         resolver = resolve_evaluation_config                          |
+E         |   126     elif purpose != "training":                                       |
+E         |   127         raise ValueError("unsupported execution purpose")             |
+E         | &gt; 128     resolved, bindings = resolver(config)                             |
+E         |   129     lock = snapshot_dir / "code/uv.lock"                              |
+E         |   130     payload = {                                                       |
+E         |   131         "version": 1,                                                 |
+E         |                                                                             |
+E         | D:\Project\xlm\src\xlm\experiments\evaluation_execution.py:25 in            |
+E         | resolve_evaluation_config                                                   |
+E         |                                                                             |
+E         |   22     from xlm.tokenizers.loading import checkpoint_weights_hash,        |
+E         |      load_inference_tokenizer                                               |
+E         |   23                                                                        |
+E         |   24     checkpoint = Path(config["checkpoint"])                            |
+E         | &gt; 25     manifest =                                                         |
+E         |      ArtifactStore(ArtifactPaths.from_env()).verify_artifact(checkpoint)    |
+E         |   26     training: dict[str, Any] = {"status": "legacy-unresolved"}         |
+E         |   27     context_path = checkpoint / "execution.json"                       |
+E         |   28     if context_path.is_file():                                         |
+E         |                                                                             |
+E         | D:\Project\xlm\src\xlm\artifacts\store.py:273 in verify_artifact            |
+E         |                                                                             |
+E         |   270         marker = artifact_dir / "_COMPLETED"                          |
+E         |   271         ensure_plain_path(marker)                                     |
+E         |   272         if not marker.is_file():                                      |
+E         | &gt; 273             raise ValueError(f"Artifact at '{artifact_dir}' is        |
+E         |       incomplete (missing '_COMPLETED')")                                   |
+E         |   274         manifest = self.load_manifest(artifact_dir)                   |
+E         |   275         if manifest.status != "completed":                            |
+E         |   276             raise ValueError(f"Artifact status is                     |
+E         |       '{manifest.status}', expected 'completed'")                           |
+E         +-----------------------------------------------------------------------------+
+E         ValueError: Artifact at 
+E         'D:\Project\xlm\data\audit\p23-remediation\stage02\after01\caller-probe-tmp\tes
+E         t_cli_evaluate_and_generate0\model_ckpt' is incomplete (missing '_COMPLETED')
+E         
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage01\\after01\\.venv\\Scripts\\python.exe',...\\after01\\caller-probe-tmp\\tes\nt_cli_evaluate_and_generate0\\model_ckpt\' is incomplete (missing \'_COMPLETED\')\n').returncode
+
+tests\test_cli_eval_gen.py:64: AssertionError</failure></testcase><testcase classname="tests.test_checkpoint" name="test_checksum_valid_checkpoint_still_refuses_pickle_globals" time="0.719" /><testcase classname="tests.test_checkpoint" name="test_checkpoint_save_and_reload_roundtrip" time="2.413" /><testcase classname="tests.test_checkpoint" name="test_checkpoint_checksum_corruption_detection" time="0.542" /><testcase classname="tests.test_checkpoint" name="test_checkpoint_plan_compatibility_validation" time="0.705" /><testcase classname="tests.test_checkpoint" name="test_checkpoint_tied_weights_mismatch_detected" time="0.597" /><testcase classname="tests.test_checkpoint" name="test_checkpoint_fork_lineage" time="0.623" /></testsuite></testsuites>

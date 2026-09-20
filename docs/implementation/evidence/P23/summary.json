@@ -1,0 +1,364 @@
+{
+  "junit": {
+    "tests": "885",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "1",
+    "time": "585.995"
+  },
+  "per_test_module": {
+    "tests.test_acquisition_fetcher": {
+      "passed": 10,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_acquisition_plan": {
+      "passed": 5,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_acquisition_verifier": {
+      "passed": 6,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_artifacts": {
+      "passed": 10,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_attention_and_masks": {
+      "passed": 12,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_checkpoint": {
+      "passed": 6,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_cleaning_filters": {
+      "passed": 7,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_cleaning_html": {
+      "passed": 4,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_cleaning_normalization": {
+      "passed": 4,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_cleaning_pipeline": {
+      "passed": 5,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_cleaning_scale": {
+      "passed": 11,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_cleaning_structured": {
+      "passed": 5,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_cli": {
+      "passed": 6,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_cli_eval_gen": {
+      "passed": 2,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_cli_inventory": {
+      "passed": 87,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_cli_pool_freeze": {
+      "passed": 8,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_cli_train_demo": {
+      "passed": 3,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_comparison": {
+      "passed": 34,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_config": {
+      "passed": 12,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_continuation": {
+      "passed": 1,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_continuation_p05": {
+      "passed": 1,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_contracts": {
+      "passed": 7,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_cuda_execution": {
+      "passed": 12,
+      "skipped": 1,
+      "failed": 0
+    },
+    "tests.test_dashboard": {
+      "passed": 5,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_data_adapters": {
+      "passed": 6,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_data_catalog": {
+      "passed": 5,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_dedup_engine": {
+      "passed": 20,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_dedup_lineage": {
+      "passed": 6,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_doctor": {
+      "passed": 5,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_eval_suites": {
+      "passed": 29,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_evaluation_fixtures": {
+      "passed": 6,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_exclusion_benchmark": {
+      "passed": 10,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_exclusion_receipt": {
+      "passed": 22,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_experiment_plans": {
+      "passed": 19,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_export": {
+      "passed": 20,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_final_acceptance": {
+      "passed": 12,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_generation": {
+      "passed": 6,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_harness_adapter": {
+      "passed": 14,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_imports": {
+      "passed": 2,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_ledger": {
+      "passed": 4,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_likelihood": {
+      "passed": 8,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_mix01_views": {
+      "passed": 32,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_mixture_planning": {
+      "passed": 31,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_mixture_stream": {
+      "passed": 22,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_models": {
+      "passed": 15,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_objectives": {
+      "passed": 10,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_offline_workflow": {
+      "passed": 4,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_operator": {
+      "passed": 22,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_optimizers": {
+      "passed": 5,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_packing_scheduling": {
+      "passed": 23,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_paths": {
+      "passed": 4,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_pool_freeze_regime": {
+      "passed": 43,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_pool_splits": {
+      "passed": 14,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_pool_views": {
+      "passed": 14,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_prepare": {
+      "passed": 14,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_queue": {
+      "passed": 18,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_recipes": {
+      "passed": 9,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_registry": {
+      "passed": 2,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_reports": {
+      "passed": 18,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_research": {
+      "passed": 22,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_schedules": {
+      "passed": 7,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_source_admission": {
+      "passed": 9,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_source_discovery": {
+      "passed": 13,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_token_shards": {
+      "passed": 2,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_tokenizer_regime": {
+      "passed": 48,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_tokenizers": {
+      "passed": 9,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_trainer": {
+      "passed": 4,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_trainer_data": {
+      "passed": 7,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.test_trainer_mixture": {
+      "passed": 6,
+      "skipped": 0,
+      "failed": 0
+    }
+  },
+  "final_quality": {
+    "format_exit_code": 0,
+    "cwd": "D:\\Project\\xlm",
+    "lint_exit_code": 0,
+    "note": "Final root formatting; only test_cli_inventory.py differs from full-suite snapshot by formatting (AST identical)."
+  },
+  "aggregate_runner_exit_code": 1,
+  "aggregate_runner_note": "One stale copied test formatting check failed; full tests passed. Final root formatting and lint passed separately; AST-identical test formatting is the only difference from tested code. Initial install was fresh in final-evidence; verified-evidence sync reuses it."
+}

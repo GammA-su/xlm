@@ -1,0 +1,39 @@
+id: authored_d03
+output_root: D:\Project\xlm\data\audit\p23-remediation\stage03\after04\focused-tmp\test_public_two_source_prepare1\preparation
+stages:
+- command:
+  - data
+  - tokenize
+  - --input
+  - D:\Project\xlm\data\audit\p23-remediation\stage03\after04\focused-tmp\test_public_two_source_prepare1\documents.jsonl
+  - --tokenizer
+  - D:\Project\xlm\data\audit\p23-remediation\stage03\after04\focused-tmp\test_public_two_source_prepare1\tokenizer
+  - --output-dir
+  - D:\Project\xlm\data\audit\p23-remediation\stage03\after04\focused-tmp\test_public_two_source_prepare1\shards
+  - --pool-id
+  - authored_d03
+  - --split
+  - train
+  invalidates:
+  - exposure
+  kind: run
+  outputs:
+  - D:\Project\xlm\data\audit\p23-remediation\stage03\after04\focused-tmp\test_public_two_source_prepare1\shards
+  stage_id: tokenize
+- command:
+  - mixture
+  - plan
+  - --recipe
+  - D:\Project\xlm\data\audit\p23-remediation\stage03\after04\focused-tmp\test_public_two_source_prepare1\mixture.yaml
+  - --shards
+  - D:\Project\xlm\data\audit\p23-remediation\stage03\after04\focused-tmp\test_public_two_source_prepare1\shards
+  - --budget-targets
+  - '33'
+  - --block-size
+  - '8'
+  - --output
+  - D:\Project\xlm\data\audit\p23-remediation\stage03\after04\focused-tmp\test_public_two_source_prepare1\exposure.json
+  kind: run
+  outputs:
+  - D:\Project\xlm\data\audit\p23-remediation\stage03\after04\focused-tmp\test_public_two_source_prepare1\exposure.json
+  stage_id: exposure

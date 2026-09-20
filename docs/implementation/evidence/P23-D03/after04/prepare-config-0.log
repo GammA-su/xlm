@@ -1,0 +1,39 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0
+collecting ... collected 28 items
+
+tests/test_prepare.py::test_plan_only_reports_statuses_without_executing PASSED [  3%]
+tests/test_prepare.py::test_missing_approval_blocks_with_named_reason PASSED [  7%]
+tests/test_prepare.py::test_unknown_variables_fail_closed PASSED         [ 10%]
+tests/test_prepare.py::test_duplicate_and_unknown_stages_are_rejected PASSED [ 14%]
+tests/test_prepare.py::test_stale_inputs_invalidate_downstream PASSED    [ 17%]
+tests/test_prepare.py::test_execution_requires_explicit_authorization PASSED [ 21%]
+tests/test_prepare.py::test_full_toy_run_reuses_on_repeat PASSED         [ 25%]
+tests/test_prepare.py::test_partial_outputs_resume_without_redo PASSED   [ 28%]
+tests/test_prepare.py::test_failed_stage_stops_with_reason_and_state PASSED [ 32%]
+tests/test_prepare.py::test_local_copy_enforces_its_byte_cap PASSED      [ 35%]
+tests/test_prepare.py::test_find_repo_root_and_config_errors PASSED      [ 39%]
+tests/test_prepare.py::test_cli_plan_only_lists_stages PASSED            [ 42%]
+tests/test_prepare.py::test_cli_prepare_refuses_without_authorize PASSED [ 46%]
+tests/test_prepare.py::test_cli_maintenance_dry_run_lists_scratch PASSED [ 50%]
+tests/test_config.py::test_duplicate_yaml_key_rejection PASSED           [ 53%]
+tests/test_config.py::test_unknown_key_rejection PASSED                  [ 57%]
+tests/test_config.py::test_non_finite_float_rejection PASSED             [ 60%]
+tests/test_config.py::test_composition_extends_and_cycle_detection PASSED [ 64%]
+tests/test_config.py::test_list_replacement_and_deep_merge PASSED        [ 67%]
+tests/test_config.py::test_conflicting_component_type_change PASSED      [ 71%]
+tests/test_config.py::test_environment_variable_interpolation PASSED     [ 75%]
+tests/test_config.py::test_cli_overrides PASSED                          [ 78%]
+tests/test_config.py::test_draft_versus_executable_validation PASSED     [ 82%]
+tests/test_config.py::test_supplied_preset_recipes_validity PASSED       [ 85%]
+tests/test_config.py::test_canonical_hashing_and_granularity PASSED      [ 89%]
+tests/test_config.py::test_cli_config_commands PASSED                    [ 92%]
+tests/test_registry.py::test_registry_registration_and_lookup PASSED     [ 96%]
+tests/test_registry.py::test_configuration_only_plugins_without_generic_composer_edits PASSED [100%]
+
+- generated xml file: D:\Project\xlm\data\audit\p23-remediation\stage03\after04\prepare-config.xml -
+============================= 28 passed in 58.56s =============================

@@ -1,0 +1,120 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "xlm"
+version = "0.1.0"
+description = "XLM research platform for causal language models"
+readme = "README.md"
+requires-python = ">=3.12, <3.13"
+dependencies = [
+    "typer>=0.12.0",
+    "pydantic>=2.7.0",
+    "pyyaml>=6.0.1",
+    "psutil>=5.9.0",
+    "filelock>=3.13.0",
+    "tokenizers>=0.19.0",
+    "pyarrow>=15.0.0",
+    "safetensors>=0.8.0",
+]
+
+[project.scripts]
+xlm = "xlm.cli.main:app"
+
+[project.optional-dependencies]
+cpu = [
+    "torch",
+]
+cuda = [
+    "torch",
+]
+eval = [
+    "lm-eval==0.4.13",
+]
+
+[tool.uv]
+conflicts = [
+    [ { extra = "cpu" }, { extra = "cuda" } ],
+]
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cpu", extra = "cpu" },
+    { index = "pytorch-cu126", extra = "cuda" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu126"
+url = "https://download.pytorch.org/whl/cu126"
+explicit = true
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=5.0.0",
+    "ruff>=0.4.0",
+    "mypy>=1.10.0",
+    "types-pyyaml>=6.0.12",
+    "types-psutil>=5.9.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/xlm"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "W",
+    "F",
+    "I",
+    "B",
+    "UP",
+]
+ignore = []
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = [
+    "torch",
+    "torch.*",
+    "tokenizers",
+    "tokenizers.*",
+    "pyarrow",
+    "pyarrow.*",
+    "lm_eval",
+    "lm_eval.*",
+]
+ignore_missing_imports = true
+disallow_untyped_calls = false
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+markers = [
+    "network: tests that require network access (offline by default)",
+    "cuda: tests that require an NVIDIA CUDA GPU",
+    "slow: tests that take longer than a few seconds",
+    "operator: tests that require isolated operator privileges",
+]

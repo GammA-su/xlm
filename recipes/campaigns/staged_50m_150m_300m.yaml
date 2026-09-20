@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "kind": "campaign_draft",
+  "id": "staged_baseline_to_300m",
+  "status": "draft_not_authorized",
+  "experiment_template": "baseline_50m",
+  "mixtures": [
+    "mix01",
+    "m1_less_synth",
+    "m2_more_synth",
+    "m3_more_pdfs",
+    "m4_txt360_web",
+    "m5_more_practical"
+  ],
+  "first_round": {
+    "model_preset": "50m",
+    "valid_targets_per_run": 128000000,
+    "init_seeds": [
+      101
+    ],
+    "schedule_horizon_valid_targets": 1000000000,
+    "restart_policy": "matched_full_horizon_prefix"
+  },
+  "later_rounds_require_selection": [
+    {
+      "model_preset": "50m",
+      "valid_targets_per_run": 512000000,
+      "init_seeds": [
+        101,
+        102
+      ]
+    },
+    {
+      "model_preset": "150m",
+      "valid_targets_per_run": 1000000000,
+      "init_seeds": [
+        101,
+        102
+      ]
+    },
+    {
+      "model_preset": "150m",
+      "valid_targets_per_run": 3000000000,
+      "init_seeds": [
+        101,
+        102,
+        103
+      ]
+    },
+    {
+      "model_preset": "300m",
+      "valid_targets_per_run": 6000000000,
+      "init_seeds": [
+        101,
+        102
+      ]
+    }
+  ],
+  "max_parallel_gpu_runs": 1,
+  "auto_promote": false,
+  "auto_final_evaluation": false,
+  "note": "Calibration screens at 50M, shortlist validation at 150M, innovation screening, then 300M final confirmation. Later rounds need explicit selection; freeze the corpus before shortlisting. Budgets are plans, not automatic runs."
+}

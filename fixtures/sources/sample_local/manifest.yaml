@@ -1,0 +1,20 @@
+source_id: "sample_local"
+source_revision: "v1.0.0-fixture"
+license: "CC0-1.0"
+description: "Author-written local fixture dataset for P02 testing"
+files:
+  - path: "documents.jsonl"
+    format: "jsonl"
+  - path: "sample_text.txt"
+    format: "text"
+splits:
+  train:
+    - "sample_local_01_prose"
+    - "sample_local_02_names"
+    - "sample_local_03_code"
+    - "sample_local_04_math"
+    - "sample_local_05_emoji"
+    - "sample_local_06_literal_tokens"
+  diagnostic_val:
+    - "sample_local_07_val_prose"
+    - "sample_local_08_val_mixed"

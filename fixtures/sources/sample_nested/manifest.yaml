@@ -1,0 +1,13 @@
+source_id: "sample_nested"
+source_revision: "v1.0.0-nested-fixture"
+license: "CC0-1.0"
+description: "Author-written local fixture dataset with nested Arrow schemas for P07 testing"
+files:
+  - path: "nested_sample.parquet"
+    format: "parquet"
+  - path: "sample_records.jsonl"
+    format: "jsonl"
+splits:
+  train:
+    - "sample_nested_01"
+    - "sample_nested_02"

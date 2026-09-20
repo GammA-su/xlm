@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="5" skipped="0" tests="6" time="0.403" timestamp="2026-09-19T21:17:56.431790+02:00" hostname="BetA-C1"><testcase classname="data.audit.p23-remediation.stage01.test_d01_before" name="test_identical_request_reuses_unchanged_artifact" time="0.015" /><testcase classname="data.audit.p23-remediation.stage01.test_d01_before" name="test_conflicting_request_must_fail_and_preserve_original[payload]" time="0.018"><failure message="Failed: DID NOT RAISE ValueError">tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage01/tmp/test_conflicting_request_must_0')
+change = 'payload'
+
+    @pytest.mark.parametrize("change", ["payload", "producer", "dependency", "lineage"])
+    def test_conflicting_request_must_fail_and_preserve_original(tmp_path: Path, change: str) -&gt; None:
+        store = ArtifactStore(ArtifactPaths(root=tmp_path / "store"))
+        published = store.publish_artifact(**request())
+        before = {file.name: file.read_bytes() for file in published.iterdir()}
+        changed = request()
+        if change == "payload":
+            changed["files"] = {"payload.txt": b"BBBB"}  # Same size and configuration.
+        elif change == "producer":
+            changed["producer_code_hash"] = digest("authored producer B")
+        elif change == "dependency":
+            changed["dependency_hash"] = digest("authored dependency graph B")
+        else:
+            changed["input_artifact_ids"] = ["authored_parent_b"]
+        try:
+&gt;           with pytest.raises(ValueError, match="[Cc]onflict"):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE ValueError
+
+data\audit\p23-remediation\stage01\test_d01_before.py:55: Failed</failure></testcase><testcase classname="data.audit.p23-remediation.stage01.test_d01_before" name="test_conflicting_request_must_fail_and_preserve_original[producer]" time="0.017"><failure message="Failed: DID NOT RAISE ValueError">tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage01/tmp/test_conflicting_request_must_1')
+change = 'producer'
+
+    @pytest.mark.parametrize("change", ["payload", "producer", "dependency", "lineage"])
+    def test_conflicting_request_must_fail_and_preserve_original(tmp_path: Path, change: str) -&gt; None:
+        store = ArtifactStore(ArtifactPaths(root=tmp_path / "store"))
+        published = store.publish_artifact(**request())
+        before = {file.name: file.read_bytes() for file in published.iterdir()}
+        changed = request()
+        if change == "payload":
+            changed["files"] = {"payload.txt": b"BBBB"}  # Same size and configuration.
+        elif change == "producer":
+            changed["producer_code_hash"] = digest("authored producer B")
+        elif change == "dependency":
+            changed["dependency_hash"] = digest("authored dependency graph B")
+        else:
+            changed["input_artifact_ids"] = ["authored_parent_b"]
+        try:
+&gt;           with pytest.raises(ValueError, match="[Cc]onflict"):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE ValueError
+
+data\audit\p23-remediation\stage01\test_d01_before.py:55: Failed</failure></testcase><testcase classname="data.audit.p23-remediation.stage01.test_d01_before" name="test_conflicting_request_must_fail_and_preserve_original[dependency]" time="0.019"><failure message="Failed: DID NOT RAISE ValueError">tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage01/tmp/test_conflicting_request_must_2')
+change = 'dependency'
+
+    @pytest.mark.parametrize("change", ["payload", "producer", "dependency", "lineage"])
+    def test_conflicting_request_must_fail_and_preserve_original(tmp_path: Path, change: str) -&gt; None:
+        store = ArtifactStore(ArtifactPaths(root=tmp_path / "store"))
+        published = store.publish_artifact(**request())
+        before = {file.name: file.read_bytes() for file in published.iterdir()}
+        changed = request()
+        if change == "payload":
+            changed["files"] = {"payload.txt": b"BBBB"}  # Same size and configuration.
+        elif change == "producer":
+            changed["producer_code_hash"] = digest("authored producer B")
+        elif change == "dependency":
+            changed["dependency_hash"] = digest("authored dependency graph B")
+        else:
+            changed["input_artifact_ids"] = ["authored_parent_b"]
+        try:
+&gt;           with pytest.raises(ValueError, match="[Cc]onflict"):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE ValueError
+
+data\audit\p23-remediation\stage01\test_d01_before.py:55: Failed</failure></testcase><testcase classname="data.audit.p23-remediation.stage01.test_d01_before" name="test_conflicting_request_must_fail_and_preserve_original[lineage]" time="0.019"><failure message="Failed: DID NOT RAISE ValueError">tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage01/tmp/test_conflicting_request_must_3')
+change = 'lineage'
+
+    @pytest.mark.parametrize("change", ["payload", "producer", "dependency", "lineage"])
+    def test_conflicting_request_must_fail_and_preserve_original(tmp_path: Path, change: str) -&gt; None:
+        store = ArtifactStore(ArtifactPaths(root=tmp_path / "store"))
+        published = store.publish_artifact(**request())
+        before = {file.name: file.read_bytes() for file in published.iterdir()}
+        changed = request()
+        if change == "payload":
+            changed["files"] = {"payload.txt": b"BBBB"}  # Same size and configuration.
+        elif change == "producer":
+            changed["producer_code_hash"] = digest("authored producer B")
+        elif change == "dependency":
+            changed["dependency_hash"] = digest("authored dependency graph B")
+        else:
+            changed["input_artifact_ids"] = ["authored_parent_b"]
+        try:
+&gt;           with pytest.raises(ValueError, match="[Cc]onflict"):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE ValueError
+
+data\audit\p23-remediation\stage01\test_d01_before.py:55: Failed</failure></testcase><testcase classname="data.audit.p23-remediation.stage01.test_d01_before" name="test_publication_must_not_replace_an_incomplete_existing_directory" time="0.010"><failure message="Failed: DID NOT RAISE ValueError">tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage01/tmp/test_publication_must_not_repl0')
+
+    def test_publication_must_not_replace_an_incomplete_existing_directory(tmp_path: Path) -&gt; None:
+        store = ArtifactStore(ArtifactPaths(root=tmp_path / "store"))
+        published = store.publish_artifact(**request())
+        (published / "_COMPLETED").unlink()  # Only this test's private fixture marker.
+&gt;       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+data\audit\p23-remediation\stage01\test_d01_before.py:65: Failed</failure></testcase></testsuite></testsuites>

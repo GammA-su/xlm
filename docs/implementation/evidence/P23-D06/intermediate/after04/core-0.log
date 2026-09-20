@@ -1,0 +1,18 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0
+collecting ... collected 53 items
+
+tests/test_frozen_execution.py::test_independent_persisted_bindings_refuse_before_worker PASSED [  1%]
+tests/test_frozen_execution.py::test_authority_and_recomputed_envelope_fields_are_checked PASSED [  3%]
+tests/test_frozen_execution.py::test_actual_environment_mismatch_fails_in_real_worker PASSED [  5%]
+tests/test_frozen_execution.py::test_public_queue_and_diagnostic_receipt_keep_separate_provenance PASSED [  7%]
+tests/test_frozen_execution.py::test_changed_tokenizer_and_real_shard_are_rejected PASSED [  9%]
+tests/test_frozen_execution.py::test_real_worker_output_bound_and_terminal_failure PASSED [ 11%]
+tests/test_frozen_execution.py::test_worker_rejects_cli_override_outside_frozen_envelope PASSED [ 13%]
+tests/test_frozen_execution.py::test_unresolved_checkpoint_is_inspectable_but_not_frozen_resume PASSED [ 15%]
+tests/test_frozen_execution.py::test_snapshot_reuse_conflicts_and_paths PASSED [ 16%]
+tests/test_frozen_execution.py::test_relocated_locked_environment_ignores_editable_hooks_and_bytecode 

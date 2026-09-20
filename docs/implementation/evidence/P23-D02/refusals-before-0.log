@@ -1,0 +1,41 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0
+collecting ... collected 2 items
+
+data/audit/p23-remediation/stage04/test_d02_refusals_before.py::test_corrupt_completed_original_is_refused_without_overwrite FAILED [ 50%]
+data/audit/p23-remediation/stage04/test_d02_refusals_before.py::test_whole_file_over_record_cap_is_refused_before_publication FAILED [100%]
+
+================================== FAILURES ===================================
+________ test_corrupt_completed_original_is_refused_without_overwrite _________
+
+tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/refusals-before-tmp/test_corrupt_completed_origina0')
+
+    def test_corrupt_completed_original_is_refused_without_overwrite(tmp_path: Path) -> None:
+        fetcher(tmp_path).run()
+        cached = tmp_path / "output/rows.jsonl"
+        corrupted = b"X" * len(PAYLOAD)
+        cached.write_bytes(corrupted)
+>       with pytest.raises((ValueError, RuntimeError), match="checksum|integrity|corrupt"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE any of (ValueError, RuntimeError)
+
+data\audit\p23-remediation\stage04\test_d02_refusals_before.py:14: Failed
+________ test_whole_file_over_record_cap_is_refused_before_publication ________
+
+tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/refusals-before-tmp/test_whole_file_over_record_ca0')
+
+    def test_whole_file_over_record_cap_is_refused_before_publication(tmp_path: Path) -> None:
+>       with pytest.raises((ValueError, RuntimeError), match="record"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE any of (ValueError, RuntimeError)
+
+data\audit\p23-remediation\stage04\test_d02_refusals_before.py:20: Failed
+- generated xml file: D:\Project\xlm\data\audit\p23-remediation\stage04\refusals-before.xml -
+=========================== short test summary info ===========================
+FAILED data/audit/p23-remediation/stage04/test_d02_refusals_before.py::test_corrupt_completed_original_is_refused_without_overwrite - Failed: DID NOT RAISE any of (ValueError, RuntimeError)
+FAILED data/audit/p23-remediation/stage04/test_d02_refusals_before.py::test_whole_file_over_record_cap_is_refused_before_publication - Failed: DID NOT RAISE any of (ValueError, RuntimeError)
+============================== 2 failed in 2.82s ==============================

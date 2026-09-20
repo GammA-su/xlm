@@ -1,0 +1,21 @@
+# Nonnovel control: the existing pass-through objective, registered through the
+# plugin seam. Not a research contribution.
+manifest_version: "1"
+plugin_id: noop_objective
+version: "1"
+category: objective
+enabled: true
+entry_module: noop_objective_plugin.py
+register_function: register
+files:
+  - noop_objective_plugin.py
+capabilities:
+  loss_protocol: token_additive
+  supports_microbatching: true
+  has_auxiliary_parameters: false
+  requires_hidden_states: false
+parameter_accounting:
+  parameters: none beyond the baseline
+  state: none beyond the baseline
+  extra_compute_per_step: "0"
+novelty: nonnovel control for seam verification only

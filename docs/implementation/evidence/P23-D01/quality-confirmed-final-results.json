@@ -1,0 +1,67 @@
+[
+  {
+    "argv": [
+      "uv",
+      "run",
+      "--offline",
+      "--locked",
+      "--extra",
+      "cpu",
+      "--extra",
+      "eval",
+      "ruff",
+      "format",
+      "--check",
+      "src",
+      "tests"
+    ],
+    "cwd": "D:\\Project\\xlm",
+    "exit_code": 0,
+    "elapsed_seconds": 0.2339999999385327,
+    "sampled_peak_tree_rss_bytes": 42012672,
+    "log": "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage01\\after01\\quality-confirmed-final-0.log",
+    "limit_reason": null
+  },
+  {
+    "argv": [
+      "uv",
+      "run",
+      "--offline",
+      "--locked",
+      "--extra",
+      "cpu",
+      "--extra",
+      "eval",
+      "ruff",
+      "check",
+      "src",
+      "tests"
+    ],
+    "cwd": "D:\\Project\\xlm",
+    "exit_code": 0,
+    "elapsed_seconds": 0.2190000000409782,
+    "sampled_peak_tree_rss_bytes": 36724736,
+    "log": "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage01\\after01\\quality-confirmed-final-1.log",
+    "limit_reason": null
+  },
+  {
+    "argv": [
+      "uv",
+      "run",
+      "--offline",
+      "--locked",
+      "--extra",
+      "cpu",
+      "--extra",
+      "eval",
+      "mypy",
+      "src"
+    ],
+    "cwd": "D:\\Project\\xlm",
+    "exit_code": 0,
+    "elapsed_seconds": 1.562999999965541,
+    "sampled_peak_tree_rss_bytes": 130252800,
+    "log": "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage01\\after01\\quality-confirmed-final-2.log",
+    "limit_reason": null
+  }
+]

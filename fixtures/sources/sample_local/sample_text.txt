@@ -1,0 +1,5 @@
+This is a sample plain text document for local ingestion tests.
+It contains paragraphs, punctuation, and author-written sentences.
+Language models read canonical representations of text without silent alterations.
+Testing Unicode preservation: café, naïve, jalapeño, and 🚀 rocket.
+Literally mentioning <eos> and <pad> in plain prose.

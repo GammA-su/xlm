@@ -1,0 +1,113 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0
+collecting ... collected 3 items
+
+data/audit/p23-remediation/stage03/test_d03_before.py::test_document_visit_respects_declared_cap FAILED [ 33%]
+data/audit/p23-remediation/stage03/test_d03_before.py::test_uncapped_authored_stream_positive_control PASSED [ 66%]
+data/audit/p23-remediation/stage03/test_d03_before.py::test_public_cli_executes_registered_objective FAILED [100%]
+
+================================== FAILURES ===================================
+__________________ test_document_visit_respects_declared_cap __________________
+
+tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage03/before-tmp/test_document_visit_respects_d0')
+
+    def test_document_visit_respects_declared_cap(tmp_path: Path) -> None:
+        reader = authored_shard(tmp_path / "shard")
+        recipe = MixtureRecipe(mixture_id="capped", components=[MixtureComponent(source_id="authored", weight=1.0)],
+                               packing=PackingPolicy(max_document_tokens=4))
+        batcher = MixtureBatcher(recipe, {"authored": reader}, context_length=16, global_batch_valid_targets=16)
+        before = batcher._uncommitted["cursors"]["authored"]
+        window, _ = batcher._next_window("authored")
+        drawn = batcher._uncommitted["cursors"]["authored"] - before
+        (tmp_path / "observed.json").write_text(json.dumps({"declared_cap": 4, "drawn_tokens": drawn, "window_tokens": len(window)}))
+>       assert drawn <= 4, "PackingPolicy.max_document_tokens must bound one document/source visit"
+E       AssertionError: PackingPolicy.max_document_tokens must bound one document/source visit
+E       assert 17 <= 4
+
+data\audit\p23-remediation\stage03\test_d03_before.py:42: AssertionError
+________________ test_public_cli_executes_registered_objective ________________
+
+tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage03/before-tmp/test_public_cli_executes_regis0')
+
+    def test_public_cli_executes_registered_objective(tmp_path: Path) -> None:
+        from xlm.config import schemas  # register the existing built-ins
+        from xlm.core.registry import objectives
+    
+        assert schemas is not None and objectives.get("noop_objective", "1").factory is not None
+        plan = {
+            "id": "d03_registered_objective", "model": {"architecture": "transformer_baseline", "vocab_size": 64,
+                "hidden_size": 16, "intermediate_size": 32, "num_layers": 1, "num_attention_heads": 2,
+                "context_length": 8, "attention_backend": "eager"},
+            "objective": {"type": "noop_objective", "version": "1"},
+            "optimizer": {"type": "adamw", "lr": 0.01},
+            "data": {"synthetic_tokens": [4 + i % 50 for i in range(64)]},
+            "training": {"device": "cpu", "precision": "fp32", "context_length": 8, "global_batch_valid_targets": 8,
+                         "budget": {"max_valid_targets": 8, "max_train_seconds": 10},
+                         "schedule": {"type": "warmup_cosine", "warmup_valid_targets": 0, "horizon_valid_targets": 8}},
+        }
+        path = tmp_path / "plan.json"
+        path.write_text(json.dumps(plan), encoding="utf-8")
+        result = subprocess.run([sys.executable, "-m", "xlm.cli.main", "train", str(path), "--device", "cpu"],
+            env={**os.environ, "XLM_HOME": str(tmp_path / "home")}, capture_output=True, text=True, timeout=180)
+        (tmp_path / "observed.json").write_text(json.dumps({"returncode": result.returncode, "stdout": result.stdout,
+            "stderr": result.stderr, "checkpoints": [str(p) for p in (tmp_path / "home").rglob("model.pt")]}), encoding="utf-8")
+>       assert result.returncode == 0, result.stderr
+E       AssertionError: <frozen runpy>:128: RuntimeWarning: 'xlm.cli.main' found in sys.modules after import of package 'xlm.cli', but prior to execution of 'xlm.cli.main'; this may result in unpredictable behaviour
+E         Error: frozen worker failed (1): Traceback (most recent call last):
+E           File "D:\Project\xlm\data\audit\p23-remediation\stage03\before-tmp\test_public_cli_executes_regis0\home\runs\direct-e6b6500162594410a2f6ab75f55254ea\snapshot\code\src\xlm\experiments\bootstrap.py", line 50, in <module>
+E             raise SystemExit(main())
+E                              ^^^^^^
+E           File "D:\Project\xlm\data\audit\p23-remediation\stage03\before-tmp\test_public_cli_executes_regis0\home\runs\direct-e6b6500162594410a2f6ab75f55254ea\snapshot\code\src\xlm\experiments\bootstrap.py", line 46, in main
+E             return run_worker(request)
+E                    ^^^^^^^^^^^^^^^^^^^
+E           File "D:\Project\xlm\data\audit\p23-remediation\stage03\before-tmp\test_public_cli_executes_regis0\home\runs\direct-e6b6500162594410a2f6ab75f55254ea\snapshot\code\src\xlm\experiments\worker.py", line 99, in run_worker
+E             _train_in_process(Path(request["plan_path"]), execution=context, **request["options"])
+E           File "D:\Project\xlm\data\audit\p23-remediation\stage03\before-tmp\test_public_cli_executes_regis0\home\runs\direct-e6b6500162594410a2f6ab75f55254ea\snapshot\code\src\xlm\cli\train_cmd.py", line 231, in _train_in_process
+E             obj_cfg = CrossEntropyObjectiveConfig.model_validate(plan_dict.get("objective", {}))
+E                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           File "D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Lib\site-packages\pydantic\main.py", line 732, in model_validate
+E             return cls.__pydantic_validator__.validate_python(
+E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E         pydantic_core._pydantic_core.ValidationError: 1 validation error for CrossEntropyObjectiveConfig
+E         type
+E           Input should be 'cross_entropy' [type=literal_error, input_value='noop_objective', input_type=str]
+E             For further information visit https://errors.pydantic.dev/2.13/v/literal_error
+E         
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage01\\after01\\.venv\\Scripts\\python.exe', '-m', 'xlm.cli.main', 'train', 'D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\before-tmp\\test_public_cli_executes_regis0\\plan.json', '--device', 'cpu'], returncode=1, stdout='', stderr='<frozen runpy>:128: RuntimeWarning: \'xlm.cli.main\' found in sys.modules after import of package \'xlm.cli\', but prior to execution of \'xlm.cli.main\'; this may result in unpredictable behaviour\nError: frozen worker failed (1): Traceback (most recent call last):\n  File "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\before-tmp\\test_public_cli_executes_regis0\\home\\runs\\direct-e6b6500162594410a2f6ab75f55254ea\\snapshot\\code\\src\\xlm\\experiments\\bootstrap.py", line 50, in <module>\n    raise SystemExit(main())\n                     ^^^^^^\n  File "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\before-tmp\\test_public_cli_executes_regis0\\home\\runs\\direct-e6b6500162594410a2f6ab75f55254ea\\snapshot\\code\\src\\xlm\\experiments\\bootstrap.py", line 46, in main\n    return run_worker(request)\n           ^^^^^^^^^^^^^^^^^^^\n  File "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\before-tmp\\test_public_cli_executes_regis0\\home\\runs\\direct-e6b6500162594410a2f6ab75f55254ea\\snapshot\\code\\src\\xlm\\experiments\\worker.py", line 99, in run_worker\n    _train_in_process(Path(request["plan_path"]), execution=context, **request["options"])\n  File "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\before-tmp\\test_public_cli_executes_regis0\\home\\runs\\direct-e6b6500162594410a2f6ab75f55254ea\\snapshot\\code\\src\\xlm\\cli\\train_cmd.py", line 231, in _train_in_process\n    obj_cfg = CrossEntropyObjectiveConfig.model_validate(plan_dict.get("objective", {}))\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage01\\after01\\.venv\\Lib\\site-packages\\pydantic\\main.py", line 732, in model_validate\n    return cls.__pydantic_validator__.validate_python(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\npydantic_core._pydantic_core.ValidationError: 1 validation error for CrossEntropyObjectiveConfig\ntype\n  Input should be \'cross_entropy\' [type=literal_error, input_value=\'noop_objective\', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/literal_error\n\n').returncode
+
+data\audit\p23-remediation\stage03\test_d03_before.py:76: AssertionError
+- generated xml file: D:\Project\xlm\data\audit\p23-remediation\stage03\before.xml -
+=========================== short test summary info ===========================
+FAILED data/audit/p23-remediation/stage03/test_d03_before.py::test_document_visit_respects_declared_cap - AssertionError: PackingPolicy.max_document_tokens must bound one document/source visit
+assert 17 <= 4
+FAILED data/audit/p23-remediation/stage03/test_d03_before.py::test_public_cli_executes_registered_objective - AssertionError: <frozen runpy>:128: RuntimeWarning: 'xlm.cli.main' found in sys.modules after import of package 'xlm.cli', but prior to execution of 'xlm.cli.main'; this may result in unpredictable behaviour
+  Error: frozen worker failed (1): Traceback (most recent call last):
+    File "D:\Project\xlm\data\audit\p23-remediation\stage03\before-tmp\test_public_cli_executes_regis0\home\runs\direct-e6b6500162594410a2f6ab75f55254ea\snapshot\code\src\xlm\experiments\bootstrap.py", line 50, in <module>
+      raise SystemExit(main())
+                       ^^^^^^
+    File "D:\Project\xlm\data\audit\p23-remediation\stage03\before-tmp\test_public_cli_executes_regis0\home\runs\direct-e6b6500162594410a2f6ab75f55254ea\snapshot\code\src\xlm\experiments\bootstrap.py", line 46, in main
+      return run_worker(request)
+             ^^^^^^^^^^^^^^^^^^^
+    File "D:\Project\xlm\data\audit\p23-remediation\stage03\before-tmp\test_public_cli_executes_regis0\home\runs\direct-e6b6500162594410a2f6ab75f55254ea\snapshot\code\src\xlm\experiments\worker.py", line 99, in run_worker
+      _train_in_process(Path(request["plan_path"]), execution=context, **request["options"])
+    File "D:\Project\xlm\data\audit\p23-remediation\stage03\before-tmp\test_public_cli_executes_regis0\home\runs\direct-e6b6500162594410a2f6ab75f55254ea\snapshot\code\src\xlm\cli\train_cmd.py", line 231, in _train_in_process
+      obj_cfg = CrossEntropyObjectiveConfig.model_validate(plan_dict.get("objective", {}))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    File "D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Lib\site-packages\pydantic\main.py", line 732, in model_validate
+      return cls.__pydantic_validator__.validate_python(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  pydantic_core._pydantic_core.ValidationError: 1 validation error for CrossEntropyObjectiveConfig
+  type
+    Input should be 'cross_entropy' [type=literal_error, input_value='noop_objective', input_type=str]
+      For further information visit https://errors.pydantic.dev/2.13/v/literal_error
+  
+  
+assert 1 == 0
+ +  where 1 = CompletedProcess(args=['D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage01\\after01\\.venv\\Scripts\\python.exe', '-m', 'xlm.cli.main', 'train', 'D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\before-tmp\\test_public_cli_executes_regis0\\plan.json', '--device', 'cpu'], returncode=1, stdout='', stderr='<frozen runpy>:128: RuntimeWarning: \'xlm.cli.main\' found in sys.modules after import of package \'xlm.cli\', but prior to execution of \'xlm.cli.main\'; this may result in unpredictable behaviour\nError: frozen worker failed (1): Traceback (most recent call last):\n  File "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\before-tmp\\test_public_cli_executes_regis0\\home\\runs\\direct-e6b6500162594410a2f6ab75f55254ea\\snapshot\\code\\src\\xlm\\experiments\\bootstrap.py", line 50, in <module>\n    raise SystemExit(main())\n                     ^^^^^^\n  File "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\before-tmp\\test_public_cli_executes_regis0\\home\\runs\\direct-e6b6500162594410a2f6ab75f55254ea\\snapshot\\code\\src\\xlm\\experiments\\bootstrap.py", line 46, in main\n    return run_worker(request)\n           ^^^^^^^^^^^^^^^^^^^\n  File "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\before-tmp\\test_public_cli_executes_regis0\\home\\runs\\direct-e6b6500162594410a2f6ab75f55254ea\\snapshot\\code\\src\\xlm\\experiments\\worker.py", line 99, in run_worker\n    _train_in_process(Path(request["plan_path"]), execution=context, **request["options"])\n  File "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\before-tmp\\test_public_cli_executes_regis0\\home\\runs\\direct-e6b6500162594410a2f6ab75f55254ea\\snapshot\\code\\src\\xlm\\cli\\train_cmd.py", line 231, in _train_in_process\n    obj_cfg = CrossEntropyObjectiveConfig.model_validate(plan_dict.get("objective", {}))\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage01\\after01\\.venv\\Lib\\site-packages\\pydantic\\main.py", line 732, in model_validate\n    return cls.__pydantic_validator__.validate_python(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\npydantic_core._pydantic_core.ValidationError: 1 validation error for CrossEntropyObjectiveConfig\ntype\n  Input should be \'cross_entropy\' [type=literal_error, input_value=\'noop_objective\', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/literal_error\n\n').returncode
+======================== 2 failed, 1 passed in 52.17s =========================

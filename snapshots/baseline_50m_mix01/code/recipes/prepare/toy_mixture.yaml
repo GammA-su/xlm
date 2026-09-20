@@ -1,0 +1,15 @@
+# Toy single-source mixture over the offline fixture shards (P12 recipe format).
+# Weights are shares of valid target tokens and must sum to 1.0 exactly.
+mixture_id: toy_fixture
+data_seed: 20260919
+model_seed: 20260920
+max_share_drift: 0.05
+components:
+  - source_id: fixture_cleaning
+    weight: 1.0
+exhaustion:
+  repeat: false
+  max_epochs: 1
+packing:
+  mode: causal_stream
+  cross_document_attention: true

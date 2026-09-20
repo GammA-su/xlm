@@ -1,0 +1,19 @@
+# Nonnovel control: byte-tokenizer behavior through the plugin seam, used only to
+# verify tokenizer extensibility and deterministic scoring. Not a research
+# contribution.
+manifest_version: "1"
+plugin_id: noop_tokenizer
+version: "1"
+category: tokenizer
+enabled: true
+entry_module: noop_tokenizer_plugin.py
+register_function: register
+files:
+  - noop_tokenizer_plugin.py
+capabilities:
+  deterministic_scoring: true
+parameter_accounting:
+  parameters: none
+  state: none
+  extra_compute_per_step: "0"
+novelty: nonnovel control for seam verification only

@@ -1,0 +1,35 @@
+{
+  "commands": [
+    {
+      "argv": [
+        "uv",
+        "run",
+        "--offline",
+        "--locked",
+        "--extra",
+        "cpu",
+        "--extra",
+        "eval",
+        "pytest",
+        "tests/test_frozen_execution.py",
+        "tests/test_frozen_recovery.py",
+        "tests/test_queue.py",
+        "tests/test_experiment_plans.py",
+        "-vv",
+        "-m",
+        "not network and not cuda and not operator",
+        "-o",
+        "faulthandler_timeout=240",
+        "--basetemp=D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage02\\after05\\core-tmp",
+        "--junitxml=D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage02\\after05\\core.xml"
+      ],
+      "cwd": "D:\\Project\\xlm",
+      "exit_code": 0,
+      "elapsed_seconds": 1450.0779999999795,
+      "sampled_peak_tree_rss_bytes": 884035584,
+      "log": "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage02\\after05\\core-0.log",
+      "limit_reason": null
+    }
+  ],
+  "source_unchanged": true
+}

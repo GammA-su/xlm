@@ -1,0 +1,4 @@
+{"id": "pair_0", "context": "The cat sat on the mat.", "choices": ["The cat sat on the mat.", "The cat sat mat on the."], "answer": 0}
+{"id": "pair_1", "context": "She quickly finished her homework.", "choices": ["She quickly finished her homework.", "She finished quickly her homework."], "answer": 0}
+{"id": "pair_2", "context": "The bright stars shone at night.", "choices": ["The bright stars shone at night.", "The stars bright shone at night."], "answer": 0}
+{"id": "pair_3", "context": "He drank a glass of cold water.", "choices": ["He drank a glass of cold water.", "He a glass of cold water drank."], "answer": 0}

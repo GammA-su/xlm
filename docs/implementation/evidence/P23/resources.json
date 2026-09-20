@@ -1,0 +1,35 @@
+{
+  "repo/.venv": {
+    "logical_bytes": 1082404715,
+    "files": 46860
+  },
+  "final-repo/.venv": {
+    "logical_bytes": 1082427467,
+    "files": 46860
+  },
+  "cuda-venv": {
+    "logical_bytes": 4490611308,
+    "files": 21487
+  },
+  "verified-evidence": {
+    "logical_bytes": 62592102,
+    "files": 3697
+  },
+  "evidence": {
+    "logical_bytes": 188364,
+    "files": 28
+  },
+  "cuda-profile": {
+    "logical_bytes": 26227192,
+    "files": 15
+  },
+  "cuda-home": {
+    "logical_bytes": 0,
+    "files": 0
+  },
+  "live": {
+    "logical_bytes": 52849,
+    "files": 8
+  },
+  "note": "Logical file sizes; hardlinked/shared dependency bytes may be counted more than once. Excludes pre-existing uv package cache. Retained fixture artifacts included; no production disk-quota claim. Selected directories only; excludes original-system temporary pytest directories, earlier intermediate audit iterations, and the original checkout environment."
+}

@@ -1,0 +1,58 @@
+data:
+  exposure_plan: D:\Project\xlm\data\audit\p23-remediation\stage03\after04\focused-tmp\test_public_two_source_prepare0\exposure.json
+  mixture:
+    components:
+    - shard_id: null
+      source_id: alpha
+      weight: 0.75
+    - shard_id: null
+      source_id: zeta
+      weight: 0.25
+    data_seed: 42
+    exhaustion:
+      max_epochs: 1
+      max_repeated_targets: null
+      repeat: false
+    max_share_drift: 0.02
+    mixture_id: two_sources
+    model_seed: 7
+    packing:
+      cross_document_attention: true
+      max_document_tokens: 4
+      mode: causal_stream
+  sources:
+    alpha: D:\Project\xlm\data\audit\p23-remediation\stage03\after04\focused-tmp\test_public_two_source_prepare0\shards\alpha
+    zeta: D:\Project\xlm\data\audit\p23-remediation\stage03\after04\focused-tmp\test_public_two_source_prepare0\shards\zeta
+  tokenizer:
+    target_vocab_size: 260
+    type: bpe
+  tokenizer_artifact: D:\Project\xlm\data\audit\p23-remediation\stage03\after04\focused-tmp\test_public_two_source_prepare0\tokenizer
+id: authored_d03
+model:
+  architecture: transformer_baseline
+  attention_backend: eager
+  context_length: 8
+  hidden_size: 16
+  intermediate_size: 32
+  num_attention_heads: 2
+  num_layers: 1
+  vocab_size: 260
+objective:
+  type: cross_entropy
+optimizer:
+  lr: 0.01
+  type: adamw
+training:
+  budget:
+    max_train_seconds: 30
+    max_valid_targets: 33
+  checkpoint_every_valid_targets: 16
+  context_length: 8
+  data_seed: 42
+  device: cpu
+  global_batch_valid_targets: 16
+  init_seed: 7
+  microbatch_sequences: 2
+  precision: fp32
+  schedule:
+    type: constant

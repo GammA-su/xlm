@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="1" time="87.020" timestamp="2026-09-20T10:58:01.954928+02:00" hostname="BetA-C1"><testcase classname="tests.test_frozen_recovery" name="test_real_crash_preserves_committed_boundary_on_retry" time="84.723" /></testsuite></testsuites>

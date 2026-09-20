@@ -1,0 +1,65 @@
+{
+  "scope": "LIVE metadata-file acquisition only; corpus-row adapter pilot BLOCKED",
+  "discovery": {
+    "bytes_transferred": 46692,
+    "decompressed_bytes": 0,
+    "requests_made": 2,
+    "elapsed_seconds": 0.859
+  },
+  "fetch": {
+    "schema_version": 1,
+    "plan_id": "p23_finewiki_metadata_pilot",
+    "plan_hash": "b57579d33f5174ed5bae13f5c4c225b76ad6f4bdb2f8759fb7ee5f1ec34f3f1e",
+    "status": "COMPLETED",
+    "transferred_bytes": 21702,
+    "decompressed_bytes": 0,
+    "temp_disk_bytes": 0,
+    "output_disk_bytes": 21702,
+    "requests_made": 0,
+    "cache_hits": 0,
+    "records_acquired": 0,
+    "file_progress": {
+      "language_subsets.csv": {
+        "file_path": "language_subsets.csv",
+        "bytes_downloaded": 21702,
+        "total_expected": 21702,
+        "etag": "\"85b0356a9bed5fc0f2bc2ba956b36070c6a729c8\"",
+        "last_modified": null,
+        "verified_prefix_bytes": 21702,
+        "status": "completed",
+        "error": null
+      }
+    },
+    "started_at": "2026-09-19T18:08:09.308354+00:00",
+    "updated_at": "2026-09-19T18:08:09.748724+00:00",
+    "error_reason": null
+  },
+  "receipt": {
+    "schema_version": 1,
+    "receipt_id": "receipt_p23_finewiki_metadata_pilot",
+    "plan_id": "p23_finewiki_metadata_pilot",
+    "plan_hash": "b57579d33f5174ed5bae13f5c4c225b76ad6f4bdb2f8759fb7ee5f1ec34f3f1e",
+    "source_id": "finewiki",
+    "view_id": "default",
+    "provider": "huggingface",
+    "repository": "HuggingFaceFW/finewiki",
+    "revision": "8bd13e72e6a002407649b3e898535f42ceb1aeb9",
+    "mode": "whole_file",
+    "eligibility": "pilot_only",
+    "files": [
+      {
+        "relative_path": "language_subsets.csv",
+        "size_bytes": 21702,
+        "locally_computed_sha256": "d4392c4e4d4d2e2c4341a5db8de7403f51aaa9ca5a2c457b2f1b12fd03f54fc4",
+        "provider_declared_checksum": null,
+        "independent_expected_sha256": null,
+        "independent_checksum_verified": false,
+        "record_count": null
+      }
+    ],
+    "resource_metrics": {},
+    "created_at": "2026-09-19T18:08:09.786540+00:00",
+    "is_verified": true,
+    "verification_notes": []
+  }
+}

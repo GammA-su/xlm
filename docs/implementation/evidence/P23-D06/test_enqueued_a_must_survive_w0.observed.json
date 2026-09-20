@@ -1,0 +1,11 @@
+{
+  "result": {
+    "ran": false,
+    "job_id": "run_7c6f175e9c10d24f",
+    "state": "BLOCKED",
+    "reason": "working tree diverged from snapshot: src/xlm/training/trainer.py: content changed after capture"
+  },
+  "observed_train_step_origins": [],
+  "queue_fixture_only": true,
+  "python": "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage01\\after01\\.venv\\Scripts\\python.exe"
+}

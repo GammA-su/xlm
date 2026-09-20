@@ -1,0 +1,20 @@
+{
+  "before-0.log": "cbf4d8781f40898d7f3ac494b421d7c641a07048bca226a6a86b1f58ddc53836",
+  "before-results.json": "8413902afaec40561fc6b0dfd5408f98495f55d209314255ceb810d5568af370",
+  "before-source-after.json": "261c590d91eb59239abdfbc64a9ded8d5ae4b4bd2e13551ef4829fa023e06078",
+  "before-source-before.json": "261c590d91eb59239abdfbc64a9ded8d5ae4b4bd2e13551ef4829fa023e06078",
+  "before-tmp/test_concurrent_reservations_s0/observed.json": "c3d4b59da41e1fac9b90c9601a368bc2648af136e052c8080072404840e09fc9",
+  "before-tmp/test_declared_record_cap_bound0/observed.json": "b64ac744f00cbb7e375fdf2fe31c4eb14097039cf8390eb202948eded3de8b95",
+  "before-tmp/test_durable_consumption_survi0/observed.json": "123393e32d8224f263cc6b18c17ff3861d8e641376d912629ee54433daa90a03",
+  "before-tmp/test_same_length_corrupted_cac0/observed.json": "18e0e7bc141464413131c2b020783219116b1cc5fabfafabf3b0b724e2f732f0",
+  "before.xml": "dd2498343cc566624775773d6aff679760ee1731a4e8a036b75ae511b7e5b426",
+  "PLAN.md": "cdea72e44ad4cfb549df13d1b024d2d6d9a1b0c5a96d2e8dccb94c38b9ddb4b5",
+  "refusals-before-0.log": "8f62f6727871a0357b04aa73eb91eb60437ce9989c84bcc3aafa3b1060c8f481",
+  "refusals-before-results.json": "6196633a853e0b4f066bd359c6e869b8b41b431933676bf1f4037a4d61705f28",
+  "refusals-before-source-after.json": "6a1cbd057a87936875170cf07794446159e17d9189fb8743cbb9b3cce9fc7867",
+  "refusals-before-source-before.json": "6a1cbd057a87936875170cf07794446159e17d9189fb8743cbb9b3cce9fc7867",
+  "refusals-before.xml": "efa26bfdfaced74ca46549d0c9f29c8a8dfe3fb05b24e976ec817f8d7382ebab",
+  "run_before.py": "a807bc659ddd50f78452bbd154714864c325d28e35c6f735dd0a15ea400d9498",
+  "test_d02_before.py": "a6a9260807afdb4be1aab6879e66be1f76996110fab2d252cbc18abeb2b35c18",
+  "test_d02_refusals_before.py": "cfb1046defcad535d8206c6aa59d28a618cda6fa0618a9a58c6107bc36eb798d"
+}

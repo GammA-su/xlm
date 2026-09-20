@@ -1,0 +1,12 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0
+collecting ... collected 1 item
+
+tests/test_training_vocabulary.py::test_authored_ids_do_not_excuse_a_declared_tokenizer_vocabulary_mismatch PASSED [100%]
+
+- generated xml file: D:\Project\xlm\data\audit\p23-remediation\stage03\after05\vocabulary.xml -
+============================== 1 passed in 4.10s ==============================

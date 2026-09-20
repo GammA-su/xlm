@@ -1,0 +1,13 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0
+collecting ... collected 2 items
+
+tests/test_continuation_p05.py::test_cpu_fresh_process_continuation_parity PASSED [ 50%]
+tests/test_cli_train_demo.py::test_cli_train_and_resume_subprocess PASSED [100%]
+
+- generated xml file: D:\Project\xlm\data\audit\p23-remediation\stage02\after04\continuation-correction.xml -
+======================== 2 passed in 184.43s (0:03:04) ========================

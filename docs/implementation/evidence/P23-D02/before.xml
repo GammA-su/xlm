@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="4" skipped="0" tests="5" time="1.873" timestamp="2026-09-20T12:43:22.226269+02:00" hostname="BetA-C1"><testcase classname="data.audit.p23-remediation.stage04.test_d02_before" name="test_durable_consumption_survives_restart" time="0.374"><failure message="AssertionError: restart must not replenish transfer allowance&#10;assert 0 &gt;= 44&#10; +  where 44 = AcquisitionState(schema_version=1, plan_id='authored_d02', plan_hash='42cd3236b935900f45f783440c71c1516463e4038fc79f417622b47f662435b1', status='COMPLETED', transferred_bytes=44, decompressed_bytes=0, temp_disk_bytes=0, output_disk_bytes=44, requests_made=1, cache_hits=0, records_acquired=0, file_progress={'rows.jsonl': FileProgress(file_path='rows.jsonl', bytes_downloaded=44, total_expected=44, etag='&quot;authored-v1&quot;', last_modified=None, verified_prefix_bytes=44, status='completed', error=None)}, started_at='2026-09-20T10:43:22.683026+00:00', updated_at='2026-09-20T10:43:22.977725+00:00', error_reason=None).transferred_bytes">tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/before-tmp/test_durable_consumption_survi0')
+
+    def test_durable_consumption_survives_restart(tmp_path: Path) -&gt; None:
+        first = fetcher(tmp_path)
+        state = first.run()
+        resumed = fetcher(tmp_path)
+        actual = resumed.capacity_mgr.snapshot()["transferred_bytes"]
+        observe(tmp_path, {"durable_consumed": state.transferred_bytes, "resumed_accounting": actual})
+&gt;       assert actual &gt;= state.transferred_bytes, "restart must not replenish transfer allowance"
+E       AssertionError: restart must not replenish transfer allowance
+E       assert 0 &gt;= 44
+E        +  where 44 = AcquisitionState(schema_version=1, plan_id='authored_d02', plan_hash='42cd3236b935900f45f783440c71c1516463e4038fc79f417622b47f662435b1', status='COMPLETED', transferred_bytes=44, decompressed_bytes=0, temp_disk_bytes=0, output_disk_bytes=44, requests_made=1, cache_hits=0, records_acquired=0, file_progress={'rows.jsonl': FileProgress(file_path='rows.jsonl', bytes_downloaded=44, total_expected=44, etag='"authored-v1"', last_modified=None, verified_prefix_bytes=44, status='completed', error=None)}, started_at='2026-09-20T10:43:22.683026+00:00', updated_at='2026-09-20T10:43:22.977725+00:00', error_reason=None).transferred_bytes
+
+data\audit\p23-remediation\stage04\test_d02_before.py:55: AssertionError</failure></testcase><testcase classname="data.audit.p23-remediation.stage04.test_d02_before" name="test_same_length_corrupted_cache_is_not_reused" time="0.369"><failure message="AssertionError: same length is not content integrity&#10;assert b'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX' == b'{&quot;text&quot;:&quot;authored A&quot;}\n{&quot;text&quot;:&quot;authored B&quot;}\n'&#10;  &#10;  At index 0 diff: b'X' != b'{'&#10;  &#10;  Full diff:&#10;  - (b'{&quot;text&quot;:&quot;authored A&quot;}\n{&quot;text&quot;:&quot;authored B&quot;}\n')&#10;  + (b'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')">tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/before-tmp/test_same_length_corrupted_cac0')
+
+    def test_same_length_corrupted_cache_is_not_reused(tmp_path: Path) -&gt; None:
+        fetcher(tmp_path).run()
+        cached = tmp_path / "output/rows.jsonl"
+        cached.write_bytes(b"X" * len(PAYLOAD))
+        resumed = fetcher(tmp_path)
+        state = resumed.run()
+        observe(tmp_path, {"status": state.status, "cache_hits": state.cache_hits,
+            "actual_hash": hashlib.sha256(cached.read_bytes()).hexdigest(),
+            "expected_hash": hashlib.sha256(PAYLOAD).hexdigest()})
+&gt;       assert cached.read_bytes() == PAYLOAD, "same length is not content integrity"
+E       AssertionError: same length is not content integrity
+E       assert b'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX' == b'{"text":"authored A"}\n{"text":"authored B"}\n'
+E         
+E         At index 0 diff: b'X' != b'{'
+E         
+E         Full diff:
+E         - (b'{"text":"authored A"}\n{"text":"authored B"}\n')
+E         + (b'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+
+data\audit\p23-remediation\stage04\test_d02_before.py:67: AssertionError</failure></testcase><testcase classname="data.audit.p23-remediation.stage04.test_d02_before" name="test_declared_record_cap_bounds_retained_corpus" time="0.236"><failure message="AssertionError: max_records must be a processing/retention gate&#10;assert 2 &lt;= 1&#10; +  where 2 = len([b'{&quot;text&quot;:&quot;authored A&quot;}', b'{&quot;text&quot;:&quot;authored B&quot;}'])">tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/before-tmp/test_declared_record_cap_bound0')
+
+    def test_declared_record_cap_bounds_retained_corpus(tmp_path: Path) -&gt; None:
+        state = fetcher(tmp_path, records=1).run()
+        records = (tmp_path / "output/rows.jsonl").read_bytes().splitlines()
+        observe(tmp_path, {"declared_cap": 1, "retained_records": len(records),
+                          "reported_records": state.records_acquired, "status": state.status})
+&gt;       assert len(records) &lt;= 1, "max_records must be a processing/retention gate"
+E       AssertionError: max_records must be a processing/retention gate
+E       assert 2 &lt;= 1
+E        +  where 2 = len([b'{"text":"authored A"}', b'{"text":"authored B"}'])
+
+data\audit\p23-remediation\stage04\test_d02_before.py:75: AssertionError</failure></testcase><testcase classname="data.audit.p23-remediation.stage04.test_d02_before" name="test_concurrent_reservations_share_remaining_allowance" time="0.003"><failure message="AssertionError: accepted reservations must reserve shared remaining allowance&#10;assert 2 &lt;= 1">tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/before-tmp/test_concurrent_reservations_s0')
+
+    def test_concurrent_reservations_share_remaining_allowance(tmp_path: Path) -&gt; None:
+        manager = StorageCapacityManager(4096, 4096, 4096, 4096)
+        def reserve(_):
+            try:
+                manager.reserve_transfer(3000)
+                return 1
+            except BudgetExhaustedError:
+                return 0
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            accepted = sum(executor.map(reserve, range(2)))
+        observe(tmp_path, {"limit": 4096, "reservation_bytes": 3000, "accepted": accepted})
+&gt;       assert accepted &lt;= 1, "accepted reservations must reserve shared remaining allowance"
+E       AssertionError: accepted reservations must reserve shared remaining allowance
+E       assert 2 &lt;= 1
+
+data\audit\p23-remediation\stage04\test_d02_before.py:89: AssertionError</failure></testcase><testcase classname="data.audit.p23-remediation.stage04.test_d02_before" name="test_authored_single_transfer_positive_control" time="0.253" /></testsuite></testsuites>

@@ -1,0 +1,25 @@
+# Fixed-recipe architecture comparison: 50M vs 150M on identical data exposure.
+# Draft only: run evidence does not exist yet, so this must never be read as a
+# result. Track rules come from the P17 comparison contracts.
+schema_version: 1
+kind: comparison_recipe
+id: arch_fixed_50m_150m
+status: draft_requires_evidence
+track: architecture
+baseline_run: null
+candidate_run: null
+allowed_differences:
+  - architecture_id
+  - model_config
+  - total_params
+fixed:
+  - tokenizer_hash
+  - mixture_id
+  - packing
+  - objective_id
+  - optimizer_id
+  - budget_targets
+  - horizon_kind
+notes:
+  - Same mixture, tokenizer, packing, objective, optimizer allowance, budget and horizon.
+  - Only the architecture (and paired initialization) may differ.

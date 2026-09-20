@@ -1,0 +1,32 @@
+{
+  "commands": [
+    {
+      "argv": [
+        "uv",
+        "run",
+        "--offline",
+        "--locked",
+        "--extra",
+        "cpu",
+        "--extra",
+        "eval",
+        "pytest",
+        "data/audit/p23-remediation/stage04/test_d02_refusals_before.py",
+        "-o",
+        "faulthandler_timeout=0",
+        "-vv",
+        "-m",
+        "not network and not cuda and not operator",
+        "--basetemp=D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage04\\refusals-before-tmp",
+        "--junitxml=D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage04\\refusals-before.xml"
+      ],
+      "cwd": "D:\\Project\\xlm",
+      "exit_code": 1,
+      "elapsed_seconds": 3.688000000000102,
+      "sampled_peak_tree_rss_bytes": 111640576,
+      "log": "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage04\\refusals-before-0.log",
+      "limit_reason": null
+    }
+  ],
+  "source_unchanged": true
+}

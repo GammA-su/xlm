@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "plan_id": "p23_finewiki_metadata_recheck",
+  "source_id": "finewiki",
+  "view_id": "default",
+  "provider": "huggingface",
+  "repository": "HuggingFaceFW/finewiki",
+  "revision": "8bd13e72e6a002407649b3e898535f42ceb1aeb9",
+  "mode": "whole_file",
+  "selected_files": [
+    "language_subsets.csv"
+  ],
+  "row_ranges": null,
+  "sampling_frame": {
+    "total_remote_files": null,
+    "selected_files": [],
+    "selection_seed": null,
+    "sampling_method": "explicit_file_list",
+    "coverage_notes": "",
+    "selection_bias_warning": "Warning: Selected subset is not a uniform random sample of the full corpus. Domain, temporal, and shard clustering effects apply."
+  },
+  "expected_bytes": 21702,
+  "expected_file_digests": {},
+  "limits": {
+    "max_transferred_bytes": 1048576,
+    "max_decompressed_bytes": 1048576,
+    "max_records": 100,
+    "max_temp_disk_bytes": 2097152,
+    "max_output_disk_bytes": 2097152,
+    "max_requests": 3,
+    "max_retries": 1,
+    "per_request_timeout_seconds": 15.0,
+    "overall_deadline_seconds": 60.0,
+    "max_decompression_ratio": 15.0,
+    "max_workers": 1
+  },
+  "output_artifact_id": "p23_finewiki_metadata_recheck",
+  "admitted_source_reference": null,
+  "is_pilot": true,
+  "authorization": {
+    "authorization_hash": "30b5610182145dec08c3d098bf36e55acab6343b34d87517a77573bd9f00a2d8",
+    "authorized_by": "user_P23_explicit_session_approval",
+    "authorized_at": "2026-09-19T18:19:38.311333+00:00",
+    "scope": "metadata-only pilot; no corpus records admitted",
+    "is_pilot_approved": true,
+    "bound_limits_hash": ""
+  },
+  "plan_hash": "30b5610182145dec08c3d098bf36e55acab6343b34d87517a77573bd9f00a2d8"
+}

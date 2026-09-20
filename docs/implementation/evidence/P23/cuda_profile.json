@@ -1,0 +1,145 @@
+{
+  "accumulation_steps": 2,
+  "backend": {
+    "arbitrary_mask": false,
+    "configured": "sdpa",
+    "device": "cuda",
+    "fallback_notes": [
+      "SDPA kernel availability (probed): mem_efficient, math.",
+      "Flash attention unavailable; SDPA uses a slower kernel."
+    ],
+    "sdpa_kernels": {
+      "flash": false,
+      "math": true,
+      "mem_efficient": true
+    },
+    "selected": "sdpa"
+  },
+  "freeze": {
+    "accumulation_steps": 2,
+    "activation_checkpointing": false,
+    "attention_backend": "sdpa",
+    "compile": false,
+    "context_length": 64,
+    "device": "cuda",
+    "global_batch_valid_targets": 128,
+    "microbatch_sequences": 1,
+    "model_config_hash": "8763704e40157bb9",
+    "model_id": "tiny",
+    "precision": "bf16_fp32_master",
+    "profile_version": "1",
+    "torch_version": "2.14.0+cu126"
+  },
+  "model_id": "tiny",
+  "preflight": {
+    "compute_capability": "8.9",
+    "device": "cuda",
+    "disk_free_gib": 203.44,
+    "gpu_name": "NVIDIA GeForce RTX 4090",
+    "torch_cuda_build": "12.6",
+    "torch_version": "2.14.0+cu126",
+    "vram_lower_bound_gib": 0.02,
+    "vram_total_gib": 23.99
+  },
+  "profile_version": "1",
+  "request": {
+    "activation_checkpointing": false,
+    "attention_backend": "sdpa",
+    "compile": false,
+    "compile_mode": "default",
+    "context_length": 64,
+    "device": "cuda",
+    "dry_steps": 2,
+    "global_batch_valid_targets": 128,
+    "max_vram_fraction": 0.9,
+    "microbatch_candidates": [
+      1
+    ],
+    "min_disk_gib": 5.0,
+    "model_config": {
+      "architecture": "transformer_baseline",
+      "architecture_version": "1",
+      "attention_backend": "profile_required",
+      "bias": false,
+      "context_length": 64,
+      "dropout": 0.0,
+      "expected_unique_parameters": 2179392,
+      "ffn": "swiglu",
+      "hidden_size": 64,
+      "initialization_policy": "baseline_v1",
+      "intermediate_size": 128,
+      "max_deployed_parameters": 5000000,
+      "normalization": "rmsnorm",
+      "num_attention_heads": 2,
+      "num_layers": 2,
+      "position_encoding": "rope",
+      "tie_embeddings": true,
+      "vocab_size": 32768
+    },
+    "model_id": "tiny",
+    "precision": "bf16_fp32_master",
+    "seed": 101,
+    "worker_timeout_seconds": 120.0
+  },
+  "resource_plan": {
+    "budget_valid_targets": 1024,
+    "checkpoint_gib": 0.02439663279801607,
+    "checkpoint_save_seconds": 0.34299999999348074,
+    "eta_seconds_range": [
+      0.37600000016391283,
+      0.37600000016391283
+    ],
+    "forward_flops_per_token_estimate": 4358784,
+    "optimizer_state_gib": 0.016237810254096985,
+    "peak_reserved_gib": 0.099609375,
+    "throughput_tokens_per_sec_range": [
+      2723.4042541319127,
+      2723.4042541319127
+    ],
+    "train_flops_per_token_estimate": 13076352,
+    "uncertainty_notes": [
+      "Throughput range spans feasible microbatch sizes on the profiled device;",
+      "it is a measurement interval, not a promise.",
+      "ETA covers training steps only; evaluation and checkpoint saves are",
+      "reported separately (checkpoint_save_seconds per save).",
+      "FLOP figures are formula estimates for transformer_baseline, not profiler counts.",
+      "Loader wait is measured on synthetic in-memory tokens; real loader",
+      "wait must be re-measured against the production loader."
+    ],
+    "unique_parameters": 2179392
+  },
+  "selected_microbatch_sequences": 1,
+  "sizes": [
+    {
+      "backend": {
+        "arbitrary_mask": false,
+        "configured": "sdpa",
+        "device": "cuda",
+        "fallback_notes": [
+          "SDPA kernel availability (probed): mem_efficient, math.",
+          "Flash attention unavailable; SDPA uses a slower kernel."
+        ],
+        "sdpa_kernels": {
+          "flash": false,
+          "math": true,
+          "mem_efficient": true
+        },
+        "selected": "sdpa"
+      },
+      "build_seconds": 1.4380000000237487,
+      "checkpoint_bytes": 26195685,
+      "checkpoint_save_seconds": 0.34299999999348074,
+      "cpu_rss_gib": 1.503509521484375,
+      "failure_reason": null,
+      "feasible": true,
+      "loader_wait_seconds": 0.0,
+      "measured_valid_targets_per_step": 64,
+      "microbatch_sequences": 1,
+      "optimizer_state_bytes": 17435216,
+      "peak_allocated_gib": 0.07212209701538086,
+      "peak_reserved_gib": 0.099609375,
+      "step_seconds": 0.02350000001024455,
+      "tokens_per_sec": 2723.4042541319127
+    }
+  ]
+}

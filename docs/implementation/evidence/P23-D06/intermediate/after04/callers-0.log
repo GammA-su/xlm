@@ -1,0 +1,88 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0
+collecting ... collected 27 items
+
+tests/test_checkpoint.py::test_checksum_valid_checkpoint_still_refuses_pickle_globals PASSED [  3%]
+tests/test_checkpoint.py::test_checkpoint_save_and_reload_roundtrip PASSED [  7%]
+tests/test_checkpoint.py::test_checkpoint_checksum_corruption_detection PASSED [ 11%]
+tests/test_checkpoint.py::test_checkpoint_plan_compatibility_validation PASSED [ 14%]
+tests/test_checkpoint.py::test_checkpoint_tied_weights_mismatch_detected PASSED [ 18%]
+tests/test_checkpoint.py::test_checkpoint_fork_lineage PASSED            [ 22%]
+tests/test_cli_train_demo.py::test_cli_demo_subprocess PASSED            [ 25%]
+tests/test_cli_train_demo.py::test_cli_run_inspect_subprocess PASSED     [ 29%]
+tests/test_cli_train_demo.py::test_cli_train_and_resume_subprocess FAILED [ 33%]
+tests/test_cli_eval_gen.py::test_cli_demo_complete_vertical_slice_subprocess PASSED [ 37%]
+tests/test_cli_eval_gen.py::test_cli_evaluate_and_generate_subprocess PASSED [ 40%]
+tests/test_offline_workflow.py::test_offline_workflow_from_clean_environment Timeout (0:04:00)!
+Thread 0x0001a390 (most recent call first):
+  File "C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\subprocess.py", line 1599 in _readerthread
+  File "C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\threading.py", line 1012 in run
+  File "C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\threading.py", line 1032 in _bootstrap
+
+Thread 0x00015368 (most recent call first):
+  File "C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\subprocess.py", line 1599 in _readerthread
+  File "C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\threading.py", line 1012 in run
+  File "C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\threading.py", line 1032 in _bootstrap
+
+Thread 0x00011824 (most recent call first):
+  File "C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\threading.py", line 1169 in _wait_for_tstate_lock
+  File "C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\threading.py", line 1153 in join
+  File "C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\subprocess.py", line 1628 in _communicate
+  File "C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\subprocess.py", line 1209 in communicate
+  File "C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\subprocess.py", line 550 in run
+  File "D:\Project\xlm\tests\test_offline_workflow.py", line 26 in _run
+  File "D:\Project\xlm\tests\test_offline_workflow.py", line 230 in test_offline_workflow_from_clean_environment
+  File "D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Lib\site-packages\_pytest\python.py", line 167 in pytest_pyfunc_call
+  File "D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Lib\site-packages\_pytest\python.py", line 1707 in runtest
+  File "D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Lib\site-packages\_pytest\runner.py", line 184 in pytest_runtest_call
+  File "D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Lib\site-packages\_pytest\runner.py", line 250 in <lambda>
+  File "D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Lib\site-packages\_pytest\runner.py", line 361 in from_call
+  File "D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Lib\site-packages\_pytest\runner.py", line 249 in call_and_report
+  File "D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Lib\site-packages\_pytest\runner.py", line 139 in runtestprotocol
+  File "D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Lib\site-packages\_pytest\runner.py", line 118 in pytest_runtest_protocol
+  File "D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Lib\site-packages\_pytest\main.py", line 408 in pytest_runtestloop
+  File "D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Lib\site-packages\_pytest\main.py", line 384 in _main
+  File "D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Lib\site-packages\_pytest\main.py", line 330 in wrap_session
+  File "D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Lib\site-packages\_pytest\main.py", line 377 in pytest_cmdline_main
+  File "D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Lib\site-packages\_pytest\config\__init__.py", line 229 in _main
+  File "D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Lib\site-packages\_pytest\config\__init__.py", line 253 in _console_main
+  File "D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Scripts\pytest.exe\__main__.py", line 10 in <module>
+  File "<frozen runpy>", line 88 in _run_code
+  File "<frozen runpy>", line 198 in _run_module_as_main
+PASSED [ 44%]
+tests/test_offline_workflow.py::test_prepare_restart_reuses_verified_acquisition PASSED [ 48%]
+tests/test_offline_workflow.py::test_each_dimension_uses_its_intended_interface PASSED [ 51%]
+tests/test_offline_workflow.py::test_large_campaigns_prepare_without_launching PASSED [ 55%]
+tests/test_final_acceptance.py::test_prepare_rejects_corrupted_existing_output PASSED [ 59%]
+tests/test_final_acceptance.py::test_prepare_hashes_copy_inputs_and_policy PASSED [ 62%]
+tests/test_final_acceptance.py::test_failed_check_stops_preparation_and_records_failure PASSED [ 66%]
+tests/test_final_acceptance.py::test_prepare_duplicate_yaml_keys_are_rejected PASSED [ 70%]
+tests/test_final_acceptance.py::test_blocked_upstream_blocks_pending_downstream PASSED [ 74%]
+tests/test_final_acceptance.py::test_request_budget_counts_attempts_across_restart PASSED [ 77%]
+tests/test_final_acceptance.py::test_seed_pairs_follow_recorded_ids_not_argument_order PASSED [ 81%]
+tests/test_final_acceptance.py::test_remote_harness_task_is_refused_before_dataset_loading PASSED [ 85%]
+tests/test_final_acceptance.py::test_missing_explicit_tokenizer_never_uses_byte_fixture PASSED [ 88%]
+tests/test_final_acceptance.py::test_cli_missing_data_is_refused_even_in_dry_run[False] PASSED [ 92%]
+tests/test_final_acceptance.py::test_cli_missing_data_is_refused_even_in_dry_run[True] PASSED [ 96%]
+tests/test_final_acceptance.py::test_cli_resume_reconstructs_real_settings_and_exact_nonmultiple_budget 

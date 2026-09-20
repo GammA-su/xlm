@@ -1,0 +1,27 @@
+{
+  "reason": "Superseded by settled-source D06 verification after completed-resume guard and continuation fixture correction",
+  "roots": [
+    20548,
+    25432,
+    87528,
+    88528,
+    101288,
+    107088
+  ],
+  "owned_tree_pids": [
+    20548,
+    25432,
+    28528,
+    72384,
+    86912,
+    87528,
+    88528,
+    90852,
+    96024,
+    98248,
+    101268,
+    101288,
+    104968,
+    107088
+  ]
+}

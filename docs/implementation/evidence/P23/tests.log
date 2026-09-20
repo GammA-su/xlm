@@ -1,0 +1,29 @@
+........................................................................ [  8%]
+........................................................................ [ 16%]
+........................................................................ [ 24%]
+..........................................s............................. [ 32%]
+........................................................................ [ 40%]
+........................................................................ [ 48%]
+........................................................................ [ 56%]
+........................................................................ [ 65%]
+........................................................................ [ 73%]
+........................................................................ [ 81%]
+........................................................................ [ 89%]
+........................................................................ [ 97%]
+.....................                                                    [100%]
+============================ slowest 10 durations =============================
+107.46s call     tests/test_harness_adapter.py::test_harness_fixture_task_matches_native_acc_and_acc_norm
+63.68s call     tests/test_harness_adapter.py::test_evidence_cache_reuses_and_recomputes_on_identity_change
+36.55s call     tests/test_offline_workflow.py::test_offline_workflow_from_clean_environment
+24.08s call     tests/test_prepare.py::test_full_toy_run_reuses_on_repeat
+23.23s call     tests/test_harness_adapter.py::test_no_op_model_scores_match_native_exactly
+22.52s call     tests/test_harness_adapter.py::test_bounded_run_records_the_limit_and_withholds_the_index
+18.53s call     tests/test_cuda_execution.py::test_cpu_compile_eager_parity
+17.61s call     tests/test_prepare.py::test_partial_outputs_resume_without_redo
+16.56s call     tests/test_harness_adapter.py::test_task_manager_discovers_the_authored_fixture
+15.70s call     tests/test_offline_workflow.py::test_prepare_restart_reuses_verified_acquisition
+=========================== short test summary info ===========================
+SKIPPED [1] ..\..\..\..\tests\test_cuda_execution.py:405: torch.compile unavailable on cpu: InductorError: InvalidCxxCompiler: Compiler: cl is not found.
+
+Set TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS="+dynamo"
+884 passed, 1 skipped, 12 deselected in 586.04s (0:09:46)

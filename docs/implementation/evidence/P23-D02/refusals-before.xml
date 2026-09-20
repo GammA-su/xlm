@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="2" time="2.787" timestamp="2026-09-20T13:06:20.398430+02:00" hostname="BetA-C1"><testcase classname="data.audit.p23-remediation.stage04.test_d02_refusals_before" name="test_corrupt_completed_original_is_refused_without_overwrite" time="1.550"><failure message="Failed: DID NOT RAISE any of (ValueError, RuntimeError)">tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/refusals-before-tmp/test_corrupt_completed_origina0')
+
+    def test_corrupt_completed_original_is_refused_without_overwrite(tmp_path: Path) -&gt; None:
+        fetcher(tmp_path).run()
+        cached = tmp_path / "output/rows.jsonl"
+        corrupted = b"X" * len(PAYLOAD)
+        cached.write_bytes(corrupted)
+&gt;       with pytest.raises((ValueError, RuntimeError), match="checksum|integrity|corrupt"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE any of (ValueError, RuntimeError)
+
+data\audit\p23-remediation\stage04\test_d02_refusals_before.py:14: Failed</failure></testcase><testcase classname="data.audit.p23-remediation.stage04.test_d02_refusals_before" name="test_whole_file_over_record_cap_is_refused_before_publication" time="0.578"><failure message="Failed: DID NOT RAISE any of (ValueError, RuntimeError)">tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/refusals-before-tmp/test_whole_file_over_record_ca0')
+
+    def test_whole_file_over_record_cap_is_refused_before_publication(tmp_path: Path) -&gt; None:
+&gt;       with pytest.raises((ValueError, RuntimeError), match="record"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE any of (ValueError, RuntimeError)
+
+data\audit\p23-remediation\stage04\test_d02_refusals_before.py:20: Failed</failure></testcase></testsuite></testsuites>

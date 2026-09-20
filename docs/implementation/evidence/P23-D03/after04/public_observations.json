@@ -1,0 +1,169 @@
+[
+  {
+    "fixture": "test_public_two_source_prepare0",
+    "checkpoint": "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\after04\\focused-tmp\\test_public_two_source_prepare0\\direct-home\\checkpoints\\run_authored_d03_final",
+    "source_counters": {
+      "alpha": {
+        "source_id": "alpha",
+        "valid_targets": 25,
+        "repeated_targets": 0,
+        "content_targets": 25,
+        "eos_targets": 0,
+        "bos_excluded": 0,
+        "padding_excluded": 39,
+        "documents_visited": 1,
+        "canonical_bytes": 25,
+        "repeated_bytes": 0,
+        "epoch": 0,
+        "cursor": 0,
+        "unique_targets": 25
+      },
+      "zeta": {
+        "source_id": "zeta",
+        "valid_targets": 8,
+        "repeated_targets": 0,
+        "content_targets": 8,
+        "eos_targets": 0,
+        "bos_excluded": 0,
+        "padding_excluded": 16,
+        "documents_visited": 1,
+        "canonical_bytes": 8,
+        "repeated_bytes": 0,
+        "epoch": 0,
+        "cursor": 0,
+        "unique_targets": 8
+      }
+    },
+    "committed_stream_cursors": {
+      "alpha": 26,
+      "zeta": 9
+    },
+    "committed_stream_carry": {
+      "alpha": 36,
+      "zeta": 224
+    },
+    "targets": 33,
+    "trace_digest": "03305aa0d1d88efe4142d2c109baa56573eeacf9b49529d1e1f26f7ad1b9d8b9",
+    "auxiliary_parameter": null,
+    "optimizer_saved_keys": [
+      "manifest",
+      "state_dict"
+    ],
+    "components": {
+      "model": {
+        "key": "transformer_baseline:1",
+        "serializer": "1"
+      },
+      "objective": {
+        "key": "cross_entropy:1",
+        "serializer": "1"
+      },
+      "optimizer": {
+        "key": "adamw:1",
+        "serializer": "1"
+      },
+      "schedule": {
+        "key": "constant:1",
+        "serializer": "1"
+      }
+    },
+    "tokenizer_identity": {
+      "artifact_hash": "cdb67c9aea8e1d0ecfc9ddbbdf54a3563899a453a3017f83b1e38fb92b7071c4",
+      "component": {
+        "key": "bpe:1",
+        "serializer": "1"
+      },
+      "fingerprint": "de7c6631c4e5acf7e2e505e8b358e27535b6bcb1fdfc28b882f4219c2458be84",
+      "type": "ByteLevelBPETokenizer"
+    },
+    "worker_pid": 34596,
+    "snapshot_dir": "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\after04\\focused-tmp\\test_public_two_source_prepare0\\direct-home\\runs\\direct-8cca4ecedd9b4f82b737c9f6313e028a\\snapshot",
+    "plugin_origins": {}
+  },
+  {
+    "fixture": "test_public_two_source_prepare1",
+    "checkpoint": "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\after04\\focused-tmp\\test_public_two_source_prepare1\\direct-home\\checkpoints\\run_authored_d03_final",
+    "source_counters": {
+      "alpha": {
+        "source_id": "alpha",
+        "valid_targets": 25,
+        "repeated_targets": 0,
+        "content_targets": 25,
+        "eos_targets": 0,
+        "bos_excluded": 0,
+        "padding_excluded": 39,
+        "documents_visited": 1,
+        "canonical_bytes": 25,
+        "repeated_bytes": 0,
+        "epoch": 0,
+        "cursor": 0,
+        "unique_targets": 25
+      },
+      "zeta": {
+        "source_id": "zeta",
+        "valid_targets": 8,
+        "repeated_targets": 0,
+        "content_targets": 8,
+        "eos_targets": 0,
+        "bos_excluded": 0,
+        "padding_excluded": 16,
+        "documents_visited": 1,
+        "canonical_bytes": 8,
+        "repeated_bytes": 0,
+        "epoch": 0,
+        "cursor": 0,
+        "unique_targets": 8
+      }
+    },
+    "committed_stream_cursors": {
+      "alpha": 26,
+      "zeta": 9
+    },
+    "committed_stream_carry": {
+      "alpha": 36,
+      "zeta": 224
+    },
+    "targets": 33,
+    "trace_digest": "03305aa0d1d88efe4142d2c109baa56573eeacf9b49529d1e1f26f7ad1b9d8b9",
+    "auxiliary_parameter": 1.029984474182129,
+    "optimizer_saved_keys": [
+      "manifest",
+      "state_dict"
+    ],
+    "components": {
+      "model": {
+        "key": "authored_architecture:1",
+        "serializer": "1"
+      },
+      "objective": {
+        "key": "authored_aux:1",
+        "serializer": "1"
+      },
+      "optimizer": {
+        "key": "authored_optimizer:1",
+        "serializer": "1"
+      },
+      "schedule": {
+        "key": "constant:1",
+        "serializer": "1"
+      }
+    },
+    "tokenizer_identity": {
+      "artifact_hash": "cdb67c9aea8e1d0ecfc9ddbbdf54a3563899a453a3017f83b1e38fb92b7071c4",
+      "component": {
+        "key": "authored_tokenizer:1",
+        "serializer": "1"
+      },
+      "fingerprint": "de7c6631c4e5acf7e2e505e8b358e27535b6bcb1fdfc28b882f4219c2458be84",
+      "type": "ByteLevelBPETokenizer"
+    },
+    "worker_pid": 46140,
+    "snapshot_dir": "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage03\\after04\\focused-tmp\\test_public_two_source_prepare1\\direct-home\\runs\\direct-97ed24df031743568b2215b7f8e28d1e\\snapshot",
+    "plugin_origins": {
+      "xlm_plugin_authored_architecture_1": "src/xlm/plugins/authored_architecture/entry.py",
+      "xlm_plugin_authored_aux_1": "src/xlm/plugins/authored_aux/entry.py",
+      "xlm_plugin_authored_optimizer_1": "src/xlm/plugins/authored_optimizer/entry.py",
+      "xlm_plugin_authored_tokenizer_1": "src/xlm/plugins/authored_tokenizer/entry.py"
+    }
+  }
+]

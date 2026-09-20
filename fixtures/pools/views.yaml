@@ -1,0 +1,22 @@
+# Deterministic source views over the P10 split fixture corpus.
+# Two views drawing on ONE family, so the overlap audit has something real to say
+# about view-versus-family independence.
+views:
+  - view_id: fixture_prose
+    family_id: fixture_cleaning
+    declared_raw_byte_share: 0.7
+    priority: 10
+    selector:
+      source_ids: [fixture_cleaning]
+      document_kinds: [prose]
+    notes:
+      - "Prose records from the cleaning fixture family."
+  - view_id: fixture_code
+    family_id: fixture_cleaning
+    declared_raw_byte_share: 0.3
+    priority: 5
+    selector:
+      source_ids: [fixture_cleaning]
+      document_kinds: [code]
+    notes:
+      - "Code records from the same family; not an independent source."

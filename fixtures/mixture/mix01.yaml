@@ -1,0 +1,21 @@
+# A three-source mixture over the P12 fixture shards.
+# Weights are shares of VALID TARGET TOKENS under the frozen tokenizer (C07),
+# not document counts and not publisher estimates. They must sum to 1.0 exactly;
+# nothing here is renormalized silently.
+mixture_id: mix01_fixture
+data_seed: 20260919
+model_seed: 20260920
+max_share_drift: 0.02
+components:
+  - source_id: encyclopedia
+    weight: 0.55
+  - source_id: web_forum
+    weight: 0.30
+  - source_id: code_repo
+    weight: 0.15
+exhaustion:
+  repeat: false
+  max_epochs: 1
+packing:
+  mode: causal_stream
+  cross_document_attention: true

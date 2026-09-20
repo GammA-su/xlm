@@ -1,0 +1,30 @@
+{
+  "repository": "SimpleStories/SimpleStories",
+  "revision": "e63b8adc3b1a1bdc7cac5b500d150b71346b0628",
+  "license": "mit",
+  "files": [
+    {
+      "path": ".gitattributes",
+      "size": 2419,
+      "oid": "55cab133643a2a73e083373d2106533678d0edd5"
+    },
+    {
+      "path": "README.md",
+      "size": 4176,
+      "oid": "cdb4c8f896a166844dc2b5058616f99ce62d5d97"
+    },
+    {
+      "path": "processed.parquet",
+      "size": 431432698,
+      "oid": "db38daf553ffc638c72cd20109d0716d2e7940f8"
+    }
+  ],
+  "cursor": null,
+  "count": 3,
+  "metrics": {
+    "bytes_transferred": 3736,
+    "decompressed_bytes": 0,
+    "requests_made": 2,
+    "elapsed_seconds": 0.343
+  }
+}

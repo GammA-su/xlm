@@ -1,0 +1,61 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Environment and virtualenv
+.venv/
+venv/
+ENV/
+env/
+
+# Build artifacts and packaging
+dist/
+build/
+*.egg-info/
+*.egg
+
+# Test and linter caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Local XLM runtime storage and artifacts
+data/raw/
+data/clean/
+data/shards/
+runs/
+/artifacts/
+/data/audit/
+checkpoints/
+.staging/
+.locks/
+*.sqlite
+*.sqlite3
+*.db
+
+# Large weights and binaries (keep fixtures in tests/ allowed)
+*.parquet
+*.safetensors
+*.pt
+*.bin
+
+# Secrets and environment files
+secrets/
+.env
+.env.*
+!.env.example
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini

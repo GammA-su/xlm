@@ -1,0 +1,23 @@
+# Nonnovel control: identical computation to the baseline Transformer, used only
+# to verify the architecture extension seam. Not a research contribution.
+manifest_version: "1"
+plugin_id: noop_architecture
+version: "1"
+category: architecture
+enabled: true
+entry_module: noop_architecture_plugin.py
+register_function: register
+files:
+  - noop_architecture_plugin.py
+capabilities:
+  has_recurrent_state: false
+  supports_state_reset: true
+  declares_auxiliary_outputs: false
+  requires_auxiliary_outputs: false
+  supports_kv_cache: false
+  uses_inference_only_inputs: true
+parameter_accounting:
+  parameters: identical to the wrapped baseline Transformer
+  state: none beyond baseline parameters
+  extra_compute_per_step: "0"
+novelty: nonnovel control for seam verification only

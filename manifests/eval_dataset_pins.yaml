@@ -1,0 +1,40 @@
+{
+  "_budget": {
+    "bytes_transferred": 59996,
+    "decompressed_bytes": 0,
+    "elapsed_seconds": 0.656,
+    "requests_made": 4
+  },
+  "arc_easy": {
+    "declared_license": "cc-by-sa-4.0",
+    "is_gated": false,
+    "notes": null,
+    "repository": "allenai/ai2_arc",
+    "resolved": true,
+    "revision": "210d026faf9955653af8916fad021475a3f00453"
+  },
+  "blimp": {
+    "declared_license": "cc-by-4.0",
+    "is_gated": false,
+    "notes": null,
+    "repository": "nyu-mll/blimp",
+    "resolved": true,
+    "revision": "877fba0801ffb7cbd8c39c1ff314a46f053f6036"
+  },
+  "hellaswag": {
+    "declared_license": null,
+    "is_gated": false,
+    "notes": null,
+    "repository": "Rowan/hellaswag",
+    "resolved": true,
+    "revision": "218ec52e09a7e7462a5400043bb9a69a41d06b76"
+  },
+  "piqa": {
+    "declared_license": null,
+    "is_gated": false,
+    "notes": null,
+    "repository": "baber/piqa",
+    "resolved": true,
+    "revision": "142f6d7367fd9877f0fb3b5734ea6a545f54cdd1"
+  }
+}

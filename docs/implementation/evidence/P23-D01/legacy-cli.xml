@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="9.563" timestamp="2026-09-19T22:03:24.956809+02:00" hostname="BetA-C1"><testcase classname="tests.test_artifact_identity" name="test_actual_public_cli_current_and_legacy_artifacts" time="9.189"><failure message="assert 'legacy checksum-only artifact cannot be reused' in (&quot;Imported 1 documents from source 'd01_legacy'.\nTotal canonical UTF-8 bytes: 56\nSplit breakdown: {'train': 1}\nWritt...\audit\\p23-remediation\\stage01\\after01\\legacy-cli-tmp\\test_actual_public_cli_current0\\scratch\\documents.jsonl\n&quot; + &quot;&lt;frozen runpy&gt;:128: RuntimeWarning: 'xlm.cli.main' found in sys.modules after import of package 'xlm.cli', but prior ...acy checksum-only artifact \ncannot be reused as a v2 request; preserve it and explicitly choose a new \nartifact ID\n&quot;)&#10; +  where &quot;Imported 1 documents from source 'd01_legacy'.\nTotal canonical UTF-8 bytes: 56\nSplit breakdown: {'train': 1}\nWritt...\audit\\p23-remediation\\stage01\\after01\\legacy-cli-tmp\\test_actual_public_cli_current0\\scratch\\documents.jsonl\n&quot; = CompletedProcess(args=['D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage01\\after01\\.venv\\Scripts\\python.exe',...cy checksum-only artifact \ncannot be reused as a v2 request; preserve it and explicitly choose a new \nartifact ID\n').stdout&#10; +  and   &quot;&lt;frozen runpy&gt;:128: RuntimeWarning: 'xlm.cli.main' found in sys.modules after import of package 'xlm.cli', but prior ...acy checksum-only artifact \ncannot be reused as a v2 request; preserve it and explicitly choose a new \nartifact ID\n&quot; = CompletedProcess(args=['D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage01\\after01\\.venv\\Scripts\\python.exe',...cy checksum-only artifact \ncannot be reused as a v2 request; preserve it and explicitly choose a new \nartifact ID\n').stderr">tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage01/after01/legacy-cli-tmp/test_actual_public_cli_current0')
+
+    def test_actual_public_cli_current_and_legacy_artifacts(tmp_path: Path) -&gt; None:
+        import json
+        import os
+        import subprocess
+        import sys
+    
+        root = Path(__file__).resolve().parents[1]
+        home = tmp_path / "home"
+        source = tmp_path / "fixture.txt"
+        source.write_text("An authored local fixture for immutable publication.\n", encoding="utf-8")
+        env = {**os.environ, "XLM_HOME": str(home), "PYTHONPATH": str(root / "src")}
+    
+        def cli(*args: str) -&gt; subprocess.CompletedProcess[str]:
+            return subprocess.run(
+                [sys.executable, "-m", "xlm.cli.main", *args],
+                env=env,
+                cwd=tmp_path,
+                text=True,
+                capture_output=True,
+                timeout=30,
+            )
+    
+        args = (
+            "data",
+            "import-local",
+            "--input",
+            str(source),
+            "--source-id",
+            "d01_cli",
+            "--format",
+            "text",
+            "--output-dir",
+            str(tmp_path / "scratch"),
+            "--publish",
+        )
+        first = cli(*args)
+        assert first.returncode == 0, first.stderr
+        path = home / "clean/canonical_d01_cli"
+        original = snapshot(path)
+        second = cli(*args)
+        assert second.returncode == 0, second.stderr
+        assert snapshot(path) == original
+        result = cli("artifact", "inspect", "canonical_d01_cli", "--json")
+        assert result.returncode == 0, result.stderr
+        data = json.loads(result.stdout)
+        assert data["schema_version"] == 2 and data["identity_scope"] == "declared-request-v2"
+        assert cli("artifact", "verify", "canonical_d01_cli").returncode == 0
+        source.write_text("Different authored text with the same publication name.\n", encoding="utf-8")
+        changed = cli(*args)
+        assert changed.returncode != 0
+        assert "Artifact conflict" in changed.stderr + changed.stdout
+        assert snapshot(path) == original
+        legacy = legacy_artifact(home, "canonical_d01_legacy")
+        preserved = snapshot(legacy)
+        inspected = cli("artifact", "inspect", legacy.name, "--json")
+        assert inspected.returncode == 0
+        assert json.loads(inspected.stdout)["identity_scope"] == "legacy-checksum-only"
+        verified = cli("artifact", "verify", legacy.name)
+        assert verified.returncode == 0 and "Legacy integrity only" in verified.stdout
+        legacy_args = tuple("d01_legacy" if arg == "d01_cli" else arg for arg in args)
+        refused = cli(*legacy_args)
+        assert refused.returncode != 0
+&gt;       assert "legacy checksum-only artifact cannot be reused" in refused.stdout + refused.stderr
+E       assert 'legacy checksum-only artifact cannot be reused' in ("Imported 1 documents from source 'd01_legacy'.\nTotal canonical UTF-8 bytes: 56\nSplit breakdown: {'train': 1}\nWritt...\audit\\p23-remediation\\stage01\\after01\\legacy-cli-tmp\\test_actual_public_cli_current0\\scratch\\documents.jsonl\n" + "&lt;frozen runpy&gt;:128: RuntimeWarning: 'xlm.cli.main' found in sys.modules after import of package 'xlm.cli', but prior ...acy checksum-only artifact \ncannot be reused as a v2 request; preserve it and explicitly choose a new \nartifact ID\n")
+E        +  where "Imported 1 documents from source 'd01_legacy'.\nTotal canonical UTF-8 bytes: 56\nSplit breakdown: {'train': 1}\nWritt...\audit\\p23-remediation\\stage01\\after01\\legacy-cli-tmp\\test_actual_public_cli_current0\\scratch\\documents.jsonl\n" = CompletedProcess(args=['D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage01\\after01\\.venv\\Scripts\\python.exe',...cy checksum-only artifact \ncannot be reused as a v2 request; preserve it and explicitly choose a new \nartifact ID\n').stdout
+E        +  and   "&lt;frozen runpy&gt;:128: RuntimeWarning: 'xlm.cli.main' found in sys.modules after import of package 'xlm.cli', but prior ...acy checksum-only artifact \ncannot be reused as a v2 request; preserve it and explicitly choose a new \nartifact ID\n" = CompletedProcess(args=['D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage01\\after01\\.venv\\Scripts\\python.exe',...cy checksum-only artifact \ncannot be reused as a v2 request; preserve it and explicitly choose a new \nartifact ID\n').stderr
+
+tests\test_artifact_identity.py:395: AssertionError</failure></testcase></testsuite></testsuites>

@@ -1,0 +1,25 @@
+{
+  "measurement": "Logical retained file sizes, including hardlinks; not allocated space or full job/cache cost",
+  "paths": {
+    "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage01\\after01\\.venv": {
+      "files": 45472,
+      "logical_bytes": 1040906308
+    },
+    "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage01\\after01\\focused-final-tmp": {
+      "files": 170,
+      "logical_bytes": 399060
+    },
+    "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage01\\after01\\callers-final-tmp": {
+      "files": 713,
+      "logical_bytes": 40369898
+    },
+    "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage01\\after01\\legacy-cli-tmp": {
+      "files": 10,
+      "logical_bytes": 16145
+    },
+    "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage02\\before-tmp": {
+      "files": 1385,
+      "logical_bytes": 13248471
+    }
+  }
+}

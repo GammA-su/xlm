@@ -1,0 +1,12 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0
+collecting ... collected 1 item
+
+tests/test_frozen_recovery.py::test_real_crash_preserves_committed_boundary_on_retry PASSED [100%]
+
+- generated xml file: D:\Project\xlm\data\audit\p23-remediation\stage02\after02\recovery-probe.xml -
+======================== 1 passed in 87.02s (0:01:27) =========================

@@ -1,0 +1,37 @@
+[
+  {
+    "argv": [
+      "uv",
+      "run",
+      "--offline",
+      "--locked",
+      "--extra",
+      "cpu",
+      "--extra",
+      "eval",
+      "pytest",
+      "tests/test_checkpoint.py",
+      "tests/test_models.py",
+      "tests/test_cli_train_demo.py",
+      "tests/test_cli_eval_gen.py",
+      "tests/test_export.py",
+      "tests/test_source_admission.py",
+      "tests/test_acquisition_verifier.py",
+      "tests/test_tokenizers.py",
+      "tests/test_data_adapters.py",
+      "tests/test_offline_workflow.py",
+      "tests/test_final_acceptance.py",
+      "-q",
+      "-m",
+      "not network and not cuda and not operator",
+      "--basetemp=D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage01\\after01\\callers-final-tmp",
+      "--junitxml=D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage01\\after01\\callers-final.xml"
+    ],
+    "cwd": "D:\\Project\\xlm",
+    "exit_code": 0,
+    "elapsed_seconds": 165.60999999998603,
+    "sampled_peak_tree_rss_bytes": 751747072,
+    "log": "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage01\\after01\\callers-final-0.log",
+    "limit_reason": null
+  }
+]

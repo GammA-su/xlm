@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="47.255" timestamp="2026-09-20T10:09:58.165723+02:00" hostname="BetA-C1"><testcase classname="tests.test_frozen_execution" name="test_real_frozen_worker_trains_and_publishes" time="44.912"><failure message="AssertionError: {'ran': True, 'job_id': 'run_b9b5ed0d281270c4', 'state': 'FAILED', 'reason': 'RuntimeError: frozen worker failed (1): ... ValueError(f&quot;unverifiable XLM module origin: {name}&quot;)&#10;  ValueError: unverifiable XLM module origin: xlm.artifacts&#10;  &#10;  '}&#10;assert 'FAILED' == 'SUCCEEDED'&#10;  &#10;  - SUCCEEDED&#10;  + FAILED">tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage02/after01/control2-tmp/test_real_frozen_worker_trains0')
+
+    def test_real_frozen_worker_trains_and_publishes(tmp_path: Path) -&gt; None:
+        plan, queue, job_id, _, snapshot = frozen_fixture(tmp_path, 'print("D06_AUTHORED_A", flush=True)')
+        result = queue.run_job(job_id)
+&gt;       assert result["state"] == "SUCCEEDED", result
+E       AssertionError: {'ran': True, 'job_id': 'run_b9b5ed0d281270c4', 'state': 'FAILED', 'reason': 'RuntimeError: frozen worker failed (1): ... ValueError(f"unverifiable XLM module origin: {name}")
+E         ValueError: unverifiable XLM module origin: xlm.artifacts
+E         
+E         '}
+E       assert 'FAILED' == 'SUCCEEDED'
+E         
+E         - SUCCEEDED
+E         + FAILED
+
+tests\test_frozen_execution.py:77: AssertionError</failure></testcase></testsuite></testsuites>

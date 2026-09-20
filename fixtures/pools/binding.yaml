@@ -1,0 +1,20 @@
+# Pool binding for the demo/pilot fixture pool. Every required component is bound;
+# omitting any one of them blocks publication.
+source_revisions:
+  fixture_cleaning: rev_fixture_1
+selected_raw_files:
+  fixture_cleaning:
+    - shard_00.jsonl
+    - shard_01.jsonl
+    - shard_02.jsonl
+    - shard_03.jsonl
+    - shard_04.jsonl
+    - shard_05.jsonl
+row_locator_digest: fixture_rows_v1
+cleaning_policy_identity: e5737733dfd63eb859ff10647d0128e611af2a9ef691db258dc5c613f0baf5ae
+dedup_policy_identity: 6e4674bb1f1c41b2acc3d3b88bbb116c
+exclusion_policy_identity: 42c9447e07d5ce0c32d00b31599553de
+split_policy_identity: 0a4e842c25b20748fb40fa9df67d0d3c
+license_receipts:
+  fixture_cleaning: cc-by-4.0 (authored synthetic fixture, no third-party rights)
+producer_code_version: p11_pool_builder_v1

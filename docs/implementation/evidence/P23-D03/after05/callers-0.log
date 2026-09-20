@@ -1,0 +1,38 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0
+collecting ... collected 27 items
+
+tests/test_checkpoint.py::test_checksum_valid_checkpoint_still_refuses_pickle_globals PASSED [  3%]
+tests/test_checkpoint.py::test_checkpoint_save_and_reload_roundtrip PASSED [  7%]
+tests/test_checkpoint.py::test_checkpoint_checksum_corruption_detection PASSED [ 11%]
+tests/test_checkpoint.py::test_checkpoint_plan_compatibility_validation PASSED [ 14%]
+tests/test_checkpoint.py::test_checkpoint_tied_weights_mismatch_detected PASSED [ 18%]
+tests/test_checkpoint.py::test_checkpoint_fork_lineage PASSED            [ 22%]
+tests/test_cli_train_demo.py::test_cli_demo_subprocess PASSED            [ 25%]
+tests/test_cli_train_demo.py::test_cli_run_inspect_subprocess PASSED     [ 29%]
+tests/test_cli_train_demo.py::test_cli_train_and_resume_subprocess PASSED [ 33%]
+tests/test_cli_eval_gen.py::test_cli_demo_complete_vertical_slice_subprocess PASSED [ 37%]
+tests/test_cli_eval_gen.py::test_cli_evaluate_and_generate_subprocess PASSED [ 40%]
+tests/test_offline_workflow.py::test_offline_workflow_from_clean_environment PASSED [ 44%]
+tests/test_offline_workflow.py::test_prepare_restart_reuses_verified_acquisition PASSED [ 48%]
+tests/test_offline_workflow.py::test_each_dimension_uses_its_intended_interface PASSED [ 51%]
+tests/test_offline_workflow.py::test_large_campaigns_prepare_without_launching PASSED [ 55%]
+tests/test_final_acceptance.py::test_prepare_rejects_corrupted_existing_output PASSED [ 59%]
+tests/test_final_acceptance.py::test_prepare_hashes_copy_inputs_and_policy PASSED [ 62%]
+tests/test_final_acceptance.py::test_failed_check_stops_preparation_and_records_failure PASSED [ 66%]
+tests/test_final_acceptance.py::test_prepare_duplicate_yaml_keys_are_rejected PASSED [ 70%]
+tests/test_final_acceptance.py::test_blocked_upstream_blocks_pending_downstream PASSED [ 74%]
+tests/test_final_acceptance.py::test_request_budget_counts_attempts_across_restart PASSED [ 77%]
+tests/test_final_acceptance.py::test_seed_pairs_follow_recorded_ids_not_argument_order PASSED [ 81%]
+tests/test_final_acceptance.py::test_remote_harness_task_is_refused_before_dataset_loading PASSED [ 85%]
+tests/test_final_acceptance.py::test_missing_explicit_tokenizer_never_uses_byte_fixture PASSED [ 88%]
+tests/test_final_acceptance.py::test_cli_missing_data_is_refused_even_in_dry_run[False] PASSED [ 92%]
+tests/test_final_acceptance.py::test_cli_missing_data_is_refused_even_in_dry_run[True] PASSED [ 96%]
+tests/test_final_acceptance.py::test_cli_resume_reconstructs_real_settings_and_exact_nonmultiple_budget PASSED [100%]
+
+- generated xml file: D:\Project\xlm\data\audit\p23-remediation\stage03\after05\callers.xml -
+======================= 27 passed in 590.33s (0:09:50) ========================

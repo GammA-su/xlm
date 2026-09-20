@@ -1,0 +1,34 @@
+﻿[
+    {
+        "Path":  "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage01\\test_d01_before.py",
+        "Hash":  "ED44B0228AB260DDF89381FFEA34D0FAC9F291DBE4FC0E81E59D47FC8BBC5D7C"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage01\\before.log",
+        "Hash":  "A42852DB1AE85B0B87AF4882717AE80E60E17C33F43CC151841D6184C613E723"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage01\\before.xml",
+        "Hash":  "64BD768E199F2D5A829CEBEFE829899A672E3C73CAC391A3649E2D93ACF1687E"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\uv.lock",
+        "Hash":  "3C1B906F49047DAB3C27253E800083E7ECEE16657882F9A89A85AFF110EA9C0E"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\pyproject.toml",
+        "Hash":  "A66458C5F227C43792047C674D23B7499E76D0E25766E9B93C9E88403981ACF2"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\.python-version",
+        "Hash":  "AA0D6581054E6E4FF3F91839DECA7A854AD37221B8784D060B42D0F847FF1A3B"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\CONTRACTS.md",
+        "Hash":  "46CAA6763BA09788691D118A174B375752B9394A10406379F3B8980C7CA943A3"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\EVALUATION_POLICY.md",
+        "Hash":  "74FFBC03B82851665326D68510D55B34B88FE5F05258D56FC572EC6C9B83FF97"
+    }
+]

@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "D:\Project\xlm\data\audit\p23-remediation\stage02\after05\core-tmp\test_worker_rejects_cli_overri0\snapshot\code\src\xlm\experiments\bootstrap.py", line 50, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "D:\Project\xlm\data\audit\p23-remediation\stage02\after05\core-tmp\test_worker_rejects_cli_overri0\snapshot\code\src\xlm\experiments\bootstrap.py", line 46, in main
+    return run_worker(request)
+           ^^^^^^^^^^^^^^^^^^^
+  File "D:\Project\xlm\data\audit\p23-remediation\stage02\after05\core-tmp\test_worker_rejects_cli_overri0\snapshot\code\src\xlm\experiments\worker.py", line 57, in run_worker
+    validate_request_options(request)
+  File "D:\Project\xlm\data\audit\p23-remediation\stage02\after05\core-tmp\test_worker_rejects_cli_overri0\snapshot\code\src\xlm\experiments\worker.py", line 37, in validate_request_options
+    raise ValueError(f"worker option '{key}' differs from frozen execution")
+ValueError: worker option 'max_targets' differs from frozen execution

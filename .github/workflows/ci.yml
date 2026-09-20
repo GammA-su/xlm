@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.11.6"
+          enable-cache: true
+
+      - name: Set up Python 3.12
+        run: uv python install 3.12
+
+      - name: Verify dependency lock consistency
+        run: uv lock --check
+
+      - name: Sync dependencies (CPU extra)
+        run: uv sync --locked --extra cpu
+
+      - name: Check code formatting
+        run: uv run --locked --extra cpu ruff format --check
+
+      - name: Run linter
+        run: uv run --locked --extra cpu ruff check
+
+      - name: Run type checker
+        run: uv run --locked --extra cpu mypy src tests
+
+      - name: Run offline test suite
+        run: uv run --locked --extra cpu pytest -q -m "not network and not cuda and not operator"

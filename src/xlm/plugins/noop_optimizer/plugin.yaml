@@ -1,0 +1,19 @@
+# Nonnovel control: baseline AdamW mathematics through the plugin seam, used only
+# to verify optimizer extensibility. Not a research contribution.
+manifest_version: "1"
+plugin_id: noop_optimizer
+version: "1"
+category: optimizer
+enabled: true
+entry_module: noop_optimizer_plugin.py
+register_function: register
+files:
+  - noop_optimizer_plugin.py
+capabilities:
+  requires_closure: false
+  has_optimizer_state: true
+parameter_accounting:
+  parameters: none beyond the baseline
+  state: identical AdamW first/second moments
+  extra_compute_per_step: "0"
+novelty: nonnovel control for seam verification only

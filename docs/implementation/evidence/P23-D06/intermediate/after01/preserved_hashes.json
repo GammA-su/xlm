@@ -1,0 +1,54 @@
+﻿[
+    {
+        "Path":  "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage02\\test_d06_before.py",
+        "Hash":  "1C38268326E0FCF837D40F050C4A9A404C0C02F9BCE99A503573D176597EC2AD"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage02\\before.log",
+        "Hash":  "433A741C3F88F1DD9FD8221208E7FB01CD653876CA19E29B0A32EB90F076A91F"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage02\\before.xml",
+        "Hash":  "BF460EC3271DCA1354B2B3307B080A5CB394DB3A7F7CBE618154657B58BAC091"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\CONTRACTS.md",
+        "Hash":  "46CAA6763BA09788691D118A174B375752B9394A10406379F3B8980C7CA943A3"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\EVALUATION_POLICY.md",
+        "Hash":  "74FFBC03B82851665326D68510D55B34B88FE5F05258D56FC572EC6C9B83FF97"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\ACCEPTANCE_MATRIX.md",
+        "Hash":  "58243ED30BD4432B85712B1D6D961ADE298748B9F2D1E480DA9703BAFD6E0134"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\uv.lock",
+        "Hash":  "3C1B906F49047DAB3C27253E800083E7ECEE16657882F9A89A85AFF110EA9C0E"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\pyproject.toml",
+        "Hash":  "A66458C5F227C43792047C674D23B7499E76D0E25766E9B93C9E88403981ACF2"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\.python-version",
+        "Hash":  "AA0D6581054E6E4FF3F91839DECA7A854AD37221B8784D060B42D0F847FF1A3B"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage02\\before-tmp\\test_authored_control_really_e0\\observed.json",
+        "Hash":  "460F18A2CAF6C3C5EFBB1A4D824549F1028FF808553C8290B1B6A1D4B03E8DDA"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage02\\before-tmp\\test_enqueued_a_must_survive_w0\\observed.json",
+        "Hash":  "3FC765D2708786816A96D17FECAEA6DB46E161097E6C1993BF4CCB48D3AFAD3F"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage02\\before-tmp\\test_executed_code_and_saved_i0\\observed.json",
+        "Hash":  "3E9A89743E1FD722F3CE4B7CF8D7866B15529AFFDDE9E7E612F5B939964753AE"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage02\\before-tmp\\test_tampered_frozen_code_must0\\observed.json",
+        "Hash":  "21F726FB99AD2F4585C768A932C62A604FC49FABC3E6D4BA67E16CAD5BFCBB16"
+    }
+]

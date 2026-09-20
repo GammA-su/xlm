@@ -1,0 +1,31 @@
+{
+  "commands": [
+    {
+      "argv": [
+        "uv",
+        "run",
+        "--offline",
+        "--locked",
+        "--extra",
+        "cpu",
+        "--extra",
+        "eval",
+        "pytest",
+        "tests/test_continuation_p05.py",
+        "tests/test_cli_train_demo.py::test_cli_train_and_resume_subprocess",
+        "-vv",
+        "-m",
+        "not network and not cuda and not operator",
+        "--basetemp=D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage02\\after04\\continuation-correction-tmp",
+        "--junitxml=D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage02\\after04\\continuation-correction.xml"
+      ],
+      "cwd": "D:\\Project\\xlm",
+      "exit_code": 0,
+      "elapsed_seconds": 186.40599999995902,
+      "sampled_peak_tree_rss_bytes": 955715584,
+      "log": "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage02\\after04\\continuation-correction-0.log",
+      "limit_reason": null
+    }
+  ],
+  "source_unchanged": true
+}

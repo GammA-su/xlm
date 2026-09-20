@@ -1,0 +1,60 @@
+{
+  "scope": "LIVE metadata-file acquisition only; corpus-row adapter pilot BLOCKED",
+  "fetch": {
+    "schema_version": 1,
+    "plan_id": "p23_finewiki_metadata_recheck",
+    "plan_hash": "30b5610182145dec08c3d098bf36e55acab6343b34d87517a77573bd9f00a2d8",
+    "status": "COMPLETED",
+    "transferred_bytes": 21702,
+    "decompressed_bytes": 0,
+    "temp_disk_bytes": 0,
+    "output_disk_bytes": 21702,
+    "requests_made": 1,
+    "cache_hits": 0,
+    "records_acquired": 0,
+    "file_progress": {
+      "language_subsets.csv": {
+        "file_path": "language_subsets.csv",
+        "bytes_downloaded": 21702,
+        "total_expected": 21702,
+        "etag": "\"85b0356a9bed5fc0f2bc2ba956b36070c6a729c8\"",
+        "last_modified": null,
+        "verified_prefix_bytes": 21702,
+        "status": "completed",
+        "error": null
+      }
+    },
+    "started_at": "2026-09-19T18:19:38.312847+00:00",
+    "updated_at": "2026-09-19T18:19:39.028222+00:00",
+    "error_reason": null
+  },
+  "receipt": {
+    "schema_version": 1,
+    "receipt_id": "receipt_p23_finewiki_metadata_recheck",
+    "plan_id": "p23_finewiki_metadata_recheck",
+    "plan_hash": "30b5610182145dec08c3d098bf36e55acab6343b34d87517a77573bd9f00a2d8",
+    "source_id": "finewiki",
+    "view_id": "default",
+    "provider": "huggingface",
+    "repository": "HuggingFaceFW/finewiki",
+    "revision": "8bd13e72e6a002407649b3e898535f42ceb1aeb9",
+    "mode": "whole_file",
+    "eligibility": "pilot_only",
+    "files": [
+      {
+        "relative_path": "language_subsets.csv",
+        "size_bytes": 21702,
+        "locally_computed_sha256": "d4392c4e4d4d2e2c4341a5db8de7403f51aaa9ca5a2c457b2f1b12fd03f54fc4",
+        "provider_declared_checksum": null,
+        "independent_expected_sha256": null,
+        "independent_checksum_verified": false,
+        "record_count": null
+      }
+    ],
+    "resource_metrics": {},
+    "created_at": "2026-09-19T18:19:39.104501+00:00",
+    "is_verified": true,
+    "verification_notes": []
+  },
+  "request_metric_scope": "primary attempts; redirects are not metered by the implementation"
+}

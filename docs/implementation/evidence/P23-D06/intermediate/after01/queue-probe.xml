@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="6" skipped="0" tests="38" time="601.364" timestamp="2026-09-20T10:27:54.491233+02:00" hostname="BetA-C1"><testcase classname="tests.test_queue" name="test_submit_deduplicates_identical_plans" time="26.487" /><testcase classname="tests.test_queue" name="test_submit_refuses_blocked_plans_and_missing_snapshots" time="45.002" /><testcase classname="tests.test_queue" name="test_submit_allows_explicit_duplicates" time="25.655" /><testcase classname="tests.test_queue" name="test_only_one_gpu_lease_can_be_held" time="0.026" /><testcase classname="tests.test_queue" name="test_stale_lease_is_reclaimable_and_recorded" time="0.010" /><testcase classname="tests.test_queue" name="test_cpu_environment_refuses_cuda_job_without_execution" time="24.789" /><testcase classname="tests.test_queue" name="test_toy_campaign_runs_sequentially_to_success" time="182.647"><failure message="AssertionError: {'ran': True, 'job_id': 'run_f2160d95bee9003f', 'state': 'FAILED', 'reason': 'RuntimeError: frozen worker failed (1): ...environment differs from frozen identity&quot;)&#10;  ValueError: actual installed environment differs from frozen identity&#10;  &#10;  '}&#10;assert 'FAILED' == 'SUCCEEDED'&#10;  &#10;  - SUCCEEDED&#10;  + FAILED">tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage02/after01/queue-probe-tmp/test_toy_campaign_runs_sequent0')
+
+    def test_toy_campaign_runs_sequentially_to_success(tmp_path: Path) -&gt; None:
+        # One queue drains three toy jobs in submission order. All fixture trees
+        # carry identical file contents, so one tree root verifies every snapshot.
+        first_tree = tmp_path / "ws_toy_a"
+        queue = make_queue(tmp_path, "camp", first_tree)
+        job_ids: list[str] = []
+        for seed, name in enumerate(("toy_a", "toy_b", "toy_c")):
+            plan, plan_path, snapshot_dir = make_plan(tmp_path, name, seed=seed)
+            job_ids.append(submit_toy(queue, plan, plan_path, snapshot_dir))
+        queues = queue
+    
+        order: list[str] = []
+        for job_id in job_ids:
+            result = queues.run_job(job_id)
+&gt;           assert result["state"] == "SUCCEEDED", result
+E           AssertionError: {'ran': True, 'job_id': 'run_f2160d95bee9003f', 'state': 'FAILED', 'reason': 'RuntimeError: frozen worker failed (1): ...environment differs from frozen identity")
+E             ValueError: actual installed environment differs from frozen identity
+E             
+E             '}
+E           assert 'FAILED' == 'SUCCEEDED'
+E             
+E             - SUCCEEDED
+E             + FAILED
+
+tests\test_queue.py:272: AssertionError</failure></testcase><testcase classname="tests.test_queue" name="test_changed_live_tree_preserves_frozen_run" time="52.786"><failure message="AssertionError: {'ran': True, 'job_id': 'run_a3cf468d5577147a', 'state': 'FAILED', 'reason': 'RuntimeError: frozen worker failed (1): ...environment differs from frozen identity&quot;)&#10;  ValueError: actual installed environment differs from frozen identity&#10;  &#10;  '}&#10;assert 'FAILED' == 'SUCCEEDED'&#10;  &#10;  - SUCCEEDED&#10;  + FAILED">tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage02/after01/queue-probe-tmp/test_changed_live_tree_preserv0')
+
+    def test_changed_live_tree_preserves_frozen_run(tmp_path: Path) -&gt; None:
+        plan, plan_path, snapshot_dir = make_plan(tmp_path, "frozen")
+        tree = tmp_path / "ws_frozen"
+        queue = make_queue(tmp_path, "frozen", tree)
+        job_id = submit_toy(queue, plan, plan_path, snapshot_dir)
+        (tree / "src" / "xlm" / "core.py").write_text("VALUE = 999\n", encoding="utf-8")
+        result = queue.run_job(job_id)
+&gt;       assert result["state"] == "SUCCEEDED", result
+E       AssertionError: {'ran': True, 'job_id': 'run_a3cf468d5577147a', 'state': 'FAILED', 'reason': 'RuntimeError: frozen worker failed (1): ...environment differs from frozen identity")
+E         ValueError: actual installed environment differs from frozen identity
+E         
+E         '}
+E       assert 'FAILED' == 'SUCCEEDED'
+E         
+E         - SUCCEEDED
+E         + FAILED
+
+tests\test_queue.py:291: AssertionError</failure></testcase><testcase classname="tests.test_queue" name="test_failed_jobs_keep_evidence_and_stay_terminal" time="53.152"><failure message="assert 'authored worker failure' in 'RuntimeError: frozen worker failed (1): Traceback (most recent call last):\n  File &quot;D:\\Project\\xlm\\data\\audit\\p2... environment differs from frozen identity&quot;)\nValueError: actual installed environment differs from frozen identity\n\n'">tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage02/after01/queue-probe-tmp/test_failed_jobs_keep_evidence0')
+
+    def test_failed_jobs_keep_evidence_and_stay_terminal(tmp_path: Path) -&gt; None:
+        """Execution failures are terminal, recorded, and never silently rerun."""
+        plan, plan_path, snapshot_dir = make_plan(
+            tmp_path, "flaky", behavior='raise RuntimeError("authored worker failure")'
+        )
+        queue = make_queue(tmp_path, "flaky", tmp_path / "ws_flaky")
+        job_id = submit_toy(queue, plan, plan_path, snapshot_dir, max_retries=1)
+    
+        first = queue.run_job(job_id)
+        assert first["state"] == "FAILED"
+&gt;       assert "authored worker failure" in first["reason"]
+E       assert 'authored worker failure' in 'RuntimeError: frozen worker failed (1): Traceback (most recent call last):\n  File "D:\\Project\\xlm\\data\\audit\\p2... environment differs from frozen identity")\nValueError: actual installed environment differs from frozen identity\n\n'
+
+tests\test_queue.py:307: AssertionError</failure></testcase><testcase classname="tests.test_queue" name="test_crash_recovery_requeues_once_when_retries_remain" time="52.471"><failure message="AssertionError: assert ('run_a3cf468d5577147a' == 'run_a3cf468d5577147a'&#10;  &#10;    run_a3cf468d5577147a and 'FAILED' == 'SUCCEEDED'&#10;  &#10;  - SUCCEEDED&#10;  + FAILED)">tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage02/after01/queue-probe-tmp/test_crash_recovery_requeues_o0')
+
+    def test_crash_recovery_requeues_once_when_retries_remain(tmp_path: Path) -&gt; None:
+        plan, plan_path, snapshot_dir = make_plan(tmp_path, "crash")
+        queue = ExperimentQueue(
+            RunLedger(ArtifactPaths(root=tmp_path / "home_crash").ledger / "ledger.sqlite"),
+            ArtifactPaths(root=tmp_path / "home_crash"),
+            tree_root=tmp_path / "ws_crash",
+            heartbeat_stale_seconds=60,
+        )
+        job_id = submit_toy(queue, plan, plan_path, snapshot_dir, max_retries=1)
+    
+        crashed = simulate_crash(queue, job_id)
+        assert crashed.state == RunStatus.RUNNING.value
+    
+        recovered = queue.recover_stale_jobs()
+        assert recovered == [job_id]
+        requeued = queue.get_job(job_id)
+        assert requeued is not None and requeued.state == RunStatus.AUTHORIZED.value
+        assert requeued.attempts_made == 1
+    
+        # Recovery is idempotent: nothing more to reap.
+        assert queue.recover_stale_jobs() == []
+        # And the requeued job runs exactly once, keeping the crash evidence.
+        result = queue.run_next()
+&gt;       assert result["job_id"] == job_id and result["state"] == "SUCCEEDED"
+E       AssertionError: assert ('run_a3cf468d5577147a' == 'run_a3cf468d5577147a'
+E         
+E           run_a3cf468d5577147a and 'FAILED' == 'SUCCEEDED'
+E         
+E         - SUCCEEDED
+E         + FAILED)
+
+tests\test_queue.py:348: AssertionError</failure></testcase><testcase classname="tests.test_queue" name="test_crash_without_retries_fails_loudly" time="24.127" /><testcase classname="tests.test_queue" name="test_cancel_stops_a_queued_job_and_a_running_job" time="74.324"><failure message="AssertionError: assert 'FAILED' == 'CANCELLED'&#10;  &#10;  - CANCELLED&#10;  + FAILED">tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage02/after01/queue-probe-tmp/test_cancel_stops_a_queued_job0')
+
+    def test_cancel_stops_a_queued_job_and_a_running_job(tmp_path: Path) -&gt; None:
+        plan, plan_path, snapshot_dir = make_plan(tmp_path, "cancelq")
+        queue = make_queue(tmp_path, "cancelq", tmp_path / "ws_cancelq")
+        job_id = submit_toy(queue, plan, plan_path, snapshot_dir)
+        cancelled = queue.cancel(job_id)
+        assert cancelled.state == RunStatus.CANCELLED.value
+        assert queue.run_next()["ran"] is False
+    
+        plan2, plan_path2, snapshot_dir2 = make_plan(tmp_path, "cancelr")
+        queue2 = make_queue(tmp_path, "cancelr", tmp_path / "ws_cancelr")
+        job2 = submit_toy(queue2, plan2, plan_path2, snapshot_dir2)
+    
+        outcome: dict[str, Any] = {}
+        thread = threading.Thread(target=lambda: outcome.update(queue2.run_job(job2)), daemon=True)
+        thread.start()
+        for _ in range(100):
+            current = queue2.get_job(job2)
+            if current is not None and current.state == RunStatus.RUNNING.value:
+                break
+            time.sleep(0.05)
+        queue2.cancel(job2)
+        thread.join(timeout=120)
+&gt;       assert outcome.get("state") == "CANCELLED"
+E       AssertionError: assert 'FAILED' == 'CANCELLED'
+E         
+E         - CANCELLED
+E         + FAILED
+
+tests\test_queue.py:403: AssertionError</failure></testcase><testcase classname="tests.test_queue" name="test_prep_pool_is_bounded_and_ordered" time="0.104" /><testcase classname="tests.test_queue" name="test_status_lists_jobs_with_attempts" time="25.420" /><testcase classname="tests.test_queue" name="test_cli_experiment_plan_reports_blockers" time="0.976" /><testcase classname="tests.test_queue" name="test_cli_campaign_plan_shows_six_mixtures_without_running" time="0.156" /><testcase classname="tests.test_queue" name="test_cli_submit_blocks_unauthorized_large_runs" time="1.045" /><testcase classname="tests.test_queue" name="test_cli_queue_status_and_cancel" time="1.054" /><testcase classname="tests.test_experiment_plans" name="test_snapshot_round_trip_and_immutability" time="0.163" /><testcase classname="tests.test_experiment_plans" name="test_snapshot_refuses_secrets_fail_closed" time="0.076" /><testcase classname="tests.test_experiment_plans" name="test_snapshot_missing_tree_is_refused" time="0.003" /><testcase classname="tests.test_experiment_plans" name="test_smoke_ticket_covers_only_smoke_scale" time="0.001" /><testcase classname="tests.test_experiment_plans" name="test_ticket_binds_one_plan_hash" time="0.001" /><testcase classname="tests.test_experiment_plans" name="test_ticket_round_trip_and_malformed_refusal" time="0.019" /><testcase classname="tests.test_experiment_plans" name="test_validate_against_ticket_applies_smoke_caps_by_default" time="0.002" /><testcase classname="tests.test_experiment_plans" name="test_resolve_reports_blockers_instead_of_defaults" time="0.563" /><testcase classname="tests.test_experiment_plans" name="test_seed_and_source_changes_alter_plan_identity" time="1.236" /><testcase classname="tests.test_experiment_plans" name="test_plan_round_trips_through_json" time="0.593" /><testcase classname="tests.test_experiment_plans" name="test_budget_beyond_horizon_requires_a_fork" time="0.001" /><testcase classname="tests.test_experiment_plans" name="test_extend_plan_budget_forks_with_lineage" time="0.572" /><testcase classname="tests.test_experiment_plans" name="test_grid_sweep_counts_and_orders_deterministically" time="0.002" /><testcase classname="tests.test_experiment_plans" name="test_random_proposals_are_deterministic_and_valid" time="0.001" /><testcase classname="tests.test_experiment_plans" name="test_simplex_proposals_cover_the_lattice" time="0.006" /><testcase classname="tests.test_experiment_plans" name="test_explicit_lists_and_diffs" time="0.001" /><testcase classname="tests.test_experiment_plans" name="test_six_mixture_campaign_expands_with_gated_later_rounds" time="0.019" /><testcase classname="tests.test_experiment_plans" name="test_selection_unblocks_a_later_round" time="0.023" /><testcase classname="tests.test_experiment_plans" name="test_campaign_plan_is_hash_stable_and_budget_gated" time="0.025" /><testcase classname="tests.test_cli_eval_gen" name="test_cli_evaluate_and_generate_subprocess" time="4.807"><failure message="AssertionError: Evaluate failed:&#10;  &lt;frozen runpy&gt;:128: RuntimeWarning: 'xlm.cli.main' found in sys.modules after import of package 'xlm.cli', but prior to execution of 'xlm.cli.main'; this may result in unpredictable behaviour&#10;  +--------------------- Traceback (most recent call last) ---------------------+&#10;  | D:\Project\xlm\src\xlm\cli\eval_cmd.py:389 in evaluate_command              |&#10;  |                                                                             |&#10;  |   386         return                                                        |&#10;  |   387     from xlm.experiments.evaluation_execution import                  |&#10;  |       launch_evaluation                                                     |&#10;  |   388                                                                       |&#10;  | &gt; 389     launch_evaluation(options)                                        |&#10;  |   390                                                                       |&#10;  |   391                                                                       |&#10;  |   392 def _evaluate_in_process(                                             |&#10;  |                                                                             |&#10;  | D:\Project\xlm\src\xlm\experiments\evaluation_execution.py:102 in           |&#10;  | launch_evaluation                                                           |&#10;  |                                                                             |&#10;  |    99     extras = [options[&quot;device&quot;]] + (                                  |&#10;  |   100         [] if options[&quot;suite&quot;] in (&quot;all&quot;, &quot;synthetic_mc&quot;,             |&#10;  |       &quot;synthetic_pair&quot;) else [&quot;eval&quot;]                                       |&#10;  |   101     )                                                                 |&#10;  | &gt; 102     envelope = make_envelope(config, snapshot, extras=extras,         |&#10;  |       purpose=&quot;evaluation&quot;)                                                 |&#10;  |   103     result = launch_worker(                                           |&#10;  |   104         {                                                             |&#10;  |   105             &quot;action&quot;: &quot;evaluate&quot;,                                     |&#10;  |                                                                             |&#10;  | D:\Project\xlm\src\xlm\experiments\execution.py:151 in make_envelope        |&#10;  |                                                                             |&#10;  |   148         resolver = resolve_evaluation_config                          |&#10;  |   149     elif purpose != &quot;training&quot;:                                       |&#10;  |   150         raise ValueError(&quot;unsupported execution purpose&quot;)             |&#10;  | &gt; 151     resolved, bindings = resolver(config)                             |&#10;  |   152     lock = snapshot_dir / &quot;code/uv.lock&quot;                              |&#10;  |   153     payload = {                                                       |&#10;  |   154         &quot;version&quot;: 1,                                                 |&#10;  |                                                                             |&#10;  | D:\Project\xlm\src\xlm\experiments\evaluation_execution.py:78 in            |&#10;  | resolve_evaluation_config                                                   |&#10;  |                                                                             |&#10;  |    75         &quot;checkpoint_manifest_hash&quot;: (                                 |&#10;  |    76             compute_file_sha256(checkpoint / &quot;manifest.json&quot;) if      |&#10;  |       manifest is not None else None                                        |&#10;  |    77         ),                                                            |&#10;  | &gt;  78         &quot;model_config_hash&quot;: compute_file_sha256(checkpoint /         |&#10;  |       &quot;model_config.json&quot;),                                                 |&#10;  |    79         &quot;checkpoint_weights_hash&quot;:                                    |&#10;  |       checkpoint_weights_hash(checkpoint),                                  |&#10;  |    80         &quot;tokenizer_hash&quot;: tokenizer.fingerprint,                      |&#10;  |    81         &quot;evaluation_assets&quot;: assets,                                  |&#10;  |                                                                             |&#10;  | D:\Project\xlm\src\xlm\artifacts\store.py:48 in compute_file_sha256         |&#10;  |                                                                             |&#10;  |    45 def compute_file_sha256(path: Path, *, max_bytes: int | None = None)  |&#10;  |       -&gt; str:                                                               |&#10;  |    46     hasher = hashlib.sha256()                                         |&#10;  |    47     size = 0                                                          |&#10;  | &gt;  48     with path.open(&quot;rb&quot;) as file:                                     |&#10;  |    49         while chunk := file.read(CHUNK_BYTES):                        |&#10;  |    50             size += len(chunk)                                        |&#10;  |    51             if max_bytes is not None and size &gt; max_bytes:            |&#10;  |                                                                             |&#10;  | C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-non |&#10;  | e\Lib\pathlib.py:1013 in open                                               |&#10;  |                                                                             |&#10;  |   1010         &quot;&quot;&quot;                                                          |&#10;  |   1011         if &quot;b&quot; not in mode:                                          |&#10;  |   1012             encoding = io.text_encoding(encoding)                    |&#10;  | &gt; 1013         return io.open(self, mode, buffering, encoding, errors,      |&#10;  |        newline)                                                             |&#10;  |   1014                                                                      |&#10;  |   1015     def read_bytes(self):                                            |&#10;  |   1016         &quot;&quot;&quot;                                                          |&#10;  +-----------------------------------------------------------------------------+&#10;  FileNotFoundError: [Errno 2] No such file or directory: &#10;  'D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage02\\after01\\queue-probe-&#10;  tmp\\test_cli_evaluate_and_generate0\\model_ckpt\\model_config.json'&#10;  &#10;  &#10;assert 1 == 0&#10; +  where 1 = CompletedProcess(args=['D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage01\\after01\\.venv\\Scripts\\python.exe',...\\\\stage02\\\\after01\\\\queue-probe-\ntmp\\\\test_cli_evaluate_and_generate0\\\\model_ckpt\\\\model_config.json\'\n').returncode">tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage02/after01/queue-probe-tmp/test_cli_evaluate_and_generate0')
+
+    def test_cli_evaluate_and_generate_subprocess(tmp_path: Path) -&gt; None:
+        """Verify xlm evaluate and xlm generate commands run cleanly on a saved checkpoint."""
+    
+        from xlm.config.schemas import TransformerBaselineConfig
+        from xlm.models.serialization import save_model_to_directory
+        from xlm.models.transformer import TransformerBaseline
+    
+        # 1. Author a small model artifact
+        cfg = TransformerBaselineConfig(
+            architecture="transformer_baseline",
+            vocab_size=260,
+            context_length=128,
+            hidden_size=64,
+            intermediate_size=128,
+            num_layers=2,
+            num_attention_heads=4,
+            attention_backend="eager",
+        )
+        model = TransformerBaseline(cfg, seed=42)
+        model_dir = tmp_path / "model_ckpt"
+        save_model_to_directory(model, model_dir)
+    
+        env = dict(os.environ)
+        env["XLM_HOME"] = str(tmp_path / "xlm_home")
+    
+        # 2. Test xlm evaluate
+        eval_res = subprocess.run(
+            [sys.executable, "-m", "xlm.cli.main", "evaluate", str(model_dir), "--device", "cpu"],
+            capture_output=True,
+            text=True,
+            check=False,
+            env=env,
+        )
+&gt;       assert eval_res.returncode == 0, f"Evaluate failed:\n{eval_res.stderr}\n{eval_res.stdout}"
+E       AssertionError: Evaluate failed:
+E         &lt;frozen runpy&gt;:128: RuntimeWarning: 'xlm.cli.main' found in sys.modules after import of package 'xlm.cli', but prior to execution of 'xlm.cli.main'; this may result in unpredictable behaviour
+E         +--------------------- Traceback (most recent call last) ---------------------+
+E         | D:\Project\xlm\src\xlm\cli\eval_cmd.py:389 in evaluate_command              |
+E         |                                                                             |
+E         |   386         return                                                        |
+E         |   387     from xlm.experiments.evaluation_execution import                  |
+E         |       launch_evaluation                                                     |
+E         |   388                                                                       |
+E         | &gt; 389     launch_evaluation(options)                                        |
+E         |   390                                                                       |
+E         |   391                                                                       |
+E         |   392 def _evaluate_in_process(                                             |
+E         |                                                                             |
+E         | D:\Project\xlm\src\xlm\experiments\evaluation_execution.py:102 in           |
+E         | launch_evaluation                                                           |
+E         |                                                                             |
+E         |    99     extras = [options["device"]] + (                                  |
+E         |   100         [] if options["suite"] in ("all", "synthetic_mc",             |
+E         |       "synthetic_pair") else ["eval"]                                       |
+E         |   101     )                                                                 |
+E         | &gt; 102     envelope = make_envelope(config, snapshot, extras=extras,         |
+E         |       purpose="evaluation")                                                 |
+E         |   103     result = launch_worker(                                           |
+E         |   104         {                                                             |
+E         |   105             "action": "evaluate",                                     |
+E         |                                                                             |
+E         | D:\Project\xlm\src\xlm\experiments\execution.py:151 in make_envelope        |
+E         |                                                                             |
+E         |   148         resolver = resolve_evaluation_config                          |
+E         |   149     elif purpose != "training":                                       |
+E         |   150         raise ValueError("unsupported execution purpose")             |
+E         | &gt; 151     resolved, bindings = resolver(config)                             |
+E         |   152     lock = snapshot_dir / "code/uv.lock"                              |
+E         |   153     payload = {                                                       |
+E         |   154         "version": 1,                                                 |
+E         |                                                                             |
+E         | D:\Project\xlm\src\xlm\experiments\evaluation_execution.py:78 in            |
+E         | resolve_evaluation_config                                                   |
+E         |                                                                             |
+E         |    75         "checkpoint_manifest_hash": (                                 |
+E         |    76             compute_file_sha256(checkpoint / "manifest.json") if      |
+E         |       manifest is not None else None                                        |
+E         |    77         ),                                                            |
+E         | &gt;  78         "model_config_hash": compute_file_sha256(checkpoint /         |
+E         |       "model_config.json"),                                                 |
+E         |    79         "checkpoint_weights_hash":                                    |
+E         |       checkpoint_weights_hash(checkpoint),                                  |
+E         |    80         "tokenizer_hash": tokenizer.fingerprint,                      |
+E         |    81         "evaluation_assets": assets,                                  |
+E         |                                                                             |
+E         | D:\Project\xlm\src\xlm\artifacts\store.py:48 in compute_file_sha256         |
+E         |                                                                             |
+E         |    45 def compute_file_sha256(path: Path, *, max_bytes: int | None = None)  |
+E         |       -&gt; str:                                                               |
+E         |    46     hasher = hashlib.sha256()                                         |
+E         |    47     size = 0                                                          |
+E         | &gt;  48     with path.open("rb") as file:                                     |
+E         |    49         while chunk := file.read(CHUNK_BYTES):                        |
+E         |    50             size += len(chunk)                                        |
+E         |    51             if max_bytes is not None and size &gt; max_bytes:            |
+E         |                                                                             |
+E         | C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-non |
+E         | e\Lib\pathlib.py:1013 in open                                               |
+E         |                                                                             |
+E         |   1010         """                                                          |
+E         |   1011         if "b" not in mode:                                          |
+E         |   1012             encoding = io.text_encoding(encoding)                    |
+E         | &gt; 1013         return io.open(self, mode, buffering, encoding, errors,      |
+E         |        newline)                                                             |
+E         |   1014                                                                      |
+E         |   1015     def read_bytes(self):                                            |
+E         |   1016         """                                                          |
+E         +-----------------------------------------------------------------------------+
+E         FileNotFoundError: [Errno 2] No such file or directory: 
+E         'D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage02\\after01\\queue-probe-
+E         tmp\\test_cli_evaluate_and_generate0\\model_ckpt\\model_config.json'
+E         
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage01\\after01\\.venv\\Scripts\\python.exe',...\\\\stage02\\\\after01\\\\queue-probe-\ntmp\\\\test_cli_evaluate_and_generate0\\\\model_ckpt\\\\model_config.json\'\n').returncode
+
+tests\test_cli_eval_gen.py:64: AssertionError</failure></testcase></testsuite></testsuites>

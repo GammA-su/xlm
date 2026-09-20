@@ -1,0 +1,40 @@
+{
+  "exit_code": 1,
+  "pytest": "3 failed, 1 passed in 21.49s",
+  "fixtures_only": true,
+  "implementation_changes": false,
+  "observations": {
+    "test_authored_control_really_e0": {
+      "state": "SUCCEEDED",
+      "committed_valid_targets": 8,
+      "origins": [
+        "D:\\Project\\xlm\\src\\xlm\\training\\trainer.py"
+      ]
+    },
+    "test_enqueued_a_must_survive_w0": {
+      "state": "BLOCKED",
+      "committed_valid_targets": 0,
+      "origins": []
+    },
+    "test_executed_code_and_saved_i0": {
+      "state": "SUCCEEDED",
+      "committed_valid_targets": 8,
+      "origins": [
+        "D:\\Project\\xlm\\src\\xlm\\training\\trainer.py"
+      ]
+    },
+    "test_tampered_frozen_code_must0": {
+      "state": "SUCCEEDED",
+      "committed_valid_targets": 8,
+      "origins": [
+        "D:\\Project\\xlm\\src\\xlm\\training\\trainer.py"
+      ]
+    }
+  },
+  "sha256": {
+    "test_d06_before.py": "1c38268326e0fcf837d40f050c4a9a404c0c02f9bce99a503573d176597ec2ad",
+    "before.log": "433a741c3f88f1dd9fd8221208e7fb01cd653876ca19e29b0a32eb90f076a91f",
+    "before.xml": "bf460ec3271dca1354b2b3307b080a5cb394db3a7f7cbe618154657b58bac091",
+    "PLAN.md": "a01aad41710dcbea900a9f2fa64dd6be787df2bf035bcf450cd601ffda4b6307"
+  }
+}

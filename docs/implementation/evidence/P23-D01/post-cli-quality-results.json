@@ -1,0 +1,39 @@
+[
+  {
+    "argv": [
+      "uv",
+      "run",
+      "--offline",
+      "--locked",
+      "--extra",
+      "cpu",
+      "--extra",
+      "eval",
+      "ruff",
+      "format",
+      "--check",
+      "src",
+      "tests"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 0.10999999998603016
+  },
+  {
+    "argv": [
+      "uv",
+      "run",
+      "--offline",
+      "--locked",
+      "--extra",
+      "cpu",
+      "--extra",
+      "eval",
+      "ruff",
+      "check",
+      "src",
+      "tests"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 0.09299999999348074
+  }
+]

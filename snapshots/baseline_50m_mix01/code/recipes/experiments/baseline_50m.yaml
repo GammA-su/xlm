@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "kind": "experiment_draft",
+  "id": "baseline_50m_mix01",
+  "status": "draft_requires_artifacts_and_approval",
+  "track": "baseline",
+  "model": {
+    "preset": "50m"
+  },
+  "data": {
+    "pool_artifact": null,
+    "tokenizer_artifact": null,
+    "mixture_preset": "mix01",
+    "exposure_plan": null,
+    "packing_policy": "causal_stream_eos",
+    "cross_document_attention": true
+  },
+  "objective": {
+    "type": "cross_entropy",
+    "version": "1"
+  },
+  "optimizer": {
+    "type": "adamw",
+    "lr": 0.001,
+    "betas": [
+      0.9,
+      0.95
+    ],
+    "eps": 1e-08,
+    "weight_decay": 0.1,
+    "decay_norms": false,
+    "decay_embeddings": true
+  },
+  "training": {
+    "device": "cuda",
+    "precision": "bf16_fp32_master",
+    "context_length": 512,
+    "global_batch_valid_targets": 65536,
+    "microbatch_sequences": null,
+    "gradient_clip_norm": 1.0,
+    "budget": {
+      "max_valid_targets": 128000000,
+      "max_train_seconds": null
+    },
+    "schedule": {
+      "type": "warmup_cosine",
+      "counter": "committed_valid_targets",
+      "horizon_valid_targets": 1000000000,
+      "warmup_valid_targets": 10000000,
+      "min_lr_ratio": 0.1
+    },
+    "activation_checkpointing": false,
+    "compile": false,
+    "init_seed": 101,
+    "data_seed": 20260918,
+    "checkpoint_every_valid_targets": 16000000
+  },
+  "evaluation": {
+    "suite": "search",
+    "policy_artifact": null,
+    "every_valid_targets": 16000000,
+    "checkpoint_selection": "last_at_declared_budget",
+    "allow_final": false
+  },
+  "resources": {
+    "profile_artifact": null,
+    "max_new_disk_gib": null,
+    "max_gpu_processes": 1
+  },
+  "authorization": {
+    "state": "not_authorized",
+    "plan_hash": null
+  }
+}

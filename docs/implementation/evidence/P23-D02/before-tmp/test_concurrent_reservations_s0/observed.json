@@ -1,0 +1,5 @@
+{
+  "limit": 4096,
+  "reservation_bytes": 3000,
+  "accepted": 2
+}

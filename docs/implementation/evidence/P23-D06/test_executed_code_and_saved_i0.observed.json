@@ -1,0 +1,106 @@
+{
+  "result": {
+    "ran": true,
+    "job_id": "run_7c6f175e9c10d24f",
+    "state": "SUCCEEDED",
+    "steps": 1,
+    "committed_valid_targets": 8,
+    "final_loss": 4.160155296325684,
+    "checkpoint_id": "run_7c6f175e9c10d24f_final"
+  },
+  "observed_train_step_origins": [
+    "D:\\Project\\xlm\\src\\xlm\\training\\trainer.py"
+  ],
+  "queue_fixture_only": true,
+  "python": "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage01\\after01\\.venv\\Scripts\\python.exe",
+  "checkpoint_manifest": {
+    "schema_version": 2,
+    "artifact_id": "run_7c6f175e9c10d24f_final",
+    "kind": "checkpoints",
+    "status": "completed",
+    "created_at": "2026-09-19T19:59:02.094734+00:00",
+    "producer_code_hash": "P05_TRAINER_CHECKPOINT",
+    "dependency_hash": "TORCH_P05",
+    "resolved_config_hash": "authored_d06_7c6",
+    "input_artifact_ids": [],
+    "files": [
+      {
+        "path": "model_config.json",
+        "size_bytes": 521,
+        "sha256": "4de5d225a9156b4aa5f978e322e20a2f207007b2600047997574ccf6a47ebdc6"
+      },
+      {
+        "path": "model.pt",
+        "size_bytes": 97523,
+        "sha256": "896185a95ad231e99b4e0b8d435ac5c612df7b46a9e0bb455ddb7c4b0814cd2b"
+      },
+      {
+        "path": "objective.pt",
+        "size_bytes": 1337,
+        "sha256": "3316725ced6921e4a660b013ca167384d36f8fd22029cc216e04f0a0a975f578"
+      },
+      {
+        "path": "optimizer.pt",
+        "size_bytes": 200499,
+        "sha256": "e8568eed5b9291248be0f3e929ce89b1f207e27083d1d2dce59ccee7b1738f8a"
+      },
+      {
+        "path": "schedule.json",
+        "size_bytes": 198,
+        "sha256": "c26bd066c57bc30ce6b632a017aee637c0756812ccb5a34811eb01f06cdcb8a1"
+      },
+      {
+        "path": "data_state.json",
+        "size_bytes": 178,
+        "sha256": "533212738c5676651164a40dfc7bf946ea7c1d894f94c16bea87f7405f3fd210"
+      },
+      {
+        "path": "rng_state.pt",
+        "size_bytes": 10487,
+        "sha256": "19759b746c63b258663a72315961f7761513810e33e6ca0adf39191ed5112c9c"
+      },
+      {
+        "path": "checkpoint_meta.json",
+        "size_bytes": 934,
+        "sha256": "b716c2ab472381383276e184964788a9ee9ee695ba210f27c9e67befe565921e"
+      }
+    ],
+    "metadata": {
+      "checkpoint_id": "run_7c6f175e9c10d24f_final",
+      "committed_valid_targets": 8,
+      "created_at": "2026-09-19T19:59:02.065295+00:00",
+      "model_config": {
+        "architecture": "transformer_baseline",
+        "architecture_version": "1",
+        "attention_backend": "eager",
+        "bias": false,
+        "context_length": 16,
+        "dropout": 0.0,
+        "expected_unique_parameters": null,
+        "ffn": "swiglu",
+        "hidden_size": 32,
+        "initialization_policy": "baseline_v1",
+        "intermediate_size": 64,
+        "max_deployed_parameters": null,
+        "normalization": "rmsnorm",
+        "num_attention_heads": 2,
+        "num_layers": 2,
+        "position_encoding": "rope",
+        "tie_embeddings": true,
+        "vocab_size": 64
+      },
+      "parent_checkpoint_id": null,
+      "parent_plan_id": null,
+      "plan_id": "authored_d06_7c6f175e9c10d24f",
+      "precision": "fp32",
+      "processed_valid_targets": 8,
+      "run_id": "run_7c6f175e9c10d24f",
+      "step": 1
+    },
+    "serializer_version": "xlm.artifact-files/1",
+    "input_manifest_hashes": {},
+    "cosmetic_metadata": {},
+    "production_key": "21265785b2a298fa52e9b9417625777f53f8da4889a9c0ad4a11e4f6bce300d7",
+    "content_hash": "7ccbb6929c948b518287d93f4f2fdf0505390c2c0b92368c24a9de6bf3e55c53"
+  }
+}

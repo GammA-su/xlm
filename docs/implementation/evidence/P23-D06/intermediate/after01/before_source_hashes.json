@@ -1,0 +1,1042 @@
+﻿[
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\__init__.py",
+        "Hash":  "2A56EE30C8C74AF72268225B6C1EE769D8C4A181EE029D2BD83363FBCFA04EBC"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_cli.py",
+        "Hash":  "7191A7E3C51149D62F85D77E50BE106D3D8740FED292F17CAB5C942ABA530959"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_attention_and_masks.py",
+        "Hash":  "CED62296EA3FF793924E19D69DE9DD783602AF36D7E2B4AE04F25071C5D09BEE"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_cleaning_normalization.py",
+        "Hash":  "C62C62FFA6F63160EFAE9D05886828391ACC2218C69CD503262CD2CC128604DA"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_contracts.py",
+        "Hash":  "D2E482F0A6C5D02381690E8E52756766D6E3D35AE438A54FE461333B0B33C4F3"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_cleaning_structured.py",
+        "Hash":  "BAE19900DB61634F56887E5BB5D4A54146580913B3AB458DCC5FC8FD1D98A796"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_cleaning_scale.py",
+        "Hash":  "0D1205CF69778602723391252DC2A3E49D0A20326B5A9BC5C460CDF70BDC212E"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_cleaning_pipeline.py",
+        "Hash":  "CAE37EC1C22F93FE846A43D27C1183902BF9DF59363C5AEF477F34CB90294F3B"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_artifact_identity.py",
+        "Hash":  "7A06C288A3854E65AC6716D2BE8C1B46616B839638186629DE8199FE0F65CC4B"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_artifacts.py",
+        "Hash":  "36B99A6A42A0DC8EC74DF88150983D185360BCAEF983AA2AC5BF30E326867902"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_continuation_p05.py",
+        "Hash":  "0BAED5AACB009405F7EA4C0BF4294928E05007BEDA8793DD928706A683FB7164"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_cleaning_filters.py",
+        "Hash":  "A96E36CCFE7722976107B747BF27A5D4617071BE3D696D6749EEF78272BF18B7"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_acquisition_verifier.py",
+        "Hash":  "BBCE82AE5F1F5680F87FFCC7C13DB83988E0D7106F1CB66376B269B6AEBAA709"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_continuation.py",
+        "Hash":  "A111AF3D5AC3888C0E171AA0A31110533163D13D7C9DA09EB90C2C84B402AFC6"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_checkpoint.py",
+        "Hash":  "182363BFC645DCEB06323A1B64A6B8116D735794197009954F8A6F6E4BE1D2BF"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_config.py",
+        "Hash":  "02CDFA9E21667131478319A4BA57CA297710CC9207564D3F7B52506A8EF00F92"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_acquisition_plan.py",
+        "Hash":  "55329B41E993F1772B51ECC151D02A9B3A58B8174A9135F41476E3A032B1DE81"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_comparison.py",
+        "Hash":  "B4C29FC79045BC1BBD435B429F73F26B54B9FC8362DA6D0B4C59882D635CE5A9"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_acquisition_live.py",
+        "Hash":  "347DA54AA52F3003D1522D812E189E33ACDD5A2B3F79D3965638C4408B8BFF78"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_cli_train_demo.py",
+        "Hash":  "EF208560541097EC54C1210F0A49D22276C965EC4BA568BE221CD172FB518D68"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_cleaning_html.py",
+        "Hash":  "AE0802BDDEA75B0E86D04724FF163D4B76B698E80155558935A0C4B53B0469DF"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_acquisition_fetcher.py",
+        "Hash":  "44E547EBD2041769A583B112C4D714DD932E1CE342D2FD722D9F37C46B1CA5AD"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_cli_pool_freeze.py",
+        "Hash":  "E90DA2A6E01F228A56D9926952D3BD270165C225F4C20E9F5F4406D8FCE0E812"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_cli_inventory.py",
+        "Hash":  "E4CFC96D20175B860AEB99B9B8A4071DE69EB43CFAC76DA77CBE07FE6BBEADF6"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\conftest.py",
+        "Hash":  "604CC89AEBD37B303413A2594276B86BA2BC2FFAAE4201500C028B0AE579ED33"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_cli_eval_gen.py",
+        "Hash":  "F897E07E559C7592C9939B68021EC4319E53A351BD1CA0AB9455C53C1E86AF5B"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_models.py",
+        "Hash":  "006ACFA1A1AB35C7DDAF0E7DCD48FED6FCBCF6177361470FFCD62D1CE7B52700"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_mixture_stream.py",
+        "Hash":  "D4EAA7F4D52A9D6FA1BCEFBE2A7110F9439F6D6D4840A371C7283BD0B41DD8B7"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_mixture_planning.py",
+        "Hash":  "6B23FC07076C78F77561E6475C94606254C47DA1B776EF3114C2BDC7DC5668A0"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_mix01_views.py",
+        "Hash":  "C577C35586B766611682F36F4EA4691F4E342A362D83FAC8B92A8BD70900504A"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_likelihood.py",
+        "Hash":  "196A2AF20293C64A124BC01CF3F622FCD2BC3C87968476C887FEA54182147F88"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_ledger.py",
+        "Hash":  "AEA227A2BEEB08505FF5843214A8120B42B4096F26D16EFA5D3FF0B144A76529"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_imports.py",
+        "Hash":  "FF8F5F7924479CAF6827E90818DE1F077C19E13E9A7A5B47B882992FADAF3284"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_harness_adapter.py",
+        "Hash":  "471F6B112F3A5F75437D9D742CB940EA8491AA154359F2D3401D8243F1C56226"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_generation.py",
+        "Hash":  "AC9353C49315E326F42427EB486A0AC250F1BB6ACEE1D614822DFAA7D03F5AD3"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_final_acceptance.py",
+        "Hash":  "B33E582CEA19D5DA929B5572881F0306EF9C0E72DBD626620833D9454BB294AD"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_export.py",
+        "Hash":  "69E177EFFEEFC44D246C1075BC6CF6D11D2883F9F4FC29BE499B6CCDD92DB48B"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_experiment_plans.py",
+        "Hash":  "8C4B0C1BE88843714C5E3F082C7A7ADB324A604A1EE4BC61BB7A7193847A0C5E"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_exclusion_receipt.py",
+        "Hash":  "317EBF439DEDE1E834121A78B1AF1F15A036E287B39AAA057ADCA0D468B865B1"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_exclusion_benchmark.py",
+        "Hash":  "96D2ADB436CA4457EE4339421DA1605C9D2B0BA4A06C5720532A3A82FCFDD249"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_eval_suites.py",
+        "Hash":  "852530A461BAC1954593432F94063A7231049AFAE092419D7DA63FA010F122BC"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_evaluation_fixtures.py",
+        "Hash":  "30A0E64DEE621FBC8087E880FDE372585FEC026F62241F06A9FB30CAF084730C"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_doctor.py",
+        "Hash":  "AE94F6F1A2F2D61B65376E8DD49A1D25BFE947BD2A9A9344E7CE8C4AA7403458"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_dedup_lineage.py",
+        "Hash":  "F96857EDDA53BCE870BCCC2702E3E1A43214C42F988D976E8530966D953BB1AF"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_dedup_engine.py",
+        "Hash":  "B83D280BB4220019B29871FB07006E03812BC358A4836D82CBED84A162BE844D"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_data_catalog.py",
+        "Hash":  "6646F8ECEC868513FE57855F91D8765F52E7DCD2C546D0F0FE406B20717172C2"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_data_adapters.py",
+        "Hash":  "3B120F2EEB04599D549DCCD57528E64D945F6A4004404C960F741E75EC35A18F"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_dashboard.py",
+        "Hash":  "17FCD240133A63F64C54DABDF0FF25239E8398C1F213D7553683731B6A6EFD19"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_cuda_execution.py",
+        "Hash":  "9BB411D0CCFB4C316997175DE6AC8CF705F26094CE46C84B6AC533F24B52401B"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_cuda.py",
+        "Hash":  "6AFC0C6BBBFDE3C4085841951DB2F05F1B3C638D9962A56827DDD1C87146D0FF"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_recipes.py",
+        "Hash":  "8B101E3B498B3CC632788FB19AC3777F33F8534F61D610631DD32D347E9817E4"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_queue.py",
+        "Hash":  "B87FFFCC98B2C51890C41A34239053A619022EB5333D81C88BF8C6C67EFC19FD"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_prepare.py",
+        "Hash":  "3F9523A6D00BB210F3F4A114F7AA969B808B3FC869525249B637221A7534618F"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_pool_views.py",
+        "Hash":  "9B8E0D17C4F2D58DBBB31AEF4DD691BBB85268188DDB9C92C935A49558FD619D"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_pool_splits.py",
+        "Hash":  "4C46321518EE5C6B37D92CEB0852F7D406C1B8812C0CDF8C8B015C6729349B5C"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_pool_freeze_regime.py",
+        "Hash":  "0C4CF21BDF9F4FC019310F26F128FEDCCCED37F7E9E9249954CE06BC9215DC0D"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_paths.py",
+        "Hash":  "4135B1811D119C7935D82220290DEAE76C6DB5FDEF597AA8D4BE5089CE7FAB45"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_packing_scheduling.py",
+        "Hash":  "E95DD3ADCC6DFC3BFDF9B7F6732A82CF575F65C99DC81E840F1543D824C25A4E"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_optimizers.py",
+        "Hash":  "64F7F7B1E649A9A5C5C3FF6288DB516C61B3BF51CC0C98CC9A747874819CB735"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_operator.py",
+        "Hash":  "637EB7129053688C399E899EA95D7645E46564F3DFAE7D8CFEE76F86CAC2B472"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_offline_workflow.py",
+        "Hash":  "8519B08E35DEF518CF221D27A04BDCBA3BEBBE1A75BD38D8A30CA4D242443946"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_objectives.py",
+        "Hash":  "9065070D580B40E6EF75E4506FC751FABA354CFD660DBDA60ECFD29CF989844D"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_source_discovery.py",
+        "Hash":  "2EEFF43FCD53EADA50B5C2993C0CB9ACED49F017F9D13F4E586428D457696CC1"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_source_admission.py",
+        "Hash":  "212895BBDB5F85D2CF5CEBEE8AD44130046198389F5F257539A1A3840AC2A111"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_schedules.py",
+        "Hash":  "109AD43E801E9AD1CED080ABA9D2AA105A598EA060558A0227C71238304CE5DB"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_research.py",
+        "Hash":  "791BD26F6A2987D8FA0B0A1524CB2F56CEB73D07BC3BC6FAD35704508B95E4F2"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_reports.py",
+        "Hash":  "4FD6298678C7D84C38CAE9DEE392DF37E83962E5DCA99B727A95F968F6B99F59"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_registry.py",
+        "Hash":  "7AB226DA7DCBECCFCEDC7144B6DD11599F2941941E5A99940128916BC183A09C"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_token_shards.py",
+        "Hash":  "02B195962527BE580D581D8295718E6742903B452198DE3879DA44BDB2F9D9C6"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_tokenizer_regime.py",
+        "Hash":  "3B53B27A67D962654F2310E19E9629E72EB1F7580A817475E7EDC1C68BDEDEEC"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_tokenizers.py",
+        "Hash":  "0183F6F878057A41191EC25124664F1092A772AB8CC0A2C6D49D6C6F13F2C881"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_trainer_data.py",
+        "Hash":  "39B889E31A27EC3519071594A96D27C2AE0425D2768354A5C92A0F8199A6AE95"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_trainer.py",
+        "Hash":  "F974616FE90478406ED362DAE6E794423FAA9ADC0653039207F60944FE954C38"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\tests\\test_trainer_mixture.py",
+        "Hash":  "EE1B406BBC251FBFF8E4757991C02244B935AD106C1A316EE3BC557359469134"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\training\\__init__.py",
+        "Hash":  "36819BED41FC840D11E98F241F8EC27D353DAD6F59B6FD76E96712697D941D46"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\training\\trainer.py",
+        "Hash":  "95BA4BC6D65156CC1A5E934B8383B5D7F7F38164216596253438762762E6AB65"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\training\\recovery.py",
+        "Hash":  "31BAC3C772A4AACB0EB80F963E597744605B5665D415B7AB5E19EB94FA2B9EA5"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\training\\profile_worker.py",
+        "Hash":  "CD4202F0D5CED1A0BD2125FCAE3B32ACE2E08928FB51C0C88668F29852704EFF"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\training\\profile.py",
+        "Hash":  "916E9FBC23F810D0323F5B895156150318BEB0A34E960B9A9F70C3EBC8C62A09"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\training\\inputs.py",
+        "Hash":  "55049562262220A064FBDE0AE7B2C3D44B1E5E2BAD664014E412EDF090E5B550"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\training\\data.py",
+        "Hash":  "11C90C612F487F4AFC38EEE6C124899B8EFF49D9080DB585A6F444BADB945136"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\training\\checkpoint.py",
+        "Hash":  "BE632C0BA969B73856BE841EE01D521DB07B564514B9549371A0B3572B88C801"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\objectives\\__init__.py",
+        "Hash":  "9C8609328FCA5D1BC3973D9528D318BAC226A3F881B424C2C918343B09F4928C"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\objectives\\noop.py",
+        "Hash":  "E3DDED03BF360FA1D985B403C26A6945D1E67C43996612F52F329C6D367C70F7"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\objectives\\cross_entropy.py",
+        "Hash":  "DC71C318BAF33BD957057F22810C3BAB18C89C69F07B33F2ABD26757BA31F6FB"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\objectives\\base.py",
+        "Hash":  "D7BF220F865D734C4183F9B336D7E6999577960E77B0AD88ABF7FB062504B9C3"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\objectives\\auxiliary_fixture.py",
+        "Hash":  "692732309FBAF1225644B54F9D455B2345709C7B7286F55BE992615843CA77BC"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\inference\\__init__.py",
+        "Hash":  "E967123466B941FE09BD18B983E72FA90DECB0C5C89FFF994AE32CB60F8B67AE"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\inference\\session.py",
+        "Hash":  "30434BB4E34A82D1E50DC68E7671EA6890960204A16A596CD53C508AFEFEEFB1"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\inference\\generation.py",
+        "Hash":  "52C8D76B8D8B2366F2010ACE6D9C62C81A574C2BA51C4E7DD80A7D6B6A6C593D"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\experiments\\__init__.py",
+        "Hash":  "F96FE7F0E5079915AEF0C1992C538EB7330B1B7BB9DE156A0BE96E7A77A2FDB7"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\experiments\\sweeps.py",
+        "Hash":  "F578D1E302245A78464E84A276DAFD7C98F83CA779F456756EEA98A3943A6D3E"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\experiments\\snapshot.py",
+        "Hash":  "452970EAF943724A3CC54153553DDB65C965991D15F6C78E859DD14FC21EF933"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\experiments\\queue.py",
+        "Hash":  "1F8DDDE17924F38B66D0B70C60EA8A9B3568729E556673064AF0A0003C931DF3"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\experiments\\plans.py",
+        "Hash":  "E692B77D6BAAB0431C6DB15923BF49ECAB605BAC3B5DC2B5E07FCED181A2AA2B"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\experiments\\campaigns.py",
+        "Hash":  "7AA9965D0E7BCD0047F97E8F7AF1FFDFBD419F037DDE4D646F8DA545DB9B7529"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\experiments\\authorization.py",
+        "Hash":  "542FC3849A3533BD07FA762CDA7DF2DAC1D9C372CCDD2B8710F3013FCB2967E5"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\models\\initialization.py",
+        "Hash":  "0ABB86C19BB9160149FFCA69DA509F66F55C0B048E881C32774F5CD496CEE4E9"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\models\\feedforward.py",
+        "Hash":  "64162F00BC5DB2E35200E969F1B912C66D848CBAF5C40C32131F967B445C5B3E"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\models\\base.py",
+        "Hash":  "811B3D40F29E01AB94F8AE140AFAFDA99158DA28AC7C427BF740E36158146408"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\models\\backends.py",
+        "Hash":  "D5DB37747D771750F4DBFEAE5FC56A6A28666876C3B5288EE592185D7E260F77"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\models\\attention.py",
+        "Hash":  "9B29B09EC98749D900C5A5AD8D650F8D99CB1D9922F72C140B8C23A3AF118C17"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\models\\parameter_counts.py",
+        "Hash":  "55A0BF22B7750EA16888561F231EB0AA2B84CC344C851E5140A5AE9E52A525AB"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\models\\masks.py",
+        "Hash":  "C795E82985B55B07F36AE3C11696A5E2D04567215CE7D37F2B5FBF2EB724D54F"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\models\\rope.py",
+        "Hash":  "993E2A3F5B7A5034DE40DDC1404282B5F7BE18BB8275A5774018D36DB0EB1C59"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\models\\rmsnorm.py",
+        "Hash":  "7CBAD3539064B99F4DF9F22C86F5F5490D2387C0B3DE84C66F4F3CF80CDB0B1F"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\models\\serialization.py",
+        "Hash":  "C1CFD0A207B6B4E5A81507D84018D65983D9398E5B55BCFE422FAD4643D2ADC7"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\models\\__init__.py",
+        "Hash":  "ED2A91787925A332F122A5F48136E2972F1286308ECF5DAB1C5AA252C34C2E32"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\evaluation\\__init__.py",
+        "Hash":  "EF4127AA18F4838ACB977296F79EB7EEBE9B1F3342298BFD99BCC4F11EACBE97"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\models\\transformer.py",
+        "Hash":  "0F869EFCE538C492B4D925006E903B54263EBFB7BCF9FE8C65EED91EE2B6BC1E"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\evaluation\\suites.py",
+        "Hash":  "380E9D425EA5E9DD9C549F0CAB345700E9EE6C3EB67722A47C30F6916D887F82"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\evaluation\\scorer.py",
+        "Hash":  "07E8E8008F0B4892DD7B6C8D179315838F7AA0F0769D04606C9D8E6B78870907"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\evaluation\\reference.py",
+        "Hash":  "F100440A3ECF019F41B2E013B17D19E990AC3C5865C5AC74FDED35BEB7CEFE91"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\evaluation\\likelihood.py",
+        "Hash":  "E55E8A66F03F2F5DD6BCA940465D7E0227C69A861ED5155E35328869C0FEF9D2"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\evaluation\\harness_runner.py",
+        "Hash":  "7994FF0B5C9A2EC8AC381E64A7F900B25D7551D4811A5A7B4EAE9EA6024D30C8"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\evaluation\\harness_lm.py",
+        "Hash":  "93493D9A250CF0CE6D2F961AF1DE06E59715FFDEB10C26FD55E0A60D59E1CC92"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\evaluation\\harness.py",
+        "Hash":  "289A0C9CF0E1AE766F7458013E67787DE3DAF5FF75F3C8B54618B66638626463"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\evaluation\\fixtures.py",
+        "Hash":  "B717EE874E6FF91871A0E290D63D8F60DFA11180A8C6BF8B897EC1ED08D241CF"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\evaluation\\evidence.py",
+        "Hash":  "7A2861C0084887EC2BF719B1F23BBCA00A99B0D74A12956FF05831CFF2868C62"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\evaluation\\diagnostics.py",
+        "Hash":  "53DE78C1296B191E2598C9FB10C6D81F061F5604C434585221D607DA03CF45DC"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\export\\__init__.py",
+        "Hash":  "11B8B28B8094D581FA8C153935E250A65DE1B2F0941C2359537C3190D0E24404"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\export\\writer.py",
+        "Hash":  "89D215F6A5CE346BA357774840DD9DC7A592A3118CC5986B2CE74366C5D81D9E"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\export\\manifest.py",
+        "Hash":  "8F5A33E172BD4614B2B8BABA1A5E0715C6F53AA69147758F03FCC5B3E337A686"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\export\\loader.py",
+        "Hash":  "F95D9552F94C294E2293993ABDD263C24CB37FFBF38E5DD3F6EC1DCC817A6D0C"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\export\\hf.py",
+        "Hash":  "A508292EE1FDDD7F13E14B015C702A6C00BE0541929CB48ED0C27BE0A6948A96"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\dashboard\\server.py",
+        "Hash":  "EF65BA323150E84FFBE0FF4CDB0200DAF3DF21507BF08FD1C90B89D4ACDD4D89"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\dashboard\\__init__.py",
+        "Hash":  "0E26AC3FA0C33049BE0715790B8F4928F41A707B355E96A940F3EB7ECF934552"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\tokenizers\\__init__.py",
+        "Hash":  "1A6957EAF0CF86ECAD9B1727FE5330E298614476536E6ECA09AFEE15EE8A9A8B"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\tokenizers\\loading.py",
+        "Hash":  "22DA05C8A366583FC8AE7242CD3C9479131D00D65F8C790D5540BE9327B4ED91"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\tokenizers\\byte.py",
+        "Hash":  "13C275571DFEDC55C084F78194C4204263306772940CFC6FC951A5E0420DAAC2"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\tokenizers\\bpe.py",
+        "Hash":  "FBA7AAA39C02F00C0DECA985163B341A017975BD29F0DE7817058B7D32FDBA4E"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\tokenizers\\base.py",
+        "Hash":  "536387BEE47DFA05633983892602EE29749C4CA96E75F054A4CA0F6309598EF6"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\core\\__init__.py",
+        "Hash":  "497A087EFAD1670DC2B48068B8C12A6F358A2D0A21546F6ADA5E3FFE4C39AF4E"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\core\\registry.py",
+        "Hash":  "D6552110351DC5358D4010512021D998639272C4F9B39187437AEB77657B335D"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\core\\paths.py",
+        "Hash":  "17AA05D67DA1D36FFA04E375EF4B68C969525F713E37764E7E09F3DC8C9588B5"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\core\\contracts.py",
+        "Hash":  "D961FD32AB43D410851BFF0E541D17ADD224DCC0BFD53CD4912DD230FC8B0173"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\research\\__init__.py",
+        "Hash":  "4CD131AAB11B3427586A2AEEDE98A1B8694334BA05FDCB47EE571BC0CD2395DF"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\reports\\__init__.py",
+        "Hash":  "A33F76BDFEAA44394B187A84E233A80BC85EF73AE3D7120DA6599F2C21622439"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\plugins\\__init__.py",
+        "Hash":  "CC556B74CDA6B3FC42A4C34B7B994A6551335B89CD76238FBCD54FB82624074F"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\research\\scaffold.py",
+        "Hash":  "603F77FC88D6B31DAF4E35CA930EB03D536D76C41882DBC88D37E1A43574B14D"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\research\\loader.py",
+        "Hash":  "173587DE9B15970453E3A02ADB515807E3F08F17C5B1232FB1F72BE98390E7A8"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\research\\ideas.py",
+        "Hash":  "DE8D2E34FEAF3AA375D7CAD98482D497851D021B3C290D1CDC750E4BDC25994E"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\reports\\render.py",
+        "Hash":  "808FED33DD74F2BC9E8EA42DAFA5288B56AA12A8B6D211C47600EBBC1A392BBF"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\research\\capabilities.py",
+        "Hash":  "1883D148D4D1A1B2E6343BB8EE1A75B0AA1A36241066FC719221A283BBEC1093"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\reports\\collect.py",
+        "Hash":  "CD9E6E0B5F951040472226A64674557D6425D83F0A97D5C0E53CF0915A8488FC"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\optimizers\\base.py",
+        "Hash":  "724E04971B408B8C7420F74F958C92D1790B9294A11774B7333043A5A9D74725"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\optimizers\\clipping.py",
+        "Hash":  "1881BDC2E3FC51C42D19DDB8D75F41F3D75BDD265C7DA3255239E7FF08BF755C"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\optimizers\\adamw.py",
+        "Hash":  "5671D55E661644C974551FB10D69EAE71ED2A4911FDAD9B442C001A7C89521EB"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\optimizers\\__init__.py",
+        "Hash":  "74B0DEB9F46CAB65C7D06B82DA3D27932568949887374C428A4D8DCB0A9FA033"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\__init__.py",
+        "Hash":  "05188BDA8E42A0AF3755D2281F9E7D0A487C4218C85F4AE74A5A330D9BF5BC58"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\tokens.py",
+        "Hash":  "FDE5CC1BE12BAD76DEBE898D720BA252CA3C66FEE3256F94B4F21497E570C163"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\config\\schemas.py",
+        "Hash":  "700DEF47D07AEC201335744226906B5C4DF5868D1699D79225AD1DB264263B6F"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\config\\composer.py",
+        "Hash":  "68392F562A59468F65F173836CD42746FE5A07E0D42640960BC8CD4A4E9F084E"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\schedules\\__init__.py",
+        "Hash":  "3C04B7F77DA85946D0687C52F05763B0833ECFA244E4F522CFBCCB9EAD74A546"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\schedules\\cosine.py",
+        "Hash":  "77E42AEC4F72DBEEDC681FEFFC93A1CEFCF7F87A56166E63A85F2D2755DCBE06"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\schedules\\constant.py",
+        "Hash":  "31E9A64F50A110FBA1A56E73B87FA223A754A4736A9FB849595F3BB78AC9A5DF"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\schedules\\base.py",
+        "Hash":  "F6EA94CFD782BA7AEC866E7368C4EA3C47385859BF561733286F22D5B5E24D21"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\schedules\\anchors.py",
+        "Hash":  "25D9E72246CDAA74E3DE6BFF45501F0BABDFD8466FE5081BB82470FC9F1B6E7C"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\acquisition\\progress.py",
+        "Hash":  "2F2183973E12C08639B0017546158E4F85E345B4AF0D10AF6AAA719F1947396C"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\acquisition\\plan.py",
+        "Hash":  "EFEEA4AE27BE4FBA139FD2C58903DE8141A00B0D44AFE7009FBC2088E2F52DF3"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\acquisition\\fetcher.py",
+        "Hash":  "D2BAC21BFCD7062CFFEF95AC5DF221472DCB0D74DD6813BCAFE7A05ABD28865D"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\acquisition\\disk.py",
+        "Hash":  "2028C8591EC9F297EB152EC93DAF0D1F0DB2615DB54481CBBEEECA88AC4C8D14"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\acquisition\\verifier.py",
+        "Hash":  "AA574A2998033DBC73DB5AADA2E78ACBBAE008E7D8ACACE9C90DF3D0C6DC0FAE"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\acquisition\\receipt.py",
+        "Hash":  "D11D9193B8E556292BEB66297A82DB093B6E3F0BA9C3D8F35700C50B96BADA17"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\acquisition\\__init__.py",
+        "Hash":  "30DB261ACB7DB78DDB5AC9476EA4D5C3145EA213E6C3792AF434D721847F62FF"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\normalization.py",
+        "Hash":  "B967AC28F31E4398D036610BE3F28AEBEF2F615115831B70B97F563A7117338C"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\prepare\\__init__.py",
+        "Hash":  "E02B8FFDBABFE581DCB56D393F324D40FB18966E98B41BC0C2C30E829CBD8B92"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\prepare\\runner.py",
+        "Hash":  "89C9F0EFB495DD21FB97110CBA998BBDE625999B63D2F36AD65E0AB46C357189"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\prepare\\planner.py",
+        "Hash":  "D428D8DDA4C605E259FF6BCCAE1F47DD4CB3BCB0264D333951353FA1AE4A558C"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\prepare\\integrity.py",
+        "Hash":  "434EE9213172661A6D28077CB00EA88CA02727941C6E1F200383D754F6620B9A"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\prepare\\config.py",
+        "Hash":  "E7E8EB30225E95CF626C070A8EB52AC2BF83089E5C898983C94813048B8F05DA"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\operator\\__init__.py",
+        "Hash":  "D57ED8FA955EF817C1DA2C08CC0DC12ADCE5076D8FF618812ED6BEB849159234"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\plugins\\noop_tokenizer\\noop_tokenizer_plugin.py",
+        "Hash":  "C0A2C7A292511D776F12791588052EAE822D5AE0445EC26247B43E1C6FC968BA"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\operator\\sealed.py",
+        "Hash":  "7D81D29A5E73C8CA4181F89D43C09C156877BAD78FD1EAD1C2F1F7A538E0A77D"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\operator\\release.py",
+        "Hash":  "B3AD0E9518830F1C95D63CAEB4B70A57E891C6EB1F1E75A61F1F5473412DFCB2"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\operator\\final.py",
+        "Hash":  "9FD3F9B6C018A522119C8697559906953FD1CBC64951D69E3E6E00764F4FB370"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\canonical_io.py",
+        "Hash":  "2F811DC0DB120A49C2650660B5F7B3BCC1B602992E73CE58B98E828474FDB5B7"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\artifacts\\ledger.py",
+        "Hash":  "C4B66B2EBEAAE1D5A1208E66841363DC187B9689B6F6D5073A3E389970C5693F"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\comparison\\__init__.py",
+        "Hash":  "D46711456F7915FAB68E8CB89C25CB325F7BBB0AD4168E6CC5D3B14FF321FB5A"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\comparison\\tracks.py",
+        "Hash":  "07D9B7A158A4171D68BBF30FB6B9249EB1AADE156F37E076F91B3C474354D019"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\comparison\\recipes.py",
+        "Hash":  "36498A181E648314CEA23742EB8E79748E352A6F7AFB63DB572DECA3D5AD15EF"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\comparison\\promotion.py",
+        "Hash":  "04E961ACB3DFE643742FA0777B7E9A98838139D8D34DBD08DDA7689713AA8842"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\comparison\\curves.py",
+        "Hash":  "E45948F40E99889873E35F7E84D1D4AD2F2318AE5CE8B6D2BC1380DC4D7B85E0"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\comparison\\bootstrap.py",
+        "Hash":  "1F98DD85854CFC570AC7685CCD01508A9F0021134FAA1556E345CE0E8F265978"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\sources\\mix01.py",
+        "Hash":  "7594B1E31470BD6FE3C9D8FFD97F788C06B2751BF6C9E6F184006B02C2FE3B2E"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\sources\\catalog.py",
+        "Hash":  "5260F6B5511D87C2E7AD95F954BEC5A6D758EA3581E2E6ADC14AC19C9438F95F"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\sources\\admission.py",
+        "Hash":  "65FB1A041D12182201C3C46485E6F6A73602B9311DCBA2521B2CA95D5C10F14C"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\cli\\__init__.py",
+        "Hash":  "F5FBABAC9A74625798F71D8BBB3692B69ACBA0225C3B7E26A745270E20160FD0"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\cli\\train_cmd.py",
+        "Hash":  "2861EFB4C0F8C95A8747E0FFAA1B4AC09B3551383E7422E9DE45726FC89EDBEB"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\cli\\tokenizer_cmd.py",
+        "Hash":  "4A1F47E9870B7CA197E44C3D972C247D7A88D7A336A91CB017E0A3BC130697DA"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\cli\\research_cmd.py",
+        "Hash":  "B1AC5735B126C2B3F7FC7F992F591620F9A48E800C00B61D49D4189D4B855739"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\cli\\report_cmd.py",
+        "Hash":  "BFCFB88C90A5E0E5D744E0EC6C73A93699EB10C6AF6849E1FC78D82B9544E66B"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\cli\\profile_cmd.py",
+        "Hash":  "F78C41C0C068D5AF02D891AB89D1C4B77663854166D34FD0C007634980272F5C"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\cli\\prepare_cmd.py",
+        "Hash":  "15CCDE8BDED7F09584D57478E9927E0A6FFD7E4BA060B85BB674EE38BAC6F676"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\cli\\model_cmd.py",
+        "Hash":  "A6B90E70DD744B5106E6A10A9A30A0675A18B12D098C5943D485F5893299C0F3"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\cli\\mixture_cmd.py",
+        "Hash":  "8DFAC921DABC1D54E318DDB3AA5B2D52249F60D5AE8F5C8B216AB8374EA46E60"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\cli\\main.py",
+        "Hash":  "FA4781C0051393409F3F00755B1880F64BA9E58CA9D6F2AF68B35929E11A3F8C"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\cli\\generate_cmd.py",
+        "Hash":  "51E701136DB8C64CFE669C8808F86719D1A0FF06756114F07743DBD5548CF9A1"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\cli\\final_cmd.py",
+        "Hash":  "7762577CF5D6E630296C160065D99510D6FF53CD0C7772CCACF24FC69D5072A1"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\cli\\export_cmd.py",
+        "Hash":  "409AD8B749F4843B2D471B7252717F95C301998EF4AEC9F847C03EDC8D925B7C"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\cli\\experiment_cmd.py",
+        "Hash":  "F2389C4E7B47EF23CD691988E70280909FE76999B542205C70BBCE600F64A76A"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\cli\\eval_cmd.py",
+        "Hash":  "A31729AA855C812CC00CE86F9774EA5B8B9B72BEEA869D9C582E8900E9BA8608"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\cli\\doctor.py",
+        "Hash":  "87F9F32227FC9A33D7FBD256539CBC2101B01C9DD4AA14027E6823E8D8B07947"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\cli\\demo_cmd.py",
+        "Hash":  "6D4A0C16162C1E9163996F57B434AB7D4BA73E945013B28E3DE62AB178F4815C"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\cli\\data_cmd.py",
+        "Hash":  "5E99DE4E5B976AD3DAD1CD2AA1B27C4C63E8AAB8081568A8D10FFFBBB517CC72"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\cli\\config_cmd.py",
+        "Hash":  "2815FDE38ECD63C2E20DB48013B3114AA6CF8885B63AB79B7D0DBDFD125426AE"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\cli\\compare_cmd.py",
+        "Hash":  "C15CBEC794438487BB28893D6C3A818C7A8CC2B395CCEF38E5DAEB6297EE07B1"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\cli\\artifact_cmd.py",
+        "Hash":  "05960F52B1B8AF56FB1E7B831B73BA95DAB51B7C23B13FACDD2CA2D7C875766D"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\plugins\\noop_objective\\noop_objective_plugin.py",
+        "Hash":  "C3507317575EC35261DA8D122D7CB17F8F2EC122D9F86D767E0D6E585239BED9"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\plugins\\noop_optimizer\\noop_optimizer_plugin.py",
+        "Hash":  "2ECCA42F3FCC5B59B820B9EF268DF3D6184D272393A5B97DC15484350AFCF933"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\artifacts\\manifest.py",
+        "Hash":  "56BE6EA9C6B89B98B41BBA126FD5B31BE296D0080786A1FF32FD2BB635E80780"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\adapters\\mix01_adapters.py",
+        "Hash":  "86B49FC6C9CB67559A2D31895F7F93E7029973FFCC6DEF316FD8798194A34A0A"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\dedup\\lineage.py",
+        "Hash":  "4F1D93B5AB5F45131994533C9D82D43D7EDBD9FA2A51D4F262822BA886F88B0A"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\dedup\\index.py",
+        "Hash":  "4D0638CF5D13D56BADB27AE8F9E13CE8FF0530F143F82C486E80E9FFF929D3D9"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\adapters\\jsonl.py",
+        "Hash":  "7F4ACC0F161C67BD34E5165CF1DC150F55A18A7D0E7BA4F5B05C0BB2DD772D11"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\dedup\\engine.py",
+        "Hash":  "87319DFF5F1175997F13F5959F16721A8892A317252852D294014FC83ECB550D"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\dedup\\clusters.py",
+        "Hash":  "A2F598B6671FA5E2FD9EAB5B654145A08D1AA822D6686223B22F68D668432585"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\adapters\\__init__.py",
+        "Hash":  "9E287242338ACB2DA01A8C0C4256F4C4BBAA383E7FC57BE7AE5F6E65428D2216"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\adapters\\text.py",
+        "Hash":  "3733024E20B74D6B4F4EE3709E5555E36E49B2B466A629A221D022ED4F486ED4"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\dedup\\minhash.py",
+        "Hash":  "06B662939D1D0E63F6F6998F22721BABF90044AD6D349D8487E667889B35023D"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\dedup\\matchview.py",
+        "Hash":  "5E7A1724844F05D67F8E2CB197FDC4866A989F86A0E4B84477EAF189DE6C7F54"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\dedup\\__init__.py",
+        "Hash":  "70A4E8F99B426AE14F35851DE14DDC279E9D96A7FDDB7F4C6E7AA972D4ECDBE7"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\sources\\schema.py",
+        "Hash":  "5F709A8C0D6C95F787E6192930CD8049019754D429B499D772538480AB2328B2"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\sources\\prober.py",
+        "Hash":  "FB4AA4D8A41EEBF99F4D2581D4BB082ABD9C147203C84ADDF26CA2354B328B3B"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\sources\\policy.py",
+        "Hash":  "D44DC64A80A08EA972DBA9E073195E0AD3F8DEFC54FC48A2AAFBA69F4A2029F6"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\sources\\transport.py",
+        "Hash":  "7E3D29A9A028813C66EAD4C22C1ACF8788418AA5C4EC5181F381A0373F4F9717"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\sources\\__init__.py",
+        "Hash":  "0D66B725303AB9CEDFC8AF67352903B61C2046BEB7C5392B39019E188C73AD0F"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\pools\\builder.py",
+        "Hash":  "9FE165F91F577BC3EFB4E09B99E394BAEB1062B7776AA4C3C629FFE2C26E38F0"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\pools\\freeze.py",
+        "Hash":  "07A5BF8F34705F8169EE05E8493D84568B031D87BDD4C0B22F1EABB94B1E6B19"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\pools\\manifest.py",
+        "Hash":  "986C7CFDD83E3A9B4FFB2F0A5375F3E98F2BC173114E7E7C7772D2C70FAA2F4A"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\plugins\\noop_architecture\\noop_architecture_plugin.py",
+        "Hash":  "494C385E103AB130FA09A53B9D48FC0DFAA79328E79C033C881E66B9A30741B6"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\pools\\tokenizer_fit.py",
+        "Hash":  "A721BE3CA23AF7CD5E917B8B829D9FE182D2FD41E1BEB83AE7160409323A1266"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\pools\\splits.py",
+        "Hash":  "F2855A0505FB27CAA52760CC76AF2A34902D27823DA0E14256D8577FC595DEF6"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\pools\\regime.py",
+        "Hash":  "2D2BB0BD07EAE570F6092AB1B8996C88BC66CF0EE88BE0861C0E6FA507AF79F3"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\pools\\views.py",
+        "Hash":  "44034057730F0BC7BC33166650DB1FEEB7BD49DAE668A8BCC914AC7555611F04"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\pools\\__init__.py",
+        "Hash":  "2D3464DBF25FD9AA4000C536B4701C273E538A99C20637C1F8290039DFB6240E"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\artifacts\\store.py",
+        "Hash":  "AA746737B1C5BC2C1BAF31D226C2CE9AA24DF60A76902D8C8BCC18A0D621EDB1"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\sampling\\__init__.py",
+        "Hash":  "0872A24D84109A675CECCB8DE6741D277226140A2A88D7CD73D49691985DA9EA"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\sampling\\stream.py",
+        "Hash":  "CE3AFB721FAC08BB4846180D72211307AAF9D6D1F44318D9C8B7B00C855F8D21"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\sampling\\scheduler.py",
+        "Hash":  "CA5253DF8F27362FF6C9D8CEB31590C0EFD86CE242E8F8562D5F2132149C22EB"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\sampling\\plan.py",
+        "Hash":  "DEE6059D338B871E07A5A82FCDD6E87FCFE5D687D5BD53B9362C442C9BA921BA"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\sampling\\packing.py",
+        "Hash":  "0EBD25D13339B6420ECCFEC5C638B029FFA97A2A267E4F781A6FB4DED2A291BC"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\sampling\\mixture.py",
+        "Hash":  "263C7177D797D7FA8B3F1EE0C4D8FE165969786F4A635AA640C76C8DB8EDB199"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\exclusion\\__init__.py",
+        "Hash":  "207658BA894BC1175354E72492601E49FE7E2DE8F7F105E704709236033B8088"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\exclusion\\receipt.py",
+        "Hash":  "E221735DCFF6E8E07AAB3CAEA71A44DC3C593391E6757A26F788329B6301A614"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\exclusion\\benchmark.py",
+        "Hash":  "FC93EF823245913DE9CBBE6DD04F4893F471AEF968C11AA1A6779C3633EE6A32"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\cleaning\\__init__.py",
+        "Hash":  "2528C8A8411A902088734087C22DE77D11740B926CD39BAC6AA66F066D38C9F8"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\cleaning\\types.py",
+        "Hash":  "A8A82A90D88D5F2DF3988343076F7A219FADCCFA56F770D4A0E17702142322EB"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\cleaning\\structured.py",
+        "Hash":  "6B90725994B94146161C84DEF47E367F4CA10E9951F2DA9445615D1947E72A24"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\cleaning\\reporting.py",
+        "Hash":  "D30FD2A3B58A96E2384BCCEF62A5D119A831BC2C980E28833AA267A07F808689"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\cleaning\\repetition.py",
+        "Hash":  "36F211B55B4C02E5067F1758156D7E03286053710776AFE3552895DE0B4DC366"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\cleaning\\quarantine.py",
+        "Hash":  "8692FF54DBC0B476B11538E0844F29EB0A2DEB259E535BC18E22118F94EB368C"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\cleaning\\pipeline.py",
+        "Hash":  "20DED3AC8FEADBEC38F3D7934A3DF20A18927BF8B74C24703F8E89A2DF44C1B0"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\cleaning\\pii.py",
+        "Hash":  "51B882FAD9384448E6C62C6B5CDE29D07F08D66122107F8893C504B00AC204AC"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\cleaning\\normalization.py",
+        "Hash":  "2F29AA667F293E9019EE7B2F51E0B83C383DB9EE39561F404EFCC4A9F9C3049E"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\cleaning\\length_noise.py",
+        "Hash":  "6B2B83575C3920361347CA6051435217CCF0651FA12FCDB097783FE2930C4C85"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\cleaning\\language.py",
+        "Hash":  "007B8213FA4FDF0ED005D98C69504CA1645584EC19E175AAC799EC959B538CA0"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\cleaning\\html.py",
+        "Hash":  "98BFE3EDF694AA2F0706E3222A139B0F63C7C006696B85BB996987A327CC65DA"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\cleaning\\boilerplate.py",
+        "Hash":  "E4CC7B795987DAA779E11E77163F3E75B89D5F11BC616FEDF854C2AD7CB02CA7"
+    },
+    {
+        "Path":  "D:\\Project\\xlm\\src\\xlm\\data\\cleaning\\base.py",
+        "Hash":  "BA2790970D98BE9BD45BEA4BF921BDA8DAF035DAFDECFFB6FE8B33DE36F8BFA0"
+    }
+]

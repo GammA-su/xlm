@@ -1,0 +1,23 @@
+# Authored offline fixture shaped like a BLiMP-style acceptability pair task.
+# Synthetic content only; one subdataset stand-in for macro-partition tests.
+task: xlm_fixture_pair
+dataset_path: json
+dataset_kwargs:
+  data_files:
+    train: data/xlm_fixture_pair.json
+output_type: multiple_choice
+training_split: train
+validation_split: train
+test_split: train
+doc_to_text: ""
+doc_to_choice: "{{choices}}"
+doc_to_target: "{{answer}}"
+metric_list:
+  - metric: acc
+    aggregation: mean
+    higher_is_better: true
+  - metric: acc_norm
+    aggregation: mean
+    higher_is_better: true
+metadata:
+  version: 1.0

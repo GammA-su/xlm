@@ -1,0 +1,7 @@
+{
+  "command": "uv run --offline --locked --extra cpu --extra eval python data/audit/p23-remediation/stage02/after05/collect_evidence.py",
+  "exit_code": 1,
+  "error": "KeyError: envelope while summarizing an intentionally unresolved checkpoint execution sidecar",
+  "original_script": "collect_evidence_initial.py",
+  "repair": "Collector separately records unresolved sidecar evidence instead of requiring or inventing an envelope. No product or maintained test source changed."
+}

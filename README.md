@@ -1,5 +1,7 @@
 # XLM — Complete Implementation Prompt Pack
 
+**Implementation audit (2026-09-19):** Prompt 23 is complete. Bounded offline and CUDA checks have evidence; production acceptance is blocked by documented correctness and integration gaps. Read [final acceptance](docs/implementation/FINAL_ACCEPTANCE.md), [status](docs/implementation/STATUS.md), and the [Windows](docs/runbooks/windows.md) / [Linux](docs/runbooks/linux.md) runbooks before running experiments. No research results or full live-source verification are claimed.
+
 **Prepared:** 18 September 2026. **Deliverable:** an implementation plan and executable acceptance requirements for a coding agent, not an already implemented XLM application. The recipes specify the configuration language to build; remote sources remain unadmitted until verified locally.
 
 ## What to do

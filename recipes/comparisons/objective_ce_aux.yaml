@@ -1,0 +1,21 @@
+# Objective comparison draft: baseline cross-entropy vs an auxiliary objective.
+# Draft only: no evidence attached. Extra supervision and compute must be
+# disclosed before any claim.
+schema_version: 1
+kind: comparison_recipe
+id: objective_ce_aux
+status: draft_requires_evidence
+track: objective
+baseline_run: null
+candidate_run: null
+allowed_differences:
+  - objective_id
+  - objective_extras
+fixed:
+  - architecture_id
+  - tokenizer_hash
+  - mixture_id
+  - optimizer_id
+  - budget_targets
+notes:
+  - Candidate must disclose extra supervision and extra compute explicitly.

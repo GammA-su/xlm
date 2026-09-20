@@ -1,0 +1,19 @@
+{
+  "callers-0.log": "21faee17c02a3ea06fde0ebe715ff7d23759e9c43e0be24935a55203c5db7704",
+  "callers-results.json": "4bbd4736de216d5e5c496f99e28e2ebddc9c75f35a2b56bd8f0d77656a3290f6",
+  "callers-source-after.json": "6a1cbd057a87936875170cf07794446159e17d9189fb8743cbb9b3cce9fc7867",
+  "callers-source-before.json": "6a1cbd057a87936875170cf07794446159e17d9189fb8743cbb9b3cce9fc7867",
+  "callers.xml": "fa9852b49310001ce9f2c0e03a7fd5a4e4ff2349921e402f75b1dce094174ff5",
+  "quality-0.log": "e3ef58579eb566e7de49eea46e9563c2e14da7a5f45a42fd33f95010938b335b",
+  "quality-1.log": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+  "quality-2.log": "6f03df9a6da1c72efb9242ab1b62bf5bbd7a14bf4939d94aa091fd9ce2d0f52b",
+  "quality-results.json": "af1b25deb866e3af4481359735598e622deab5ac142de65621eac58028c9b032",
+  "quality-source-after.json": "6a1cbd057a87936875170cf07794446159e17d9189fb8743cbb9b3cce9fc7867",
+  "quality-source-before.json": "6a1cbd057a87936875170cf07794446159e17d9189fb8743cbb9b3cce9fc7867",
+  "run_checks.py": "a807bc659ddd50f78452bbd154714864c325d28e35c6f735dd0a15ea400d9498",
+  "vocabulary-0.log": "2caacdef4d80849c2a1a18c2ed8fda189946d4453aaf38cf4f10999d080d1cf0",
+  "vocabulary-results.json": "f6ea41eb3a70e5d1b0f513748185094c3deb91b6df67f316784b52c12d4b319a",
+  "vocabulary-source-after.json": "6a1cbd057a87936875170cf07794446159e17d9189fb8743cbb9b3cce9fc7867",
+  "vocabulary-source-before.json": "6a1cbd057a87936875170cf07794446159e17d9189fb8743cbb9b3cce9fc7867",
+  "vocabulary.xml": "e38ecc9a2b0cb7f7b5ff3a130130fea19f8187a747149ded1f8a5fdda71080f3"
+}

@@ -1,0 +1,12 @@
+unformatted: File would be reformatted
+  --> tests\test_cli_inventory.py:16:19
+   |
+15 |
+   - def command_paths(
+   -     command: Command, prefix: tuple[str, ...] = ()
+   - ) -> Iterator[tuple[str, ...]]:
+16 + def command_paths(command: Command, prefix: tuple[str, ...] = ()) -> Iterator[tuple[str, ...]]:
+17 |     yield prefix
+   |
+
+1 file would be reformatted, 259 files already formatted

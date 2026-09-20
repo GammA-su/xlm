@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="3" skipped="0" tests="4" time="21.492" timestamp="2026-09-19T21:58:45.866456+02:00" hostname="BetA-C1"><testcase classname="data.audit.p23-remediation.stage02.test_d06_before" name="test_enqueued_a_must_survive_working_tree_edit_b" time="3.537"><failure message="AssertionError: {'ran': False, 'job_id': 'run_7c6f175e9c10d24f', 'state': 'BLOCKED', 'reason': 'working tree diverged from snapshot: src/xlm/training/trainer.py: content changed after capture'}&#10;assert 'BLOCKED' == 'SUCCEEDED'&#10;  &#10;  - SUCCEEDED&#10;  + BLOCKED">tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage02/before-tmp/test_enqueued_a_must_survive_w0')
+
+    def test_enqueued_a_must_survive_working_tree_edit_b(tmp_path: Path) -&gt; None:
+        plan, queue, job_id, tree, snapshot = fixture(tmp_path)
+        (tree / "src/xlm/training/trainer.py").write_text(
+            'raise RuntimeError("authored B must not execute for queued A")\n', encoding="utf-8"
+        )
+        assert verify_snapshot(snapshot / "code", plan.code_snapshot) == []
+        result, _, _ = observed_run(tmp_path, queue, job_id)
+&gt;       assert result["state"] == "SUCCEEDED", result
+E       AssertionError: {'ran': False, 'job_id': 'run_7c6f175e9c10d24f', 'state': 'BLOCKED', 'reason': 'working tree diverged from snapshot: src/xlm/training/trainer.py: content changed after capture'}
+E       assert 'BLOCKED' == 'SUCCEEDED'
+E         
+E         - SUCCEEDED
+E         + BLOCKED
+
+data\audit\p23-remediation\stage02\test_d06_before.py:90: AssertionError</failure></testcase><testcase classname="data.audit.p23-remediation.stage02.test_d06_before" name="test_tampered_frozen_code_must_block_before_training" time="7.147"><failure message="AssertionError: {'ran': True, 'job_id': 'run_7c6f175e9c10d24f', 'state': 'SUCCEEDED', 'steps': 1, ...}&#10;assert ('SUCCEEDED' == 'BLOCKED'&#10;  &#10;  - BLOCKED&#10;  + SUCCEEDED)">tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage02/before-tmp/test_tampered_frozen_code_must0')
+
+    def test_tampered_frozen_code_must_block_before_training(tmp_path: Path) -&gt; None:
+        plan, queue, job_id, tree, snapshot = fixture(tmp_path)
+        (snapshot / "code/src/xlm/training/trainer.py").write_text(
+            'raise RuntimeError("authored snapshot tampering")\n', encoding="utf-8"
+        )
+        assert verify_snapshot(tree, plan.code_snapshot) == []
+        assert verify_snapshot(snapshot / "code", plan.code_snapshot)
+        result, origins, _ = observed_run(tmp_path, queue, job_id)
+&gt;       assert result["state"] == "BLOCKED" and not origins, result
+E       AssertionError: {'ran': True, 'job_id': 'run_7c6f175e9c10d24f', 'state': 'SUCCEEDED', 'steps': 1, ...}
+E       assert ('SUCCEEDED' == 'BLOCKED'
+E         
+E         - BLOCKED
+E         + SUCCEEDED)
+
+data\audit\p23-remediation\stage02\test_d06_before.py:102: AssertionError</failure></testcase><testcase classname="data.audit.p23-remediation.stage02.test_d06_before" name="test_executed_code_and_saved_identity_must_match_snapshot" time="3.939"><failure message="AssertionError: {'result': {'ran': True, 'job_id': 'run_7c6f175e9c10d24f', 'state': 'SUCCEEDED', 'steps': 1, ...}, 'observed_train_ste...': True, 'python': 'D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage01\\after01\\.venv\\Scripts\\python.exe', ...}&#10;assert {'D:\\Project...\\trainer.py'} == {'D:\\Project...\\trainer.py'}&#10;  &#10;  Extra items in the left set:&#10;  'D:\\Project\\xlm\\src\\xlm\\training\\trainer.py'&#10;  Extra items in the right set:&#10;  'D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage02\\before-tmp\\test_executed_code_and_saved_i0\\complete_snapshot\\code\\src\\xlm\\training\\trainer.py'&#10;  Use -v to get more diff">tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage02/before-tmp/test_executed_code_and_saved_i0')
+
+    def test_executed_code_and_saved_identity_must_match_snapshot(tmp_path: Path) -&gt; None:
+        plan, queue, job_id, _, snapshot = fixture(tmp_path)
+        result, origins, receipt = observed_run(tmp_path, queue, job_id)
+        assert result["state"] == "SUCCEEDED", result
+&gt;       assert origins == {str((snapshot / "code/src/xlm/training/trainer.py").resolve())}, receipt
+E       AssertionError: {'result': {'ran': True, 'job_id': 'run_7c6f175e9c10d24f', 'state': 'SUCCEEDED', 'steps': 1, ...}, 'observed_train_ste...': True, 'python': 'D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage01\\after01\\.venv\\Scripts\\python.exe', ...}
+E       assert {'D:\\Project...\\trainer.py'} == {'D:\\Project...\\trainer.py'}
+E         
+E         Extra items in the left set:
+E         'D:\\Project\\xlm\\src\\xlm\\training\\trainer.py'
+E         Extra items in the right set:
+E         'D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage02\\before-tmp\\test_executed_code_and_saved_i0\\complete_snapshot\\code\\src\\xlm\\training\\trainer.py'
+E         Use -v to get more diff
+
+data\audit\p23-remediation\stage02\test_d06_before.py:109: AssertionError</failure></testcase><testcase classname="data.audit.p23-remediation.stage02.test_d06_before" name="test_authored_control_really_executes_eight_targets" time="4.606" /></testsuite></testsuites>
