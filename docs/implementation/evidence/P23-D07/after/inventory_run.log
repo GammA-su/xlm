@@ -1,0 +1,67 @@
+﻿{
+  "model_level": {
+    "logical_state_names": 21,
+    "unique_deployed_parameters": 98880,
+    "total_instantiated_including_aliases": 115520,
+    "tied_parameters": 16640,
+    "tied_aliases": [
+      [
+        "lm_head.weight",
+        "embed_tokens.weight"
+      ]
+    ]
+  },
+  "serialized_level": {
+    "serialized_tensor_entries": 20,
+    "serialized_elements": 98880,
+    "serialized_payload_bytes": 395520,
+    "container_header_bytes": 1912,
+    "file_bytes": 397432,
+    "names": [
+      "embed_tokens.weight",
+      "layers.0.input_layernorm.weight",
+      "layers.0.mlp.down_proj.weight",
+      "layers.0.mlp.gate_proj.weight",
+      "layers.0.mlp.up_proj.weight",
+      "layers.0.post_attention_layernorm.weight",
+      "layers.0.self_attn.k_proj.weight",
+      "layers.0.self_attn.out_proj.weight",
+      "layers.0.self_attn.q_proj.weight",
+      "layers.0.self_attn.v_proj.weight",
+      "layers.1.input_layernorm.weight",
+      "layers.1.mlp.down_proj.weight",
+      "layers.1.mlp.gate_proj.weight",
+      "layers.1.mlp.up_proj.weight",
+      "layers.1.post_attention_layernorm.weight",
+      "layers.1.self_attn.k_proj.weight",
+      "layers.1.self_attn.out_proj.weight",
+      "layers.1.self_attn.q_proj.weight",
+      "layers.1.self_attn.v_proj.weight",
+      "norm.weight"
+    ]
+  },
+  "manifest_level": {
+    "export_format_version": "2",
+    "alias_schema_version": "1",
+    "storage_layout": "single_copy",
+    "alias_map": {
+      "lm_head.weight": "embed_tokens.weight"
+    },
+    "parameters_deployed": 98880,
+    "serialized_tensor_entries": 20,
+    "serialized_payload_bytes": 395520
+  },
+  "cross_checks": {
+    "payload_bytes_equals_unique_deployed_x4": true,
+    "serialized_elements_equals_unique_deployed": true,
+    "alias_carries_no_payload": true,
+    "file_bytes_equals_header_plus_payload": true
+  },
+  "behaviour": {
+    "logits_max_abs_diff": 0.0,
+    "parameter_identity_restored": true,
+    "deployed_parameters_unchanged": true,
+    "tokenizer_fingerprint_unchanged": true,
+    "loaded_storage_layout": "single_copy"
+  }
+}

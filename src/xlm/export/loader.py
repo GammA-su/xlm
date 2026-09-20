@@ -20,6 +20,12 @@ from safetensors.torch import load_file as safetensors_load
 
 from xlm.core.registry import architectures
 from xlm.export.manifest import ExportManifest
+from xlm.models.aliases import (
+    AliasError,
+    restore_alias_identity,
+    validate_alias_map,
+    verify_alias_identity,
+)
 from xlm.models.base import BaseModel
 from xlm.tokenizers.base import BaseTokenizer
 
@@ -74,6 +80,82 @@ def _resolve_plugin(entry_desc: str, registry: Any, plugin_id: str) -> Any:
             f"Install and register it first; available: {available or ['(none)']}. "
             "Exports never bundle executable plugin code."
         ) from exc
+
+
+def _resolve_alias_mapping(
+    manifest: ExportManifest, model: BaseModel, state_dict: dict[str, Any]
+) -> dict[str, str]:
+    """Determine the alias -> canonical mapping this bundle must reconstruct.
+
+    v2 carries an explicit alias map and stores one payload per tied tensor.
+    v1 stored both copies, so the mapping is recovered from ``tied_mapping`` and
+    the duplicate payloads are validated against each other before the tie is
+    restored. A v1 bundle is never rewritten and never relabelled single-copy.
+    """
+    payload_names = set(state_dict)
+
+    if manifest.export_format_version != "1":
+        mapping = dict(manifest.alias_map)
+        try:
+            validate_alias_map(mapping, payload_names)
+        except AliasError as exc:
+            raise ExportLoadError(f"invalid alias metadata: {exc}") from exc
+        _check_alias_shapes(mapping, model, state_dict)
+        return mapping
+
+    # ---- legacy v1: both copies present, verify before collapsing ----
+    mapping = {}
+    for group, names in sorted(manifest.tied_mapping.items()):
+        present = [name for name in names if name in state_dict]
+        if len(present) < 2:
+            continue
+        target, *aliases = present
+        reference = state_dict[target]
+        for alias in aliases:
+            candidate = state_dict[alias]
+            # Shape and dtype first: byte equality alone is not validation.
+            if candidate.shape != reference.shape:
+                raise ExportLoadError(
+                    f"legacy tie '{group}': '{alias}' has shape {tuple(candidate.shape)} "
+                    f"but '{target}' has {tuple(reference.shape)}"
+                )
+            if candidate.dtype != reference.dtype:
+                raise ExportLoadError(
+                    f"legacy tie '{group}': '{alias}' has dtype {candidate.dtype} "
+                    f"but '{target}' has {reference.dtype}"
+                )
+            if not torch.equal(candidate, reference):
+                raise ExportLoadError(
+                    f"tied weights diverged for '{alias}'; refusing a corrupt bundle. "
+                    "Conflicting legacy copies are never resolved by load order."
+                )
+            mapping[alias] = target
+    _check_alias_shapes(mapping, model, state_dict)
+    return mapping
+
+
+def _check_alias_shapes(
+    mapping: dict[str, str], model: BaseModel, state_dict: dict[str, Any]
+) -> None:
+    """The stored payload must fit what the built model expects at both names."""
+    expected = dict(model.state_dict())
+    for alias, target in sorted(mapping.items()):
+        if alias not in expected:
+            raise ExportLoadError(
+                f"alias '{alias}' is not part of the declared architecture's state"
+            )
+        payload = state_dict[target]
+        wanted = expected[alias]
+        if tuple(payload.shape) != tuple(wanted.shape):
+            raise ExportLoadError(
+                f"alias '{alias}' expects shape {tuple(wanted.shape)} but its target "
+                f"'{target}' stores {tuple(payload.shape)}"
+            )
+        if payload.dtype != wanted.dtype:
+            raise ExportLoadError(
+                f"alias '{alias}' expects dtype {wanted.dtype} but its target "
+                f"'{target}' stores {payload.dtype}"
+            )
 
 
 def load_exported_model(
@@ -132,23 +214,19 @@ def load_exported_model(
     except Exception as exc:
         raise ExportLoadError(f"safe weights failed to load: {exc}") from exc
 
-    # Tied aliases must match bitwise before identity is restored.
-    for _, aliases in manifest.tied_mapping.items():
-        present = [a for a in aliases if a in state_dict]
-        if len(present) > 1:
-            first = state_dict[present[0]]
-            for alias in present[1:]:
-                if not torch.equal(first, state_dict[alias]):
-                    raise ExportLoadError(
-                        f"tied weights diverged for '{alias}'; refusing a corrupt bundle"
-                    )
-    model.load_state_dict(state_dict)
-    for _, aliases in manifest.tied_mapping.items():
-        if "embed_tokens.weight" in aliases and "lm_head.weight" in aliases:
-            embed_tokens = getattr(model, "embed_tokens", None)
-            lm_head = getattr(model, "lm_head", None)
-            if embed_tokens is not None and lm_head is not None:
-                lm_head.weight = embed_tokens.weight
+    alias_mapping = _resolve_alias_mapping(manifest, model, state_dict)
+    # Materialize each alias as the *same object* as its target, so the load is
+    # strict (every expected key present) without duplicating any payload.
+    for alias, target in alias_mapping.items():
+        state_dict[alias] = state_dict[target]
+    try:
+        model.load_state_dict(state_dict)
+    except RuntimeError as exc:
+        raise ExportLoadError(f"weights do not fit the declared architecture: {exc}") from exc
+    try:
+        restore_alias_identity(model, alias_mapping)
+    except AliasError as exc:
+        raise ExportLoadError(f"alias reconstruction failed: {exc}") from exc
 
     # Tokenizer reconstruction must be unchanged. No-op plugin tokenizers
     # serialize in their base format, so the base loader plus the fingerprint
@@ -193,4 +271,13 @@ def load_exported_model(
     if torch_dtype is not torch.float32:
         model.to(torch_dtype)
     model.eval()
+    # Device placement and dtype conversion can replace parameter objects and
+    # silently untie the model, so the tie is re-checked after conversion and
+    # re-established rather than assumed to have survived.
+    if alias_mapping:
+        try:
+            verify_alias_identity(model, alias_mapping)
+        except AliasError:
+            restore_alias_identity(model, alias_mapping)
+            verify_alias_identity(model, alias_mapping)
     return model, tokenizer, manifest

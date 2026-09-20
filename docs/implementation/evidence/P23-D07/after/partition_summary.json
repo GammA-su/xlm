@@ -1,0 +1,70 @@
+{
+  "test_files_total": 84,
+  "test_files_executed": 84,
+  "partitions": [
+    {
+      "partition": 0,
+      "files": 10,
+      "returncode": 1,
+      "seconds": 255.2,
+      "tail": "2 failed, 134 passed in 253.60s (0:04:13)"
+    },
+    {
+      "partition": 1,
+      "files": 10,
+      "returncode": 0,
+      "seconds": 448.5,
+      "tail": "267 passed in 446.66s (0:07:26)"
+    },
+    {
+      "partition": 2,
+      "files": 10,
+      "returncode": 1,
+      "seconds": 128.5,
+      "tail": "1 failed, 105 passed, 1 deselected in 126.89s (0:02:06)"
+    },
+    {
+      "partition": 3,
+      "files": 10,
+      "returncode": 1,
+      "seconds": 147.6,
+      "tail": "1 failed, 108 passed, 1 deselected in 146.10s (0:02:26)"
+    },
+    {
+      "partition": 4,
+      "files": 10,
+      "returncode": 1,
+      "seconds": 465.9,
+      "tail": "2 failed, 106 passed in 464.54s (0:07:44)"
+    },
+    {
+      "partition": 5,
+      "files": 9,
+      "returncode": 1,
+      "seconds": 72.6,
+      "tail": "2 failed, 172 passed, 1 warning in 71.82s (0:01:11)"
+    },
+    {
+      "partition": 6,
+      "files": 9,
+      "returncode": 1,
+      "seconds": 123.3,
+      "tail": "2 failed, 119 passed in 121.69s (0:02:01)"
+    },
+    {
+      "partition": 7,
+      "files": 9,
+      "returncode": 1,
+      "seconds": 25.2,
+      "tail": "1 failed, 84 passed, 1 warning in 23.63s"
+    },
+    {
+      "partition": 8,
+      "files": 7,
+      "returncode": 1,
+      "seconds": 2435.6,
+      "tail": "2 failed, 50 passed, 1 skipped, 10 deselected in 2433.80s (0:40:33)"
+    }
+  ],
+  "all_passed": false
+}

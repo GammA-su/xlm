@@ -183,20 +183,34 @@ def test_tokenizer_reconstruction_and_tied_identity(tmp_path: Path) -> None:
     loaded_embed = getattr(loaded, "embed_tokens").weight  # noqa: B009
     assert loaded_head is loaded_embed
     assert torch.equal(loaded_head, model.embed_tokens.weight)
-    assert manifest.tied_mapping["tied_lm_head"] == ["embed_tokens.weight", "lm_head.weight"]
+    # v2 records the tie as an explicit alias -> canonical map. The grouped
+    # `tied_mapping` view is kept, now keyed generically by the canonical name
+    # instead of a Transformer-specific label.
+    assert manifest.alias_map == {"lm_head.weight": "embed_tokens.weight"}
+    assert manifest.storage_layout == "single_copy"
+    assert manifest.tied_mapping["tied_embed_tokens_weight"] == [
+        "embed_tokens.weight",
+        "lm_head.weight",
+    ]
 
 
 # ------------------------------------------------------------- refusal paths
 
 
-def test_diverged_tied_weights_are_refused(tmp_path: Path) -> None:
+def test_an_alias_carrying_its_own_payload_is_refused(tmp_path: Path) -> None:
+    """A v2 bundle must store the tied tensor exactly once.
+
+    Re-adding a payload under the alias name is how a duplicated bundle would
+    masquerade as single-copy, so it is refused even when the values agree.
+    """
     from safetensors.torch import load_file as safetensors_load
     from safetensors.torch import save_file as safetensors_save
 
     out, _, _ = _export_toy(tmp_path, name="tied_div")
     weights_path = out / "model.safetensors"
     state = safetensors_load(str(weights_path))
-    state["lm_head.weight"] = state["lm_head.weight"] + 1.0
+    assert "lm_head.weight" not in state, "v2 must not store the alias payload"
+    state["lm_head.weight"] = state["embed_tokens.weight"].clone()
     safetensors_save(state, str(weights_path))
 
     manifest_path = out / "export_manifest.json"
@@ -206,7 +220,7 @@ def test_diverged_tied_weights_are_refused(tmp_path: Path) -> None:
             entry["sha256"] = hashlib.sha256(weights_path.read_bytes()).hexdigest()
             entry["size_bytes"] = weights_path.stat().st_size
     manifest_path.write_text(json.dumps(payload), encoding="utf-8")
-    with pytest.raises(ExportLoadError, match="tied weights diverged"):
+    with pytest.raises(ExportLoadError, match="also carries its own payload"):
         load_exported_model(out, device="cpu")
 
 

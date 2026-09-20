@@ -45,6 +45,13 @@ def export_command(
     plugin_id: Annotated[
         str | None, typer.Option("--plugin-id", help="Plugin family that built the model.")
     ] = None,
+    publish: Annotated[
+        bool,
+        typer.Option(
+            "--publish",
+            help="Also register the bundle in the artifact store (immutable identity).",
+        ),
+    ] = False,
     as_json: Annotated[bool, typer.Option("--json", help="Emit the manifest as JSON.")] = False,
 ) -> None:
     """Export a checkpoint to a portable bundle: safe weights, hashes, provenance.
@@ -91,6 +98,7 @@ def export_command(
             data_manifest_refs=refs,
             budget_valid_targets=budget_targets,
             evidence_status=evidence_status,
+            publish=publish,
         )
     except ExportError as exc:
         typer.echo(f"Error: export refused: {exc}", err=True)
@@ -105,6 +113,15 @@ def export_command(
     typer.echo(f"Parameters:      {manifest.parameters_deployed:,} deployed")
     typer.echo(f"Tokenizer:       {manifest.tokenizer_type} ({manifest.tokenizer_hash[:16]})")
     typer.echo(f"Weights:         model.safetensors ({manifest.model_hash[:16]})")
+    typer.echo(
+        f"Storage:         {manifest.storage_layout}, "
+        f"{manifest.serialized_tensor_entries} tensors, "
+        f"{manifest.serialized_payload_bytes:,} payload bytes"
+    )
+    if manifest.alias_map:
+        typer.echo(f"Tied aliases:    {len(manifest.alias_map)} stored once")
+    if publish:
+        typer.echo(f"Published:       artifact '{manifest.export_id}' (kind 'exports')")
     typer.echo(
         f"Optimizer state: {'included' if manifest.includes_optimizer_state else 'excluded'}"
     )
