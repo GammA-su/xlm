@@ -1,9 +1,10 @@
 # Implementation status
 
-> **D02 secured pause (2026-09-20, user usage limit): IN PROGRESS, not accepted.**
-> [Resume handoff](D02_RESUME_HANDOFF.md): prior focused 196 + D01 99 passes;
-> latest quality passes; child-output accounting failure and full reruns pending.
-> No integration occurred.
+> **D02 continuation (after04): IMPLEMENTED / VERIFIED (bounded Windows CPU offline)**
+> on `fix/d02` for scoped groups — focused 201, D01 99, callers 27, D03 82,
+> quality clean. D06 core has a separate environmental timing failure.
+> [Resume handoff](D02_RESUME_HANDOFF.md) records the historical pause, root
+> causes, and remaining gates. No integration occurred.
 
 > D01 remediation is **IMPLEMENTED / VERIFIED (bounded offline)** under Stage 1 approval.
 > See [reports/P23-D01.md](reports/P23-D01.md) and [REMEDIATION.md](REMEDIATION.md).

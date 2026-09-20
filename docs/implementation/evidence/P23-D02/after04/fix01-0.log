@@ -1,0 +1,49 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0
+collecting ... collected 4 items
+
+tests/test_prepare_bounds.py::test_child_stdout_and_stderr_are_bounded_and_accounted PASSED [ 25%]
+tests/test_prepare_bounds.py::test_child_output_accounting_covers_write_orders[import os; os.write(1,b'A'*8192); os.write(2,b'B'*8192)] PASSED [ 50%]
+tests/test_prepare_bounds.py::test_child_output_accounting_covers_write_orders[import os; os.write(2,b'B'*8192); os.write(1,b'A'*8192)] PASSED [ 75%]
+tests/test_prepare_bounds.py::test_child_output_accounting_covers_write_orders[import os; [os.write(1,b'A'*512) or os.write(2,b'B'*512) for _ in range(16)]] FAILED [100%]
+
+================================== FAILURES ===================================
+_ test_child_output_accounting_covers_write_orders[import os; [os.write(1,b'A'*512) or os.write(2,b'B'*512) for _ in range(16)]] _
+
+tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after04/fix01-tmp/test_child_output_accounting_c2')
+program = "import os; [os.write(1,b'A'*512) or os.write(2,b'B'*512) for _ in range(16)]"
+
+    @pytest.mark.parametrize(
+        "program",
+        [
+            "import os; os.write(1,b'A'*8192); os.write(2,b'B'*8192)",
+            "import os; os.write(2,b'B'*8192); os.write(1,b'A'*8192)",
+            "import os; [os.write(1,b'A'*512) or os.write(2,b'B'*512) for _ in range(16)]",
+        ],
+    )
+    def test_child_output_accounting_covers_write_orders(tmp_path: Path, program: str) -> None:
+        """Concurrent pipe readers share one aggregate allowance without losing commits.
+    
+        Reservation contention between the stdout/stderr drain workers must wait for
+        the sibling to settle; only an observed probe byte beyond the cap declares
+        overflow. Journal reconstruction must preserve committed consumption.
+        """
+    
+        config = config_for(tmp_path, max_subprocess_output_bytes=1024)
+        bounds = PrepareBounds(config, tmp_path / "out", tmp_path / "home")
+        with pytest.raises(ValueError, match="output limit"):
+            bounds.run([sys.executable, "-c", program], tmp_path, 5)
+        assert sum(p.stat().st_size for p in bounds.spool.glob("*.log")) <= 1024
+        snapshot = bounds.capacity.snapshot()
+>       assert snapshot["transferred_bytes"] == 1024
+E       assert 0 == 1024
+
+tests\test_prepare_bounds.py:63: AssertionError
+- generated xml file: D:\Project\xlm\data\audit\p23-remediation\stage04\after04\fix01.xml -
+=========================== short test summary info ===========================
+FAILED tests/test_prepare_bounds.py::test_child_output_accounting_covers_write_orders[import os; [os.write(1,b'A'*512) or os.write(2,b'B'*512) for _ in range(16)]] - assert 0 == 1024
+======================== 1 failed, 3 passed in 16.00s =========================

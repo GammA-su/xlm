@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="1" time="1.923" timestamp="2026-09-20T15:07:14.565831+02:00" hostname="BetA-C1"><testcase classname="tests.test_prepare_bounds" name="test_child_stdout_and_stderr_are_bounded_and_accounted" time="1.431" /></testsuite></testsuites>

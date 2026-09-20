@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="3" time="5.304" timestamp="2026-09-20T16:19:21.107674+02:00" hostname="BetA-C1"><testcase classname="tests.test_final_acceptance" name="test_prepare_hashes_copy_inputs_and_policy" time="2.464"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'exceeds'&#10;  Actual message: 'Invalid acquisition journal: journal plan identity mismatch'">tmp_path = WindowsPath('D:/Project/xlm/data/audit/p23-remediation/stage04/after04/compat01-tmp/test_prepare_hashes_copy_input0')
+
+    def test_prepare_hashes_copy_inputs_and_policy(tmp_path: Path) -&gt; None:
+        config = copy_config(tmp_path)
+        path = tmp_path / "config.yaml"
+        run_prepare(config, path, tmp_path / "home", REPO, authorize=True)
+        (tmp_path / "source/record.txt").write_text("changed!", encoding="utf-8")
+        plan = plan_prepare(config, path, tmp_path / "home", REPO, load_prior_state(tmp_path / "out"))
+        assert plan.stages[0].status == "stale"
+        config.stages[0].max_bytes = 1
+&gt;       with pytest.raises(PrepareRunError, match="exceeds"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'exceeds'
+E         Actual message: 'Invalid acquisition journal: journal plan identity mismatch'
+
+tests\test_final_acceptance.py:54: AssertionError</failure></testcase><testcase classname="tests.test_prepare_bounds" name="test_changed_prepare_budget_does_not_replenish_account" time="1.074" /><testcase classname="tests.test_prepare_bounds" name="test_declared_external_output_is_in_shared_disk_account" time="0.641" /></testsuite></testsuites>

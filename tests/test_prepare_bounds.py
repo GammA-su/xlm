@@ -38,6 +38,39 @@ def test_child_stdout_and_stderr_are_bounded_and_accounted(tmp_path: Path) -> No
     assert restored.capacity.remaining("transfer") < 1024
 
 
+@pytest.mark.parametrize(
+    "program",
+    [
+        "import os; os.write(1,b'A'*8192); os.write(2,b'B'*8192)",
+        "import os; os.write(2,b'B'*8192); os.write(1,b'A'*8192)",
+        "import os; [(os.write(1,b'A'*512), os.write(2,b'B'*512)) for _ in range(16)]",
+        "import os; os.write(1,b'A'*8192)",
+    ],
+)
+def test_child_output_accounting_covers_write_orders(tmp_path: Path, program: str) -> None:
+    """Concurrent pipe readers share one aggregate allowance without losing commits.
+
+    Reservation contention between the stdout/stderr drain workers must wait for
+    the sibling to settle; only an observed probe byte beyond the cap declares
+    overflow. Journal reconstruction must preserve committed consumption.
+    """
+
+    config = config_for(tmp_path, max_subprocess_output_bytes=1024)
+    bounds = PrepareBounds(config, tmp_path / "out", tmp_path / "home")
+    with pytest.raises(ValueError, match="output limit"):
+        bounds.run([sys.executable, "-c", program], tmp_path, 5)
+    assert sum(p.stat().st_size for p in bounds.spool.glob("*.log")) <= 1024
+    snapshot = bounds.capacity.snapshot()
+    assert snapshot["transferred_bytes"] == 1024
+    assert snapshot.get("reserved_transfer_bytes", 0) == 0
+    assert snapshot.get("reserved_temp_bytes", 0) == 0
+    restored = PrepareBounds(config, tmp_path / "out", tmp_path / "home")
+    journals = list((tmp_path / "out" / ".accounting").glob("resources.json"))
+    assert journals
+    assert restored.capacity.snapshot()["transferred_bytes"] == 1024
+    assert restored.capacity.remaining("transfer") < 1024
+
+
 def test_check_only_stage_consumes_aggregate_allowance(tmp_path: Path) -> None:
     root = Path(__file__).resolve().parents[1]
     config = config_for(tmp_path, max_attempts=1)

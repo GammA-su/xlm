@@ -1,0 +1,14 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0
+collecting ... collected 3 items
+
+tests/test_final_acceptance.py::test_prepare_hashes_copy_inputs_and_policy PASSED [ 33%]
+tests/test_prepare_bounds.py::test_changed_prepare_budget_does_not_replenish_account PASSED [ 66%]
+tests/test_prepare_bounds.py::test_declared_external_output_is_in_shared_disk_account PASSED [100%]
+
+- generated xml file: D:\Project\xlm\data\audit\p23-remediation\stage04\after04\compat02.xml -
+============================== 3 passed in 4.99s ==============================

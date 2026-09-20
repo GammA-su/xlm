@@ -1,0 +1,35 @@
+{
+  "commands": [
+    {
+      "argv": [
+        "uv",
+        "run",
+        "--offline",
+        "--locked",
+        "--extra",
+        "cpu",
+        "--extra",
+        "eval",
+        "pytest",
+        "tests/test_artifact_identity.py",
+        "tests/test_artifacts.py",
+        "tests/test_ledger.py",
+        "data/audit/p23-remediation/stage01/test_d01_before.py",
+        "-o",
+        "faulthandler_timeout=0",
+        "-vv",
+        "-m",
+        "not network and not cuda and not operator",
+        "--basetemp=D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage04\\after04\\d012-tmp",
+        "--junitxml=D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage04\\after04\\d012.xml"
+      ],
+      "cwd": "D:\\Project\\xlm",
+      "exit_code": 0,
+      "elapsed_seconds": 22.23400000000038,
+      "sampled_peak_tree_rss_bytes": 238018560,
+      "log": "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage04\\after04\\d012-0.log",
+      "limit_reason": null
+    }
+  ],
+  "source_unchanged": true
+}

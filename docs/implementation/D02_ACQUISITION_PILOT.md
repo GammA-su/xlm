@@ -1,7 +1,9 @@
 # First bounded acquisition pilot (operator execution)
 
-D02 implementation verification is still IN PROGRESS. These are the implemented
-CLI paths, not evidence that any real source has been acquired or admitted.
+D02 implementation is VERIFIED within its bounded offline scope (after04:
+focused 201, D01 99, callers 27, D03 82, quality clean; D06 core has a separate
+environmental failure). These are the implemented CLI paths, not evidence that
+any real source has been acquired or admitted.
 Real discovery, acquisition and preparation are operator actions. Production
 platform acceptance remains BLOCKED; D04/D05, D08, D07 and deferred D03 work have
 their own gates. Use an isolated `XLM_HOME` and the pinned CPU environment.

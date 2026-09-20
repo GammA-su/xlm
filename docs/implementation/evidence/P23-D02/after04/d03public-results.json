@@ -1,0 +1,32 @@
+{
+  "commands": [
+    {
+      "argv": [
+        "uv",
+        "run",
+        "--offline",
+        "--locked",
+        "--extra",
+        "cpu",
+        "--extra",
+        "eval",
+        "pytest",
+        "tests/test_configurable_workflow.py::test_public_two_source_prepare_direct_queue_and_resume",
+        "-o",
+        "faulthandler_timeout=0",
+        "-vv",
+        "-m",
+        "not network and not cuda and not operator",
+        "--basetemp=D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage04\\after04\\d03public-tmp",
+        "--junitxml=D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage04\\after04\\d03public.xml"
+      ],
+      "cwd": "D:\\Project\\xlm",
+      "exit_code": 0,
+      "elapsed_seconds": 513.3439999999991,
+      "sampled_peak_tree_rss_bytes": 937840640,
+      "log": "D:\\Project\\xlm\\data\\audit\\p23-remediation\\stage04\\after04\\d03public-0.log",
+      "limit_reason": null
+    }
+  ],
+  "source_unchanged": true
+}

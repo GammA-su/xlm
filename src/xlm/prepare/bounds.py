@@ -15,10 +15,11 @@ from typing import Any
 import psutil
 
 from xlm.artifacts.manifest import bounded_children, ensure_plain_path
-from xlm.data.acquisition.disk import StorageCapacityManager
+from xlm.data.acquisition.disk import DiskCeilingExceededError, StorageCapacityManager
 from xlm.data.acquisition.plan import AcquisitionLimits
 from xlm.data.acquisition.progress import ProgressJournal
 from xlm.data.acquisition.records import inspect_records
+from xlm.data.sources.transport import BudgetExhaustedError
 from xlm.prepare.config import PrepareBudgets, PrepareConfig
 
 
@@ -67,10 +68,22 @@ class PrepareBounds:
                     inputs[str(path.resolve())] = path_digest(
                         path, max_bytes=self.limits.fetch_max_bytes
                     )
+        # Per-stage max_bytes caps one copy operation; aggregate budgets in
+        # config.budgets remain the accounting identity. Excluding max_bytes lets
+        # an existing job rerun a stale stage under a tightened cap and report
+        # "exceeds" instead of failing closed on plan identity.
+        config_dump = config.model_dump()
+        for entry in config_dump.get("stages", []):
+            if isinstance(entry, dict):
+                entry.pop("max_bytes", None)
+        # Bind watched/copy input structure (which paths), not their current
+        # content digests: changed content reruns as a stale stage under the
+        # same cumulative account (planner detects staleness), without resetting
+        # spent allowance. Path changes still bind a different identity.
         payload = json.dumps(
             {
-                "config": config.model_dump(),
-                "copy_inputs": inputs,
+                "config": config_dump,
+                "copy_inputs": sorted(inputs.keys()),
                 "code": path_digest(repo / "src"),
                 "lock": path_digest(repo / "uv.lock"),
             },
@@ -184,29 +197,52 @@ class PrepareBounds:
             try:
                 with path.open("xb") as output:
                     while True:
-                        amount = min(
-                            8192,
-                            self.capacity.remaining("transfer"),
-                            self.capacity.remaining("temp"),
-                        )
-                        if amount <= 0:
-                            # Bounded EOF probe; bytes beyond the cap are never retained.
-                            if stream.read(1):
+                        if errors:
+                            break
+                        # Read without holding shared allowance so an idle pipe
+                        # blocked waiting for EOF cannot starve the active pipe.
+                        # RAM is bounded to one 8192-byte chunk per worker.
+                        chunk = stream.read1(8192)
+                        if not chunk:
+                            break
+                        while chunk:
+                            if errors:
+                                break
+                            remaining_transfer = self.capacity.remaining("transfer")
+                            remaining_temp = self.capacity.remaining("temp")
+                            allow = min(len(chunk), remaining_transfer, remaining_temp)
+                            if allow <= 0:
+                                # Shared cap is filled and this chunk proves extra
+                                # bytes exist beyond it. Retain nothing more; count
+                                # one discarded probe byte per overflowing pipe.
                                 self.capacity.record_units(
                                     "discarded_child_probe_bytes", 1, 2 * self.limits.max_attempts
                                 )
                                 raise ValueError("aggregate child output limit exceeded")
-                            break
-                        token = self.capacity.reserve_transfer(amount)
-                        disk = self.capacity.reserve_disk_space(self.spool, amount)
-                        chunk = stream.read1(amount)
-                        self.capacity.settle("transfer", token, len(chunk))
-                        if not chunk:
-                            self.capacity.settle("temp", disk, 0)
-                            break
-                        output.write(chunk)
-                        output.flush()
-                        self.capacity.settle("temp", disk, len(chunk))
+                            head = chunk[:allow]
+                            try:
+                                token = self.capacity.reserve_transfer(len(head))
+                            except (BudgetExhaustedError, DiskCeilingExceededError, ValueError):
+                                time.sleep(0.01)
+                                continue
+                            try:
+                                disk = self.capacity.reserve_disk_space(self.spool, len(head))
+                            except (BudgetExhaustedError, DiskCeilingExceededError, ValueError):
+                                self.capacity.settle("transfer", token, 0)
+                                time.sleep(0.01)
+                                continue
+                            self.capacity.settle("transfer", token, len(head))
+                            output.write(head)
+                            output.flush()
+                            self.capacity.settle("temp", disk, len(head))
+                            chunk = chunk[allow:]
+                            if chunk:
+                                # Remainder in memory already proves overflow beyond
+                                # the shared cap; never retain it.
+                                self.capacity.record_units(
+                                    "discarded_child_probe_bytes", 1, 2 * self.limits.max_attempts
+                                )
+                                raise ValueError("aggregate child output limit exceeded")
             except BaseException as exc:
                 errors.append(exc)
             finally:

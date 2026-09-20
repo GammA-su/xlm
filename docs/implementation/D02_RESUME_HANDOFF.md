@@ -1,9 +1,13 @@
-# D02 secured handoff — paused at the user's usage limit
+# D02 continuation — child-output accounting repaired, scoped groups verified
 
-**D02 remains IN PROGRESS, not accepted or fully verified.** On 2026-09-20 the
-user reported 5% usage remaining and requested completion or a secured stop.
-Astra stopped implementation, retained failures/evidence, and prepared a scoped
-local WIP commit on `fix/d02`. No push or integration occurred; main is unchanged.
+**Historical pause (2026-09-20):** the user reported 5% usage remaining and Astra
+secured a WIP commit on `fix/d02` with one known failure. **Continuation:** the
+assignee reproduced the flaky failure in new after04 evidence, repaired the drain
+and identity protocols, added a controlled concurrency regression, and verified
+the staged acceptance groups on one stable tree. D02 is IMPLEMENTED / VERIFIED
+within its bounded offline scope; D06 core has a separate environmental failure,
+and overall platform acceptance remains BLOCKED. No push or integration occurred;
+main is unchanged.
 
 ## Baselines and ownership
 
@@ -61,13 +65,39 @@ Latest changes after after02:
 3. Discarded overflow probes (at most one byte per child pipe) are explicitly
    counted separately as `discarded_child_probe_bytes`; retained logs remain capped.
 
-**Current unresolved failure:**
-`test_prepare_bounds.py::test_child_stdout_and_stderr_are_bounded_and_accounted`
-observed restored `transferred_bytes == 0`, failing its `> 0` assertion. Inspect
-the simultaneous pipe reservation/overflow/termination interleaving and distinguish
-retained bytes, committed consumption and pending reservations. Keep the assertion;
-do not declare a single passing retry sufficient. Trace: `after03/secure-0.log`
-and `secure.xml`. No subsequent fix was attempted under the usage constraint.
+**Resolved failures (after04 on the final tree):**
+
+1. Child-output accounting: both drain workers previously reserved the full
+   remaining aggregate allowance before blocking pipe reads. The second worker's
+   `BudgetExhaustedError` killed the child before the sibling committed, leaving
+   `transferred_bytes == 0` (after03 secure, after04 stab02; 1/10 flaky). An idle
+   pipe could also hoard allowance while blocked on EOF and starve the active
+   pipe. Fix (`src/xlm/prepare/bounds.py`): read bounded 8192-byte chunks without
+   holding shared allowance, then reserve/commit retained bytes before spool
+   writes; remainder proves overflow with one `discarded_child_probe_bytes` per
+   pipe. 20/20 diagnostic runs and 11/11 bounded stability groups pass with
+   `transferred == 1024`, spool `<= 1024`, no reservation leak. New maintained
+   test `test_child_output_accounting_covers_write_orders` covers stdout-first,
+   stderr-first, interleaved, and single-pipe orders with journal reconstruction.
+2. Preparation identity compatibility: the journal bound the full config dump and
+   copy-input content digests, so a legitimate stale rerun (changed source
+   content plus tightened per-stage `max_bytes`) failed with plan-identity
+   mismatch instead of the supported `exceeds` refusal, breaking public caller
+   `test_prepare_hashes_copy_inputs_and_policy`. Fix: identity binds config id,
+   aggregate budgets, watched/copy input paths (not content digests), code and
+   lock; per-stage `max_bytes` excluded. Aggregate-budget changes still refuse
+   (`test_changed_prepare_budget_does_not_replenish_account` passes).
+3. D03 external outputs: the two public workflow cases that failed in after02
+   now pass (after04 d03public 2/2), and the full D03 group passes 82/82.
+
+**Remaining, not D02-caused:** D06 core
+`test_relocated_locked_environment_ignores_editable_hooks_and_bytecode` fails
+with `installed runtime inventory exceeds time bound` (90 s cap; isolated rerun
+also fails). D02 changes touch only `prepare/bounds.py` and
+`test_prepare_bounds.py`; the failing path (`experiments/environment.py`
+site-packages inventory hashing) is untouched. Reported as BLOCKED environmental,
+not a D02 pass. Opus D04/D05 integration still requires its final commits and a
+separate instruction.
 
 ## Resume
 

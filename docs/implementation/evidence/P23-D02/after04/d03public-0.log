@@ -1,0 +1,13 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm\data\audit\p23-remediation\stage01\after01\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0
+collecting ... collected 2 items
+
+tests/test_configurable_workflow.py::test_public_two_source_prepare_direct_queue_and_resume[False] PASSED [ 50%]
+tests/test_configurable_workflow.py::test_public_two_source_prepare_direct_queue_and_resume[True] PASSED [100%]
+
+- generated xml file: D:\Project\xlm\data\audit\p23-remediation\stage04\after04\d03public.xml -
+======================== 2 passed in 512.25s (0:08:32) ========================
