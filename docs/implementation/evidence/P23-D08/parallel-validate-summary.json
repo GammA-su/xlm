@@ -1,0 +1,84 @@
+{
+  "workers": 2,
+  "elapsed_seconds": 4.813000000001921,
+  "groups": {
+    "pw-a": {
+      "group": "pw-a",
+      "argv": [
+        "uv",
+        "run",
+        "--offline",
+        "--locked",
+        "--no-sync",
+        "--extra",
+        "cpu",
+        "--extra",
+        "eval",
+        "python",
+        "-m",
+        "pytest",
+        "tests/test_comparison.py::test_identical_runs_are_eligible_on_every_causal_track",
+        "-vv",
+        "-m",
+        "not network and not cuda and not operator",
+        "-o",
+        "faulthandler_timeout=0",
+        "--durations=10",
+        "--basetemp=D:\\Project\\xlm-integration\\data\\audit\\p23-remediation\\stage05\\d08\\pw-a-tmp",
+        "--junitxml=D:\\Project\\xlm-integration\\data\\audit\\p23-remediation\\stage05\\d08\\pw-a.xml"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 4.39100000000326,
+      "sampled_peak_tree_rss_bytes": 248881152,
+      "log": "D:\\Project\\xlm-integration\\data\\audit\\p23-remediation\\stage05\\d08\\pw-a-0.log",
+      "limit_reason": null,
+      "junit": {
+        "present": true,
+        "tests": "1",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      }
+    },
+    "pw-b": {
+      "group": "pw-b",
+      "argv": [
+        "uv",
+        "run",
+        "--offline",
+        "--locked",
+        "--no-sync",
+        "--extra",
+        "cpu",
+        "--extra",
+        "eval",
+        "python",
+        "-m",
+        "pytest",
+        "tests/test_eval_suites.py",
+        "-vv",
+        "-m",
+        "not network and not cuda and not operator",
+        "-o",
+        "faulthandler_timeout=0",
+        "--durations=10",
+        "--basetemp=D:\\Project\\xlm-integration\\data\\audit\\p23-remediation\\stage05\\d08\\pw-b-tmp",
+        "--junitxml=D:\\Project\\xlm-integration\\data\\audit\\p23-remediation\\stage05\\d08\\pw-b.xml"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 4.813000000001921,
+      "sampled_peak_tree_rss_bytes": 270409728,
+      "log": "D:\\Project\\xlm-integration\\data\\audit\\p23-remediation\\stage05\\d08\\pw-b-0.log",
+      "limit_reason": null,
+      "junit": {
+        "present": true,
+        "tests": "29",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      }
+    }
+  },
+  "missing_groups": [],
+  "failed_groups": []
+}

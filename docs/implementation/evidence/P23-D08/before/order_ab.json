@@ -1,0 +1,243 @@
+{
+  "baseline_run": "fp_b1",
+  "candidate_run": "fp_c1",
+  "comparison_version": 1,
+  "eligibility": {
+    "diffs": [
+      {
+        "baseline": "transformer_baseline",
+        "candidate": "transformer_baseline",
+        "field": "architecture_id",
+        "verdict": "same"
+      },
+      {
+        "baseline": {
+          "context_length": null,
+          "hidden_size": null,
+          "intermediate_size": null,
+          "num_attention_heads": null,
+          "num_layers": null,
+          "vocab_size": 64
+        },
+        "candidate": {
+          "context_length": null,
+          "hidden_size": null,
+          "intermediate_size": null,
+          "num_attention_heads": null,
+          "num_layers": null,
+          "vocab_size": 64
+        },
+        "field": "model_config",
+        "verdict": "same"
+      },
+      {
+        "baseline": 1000,
+        "candidate": 1000,
+        "field": "total_params",
+        "verdict": "same"
+      },
+      {
+        "baseline": "tok_fp_1",
+        "candidate": "tok_fp_1",
+        "field": "tokenizer_hash",
+        "verdict": "same"
+      },
+      {
+        "baseline": 64,
+        "candidate": 64,
+        "field": "vocab_size",
+        "verdict": "same"
+      },
+      {
+        "baseline": "mix01",
+        "candidate": "mix01",
+        "field": "mixture_id",
+        "verdict": "same"
+      },
+      {
+        "baseline": {
+          "a": 1.0
+        },
+        "candidate": {
+          "a": 1.0
+        },
+        "field": "mixture_weights",
+        "verdict": "same"
+      },
+      {
+        "baseline": 500,
+        "candidate": 500,
+        "field": "canonical_bytes",
+        "verdict": "same"
+      },
+      {
+        "baseline": "causal_stream",
+        "candidate": "causal_stream",
+        "field": "packing",
+        "verdict": "same"
+      },
+      {
+        "baseline": 1,
+        "candidate": 1,
+        "field": "data_seed",
+        "verdict": "same"
+      },
+      {
+        "baseline": "cross_entropy",
+        "candidate": "cross_entropy",
+        "field": "objective_id",
+        "verdict": "same"
+      },
+      {
+        "baseline": null,
+        "candidate": null,
+        "field": "objective_extras",
+        "verdict": "same"
+      },
+      {
+        "baseline": "adamw",
+        "candidate": "adamw",
+        "field": "optimizer_id",
+        "verdict": "same"
+      },
+      {
+        "baseline": 1,
+        "candidate": 1,
+        "field": "tuning_allowance",
+        "verdict": "same"
+      },
+      {
+        "baseline": 2,
+        "candidate": 2,
+        "field": "init_seeds",
+        "verdict": "same"
+      },
+      {
+        "baseline": 16,
+        "candidate": 16,
+        "field": "context_length",
+        "verdict": "same"
+      },
+      {
+        "baseline": 100,
+        "candidate": 100,
+        "field": "budget_targets",
+        "verdict": "same"
+      },
+      {
+        "baseline": 5.0,
+        "candidate": 5.0,
+        "field": "measured_compute_seconds",
+        "verdict": "same"
+      },
+      {
+        "baseline": "standalone",
+        "candidate": "standalone",
+        "field": "horizon_kind",
+        "verdict": "same"
+      },
+      {
+        "baseline": "fp32",
+        "candidate": "fp32",
+        "field": "precision",
+        "verdict": "same"
+      },
+      {
+        "baseline": null,
+        "candidate": null,
+        "field": "matched_bytes",
+        "verdict": "same"
+      },
+      {
+        "baseline": null,
+        "candidate": null,
+        "field": "matched_compute",
+        "verdict": "same"
+      }
+    ],
+    "eligible": true,
+    "reasons": [],
+    "track": "architecture"
+  },
+  "index_difference": 33.33333333333334,
+  "seeds": {
+    "baseline": [
+      "fp_b1",
+      "fp_b2"
+    ],
+    "candidate": [
+      "fp_c1",
+      "fp_c2"
+    ]
+  },
+  "suite": {
+    "index_interval": {
+      "analysis_seed": 20260918,
+      "ci_hi": 33.33333333333334,
+      "ci_level": 0.95,
+      "ci_lo": 33.33333333333334,
+      "excludes_zero": true,
+      "n_bootstrap": 100,
+      "n_clusters": 14,
+      "n_items": 16,
+      "point": 33.33333333333334
+    },
+    "seed_note": "between-training-seed spread over 2 seed pairs; item intervals above are within-run uncertainty",
+    "seed_spread": {
+      "maximum": 33.33333333333334,
+      "mean": 0.0,
+      "minimum": -33.33333333333334,
+      "per_seed_differences": {
+        "seed_pair_0": 33.33333333333334,
+        "seed_pair_1": -33.33333333333334
+      }
+    },
+    "task_intervals": {
+      "arc_easy": {
+        "analysis_seed": 20260918,
+        "ci_hi": 1.0,
+        "ci_level": 0.95,
+        "ci_lo": 1.0,
+        "excludes_zero": true,
+        "n_bootstrap": 100,
+        "n_clusters": 14,
+        "n_items": 4,
+        "point": 1.0
+      },
+      "blimp": {
+        "analysis_seed": 20260918,
+        "ci_hi": 0.0,
+        "ci_level": 0.95,
+        "ci_lo": 0.0,
+        "excludes_zero": false,
+        "n_bootstrap": 100,
+        "n_clusters": 14,
+        "n_items": 4,
+        "point": 0.0
+      },
+      "hellaswag": {
+        "analysis_seed": 20260918,
+        "ci_hi": 0.0,
+        "ci_level": 0.95,
+        "ci_lo": 0.0,
+        "excludes_zero": false,
+        "n_bootstrap": 100,
+        "n_clusters": 14,
+        "n_items": 4,
+        "point": 0.0
+      },
+      "piqa": {
+        "analysis_seed": 20260918,
+        "ci_hi": 0.0,
+        "ci_level": 0.95,
+        "ci_lo": 0.0,
+        "excludes_zero": false,
+        "n_bootstrap": 100,
+        "n_clusters": 14,
+        "n_items": 4,
+        "point": 0.0
+      }
+    }
+  },
+  "track": "architecture"
+}
