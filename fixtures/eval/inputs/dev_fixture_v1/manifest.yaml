@@ -1,0 +1,129 @@
+manifest_version: '1'
+manifest_id: 4ba0b160e3e926636d6ced7a9e191eb3c0c82e353eafe7cdfa78d9646d6b2b04
+scope_label: authored fixture suite v1 (complete)
+scope_kind: authored_fixture
+exposure_class: authored_fixture
+tier: search
+harness_version: 0.4.13
+task_definition_source: pinned_installed_harness
+required_blimp_subdatasets:
+- blimp_adjunct_island
+- blimp_anaphor_gender_agreement
+acquisition_receipts: []
+notes:
+- Authored synthetic fixture. Not an official benchmark scope and never research or
+  promotion evidence.
+selections:
+- task: arc_easy
+  leaf_task: arc_easy
+  source_repository: allenai/ai2_arc
+  source_revision: 210d026faf9955653af8916fad021475a3f00453
+  source_split: train
+  record_schema_version: arc_easy.official_shape.v1
+  adapter_version: xlm_eval_json.v1
+  item_id_field: id
+  item_ids:
+  - syn_arc_0000
+  - syn_arc_0001
+  - syn_arc_0002
+  - syn_arc_0003
+  data_file: arc_easy.json
+  content_sha256: 2a279d483e30c6cfd0332f07fe5765f42eece7a9db6c0614cae988fc3ae01bc3
+  content_bytes: 1008
+  subdataset: null
+  source_config: ARC-Easy
+  source_population_size: 2251
+  label_field: answerKey
+  notes:
+  - AUTHORED SYNTHETIC CONTENT in the official record shape
+  namespace: arc_easy
+- task: hellaswag
+  leaf_task: hellaswag
+  source_repository: Rowan/hellaswag
+  source_revision: 218ec52e09a7e7462a5400043bb9a69a41d06b76
+  source_split: train
+  record_schema_version: hellaswag.official_shape.v1
+  adapter_version: xlm_eval_json.v1
+  item_id_field: xlm_item_locator
+  item_ids:
+  - syn_hellaswag/train/0000
+  - syn_hellaswag/train/0001
+  - syn_hellaswag/train/0002
+  - syn_hellaswag/train/0003
+  data_file: hellaswag.json
+  content_sha256: 547e4612c5e8b28eacb33e2c72057bb5b26ae1c79f2f7f99c85dcac1302dde12
+  content_bytes: 1724
+  subdataset: null
+  source_config: null
+  source_population_size: 39905
+  label_field: label
+  notes:
+  - AUTHORED SYNTHETIC CONTENT in the official record shape
+  namespace: hellaswag
+- task: piqa
+  leaf_task: piqa
+  source_repository: baber/piqa
+  source_revision: 142f6d7367fd9877f0fb3b5734ea6a545f54cdd1
+  source_split: train
+  record_schema_version: piqa.official_shape.v1
+  adapter_version: xlm_eval_json.v1
+  item_id_field: xlm_item_locator
+  item_ids:
+  - syn_piqa/train/0000
+  - syn_piqa/train/0001
+  - syn_piqa/train/0002
+  - syn_piqa/train/0003
+  data_file: piqa.json
+  content_sha256: 3e5b553b7e3bca319ee877dc96fbff63d71a75684acf93bc88944cd9a9bf678d
+  content_bytes: 693
+  subdataset: null
+  source_config: null
+  source_population_size: 16113
+  label_field: label
+  notes:
+  - AUTHORED SYNTHETIC CONTENT in the official record shape
+  namespace: piqa
+- task: blimp
+  leaf_task: blimp_adjunct_island
+  source_repository: nyu-mll/blimp
+  source_revision: 877fba0801ffb7cbd8c39c1ff314a46f053f6036
+  source_split: train
+  record_schema_version: blimp.official_shape.v1
+  adapter_version: xlm_eval_json.v1
+  item_id_field: xlm_item_locator
+  item_ids:
+  - syn_blimp_adjunct_island/train/0000
+  - syn_blimp_adjunct_island/train/0001
+  - syn_blimp_adjunct_island/train/0002
+  data_file: blimp_adjunct_island.json
+  content_sha256: 3209e90707a5cdd203b0e7cafb8d310252d381432815617d50764348bca5cf3d
+  content_bytes: 1163
+  subdataset: blimp_adjunct_island
+  source_config: null
+  source_population_size: 1000
+  label_field: null
+  notes:
+  - AUTHORED SYNTHETIC CONTENT in the official record shape
+  namespace: blimp/blimp_adjunct_island
+- task: blimp
+  leaf_task: blimp_anaphor_gender_agreement
+  source_repository: nyu-mll/blimp
+  source_revision: 877fba0801ffb7cbd8c39c1ff314a46f053f6036
+  source_split: train
+  record_schema_version: blimp.official_shape.v1
+  adapter_version: xlm_eval_json.v1
+  item_id_field: xlm_item_locator
+  item_ids:
+  - syn_blimp_anaphor_gender_agreement/train/0000
+  - syn_blimp_anaphor_gender_agreement/train/0001
+  - syn_blimp_anaphor_gender_agreement/train/0002
+  data_file: blimp_anaphor_gender_agreement.json
+  content_sha256: 6e8fa988b0a8810487ec45d59aaf4530c4fd7b9c3a68f93963c0f32928b98322
+  content_bytes: 1209
+  subdataset: blimp_anaphor_gender_agreement
+  source_config: null
+  source_population_size: 1000
+  label_field: null
+  notes:
+  - AUTHORED SYNTHETIC CONTENT in the official record shape
+  namespace: blimp/blimp_anaphor_gender_agreement

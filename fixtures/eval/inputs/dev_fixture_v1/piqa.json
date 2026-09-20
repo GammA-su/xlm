@@ -1,0 +1,30 @@
+[
+  {
+    "xlm_item_locator": "syn_piqa/train/0000",
+    "goal": "dry a fixture cup quickly",
+    "sol1": "use a dry cloth",
+    "sol2": "use a magnet",
+    "label": 0
+  },
+  {
+    "xlm_item_locator": "syn_piqa/train/0001",
+    "goal": "carry hot fixture soup safely",
+    "sol1": "use bare hands",
+    "sol2": "use a tray",
+    "label": 1
+  },
+  {
+    "xlm_item_locator": "syn_piqa/train/0002",
+    "goal": "open a stuck fixture jar",
+    "sol1": "grip it with a cloth",
+    "sol2": "shout at it",
+    "label": 0
+  },
+  {
+    "xlm_item_locator": "syn_piqa/train/0003",
+    "goal": "keep fixture bread fresh",
+    "sol1": "seal the bag",
+    "sol2": "leave the bag open",
+    "label": 0
+  }
+]

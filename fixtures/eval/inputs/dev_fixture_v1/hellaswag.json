@@ -1,0 +1,66 @@
+[
+  {
+    "xlm_item_locator": "syn_hellaswag/train/0000",
+    "ind": 0,
+    "activity_label": "Fixture cooking",
+    "ctx_a": "A fixture cook opens the oven",
+    "ctx_b": "and then",
+    "ctx": "A fixture cook opens the oven and then",
+    "endings": [
+      "removes the tray.",
+      "paints a wall."
+    ],
+    "source_id": "synthetic_fixture",
+    "split": "train",
+    "split_type": "indomain",
+    "label": "0"
+  },
+  {
+    "xlm_item_locator": "syn_hellaswag/train/0001",
+    "ind": 1,
+    "activity_label": "Fixture running",
+    "ctx_a": "The fixture runner ties both laces",
+    "ctx_b": "and then",
+    "ctx": "The fixture runner ties both laces and then",
+    "endings": [
+      "starts running.",
+      "eats the laces."
+    ],
+    "source_id": "synthetic_fixture",
+    "split": "train",
+    "split_type": "indomain",
+    "label": "0"
+  },
+  {
+    "xlm_item_locator": "syn_hellaswag/train/0002",
+    "ind": 2,
+    "activity_label": "Fixture cycling",
+    "ctx_a": "A fixture cyclist stops at the light",
+    "ctx_b": "and then",
+    "ctx": "A fixture cyclist stops at the light and then",
+    "endings": [
+      "waits for green.",
+      "sells the bike."
+    ],
+    "source_id": "synthetic_fixture",
+    "split": "train",
+    "split_type": "indomain",
+    "label": "0"
+  },
+  {
+    "xlm_item_locator": "syn_hellaswag/train/0003",
+    "ind": 3,
+    "activity_label": "Fixture painting",
+    "ctx_a": "The fixture painter dips the brush",
+    "ctx_b": "and then",
+    "ctx": "The fixture painter dips the brush and then",
+    "endings": [
+      "drinks the paint.",
+      "paints the fence."
+    ],
+    "source_id": "synthetic_fixture",
+    "split": "train",
+    "split_type": "indomain",
+    "label": "1"
+  }
+]

@@ -1,0 +1,46 @@
+{
+  "scope_label": "authored fixture two-task subset v1",
+  "scope_kind": "authored_fixture",
+  "exposure_class": "authored_fixture",
+  "tier": "search",
+  "required_blimp_subdatasets": [],
+  "acquisition_receipts": [],
+  "notes": [
+    "Authored synthetic fixture. Not an official benchmark scope and never research or promotion evidence."
+  ],
+  "entries": [
+    {
+      "task": "arc_easy",
+      "leaf_task": "arc_easy",
+      "source_repository": "allenai/ai2_arc",
+      "source_revision": "210d026faf9955653af8916fad021475a3f00453",
+      "source_split": "train",
+      "record_schema_version": "arc_easy.official_shape.v1",
+      "adapter_version": "xlm_eval_json.v1",
+      "item_id_field": "id",
+      "data_file": "arc_easy.json",
+      "notes": [
+        "AUTHORED SYNTHETIC CONTENT in the official record shape"
+      ],
+      "source_config": "ARC-Easy",
+      "label_field": "answerKey",
+      "source_population_size": 2251
+    },
+    {
+      "task": "piqa",
+      "leaf_task": "piqa",
+      "source_repository": "baber/piqa",
+      "source_revision": "142f6d7367fd9877f0fb3b5734ea6a545f54cdd1",
+      "source_split": "train",
+      "record_schema_version": "piqa.official_shape.v1",
+      "adapter_version": "xlm_eval_json.v1",
+      "item_id_field": "xlm_item_locator",
+      "data_file": "piqa.json",
+      "notes": [
+        "AUTHORED SYNTHETIC CONTENT in the official record shape"
+      ],
+      "label_field": "label",
+      "source_population_size": 16113
+    }
+  ]
+}

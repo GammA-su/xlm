@@ -1,0 +1,97 @@
+{
+  "scope_label": "authored fixture suite v1 (complete)",
+  "scope_kind": "authored_fixture",
+  "exposure_class": "authored_fixture",
+  "tier": "search",
+  "required_blimp_subdatasets": [
+    "blimp_adjunct_island",
+    "blimp_anaphor_gender_agreement"
+  ],
+  "acquisition_receipts": [],
+  "notes": [
+    "Authored synthetic fixture. Not an official benchmark scope and never research or promotion evidence."
+  ],
+  "entries": [
+    {
+      "task": "arc_easy",
+      "leaf_task": "arc_easy",
+      "source_repository": "allenai/ai2_arc",
+      "source_revision": "210d026faf9955653af8916fad021475a3f00453",
+      "source_split": "train",
+      "record_schema_version": "arc_easy.official_shape.v1",
+      "adapter_version": "xlm_eval_json.v1",
+      "item_id_field": "id",
+      "data_file": "arc_easy.json",
+      "notes": [
+        "AUTHORED SYNTHETIC CONTENT in the official record shape"
+      ],
+      "source_config": "ARC-Easy",
+      "label_field": "answerKey",
+      "source_population_size": 2251
+    },
+    {
+      "task": "hellaswag",
+      "leaf_task": "hellaswag",
+      "source_repository": "Rowan/hellaswag",
+      "source_revision": "218ec52e09a7e7462a5400043bb9a69a41d06b76",
+      "source_split": "train",
+      "record_schema_version": "hellaswag.official_shape.v1",
+      "adapter_version": "xlm_eval_json.v1",
+      "item_id_field": "xlm_item_locator",
+      "data_file": "hellaswag.json",
+      "notes": [
+        "AUTHORED SYNTHETIC CONTENT in the official record shape"
+      ],
+      "label_field": "label",
+      "source_population_size": 39905
+    },
+    {
+      "task": "piqa",
+      "leaf_task": "piqa",
+      "source_repository": "baber/piqa",
+      "source_revision": "142f6d7367fd9877f0fb3b5734ea6a545f54cdd1",
+      "source_split": "train",
+      "record_schema_version": "piqa.official_shape.v1",
+      "adapter_version": "xlm_eval_json.v1",
+      "item_id_field": "xlm_item_locator",
+      "data_file": "piqa.json",
+      "notes": [
+        "AUTHORED SYNTHETIC CONTENT in the official record shape"
+      ],
+      "label_field": "label",
+      "source_population_size": 16113
+    },
+    {
+      "task": "blimp",
+      "leaf_task": "blimp_adjunct_island",
+      "source_repository": "nyu-mll/blimp",
+      "source_revision": "877fba0801ffb7cbd8c39c1ff314a46f053f6036",
+      "source_split": "train",
+      "record_schema_version": "blimp.official_shape.v1",
+      "adapter_version": "xlm_eval_json.v1",
+      "item_id_field": "xlm_item_locator",
+      "data_file": "blimp_adjunct_island.json",
+      "notes": [
+        "AUTHORED SYNTHETIC CONTENT in the official record shape"
+      ],
+      "subdataset": "blimp_adjunct_island",
+      "source_population_size": 1000
+    },
+    {
+      "task": "blimp",
+      "leaf_task": "blimp_anaphor_gender_agreement",
+      "source_repository": "nyu-mll/blimp",
+      "source_revision": "877fba0801ffb7cbd8c39c1ff314a46f053f6036",
+      "source_split": "train",
+      "record_schema_version": "blimp.official_shape.v1",
+      "adapter_version": "xlm_eval_json.v1",
+      "item_id_field": "xlm_item_locator",
+      "data_file": "blimp_anaphor_gender_agreement.json",
+      "notes": [
+        "AUTHORED SYNTHETIC CONTENT in the official record shape"
+      ],
+      "subdataset": "blimp_anaphor_gender_agreement",
+      "source_population_size": 1000
+    }
+  ]
+}

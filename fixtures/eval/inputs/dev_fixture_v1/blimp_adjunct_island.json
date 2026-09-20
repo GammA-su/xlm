@@ -1,0 +1,38 @@
+[
+  {
+    "xlm_item_locator": "syn_blimp_adjunct_island/train/0000",
+    "sentence_good": "The fixture cats sleep quietly.",
+    "sentence_bad": "The fixture cats sleeps quietly.",
+    "field": "syntax",
+    "linguistics_term": "synthetic_fixture",
+    "UID": "adjunct_island",
+    "pair_id": 0,
+    "one_prefix_method": false,
+    "two_prefix_method": false,
+    "simple_LM_method": true
+  },
+  {
+    "xlm_item_locator": "syn_blimp_adjunct_island/train/0001",
+    "sentence_good": "A fixture dog barks at noon.",
+    "sentence_bad": "A fixture dog bark at noon.",
+    "field": "syntax",
+    "linguistics_term": "synthetic_fixture",
+    "UID": "adjunct_island",
+    "pair_id": 1,
+    "one_prefix_method": false,
+    "two_prefix_method": false,
+    "simple_LM_method": true
+  },
+  {
+    "xlm_item_locator": "syn_blimp_adjunct_island/train/0002",
+    "sentence_good": "These fixture books are new.",
+    "sentence_bad": "These fixture books is new.",
+    "field": "syntax",
+    "linguistics_term": "synthetic_fixture",
+    "UID": "adjunct_island",
+    "pair_id": 2,
+    "one_prefix_method": false,
+    "two_prefix_method": false,
+    "simple_LM_method": true
+  }
+]

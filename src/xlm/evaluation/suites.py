@@ -473,6 +473,9 @@ class SuiteIndex:
     components: dict[str, float]
     missing: list[str]
     chance_references: dict[str, float]
+    scope_label: str = "undeclared"
+    scope_kind: str = "undeclared"
+    withheld_reasons: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -481,13 +484,35 @@ class SuiteIndex:
 def compute_four_task_index(
     scores: Mapping[str, TaskScore],
     required: Sequence[str] = REQUIRED_TASKS_FOR_INDEX,
+    coverage: Any = None,
 ) -> SuiteIndex:
     """Compute S = 100 * mean((acc - chance) / (1 - chance)) over four tasks.
 
     BLiMP contributes one macro-averaged component over its whole subdatasets;
     a missing task yields ``index=None`` with the missing list, never a partial
     score presented as the suite index. Negative components are not clipped.
+
+    When a :class:`~xlm.evaluation.coverage.SuiteCoverage` is supplied, the index
+    is additionally withheld unless the declared scope was covered exactly. A
+    task can be *present* yet incomplete, and a present-but-incomplete suite is
+    not a suite score. The formula, the chance references, the denominators and
+    the four-task weighting are untouched by this gate: coverage decides only
+    whether the computed index may be published.
     """
+    scope_label = str(getattr(coverage, "scope_label", "undeclared"))
+    scope_kind = str(getattr(coverage, "scope_kind", "undeclared"))
+    if coverage is not None and not coverage.complete:
+        return SuiteIndex(
+            complete=False,
+            index=None,
+            components={},
+            missing=sorted({task for task in required if task not in scores}),
+            chance_references={},
+            scope_label=scope_label,
+            scope_kind=scope_kind,
+            withheld_reasons=list(coverage.eligibility_reasons()),
+        )
+
     missing = sorted({task for task in required if task not in scores})
     if missing:
         return SuiteIndex(
@@ -496,6 +521,9 @@ def compute_four_task_index(
             components={},
             missing=missing,
             chance_references={},
+            scope_label=scope_label,
+            scope_kind=scope_kind,
+            withheld_reasons=[f"required task(s) absent: {missing}"],
         )
 
     components: dict[str, float] = {}
@@ -509,6 +537,9 @@ def compute_four_task_index(
                 components={},
                 missing=[f"{task}:no_scored_items"],
                 chance_references={},
+                scope_label=scope_label,
+                scope_kind=scope_kind,
+                withheld_reasons=[f"task '{task}' scored no items"],
             )
         if score.subdataset_scores:
             # Macro-average BLiMP subdatasets before giving BLiMP one quarter weight.
@@ -529,6 +560,9 @@ def compute_four_task_index(
         components={k: components[k] for k in required},
         missing=[],
         chance_references=chances,
+        scope_label=scope_label,
+        scope_kind=scope_kind,
+        withheld_reasons=[],
     )
 
 

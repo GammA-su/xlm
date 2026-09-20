@@ -11,6 +11,7 @@ from pathlib import Path
 
 import pytest
 
+from xlm.evaluation.coverage import undeclared_coverage
 from xlm.evaluation.evidence import (
     EVIDENCE_VERSION,
     EvaluationEvidence,
@@ -323,6 +324,11 @@ def _evidence(fingerprint: str, value: float = 0.5) -> EvaluationEvidence:
         tasks={"arc_easy": task},
         index=index,
         limit=None,
+        # Evidence written today always records its coverage state. Omitting it
+        # is the legacy case, covered separately in test_eval_declared_inputs.
+        coverage=undeclared_coverage(),
+        raw_identity_fingerprint=fingerprint,
+        aggregate_identity_fingerprint=f"agg-{fingerprint}",
         notes=[],
     )
 
