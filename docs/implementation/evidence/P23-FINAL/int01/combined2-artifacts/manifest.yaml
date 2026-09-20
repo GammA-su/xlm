@@ -1,0 +1,36 @@
+manifest_version: '1'
+manifest_id: c643aa775083ee9a9e1a21e51b739068b6fd8c17287efffc34e66397536678ff
+scope_label: chain loopback arc scope v1
+scope_kind: authored_fixture
+exposure_class: authored_fixture
+tier: search
+harness_version: 0.4.13
+task_definition_source: pinned_installed_harness
+required_blimp_subdatasets: []
+acquisition_receipts:
+- receipt_plan_authored_default_https_1249879051ab5e1eb477
+notes:
+- final-integration chain; authored fixture, not research evidence
+selections:
+- task: arc_easy
+  leaf_task: arc_easy
+  source_repository: loopback-authored-chain
+  source_revision: authored-chain-v1
+  source_split: train
+  record_schema_version: arc_easy.official_shape.v1
+  adapter_version: xlm_eval_json.v1
+  item_id_field: id
+  item_ids:
+  - chain_arc_0000
+  - chain_arc_0001
+  - chain_arc_0002
+  data_file: D:\Project\xlm-final-integration\data\audit\p23-remediation\stage06\final01\combined2\home\acquisition\plan_authored_default_https_1249879051ab5e1eb477\raw\selected_records.jsonl
+  content_sha256: eeec93446f07a8fc193b12be5f353bfa319fc3aac5e35572a7d8472b902e74a1
+  content_bytes: 1641
+  subdataset: null
+  source_config: ARC-Easy
+  source_population_size: null
+  label_field: answerKey
+  notes:
+  - SYNTHETIC loopback content acquired via D02; never official data
+  namespace: arc_easy

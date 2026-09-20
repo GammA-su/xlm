@@ -1,19 +1,24 @@
 # Implementation status
 
-> **D02 continuation (after04): IMPLEMENTED / VERIFIED (bounded Windows CPU offline)**
-> on `fix/d02` for scoped groups — focused 201, D01 99, callers 27, D03 82,
-> quality clean. D06 core has a separate environmental timing failure.
-> [Resume handoff](D02_RESUME_HANDOFF.md) records the historical pause, root
-> causes, and remaining gates. No integration occurred.
+> **D02 + D04/D05 + D07 + D08 integrated (2026-09-20): IMPLEMENTED / INTEGRATED
+> (bounded Windows CPU offline)** on `integrate/d07-d08`. Merges `fix/d08`
+> (D02 closeout + D08 analysis repair) and `fix/d07` (single-copy export);
+> shared xdist tooling reconciled identical. Full offline audit on the final
+> tree: parallel (77 files, `-n 8`) 1029 passed / 2 pre-existing failures,
+> serial (7 files) all green, serial-marked 3/3, base-only green, quality and
+> demo green, authored chain green. Remaining: D06 inventory timing, recipe and
+> report-plan failures, receipt-verification gap, deferred tokenizer work,
+> operator-run validation. See `reports/P23-D02-D04-D05.md`, `reports/P23-D07.md`,
+> `reports/P23-D08.md` and the consolidated integration report below.
+> Overall production acceptance remains BLOCKED; main is unchanged.
 
 > D01 remediation is **IMPLEMENTED / VERIFIED (bounded offline)** under Stage 1 approval.
 > See [reports/P23-D01.md](reports/P23-D01.md) and [REMEDIATION.md](REMEDIATION.md).
 > D06 is **IMPLEMENTED / VERIFIED (bounded Windows CPU offline)**.
 > D03 core is **IMPLEMENTED / VERIFIED (bounded Windows CPU)** for the baseline
 > pilot handoff; see [P23-D03](reports/P23-D03.md). Cross-tokenizer comparison
-> remains OPEN / DEFERRED. D02 is now approved and IN PROGRESS; D04/D05 is approved
-> separately for Opus in `fix/d04-d05`. Other later repairs
-> require separate approval.
+> remains OPEN / DEFERRED. D02, D04/D05, D07 and D08 are implemented and
+> integrated (see above); other later repairs require separate approval.
 > Overall production acceptance remains BLOCKED.
 
 > **P23 audit (2026-09-19): production acceptance is BLOCKED.** Historical milestone statuses describe their original evidence. The updated requirement ledger and [FINAL_ACCEPTANCE.md](FINAL_ACCEPTANCE.md) supersede broader readiness claims. D01/A03 and D06/A28 are verified within their offline scopes; A14/A27/A31 and the other unresolved remediation gates remain open. Live corpus, official evaluation and real protected deployment are not verified. P23 audit delivery is complete, not a production or research-results certification.

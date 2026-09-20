@@ -1,0 +1,43 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm-final-integration\.venv-final\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm-final-integration
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0, xdist-3.8.0
+collecting ... collected 22 items / 1 deselected / 21 selected
+
+tests/test_operator.py::test_missing_sealed_root_is_not_ready PASSED     [  4%]
+tests/test_operator.py::test_writable_same_user_directory_is_not_ready PASSED [  9%]
+tests/test_operator.py::test_sealed_root_inside_an_agent_mount_is_not_ready PASSED [ 14%]
+tests/test_operator.py::test_yaml_flag_without_attestation_is_not_ready PASSED [ 19%]
+tests/test_operator.py::test_bare_sealed_flag_attestation_is_refused PASSED [ 23%]
+tests/test_operator.py::test_attested_nonwritable_root_reports_ready PASSED [ 28%]
+tests/test_operator.py::test_unbounded_or_empty_requests_are_refused PASSED [ 33%]
+tests/test_operator.py::test_execute_happy_path_returns_aggregates_only PASSED [ 38%]
+tests/test_operator.py::test_replay_revocation_mismatch_and_quota_are_refused PASSED [ 42%]
+tests/test_operator.py::test_missing_credentials_refuse_execution PASSED [ 47%]
+tests/test_operator.py::test_receipt_alteration_and_unknown_ids_fail_verification PASSED [ 52%]
+tests/test_operator.py::test_decontamination_receipts_carry_counts_not_content PASSED [ 57%]
+tests/test_operator.py::test_sanitize_aggregates_rejects_non_scalars PASSED [ 61%]
+tests/test_operator.py::test_quota_bounds_adaptive_oracles PASSED        [ 66%]
+tests/test_operator.py::test_release_audit_passes_a_complete_release PASSED [ 71%]
+tests/test_operator.py::test_release_audit_blocks_unknown_rights_and_fails_gaps PASSED [ 76%]
+tests/test_operator.py::test_final_split_artifacts_are_detected_in_caches PASSED [ 80%]
+tests/test_operator.py::test_clean_cache_passes_and_purge_needs_confirmation PASSED [ 85%]
+tests/test_operator.py::test_cli_final_request_builds_but_never_executes PASSED [ 90%]
+tests/test_operator.py::test_cli_final_execute_refuses_without_operator PASSED [ 95%]
+tests/test_operator.py::test_cli_release_audit_gates_releases PASSED     [100%]
+
+- generated xml file: D:\Project\xlm-final-integration\data\audit\p23-remediation\stage06\final01\serial-operator.xml -
+============================ slowest 10 durations =============================
+0.72s call     tests/test_operator.py::test_cli_final_request_builds_but_never_executes
+0.27s call     tests/test_operator.py::test_cli_release_audit_gates_releases
+0.08s call     tests/test_operator.py::test_cli_final_execute_refuses_without_operator
+0.05s call     tests/test_operator.py::test_release_audit_passes_a_complete_release
+0.04s call     tests/test_operator.py::test_release_audit_blocks_unknown_rights_and_fails_gaps
+0.03s call     tests/test_operator.py::test_execute_happy_path_returns_aggregates_only
+0.02s call     tests/test_operator.py::test_quota_bounds_adaptive_oracles
+0.02s call     tests/test_operator.py::test_receipt_alteration_and_unknown_ids_fail_verification
+0.01s call     tests/test_operator.py::test_clean_cache_passes_and_purge_needs_confirmation
+0.01s call     tests/test_operator.py::test_replay_revocation_mismatch_and_quota_are_refused
+====================== 21 passed, 1 deselected in 1.45s =======================

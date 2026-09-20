@@ -1,0 +1,66 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm-final-integration\.venv-final\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm-final-integration
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0, xdist-3.8.0
+collecting ... collected 44 items
+
+tests/test_export_aliases.py::test_a_tied_tensor_is_serialized_exactly_once PASSED [  2%]
+tests/test_export_aliases.py::test_equal_valued_independent_parameters_stay_independent PASSED [  4%]
+tests/test_export_aliases.py::test_canonical_name_and_alias_map_are_deterministic PASSED [  6%]
+tests/test_export_aliases.py::test_fresh_process_reload_restores_parameter_identity_and_parity PASSED [  9%]
+tests/test_export_aliases.py::test_gradients_accumulate_into_the_single_tied_parameter PASSED [ 11%]
+tests/test_export_aliases.py::test_corrupted_payload_is_rejected_before_deserialization PASSED [ 13%]
+tests/test_export_aliases.py::test_invalid_alias_metadata_is_rejected[mutate0-carries no stored payload] PASSED [ 15%]
+tests/test_export_aliases.py::test_invalid_alias_metadata_is_rejected[mutate1-targets itself] PASSED [ 18%]
+tests/test_export_aliases.py::test_invalid_alias_metadata_is_rejected[mutate2-carries no stored payload] PASSED [ 20%]
+tests/test_export_aliases.py::test_alias_chains_and_cycles_are_rejected PASSED [ 22%]
+tests/test_export_aliases.py::test_missing_and_extra_tensors_are_rejected PASSED [ 25%]
+tests/test_export_aliases.py::test_unsupported_versions_are_rejected PASSED [ 27%]
+tests/test_export_aliases.py::test_a_v1_bundle_cannot_claim_single_copy PASSED [ 29%]
+tests/test_export_aliases.py::test_legacy_v1_bundle_loads_and_is_labelled_duplicated PASSED [ 31%]
+tests/test_export_aliases.py::test_conflicting_legacy_copies_are_refused PASSED [ 34%]
+tests/test_export_aliases.py::test_legacy_shape_mismatch_is_refused_before_bit_comparison PASSED [ 36%]
+tests/test_export_aliases.py::test_partial_and_transposed_views_are_refused PASSED [ 38%]
+tests/test_export_aliases.py::test_undeclared_shared_storage_is_refused_by_the_writer PASSED [ 40%]
+tests/test_export_aliases.py::test_alias_detection_rejects_a_declared_but_absent_alias PASSED [ 43%]
+tests/test_export_aliases.py::test_published_bundle_reuses_identical_content PASSED [ 45%]
+tests/test_export_aliases.py::test_conflicting_content_under_one_export_id_is_refused PASSED [ 47%]
+tests/test_export_aliases.py::test_layout_change_is_a_different_representation_identity PASSED [ 50%]
+tests/test_export_aliases.py::test_a_copied_bundle_loads_without_the_store PASSED [ 52%]
+tests/test_export_aliases.py::test_public_cli_export_and_load_round_trip PASSED [ 54%]
+tests/test_export.py::test_export_bundle_contains_only_declared_files PASSED [ 56%]
+tests/test_export.py::test_clean_process_load_reproduces_logits_likelihood_and_completion PASSED [ 59%]
+tests/test_export.py::test_tokenizer_reconstruction_and_tied_identity PASSED [ 61%]
+tests/test_export.py::test_an_alias_carrying_its_own_payload_is_refused PASSED [ 63%]
+tests/test_export.py::test_corrupted_and_incomplete_exports_are_rejected PASSED [ 65%]
+tests/test_export.py::test_unknown_format_and_serializer_are_refused_with_guidance PASSED [ 68%]
+tests/test_export.py::test_missing_plugin_fails_usefully PASSED          [ 70%]
+tests/test_export.py::test_plugin_family_round_trip_and_missing_plugin PASSED [ 72%]
+tests/test_export.py::test_optimizer_state_excluded_by_default_with_opt_in PASSED [ 75%]
+tests/test_export.py::test_training_only_heads_are_excluded_with_accounting PASSED [ 77%]
+tests/test_export.py::test_secrets_and_raw_data_never_enter_the_bundle PASSED [ 79%]
+tests/test_export.py::test_dtype_device_load_rules PASSED                [ 81%]
+tests/test_export.py::test_session_is_deterministic_and_resets_between_prompts PASSED [ 84%]
+tests/test_export.py::test_stop_strings_and_max_context_behave_explicitly PASSED [ 86%]
+tests/test_export.py::test_no_chat_template_is_attached PASSED           [ 88%]
+tests/test_export.py::test_hf_mapping_is_complete_and_shape_exact PASSED [ 90%]
+tests/test_export.py::test_hf_mapping_refuses_non_baseline_and_partial_keys PASSED [ 93%]
+tests/test_export.py::test_cache_support_is_labeled_not_assumed PASSED   [ 95%]
+tests/test_export.py::test_generate_command_reads_export_bundles PASSED  [ 97%]
+tests/test_export.py::test_general_inference_loader_cannot_bypass_export_integrity PASSED [100%]
+
+- generated xml file: D:\Project\xlm-final-integration\data\audit\p23-remediation\stage06\final01\m-d07-export.xml -
+============================ slowest 10 durations =============================
+17.92s call     tests/test_export.py::test_export_bundle_contains_only_declared_files
+3.93s call     tests/test_export.py::test_generate_command_reads_export_bundles
+3.70s call     tests/test_export.py::test_clean_process_load_reproduces_logits_likelihood_and_completion
+3.27s call     tests/test_export_aliases.py::test_fresh_process_reload_restores_parameter_identity_and_parity
+2.98s call     tests/test_export_aliases.py::test_public_cli_export_and_load_round_trip
+2.92s call     tests/test_export.py::test_corrupted_and_incomplete_exports_are_rejected
+2.53s call     tests/test_export.py::test_optimizer_state_excluded_by_default_with_opt_in
+1.99s call     tests/test_export.py::test_general_inference_loader_cannot_bypass_export_integrity
+1.64s call     tests/test_export.py::test_stop_strings_and_max_context_behave_explicitly
+1.31s call     tests/test_export.py::test_missing_plugin_fails_usefully
+======================== 44 passed in 71.58s (0:01:11) ========================

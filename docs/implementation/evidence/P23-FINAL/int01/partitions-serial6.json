@@ -1,0 +1,1 @@
+{"groups": {"serial-configurable_workflow": ["tests/test_configurable_workflow.py"], "serial-frozen_execution": ["tests/test_frozen_execution.py"], "serial-frozen_recovery": ["tests/test_frozen_recovery.py"], "serial-offline_workflow": ["tests/test_offline_workflow.py"], "serial-operator": ["tests/test_operator.py"], "serial-queue": ["tests/test_queue.py"]}}

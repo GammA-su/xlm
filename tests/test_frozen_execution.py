@@ -380,8 +380,8 @@ def test_snapshot_reuse_conflicts_and_paths(tmp_path: Path) -> None:
             verify_snapshot(tmp_path / "snapshot/code", invalid, exact=True)
 
 
-  # Measured environment-inventory timing: exclusive execution only (see
-  # pyproject serial marker). Flagged for D06 review; behavior unchanged.
+# Measured environment-inventory timing: exclusive execution only (see
+# pyproject serial marker). Flagged for D06 review; behavior unchanged.
 @pytest.mark.serial
 def test_relocated_locked_environment_ignores_editable_hooks_and_bytecode(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch

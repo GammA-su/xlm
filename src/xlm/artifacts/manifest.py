@@ -96,11 +96,30 @@ def ensure_plain_path(path: Path) -> None:
             raise ValueError(f"Artifact path contains a symlink/junction: {part}")
 
 
+def comparable_resolved(path: Path) -> Path:
+    """Resolve for containment comparison, independent of path existence.
+
+    On Windows, ``Path.resolve()`` returns an extended-length (``\\\\?\\``)
+    form when the path can be opened and the plain form otherwise, so two
+    resolutions of nearby paths can disagree on form when files are created
+    concurrently. Stripping that prefix keeps the comparison deterministic.
+    Containment stays sound: link/junction rejection happens separately in
+    ``ensure_plain_path``, and no separators survive component validation.
+    """
+    text = str(path.resolve())
+    if text.startswith("\\\\?\\"):
+        stripped = text[len("\\\\?\\") :]
+        if stripped.startswith("UNC\\"):
+            stripped = "\\\\" + stripped[len("UNC\\") :]
+        text = stripped
+    return Path(text)
+
+
 def validate_manifest_path(artifact_dir: Path, rel_path: str) -> Path:
     canonical_payload_path(rel_path)
     target = artifact_dir / rel_path
     ensure_plain_path(target)
-    if not target.resolve().is_relative_to(artifact_dir.resolve()):
+    if not comparable_resolved(target).is_relative_to(comparable_resolved(artifact_dir)):
         raise ValueError(f"Path traversal detected: {rel_path!r}")
     return target
 

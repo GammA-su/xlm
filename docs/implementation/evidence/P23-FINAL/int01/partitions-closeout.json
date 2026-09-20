@@ -1,0 +1,1 @@
+{"groups": {"closeout-target": ["tests/test_artifacts.py", "tests/test_artifact_identity.py", "tests/test_ledger.py", "tests/test_export.py", "tests/test_export_aliases.py", "tests/test_acquisition_verifier.py", "tests/test_operator.py"]}}

@@ -1,0 +1,26 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm-final-integration\.venv-final\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm-final-integration
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0, xdist-3.8.0
+collecting ... collected 4 items
+
+tests/test_comparison.py::test_compare_headline_is_stable_under_argument_permutation PASSED [ 25%]
+tests/test_comparison.py::test_primary_pair_uses_numeric_seed_order PASSED [ 50%]
+tests/test_comparison.py::test_suite_blimp_draws_retain_repeated_occurrences PASSED [ 75%]
+tests/test_comparison.py::test_promote_refuses_stale_unversioned_comparison PASSED [100%]
+
+- generated xml file: D:\Project\xlm-final-integration\data\audit\p23-remediation\stage06\final01\m-d08-new.xml -
+============================ slowest 10 durations =============================
+2.71s call     tests/test_comparison.py::test_compare_headline_is_stable_under_argument_permutation
+0.28s call     tests/test_comparison.py::test_promote_refuses_stale_unversioned_comparison
+0.16s call     tests/test_comparison.py::test_primary_pair_uses_numeric_seed_order
+0.05s call     tests/test_comparison.py::test_suite_blimp_draws_retain_repeated_occurrences
+0.00s setup    tests/test_comparison.py::test_compare_headline_is_stable_under_argument_permutation
+0.00s setup    tests/test_comparison.py::test_primary_pair_uses_numeric_seed_order
+0.00s setup    tests/test_comparison.py::test_promote_refuses_stale_unversioned_comparison
+0.00s setup    tests/test_comparison.py::test_suite_blimp_draws_retain_repeated_occurrences
+0.00s teardown tests/test_comparison.py::test_compare_headline_is_stable_under_argument_permutation
+0.00s teardown tests/test_comparison.py::test_primary_pair_uses_numeric_seed_order
+============================= 4 passed in 20.73s ==============================

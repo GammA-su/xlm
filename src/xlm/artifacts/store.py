@@ -22,6 +22,7 @@ from xlm.artifacts.manifest import (
     ArtifactManifest,
     bounded_children,
     canonical_json,
+    comparable_resolved,
     ensure_plain_path,
     identity_digest,
     validate_component,
@@ -73,7 +74,7 @@ class ArtifactStore:
         dest = self.paths.root / kind / artifact_id
         for path in (dest, self.staging_dir, self.locks_dir):
             ensure_plain_path(path)
-            if not path.resolve().is_relative_to(self.paths.root.resolve()):
+            if not comparable_resolved(path).is_relative_to(comparable_resolved(self.paths.root)):
                 raise ValueError(f"Artifact destination escapes store: {path}")
         # Reject differently cased aliases consistently on case-sensitive hosts too.
         for parent, requested in ((self.paths.root, kind), (dest.parent, artifact_id)):

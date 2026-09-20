@@ -1,0 +1,20 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm-final-integration\.venv-final\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm-final-integration
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0, xdist-3.8.0
+collecting ... collected 2 items
+
+tests/test_configurable_workflow.py::test_public_two_source_prepare_direct_queue_and_resume[False] PASSED [ 50%]
+tests/test_configurable_workflow.py::test_public_two_source_prepare_direct_queue_and_resume[True] PASSED [100%]
+
+- generated xml file: D:\Project\xlm-final-integration\data\audit\p23-remediation\stage06\final01\serial-configurable_workflow.xml -
+============================ slowest 10 durations =============================
+187.28s call     tests/test_configurable_workflow.py::test_public_two_source_prepare_direct_queue_and_resume[False]
+144.81s call     tests/test_configurable_workflow.py::test_public_two_source_prepare_direct_queue_and_resume[True]
+0.00s setup    tests/test_configurable_workflow.py::test_public_two_source_prepare_direct_queue_and_resume[False]
+0.00s setup    tests/test_configurable_workflow.py::test_public_two_source_prepare_direct_queue_and_resume[True]
+0.00s teardown tests/test_configurable_workflow.py::test_public_two_source_prepare_direct_queue_and_resume[False]
+0.00s teardown tests/test_configurable_workflow.py::test_public_two_source_prepare_direct_queue_and_resume[True]
+======================== 2 passed in 334.16s (0:05:34) ========================

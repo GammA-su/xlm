@@ -164,6 +164,33 @@ def test_concurrent_writer_lock_contention(tmp_path: Path) -> None:
     assert store.verify_artifact(r1)
 
 
+def test_resolved_containment_is_existence_independent(tmp_path: Path) -> None:
+    """Containment must not depend on whether paths exist yet.
+
+    Windows resolve() returns an extended-length (``\\\\?\\``) form when a path
+    can be opened and the plain form otherwise, so concurrent creation used to
+    flip containment checks. Stripping the prefix keeps them deterministic
+    while link/junction rejection stays in ensure_plain_path.
+    """
+    import os
+
+    from xlm.artifacts.manifest import comparable_resolved
+
+    root = tmp_path / "artifacts"
+    target = root / ".locks"
+    assert comparable_resolved(target).is_relative_to(comparable_resolved(root))
+    root.mkdir(parents=True)
+    target.mkdir()
+    assert comparable_resolved(target).is_relative_to(comparable_resolved(root))
+    outside = tmp_path / "elsewhere"
+    assert not comparable_resolved(outside).is_relative_to(comparable_resolved(root))
+    if os.name == "nt":
+        extended = Path("\\\\?\\C:\\store\\file")
+        assert str(comparable_resolved(extended)) == "C:\\store\\file"
+        unc = Path("\\\\?\\UNC\\host\\share\\file")
+        assert str(comparable_resolved(unc)) == "\\\\host\\share\\file"
+
+
 def test_artifact_lineage_round_trip(tmp_path: Path) -> None:
     """Verify lineage tracking from parent artifact to child artifact."""
     paths = ArtifactPaths(root=tmp_path / "artifacts")

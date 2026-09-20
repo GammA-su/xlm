@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="1" time="0.728" timestamp="2026-09-20T23:30:02.464588+02:00" hostname="BetA-C1"><testcase classname="tests.test_artifacts" name="test_concurrent_writer_lock_contention" time="0.098" /></testsuite></testsuites>

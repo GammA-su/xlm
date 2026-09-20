@@ -261,6 +261,10 @@ def test_replay_revocation_mismatch_and_quota_are_refused(tmp_path: Path) -> Non
 
 
 def test_expired_and_unreviewed_and_unbounded_suppliers_refused(tmp_path: Path) -> None:
+    # Each authorization below is issued for the exact request object executed:
+    # request hashes embed wall-clock construction time, so authorizing one
+    # construction and executing another can straddle a clock tick and mismatch.
+    # Refusal assertions (expired / unreviewed / aggregates-only) are unchanged.
     sealed = _sealed_tree(tmp_path)
     expired = build_final_request(
         "ckpt_abc",
@@ -287,10 +291,11 @@ def test_expired_and_unreviewed_and_unbounded_suppliers_refused(tmp_path: Path) 
         )
     foreign = sealed["root"] / "unreviewed.py"
     foreign.write_text("# not reviewed\n", encoding="utf-8")
+    unreviewed = _request(nonce="unrev")
     with pytest.raises(FinalEvaluationError, match="not in the reviewed registry"):
         execute_final_request(
-            _request(nonce="unrev"),
-            _auth(_request(nonce="unrev")),
+            unreviewed,
+            _auth(unreviewed),
             sealed["root"],
             foreign,
             sealed["reviewed"],
@@ -305,10 +310,11 @@ def test_expired_and_unreviewed_and_unbounded_suppliers_refused(tmp_path: Path) 
     def forbidden_supplier(request: Any) -> tuple[dict[str, Any], int]:
         return ({"arc_easy": {"acc": 0.5}, "predictions": ["a", "b"]}, 2)
 
+    forbidden = _request(nonce="forbidden")
     with pytest.raises(FinalEvaluationError, match="aggregates only"):
         execute_final_request(
-            _request(nonce="forbidden"),
-            _auth(_request(nonce="forbidden")),
+            forbidden,
+            _auth(forbidden),
             sealed["root"],
             sealed["bundle"],
             sealed["reviewed"],

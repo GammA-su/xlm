@@ -402,7 +402,10 @@ def test_actual_public_cli_current_and_legacy_artifacts(tmp_path: Path) -> None:
     assert cli("artifact", "verify", legacy.name).returncode != 0
 
 
+# Simultaneous publishers need a machine without 16-way contention (D07 finding);
+# the inner race below is retained, only the outer pytest execution is serial.
 @pytest.mark.parametrize("conflicting", [False, True])
+@pytest.mark.serial
 def test_fresh_process_publishers_have_one_permitted_outcome(
     tmp_path: Path, conflicting: bool
 ) -> None:

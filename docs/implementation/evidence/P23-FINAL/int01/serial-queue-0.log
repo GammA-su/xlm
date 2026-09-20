@@ -1,0 +1,40 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm-final-integration\.venv-final\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm-final-integration
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0, xdist-3.8.0
+collecting ... collected 18 items
+
+tests/test_queue.py::test_submit_deduplicates_identical_plans PASSED     [  5%]
+tests/test_queue.py::test_submit_refuses_blocked_plans_and_missing_snapshots PASSED [ 11%]
+tests/test_queue.py::test_submit_allows_explicit_duplicates PASSED       [ 16%]
+tests/test_queue.py::test_only_one_gpu_lease_can_be_held PASSED          [ 22%]
+tests/test_queue.py::test_stale_lease_is_reclaimable_and_recorded PASSED [ 27%]
+tests/test_queue.py::test_cpu_environment_refuses_cuda_job_without_execution PASSED [ 33%]
+tests/test_queue.py::test_toy_campaign_runs_sequentially_to_success PASSED [ 38%]
+tests/test_queue.py::test_changed_live_tree_preserves_frozen_run PASSED  [ 44%]
+tests/test_queue.py::test_failed_jobs_keep_evidence_and_stay_terminal PASSED [ 50%]
+tests/test_queue.py::test_crash_recovery_requeues_once_when_retries_remain PASSED [ 55%]
+tests/test_queue.py::test_crash_without_retries_fails_loudly PASSED      [ 61%]
+tests/test_queue.py::test_cancel_stops_a_queued_job_and_a_running_job PASSED [ 66%]
+tests/test_queue.py::test_prep_pool_is_bounded_and_ordered PASSED        [ 72%]
+tests/test_queue.py::test_status_lists_jobs_with_attempts PASSED         [ 77%]
+tests/test_queue.py::test_cli_experiment_plan_reports_blockers PASSED    [ 83%]
+tests/test_queue.py::test_cli_campaign_plan_shows_six_mixtures_without_running PASSED [ 88%]
+tests/test_queue.py::test_cli_submit_blocks_unauthorized_large_runs PASSED [ 94%]
+tests/test_queue.py::test_cli_queue_status_and_cancel PASSED             [100%]
+
+- generated xml file: D:\Project\xlm-final-integration\data\audit\p23-remediation\stage06\final01\serial-queue.xml -
+============================ slowest 10 durations =============================
+129.28s call     tests/test_queue.py::test_toy_campaign_runs_sequentially_to_success
+59.32s call     tests/test_queue.py::test_cancel_stops_a_queued_job_and_a_running_job
+44.69s call     tests/test_queue.py::test_crash_recovery_requeues_once_when_retries_remain
+43.76s call     tests/test_queue.py::test_changed_live_tree_preserves_frozen_run
+41.87s call     tests/test_queue.py::test_failed_jobs_keep_evidence_and_stay_terminal
+32.03s call     tests/test_queue.py::test_submit_refuses_blocked_plans_and_missing_snapshots
+19.63s call     tests/test_queue.py::test_submit_deduplicates_identical_plans
+19.48s call     tests/test_queue.py::test_submit_allows_explicit_duplicates
+18.62s call     tests/test_queue.py::test_cpu_environment_refuses_cuda_job_without_execution
+18.05s call     tests/test_queue.py::test_crash_without_retries_fails_loudly
+======================= 18 passed in 446.54s (0:07:26) ========================
