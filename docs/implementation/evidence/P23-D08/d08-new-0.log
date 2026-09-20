@@ -1,0 +1,35 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm-integration\.venv-integration\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm-integration
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0
+collecting ... collected 13 items
+
+tests/test_comparison.py::test_compare_headline_is_stable_under_argument_permutation PASSED [  7%]
+tests/test_comparison.py::test_compare_swapped_arms_negate_the_headline PASSED [ 15%]
+tests/test_comparison.py::test_primary_pair_uses_numeric_seed_order PASSED [ 23%]
+tests/test_comparison.py::test_compare_is_deterministic_for_identical_invocations PASSED [ 30%]
+tests/test_comparison.py::test_compare_refuses_missing_seed_partner PASSED [ 38%]
+tests/test_comparison.py::test_compare_refuses_duplicate_seed_pair PASSED [ 46%]
+tests/test_comparison.py::test_compare_refuses_cross_pair_population_mismatch PASSED [ 53%]
+tests/test_comparison.py::test_compare_refuses_ineligible_nonprimary_pair PASSED [ 61%]
+tests/test_comparison.py::test_compare_refuses_duplicate_input_records PASSED [ 69%]
+tests/test_comparison.py::test_compare_refuses_conflicting_chance_references PASSED [ 76%]
+tests/test_comparison.py::test_suite_blimp_draws_retain_repeated_occurrences PASSED [ 84%]
+tests/test_comparison.py::test_suite_blimp_unequal_clusters_keep_macro_weighting PASSED [ 92%]
+tests/test_comparison.py::test_promote_refuses_stale_unversioned_comparison PASSED [100%]
+
+- generated xml file: D:\Project\xlm-integration\data\audit\p23-remediation\stage05\d08\d08-new.xml -
+============================ slowest 10 durations =============================
+0.49s call     tests/test_comparison.py::test_compare_headline_is_stable_under_argument_permutation
+0.34s call     tests/test_comparison.py::test_compare_swapped_arms_negate_the_headline
+0.27s call     tests/test_comparison.py::test_compare_is_deterministic_for_identical_invocations
+0.23s call     tests/test_comparison.py::test_promote_refuses_stale_unversioned_comparison
+0.15s call     tests/test_comparison.py::test_primary_pair_uses_numeric_seed_order
+0.12s call     tests/test_comparison.py::test_compare_refuses_cross_pair_population_mismatch
+0.11s call     tests/test_comparison.py::test_compare_refuses_ineligible_nonprimary_pair
+0.11s call     tests/test_comparison.py::test_compare_refuses_duplicate_seed_pair
+0.11s call     tests/test_comparison.py::test_compare_refuses_duplicate_input_records
+0.11s call     tests/test_comparison.py::test_compare_refuses_conflicting_chance_references
+============================= 13 passed in 4.61s ==============================

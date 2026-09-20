@@ -1,0 +1,87 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm-integration\.venv-integration\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm-integration
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0, xdist-3.8.0
+collecting ... collected 65 items
+
+tests/test_comparison.py::test_identical_runs_are_eligible_on_every_causal_track PASSED [  1%]
+tests/test_comparison.py::test_changed_tokenizer_fails_the_architecture_track PASSED [  3%]
+tests/test_comparison.py::test_byte_matched_tokenizer_track_can_pass PASSED [  4%]
+tests/test_comparison.py::test_tokenizer_track_without_matched_evidence_is_ineligible PASSED [  6%]
+tests/test_comparison.py::test_unknown_fields_fail_closed PASSED         [  7%]
+tests/test_comparison.py::test_mismatched_horizons_are_ineligible PASSED [  9%]
+tests/test_comparison.py::test_unconstrained_track_labels_differences_without_a_causal_badge PASSED [ 10%]
+tests/test_comparison.py::test_unknown_track_is_refused PASSED           [ 12%]
+tests/test_comparison.py::test_run_facts_assemble_from_evidence_and_plan PASSED [ 13%]
+tests/test_comparison.py::test_identical_predictions_give_zero_paired_difference PASSED [ 15%]
+tests/test_comparison.py::test_known_winner_and_swapped_arms_behave_correctly PASSED [ 16%]
+tests/test_comparison.py::test_bootstrap_is_deterministic_for_a_fixed_seed PASSED [ 18%]
+tests/test_comparison.py::test_cluster_resampling_counts_clusters_not_items PASSED [ 20%]
+tests/test_comparison.py::test_mismatched_ids_and_missing_predictions_invalidate PASSED [ 21%]
+tests/test_comparison.py::test_seed_spread_separates_seed_from_item_uncertainty PASSED [ 23%]
+tests/test_comparison.py::test_suite_bootstrap_computes_index_intervals PASSED [ 24%]
+tests/test_comparison.py::test_suite_bootstrap_rejects_partial_coverage PASSED [ 26%]
+tests/test_comparison.py::test_suite_bootstrap_macro_averages_blimp_subclusters PASSED [ 27%]
+tests/test_comparison.py::test_crossing_interpolates_between_measured_points PASSED [ 29%]
+tests/test_comparison.py::test_unreached_and_out_of_range_targets_are_not_invented PASSED [ 30%]
+tests/test_comparison.py::test_teacher_and_auxiliary_costs_are_labeled PASSED [ 32%]
+tests/test_comparison.py::test_compute_comparison_requires_both_arms_to_reach PASSED [ 33%]
+tests/test_comparison.py::test_malformed_curve_mappings_are_rejected PASSED [ 35%]
+tests/test_comparison.py::test_promotion_passes_on_material_evidence PASSED [ 36%]
+tests/test_comparison.py::test_promotion_refuses_ineligible_missing_or_weak_evidence PASSED [ 38%]
+tests/test_comparison.py::test_material_regression_warns_without_silently_passing PASSED [ 40%]
+tests/test_comparison.py::test_gate_thresholds_are_inputs_not_rewritten_by_scores PASSED [ 41%]
+tests/test_comparison.py::test_promotion_emits_a_valid_from_scratch_draft PASSED [ 43%]
+tests/test_comparison.py::test_promotion_needs_a_passing_decision_for_drafts PASSED [ 44%]
+tests/test_comparison.py::test_cli_compare_reports_eligible_paired_difference PASSED [ 46%]
+tests/test_comparison.py::test_cli_compare_refuses_ineligible_tracks_before_any_winner PASSED [ 47%]
+tests/test_comparison.py::test_cli_promote_emits_a_valid_draft_on_pass PASSED [ 49%]
+tests/test_comparison.py::test_cli_promote_refuses_without_passing_gates PASSED [ 50%]
+tests/test_comparison.py::test_factorial_and_ablation_matrices_emit_plans_only PASSED [ 52%]
+tests/test_comparison.py::test_compare_headline_is_stable_under_argument_permutation PASSED [ 53%]
+tests/test_comparison.py::test_compare_swapped_arms_negate_the_headline PASSED [ 55%]
+tests/test_comparison.py::test_primary_pair_uses_numeric_seed_order PASSED [ 56%]
+tests/test_comparison.py::test_compare_is_deterministic_for_identical_invocations PASSED [ 58%]
+tests/test_comparison.py::test_compare_refuses_missing_seed_partner PASSED [ 60%]
+tests/test_comparison.py::test_compare_refuses_duplicate_seed_pair PASSED [ 61%]
+tests/test_comparison.py::test_compare_refuses_cross_pair_population_mismatch PASSED [ 63%]
+tests/test_comparison.py::test_compare_refuses_ineligible_nonprimary_pair PASSED [ 64%]
+tests/test_comparison.py::test_compare_refuses_duplicate_input_records PASSED [ 66%]
+tests/test_comparison.py::test_compare_refuses_conflicting_chance_references PASSED [ 67%]
+tests/test_comparison.py::test_suite_blimp_draws_retain_repeated_occurrences PASSED [ 69%]
+tests/test_comparison.py::test_suite_blimp_unequal_clusters_keep_macro_weighting PASSED [ 70%]
+tests/test_comparison.py::test_promote_refuses_stale_unversioned_comparison PASSED [ 72%]
+tests/test_eval_coverage.py::test_full_coverage_is_complete_and_publishes_the_index PASSED [ 73%]
+tests/test_eval_coverage.py::test_coverage_is_independent_of_observation_order PASSED [ 75%]
+tests/test_eval_coverage.py::test_all_four_tasks_present_but_partially_scored_is_incomplete PASSED [ 76%]
+tests/test_eval_coverage.py::test_runtime_limit_smaller_than_the_population_is_flagged_before_results PASSED [ 78%]
+tests/test_eval_coverage.py::test_a_failed_item_does_not_shrink_the_expected_population PASSED [ 80%]
+tests/test_eval_coverage.py::test_a_duplicate_scored_item_cannot_masquerade_as_coverage PASSED [ 81%]
+tests/test_eval_coverage.py::test_an_unexpected_item_is_reported_not_absorbed PASSED [ 83%]
+tests/test_eval_coverage.py::test_a_missing_blimp_subdataset_is_incomplete_even_with_enough_items PASSED [ 84%]
+tests/test_eval_coverage.py::test_a_task_returning_nothing_is_a_missing_task PASSED [ 86%]
+tests/test_eval_coverage.py::test_an_interrupted_run_is_never_complete PASSED [ 87%]
+tests/test_eval_coverage.py::test_a_declared_smaller_scope_is_complete_within_itself_only PASSED [ 89%]
+tests/test_eval_coverage.py::test_authored_fixture_scope_is_complete_but_never_research_evidence PASSED [ 90%]
+tests/test_eval_coverage.py::test_undeclared_coverage_never_claims_an_expected_population PASSED [ 92%]
+tests/test_eval_coverage.py::test_legacy_coverage_is_not_retroactively_completed PASSED [ 93%]
+tests/test_eval_coverage.py::test_coverage_survives_a_round_trip PASSED  [ 95%]
+tests/test_eval_coverage.py::test_task_coverage_complete_requires_every_condition PASSED [ 96%]
+tests/test_eval_coverage.py::test_expected_population_comes_from_the_manifest_alone PASSED [ 98%]
+tests/test_eval_coverage.py::test_a_manifest_declaring_fewer_tasks_requires_only_those PASSED [100%]
+
+- generated xml file: D:\Project\xlm-integration\data\audit\p23-remediation\stage05\d08\consistency-serial.xml -
+============================ slowest 10 durations =============================
+0.38s call     tests/test_comparison.py::test_cli_compare_reports_eligible_paired_difference
+0.28s call     tests/test_comparison.py::test_compare_headline_is_stable_under_argument_permutation
+0.27s call     tests/test_comparison.py::test_compare_swapped_arms_negate_the_headline
+0.26s call     tests/test_comparison.py::test_cli_promote_emits_a_valid_draft_on_pass
+0.22s call     tests/test_comparison.py::test_compare_is_deterministic_for_identical_invocations
+0.21s call     tests/test_comparison.py::test_cli_promote_refuses_without_passing_gates
+0.21s call     tests/test_comparison.py::test_promote_refuses_stale_unversioned_comparison
+0.17s call     tests/test_comparison.py::test_primary_pair_uses_numeric_seed_order
+0.16s call     tests/test_comparison.py::test_compare_refuses_duplicate_seed_pair
+0.12s call     tests/test_comparison.py::test_compare_refuses_conflicting_chance_references
+============================= 65 passed in 5.50s ==============================

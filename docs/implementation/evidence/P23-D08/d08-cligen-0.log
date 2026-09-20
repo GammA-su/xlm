@@ -1,0 +1,20 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm-integration\.venv-integration\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm-integration
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0
+collecting ... collected 2 items
+
+tests/test_cli_eval_gen.py::test_cli_demo_complete_vertical_slice_subprocess PASSED [ 50%]
+tests/test_cli_eval_gen.py::test_cli_evaluate_and_generate_subprocess PASSED [100%]
+
+- generated xml file: D:\Project\xlm-integration\data\audit\p23-remediation\stage05\d08\d08-cligen.xml -
+============================ slowest 10 durations =============================
+139.38s call     tests/test_cli_eval_gen.py::test_cli_evaluate_and_generate_subprocess
+7.79s call     tests/test_cli_eval_gen.py::test_cli_demo_complete_vertical_slice_subprocess
+0.00s setup    tests/test_cli_eval_gen.py::test_cli_evaluate_and_generate_subprocess
+0.00s teardown tests/test_cli_eval_gen.py::test_cli_evaluate_and_generate_subprocess
+0.00s setup    tests/test_cli_eval_gen.py::test_cli_demo_complete_vertical_slice_subprocess
+0.00s teardown tests/test_cli_eval_gen.py::test_cli_demo_complete_vertical_slice_subprocess
+======================== 2 passed in 147.25s (0:02:27) ========================

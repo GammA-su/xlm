@@ -1,0 +1,97 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm-integration\.venv-integration\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm-integration
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0
+collecting ... collected 75 items
+
+tests/test_eval_inputs.py::test_policy_splits_come_from_the_frozen_suite_definition PASSED [  1%]
+tests/test_eval_inputs.py::test_authored_fixture_manifest_verifies_and_reports_its_scope PASSED [  2%]
+tests/test_eval_inputs.py::test_manifest_id_is_content_identity_not_file_location PASSED [  4%]
+tests/test_eval_inputs.py::test_manifest_id_changes_with_membership PASSED [  5%]
+tests/test_eval_inputs.py::test_prompt_and_label_digests_are_separate PASSED [  6%]
+tests/test_eval_inputs.py::test_digests_are_stable_under_record_reordering PASSED [  8%]
+tests/test_eval_inputs.py::test_wrong_split_for_the_tier_is_refused PASSED [  9%]
+tests/test_eval_inputs.py::test_hellaswag_final_split_is_refused_at_search PASSED [ 10%]
+tests/test_eval_inputs.py::test_final_tier_requires_operator_authorization PASSED [ 12%]
+tests/test_eval_inputs.py::test_requested_tier_must_match_the_manifest PASSED [ 13%]
+tests/test_eval_inputs.py::test_isolated_final_exposure_is_refused_for_a_developer_run PASSED [ 14%]
+tests/test_eval_inputs.py::test_same_length_corruption_is_rejected PASSED [ 16%]
+tests/test_eval_inputs.py::test_size_mismatch_is_rejected PASSED         [ 17%]
+tests/test_eval_inputs.py::test_an_unselected_larger_source_is_not_the_selected_artifact PASSED [ 18%]
+tests/test_eval_inputs.py::test_missing_declared_item_is_rejected PASSED [ 20%]
+tests/test_eval_inputs.py::test_duplicate_records_in_the_artifact_are_rejected PASSED [ 21%]
+tests/test_eval_inputs.py::test_duplicate_declared_ids_are_rejected_by_the_schema PASSED [ 22%]
+tests/test_eval_inputs.py::test_missing_declared_id_field_is_rejected PASSED [ 24%]
+tests/test_eval_inputs.py::test_missing_declared_label_field_is_rejected PASSED [ 25%]
+tests/test_eval_inputs.py::test_absent_artifact_is_rejected PASSED       [ 26%]
+tests/test_eval_inputs.py::test_harness_version_drift_is_rejected PASSED [ 28%]
+tests/test_eval_inputs.py::test_required_subdataset_must_be_selected PASSED [ 29%]
+tests/test_eval_inputs.py::test_manifest_cannot_supply_its_own_task_definitions PASSED [ 30%]
+tests/test_eval_inputs.py::test_unsupported_manifest_version_is_refused PASSED [ 32%]
+tests/test_eval_inputs.py::test_selection_cannot_declare_an_empty_population PASSED [ 33%]
+tests/test_eval_inputs.py::test_selection_cannot_select_more_than_its_declared_source PASSED [ 34%]
+tests/test_eval_inputs.py::test_build_reads_membership_from_the_artifact_not_the_operator PASSED [ 36%]
+tests/test_eval_inputs.py::test_subset_scope_is_a_valid_narrower_manifest PASSED [ 37%]
+tests/test_eval_coverage.py::test_full_coverage_is_complete_and_publishes_the_index PASSED [ 38%]
+tests/test_eval_coverage.py::test_coverage_is_independent_of_observation_order PASSED [ 40%]
+tests/test_eval_coverage.py::test_all_four_tasks_present_but_partially_scored_is_incomplete PASSED [ 41%]
+tests/test_eval_coverage.py::test_runtime_limit_smaller_than_the_population_is_flagged_before_results PASSED [ 42%]
+tests/test_eval_coverage.py::test_a_failed_item_does_not_shrink_the_expected_population PASSED [ 44%]
+tests/test_eval_coverage.py::test_a_duplicate_scored_item_cannot_masquerade_as_coverage PASSED [ 45%]
+tests/test_eval_coverage.py::test_an_unexpected_item_is_reported_not_absorbed PASSED [ 46%]
+tests/test_eval_coverage.py::test_a_missing_blimp_subdataset_is_incomplete_even_with_enough_items PASSED [ 48%]
+tests/test_eval_coverage.py::test_a_task_returning_nothing_is_a_missing_task PASSED [ 49%]
+tests/test_eval_coverage.py::test_an_interrupted_run_is_never_complete PASSED [ 50%]
+tests/test_eval_coverage.py::test_a_declared_smaller_scope_is_complete_within_itself_only PASSED [ 52%]
+tests/test_eval_coverage.py::test_authored_fixture_scope_is_complete_but_never_research_evidence PASSED [ 53%]
+tests/test_eval_coverage.py::test_undeclared_coverage_never_claims_an_expected_population PASSED [ 54%]
+tests/test_eval_coverage.py::test_legacy_coverage_is_not_retroactively_completed PASSED [ 56%]
+tests/test_eval_coverage.py::test_coverage_survives_a_round_trip PASSED  [ 57%]
+tests/test_eval_coverage.py::test_task_coverage_complete_requires_every_condition PASSED [ 58%]
+tests/test_eval_coverage.py::test_expected_population_comes_from_the_manifest_alone PASSED [ 60%]
+tests/test_eval_coverage.py::test_a_manifest_declaring_fewer_tasks_requires_only_those PASSED [ 61%]
+tests/test_eval_suites.py::test_official_dataset_pins_are_resolved_and_immutable PASSED [ 62%]
+tests/test_eval_suites.py::test_variants_carry_the_pinned_revision_into_the_task_config PASSED [ 64%]
+tests/test_eval_suites.py::test_search_and_confirmation_never_reference_final_splits PASSED [ 65%]
+tests/test_eval_suites.py::test_final_splits_are_exactly_the_policy_split PASSED [ 66%]
+tests/test_eval_suites.py::test_final_requires_operator_authorization PASSED [ 68%]
+tests/test_eval_suites.py::test_firewall_detects_a_developer_variant_pointing_at_a_final_split PASSED [ 69%]
+tests/test_eval_suites.py::test_blimp_partition_is_whole_disjoint_subdatasets PASSED [ 70%]
+tests/test_eval_suites.py::test_blimp_partition_is_deterministic_and_seed_sensitive PASSED [ 72%]
+tests/test_eval_suites.py::test_grouped_partition_keeps_groups_together_and_disjoint PASSED [ 73%]
+tests/test_eval_suites.py::test_index_requires_complete_declared_coverage PASSED [ 74%]
+tests/test_eval_suites.py::test_index_matches_the_declared_formula_and_chance_references PASSED [ 76%]
+tests/test_eval_suites.py::test_blimp_is_macro_averaged_before_weighting PASSED [ 77%]
+tests/test_eval_suites.py::test_negative_components_are_not_clipped PASSED [ 78%]
+tests/test_eval_suites.py::test_zero_scored_items_withhold_the_index PASSED [ 80%]
+tests/test_eval_suites.py::test_final_request_is_frozen_and_hashable PASSED [ 81%]
+tests/test_eval_suites.py::test_task_evidence_counts_omissions_and_truncation PASSED [ 82%]
+tests/test_eval_suites.py::test_evidence_round_trips_deterministically PASSED [ 84%]
+tests/test_eval_suites.py::test_cache_rejects_a_stale_or_foreign_identity PASSED [ 85%]
+tests/test_eval_suites.py::test_reference_registry_round_trip_and_no_silent_replacement PASSED [ 86%]
+tests/test_eval_suites.py::test_model_download_plan_requires_authorization_revision_and_caps PASSED [ 88%]
+tests/test_eval_suites.py::test_harness_identity_changes_with_every_component PASSED [ 89%]
+tests/test_eval_suites.py::test_installed_harness_version_matches_the_pin_when_present PASSED [ 90%]
+tests/test_eval_suites.py::test_harness_identity_to_dict_carries_the_fingerprint PASSED [ 92%]
+tests/test_eval_suites.py::test_harness_samples_convert_with_lowest_index_tie_break PASSED [ 93%]
+tests/test_eval_suites.py::test_incomplete_coverage_error_is_available_for_callers PASSED [ 94%]
+tests/test_eval_suites.py::test_reference_registration_measures_parameters_locally PASSED [ 96%]
+tests/test_eval_suites.py::test_cli_final_request_only_writes_a_gated_request PASSED [ 97%]
+tests/test_eval_suites.py::test_cli_final_without_authorization_refuses PASSED [ 98%]
+tests/test_eval_suites.py::test_cli_unknown_suite_refuses PASSED         [100%]
+
+- generated xml file: D:\Project\xlm-integration\data\audit\p23-remediation\stage05\d08\d08-evalcore.xml -
+============================ slowest 10 durations =============================
+0.42s call     tests/test_eval_suites.py::test_cli_final_request_only_writes_a_gated_request
+0.14s call     tests/test_eval_suites.py::test_cli_unknown_suite_refuses
+0.13s call     tests/test_eval_suites.py::test_cli_final_without_authorization_refuses
+0.11s call     tests/test_eval_inputs.py::test_prompt_and_label_digests_are_separate
+0.08s setup    tests/test_eval_inputs.py::test_manifest_id_changes_with_membership
+0.08s setup    tests/test_eval_inputs.py::test_duplicate_records_in_the_artifact_are_rejected
+0.07s setup    tests/test_eval_inputs.py::test_missing_declared_id_field_is_rejected
+0.07s call     tests/test_eval_inputs.py::test_digests_are_stable_under_record_reordering
+0.06s setup    tests/test_eval_inputs.py::test_unsupported_manifest_version_is_refused
+0.05s setup    tests/test_eval_inputs.py::test_duplicate_declared_ids_are_rejected_by_the_schema
+============================= 75 passed in 6.20s ==============================

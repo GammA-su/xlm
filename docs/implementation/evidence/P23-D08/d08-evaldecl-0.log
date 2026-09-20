@@ -1,0 +1,51 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm-integration\.venv-integration\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm-integration
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0
+collecting ... collected 29 items
+
+tests/test_eval_declared_inputs.py::test_official_definitions_resolve_their_inherited_configuration PASSED [  3%]
+tests/test_eval_declared_inputs.py::test_binding_rewrites_only_loader_keys PASSED [  6%]
+tests/test_eval_declared_inputs.py::test_binding_refuses_an_unsupported_task_shape PASSED [ 10%]
+tests/test_eval_declared_inputs.py::test_binding_refuses_a_few_shot_task PASSED [ 13%]
+tests/test_eval_declared_inputs.py::test_official_formatting_is_applied_to_authored_records PASSED [ 17%]
+tests/test_eval_declared_inputs.py::test_resolve_metric_handles_the_installed_key_shape PASSED [ 20%]
+tests/test_eval_declared_inputs.py::test_complete_declared_scope_publishes_a_labelled_index PASSED [ 24%]
+tests/test_eval_declared_inputs.py::test_complete_fixture_scope_is_never_research_evidence PASSED [ 27%]
+tests/test_eval_declared_inputs.py::test_every_declared_item_is_accounted_for_by_identity PASSED [ 31%]
+tests/test_eval_declared_inputs.py::test_declared_ids_survive_preprocessing PASSED [ 34%]
+tests/test_eval_declared_inputs.py::test_a_lost_declared_id_is_an_error_not_a_fallback PASSED [ 37%]
+tests/test_eval_declared_inputs.py::test_all_four_tasks_under_a_limit_do_not_produce_an_index PASSED [ 41%]
+tests/test_eval_declared_inputs.py::test_a_narrower_declared_scope_is_complete_only_within_itself PASSED [ 44%]
+tests/test_eval_declared_inputs.py::test_a_missing_item_in_the_artifact_is_refused_before_execution PASSED [ 48%]
+tests/test_eval_declared_inputs.py::test_results_are_stable_under_input_ordering PASSED [ 51%]
+tests/test_eval_declared_inputs.py::test_identical_request_reuses_the_cached_aggregate PASSED [ 55%]
+tests/test_eval_declared_inputs.py::test_a_relabelling_keeps_the_raw_identity_but_invalidates_the_aggregate PASSED [ 58%]
+tests/test_eval_declared_inputs.py::test_a_changed_prompt_changes_the_raw_identity PASSED [ 62%]
+tests/test_eval_declared_inputs.py::test_a_changed_runtime_limit_changes_both_identities PASSED [ 65%]
+tests/test_eval_declared_inputs.py::test_a_changed_checkpoint_changes_the_raw_identity PASSED [ 68%]
+tests/test_eval_declared_inputs.py::test_legacy_evidence_without_coverage_stays_unverified PASSED [ 72%]
+tests/test_eval_declared_inputs.py::test_the_undeclared_fixture_route_withholds_the_index PASSED [ 75%]
+tests/test_eval_declared_inputs.py::test_pinned_remote_revisions_remain_blocked_on_the_undeclared_route PASSED [ 79%]
+tests/test_eval_declared_inputs.py::test_cli_verify_inputs_only_needs_no_checkpoint PASSED [ 82%]
+tests/test_eval_declared_inputs.py::test_cli_verify_inputs_only_reports_a_bad_manifest PASSED [ 86%]
+tests/test_eval_declared_inputs.py::test_cli_declared_run_publishes_a_labelled_index PASSED [ 89%]
+tests/test_eval_declared_inputs.py::test_cli_declared_run_under_a_limit_withholds_the_index PASSED [ 93%]
+tests/test_eval_declared_inputs.py::test_cli_refuses_to_mix_declared_inputs_with_task_overrides PASSED [ 96%]
+tests/test_eval_declared_inputs.py::test_cli_requires_a_checkpoint_to_evaluate PASSED [100%]
+
+- generated xml file: D:\Project\xlm-integration\data\audit\p23-remediation\stage05\d08\d08-evaldecl.xml -
+============================ slowest 10 durations =============================
+72.45s call     tests/test_eval_declared_inputs.py::test_cli_declared_run_publishes_a_labelled_index
+70.53s call     tests/test_eval_declared_inputs.py::test_cli_declared_run_under_a_limit_withholds_the_index
+47.81s call     tests/test_eval_declared_inputs.py::test_cli_refuses_to_mix_declared_inputs_with_task_overrides
+37.94s call     tests/test_eval_declared_inputs.py::test_official_definitions_resolve_their_inherited_configuration
+27.67s call     tests/test_eval_declared_inputs.py::test_the_undeclared_fixture_route_withholds_the_index
+18.74s call     tests/test_eval_declared_inputs.py::test_a_relabelling_keeps_the_raw_identity_but_invalidates_the_aggregate
+18.49s call     tests/test_eval_declared_inputs.py::test_identical_request_reuses_the_cached_aggregate
+18.19s call     tests/test_eval_declared_inputs.py::test_a_changed_prompt_changes_the_raw_identity
+18.12s call     tests/test_eval_declared_inputs.py::test_results_are_stable_under_input_ordering
+17.40s call     tests/test_eval_declared_inputs.py::test_a_changed_runtime_limit_changes_both_identities
+======================= 29 passed in 413.34s (0:06:53) ========================

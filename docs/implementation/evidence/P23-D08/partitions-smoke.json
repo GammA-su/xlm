@@ -1,0 +1,1 @@
+{"groups": {"d08-smoke": ["tests/test_comparison.py", "tests/test_final_acceptance.py::test_seed_pairs_follow_recorded_ids_not_argument_order"]}}

@@ -1,0 +1,184 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm-integration\.venv-integration\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm-integration
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0
+collecting ... collected 4 items
+
+tests/test_offline_workflow.py::test_offline_workflow_from_clean_environment FAILED [ 25%]
+tests/test_offline_workflow.py::test_prepare_restart_reuses_verified_acquisition PASSED [ 50%]
+tests/test_offline_workflow.py::test_each_dimension_uses_its_intended_interface PASSED [ 75%]
+tests/test_offline_workflow.py::test_large_campaigns_prepare_without_launching PASSED [100%]
+
+================================== FAILURES ===================================
+________________ test_offline_workflow_from_clean_environment _________________
+
+tmp_path = WindowsPath('D:/Project/xlm-integration/data/audit/p23-remediation/stage05/d08/d08-offline-tmp/test_offline_workflow_from_cle0')
+
+    def test_offline_workflow_from_clean_environment(tmp_path: Path) -> None:
+        """prepare -> train -> evaluate -> compare -> export, all from scratch."""
+        home = tmp_path / "home"
+        work = tmp_path / "work"
+        work.mkdir()
+        cwd = tmp_path / "cwd"
+        cwd.mkdir()
+        out_root = tmp_path / "prepared"
+    
+        prepared = _run(
+            [
+                "prepare",
+                "--config",
+                str(REPO_ROOT / "recipes/prepare/offline_toy.yaml"),
+                "--authorize",
+                "--define",
+                f"output_root={out_root}",
+            ],
+            home,
+            cwd,
+        )
+        assert prepared.returncode == 0, prepared.stderr[-2000:]
+        assert (out_root / "mixture_plan.json").is_file()
+    
+        plan_path = work / "plan.json"
+        _tiny_plan(plan_path)
+        # P23: train the shard actually prepared above; the old test trained an
+        # unrelated implicit synthetic stream and could not prove pipeline wiring.
+        training_plan = json.loads(plan_path.read_text(encoding="utf-8"))
+        from xlm.tokenizers.bpe import ByteLevelBPETokenizer
+    
+        tokenizer = ByteLevelBPETokenizer.load(out_root / "regime/tokenizer")
+        training_plan["model"]["vocab_size"] = tokenizer.vocab_size
+        training_plan["data"] = {
+            "pool_artifact": str(out_root / "shards/fixture_cleaning"),
+            "tokenizer_artifact": str(out_root / "regime/tokenizer"),
+        }
+        training_plan["training"]["budget"]["max_valid_targets"] = 257
+        training_plan["training"]["schedule"]["horizon_valid_targets"] = 257
+        training_plan["training"]["checkpoint_every_valid_targets"] = 128
+        plan_path.write_text(json.dumps(training_plan), encoding="utf-8")
+        trained = _run(["train", str(plan_path), "--device", "cpu"], home, cwd)
+        assert trained.returncode == 0, trained.stderr[-2000:]
+        assert "Training Run Complete" in trained.stdout
+    
+        checkpoints = sorted((home / "checkpoints").glob("run_toy_flow_final"))
+        assert checkpoints, "final checkpoint missing"
+        checkpoint = checkpoints[0]
+        # Resume a committed intermediate checkpoint with its real shard and settings.
+        resumed_home = tmp_path / "resumed_home"
+        resumed = _run(
+            ["resume", str(home / "checkpoints/run_toy_flow_step_2_ckpt"), "--budget", "257"],
+            resumed_home,
+            cwd,
+        )
+        assert resumed.returncode == 0, resumed.stderr[-2000:]
+        resumed_checkpoint = resumed_home / "checkpoints/run_toy_flow_final"
+        import torch
+    
+        reference_weights = torch.load(checkpoint / "model.pt", weights_only=True)
+        resumed_weights = torch.load(resumed_checkpoint / "model.pt", weights_only=True)
+        assert all(torch.equal(reference_weights[k], resumed_weights[k]) for k in reference_weights)
+        assert (
+            json.loads((resumed_checkpoint / "checkpoint_meta.json").read_text())[
+                "committed_valid_targets"
+            ]
+            == 257
+        )
+    
+        evaluated = _run(
+            [
+                "evaluate",
+                str(checkpoint),
+                "--suite",
+                "synthetic_mc",
+                "--device",
+                "cpu",
+                "--json",
+                "--tokenizer",
+                str(out_root / "regime/tokenizer"),
+            ],
+            home,
+            cwd,
+        )
+        assert evaluated.returncode == 0, evaluated.stderr[-2000:]
+        receipts = json.loads(evaluated.stdout)
+        assert isinstance(receipts, list) and receipts
+    
+        base_evidence = _synthetic_evidence(work / "base.json", "fp_base", True)
+        cand_evidence = _synthetic_evidence(work / "cand.json", "fp_cand", False)
+        plan_a = work / "plan_a.json"
+        plan_b = work / "plan_b.json"
+        _comparison_plan(plan_a, "plan_a")
+        _comparison_plan(plan_b, "plan_b")
+        facts = work / "facts.json"
+        facts.write_text(
+            json.dumps(
+                {
+                    "total_params": 1000,
+                    "canonical_bytes": 500,
+                    "matched_bytes": None,
+                    "matched_compute": None,
+                    "measured_compute_seconds": 1.0,
+                }
+            ),
+            encoding="utf-8",
+        )
+        clusters = work / "clusters.json"
+        clusters.write_text(
+            json.dumps({f"blimp:blimp_{i}": f"blimp_sub_{i % 2}" for i in range(6)}),
+            encoding="utf-8",
+        )
+        compared = _run(
+            [
+                "compare",
+                "--baseline",
+                str(base_evidence),
+                "--candidate",
+                str(cand_evidence),
+                "--plan-baseline",
+                str(plan_a),
+                "--plan-candidate",
+                str(plan_b),
+                "--track",
+                "data-mixture",
+                "--facts-baseline",
+                str(facts),
+                "--facts-candidate",
+                str(facts),
+                "--clusters",
+                str(clusters),
+                "--n-bootstrap",
+                "100",
+                "--output",
+                str(work / "comparison.json"),
+            ],
+            home,
+            cwd,
+        )
+>       assert compared.returncode == 0, compared.stderr[-2000:] + compared.stdout[-2000:]
+E       AssertionError: <frozen runpy>:128: RuntimeWarning: 'xlm.cli.main' found in sys.modules after import of package 'xlm.cli', but prior to execution of 'xlm.cli.main'; this may result in unpredictable behaviour
+E         Error: invalid paired analysis: multi-seed evidence requires recorded training_seeds (init_seed/data_seed)
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['D:\\Project\\xlm-integration\\.venv-integration\\Scripts\\python.exe', '-m', 'xlm.cli.main', 'compare', '--baseline', 'D:\\Project\\xlm-integration\\data\\audit\\p23-remediation\\stage05\\d08\\d08-offline-tmp\\test_offline_workflow_from_cle0\\work\\base.json', '--candidate', 'D:\\Project\\xlm-integration\\data\\audit\\p23-remediation\\stage05\\d08\\d08-offline-tmp\\test_offline_workflow_from_cle0\\work\\cand.json', '--plan-baseline', 'D:\\Project\\xlm-integration\\data\\audit\\p23-remediation\\stage05\\d08\\d08-offline-tmp\\test_offline_workflow_from_cle0\\work\\plan_a.json', '--plan-candidate', 'D:\\Project\\xlm-integration\\data\\audit\\p23-remediation\\stage05\\d08\\d08-offline-tmp\\test_offline_workflow_from_cle0\\work\\plan_b.json', '--track', 'data-mixture', '--facts-baseline', 'D:\\Project\\xlm-integration\\data\\audit\\p23-remediation\\stage05\\d08\\d08-offline-tmp\\test_offline_workflow_from_cle0\\work\\facts.json', '--facts-candidate', 'D:\\Project\\xlm-integration\\data\\audit\\p23-remediation\\stage05\\d08\\d08-offline-tmp\\test_offline_workflow_from_cle0\\work\\facts.json', '--clusters', 'D:\\Project\\xlm-integration\\data\\audit\\p23-remediation\\stage05\\d08\\d08-offline-tmp\\test_offline_workflow_from_cle0\\work\\clusters.json', '--n-bootstrap', '100', '--output', 'D:\\Project\\xlm-integration\\data\\audit\\p23-remediation\\stage05\\d08\\d08-offline-tmp\\test_offline_workflow_from_cle0\\work\\comparison.json'], returncode=1, stdout='', stderr="<frozen runpy>:128: RuntimeWarning: 'xlm.cli.main' found in sys.modules after import of package 'xlm.cli', but prior to execution of 'xlm.cli.main'; this may result in unpredictable behaviour\nError: invalid paired analysis: multi-seed evidence requires recorded training_seeds (init_seed/data_seed)\n").returncode
+
+tests\test_offline_workflow.py:211: AssertionError
+- generated xml file: D:\Project\xlm-integration\data\audit\p23-remediation\stage05\d08\d08-offline.xml -
+============================ slowest 10 durations =============================
+242.64s call     tests/test_offline_workflow.py::test_offline_workflow_from_clean_environment
+58.93s call     tests/test_offline_workflow.py::test_prepare_restart_reuses_verified_acquisition
+0.88s call     tests/test_offline_workflow.py::test_large_campaigns_prepare_without_launching
+0.05s call     tests/test_offline_workflow.py::test_each_dimension_uses_its_intended_interface
+0.00s setup    tests/test_offline_workflow.py::test_offline_workflow_from_clean_environment
+0.00s setup    tests/test_offline_workflow.py::test_prepare_restart_reuses_verified_acquisition
+0.00s setup    tests/test_offline_workflow.py::test_each_dimension_uses_its_intended_interface
+0.00s setup    tests/test_offline_workflow.py::test_large_campaigns_prepare_without_launching
+0.00s teardown tests/test_offline_workflow.py::test_offline_workflow_from_clean_environment
+0.00s teardown tests/test_offline_workflow.py::test_prepare_restart_reuses_verified_acquisition
+=========================== short test summary info ===========================
+FAILED tests/test_offline_workflow.py::test_offline_workflow_from_clean_environment - AssertionError: <frozen runpy>:128: RuntimeWarning: 'xlm.cli.main' found in sys.modules after import of package 'xlm.cli', but prior to execution of 'xlm.cli.main'; this may result in unpredictable behaviour
+  Error: invalid paired analysis: multi-seed evidence requires recorded training_seeds (init_seed/data_seed)
+  
+assert 1 == 0
+ +  where 1 = CompletedProcess(args=['D:\\Project\\xlm-integration\\.venv-integration\\Scripts\\python.exe', '-m', 'xlm.cli.main', 'compare', '--baseline', 'D:\\Project\\xlm-integration\\data\\audit\\p23-remediation\\stage05\\d08\\d08-offline-tmp\\test_offline_workflow_from_cle0\\work\\base.json', '--candidate', 'D:\\Project\\xlm-integration\\data\\audit\\p23-remediation\\stage05\\d08\\d08-offline-tmp\\test_offline_workflow_from_cle0\\work\\cand.json', '--plan-baseline', 'D:\\Project\\xlm-integration\\data\\audit\\p23-remediation\\stage05\\d08\\d08-offline-tmp\\test_offline_workflow_from_cle0\\work\\plan_a.json', '--plan-candidate', 'D:\\Project\\xlm-integration\\data\\audit\\p23-remediation\\stage05\\d08\\d08-offline-tmp\\test_offline_workflow_from_cle0\\work\\plan_b.json', '--track', 'data-mixture', '--facts-baseline', 'D:\\Project\\xlm-integration\\data\\audit\\p23-remediation\\stage05\\d08\\d08-offline-tmp\\test_offline_workflow_from_cle0\\work\\facts.json', '--facts-candidate', 'D:\\Project\\xlm-integration\\data\\audit\\p23-remediation\\stage05\\d08\\d08-offline-tmp\\test_offline_workflow_from_cle0\\work\\facts.json', '--clusters', 'D:\\Project\\xlm-integration\\data\\audit\\p23-remediation\\stage05\\d08\\d08-offline-tmp\\test_offline_workflow_from_cle0\\work\\clusters.json', '--n-bootstrap', '100', '--output', 'D:\\Project\\xlm-integration\\data\\audit\\p23-remediation\\stage05\\d08\\d08-offline-tmp\\test_offline_workflow_from_cle0\\work\\comparison.json'], returncode=1, stdout='', stderr="<frozen runpy>:128: RuntimeWarning: 'xlm.cli.main' found in sys.modules after import of package 'xlm.cli', but prior to execution of 'xlm.cli.main'; this may result in unpredictable behaviour\nError: invalid paired analysis: multi-seed evidence requires recorded training_seeds (init_seed/data_seed)\n").returncode
+=================== 1 failed, 3 passed in 302.60s (0:05:02) ===================

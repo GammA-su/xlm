@@ -1,0 +1,16 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm-integration\.venv-integration\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm-integration
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0, xdist-3.8.0
+collecting ... collected 1 item
+
+tests/test_offline_workflow.py::test_offline_workflow_from_clean_environment PASSED [100%]
+
+- generated xml file: D:\Project\xlm-integration\data\audit\p23-remediation\stage05\d08\d08-offline-one.xml -
+============================ slowest 10 durations =============================
+256.95s call     tests/test_offline_workflow.py::test_offline_workflow_from_clean_environment
+0.01s setup    tests/test_offline_workflow.py::test_offline_workflow_from_clean_environment
+0.00s teardown tests/test_offline_workflow.py::test_offline_workflow_from_clean_environment
+======================== 1 passed in 257.04s (0:04:17) ========================

@@ -1,0 +1,16 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm-integration\.venv-integration\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm-integration
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0
+collecting ... collected 1 item
+
+tests/test_comparison.py::test_identical_runs_are_eligible_on_every_causal_track PASSED [100%]
+
+- generated xml file: D:\Project\xlm-integration\data\audit\p23-remediation\stage05\d08\pw-a.xml -
+============================ slowest 10 durations =============================
+0.00s setup    tests/test_comparison.py::test_identical_runs_are_eligible_on_every_causal_track
+0.00s call     tests/test_comparison.py::test_identical_runs_are_eligible_on_every_causal_track
+0.00s teardown tests/test_comparison.py::test_identical_runs_are_eligible_on_every_causal_track
+============================== 1 passed in 2.20s ==============================

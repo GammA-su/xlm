@@ -931,3 +931,403 @@ def test_factorial_and_ablation_matrices_emit_plans_only(tmp_path: Path) -> None
         (tmp_path / "ablation" / "ablation_matrix.json").read_text(encoding="utf-8")
     )
     assert sorted(c["cell"] for c in matrix) == ["a_only", "b_only", "both", "neither"]
+
+
+# ------------------------------------------------------------ D08: recorded seeds,
+# primary-pair policy, and draw multiplicity (A31 repair)
+
+
+def _write_seeded_evidence(
+    path: Path,
+    fingerprint: str,
+    init_seed: int,
+    data_seed: int,
+    correct: dict[str, list[bool]],
+    chances: dict[str, float] | None = None,
+) -> None:
+    """Arm evidence with explicit recorded (init_seed, data_seed), for D08 tests."""
+    chances = chances if chances is not None else CHANCES
+    tasks: dict[str, Any] = {}
+    for task_name, flags in correct.items():
+        metric = "acc_norm" if task_name in ("arc_easy", "hellaswag") else "acc"
+        tasks[task_name] = {
+            "metric_name": metric,
+            "chance": chances[task_name],
+            "items": [
+                {
+                    "item_id": f"{task_name}_{i}",
+                    "is_correct": bool(flag),
+                    "is_correct_normalized": bool(flag),
+                    "omitted_reason": None,
+                }
+                for i, flag in enumerate(flags)
+            ],
+        }
+    path.write_text(
+        json.dumps(
+            {
+                "identity": {
+                    "fingerprint": fingerprint,
+                    "checkpoint_hash": fingerprint,
+                    "tokenizer_hash": "tok_fp_1",
+                },
+                "training_seeds": {"init_seed": init_seed, "data_seed": data_seed},
+                "tasks": tasks,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+
+def _d08_compare(
+    tmp_path: Path,
+    baselines: list[Path],
+    candidates: list[Path],
+    out_name: str = "comparison.json",
+    extra_args: list[str] | None = None,
+) -> Any:
+    plan_a = tmp_path / "d08_plan_a.json"
+    plan_b = tmp_path / "d08_plan_b.json"
+    if not plan_a.exists():
+        _write_plan(plan_a)
+    if not plan_b.exists():
+        _write_plan(plan_b)
+    facts = tmp_path / "d08_facts.json"
+    if not facts.exists():
+        _write_facts(facts)
+    clusters = tmp_path / "d08_clusters.json"
+    if not clusters.exists():
+        clusters.write_text(
+            json.dumps({f"blimp:blimp_{i}": f"blimp_sub_{i % 2}" for i in range(4)}),
+            encoding="utf-8",
+        )
+    args = ["compare"]
+    for path in baselines:
+        args += ["--baseline", str(path)]
+    for path in candidates:
+        args += ["--candidate", str(path)]
+    args += [
+        "--plan-baseline",
+        str(plan_a),
+        "--plan-candidate",
+        str(plan_b),
+        "--track",
+        "architecture",
+        "--facts-baseline",
+        str(facts),
+        "--facts-candidate",
+        str(facts),
+        "--clusters",
+        str(clusters),
+        "--n-bootstrap",
+        "100",
+        "--output",
+        str(tmp_path / out_name),
+    ]
+    args += extra_args or []
+    return _invoke(args)
+
+
+def _d08_divergent_seeds(tmp_path: Path) -> dict[str, Path]:
+    """Two seed pairs with opposite per-seed winners (4 items/task)."""
+    neutral = {t: [True] * 4 for t in REQUIRED_TASKS_FOR_INDEX}
+    paths = {}
+    for name, fingerprint, init, data, correct in [
+        ("b1", "fp_b1", 1, 100, {**neutral, "arc_easy": [False] * 4}),
+        ("b2", "fp_b2", 2, 200, {**neutral, "arc_easy": [True] * 4}),
+        ("c1", "fp_c1", 1, 100, {**neutral, "arc_easy": [True] * 4}),
+        ("c2", "fp_c2", 2, 200, {**neutral, "arc_easy": [False] * 4}),
+    ]:
+        paths[name] = tmp_path / f"d08_{name}.json"
+        _write_seeded_evidence(paths[name], fingerprint, init, data, correct)
+    return paths
+
+
+def test_compare_headline_is_stable_under_argument_permutation(tmp_path: Path) -> None:
+    paths = _d08_divergent_seeds(tmp_path)
+    first = _d08_compare(
+        tmp_path, [paths["b1"], paths["b2"]], [paths["c1"], paths["c2"]], "first.json"
+    )
+    assert first.exit_code == 0, first.output
+    second = _d08_compare(
+        tmp_path, [paths["b2"], paths["b1"]], [paths["c2"], paths["c1"]], "second.json"
+    )
+    assert second.exit_code == 0, second.output
+    one = json.loads((tmp_path / "first.json").read_text(encoding="utf-8"))
+    two = json.loads((tmp_path / "second.json").read_text(encoding="utf-8"))
+    assert one["index_difference"] == two["index_difference"] != 0
+    assert one["baseline_run"] == two["baseline_run"] == "fp_b1"
+    assert one["candidate_run"] == two["candidate_run"] == "fp_c1"
+    assert one["seeds"] == two["seeds"]
+    assert one["seed_pairs"] == two["seed_pairs"]
+    assert one["primary_seed_pair"] == two["primary_seed_pair"] == [1, 100]
+    assert one["primary_selection_policy"] == "numeric_lexicographic_min_v1"
+    assert one["bootstrap_version"] == "2"
+    assert [p["init_seed"] for p in one["seed_pairs"]] == [1, 2]
+
+
+def test_compare_swapped_arms_negate_the_headline(tmp_path: Path) -> None:
+    paths = _d08_divergent_seeds(tmp_path)
+    forward = _d08_compare(
+        tmp_path, [paths["b1"], paths["b2"]], [paths["c1"], paths["c2"]], "forward.json"
+    )
+    assert forward.exit_code == 0, forward.output
+    swapped = _d08_compare(
+        tmp_path, [paths["c1"], paths["c2"]], [paths["b1"], paths["b2"]], "swapped.json"
+    )
+    assert swapped.exit_code == 0, swapped.output
+    fore = json.loads((tmp_path / "forward.json").read_text(encoding="utf-8"))
+    back = json.loads((tmp_path / "swapped.json").read_text(encoding="utf-8"))
+    assert fore["index_difference"] == -back["index_difference"] != 0
+    assert back["baseline_run"] == "fp_c1" and back["candidate_run"] == "fp_b1"
+
+
+def test_primary_pair_uses_numeric_seed_order(tmp_path: Path) -> None:
+    """Seeds 2 and 10: numeric minimum is (2, 30), string minimum would be (10, 3)."""
+    from xlm.comparison.bootstrap import PRIMARY_SELECTION_POLICY
+
+    neutral = {t: [True] * 4 for t in REQUIRED_TASKS_FOR_INDEX}
+    paths = {}
+    for name, fingerprint, init, data in [
+        ("b10", "fp_b10", 10, 3),
+        ("b2a", "fp_b2a", 2, 30),
+        ("b2b", "fp_b2b", 2, 5),
+        ("c10", "fp_c10", 10, 3),
+        ("c2a", "fp_c2a", 2, 30),
+        ("c2b", "fp_c2b", 2, 5),
+    ]:
+        paths[name] = tmp_path / f"d08_{name}.json"
+        _write_seeded_evidence(paths[name], fingerprint, init, data, dict(neutral))
+    result = _d08_compare(
+        tmp_path,
+        [paths["b10"], paths["b2a"], paths["b2b"]],
+        [paths["c10"], paths["c2a"], paths["c2b"]],
+        "numeric.json",
+    )
+    assert result.exit_code == 0, result.output
+    payload = json.loads((tmp_path / "numeric.json").read_text(encoding="utf-8"))
+    assert payload["primary_seed_pair"] == [2, 5]
+    assert payload["primary_selection_policy"] == PRIMARY_SELECTION_POLICY
+    assert [(p["init_seed"], p["data_seed"]) for p in payload["seed_pairs"]] == [
+        (2, 5),
+        (2, 30),
+        (10, 3),
+    ]
+
+
+def test_compare_is_deterministic_for_identical_invocations(tmp_path: Path) -> None:
+    paths = _d08_divergent_seeds(tmp_path)
+    once = _d08_compare(
+        tmp_path, [paths["b1"], paths["b2"]], [paths["c1"], paths["c2"]], "once.json"
+    )
+    assert once.exit_code == 0, once.output
+    twice = _d08_compare(
+        tmp_path, [paths["b1"], paths["b2"]], [paths["c1"], paths["c2"]], "twice.json"
+    )
+    assert twice.exit_code == 0, twice.output
+    assert (tmp_path / "once.json").read_bytes() == (tmp_path / "twice.json").read_bytes()
+
+
+def test_compare_refuses_missing_seed_partner(tmp_path: Path) -> None:
+    paths = _d08_divergent_seeds(tmp_path)
+    result = _d08_compare(tmp_path, [paths["b1"], paths["b2"]], [paths["c1"]], "missing.json")
+    assert result.exit_code == 1
+    assert "differ" in result.output
+
+
+def test_compare_refuses_duplicate_seed_pair(tmp_path: Path) -> None:
+    paths = _d08_divergent_seeds(tmp_path)
+    result = _d08_compare(
+        tmp_path, [paths["b1"], paths["b1"]], [paths["c1"], paths["c2"]], "dup.json"
+    )
+    assert result.exit_code == 1
+    assert "duplicate" in result.output
+
+
+def test_compare_refuses_cross_pair_population_mismatch(tmp_path: Path) -> None:
+    neutral = {t: [True] * 4 for t in REQUIRED_TASKS_FOR_INDEX}
+    wide = {**neutral, "arc_easy": [True] * 5}
+    paths = {}
+    for name, fingerprint, init, data, correct in [
+        ("b1", "fp_b1", 1, 100, dict(neutral)),
+        ("b2", "fp_b2", 2, 200, dict(wide)),
+        ("c1", "fp_c1", 1, 100, dict(neutral)),
+        ("c2", "fp_c2", 2, 200, dict(wide)),
+    ]:
+        paths[name] = tmp_path / f"d08_{name}.json"
+        _write_seeded_evidence(paths[name], fingerprint, init, data, correct)
+    result = _d08_compare(
+        tmp_path, [paths["b1"], paths["b2"]], [paths["c1"], paths["c2"]], "pop.json"
+    )
+    assert result.exit_code == 1
+    assert "populations" in result.output
+
+
+def test_compare_refuses_ineligible_nonprimary_pair(tmp_path: Path) -> None:
+    neutral = {t: [True] * 4 for t in REQUIRED_TASKS_FOR_INDEX}
+    paths = {}
+    for name, fingerprint, init, data, correct in [
+        ("b1", "fp_b1", 1, 100, dict(neutral)),
+        ("b2", "fp_b2", 2, 200, dict(neutral)),
+        ("c1", "fp_c1", 1, 100, dict(neutral)),
+        ("c2", "fp_c2", 2, 200, dict(neutral)),
+    ]:
+        paths[name] = tmp_path / f"d08_{name}.json"
+        _write_seeded_evidence(paths[name], fingerprint, init, data, correct)
+    tampered = json.loads(paths["c2"].read_text(encoding="utf-8"))
+    tampered["identity"]["tokenizer_hash"] = "different-tokenizer"
+    paths["c2"].write_text(json.dumps(tampered), encoding="utf-8")
+    result = _d08_compare(
+        tmp_path, [paths["b1"], paths["b2"]], [paths["c1"], paths["c2"]], "elig.json"
+    )
+    assert result.exit_code == 1
+    assert "init_seed=2 data_seed=200" in result.output
+
+
+def test_compare_refuses_duplicate_input_records(tmp_path: Path) -> None:
+    neutral = {t: [True] * 4 for t in REQUIRED_TASKS_FOR_INDEX}
+    paths = {}
+    for name, fingerprint, init, data, correct in [
+        ("b1", "fp_b1", 1, 100, dict(neutral)),
+        ("c1", "fp_c1", 1, 100, dict(neutral)),
+    ]:
+        paths[name] = tmp_path / f"d08_{name}.json"
+        _write_seeded_evidence(paths[name], fingerprint, init, data, correct)
+    doubled = json.loads(paths["b1"].read_text(encoding="utf-8"))
+    doubled["tasks"]["arc_easy"]["items"].append(dict(doubled["tasks"]["arc_easy"]["items"][0]))
+    paths["b1"].write_text(json.dumps(doubled), encoding="utf-8")
+    result = _d08_compare(tmp_path, [paths["b1"]], [paths["c1"]], "dupitem.json")
+    assert result.exit_code == 1
+    assert "repeats" in result.output
+
+
+def test_compare_refuses_conflicting_chance_references(tmp_path: Path) -> None:
+    neutral = {t: [True] * 4 for t in REQUIRED_TASKS_FOR_INDEX}
+    paths = {}
+    for name, fingerprint, init, data, correct in [
+        ("b1", "fp_b1", 1, 100, dict(neutral)),
+        ("c1", "fp_c1", 1, 100, dict(neutral)),
+    ]:
+        paths[name] = tmp_path / f"d08_{name}.json"
+        _write_seeded_evidence(paths[name], fingerprint, init, data, correct)
+    skewed = json.loads(paths["c1"].read_text(encoding="utf-8"))
+    skewed["tasks"]["arc_easy"]["chance"] = 0.9
+    paths["c1"].write_text(json.dumps(skewed), encoding="utf-8")
+    result = _d08_compare(tmp_path, [paths["b1"]], [paths["c1"]], "chance.json")
+    assert result.exit_code == 1
+    assert "conflicting chance" in result.output
+
+
+def _d08_blimp_intervals(
+    diffs: dict[str, list[float]], n_bootstrap: int, ci_level: float, analysis_seed: int
+) -> tuple[Any, Any]:
+    """Run the product suite bootstrap and an independent occurrence model."""
+    import random
+
+    from xlm.comparison.bootstrap import AlignedItem, _percentile, suite_bootstrap
+
+    items: list[AlignedItem] = []
+    for cluster_id, values in diffs.items():
+        for position, value in enumerate(values):
+            items.append(
+                AlignedItem(
+                    item_id=f"blimp_{cluster_id}_{position}",
+                    task="blimp",
+                    cluster_id=cluster_id,
+                    score_a=0.0,
+                    score_b=value,
+                )
+            )
+    for task in ("arc_easy", "hellaswag", "piqa"):
+        items.append(
+            AlignedItem(
+                item_id=f"{task}_0",
+                task=task,
+                cluster_id=task,
+                score_a=1.0,
+                score_b=1.0,
+            )
+        )
+    chances = {"blimp": 0.5, "arc_easy": 0.25, "hellaswag": 0.25, "piqa": 0.5}
+    result = suite_bootstrap(
+        items, chances, n_bootstrap=n_bootstrap, ci_level=ci_level, analysis_seed=analysis_seed
+    )
+    cluster_ids = sorted(diffs)
+    expected: list[float] = []
+    rng = random.Random(analysis_seed)
+    for _ in range(n_bootstrap):
+        drawn = [rng.choice(cluster_ids) for _ in cluster_ids]
+        for _ in ("arc_easy", "hellaswag", "piqa"):
+            rng.choice([0])
+        counts: dict[str, int] = {}
+        for cluster_id in drawn:
+            counts[cluster_id] = counts.get(cluster_id, 0) + 1
+        total = sum((sum(diffs[c]) / len(diffs[c])) * n for c, n in counts.items())
+        expected.append(total / len(drawn))
+    expected.sort()
+    tail = (1.0 - ci_level) / 2.0
+    return result.task_intervals["blimp"], (
+        _percentile(expected, tail),
+        _percentile(expected, 1.0 - tail),
+    )
+
+
+def test_suite_blimp_draws_retain_repeated_occurrences() -> None:
+    """Draw [A, A, C] with means 0, 0, 1 scores 1/3, not the 1/2 collapse."""
+    assert (0.0 + 0.0 + 1.0) / 3 == 1 / 3
+    interval, (expected_lo, expected_hi) = _d08_blimp_intervals(
+        {"A": [0.0], "B": [0.0], "C": [1.0]},
+        n_bootstrap=1000,
+        ci_level=0.8,
+        analysis_seed=7,
+    )
+    assert (interval.ci_lo, interval.ci_hi) == (expected_lo, expected_hi) == (0.0, 2 / 3)
+    # n_clusters counts every cluster in the suite draw; n_items counts this task.
+    assert interval.n_clusters == 6 and interval.n_items == 3
+
+
+def test_suite_blimp_unequal_clusters_keep_macro_weighting() -> None:
+    """Two-item A (0, 0) and one-item B (1): occurrence macro, still a macro."""
+    interval, (expected_lo, expected_hi) = _d08_blimp_intervals(
+        {"A": [0.0, 0.0], "B": [1.0]},
+        n_bootstrap=1000,
+        ci_level=0.8,
+        analysis_seed=7,
+    )
+    assert interval.point == 0.5
+    assert (interval.ci_lo, interval.ci_hi) == (expected_lo, expected_hi)
+
+
+def test_promote_refuses_stale_unversioned_comparison(tmp_path: Path) -> None:
+    """An actual saved v1 comparison (no version/policy) must not satisfy promotion."""
+    neutral = {t: [True] * 4 for t in REQUIRED_TASKS_FOR_INDEX}
+    base = tmp_path / "d08_base.json"
+    cand = tmp_path / "d08_cand.json"
+    _write_seeded_evidence(base, "fp_base", 1, 100, dict(neutral))
+    _write_seeded_evidence(cand, "fp_cand", 1, 100, dict(neutral))
+    out = tmp_path / "stale.json"
+    compared = _d08_compare(tmp_path, [base], [cand], "stale.json")
+    assert compared.exit_code == 0, compared.output
+    payload = json.loads(out.read_text(encoding="utf-8"))
+    assert payload["bootstrap_version"] == "2"
+    del payload["bootstrap_version"]
+    del payload["primary_selection_policy"]
+    out.write_text(json.dumps(payload), encoding="utf-8")
+    plan_a = tmp_path / "d08_plan_a.json"
+    refused = _invoke(
+        [
+            "promote",
+            "--comparison",
+            str(out),
+            "--plan",
+            str(plan_a),
+            "--to-size",
+            "150m",
+            "--output-draft",
+            str(tmp_path / "d.json"),
+            "--output-decision",
+            str(tmp_path / "dec.json"),
+        ]
+    )
+    assert refused.exit_code == 1
+    assert "predates the corrected D08 analysis" in refused.output

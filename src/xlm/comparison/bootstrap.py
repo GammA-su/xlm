@@ -12,11 +12,17 @@ predictions invalidate the analysis instead of producing a number.
 from __future__ import annotations
 
 import random
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
-BOOTSTRAP_VERSION = "1"
+BOOTSTRAP_VERSION = "2"
+
+#: Versioned primary-pair selection policy. The headline paired analysis always
+#: uses the numerically smallest recorded (init_seed, data_seed) pair, so the
+#: choice never depends on CLI argument order. A pooled multi-seed analysis
+#: would be a different analysis with its own policy, not part of this repair.
+PRIMARY_SELECTION_POLICY = "numeric_lexicographic_min_v1"
 
 
 class BootstrapError(ValueError):
@@ -136,6 +142,45 @@ def align_paired_items(
     return items
 
 
+def _occurrence_weighted_blimp_mean(
+    drawn: Sequence[AlignedItem],
+    full_cluster_sizes: Mapping[str, int],
+    value_of: Callable[[AlignedItem], float],
+) -> float:
+    """BLiMP macro over drawn cluster occurrences, retaining repeated draws.
+
+    Resampling keeps clusters intact, so every occurrence of a cluster carries
+    identical items. The occurrence count of a cluster is its drawn item count
+    divided by its full item count (an exact division; anything else is corrupt
+    input, not a draw). The replicate value is the mean over occurrences of
+    cluster means: draw [A, A, B] with cluster means 0, 0, 1 scores 1/3, not
+    the 1/2 a distinct-cluster collapse would report. On full data every
+    cluster occurs exactly once, so point estimates are plain macro averages.
+    """
+    totals: dict[str, float] = {}
+    counts: dict[str, int] = {}
+    for item in drawn:
+        if item.task == "blimp":
+            totals[item.cluster_id] = totals.get(item.cluster_id, 0.0) + value_of(item)
+            counts[item.cluster_id] = counts.get(item.cluster_id, 0) + 1
+    if not totals:
+        raise BootstrapError("no BLiMP clusters in draw")
+    weighted, occurrences = 0.0, 0
+    for cluster_id, total in totals.items():
+        count = counts[cluster_id]
+        full = full_cluster_sizes.get(cluster_id, 0)
+        if full <= 0:
+            raise BootstrapError(f"drawn cluster '{cluster_id}' is not a known cluster")
+        draws, remainder = divmod(count, full)
+        if remainder:
+            raise BootstrapError(
+                f"drawn cluster '{cluster_id}' is not a whole multiple of its items"
+            )
+        weighted += (total / count) * draws
+        occurrences += draws
+    return weighted / occurrences
+
+
 def _percentile(sorted_values: Sequence[float], fraction: float) -> float:
     if not sorted_values:
         raise BootstrapError("cannot take a percentile of an empty sample")
@@ -211,9 +256,16 @@ class SuiteBootstrapResult:
     index_interval: BootstrapInterval | None = None
     seed_spread: SeedSpread | None = None
     seed_note: str = ""
+    primary_seed_pair: tuple[int, int] | None = None
+    primary_selection_policy: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
+            "bootstrap_version": BOOTSTRAP_VERSION,
+            "primary_seed_pair": list(self.primary_seed_pair)
+            if self.primary_seed_pair is not None
+            else None,
+            "primary_selection_policy": self.primary_selection_policy,
             "task_intervals": {k: v.to_dict() for k, v in sorted(self.task_intervals.items())},
             "index_interval": self.index_interval.to_dict() if self.index_interval else None,
             "seed_spread": self.seed_spread.to_dict() if self.seed_spread else None,
@@ -292,14 +344,19 @@ def suite_bootstrap(
         accuracies: dict[str, float] = {}
         for task, scores in per_task.items():
             if task == "blimp":
-                subclusters: dict[str, list[float]] = {}
-                for item in drawn:
-                    if item.task == "blimp":
-                        score = item.score_b if arm == "candidate" else item.score_a
-                        subclusters.setdefault(item.cluster_id, []).append(score)
-                accuracies[task] = sum(sum(v) / len(v) for v in subclusters.values()) / len(
-                    subclusters
-                )
+                # Occurrence-weighted: repeated draws of one subdataset count
+                # once per occurrence. The same drawn clusters feed both arms,
+                # so baseline/candidate resampling always matches.
+                sizes = {
+                    cluster_id: sum(1 for i in members if i.task == "blimp")
+                    for cluster_id, members in by_cluster.items()
+                }
+                sizes = {cluster_id: n for cluster_id, n in sizes.items() if n > 0}
+
+                def arm_value(item: AlignedItem, arm: str = arm) -> float:
+                    return item.score_b if arm == "candidate" else item.score_a
+
+                accuracies[task] = _occurrence_weighted_blimp_mean(drawn, sizes, arm_value)
             else:
                 accuracies[task] = sum(scores) / len(scores)
         return accuracies
@@ -332,11 +389,14 @@ def suite_bootstrap(
         values: dict[str, float] = {}
         for task, diffs in per_task.items():
             if task == "blimp":
-                subclusters: dict[str, list[float]] = {}
-                for item in drawn:
-                    if item.task == "blimp":
-                        subclusters.setdefault(item.cluster_id, []).append(item.paired_difference)
-                values[task] = sum(sum(v) / len(v) for v in subclusters.values()) / len(subclusters)
+                sizes = {
+                    cluster_id: sum(1 for i in members if i.task == "blimp")
+                    for cluster_id, members in by_cluster.items()
+                }
+                sizes = {cluster_id: n for cluster_id, n in sizes.items() if n > 0}
+                values[task] = _occurrence_weighted_blimp_mean(
+                    drawn, sizes, lambda i: i.paired_difference
+                )
             else:
                 values[task] = sum(diffs) / len(diffs)
         return values

@@ -1,0 +1,155 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm-integration\.venv-integration\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm-integration
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0, xdist-3.8.0
+created: 8/8 workers
+8 workers [65 items]
+
+scheduling tests via WorkStealingScheduling
+
+tests/test_comparison.py::test_identical_runs_are_eligible_on_every_causal_track 
+tests/test_comparison.py::test_run_facts_assemble_from_evidence_and_plan 
+tests/test_comparison.py::test_suite_bootstrap_rejects_partial_coverage 
+tests/test_eval_coverage.py::test_an_interrupted_run_is_never_complete 
+tests/test_eval_coverage.py::test_coverage_is_independent_of_observation_order 
+tests/test_comparison.py::test_promotion_refuses_ineligible_missing_or_weak_evidence 
+tests/test_comparison.py::test_compare_refuses_cross_pair_population_mismatch 
+tests/test_comparison.py::test_cli_promote_refuses_without_passing_gates 
+[gw7] [  1%] PASSED tests/test_eval_coverage.py::test_an_interrupted_run_is_never_complete 
+[gw2] [  3%] PASSED tests/test_comparison.py::test_suite_bootstrap_rejects_partial_coverage 
+[gw6] [  4%] PASSED tests/test_eval_coverage.py::test_coverage_is_independent_of_observation_order 
+[gw3] [  6%] PASSED tests/test_comparison.py::test_promotion_refuses_ineligible_missing_or_weak_evidence 
+[gw1] [  7%] PASSED tests/test_comparison.py::test_run_facts_assemble_from_evidence_and_plan 
+[gw0] [  9%] PASSED tests/test_comparison.py::test_identical_runs_are_eligible_on_every_causal_track 
+tests/test_eval_coverage.py::test_all_four_tasks_present_but_partially_scored_is_incomplete 
+tests/test_comparison.py::test_suite_bootstrap_macro_averages_blimp_subclusters 
+tests/test_comparison.py::test_identical_predictions_give_zero_paired_difference 
+tests/test_comparison.py::test_changed_tokenizer_fails_the_architecture_track 
+tests/test_eval_coverage.py::test_a_declared_smaller_scope_is_complete_within_itself_only 
+[gw7] [ 10%] PASSED tests/test_eval_coverage.py::test_a_declared_smaller_scope_is_complete_within_itself_only 
+tests/test_eval_coverage.py::test_authored_fixture_scope_is_complete_but_never_research_evidence 
+[gw6] [ 12%] PASSED tests/test_eval_coverage.py::test_all_four_tasks_present_but_partially_scored_is_incomplete 
+tests/test_comparison.py::test_material_regression_warns_without_silently_passing 
+[gw3] [ 13%] PASSED tests/test_comparison.py::test_material_regression_warns_without_silently_passing 
+tests/test_comparison.py::test_gate_thresholds_are_inputs_not_rewritten_by_scores 
+[gw0] [ 15%] PASSED tests/test_comparison.py::test_changed_tokenizer_fails_the_architecture_track 
+tests/test_eval_coverage.py::test_runtime_limit_smaller_than_the_population_is_flagged_before_results 
+[gw1] [ 16%] PASSED tests/test_comparison.py::test_identical_predictions_give_zero_paired_difference 
+[gw7] [ 18%] PASSED tests/test_eval_coverage.py::test_authored_fixture_scope_is_complete_but_never_research_evidence 
+[gw6] [ 20%] PASSED tests/test_eval_coverage.py::test_runtime_limit_smaller_than_the_population_is_flagged_before_results 
+tests/test_comparison.py::test_known_winner_and_swapped_arms_behave_correctly 
+tests/test_eval_coverage.py::test_undeclared_coverage_never_claims_an_expected_population 
+tests/test_comparison.py::test_byte_matched_tokenizer_track_can_pass 
+[gw3] [ 21%] PASSED tests/test_comparison.py::test_gate_thresholds_are_inputs_not_rewritten_by_scores 
+tests/test_eval_coverage.py::test_a_failed_item_does_not_shrink_the_expected_population 
+[gw7] [ 23%] PASSED tests/test_eval_coverage.py::test_undeclared_coverage_never_claims_an_expected_population 
+[gw0] [ 24%] PASSED tests/test_comparison.py::test_byte_matched_tokenizer_track_can_pass 
+tests/test_comparison.py::test_promotion_emits_a_valid_from_scratch_draft 
+tests/test_eval_coverage.py::test_legacy_coverage_is_not_retroactively_completed 
+tests/test_comparison.py::test_tokenizer_track_without_matched_evidence_is_ineligible 
+[gw6] [ 26%] PASSED tests/test_eval_coverage.py::test_a_failed_item_does_not_shrink_the_expected_population 
+[gw1] [ 27%] PASSED tests/test_comparison.py::test_known_winner_and_swapped_arms_behave_correctly 
+[gw7] [ 29%] PASSED tests/test_eval_coverage.py::test_legacy_coverage_is_not_retroactively_completed 
+tests/test_eval_coverage.py::test_a_duplicate_scored_item_cannot_masquerade_as_coverage 
+tests/test_comparison.py::test_bootstrap_is_deterministic_for_a_fixed_seed 
+tests/test_eval_coverage.py::test_coverage_survives_a_round_trip 
+[gw0] [ 30%] PASSED tests/test_comparison.py::test_tokenizer_track_without_matched_evidence_is_ineligible 
+[gw6] [ 32%] PASSED tests/test_eval_coverage.py::test_a_duplicate_scored_item_cannot_masquerade_as_coverage 
+tests/test_comparison.py::test_unknown_fields_fail_closed 
+[gw7] [ 33%] PASSED tests/test_eval_coverage.py::test_coverage_survives_a_round_trip 
+tests/test_eval_coverage.py::test_an_unexpected_item_is_reported_not_absorbed 
+tests/test_eval_coverage.py::test_task_coverage_complete_requires_every_condition 
+[gw0] [ 35%] PASSED tests/test_comparison.py::test_unknown_fields_fail_closed 
+[gw6] [ 36%] PASSED tests/test_eval_coverage.py::test_an_unexpected_item_is_reported_not_absorbed 
+tests/test_comparison.py::test_mismatched_horizons_are_ineligible 
+[gw7] [ 38%] PASSED tests/test_eval_coverage.py::test_task_coverage_complete_requires_every_condition 
+tests/test_eval_coverage.py::test_a_missing_blimp_subdataset_is_incomplete_even_with_enough_items 
+tests/test_eval_coverage.py::test_expected_population_comes_from_the_manifest_alone 
+[gw0] [ 40%] PASSED tests/test_comparison.py::test_mismatched_horizons_are_ineligible 
+[gw6] [ 41%] PASSED tests/test_eval_coverage.py::test_a_missing_blimp_subdataset_is_incomplete_even_with_enough_items 
+tests/test_comparison.py::test_unconstrained_track_labels_differences_without_a_causal_badge 
+[gw0] [ 43%] PASSED tests/test_comparison.py::test_unconstrained_track_labels_differences_without_a_causal_badge 
+[gw2] [ 44%] PASSED tests/test_comparison.py::test_suite_bootstrap_macro_averages_blimp_subclusters 
+[gw3] [ 46%] PASSED tests/test_comparison.py::test_promotion_emits_a_valid_from_scratch_draft 
+tests/test_comparison.py::test_promotion_needs_a_passing_decision_for_drafts 
+[gw1] [ 47%] PASSED tests/test_comparison.py::test_bootstrap_is_deterministic_for_a_fixed_seed 
+tests/test_comparison.py::test_crossing_interpolates_between_measured_points 
+[gw2] [ 49%] PASSED tests/test_comparison.py::test_crossing_interpolates_between_measured_points 
+tests/test_comparison.py::test_unreached_and_out_of_range_targets_are_not_invented 
+[gw2] [ 50%] PASSED tests/test_comparison.py::test_unreached_and_out_of_range_targets_are_not_invented 
+tests/test_comparison.py::test_cluster_resampling_counts_clusters_not_items 
+[gw1] [ 52%] PASSED tests/test_comparison.py::test_cluster_resampling_counts_clusters_not_items 
+tests/test_comparison.py::test_mismatched_ids_and_missing_predictions_invalidate 
+[gw1] [ 53%] PASSED tests/test_comparison.py::test_mismatched_ids_and_missing_predictions_invalidate 
+tests/test_comparison.py::test_teacher_and_auxiliary_costs_are_labeled 
+tests/test_comparison.py::test_seed_spread_separates_seed_from_item_uncertainty 
+[gw2] [ 55%] PASSED tests/test_comparison.py::test_teacher_and_auxiliary_costs_are_labeled 
+[gw1] [ 56%] PASSED tests/test_comparison.py::test_seed_spread_separates_seed_from_item_uncertainty 
+tests/test_comparison.py::test_compute_comparison_requires_both_arms_to_reach 
+[gw2] [ 58%] PASSED tests/test_comparison.py::test_compute_comparison_requires_both_arms_to_reach 
+tests/test_comparison.py::test_malformed_curve_mappings_are_rejected 
+[gw7] [ 60%] PASSED tests/test_eval_coverage.py::test_expected_population_comes_from_the_manifest_alone 
+[gw2] [ 61%] PASSED tests/test_comparison.py::test_malformed_curve_mappings_are_rejected 
+tests/test_comparison.py::test_suite_bootstrap_computes_index_intervals 
+tests/test_eval_coverage.py::test_a_task_returning_nothing_is_a_missing_task 
+tests/test_eval_coverage.py::test_a_manifest_declaring_fewer_tasks_requires_only_those 
+tests/test_comparison.py::test_promotion_passes_on_material_evidence 
+[gw2] [ 63%] PASSED tests/test_comparison.py::test_promotion_passes_on_material_evidence 
+[gw6] [ 64%] PASSED tests/test_eval_coverage.py::test_a_task_returning_nothing_is_a_missing_task 
+tests/test_comparison.py::test_unknown_track_is_refused 
+tests/test_comparison.py::test_compare_is_deterministic_for_identical_invocations 
+[gw0] [ 66%] PASSED tests/test_comparison.py::test_unknown_track_is_refused 
+tests/test_comparison.py::test_compare_refuses_missing_seed_partner 
+tests/test_comparison.py::test_suite_blimp_draws_retain_repeated_occurrences 
+[gw7] [ 67%] PASSED tests/test_eval_coverage.py::test_a_manifest_declaring_fewer_tasks_requires_only_those 
+tests/test_comparison.py::test_compare_refuses_duplicate_seed_pair 
+[gw1] [ 69%] PASSED tests/test_comparison.py::test_suite_bootstrap_computes_index_intervals 
+tests/test_comparison.py::test_primary_pair_uses_numeric_seed_order 
+[gw3] [ 70%] PASSED tests/test_comparison.py::test_promotion_needs_a_passing_decision_for_drafts 
+tests/test_comparison.py::test_cli_compare_reports_eligible_paired_difference 
+[gw0] [ 72%] PASSED tests/test_comparison.py::test_suite_blimp_draws_retain_repeated_occurrences 
+tests/test_comparison.py::test_suite_blimp_unequal_clusters_keep_macro_weighting 
+[gw0] [ 73%] PASSED tests/test_comparison.py::test_suite_blimp_unequal_clusters_keep_macro_weighting 
+tests/test_comparison.py::test_compare_swapped_arms_negate_the_headline 
+[gw5] [ 75%] PASSED tests/test_comparison.py::test_compare_refuses_cross_pair_population_mismatch 
+tests/test_comparison.py::test_compare_refuses_ineligible_nonprimary_pair 
+[gw6] [ 76%] PASSED tests/test_comparison.py::test_compare_refuses_missing_seed_partner 
+tests/test_eval_coverage.py::test_full_coverage_is_complete_and_publishes_the_index 
+[gw6] [ 78%] PASSED tests/test_eval_coverage.py::test_full_coverage_is_complete_and_publishes_the_index 
+[gw7] [ 80%] PASSED tests/test_comparison.py::test_compare_refuses_duplicate_seed_pair 
+tests/test_comparison.py::test_cli_compare_refuses_ineligible_tracks_before_any_winner 
+[gw3] [ 81%] PASSED tests/test_comparison.py::test_cli_compare_reports_eligible_paired_difference 
+tests/test_comparison.py::test_compare_refuses_duplicate_input_records 
+[gw1] [ 83%] PASSED tests/test_comparison.py::test_primary_pair_uses_numeric_seed_order 
+tests/test_comparison.py::test_compare_headline_is_stable_under_argument_permutation 
+[gw4] [ 84%] PASSED tests/test_comparison.py::test_cli_promote_refuses_without_passing_gates 
+tests/test_comparison.py::test_factorial_and_ablation_matrices_emit_plans_only 
+[gw4] [ 86%] PASSED tests/test_comparison.py::test_factorial_and_ablation_matrices_emit_plans_only 
+[gw7] [ 87%] PASSED tests/test_comparison.py::test_cli_compare_refuses_ineligible_tracks_before_any_winner 
+[gw5] [ 89%] PASSED tests/test_comparison.py::test_compare_refuses_ineligible_nonprimary_pair 
+tests/test_comparison.py::test_cli_promote_emits_a_valid_draft_on_pass 
+[gw2] [ 90%] PASSED tests/test_comparison.py::test_compare_is_deterministic_for_identical_invocations 
+tests/test_comparison.py::test_promote_refuses_stale_unversioned_comparison 
+[gw3] [ 92%] PASSED tests/test_comparison.py::test_compare_refuses_duplicate_input_records 
+[gw0] [ 93%] PASSED tests/test_comparison.py::test_compare_swapped_arms_negate_the_headline 
+tests/test_comparison.py::test_compare_refuses_conflicting_chance_references 
+[gw1] [ 95%] PASSED tests/test_comparison.py::test_compare_headline_is_stable_under_argument_permutation 
+[gw2] [ 96%] PASSED tests/test_comparison.py::test_promote_refuses_stale_unversioned_comparison 
+[gw5] [ 98%] PASSED tests/test_comparison.py::test_cli_promote_emits_a_valid_draft_on_pass 
+[gw0] [100%] PASSED tests/test_comparison.py::test_compare_refuses_conflicting_chance_references 
+
+- generated xml file: D:\Project\xlm-integration\data\audit\p23-remediation\stage05\d08\consistency-xdist.xml -
+============================ slowest 10 durations =============================
+0.70s call     tests/test_comparison.py::test_compare_swapped_arms_negate_the_headline
+0.68s call     tests/test_comparison.py::test_compare_is_deterministic_for_identical_invocations
+0.62s call     tests/test_comparison.py::test_cli_promote_refuses_without_passing_gates
+0.56s call     tests/test_comparison.py::test_primary_pair_uses_numeric_seed_order
+0.54s call     tests/test_comparison.py::test_cli_compare_reports_eligible_paired_difference
+0.44s call     tests/test_comparison.py::test_compare_refuses_duplicate_seed_pair
+0.44s call     tests/test_comparison.py::test_compare_refuses_missing_seed_partner
+0.44s call     tests/test_comparison.py::test_compare_refuses_cross_pair_population_mismatch
+0.33s call     tests/test_comparison.py::test_compare_headline_is_stable_under_argument_permutation
+0.30s call     tests/test_comparison.py::test_cli_promote_emits_a_valid_draft_on_pass
+============================= 65 passed in 6.24s ==============================

@@ -1,0 +1,34 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm-integration\.venv-integration\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm-integration
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0
+collecting ... collected 12 items
+
+tests/test_final_acceptance.py::test_prepare_rejects_corrupted_existing_output PASSED [  8%]
+tests/test_final_acceptance.py::test_prepare_hashes_copy_inputs_and_policy PASSED [ 16%]
+tests/test_final_acceptance.py::test_failed_check_stops_preparation_and_records_failure PASSED [ 25%]
+tests/test_final_acceptance.py::test_prepare_duplicate_yaml_keys_are_rejected PASSED [ 33%]
+tests/test_final_acceptance.py::test_blocked_upstream_blocks_pending_downstream PASSED [ 41%]
+tests/test_final_acceptance.py::test_request_budget_counts_attempts_across_restart PASSED [ 50%]
+tests/test_final_acceptance.py::test_seed_pairs_follow_recorded_ids_not_argument_order PASSED [ 58%]
+tests/test_final_acceptance.py::test_remote_harness_task_is_refused_before_dataset_loading PASSED [ 66%]
+tests/test_final_acceptance.py::test_missing_explicit_tokenizer_never_uses_byte_fixture PASSED [ 75%]
+tests/test_final_acceptance.py::test_cli_missing_data_is_refused_even_in_dry_run[False] PASSED [ 83%]
+tests/test_final_acceptance.py::test_cli_missing_data_is_refused_even_in_dry_run[True] PASSED [ 91%]
+tests/test_final_acceptance.py::test_cli_resume_reconstructs_real_settings_and_exact_nonmultiple_budget PASSED [100%]
+
+- generated xml file: D:\Project\xlm-integration\data\audit\p23-remediation\stage05\d08\d08-final.xml -
+============================ slowest 10 durations =============================
+160.99s call     tests/test_final_acceptance.py::test_cli_resume_reconstructs_real_settings_and_exact_nonmultiple_budget
+10.70s call     tests/test_final_acceptance.py::test_failed_check_stops_preparation_and_records_failure
+4.30s call     tests/test_final_acceptance.py::test_prepare_hashes_copy_inputs_and_policy
+2.49s call     tests/test_final_acceptance.py::test_remote_harness_task_is_refused_before_dataset_loading
+2.21s call     tests/test_final_acceptance.py::test_prepare_rejects_corrupted_existing_output
+0.38s call     tests/test_final_acceptance.py::test_blocked_upstream_blocks_pending_downstream
+0.37s call     tests/test_final_acceptance.py::test_cli_missing_data_is_refused_even_in_dry_run[False]
+0.14s call     tests/test_final_acceptance.py::test_cli_missing_data_is_refused_even_in_dry_run[True]
+0.08s call     tests/test_final_acceptance.py::test_request_budget_counts_attempts_across_restart
+0.02s setup    tests/test_final_acceptance.py::test_prepare_hashes_copy_inputs_and_policy
+======================= 12 passed in 182.64s (0:03:02) ========================

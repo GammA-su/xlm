@@ -37,6 +37,11 @@ def _outcomes_by_task(
             if item.get("omitted_reason") is not None:
                 continue
             key = f"{task_name}:{item.get('item_id')}"
+            if key in per_item:
+                raise BootstrapError(
+                    f"task '{task_name}' repeats item '{item.get('item_id')}' "
+                    "inside one evidence file; duplicate input records are refused"
+                )
             per_item[key] = float(
                 item.get("is_correct_normalized" if metric == "acc_norm" else "is_correct")
             )
@@ -77,8 +82,17 @@ def compare_command(
     analysis_seed: Annotated[int, typer.Option("--analysis-seed")] = 20260918,
     output: Annotated[Path, typer.Option("--output", "-o")] = Path("comparison.json"),
 ) -> None:
-    """Check track eligibility, then run the paired cluster bootstrap."""
+    """Check track eligibility, then run the paired cluster bootstrap.
+
+    Recorded (init_seed, data_seed) pairs are matched before anything else. The
+    headline analysis uses the numerically smallest pair
+    (``numeric_lexicographic_min_v1``); every required pair must be eligible and
+    cover identical item populations. A pooled multi-seed analysis would be a
+    different analysis requiring its own policy, not part of this command.
+    """
     from xlm.comparison.bootstrap import (
+        BOOTSTRAP_VERSION,
+        PRIMARY_SELECTION_POLICY,
         BootstrapError,
         align_paired_items,
         pair_seed_evidence,
@@ -109,43 +123,23 @@ def compare_command(
             merged.update(_load_json(extra, "run facts"))
         return merged
 
-    base_run = ComparisonRun.from_records(
-        base_evidence[0].get("identity", {}).get("fingerprint", baseline[0].stem),
-        base_evidence[0],
-        base_plan,
-        extra=facts(base_evidence[0], facts_baseline),
-    )
-    cand_run = ComparisonRun.from_records(
-        cand_evidence[0].get("identity", {}).get("fingerprint", candidate[0].stem),
-        cand_evidence[0],
-        cand_plan,
-        extra=facts(cand_evidence[0], facts_candidate),
-    )
-    eligibility = check_track_eligibility(base_run, cand_run, track)
-    if not eligibility.eligible:
-        output.parent.mkdir(parents=True, exist_ok=True)
-        output.write_text(
-            json.dumps(
-                {
-                    "comparison_version": 1,
-                    "baseline_run": base_run.run_id,
-                    "candidate_run": cand_run.run_id,
-                    "track": track,
-                    "eligibility": eligibility.to_dict(),
-                    "suite": None,
-                    "index_difference": None,
-                },
-                indent=2,
-                sort_keys=True,
-            ),
-            encoding="utf-8",
-        )
-        typer.echo(f"Comparison ineligible for track '{track}':")
-        for reason in eligibility.reasons:
-            typer.echo(f"  - {reason}")
-        raise typer.Exit(code=1)
+    def seed_key(evidence: dict[str, Any]) -> tuple[int, int] | None:
+        seeds = evidence.get("training_seeds", {})
+        if (
+            isinstance(seeds, dict)
+            and type(seeds.get("init_seed")) is int
+            and type(seeds.get("data_seed")) is int
+        ):
+            return (seeds["init_seed"], seeds["data_seed"])
+        return None
 
-    cluster_map = _load_clusters(clusters)
+    def run_fingerprint(evidence: dict[str, Any], key: tuple[int, int] | None) -> str:
+        fingerprint = evidence.get("identity", {}).get("fingerprint")
+        if isinstance(fingerprint, str) and fingerprint:
+            return fingerprint
+        if key is None:
+            return "unidentified-single-evidence-file"
+        return f"unidentified-seed-init{key[0]}-data{key[1]}"
 
     def keyed_items(
         evidence: dict[str, Any],
@@ -160,30 +154,150 @@ def compare_command(
         return flat, tasks, metrics
 
     try:
-        base_flat, base_tasks, _ = keyed_items(base_evidence[0])
-        cand_flat, cand_tasks, _ = keyed_items(cand_evidence[0])
-        if set(base_flat) != set(cand_flat):
-            raise BootstrapError("baseline and candidate evidence cover different items")
-        merged_tasks = dict(base_tasks)
+        # Pair recorded seeds FIRST, before any eligibility check, primary-pair
+        # selection, or headline calculation. Duplicates, missing partners, and
+        # absent seed records are refused here, independent of argument order.
+        # A single baseline/candidate file each without recorded seeds keeps the
+        # legacy single-pair path (no order dependence is possible with one
+        # pair); anything larger without complete seed records is refused.
+        seed_recorded = [seed_key(e) for e in (*base_evidence, *cand_evidence)]
+        if all(key is not None for key in seed_recorded):
+            pairs = pair_seed_evidence(base_evidence, cand_evidence)
+            pair_keys: list[tuple[int, int] | None] = [seed_key(b) for b, _ in pairs]
+        elif len(base_evidence) == 1 and len(cand_evidence) == 1:
+            pairs = [(base_evidence[0], cand_evidence[0])]
+            pair_keys = [None]
+        else:
+            # Raises the recorded-seed contract error for the caller to report.
+            pair_seed_evidence(base_evidence, cand_evidence)
+            raise BootstrapError("unreachable: seed pairing unexpectedly succeeded")
+        # pair_seed_evidence returns pairs sorted by recorded seeds; the primary
+        # pair is the numeric lexicographic minimum (numeric, not string order).
+        # A lone unrecorded pair is trivially primary: no order exists to depend on.
+        known_keys = [key for key in pair_keys if key is not None]
+        if len(known_keys) == len(pair_keys):
+            primary_index = min(range(len(pairs)), key=lambda i: known_keys[i])
+        else:
+            assert len(pairs) == 1 and pair_keys == [None]
+            primary_index = 0
+        primary_key = pair_keys[primary_index]
+        primary_base, primary_cand = pairs[primary_index]
+
+        # Every required pair must be eligible; one ineligible pair refuses the
+        # whole comparison instead of being silently discarded.
+        eligibility_results = []
+        for (base_seed_ev, cand_seed_ev), key in zip(pairs, pair_keys, strict=True):
+            tag = (
+                f"init_seed={key[0]} data_seed={key[1]}"
+                if key is not None
+                else "single evidence pair"
+            )
+            base_run = ComparisonRun.from_records(
+                run_fingerprint(base_seed_ev, key),
+                base_seed_ev,
+                base_plan,
+                extra=facts(base_seed_ev, facts_baseline),
+            )
+            cand_run = ComparisonRun.from_records(
+                run_fingerprint(cand_seed_ev, key),
+                cand_seed_ev,
+                cand_plan,
+                extra=facts(cand_seed_ev, facts_candidate),
+            )
+            verdict = check_track_eligibility(base_run, cand_run, track)
+            if len(pairs) > 1:
+                verdict.reasons = [f"seed pair ({tag}): {reason}" for reason in verdict.reasons]
+            eligibility_results.append(verdict)
+        eligibility = eligibility_results[primary_index]
+        eligibility.eligible = all(v.eligible for v in eligibility_results)
+        if len(pairs) > 1:
+            eligibility.reasons = [reason for v in eligibility_results for reason in v.reasons]
+        base_run_fingerprint = run_fingerprint(primary_base, primary_key)
+        cand_run_fingerprint = run_fingerprint(primary_cand, primary_key)
+        if not eligibility.eligible:
+            output.parent.mkdir(parents=True, exist_ok=True)
+            output.write_text(
+                json.dumps(
+                    {
+                        "comparison_version": 1,
+                        "bootstrap_version": BOOTSTRAP_VERSION,
+                        "primary_selection_policy": PRIMARY_SELECTION_POLICY,
+                        "primary_seed_pair": list(primary_key) if primary_key is not None else None,
+                        "seed_pairs": [
+                            {
+                                "init_seed": key[0] if key is not None else None,
+                                "data_seed": key[1] if key is not None else None,
+                                "baseline": run_fingerprint(b, key),
+                                "candidate": run_fingerprint(c, key),
+                            }
+                            for (b, c), key in zip(pairs, pair_keys, strict=True)
+                        ],
+                        "baseline_run": base_run_fingerprint,
+                        "candidate_run": cand_run_fingerprint,
+                        "track": track,
+                        "eligibility": eligibility.to_dict(),
+                        "suite": None,
+                        "index_difference": None,
+                    },
+                    indent=2,
+                    sort_keys=True,
+                ),
+                encoding="utf-8",
+            )
+            typer.echo(f"Comparison ineligible for track '{track}':")
+            for reason in eligibility.reasons:
+                typer.echo(f"  - {reason}")
+            raise typer.Exit(code=1)
+
+        cluster_map = _load_clusters(clusters)
+
+        # All required pairs must cover identical item populations; seed
+        # summaries over shifting populations would be meaningless.
+        pair_populations = []
+        pair_keyed = []
+        for base_seed_ev, cand_seed_ev in pairs:
+            seed_base, _, _ = keyed_items(base_seed_ev)
+            seed_cand, _, _ = keyed_items(cand_seed_ev)
+            if set(seed_base) != set(seed_cand):
+                raise BootstrapError("baseline and candidate evidence cover different items")
+            pair_populations.append(sorted(seed_base))
+            pair_keyed.append((seed_base, seed_cand))
+        if any(population != pair_populations[0] for population in pair_populations[1:]):
+            raise BootstrapError(
+                "seed pairs cover different item populations; paired multi-seed "
+                "analysis requires identical populations"
+            )
+        primary_flat, primary_tasks, _ = keyed_items(primary_base)
+        cand_flat, cand_tasks, _ = keyed_items(primary_cand)
+        merged_tasks = dict(primary_tasks)
         if any(t == "blimp" for t in merged_tasks.values()) and not cluster_map:
             raise BootstrapError(
                 "BLiMP evidence requires an explicit --clusters map; per-item "
                 "resampling would pretend subdataset structure away"
             )
-        clusters_full = {key: cluster_map.get(key, key) for key in base_flat}
-        items = align_paired_items(base_flat, cand_flat, merged_tasks, clusters_full)
+        clusters_full = {key: cluster_map.get(key, key) for key in primary_flat}
+        items = align_paired_items(primary_flat, cand_flat, merged_tasks, clusters_full)
 
+        # Chance references must agree per task across both arms and every
+        # required pair. Tasks keep their own values; conflicts are refused,
+        # never resolved by file order, averaging, or defaults.
         chances: dict[str, float] = {}
         for task_name in {v for v in merged_tasks.values()}:
-            chance = None
+            recorded: list[float] = []
             for evidence in (*base_evidence, *cand_evidence):
                 task_block = evidence.get("tasks", {}).get(task_name, {})
                 if isinstance(task_block.get("chance"), (int, float)):
-                    chance = float(task_block["chance"])
-                    break
-            if chance is None:
+                    value = float(task_block["chance"])
+                    if value not in recorded:
+                        recorded.append(value)
+            if not recorded:
                 raise BootstrapError(f"no chance reference recorded for task '{task_name}'")
-            chances[task_name] = chance
+            if len(recorded) > 1:
+                raise BootstrapError(
+                    f"conflicting chance references for task '{task_name}': "
+                    f"{recorded}; recorded references must agree"
+                )
+            chances[task_name] = recorded[0]
 
         suite = suite_bootstrap(
             items,
@@ -192,47 +306,59 @@ def compare_command(
             n_bootstrap=n_bootstrap,
             analysis_seed=analysis_seed,
         )
+        suite.primary_seed_pair = primary_key
+        suite.primary_selection_policy = PRIMARY_SELECTION_POLICY
         per_seed: dict[str, float] = {}
-        if len(base_evidence) > 1 or len(cand_evidence) > 1:
-            if len(base_evidence) != len(cand_evidence):
-                raise BootstrapError("seed-separated analysis needs equal seed counts per arm")
-            pairs = pair_seed_evidence(base_evidence, cand_evidence)
-            for index, (base_seed_ev, cand_seed_ev) in enumerate(pairs):
-                seed_base, _, _ = keyed_items(base_seed_ev)
-                seed_cand, _, _ = keyed_items(cand_seed_ev)
+        if len(pairs) > 1:
+            for position, key in enumerate(pair_keys):
+                assert key is not None, "multi-pair flow requires recorded seeds"
+                seed_base, seed_cand = pair_keyed[position]
                 seed_items = align_paired_items(seed_base, seed_cand, merged_tasks, clusters_full)
                 seed_suite = suite_bootstrap(
                     seed_items,
                     chances,
                     required_tasks=REQUIRED_TASKS_FOR_INDEX,
                     n_bootstrap=max(100, n_bootstrap // 10),
-                    analysis_seed=analysis_seed + index,
+                    analysis_seed=analysis_seed + position,
                 )
-                per_seed[f"seed_pair_{index}"] = (
+                per_seed[f"init_{key[0]}_data_{key[1]}"] = (
                     seed_suite.index_interval.point if seed_suite.index_interval else 0.0
                 )
             spread = seed_spread(per_seed)
             suite.seed_spread = spread
+            assert primary_key is not None, "multi-pair flow requires recorded seeds"
             suite.seed_note = (
                 f"between-training-seed spread over {len(per_seed)} seed pairs; "
-                "item intervals above are within-run uncertainty"
+                f"primary pair (init_seed={primary_key[0]}, data_seed={primary_key[1]}) "
+                "item intervals above are within-run uncertainty for that pair, "
+                "not uncertainty across training seeds"
             )
 
         index_point = suite.index_interval.point if suite.index_interval else None
         payload = {
             "comparison_version": 1,
-            "baseline_run": base_run.run_id,
-            "candidate_run": cand_run.run_id,
+            "bootstrap_version": BOOTSTRAP_VERSION,
+            "primary_selection_policy": PRIMARY_SELECTION_POLICY,
+            "primary_seed_pair": list(primary_key) if primary_key is not None else None,
+            "seed_pairs": [
+                {
+                    "init_seed": key[0] if key is not None else None,
+                    "data_seed": key[1] if key is not None else None,
+                    "baseline": run_fingerprint(b, key),
+                    "candidate": run_fingerprint(c, key),
+                }
+                for (b, c), key in zip(pairs, pair_keys, strict=True)
+            ],
+            "baseline_run": base_run_fingerprint,
+            "candidate_run": cand_run_fingerprint,
             "track": track,
             "eligibility": eligibility.to_dict(),
             "seeds": {
                 "baseline": [
-                    e.get("identity", {}).get("fingerprint", p.stem)
-                    for e, p in zip(base_evidence, baseline, strict=True)
+                    run_fingerprint(b, key) for (b, _), key in zip(pairs, pair_keys, strict=True)
                 ],
                 "candidate": [
-                    e.get("identity", {}).get("fingerprint", p.stem)
-                    for e, p in zip(cand_evidence, candidate, strict=True)
+                    run_fingerprint(c, key) for (_, c), key in zip(pairs, pair_keys, strict=True)
                 ],
             },
             "suite": suite.to_dict(),
@@ -276,6 +402,7 @@ def promote_command(
     ),
 ) -> None:
     """Apply frozen gates; on pass, emit a from-scratch draft. Never launches."""
+    from xlm.comparison.bootstrap import BOOTSTRAP_VERSION, PRIMARY_SELECTION_POLICY
     from xlm.comparison.promotion import (
         PromotionError,
         PromotionEvidence,
@@ -286,6 +413,21 @@ def promote_command(
     )
 
     compared = _load_json(comparison, "comparison output")
+    analysis_version = compared.get("bootstrap_version")
+    analysis_policy = compared.get("primary_selection_policy")
+    if analysis_version != BOOTSTRAP_VERSION or analysis_policy != PRIMARY_SELECTION_POLICY:
+        # Saved results from the pre-D08 analysis stay available for historical
+        # inspection, but they must never silently satisfy current requirements:
+        # their headlines could depend on argument order and their BLiMP
+        # intervals drop repeated draws. Re-run `xlm compare` to refresh.
+        typer.echo(
+            "Error: comparison output predates the corrected D08 analysis "
+            f"(bootstrap_version={analysis_version!r}, "
+            f"primary_selection_policy={analysis_policy!r}); re-run `xlm compare` "
+            "before promotion.",
+            err=True,
+        )
+        raise typer.Exit(code=1)
     plan = _load_json(baseline_plan, "baseline plan")
     gate_rules = PromotionGates()
     if gates is not None:

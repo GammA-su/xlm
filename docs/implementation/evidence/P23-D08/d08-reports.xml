@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="18" time="3.813" timestamp="2026-09-20T20:23:39.003560+02:00" hostname="BetA-C1"><testcase classname="tests.test_reports" name="test_missing_values_are_recorded_never_zero_filled" time="0.013" /><testcase classname="tests.test_reports" name="test_protected_keys_and_secrets_are_stripped_at_collection" time="0.010" /><testcase classname="tests.test_reports" name="test_evidence_tasks_index_and_partial_labels_land_in_report" time="0.011" /><testcase classname="tests.test_reports" name="test_failures_stay_visible_with_attempt_history" time="0.012" /><testcase classname="tests.test_reports" name="test_campaign_report_marks_unexecuted_trials" time="0.001" /><testcase classname="tests.test_reports" name="test_data_report_keeps_aggregates_drops_details" time="0.001" /><testcase classname="tests.test_reports" name="test_injection_fixture_is_escaped_everywhere" time="0.021" /><testcase classname="tests.test_reports" name="test_missing_renders_as_na_never_zero" time="0.006" /><testcase classname="tests.test_reports" name="test_failed_runs_render_visibly_not_hidden" time="0.012" /><testcase classname="tests.test_reports" name="test_comparison_violations_and_seeds_are_visible" time="0.014" /><testcase classname="tests.test_reports" name="test_curves_distinguish_raw_from_smoothing" time="0.001" /><testcase classname="tests.test_reports" name="test_html_pages_are_self_contained_and_portable" time="0.007" /><testcase classname="tests.test_reports" name="test_campaign_and_data_markdown_render" time="0.001" /><testcase classname="tests.test_reports" name="test_strip_protected_is_recursive" time="0.001" /><testcase classname="tests.test_reports" name="test_cli_report_runs_in_all_formats" time="1.475" /><testcase classname="tests.test_reports" name="test_cli_report_requires_exactly_one_source" time="0.242" /><testcase classname="tests.test_reports" name="test_cli_report_campaign_and_data" time="0.294" /><testcase classname="tests.test_reports" name="test_cli_runs_list_empty_and_populated" time="1.341"><failure message="xlm.experiments.plans.PlanError: legacy/unfrozen plan cannot execute; resolve a new frozen plan">tmp_path = WindowsPath('D:/Project/xlm-integration/data/audit/p23-remediation/stage05/d08/d08-reports-tmp/test_cli_runs_list_empty_and_p0')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x000001FBD4D74470&gt;
+
+    def test_cli_runs_list_empty_and_populated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -&gt; None:
+        from xlm.artifacts.ledger import RunLedger
+        from xlm.core.paths import ArtifactPaths
+        from xlm.experiments.plans import ExecutablePlan
+        from xlm.experiments.queue import ExperimentQueue
+        from xlm.experiments.snapshot import CodeSnapshot
+    
+        empty = _invoke(["runs", "list"], monkeypatch, tmp_path)
+        assert empty.exit_code == 0 and "No runs recorded" in empty.output
+    
+        paths = ArtifactPaths(root=tmp_path / "home")
+        ledger = RunLedger(paths.ledger / "ledger.sqlite")
+        queue = ExperimentQueue(ledger, paths)
+        snapshot = CodeSnapshot("1", "abc", None, [], {}, 0, "")
+        snap_dir = tmp_path / "snap"
+        snap_dir.mkdir()
+        (snap_dir / "manifest.json").write_text(json.dumps(snapshot.to_dict()), encoding="utf-8")
+        plan = ExecutablePlan(
+            plan_version="1",
+            plan_id="plan_x",
+            plan_hash="h" * 32,
+            draft_id="d",
+            track="baseline",
+            horizon_kind="standalone",
+            resolved_config={},
+            code_snapshot=snapshot,
+            dependency_hash="dep",
+            seeds={"init_seed": 1, "data_seed": 2},
+            budget_valid_targets=10,
+            budget_max_seconds=None,
+            estimated_new_disk_gib=None,
+            gpu_processes=1,
+            evaluation_tier="search",
+            checkpoint_every_valid_targets=10,
+            evaluation_every_valid_targets=10,
+            exposure={},
+            cost_estimate={},
+            storage_estimate_gib=None,
+            blockers=[],
+        )
+        plan_path = tmp_path / "plan.json"
+        plan.save(plan_path)
+&gt;       job_id, _ = queue.submit(plan, plan_path, snap_dir, "cpu", authorization_token="t")
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_reports.py:437: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\xlm\experiments\queue.py:374: in submit
+    plan.validate_identity()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = ExecutablePlan(plan_version='1', plan_id='plan_x', plan_hash='hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh', draft_id='d', track='... storage_estimate_gib=None, blockers=[], parent_plan_id=None, fork_reason=None, created_at='', execution_envelope=None)
+
+    def validate_identity(self) -&gt; None:
+        from xlm.artifacts.manifest import identity_digest
+    
+        if self.plan_version != "2" or self.execution_envelope is None:
+&gt;           raise PlanError("legacy/unfrozen plan cannot execute; resolve a new frozen plan")
+E           xlm.experiments.plans.PlanError: legacy/unfrozen plan cannot execute; resolve a new frozen plan
+
+src\xlm\experiments\plans.py:121: PlanError</failure></testcase></testsuite></testsuites>

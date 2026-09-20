@@ -1,0 +1,9 @@
+tests/test_comparison.py
+tests/test_eval_declared_inputs.py
+tests/test_eval_inputs.py
+tests/test_eval_coverage.py
+tests/test_eval_suites.py
+tests/test_reports.py
+tests/test_final_acceptance.py
+tests/test_offline_workflow.py
+tests/test_cli_eval_gen.py

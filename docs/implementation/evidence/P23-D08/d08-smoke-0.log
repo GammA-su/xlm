@@ -1,0 +1,57 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm-integration\.venv-integration\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm-integration
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0
+collecting ... collected 35 items
+
+tests/test_comparison.py::test_identical_runs_are_eligible_on_every_causal_track PASSED [  2%]
+tests/test_comparison.py::test_changed_tokenizer_fails_the_architecture_track PASSED [  5%]
+tests/test_comparison.py::test_byte_matched_tokenizer_track_can_pass PASSED [  8%]
+tests/test_comparison.py::test_tokenizer_track_without_matched_evidence_is_ineligible PASSED [ 11%]
+tests/test_comparison.py::test_unknown_fields_fail_closed PASSED         [ 14%]
+tests/test_comparison.py::test_mismatched_horizons_are_ineligible PASSED [ 17%]
+tests/test_comparison.py::test_unconstrained_track_labels_differences_without_a_causal_badge PASSED [ 20%]
+tests/test_comparison.py::test_unknown_track_is_refused PASSED           [ 22%]
+tests/test_comparison.py::test_run_facts_assemble_from_evidence_and_plan PASSED [ 25%]
+tests/test_comparison.py::test_identical_predictions_give_zero_paired_difference PASSED [ 28%]
+tests/test_comparison.py::test_known_winner_and_swapped_arms_behave_correctly PASSED [ 31%]
+tests/test_comparison.py::test_bootstrap_is_deterministic_for_a_fixed_seed PASSED [ 34%]
+tests/test_comparison.py::test_cluster_resampling_counts_clusters_not_items PASSED [ 37%]
+tests/test_comparison.py::test_mismatched_ids_and_missing_predictions_invalidate PASSED [ 40%]
+tests/test_comparison.py::test_seed_spread_separates_seed_from_item_uncertainty PASSED [ 42%]
+tests/test_comparison.py::test_suite_bootstrap_computes_index_intervals PASSED [ 45%]
+tests/test_comparison.py::test_suite_bootstrap_rejects_partial_coverage PASSED [ 48%]
+tests/test_comparison.py::test_suite_bootstrap_macro_averages_blimp_subclusters PASSED [ 51%]
+tests/test_comparison.py::test_crossing_interpolates_between_measured_points PASSED [ 54%]
+tests/test_comparison.py::test_unreached_and_out_of_range_targets_are_not_invented PASSED [ 57%]
+tests/test_comparison.py::test_teacher_and_auxiliary_costs_are_labeled PASSED [ 60%]
+tests/test_comparison.py::test_compute_comparison_requires_both_arms_to_reach PASSED [ 62%]
+tests/test_comparison.py::test_malformed_curve_mappings_are_rejected PASSED [ 65%]
+tests/test_comparison.py::test_promotion_passes_on_material_evidence PASSED [ 68%]
+tests/test_comparison.py::test_promotion_refuses_ineligible_missing_or_weak_evidence PASSED [ 71%]
+tests/test_comparison.py::test_material_regression_warns_without_silently_passing PASSED [ 74%]
+tests/test_comparison.py::test_gate_thresholds_are_inputs_not_rewritten_by_scores PASSED [ 77%]
+tests/test_comparison.py::test_promotion_emits_a_valid_from_scratch_draft PASSED [ 80%]
+tests/test_comparison.py::test_promotion_needs_a_passing_decision_for_drafts PASSED [ 82%]
+tests/test_comparison.py::test_cli_compare_reports_eligible_paired_difference PASSED [ 85%]
+tests/test_comparison.py::test_cli_compare_refuses_ineligible_tracks_before_any_winner PASSED [ 88%]
+tests/test_comparison.py::test_cli_promote_emits_a_valid_draft_on_pass PASSED [ 91%]
+tests/test_comparison.py::test_cli_promote_refuses_without_passing_gates PASSED [ 94%]
+tests/test_comparison.py::test_factorial_and_ablation_matrices_emit_plans_only PASSED [ 97%]
+tests/test_final_acceptance.py::test_seed_pairs_follow_recorded_ids_not_argument_order PASSED [100%]
+
+- generated xml file: D:\Project\xlm-integration\data\audit\p23-remediation\stage05\d08\d08-smoke.xml -
+============================ slowest 10 durations =============================
+0.26s call     tests/test_comparison.py::test_cli_compare_reports_eligible_paired_difference
+0.23s call     tests/test_comparison.py::test_cli_promote_emits_a_valid_draft_on_pass
+0.22s call     tests/test_comparison.py::test_cli_promote_refuses_without_passing_gates
+0.10s call     tests/test_comparison.py::test_cli_compare_refuses_ineligible_tracks_before_any_winner
+0.01s call     tests/test_comparison.py::test_suite_bootstrap_computes_index_intervals
+0.01s call     tests/test_comparison.py::test_suite_bootstrap_macro_averages_blimp_subclusters
+0.01s call     tests/test_comparison.py::test_factorial_and_ablation_matrices_emit_plans_only
+0.00s call     tests/test_comparison.py::test_bootstrap_is_deterministic_for_a_fixed_seed
+0.00s call     tests/test_comparison.py::test_promotion_emits_a_valid_from_scratch_draft
+0.00s call     tests/test_comparison.py::test_known_winner_and_swapped_arms_behave_correctly
+============================= 35 passed in 3.24s ==============================

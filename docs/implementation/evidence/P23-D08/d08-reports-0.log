@@ -1,0 +1,109 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm-integration\.venv-integration\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm-integration
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0
+collecting ... collected 18 items
+
+tests/test_reports.py::test_missing_values_are_recorded_never_zero_filled PASSED [  5%]
+tests/test_reports.py::test_protected_keys_and_secrets_are_stripped_at_collection PASSED [ 11%]
+tests/test_reports.py::test_evidence_tasks_index_and_partial_labels_land_in_report PASSED [ 16%]
+tests/test_reports.py::test_failures_stay_visible_with_attempt_history PASSED [ 22%]
+tests/test_reports.py::test_campaign_report_marks_unexecuted_trials PASSED [ 27%]
+tests/test_reports.py::test_data_report_keeps_aggregates_drops_details PASSED [ 33%]
+tests/test_reports.py::test_injection_fixture_is_escaped_everywhere PASSED [ 38%]
+tests/test_reports.py::test_missing_renders_as_na_never_zero PASSED      [ 44%]
+tests/test_reports.py::test_failed_runs_render_visibly_not_hidden PASSED [ 50%]
+tests/test_reports.py::test_comparison_violations_and_seeds_are_visible PASSED [ 55%]
+tests/test_reports.py::test_curves_distinguish_raw_from_smoothing PASSED [ 61%]
+tests/test_reports.py::test_html_pages_are_self_contained_and_portable PASSED [ 66%]
+tests/test_reports.py::test_campaign_and_data_markdown_render PASSED     [ 72%]
+tests/test_reports.py::test_strip_protected_is_recursive PASSED          [ 77%]
+tests/test_reports.py::test_cli_report_runs_in_all_formats PASSED        [ 83%]
+tests/test_reports.py::test_cli_report_requires_exactly_one_source PASSED [ 88%]
+tests/test_reports.py::test_cli_report_campaign_and_data PASSED          [ 94%]
+tests/test_reports.py::test_cli_runs_list_empty_and_populated FAILED     [100%]
+
+================================== FAILURES ===================================
+___________________ test_cli_runs_list_empty_and_populated ____________________
+
+tmp_path = WindowsPath('D:/Project/xlm-integration/data/audit/p23-remediation/stage05/d08/d08-reports-tmp/test_cli_runs_list_empty_and_p0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001FBD4D74470>
+
+    def test_cli_runs_list_empty_and_populated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        from xlm.artifacts.ledger import RunLedger
+        from xlm.core.paths import ArtifactPaths
+        from xlm.experiments.plans import ExecutablePlan
+        from xlm.experiments.queue import ExperimentQueue
+        from xlm.experiments.snapshot import CodeSnapshot
+    
+        empty = _invoke(["runs", "list"], monkeypatch, tmp_path)
+        assert empty.exit_code == 0 and "No runs recorded" in empty.output
+    
+        paths = ArtifactPaths(root=tmp_path / "home")
+        ledger = RunLedger(paths.ledger / "ledger.sqlite")
+        queue = ExperimentQueue(ledger, paths)
+        snapshot = CodeSnapshot("1", "abc", None, [], {}, 0, "")
+        snap_dir = tmp_path / "snap"
+        snap_dir.mkdir()
+        (snap_dir / "manifest.json").write_text(json.dumps(snapshot.to_dict()), encoding="utf-8")
+        plan = ExecutablePlan(
+            plan_version="1",
+            plan_id="plan_x",
+            plan_hash="h" * 32,
+            draft_id="d",
+            track="baseline",
+            horizon_kind="standalone",
+            resolved_config={},
+            code_snapshot=snapshot,
+            dependency_hash="dep",
+            seeds={"init_seed": 1, "data_seed": 2},
+            budget_valid_targets=10,
+            budget_max_seconds=None,
+            estimated_new_disk_gib=None,
+            gpu_processes=1,
+            evaluation_tier="search",
+            checkpoint_every_valid_targets=10,
+            evaluation_every_valid_targets=10,
+            exposure={},
+            cost_estimate={},
+            storage_estimate_gib=None,
+            blockers=[],
+        )
+        plan_path = tmp_path / "plan.json"
+        plan.save(plan_path)
+>       job_id, _ = queue.submit(plan, plan_path, snap_dir, "cpu", authorization_token="t")
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_reports.py:437: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\xlm\experiments\queue.py:374: in submit
+    plan.validate_identity()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = ExecutablePlan(plan_version='1', plan_id='plan_x', plan_hash='hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh', draft_id='d', track='... storage_estimate_gib=None, blockers=[], parent_plan_id=None, fork_reason=None, created_at='', execution_envelope=None)
+
+    def validate_identity(self) -> None:
+        from xlm.artifacts.manifest import identity_digest
+    
+        if self.plan_version != "2" or self.execution_envelope is None:
+>           raise PlanError("legacy/unfrozen plan cannot execute; resolve a new frozen plan")
+E           xlm.experiments.plans.PlanError: legacy/unfrozen plan cannot execute; resolve a new frozen plan
+
+src\xlm\experiments\plans.py:121: PlanError
+- generated xml file: D:\Project\xlm-integration\data\audit\p23-remediation\stage05\d08\d08-reports.xml -
+============================ slowest 10 durations =============================
+1.47s call     tests/test_reports.py::test_cli_report_runs_in_all_formats
+1.34s call     tests/test_reports.py::test_cli_runs_list_empty_and_populated
+0.29s call     tests/test_reports.py::test_cli_report_campaign_and_data
+0.24s call     tests/test_reports.py::test_cli_report_requires_exactly_one_source
+0.02s call     tests/test_reports.py::test_injection_fixture_is_escaped_everywhere
+0.01s call     tests/test_reports.py::test_comparison_violations_and_seeds_are_visible
+0.01s call     tests/test_reports.py::test_failures_stay_visible_with_attempt_history
+0.01s call     tests/test_reports.py::test_evidence_tasks_index_and_partial_labels_land_in_report
+0.01s call     tests/test_reports.py::test_failed_runs_render_visibly_not_hidden
+0.01s call     tests/test_reports.py::test_missing_values_are_recorded_never_zero_filled
+=========================== short test summary info ===========================
+FAILED tests/test_reports.py::test_cli_runs_list_empty_and_populated - xlm.experiments.plans.PlanError: legacy/unfrozen plan cannot execute; resolve a new frozen plan
+======================== 1 failed, 17 passed in 3.87s =========================
