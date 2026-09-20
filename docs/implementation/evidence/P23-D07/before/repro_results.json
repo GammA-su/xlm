@@ -1,0 +1,88 @@
+{
+  "results": [
+    {
+      "case": "A-genuine-tie",
+      "question": "is a genuinely tied payload stored once?",
+      "model": {
+        "state_dict_keys": 21,
+        "unique_deployed_parameters": 98880,
+        "total_instantiated": 115520,
+        "tied_parameters": 16640,
+        "tied_aliases": [
+          [
+            "lm_head.weight",
+            "embed_tokens.weight"
+          ]
+        ]
+      },
+      "manifest_tied_mapping": {
+        "tied_lm_head": [
+          "embed_tokens.weight",
+          "lm_head.weight"
+        ]
+      },
+      "manifest_parameters_deployed": 98880,
+      "container": {
+        "file_bytes": 464080,
+        "header_bytes": 2000,
+        "payload_bytes": 462080,
+        "tensor_entries": 21,
+        "distinct_payload_ranges": 21,
+        "metadata": null
+      },
+      "embed_tokens.weight": {
+        "dtype": "F32",
+        "shape": [
+          260,
+          64
+        ],
+        "offset_start": 0,
+        "offset_end": 66560,
+        "payload_bytes": 66560
+      },
+      "lm_head.weight": {
+        "dtype": "F32",
+        "shape": [
+          260,
+          64
+        ],
+        "offset_start": 395264,
+        "offset_end": 461824,
+        "payload_bytes": 66560
+      },
+      "TIED_PAYLOAD_STORED_TWICE": true,
+      "duplicated_bytes": 66560
+    },
+    {
+      "case": "B-equal-but-independent",
+      "question": "do equal-valued independent parameters stay separate?",
+      "model": {
+        "state_dict_keys": 21,
+        "unique_deployed_parameters": 115520,
+        "total_instantiated": 115520,
+        "tied_parameters": 0,
+        "tied_aliases": []
+      },
+      "manifest_tied_mapping": {},
+      "manifest_parameters_deployed": 115520,
+      "container": {
+        "file_bytes": 464080,
+        "header_bytes": 2000,
+        "payload_bytes": 462080,
+        "tensor_entries": 21,
+        "distinct_payload_ranges": 21,
+        "metadata": null
+      },
+      "separate_payload_ranges": true,
+      "values_identical": true
+    },
+    {
+      "case": "C-numerical-reload",
+      "question": "does the current bundle reload and reproduce outputs?",
+      "logits_max_abs_diff": 0.0,
+      "identity_restored_on_load": true,
+      "tokenizer_fingerprint_matches": true,
+      "note": "numerical parity does NOT establish single-copy storage (C08)"
+    }
+  ]
+}
