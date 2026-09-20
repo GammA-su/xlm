@@ -131,6 +131,64 @@ def _blimp_subdataset_names(include_path: Path | None, explicit: str | None) -> 
     return []
 
 
+def _verify_inputs_only(inputs: Path, suite: str, output_json: bool) -> None:
+    """Verify a declared evaluation-input manifest and run nothing else.
+
+    Deliberately self-contained: no checkpoint, no tokenizer, no model
+    allocation, no inference and no provider access. Only the harness version
+    is read, because the manifest declares which harness it was built against.
+    """
+    from xlm.evaluation.harness import harness_version
+    from xlm.evaluation.inputs import (
+        EvaluationInputError,
+        load_evaluation_inputs,
+        verify_evaluation_inputs,
+    )
+    from xlm.evaluation.suites import FinalAuthorizationRequiredError, SuiteTier
+
+    if suite not in TIER_SUITES:
+        typer.echo(
+            f"Error: --verify-inputs-only applies to the tier suites ({', '.join(TIER_SUITES)}).",
+            err=True,
+        )
+        raise typer.Exit(code=1)
+    try:
+        manifest = load_evaluation_inputs(inputs)
+        verified = verify_evaluation_inputs(
+            manifest,
+            tier=SuiteTier(suite),
+            harness_version=harness_version(),
+        )
+    except (EvaluationInputError, FinalAuthorizationRequiredError) as exc:
+        typer.echo(f"Error: evaluation inputs rejected: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+
+    summary = verified.summary()
+    if output_json:
+        typer.echo(json.dumps(summary, indent=2, sort_keys=True))
+        return
+    typer.echo("=" * 60)
+    typer.echo(f"Evaluation inputs VERIFIED: {inputs}")
+    typer.echo(f"Manifest id  : {summary['manifest_id']}")
+    typer.echo(f"Scope        : {summary['scope_kind']} '{summary['scope_label']}'")
+    typer.echo(f"Exposure     : {summary['exposure_class']} | tier: {summary['tier']}")
+    typer.echo(f"Tasks        : {', '.join(summary['tasks'])}")
+    if summary["required_blimp_subdatasets"]:
+        typer.echo(f"BLiMP required: {', '.join(summary['required_blimp_subdatasets'])}")
+    for entry in summary["selections"]:
+        typer.echo(
+            f"  {entry['namespace']:<28} {entry['declared_items']:>5} items  "
+            f"{entry['source']} [{entry['source_split']}]"
+        )
+    if not summary["acquisition_receipts"]:
+        typer.echo(
+            "NOTE: no acquisition receipt is referenced; provenance beyond this local "
+            "artifact is not established by verification alone."
+        )
+    typer.echo("Nothing was evaluated: --verify-inputs-only checks inputs only.")
+    typer.echo("=" * 60)
+
+
 def _run_tier_suite(
     checkpoint: Path,
     tokenizer_path: str | None,
@@ -145,6 +203,7 @@ def _run_tier_suite(
     request_only: bool,
     final_authorization_file: Path | None,
     execution: dict[str, Any] | None = None,
+    inputs: Path | None = None,
 ) -> None:
     from xlm.evaluation.harness import HarnessUnavailableError, harness_version
     from xlm.evaluation.suites import (
@@ -206,18 +265,48 @@ def _run_tier_suite(
             ticket=str(payload.get("ticket", "")),
         )
 
-    try:
-        variants = resolve_suite(
-            tier,
-            pins,
-            # Only resolve official BLiMP subdatasets for default suite runs; a
-            # --tasks override replaces the variants entirely.
-            blimp_subdatasets=None if tasks else _blimp_subdataset_names(include_path, None),
-            final_authorization=final_auth,
+    verified = None
+    if inputs is not None:
+        # Declared route (D04): verify the artifacts before a model is built,
+        # a task is resolved or any cached result is consulted.
+        from xlm.evaluation.inputs import (
+            EvaluationInputError,
+            load_evaluation_inputs,
+            verify_evaluation_inputs,
         )
-    except FinalAuthorizationRequiredError as exc:
-        typer.echo(f"Error: {exc}", err=True)
-        raise typer.Exit(code=1) from exc
+
+        try:
+            verified = verify_evaluation_inputs(
+                load_evaluation_inputs(inputs),
+                tier=tier,
+                harness_version=harness_version(),
+                final_authorization=final_auth,
+            )
+        except (EvaluationInputError, FinalAuthorizationRequiredError) as exc:
+            typer.echo(f"Error: evaluation inputs rejected: {exc}", err=True)
+            raise typer.Exit(code=1) from exc
+        if tasks or include_path:
+            typer.echo(
+                "Error: --inputs declares the evaluation population; --tasks and "
+                "--include-path would silently change it.",
+                err=True,
+            )
+            raise typer.Exit(code=1)
+
+    variants: list[TaskVariant] = []
+    if verified is None:
+        try:
+            variants = resolve_suite(
+                tier,
+                pins,
+                # Only resolve official BLiMP subdatasets for default suite runs; a
+                # --tasks override replaces the variants entirely.
+                blimp_subdatasets=None if tasks else _blimp_subdataset_names(include_path, None),
+                final_authorization=final_auth,
+            )
+        except FinalAuthorizationRequiredError as exc:
+            typer.echo(f"Error: {exc}", err=True)
+            raise typer.Exit(code=1) from exc
 
     if tasks:
         # Fixture/task override for bounded offline runs through the real harness.
@@ -271,23 +360,35 @@ def _run_tier_suite(
             include_path=include_path,
             output_dir=output_dir,
             execution_provenance=receipt_provenance(execution) if execution else None,
+            verified_inputs=verified,
         )
     except Exception as exc:  # noqa: BLE001 - surface harness errors with context
         typer.echo(f"Error: harness evaluation failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
 
+    coverage = evidence.coverage
     typer.echo("=" * 60)
     typer.echo(f"Suite: {tier.value} | Checkpoint: {checkpoint_hash}")
     typer.echo(f"Identity: {evidence.identity_fingerprint[:24]} | limit: {limit}")
+    typer.echo(f"Scope: {coverage.scope_statement()}")
     for name, task in sorted(evidence.tasks.items()):
+        expected = "?" if task.expected_items is None else str(task.expected_items)
         typer.echo(
             f"  {name:<24} acc {task.acc:.4f}  acc_norm {task.acc_norm:.4f}  "
-            f"scored {task.scored_items}/{task.total_items}"
+            f"scored {task.scored_items}/{expected} expected"
         )
-    if evidence.index.complete:
-        typer.echo(f"Four-task index: {evidence.index.index:.4f}")
+    if evidence.index.complete and evidence.index.index is not None:
+        scope = "Four-task index" if coverage.covers_full_suite else "Declared-scope index"
+        typer.echo(f"{scope}: {evidence.index.index:.4f}  [{coverage.scope_label}]")
+        if not coverage.research_eligible():
+            typer.echo(
+                "  NOT research evidence: authored synthetic fixture scope, "
+                "not an official benchmark result."
+            )
     else:
-        typer.echo(f"Index withheld (partial coverage); missing: {evidence.index.missing}")
+        typer.echo("Index WITHHELD - the declared scope was not covered:")
+        for reason in evidence.index.withheld_reasons or ["coverage is unverified"]:
+            typer.echo(f"  - {reason}")
     for note in evidence.notes:
         typer.echo(f"  NOTE: {note}")
     typer.echo(f"Evidence: {output_dir}")
@@ -296,15 +397,19 @@ def _run_tier_suite(
 
 def evaluate_command(
     checkpoint: Annotated[
-        Path,
+        Path | None,
         typer.Argument(
-            help="Path to checkpoint directory or artifact ID.",
+            # Optional only so that --verify-inputs-only can check a manifest
+            # without a model. Every evaluating mode still requires it, and
+            # says so explicitly rather than failing obscurely later.
+            help="Path to checkpoint directory or artifact ID "
+            "(not required with --verify-inputs-only).",
             exists=True,
             file_okay=False,
             dir_okay=True,
             readable=True,
         ),
-    ],
+    ] = None,
     tokenizer_path: Annotated[
         str | None,
         typer.Option("--tokenizer", help="Path to tokenizer directory or artifact ID."),
@@ -366,8 +471,42 @@ def evaluate_command(
             help="Operator authorization file matching the frozen final request.",
         ),
     ] = None,
+    inputs: Annotated[
+        Path | None,
+        typer.Option(
+            "--inputs",
+            help="Evaluation-input manifest declaring explicitly selected, verified "
+            "local benchmark artifacts.",
+            exists=True,
+            dir_okay=False,
+            readable=True,
+        ),
+    ] = None,
+    verify_inputs_only: Annotated[
+        bool,
+        typer.Option(
+            "--verify-inputs-only",
+            help="Verify --inputs and exit. Loads no model and evaluates nothing.",
+        ),
+    ] = False,
 ) -> None:
     """Evaluate a trained checkpoint against native fixtures or tiered harness suites."""
+    if verify_inputs_only:
+        if inputs is None:
+            typer.echo("Error: --verify-inputs-only requires --inputs.", err=True)
+            raise typer.Exit(code=1)
+        # Runs entirely in this process: no frozen worker, no checkpoint, no
+        # model allocation, no inference.
+        _verify_inputs_only(inputs, suite, output_json)
+        return
+    if checkpoint is None:
+        typer.echo(
+            "Error: a checkpoint is required to evaluate. Only --verify-inputs-only "
+            "runs without one.",
+            err=True,
+        )
+        raise typer.Exit(code=1)
+
     options: dict[str, Any] = {
         "checkpoint": checkpoint,
         "tokenizer_path": tokenizer_path,
@@ -383,6 +522,7 @@ def evaluate_command(
         "pins_path": pins_path,
         "request_only": request_only,
         "final_authorization_file": final_authorization_file,
+        "inputs": inputs,
     }
     if request_only or suite == "final" or suite not in ALL_SUITES:
         _evaluate_in_process(**options)
@@ -407,6 +547,7 @@ def _evaluate_in_process(
     pins_path: Path = Path("manifests/eval_dataset_pins.yaml"),
     request_only: bool = False,
     final_authorization_file: Path | None = None,
+    inputs: Path | None = None,
     *,
     execution: dict[str, Any] | None = None,
 ) -> None:
@@ -449,4 +590,5 @@ def _evaluate_in_process(
         request_only=request_only,
         final_authorization_file=final_authorization_file,
         execution=execution,
+        inputs=inputs,
     )

@@ -284,9 +284,151 @@ def materialize_pinned_tasks(
     return names, mapping
 
 
+def resolve_official_task_config(leaf: str, source_manager: Any) -> tuple[dict[str, Any], Path]:
+    """Fully resolve one installed task definition, honouring its inheritance.
+
+    The pinned harness expresses task definitions with ``include:`` (every BLiMP
+    subdataset inherits ``_template_yaml``) and ``!function`` references
+    (HellaSwag's ``process_docs`` lives beside its YAML). Reading the YAML text
+    and copying it elsewhere silently loses both. This uses the harness's own
+    loader, so what comes back is the definition the harness would really run:
+    inherited keys merged, ``!function`` resolved to the actual callable.
+
+    Nothing installed is modified, and no task code named by a manifest is run.
+    """
+    require_harness()
+    from lm_eval.tasks._yaml_loader import load_yaml  # noqa: PLC0415
+
+    index = getattr(source_manager, "task_index", {})
+    entry = index.get(leaf)
+    if entry is None or getattr(entry, "yaml_path", None) is None:
+        raise HarnessUnavailableError(
+            f"cannot locate the pinned harness YAML for task '{leaf}'; "
+            "the installed harness may be incomplete."
+        )
+    source_path = Path(entry.yaml_path)
+    config = load_yaml(source_path, resolve_func=True)
+    if not isinstance(config, dict):
+        raise HarnessUnavailableError(f"task YAML '{source_path}' is not a mapping")
+    return dict(config), source_path
+
+
+def bind_verified_inputs_to_tasks(
+    verified: Any,
+    source_manager: Any,
+) -> tuple[list[dict[str, Any]], dict[str, Any], dict[str, Any]]:
+    """Bind verified local artifacts to the pinned installed task definitions (D04).
+
+    For each verified selection the official definition is resolved and then
+    *only* loader keys are rewritten: the dataset becomes the verified local
+    JSON artifact and exactly one split is declared. Prompts, ``process_docs``,
+    choices, targets, delimiters, metrics, filters, decontamination settings and
+    the zero-shot policy stay exactly as the installed harness defines them, and
+    the function asserts that before returning.
+
+    Returns the task specs to execute, a bound-name to verified-selection map,
+    and the task-definition identities that must invalidate a cached result.
+
+    :raises HarnessUnavailableError: when a definition cannot be bound safely.
+        An unsupported case fails loudly instead of being approximated by a
+        simplified local copy of the task.
+    """
+    from xlm.evaluation.inputs import LOADER_ONLY_KEYS  # noqa: PLC0415
+
+    structural = {"tag", "group", "task_list", "include"}
+    specs: list[dict[str, Any]] = []
+    mapping: dict[str, Any] = {}
+    identities: dict[str, Any] = {}
+
+    for item in verified.selections:
+        selection = item.selection
+        config, source_path = resolve_official_task_config(selection.leaf_task, source_manager)
+
+        output_type = config.get("output_type")
+        if output_type != "multiple_choice":
+            raise HarnessUnavailableError(
+                f"task '{selection.leaf_task}' has output_type '{output_type}'. XLM binds "
+                "verified local inputs only to multiple-choice conditional-likelihood "
+                "tasks; other output types are unsupported, not approximated."
+            )
+        if int(config.get("num_fewshot", 0) or 0) != 0:
+            raise HarnessUnavailableError(
+                f"task '{selection.leaf_task}' declares num_fewshot="
+                f"{config.get('num_fewshot')}; the frozen protocol is zero-shot."
+            )
+
+        identities[selection.namespace] = {
+            "leaf_task": selection.leaf_task,
+            "definition_source": str(source_path),
+            "definition_sha256": hashlib.sha256(source_path.read_bytes()).hexdigest(),
+            "definition_version": str((config.get("metadata") or {}).get("version", "unknown")),
+            # The behavioural keys are recorded verbatim as well as by file
+            # digest, so an inherited change reached through ``include:`` is
+            # visible in the identity even though it lives in another file.
+            "doc_to_text": repr(config.get("doc_to_text")),
+            "doc_to_choice": repr(config.get("doc_to_choice")),
+            "doc_to_target": repr(config.get("doc_to_target")),
+            "target_delimiter": repr(config.get("target_delimiter")),
+            "process_docs": getattr(config.get("process_docs"), "__qualname__", None),
+            "filter_list": repr(config.get("filter_list")),
+            "metric_list": repr(config.get("metric_list")),
+            "output_type": output_type,
+            "num_fewshot": config.get("num_fewshot", 0),
+        }
+
+        bound = dict(config)
+        for key in structural:
+            bound.pop(key, None)
+
+        split = selection.source_split
+        # Every loader key is assigned explicitly. An upstream default split, a
+        # remote dataset path or a provider cache can therefore never be
+        # selected by omission.
+        bound["dataset_path"] = "json"
+        bound["dataset_name"] = None
+        bound["dataset_kwargs"] = {"data_files": {split: str(item.resolved_path)}}
+        bound["training_split"] = None
+        bound["validation_split"] = None
+        bound["fewshot_split"] = None
+        bound["test_split"] = split
+        bound["task"] = selection.bound_task_name
+
+        behavioural = set(config) - LOADER_ONLY_KEYS - structural - {"task", "metadata"}
+        bound_behavioural = set(bound) - LOADER_ONLY_KEYS - {"task", "metadata"}
+        if bound_behavioural != behavioural:
+            raise HarnessUnavailableError(
+                f"binding '{selection.leaf_task}' would change non-loader configuration "
+                f"{sorted(bound_behavioural.symmetric_difference(behavioural))}; refusing "
+                "rather than running an altered task definition."
+            )
+        for key in behavioural:
+            if bound[key] is not config[key]:
+                raise HarnessUnavailableError(
+                    f"binding '{selection.leaf_task}' altered behavioural key '{key}'"
+                )
+
+        specs.append(bound)
+        mapping[selection.bound_task_name] = item
+
+    return specs, mapping, identities
+
+
+#: Manager over the installed task index only. That index is part of the pinned
+#: installed harness and cannot change while the process runs, so it is scanned
+#: once. Managers over a local include path are never cached: those directories
+#: are written during a run, and a stale index would silently resolve the wrong
+#: task definition.
+_DEFAULT_MANAGER: Any = None
+
+
 def _task_manager_cached(include_path_key: str, include_defaults: bool) -> Any:
     from lm_eval.tasks import TaskManager  # noqa: PLC0415
 
+    global _DEFAULT_MANAGER
+    if not include_path_key and include_defaults:
+        if _DEFAULT_MANAGER is None:
+            _DEFAULT_MANAGER = TaskManager(include_path=None, include_defaults=True)
+        return _DEFAULT_MANAGER
     return TaskManager(
         include_path=include_path_key or None,
         include_defaults=include_defaults,

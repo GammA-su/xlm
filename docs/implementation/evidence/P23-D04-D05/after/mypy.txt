@@ -1,0 +1,10 @@
+﻿src\xlm\data\acquisition\records.py:49: error: Argument 1 to "jsonl_records" has incompatible type "GzipFile | BufferedReader[_BufferedReaderStream]"; expected "BinaryIO"  [arg-type]
+src\xlm\data\acquisition\fetcher.py:59: error: No overload variant of "GzipFile" matches argument types "_CountingReader", "str"  [call-overload]
+src\xlm\data\acquisition\fetcher.py:59: note: Possible overload variants:
+src\xlm\data\acquisition\fetcher.py:59: note:     def GzipFile(filename: str | bytes | PathLike[str] | PathLike[bytes] | None, mode: Literal['r', 'rb'], compresslevel: int = ..., fileobj: _ReadableFileobj | None = ..., mtime: float | None = ...) -> GzipFile
+src\xlm\data\acquisition\fetcher.py:59: note:     def GzipFile(*, mode: Literal['r', 'rb'], compresslevel: int = ..., fileobj: _ReadableFileobj | None = ..., mtime: float | None = ...) -> GzipFile
+src\xlm\data\acquisition\fetcher.py:59: note:     def GzipFile(filename: str | bytes | PathLike[str] | PathLike[bytes] | None, mode: Literal['a', 'ab', 'w', 'wb', 'x', 'xb'], compresslevel: int = ..., fileobj: _WritableFileobj | None = ..., mtime: float | None = ...) -> GzipFile
+src\xlm\data\acquisition\fetcher.py:59: note:     def GzipFile(*, mode: Literal['a', 'ab', 'w', 'wb', 'x', 'xb'], compresslevel: int = ..., fileobj: _WritableFileobj | None = ..., mtime: float | None = ...) -> GzipFile
+src\xlm\data\acquisition\fetcher.py:59: note:     def GzipFile(filename: str | bytes | PathLike[str] | PathLike[bytes] | None = ..., mode: str | None = ..., compresslevel: int = ..., fileobj: _ReadableFileobj | _WritableFileobj | None = ..., mtime: float | None = ...) -> GzipFile
+src\xlm\data\acquisition\fetcher.py:235: error: Incompatible types in assignment (expression has type "str | None", variable has type "str")  [assignment]
+Found 3 errors in 2 files (checked 200 source files)

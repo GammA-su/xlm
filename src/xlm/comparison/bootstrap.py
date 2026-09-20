@@ -229,6 +229,7 @@ def suite_bootstrap(
     ci_level: float = 0.95,
     analysis_seed: int = 20260918,
     per_seed_differences: Mapping[str, float] | None = None,
+    coverage: Sequence[Any] = (),
 ) -> SuiteBootstrapResult:
     """Bootstrap every required task and the four-task suite index together.
 
@@ -236,8 +237,29 @@ def suite_bootstrap(
     over whole subdatasets first) and then the suite index, so the index
     interval honestly reflects item uncertainty. Missing tasks invalidate the
     index, exactly like the point calculation.
+
+    ``coverage`` carries the arms' :class:`~xlm.evaluation.coverage.SuiteCoverage`
+    records. Supplying them rejects incomplete or legacy-unverified inputs at the
+    entry gate: a paired analysis over a truncated or unverifiable population is
+    not a comparison. This is an admission check only - the seed pairing and the
+    bootstrap mathematics are untouched here, and remain D08's subject.
     """
     from xlm.evaluation.suites import TaskScore, compute_four_task_index
+
+    for position, arm in enumerate(coverage):
+        if arm is None:
+            raise BootstrapError(
+                f"comparison arm {position} supplied no coverage record; a paired analysis "
+                "requires verified population coverage for every arm"
+            )
+        if not arm.complete:
+            reasons = "; ".join(arm.eligibility_reasons()) or "coverage incomplete"
+            raise BootstrapError(f"comparison arm {position} is ineligible: {reasons}")
+        if not arm.research_eligible():
+            raise BootstrapError(
+                f"comparison arm {position} is complete only within an authored fixture "
+                "scope; fixture evidence is not research evidence"
+            )
 
     items = list(items)
     present = {item.task for item in items}

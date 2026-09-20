@@ -1,0 +1,62 @@
+[
+  {
+    "id": "syn_arc_0000",
+    "question": "What colour is the fixture sky at noon?",
+    "choices": {
+      "text": [
+        "blue",
+        "plaid"
+      ],
+      "label": [
+        "A",
+        "B"
+      ]
+    },
+    "answerKey": "A"
+  },
+  {
+    "id": "syn_arc_0001",
+    "question": "How many moons orbit the fixture planet?",
+    "choices": {
+      "text": [
+        "two",
+        "nine"
+      ],
+      "label": [
+        "A",
+        "B"
+      ]
+    },
+    "answerKey": "A"
+  },
+  {
+    "id": "syn_arc_0002",
+    "question": "Which fixture tool measures invented heat?",
+    "choices": {
+      "text": [
+        "a ruler",
+        "a thermometer"
+      ],
+      "label": [
+        "A",
+        "B"
+      ]
+    },
+    "answerKey": "B"
+  },
+  {
+    "id": "syn_arc_0003",
+    "question": "What do fixture plants need in order to grow?",
+    "choices": {
+      "text": [
+        "light",
+        "gravel"
+      ],
+      "label": [
+        "A",
+        "B"
+      ]
+    },
+    "answerKey": "A"
+  }
+]

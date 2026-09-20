@@ -1,0 +1,38 @@
+[
+  {
+    "xlm_item_locator": "syn_blimp_anaphor_gender_agreement/train/0000",
+    "sentence_good": "Nobody has ever seen it.",
+    "sentence_bad": "Anybody has ever seen it.",
+    "field": "syntax",
+    "linguistics_term": "synthetic_fixture",
+    "UID": "anaphor_gender_agreement",
+    "pair_id": 0,
+    "one_prefix_method": false,
+    "two_prefix_method": false,
+    "simple_LM_method": true
+  },
+  {
+    "xlm_item_locator": "syn_blimp_anaphor_gender_agreement/train/0001",
+    "sentence_good": "She could not have known.",
+    "sentence_bad": "She could not have knowed.",
+    "field": "syntax",
+    "linguistics_term": "synthetic_fixture",
+    "UID": "anaphor_gender_agreement",
+    "pair_id": 1,
+    "one_prefix_method": false,
+    "two_prefix_method": false,
+    "simple_LM_method": true
+  },
+  {
+    "xlm_item_locator": "syn_blimp_anaphor_gender_agreement/train/0002",
+    "sentence_good": "No student ever arrived late.",
+    "sentence_bad": "Any student ever arrived late.",
+    "field": "syntax",
+    "linguistics_term": "synthetic_fixture",
+    "UID": "anaphor_gender_agreement",
+    "pair_id": 2,
+    "one_prefix_method": false,
+    "two_prefix_method": false,
+    "simple_LM_method": true
+  }
+]

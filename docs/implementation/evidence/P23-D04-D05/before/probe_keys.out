@@ -1,0 +1,22 @@
+﻿python.exe : Task 'arc_easy' from D:\Project\xlm-d0405\.d0405\work\repro\tasks\arc_easy.yaml overrides existing task fr
+om D:\Project\xlm-d0405\.venv-d0405\Lib\site-packages\lm_eval\tasks\arc\arc_easy.yaml
+At line:1 char:526
++ ... \xlm-d0405; & '.\.venv-d0405\Scripts\python.exe' .d0405/work/probe_ke ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Task 'arc_easy'...c\arc_easy.yaml:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Task 'blimp' from D:\Project\xlm-d0405\.d0405\work\repro\tasks\blimp.yaml overrides existing task from D:\Project\xlm-d
+0405\.venv-d0405\Lib\site-packages\lm_eval\tasks\blimp\_blimp.yaml
+Task 'hellaswag' from D:\Project\xlm-d0405\.d0405\work\repro\tasks\hellaswag.yaml overrides existing task from D:\Proje
+ct\xlm-d0405\.venv-d0405\Lib\site-packages\lm_eval\tasks\hellaswag\hellaswag.yaml
+Task 'piqa' from D:\Project\xlm-d0405\.d0405\work\repro\tasks\piqa.yaml overrides existing task from D:\Project\xlm-d04
+05\.venv-d0405\Lib\site-packages\lm_eval\tasks\piqa\piqa.yaml
+
+  0%|          | 0/2 [00:00<?, ?it/s]
+100%|██████████| 2/2 [00:00<00:00, 993.32it/s]
+TASKS ["blimp_syn_alpha"]
+METRIC_KEYS ["acc,none", "acc_norm,none", "acc_norm_stderr,none", "acc_stderr,none", "alias", "name", "sample_len"]
+SAMPLE_KEYS ["acc", "acc_norm", "arguments", "doc", "doc_hash", "doc_id", "filter", "filtered_resps", "metrics", "prompt_hash", "resps", "target", "target_hash"]
+SAMPLE_ID {"id": null, "doc_id": 0, "target": 0}
+DOC {"id": "syn_alpha_0", "choices": ["The fixture cats sleep.", "The fixture cats sleeps."], "answer": 0}

@@ -44,7 +44,9 @@ def resolve_evaluation_config(config: dict[str, Any]) -> tuple[dict[str, Any], d
     tokenizer = load_inference_tokenizer(checkpoint, config.get("tokenizer_path"))
     assets = {
         key: bounded_asset_hash(Path(config[key]))
-        for key in ("pins_path", "include_path")
+        # The evaluation-input manifest binds into the frozen execution
+        # envelope exactly like the pins file and any include path.
+        for key in ("pins_path", "include_path", "inputs")
         if config.get(key) and Path(config[key]).exists()
     }
     return config, {
