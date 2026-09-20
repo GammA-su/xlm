@@ -62,6 +62,7 @@ dev = [
     "mypy>=1.10.0",
     "types-pyyaml>=6.0.12",
     "types-psutil>=5.9.0",
+    "pytest-xdist>=3.8.0",
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -117,4 +118,5 @@ markers = [
     "cuda: tests that require an NVIDIA CUDA GPU",
     "slow: tests that take longer than a few seconds",
     "operator: tests that require isolated operator privileges",
+    "serial: tests requiring exclusive execution (shared-checkout mutation, nonisolatable resources, measured timing/inventory checks); run with -n 0, never under xdist",
 ]
