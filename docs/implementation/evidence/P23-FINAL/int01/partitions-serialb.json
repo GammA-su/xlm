@@ -1,0 +1,1 @@
+{"groups": {"serialb-artifact_identity": ["tests/test_artifact_identity.py"], "serialb-operator": ["tests/test_operator.py"], "serialb-offline_workflow": ["tests/test_offline_workflow.py"]}}

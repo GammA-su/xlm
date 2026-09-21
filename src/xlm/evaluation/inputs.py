@@ -36,6 +36,7 @@ from typing import Any
 
 import yaml
 
+from xlm.data.acquisition.receipt import AcquisitionReceipt
 from xlm.evaluation.suites import (
     FinalAuthorization,
     FinalAuthorizationRequiredError,
@@ -468,6 +469,7 @@ class VerifiedInputs:
     manifest_id: str
     selections: tuple[VerifiedSelection, ...]
     policy_splits: Mapping[str, str]
+    verified_receipts: tuple[str, ...] = ()
 
     @property
     def scope_label(self) -> str:
@@ -500,6 +502,7 @@ class VerifiedInputs:
                 for v in self.selections
             ],
             "acquisition_receipts": list(self.manifest.acquisition_receipts),
+            "verified_acquisition_receipts": list(self.verified_receipts),
         }
 
 
@@ -592,6 +595,158 @@ def _split_content_digests(
     )
 
 
+RECEIPT_SCAN_LIMIT = 10000
+RECEIPT_MAX_BYTES = 8 * 1024**2
+
+
+def _load_store_receipts(store_root: Path) -> dict[str, AcquisitionReceipt]:
+    """Index acquisition receipts published under a D01 store root.
+
+    Reads ``<store_root>/raw_dataset/*/acquisition_receipt.json`` through the
+    existing D02 receipt schema. Bounds the scan and each file; corrupt JSON,
+    schema violations, and duplicate receipt IDs fail closed.
+    """
+    found: dict[str, AcquisitionReceipt] = {}
+    raw = store_root / "raw_dataset"
+    if not raw.is_dir():
+        return found
+    entries = 0
+    for artifact_dir in sorted(raw.iterdir()):
+        if not artifact_dir.is_dir() or artifact_dir.is_symlink():
+            continue
+        candidate = artifact_dir / "acquisition_receipt.json"
+        if not candidate.is_file() or candidate.is_symlink():
+            continue
+        entries += 1
+        if entries > RECEIPT_SCAN_LIMIT:
+            raise InputVerificationError(
+                f"acquisition receipt scan exceeds {RECEIPT_SCAN_LIMIT} entries under {raw}"
+            )
+        data = candidate.read_bytes()
+        if len(data) > RECEIPT_MAX_BYTES:
+            raise InputVerificationError(
+                f"acquisition receipt exceeds {RECEIPT_MAX_BYTES} bytes: {candidate}"
+            )
+        try:
+            receipt = AcquisitionReceipt.model_validate_json(data)
+        except Exception as exc:
+            raise InputVerificationError(
+                f"corrupt acquisition receipt at {candidate}: {exc}"
+            ) from exc
+        if receipt.receipt_id in found:
+            raise InputVerificationError(
+                f"duplicate acquisition receipt id '{receipt.receipt_id}' in {raw}"
+            )
+        found[receipt.receipt_id] = receipt
+    return found
+
+
+def _selection_receipt_binding(
+    selection: TaskInputSelection, resolved: Path, receipt: AcquisitionReceipt
+) -> str | None:
+    """How (if at all) a verified selection binds to a verified receipt.
+
+    ``"exact"``: the executed bytes are byte-identical to a file the receipt
+    attests (digest and size). ``"derived"``: the executed file differs, but
+    every record carries the receipt's selection locator chain
+    (``selection_hash``/revision/source file) within the selected population.
+    Anything else returns ``None``: an unrelated valid receipt, a wrong
+    source/selection, or a changed derived input never binds.
+    """
+    for described in receipt.files:
+        if (
+            described.locally_computed_sha256.lower() == selection.content_sha256.lower()
+            and described.size_bytes == selection.content_bytes
+        ):
+            return "exact"
+    try:
+        records = _read_records(resolved)
+    except InputVerificationError:
+        return None
+    if not records:
+        return None
+    receipt_files = {described.relative_path for described in receipt.files}
+    for record in records:
+        locator = record.get("_xlm_acquisition")
+        if not isinstance(locator, dict):
+            return None
+        if locator.get("selection_hash") != receipt.plan_hash:
+            return None
+        if locator.get("revision") != receipt.revision:
+            return None
+        if locator.get("source_file") not in receipt_files:
+            return None
+    selected_population = sum(described.record_count or 0 for described in receipt.files)
+    if not selected_population or len(records) > selected_population:
+        return None
+    return "derived"
+
+
+def verify_acquisition_receipts(
+    manifest: EvaluationInputManifest,
+    selections: Sequence[tuple[str, TaskInputSelection, Path]],
+    *,
+    store_root: Path | None,
+) -> tuple[str, ...]:
+    """Resolve and verify declared acquisition receipts against D01/D02 services.
+
+    Establishes, for each declared receipt id: presence under the store root,
+    schema validity, verified status, and binding to at least one executed
+    selection (exact bytes or locator derivation chain); and for each executed
+    selection, binding to at least one declared receipt. Manifests declaring no
+    receipts keep their explicit fixture policy and skip this entirely.
+
+    Trust boundary: this proves the executed bytes (or their record-level
+    derivation chain) were attested by a completed D02 acquisition recorded in
+    the given store. It does not re-authenticate the store itself (use D01
+    artifact verification for that), certify source rights or admission, or
+    cover untransferred bytes beyond the attested selection.
+    """
+    declared = list(manifest.acquisition_receipts)
+    if not declared:
+        return ()
+    if len(set(declared)) != len(declared):
+        raise InputVerificationError("manifest declares duplicate acquisition receipts")
+    if store_root is None:
+        raise InputVerificationError(
+            "manifest declares acquisition receipts but no acquisition store root "
+            "was provided (--acquisition-store-root); refusing without provenance"
+        )
+    store = _load_store_receipts(store_root)
+    for receipt_id in declared:
+        receipt = store.get(receipt_id)
+        if receipt is None:
+            raise InputVerificationError(
+                f"declared acquisition receipt '{receipt_id}' was not found under {store_root}"
+            )
+        if not receipt.is_verified:
+            raise InputVerificationError(
+                f"declared acquisition receipt '{receipt_id}' is not marked verified"
+            )
+        bound = [
+            namespace
+            for namespace, selection, resolved in selections
+            if _selection_receipt_binding(selection, resolved, receipt) is not None
+        ]
+        if not bound:
+            raise InputVerificationError(
+                f"declared acquisition receipt '{receipt_id}' binds to no executed "
+                "selection: wrong source/selection, unrelated substitution, or "
+                "changed derived input"
+            )
+    for namespace, selection, resolved in selections:
+        if not any(
+            _selection_receipt_binding(selection, resolved, store[receipt_id]) is not None
+            for receipt_id in declared
+            if receipt_id in store
+        ):
+            raise InputVerificationError(
+                f"selection '{namespace}' has no acquisition-receipt lineage although "
+                "the manifest declares receipts"
+            )
+    return tuple(declared)
+
+
 def verify_evaluation_inputs(
     manifest: EvaluationInputManifest,
     *,
@@ -599,6 +754,7 @@ def verify_evaluation_inputs(
     tier: SuiteTier | None = None,
     harness_version: str | None = None,
     final_authorization: FinalAuthorization | None = None,
+    acquisition_store_root: Path | None = None,
 ) -> VerifiedInputs:
     """Verify every declared artifact before any task is built or executed.
 
@@ -609,7 +765,9 @@ def verify_evaluation_inputs(
     3. artifact existence, size and content digest;
     4. exact membership: declared ids == ids present, no duplicates, no extras;
     5. required BLiMP subdataset cover;
-    6. pinned harness agreement.
+    6. pinned harness agreement;
+    7. declared acquisition receipts, resolved against D01/D02 services and
+       bound to the executed selections (skipped when none are declared).
 
     No network access, no provider cache, no code from the manifest.
     """
@@ -718,11 +876,17 @@ def verify_evaluation_inputs(
     if missing_required:
         raise MembershipError(f"required BLiMP subdatasets were not verified: {missing_required}")
 
+    verified_receipts = verify_acquisition_receipts(
+        manifest,
+        [(v.selection.namespace, v.selection, v.resolved_path) for v in verified],
+        store_root=acquisition_store_root,
+    )
     return VerifiedInputs(
         manifest=manifest,
         manifest_id=manifest.manifest_id(),
         selections=tuple(verified),
         policy_splits=policy,
+        verified_receipts=verified_receipts,
     )
 
 

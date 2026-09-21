@@ -189,6 +189,50 @@ def test_submit_refuses_blocked_plans_and_missing_snapshots(tmp_path: Path) -> N
         queue.submit(clean, clean_path, tmp_path / "absent", "cpu", authorization_token="tok")
 
 
+def test_submit_refuses_legacy_unfrozen_plan(tmp_path: Path) -> None:
+    """A version-1 plan without an execution envelope must not execute.
+
+    Historical plans stay inspectable, but submission requires a frozen
+    version-2 plan; the queue must refuse rather than silently upgrade the
+    legacy representation.
+    """
+    from xlm.experiments.plans import ExecutablePlan, PlanError
+    from xlm.experiments.snapshot import CodeSnapshot
+
+    snapshot = CodeSnapshot("1", "abc", None, [], {}, 0, "")
+    snap_dir = tmp_path / "snap"
+    snap_dir.mkdir()
+    (snap_dir / "manifest.json").write_text(json.dumps(snapshot.to_dict()), encoding="utf-8")
+    plan = ExecutablePlan(
+        plan_version="1",
+        plan_id="plan_x",
+        plan_hash="h" * 32,
+        draft_id="d",
+        track="baseline",
+        horizon_kind="standalone",
+        resolved_config={},
+        code_snapshot=snapshot,
+        dependency_hash="dep",
+        seeds={"init_seed": 1, "data_seed": 2},
+        budget_valid_targets=10,
+        budget_max_seconds=None,
+        estimated_new_disk_gib=None,
+        gpu_processes=1,
+        evaluation_tier="search",
+        checkpoint_every_valid_targets=10,
+        evaluation_every_valid_targets=10,
+        exposure={},
+        cost_estimate={},
+        storage_estimate_gib=None,
+        blockers=[],
+    )
+    plan_path = tmp_path / "plan.json"
+    plan.save(plan_path)
+    queue = make_queue(tmp_path, "legacy", tmp_path / "ws_legacy")
+    with pytest.raises(PlanError, match="legacy/unfrozen plan cannot execute"):
+        queue.submit(plan, plan_path, snap_dir, "cpu", authorization_token="tok")
+
+
 def test_submit_allows_explicit_duplicates(tmp_path: Path) -> None:
     plan, plan_path, snapshot_dir = make_plan(tmp_path, "dup2")
     queue = make_queue(tmp_path, "dup2", tmp_path / "ws_dup2")

@@ -1,0 +1,36 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm-final-integration\.venv-final\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm-final-integration
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0, xdist-3.8.0
+collecting ... collected 15 items / 1 deselected / 14 selected
+
+tests/test_frozen_execution.py::test_independent_persisted_bindings_refuse_before_worker PASSED [  7%]
+tests/test_frozen_execution.py::test_authority_and_recomputed_envelope_fields_are_checked PASSED [ 14%]
+tests/test_frozen_execution.py::test_actual_environment_mismatch_fails_in_real_worker PASSED [ 21%]
+tests/test_frozen_execution.py::test_public_queue_and_diagnostic_receipt_keep_separate_provenance PASSED [ 28%]
+tests/test_frozen_execution.py::test_changed_tokenizer_and_real_shard_are_rejected PASSED [ 35%]
+tests/test_frozen_execution.py::test_real_worker_output_bound_and_terminal_failure PASSED [ 42%]
+tests/test_frozen_execution.py::test_worker_rejects_cli_override_outside_frozen_envelope PASSED [ 50%]
+tests/test_frozen_execution.py::test_unresolved_checkpoint_is_inspectable_but_not_frozen_resume PASSED [ 57%]
+tests/test_frozen_execution.py::test_snapshot_reuse_conflicts_and_paths PASSED [ 64%]
+tests/test_frozen_execution.py::test_real_frozen_worker_trains_and_publishes PASSED [ 71%]
+tests/test_frozen_execution.py::test_intact_a_executes_after_live_b_and_import_override PASSED [ 78%]
+tests/test_frozen_execution.py::test_snapshot_damage_rejects_before_worker[tamper] PASSED [ 85%]
+tests/test_frozen_execution.py::test_snapshot_damage_rejects_before_worker[missing] PASSED [ 92%]
+tests/test_frozen_execution.py::test_snapshot_damage_rejects_before_worker[extra] PASSED [100%]
+
+- generated xml file: D:\Project\xlm-final-integration\data\audit\p23-remediation\stage06\final01\serialc2-frozen_execution.xml -
+============================ slowest 10 durations =============================
+105.34s call     tests/test_frozen_execution.py::test_public_queue_and_diagnostic_receipt_keep_separate_provenance
+51.77s call     tests/test_frozen_execution.py::test_intact_a_executes_after_live_b_and_import_override
+50.52s call     tests/test_frozen_execution.py::test_real_frozen_worker_trains_and_publishes
+44.47s call     tests/test_frozen_execution.py::test_actual_environment_mismatch_fails_in_real_worker
+41.23s call     tests/test_frozen_execution.py::test_real_worker_output_bound_and_terminal_failure
+35.61s call     tests/test_frozen_execution.py::test_worker_rejects_cli_override_outside_frozen_envelope
+30.76s call     tests/test_frozen_execution.py::test_changed_tokenizer_and_real_shard_are_rejected
+28.83s call     tests/test_frozen_execution.py::test_independent_persisted_bindings_refuse_before_worker
+23.59s call     tests/test_frozen_execution.py::test_authority_and_recomputed_envelope_fields_are_checked
+20.93s call     tests/test_frozen_execution.py::test_snapshot_damage_rejects_before_worker[tamper]
+================ 14 passed, 1 deselected in 478.78s (0:07:58) =================

@@ -155,6 +155,13 @@ def test_readme_example_commands_are_implemented(tmp_path: Path) -> None:
             "experiment",
             "plan",
             "recipes/experiments/baseline_50m.yaml",
+            # Capture the current tree into an isolated directory: the
+            # repo's snapshots/ holds immutable frozen captures, and
+            # planning an evolved tree must refuse to overwrite them
+            # (see test_snapshot_reuse_conflicts_and_paths) rather than
+            # mutate the shared checkout.
+            "--snapshot-dir",
+            str(tmp_path / "snapshots"),
         ],
         capture_output=True,
         text=True,

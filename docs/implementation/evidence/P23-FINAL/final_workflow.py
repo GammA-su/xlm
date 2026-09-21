@@ -299,8 +299,9 @@ def step_evaluation(work: Path, home: Path, selected: str, receipt_id: str) -> d
     manifest_path = work / "manifest.yaml"
     manifest_path.write_text(yaml.safe_dump(manifest.to_dict(), sort_keys=False), encoding="utf-8")
     res = cli(["evaluate", "--suite", "search", "--inputs", str(manifest_path),
-               "--verify-inputs-only"], home, 120)
+               "--verify-inputs-only", "--acquisition-store-root", str(home)], home, 120)
     assert "Evaluation inputs VERIFIED" in res.stdout, res.stdout + res.stderr
+    assert f"Acquisition receipt verified: {receipt_id}" in res.stdout, res.stdout
 
     from xlm.config.schemas import TransformerBaselineConfig
     from xlm.models.serialization import save_model_to_directory
@@ -314,6 +315,7 @@ def step_evaluation(work: Path, home: Path, selected: str, receipt_id: str) -> d
             context_length=128, attention_backend="eager"), seed=42), ckpt)
     full_out = work / "eval-full"
     res = cli(["evaluate", str(ckpt), "--suite", "search", "--inputs", str(manifest_path),
+               "--acquisition-store-root", str(home),
                "--output-dir", str(full_out)], home, 600)
     assert res.returncode == 0, res.stdout + res.stderr
     evidence_files = sorted(full_out.glob("evidence_*.json"))
@@ -327,6 +329,7 @@ def step_evaluation(work: Path, home: Path, selected: str, receipt_id: str) -> d
     assert evidence["coverage"]["manifest_id"] == manifest.manifest_id()
     limited_out = work / "eval-limited"
     res = cli(["evaluate", str(ckpt), "--suite", "search", "--inputs", str(manifest_path),
+               "--acquisition-store-root", str(home),
                "--limit", "1", "--output-dir", str(limited_out)], home, 600)
     assert res.returncode == 0, res.stdout + res.stderr
     assert "Index WITHHELD" in res.stdout, res.stdout

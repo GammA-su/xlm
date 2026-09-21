@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="10" time="9.481" timestamp="2026-09-21T12:21:55.704849+02:00" hostname="BetA-C1"><testcase classname="tests.test_eval_declared_inputs" name="test_receipt_exact_lineage_verifies" time="0.022" /><testcase classname="tests.test_eval_declared_inputs" name="test_receipt_missing_is_refused" time="0.007" /><testcase classname="tests.test_eval_declared_inputs" name="test_receipt_unresolvable_without_store_root_is_refused" time="0.007" /><testcase classname="tests.test_eval_declared_inputs" name="test_receipt_corrupt_is_refused" time="0.012" /><testcase classname="tests.test_eval_declared_inputs" name="test_receipt_unrelated_substitution_is_refused" time="0.021" /><testcase classname="tests.test_eval_declared_inputs" name="test_receipt_tampered_digest_is_refused" time="0.022" /><testcase classname="tests.test_eval_declared_inputs" name="test_receipt_derived_locator_chain_verifies" time="0.014"><failure message="json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)">tmp_path = WindowsPath('D:/Project/xlm-final-integration/data/audit/p23-remediation/stage06/final01/receipt-tmp/test_receipt_derived_locator_c0')
+
+    def test_receipt_derived_locator_chain_verifies(tmp_path: Path) -&gt; None:
+        receipt, out = _acquire_whole_file(tmp_path, "data.jsonl", _receipt_records())
+        store = tmp_path / "store"
+        _plant_store(store, "artifact_data_jsonl", receipt)
+        derived = []
+        for index, record in enumerate(_receipt_records()):
+            derived.append(
+                {
+                    **record,
+                    "_xlm_acquisition": {
+                        "source_file": "data.jsonl",
+                        "row_index": index,
+                        "revision": receipt.revision,
+                        "selection_hash": receipt.plan_hash,
+                    },
+                }
+            )
+        derived_path = out / "derived.jsonl"
+        _write_jsonl(derived_path, derived, indent=2)
+        assert derived_path.read_bytes() != (out / "data.jsonl").read_bytes()
+&gt;       manifest = _receipt_manifest(derived_path, [receipt.receipt_id], tmp_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_eval_declared_inputs.py:928: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_eval_declared_inputs.py:801: in _receipt_manifest
+    return build_evaluation_inputs(
+src\xlm\evaluation\inputs.py:926: in build_evaluation_inputs
+    records = _read_records(resolved)
+              ^^^^^^^^^^^^^^^^^^^^^^^
+src\xlm\evaluation\inputs.py:539: in _read_records
+    records = [json.loads(line) for line in text.splitlines() if line.strip()]
+               ^^^^^^^^^^^^^^^^
+C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\json\__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\json\decoder.py:338: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;json.decoder.JSONDecoder object at 0x0000026528A02B40&gt;, s = '{', idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+&gt;           obj, end = self.scan_once(s, idx)
+                       ^^^^^^^^^^^^^^^^^^^^^^
+E           json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)
+
+C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\json\decoder.py:354: JSONDecodeError</failure></testcase><testcase classname="tests.test_eval_declared_inputs" name="test_receipt_broken_locator_chain_is_refused" time="0.012"><failure message="json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)">tmp_path = WindowsPath('D:/Project/xlm-final-integration/data/audit/p23-remediation/stage06/final01/receipt-tmp/test_receipt_broken_locator_ch0')
+
+    def test_receipt_broken_locator_chain_is_refused(tmp_path: Path) -&gt; None:
+        from xlm.evaluation.inputs import InputVerificationError
+    
+        receipt, out = _acquire_whole_file(tmp_path, "data.jsonl", _receipt_records())
+        store = tmp_path / "store"
+        _plant_store(store, "artifact_data_jsonl", receipt)
+        derived = []
+        for index, record in enumerate(_receipt_records()):
+            derived.append(
+                {
+                    **record,
+                    "_xlm_acquisition": {
+                        "source_file": "other.jsonl",
+                        "row_index": index,
+                        "revision": receipt.revision,
+                        "selection_hash": "0" * 64,
+                    },
+                }
+            )
+        derived_path = out / "derived.jsonl"
+        _write_jsonl(derived_path, derived, indent=2)
+&gt;       manifest = _receipt_manifest(derived_path, [receipt.receipt_id], tmp_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_eval_declared_inputs.py:954: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_eval_declared_inputs.py:801: in _receipt_manifest
+    return build_evaluation_inputs(
+src\xlm\evaluation\inputs.py:926: in build_evaluation_inputs
+    records = _read_records(resolved)
+              ^^^^^^^^^^^^^^^^^^^^^^^
+src\xlm\evaluation\inputs.py:539: in _read_records
+    records = [json.loads(line) for line in text.splitlines() if line.strip()]
+               ^^^^^^^^^^^^^^^^
+C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\json\__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\json\decoder.py:338: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;json.decoder.JSONDecoder object at 0x0000026528A02B40&gt;, s = '{', idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+&gt;           obj, end = self.scan_once(s, idx)
+                       ^^^^^^^^^^^^^^^^^^^^^^
+E           json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)
+
+C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\json\decoder.py:354: JSONDecodeError</failure></testcase><testcase classname="tests.test_eval_declared_inputs" name="test_receipt_changed_derived_input_is_refused" time="0.007" /><testcase classname="tests.test_eval_declared_inputs" name="test_receipt_verify_inputs_only_reports_verified_receipts" time="5.507" /></testsuite></testsuites>

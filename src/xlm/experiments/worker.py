@@ -119,6 +119,7 @@ def run_worker(request: dict[str, Any]) -> int:
             "pins_path",
             "final_authorization_file",
             "inputs",
+            "acquisition_store_root",
         ):
             if options.get(key) is not None:
                 options[key] = Path(options[key])

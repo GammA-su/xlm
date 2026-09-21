@@ -1,0 +1,16 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm-final-integration\.venv-final\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm-final-integration
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0, xdist-3.8.0
+collecting ... collected 1 item
+
+tests/test_frozen_recovery.py::test_real_crash_preserves_committed_boundary_on_retry PASSED [100%]
+
+- generated xml file: D:\Project\xlm-final-integration\data\audit\p23-remediation\stage06\final01\serialc2-frozen_recovery.xml -
+============================ slowest 10 durations =============================
+79.44s call     tests/test_frozen_recovery.py::test_real_crash_preserves_committed_boundary_on_retry
+0.00s setup    tests/test_frozen_recovery.py::test_real_crash_preserves_committed_boundary_on_retry
+0.00s teardown tests/test_frozen_recovery.py::test_real_crash_preserves_committed_boundary_on_retry
+======================== 1 passed in 81.63s (0:01:21) =========================

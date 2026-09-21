@@ -1,0 +1,97 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm-final-integration\.venv-final\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm-final-integration
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0, xdist-3.8.0
+created: 8/8 workers
+8 workers [36 items]
+
+scheduling tests via WorkStealingScheduling
+
+tests/test_queue.py::test_submit_deduplicates_identical_plans 
+tests/test_frozen_execution.py::test_snapshot_damage_rejects_before_worker[missing] 
+tests/test_queue.py::test_only_one_gpu_lease_can_be_held 
+tests/test_frozen_execution.py::test_actual_environment_mismatch_fails_in_real_worker 
+tests/test_queue.py::test_changed_live_tree_preserves_frozen_run 
+tests/test_queue.py::test_cancel_stops_a_queued_job_and_a_running_job 
+tests/test_queue.py::test_cli_campaign_plan_shows_six_mixtures_without_running 
+tests/test_frozen_execution.py::test_unresolved_checkpoint_is_inspectable_but_not_frozen_resume 
+[gw1] [  2%] PASSED tests/test_queue.py::test_only_one_gpu_lease_can_be_held 
+tests/test_queue.py::test_stale_lease_is_reclaimable_and_recorded 
+[gw1] [  5%] PASSED tests/test_queue.py::test_stale_lease_is_reclaimable_and_recorded 
+tests/test_queue.py::test_cpu_environment_refuses_cuda_job_without_execution 
+[gw4] [  8%] PASSED tests/test_queue.py::test_cli_campaign_plan_shows_six_mixtures_without_running 
+tests/test_queue.py::test_cli_submit_blocks_unauthorized_large_runs 
+[gw4] [ 11%] PASSED tests/test_queue.py::test_cli_submit_blocks_unauthorized_large_runs 
+tests/test_queue.py::test_cli_queue_status_and_cancel 
+[gw6] [ 13%] PASSED tests/test_frozen_execution.py::test_unresolved_checkpoint_is_inspectable_but_not_frozen_resume 
+tests/test_frozen_execution.py::test_snapshot_reuse_conflicts_and_paths 
+[gw4] [ 16%] PASSED tests/test_queue.py::test_cli_queue_status_and_cancel 
+tests/test_frozen_execution.py::test_independent_persisted_bindings_refuse_before_worker 
+[gw6] [ 19%] PASSED tests/test_frozen_execution.py::test_snapshot_reuse_conflicts_and_paths 
+tests/test_frozen_execution.py::test_real_frozen_worker_trains_and_publishes 
+[gw1] [ 22%] PASSED tests/test_queue.py::test_cpu_environment_refuses_cuda_job_without_execution 
+tests/test_queue.py::test_toy_campaign_runs_sequentially_to_success 
+[gw0] [ 25%] PASSED tests/test_queue.py::test_submit_deduplicates_identical_plans 
+tests/test_queue.py::test_submit_refuses_blocked_plans_and_missing_snapshots 
+[gw7] [ 27%] PASSED tests/test_frozen_execution.py::test_snapshot_damage_rejects_before_worker[missing] 
+tests/test_frozen_execution.py::test_snapshot_damage_rejects_before_worker[extra] 
+[gw4] [ 30%] PASSED tests/test_frozen_execution.py::test_independent_persisted_bindings_refuse_before_worker 
+tests/test_frozen_execution.py::test_authority_and_recomputed_envelope_fields_are_checked 
+[gw7] [ 33%] PASSED tests/test_frozen_execution.py::test_snapshot_damage_rejects_before_worker[extra] 
+tests/test_frozen_recovery.py::test_real_crash_preserves_committed_boundary_on_retry 
+[gw5] [ 36%] PASSED tests/test_frozen_execution.py::test_actual_environment_mismatch_fails_in_real_worker 
+tests/test_frozen_execution.py::test_public_queue_and_diagnostic_receipt_keep_separate_provenance 
+[gw2] [ 38%] PASSED tests/test_queue.py::test_changed_live_tree_preserves_frozen_run 
+tests/test_queue.py::test_failed_jobs_keep_evidence_and_stay_terminal 
+[gw4] [ 41%] PASSED tests/test_frozen_execution.py::test_authority_and_recomputed_envelope_fields_are_checked 
+tests/test_queue.py::test_crash_recovery_requeues_once_when_retries_remain 
+[gw0] [ 44%] PASSED tests/test_queue.py::test_submit_refuses_blocked_plans_and_missing_snapshots 
+tests/test_queue.py::test_submit_refuses_legacy_unfrozen_plan 
+[gw0] [ 47%] PASSED tests/test_queue.py::test_submit_refuses_legacy_unfrozen_plan 
+tests/test_queue.py::test_submit_allows_explicit_duplicates 
+[gw6] [ 50%] PASSED tests/test_frozen_execution.py::test_real_frozen_worker_trains_and_publishes 
+tests/test_frozen_execution.py::test_intact_a_executes_after_live_b_and_import_override 
+[gw3] [ 52%] PASSED tests/test_queue.py::test_cancel_stops_a_queued_job_and_a_running_job 
+tests/test_queue.py::test_prep_pool_is_bounded_and_ordered 
+[gw3] [ 55%] PASSED tests/test_queue.py::test_prep_pool_is_bounded_and_ordered 
+tests/test_queue.py::test_cli_experiment_plan_reports_blockers 
+[gw3] [ 58%] PASSED tests/test_queue.py::test_cli_experiment_plan_reports_blockers 
+tests/test_configurable_workflow.py::test_public_two_source_prepare_direct_queue_and_resume[True] 
+[gw0] [ 61%] PASSED tests/test_queue.py::test_submit_allows_explicit_duplicates 
+tests/test_frozen_execution.py::test_worker_rejects_cli_override_outside_frozen_envelope 
+[gw2] [ 63%] PASSED tests/test_queue.py::test_failed_jobs_keep_evidence_and_stay_terminal 
+tests/test_queue.py::test_status_lists_jobs_with_attempts 
+[gw4] [ 66%] PASSED tests/test_queue.py::test_crash_recovery_requeues_once_when_retries_remain 
+tests/test_queue.py::test_crash_without_retries_fails_loudly 
+[gw6] [ 69%] PASSED tests/test_frozen_execution.py::test_intact_a_executes_after_live_b_and_import_override 
+tests/test_frozen_execution.py::test_snapshot_damage_rejects_before_worker[tamper] 
+[gw2] [ 72%] PASSED tests/test_queue.py::test_status_lists_jobs_with_attempts 
+[gw0] [ 75%] PASSED tests/test_frozen_execution.py::test_worker_rejects_cli_override_outside_frozen_envelope 
+[gw7] [ 77%] PASSED tests/test_frozen_recovery.py::test_real_crash_preserves_committed_boundary_on_retry 
+tests/test_configurable_workflow.py::test_public_two_source_prepare_direct_queue_and_resume[False] 
+[gw4] [ 80%] PASSED tests/test_queue.py::test_crash_without_retries_fails_loudly 
+[gw6] [ 83%] PASSED tests/test_frozen_execution.py::test_snapshot_damage_rejects_before_worker[tamper] 
+[gw5] [ 86%] PASSED tests/test_frozen_execution.py::test_public_queue_and_diagnostic_receipt_keep_separate_provenance 
+tests/test_frozen_execution.py::test_changed_tokenizer_and_real_shard_are_rejected 
+[gw1] [ 88%] PASSED tests/test_queue.py::test_toy_campaign_runs_sequentially_to_success 
+tests/test_frozen_execution.py::test_real_worker_output_bound_and_terminal_failure 
+[gw5] [ 91%] PASSED tests/test_frozen_execution.py::test_changed_tokenizer_and_real_shard_are_rejected 
+[gw1] [ 94%] PASSED tests/test_frozen_execution.py::test_real_worker_output_bound_and_terminal_failure 
+[gw3] [ 97%] PASSED tests/test_configurable_workflow.py::test_public_two_source_prepare_direct_queue_and_resume[True] 
+[gw7] [100%] PASSED tests/test_configurable_workflow.py::test_public_two_source_prepare_direct_queue_and_resume[False] 
+
+- generated xml file: D:\Project\xlm-final-integration\data\audit\p23-remediation\stage06\final01\heavy4-xdist.xml -
+============================ slowest 10 durations =============================
+224.02s call     tests/test_queue.py::test_toy_campaign_runs_sequentially_to_success
+220.35s call     tests/test_configurable_workflow.py::test_public_two_source_prepare_direct_queue_and_resume[False]
+208.32s call     tests/test_configurable_workflow.py::test_public_two_source_prepare_direct_queue_and_resume[True]
+162.98s call     tests/test_frozen_execution.py::test_public_queue_and_diagnostic_receipt_keep_separate_provenance
+123.16s call     tests/test_frozen_recovery.py::test_real_crash_preserves_committed_boundary_on_retry
+107.37s call     tests/test_queue.py::test_cancel_stops_a_queued_job_and_a_running_job
+78.27s call     tests/test_queue.py::test_crash_recovery_requeues_once_when_retries_remain
+77.94s call     tests/test_frozen_execution.py::test_intact_a_executes_after_live_b_and_import_override
+76.42s call     tests/test_queue.py::test_changed_live_tree_preserves_frozen_run
+75.16s call     tests/test_queue.py::test_failed_jobs_keep_evidence_and_stay_terminal
+======================= 36 passed in 413.34s (0:06:53) ========================

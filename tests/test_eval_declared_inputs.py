@@ -729,3 +729,269 @@ def test_cli_requires_a_checkpoint_to_evaluate(tmp_path: Path) -> None:
     result = _cli(["--suite", "search", "--inputs", str(COMPLETE_MANIFEST)], tmp_path)
     assert result.returncode == 1
     assert "a checkpoint is required" in result.stderr
+
+
+# ------------------------------------------------- acquisition receipts (closeout)
+
+
+def _receipt_records() -> list[dict[str, object]]:
+    return [
+        {
+            "id": "rcpt_arc_0000",
+            "question": "What colour is the receipt sky?",
+            "choices": {"text": ["blue", "plaid"], "label": ["A", "B"]},
+            "answerKey": "A",
+        },
+        {
+            "id": "rcpt_arc_0001",
+            "question": "How many receipt moons orbit?",
+            "choices": {"text": ["two", "nine"], "label": ["A", "B"]},
+            "answerKey": "B",
+        },
+    ]
+
+
+def _write_jsonl(path: Path, records: list[dict[str, object]]) -> None:
+    """Single-line JSON records (JSONL framing) with sorted keys, so the bytes
+    differ from compact insertion-ordered serializations of the same content."""
+    lines = [json.dumps(record, sort_keys=True) for record in records]
+    path.write_bytes(("\n".join(lines) + "\n").encode("utf-8"))
+
+
+def _acquire_whole_file(tmp_path: Path, name: str, records: list[dict[str, object]]) -> Any:
+    """Verify a local authored file through the real D02 verifier (no network)."""
+    from xlm.data.acquisition.plan import AcquisitionLimits, AcquisitionMode, AcquisitionPlan
+    from xlm.data.acquisition.verifier import AcquisitionVerifier
+
+    out = tmp_path / "acquired"
+    out.mkdir(exist_ok=True)
+    (out / name).write_bytes(
+        ("\n".join(json.dumps(record) for record in records) + "\n").encode("utf-8")
+    )
+    plan = AcquisitionPlan(
+        plan_id=f"plan_{name.replace('.', '_')}",
+        source_id="authored",
+        provider="local",
+        repository=str(out),
+        revision="authored-test-v1",
+        mode=AcquisitionMode.WHOLE_FILE,
+        selected_files=[name],
+        row_ranges=None,
+        limits=AcquisitionLimits(max_transferred_bytes=65536, max_records=100),
+        output_artifact_id=f"artifact_{name.replace('.', '_')}",
+        is_pilot=True,
+    )
+    return AcquisitionVerifier(plan, out, journal=None).verify(), out
+
+
+def _plant_store(store_root: Path, artifact_id: str, receipt: Any) -> Path:
+    target = store_root / "raw_dataset" / artifact_id
+    target.mkdir(parents=True, exist_ok=True)
+    (target / "acquisition_receipt.json").write_text(
+        json.dumps(receipt.model_dump(), indent=2, sort_keys=True), encoding="utf-8"
+    )
+    return target
+
+
+def _receipt_manifest(data_file: Path, receipts: list[str], base_dir: Path) -> Any:
+    from xlm.evaluation.harness import harness_version
+    from xlm.evaluation.inputs import SuiteTier, build_evaluation_inputs
+
+    return build_evaluation_inputs(
+        scope_label="receipt closure scope v1",
+        scope_kind="authored_fixture",
+        exposure_class="authored_fixture",
+        tier=SuiteTier.SEARCH,
+        harness_version=harness_version(),
+        entries=[
+            {
+                "task": "arc_easy",
+                "leaf_task": "arc_easy",
+                "source_repository": "loopback-authored-test",
+                "source_revision": "authored-test-v1",
+                "source_split": "train",
+                "record_schema_version": "arc_easy.official_shape.v1",
+                "adapter_version": "xlm_eval_json.v1",
+                "item_id_field": "id",
+                "data_file": str(data_file),
+                "source_config": "ARC-Easy",
+                "label_field": "answerKey",
+                "notes": ["SYNTHETIC receipt-closure content"],
+            }
+        ],
+        base_dir=base_dir,
+        acquisition_receipts=receipts,
+        notes=["receipt verification closeout; authored fixture, not research evidence"],
+    )
+
+
+def _verify_manifest(manifest: Any, store_root: Path | None) -> Any:
+    from xlm.evaluation.inputs import SuiteTier, verify_evaluation_inputs
+
+    return verify_evaluation_inputs(
+        manifest,
+        tier=SuiteTier.SEARCH,
+        harness_version=harness_version(),
+        acquisition_store_root=store_root,
+    )
+
+
+def test_receipt_exact_lineage_verifies(tmp_path: Path) -> None:
+    receipt, out = _acquire_whole_file(tmp_path, "data.jsonl", _receipt_records())
+    store = tmp_path / "store"
+    _plant_store(store, "artifact_data_jsonl", receipt)
+    manifest = _receipt_manifest(out / "data.jsonl", [receipt.receipt_id], tmp_path)
+    verified = _verify_manifest(manifest, store)
+    assert verified.verified_receipts == (receipt.receipt_id,)
+    assert verified.summary()["verified_acquisition_receipts"] == [receipt.receipt_id]
+
+
+def test_receipt_missing_is_refused(tmp_path: Path) -> None:
+    from xlm.evaluation.inputs import InputVerificationError
+
+    receipt, out = _acquire_whole_file(tmp_path, "data.jsonl", _receipt_records())
+    manifest = _receipt_manifest(out / "data.jsonl", [receipt.receipt_id], tmp_path)
+    with pytest.raises(InputVerificationError, match="was not found"):
+        _verify_manifest(manifest, tmp_path / "empty-store")
+
+
+def test_receipt_unresolvable_without_store_root_is_refused(tmp_path: Path) -> None:
+    from xlm.evaluation.inputs import InputVerificationError
+
+    receipt, out = _acquire_whole_file(tmp_path, "data.jsonl", _receipt_records())
+    manifest = _receipt_manifest(out / "data.jsonl", [receipt.receipt_id], tmp_path)
+    with pytest.raises(InputVerificationError, match="no acquisition store root"):
+        _verify_manifest(manifest, None)
+
+
+def test_receipt_corrupt_is_refused(tmp_path: Path) -> None:
+    from xlm.evaluation.inputs import InputVerificationError
+
+    receipt, out = _acquire_whole_file(tmp_path, "data.jsonl", _receipt_records())
+    store = tmp_path / "store"
+    _plant_store(store, "artifact_data_jsonl", receipt)
+    (store / "raw_dataset" / "artifact_data_jsonl" / "acquisition_receipt.json").write_bytes(
+        b"{nope"
+    )
+    manifest = _receipt_manifest(out / "data.jsonl", [receipt.receipt_id], tmp_path)
+    with pytest.raises(InputVerificationError, match="corrupt acquisition receipt"):
+        _verify_manifest(manifest, store)
+
+
+def test_receipt_unrelated_substitution_is_refused(tmp_path: Path) -> None:
+    from xlm.evaluation.inputs import InputVerificationError
+
+    receipt, out = _acquire_whole_file(tmp_path, "data.jsonl", _receipt_records())
+    other_records = [dict(record, id="other_0000") for record in _receipt_records()[:1]]
+    other_receipt, other_out = _acquire_whole_file(tmp_path, "other.jsonl", other_records)
+    _plant_store(tmp_path / "store", "artifact_other", other_receipt)
+    manifest = _receipt_manifest(out / "data.jsonl", [other_receipt.receipt_id], tmp_path)
+    with pytest.raises(InputVerificationError, match="binds to no executed selection"):
+        _verify_manifest(manifest, tmp_path / "store")
+
+
+def test_receipt_tampered_digest_is_refused(tmp_path: Path) -> None:
+    from xlm.evaluation.inputs import InputVerificationError
+
+    receipt, out = _acquire_whole_file(tmp_path, "data.jsonl", _receipt_records())
+    store = tmp_path / "store"
+    target = _plant_store(store, "artifact_data_jsonl", receipt)
+    payload = json.loads((target / "acquisition_receipt.json").read_text(encoding="utf-8"))
+    payload["files"][0]["locally_computed_sha256"] = "0" * 64
+    (target / "acquisition_receipt.json").write_text(json.dumps(payload), encoding="utf-8")
+    manifest = _receipt_manifest(out / "data.jsonl", [receipt.receipt_id], tmp_path)
+    with pytest.raises(InputVerificationError, match="binds to no executed selection"):
+        _verify_manifest(manifest, store)
+
+
+def test_receipt_derived_locator_chain_verifies(tmp_path: Path) -> None:
+    receipt, out = _acquire_whole_file(tmp_path, "data.jsonl", _receipt_records())
+    store = tmp_path / "store"
+    _plant_store(store, "artifact_data_jsonl", receipt)
+    derived = []
+    for index, record in enumerate(_receipt_records()):
+        derived.append(
+            {
+                **record,
+                "_xlm_acquisition": {
+                    "source_file": "data.jsonl",
+                    "row_index": index,
+                    "revision": receipt.revision,
+                    "selection_hash": receipt.plan_hash,
+                },
+            }
+        )
+    derived_path = out / "derived.jsonl"
+    _write_jsonl(derived_path, derived)
+    assert derived_path.read_bytes() != (out / "data.jsonl").read_bytes()
+    manifest = _receipt_manifest(derived_path, [receipt.receipt_id], tmp_path)
+    verified = _verify_manifest(manifest, store)
+    assert verified.verified_receipts == (receipt.receipt_id,)
+
+
+def test_receipt_broken_locator_chain_is_refused(tmp_path: Path) -> None:
+    from xlm.evaluation.inputs import InputVerificationError
+
+    receipt, out = _acquire_whole_file(tmp_path, "data.jsonl", _receipt_records())
+    store = tmp_path / "store"
+    _plant_store(store, "artifact_data_jsonl", receipt)
+    derived = []
+    for index, record in enumerate(_receipt_records()):
+        derived.append(
+            {
+                **record,
+                "_xlm_acquisition": {
+                    "source_file": "other.jsonl",
+                    "row_index": index,
+                    "revision": receipt.revision,
+                    "selection_hash": "0" * 64,
+                },
+            }
+        )
+    derived_path = out / "derived.jsonl"
+    _write_jsonl(derived_path, derived)
+    manifest = _receipt_manifest(derived_path, [receipt.receipt_id], tmp_path)
+    with pytest.raises(InputVerificationError, match="binds to no executed selection"):
+        _verify_manifest(manifest, store)
+
+
+def test_receipt_changed_derived_input_is_refused(tmp_path: Path) -> None:
+    from xlm.evaluation.inputs import InputVerificationError, MembershipError
+
+    receipt, out = _acquire_whole_file(tmp_path, "data.jsonl", _receipt_records())
+    store = tmp_path / "store"
+    _plant_store(store, "artifact_data_jsonl", receipt)
+    manifest = _receipt_manifest(out / "data.jsonl", [receipt.receipt_id], tmp_path)
+    with (out / "data.jsonl").open("ab") as stream:
+        stream.write(b'{"id": "intruder"}\n')
+    with pytest.raises((InputVerificationError, MembershipError)):
+        _verify_manifest(manifest, store)
+
+
+def test_receipt_verify_inputs_only_reports_verified_receipts(tmp_path: Path) -> None:
+    receipt, out = _acquire_whole_file(tmp_path, "data.jsonl", _receipt_records())
+    store = tmp_path / "store"
+    _plant_store(store, "artifact_data_jsonl", receipt)
+    manifest = _receipt_manifest(out / "data.jsonl", [receipt.receipt_id], tmp_path)
+    manifest_path = tmp_path / "manifest.yaml"
+    manifest_path.write_text(yaml.safe_dump(manifest.to_dict(), sort_keys=False), encoding="utf-8")
+    result = _cli(
+        [
+            "--suite",
+            "search",
+            "--inputs",
+            str(manifest_path),
+            "--verify-inputs-only",
+            "--acquisition-store-root",
+            str(store),
+        ],
+        tmp_path,
+    )
+    assert result.returncode == 0, result.stderr
+    assert f"Acquisition receipt verified: {receipt.receipt_id}" in result.stdout
+    missing = _cli(
+        ["--suite", "search", "--inputs", str(manifest_path), "--verify-inputs-only"],
+        tmp_path,
+    )
+    assert missing.returncode == 1
+    assert "no acquisition store root" in missing.stderr

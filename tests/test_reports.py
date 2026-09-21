@@ -393,48 +393,23 @@ def test_cli_report_campaign_and_data(tmp_path: Path, monkeypatch: pytest.Monkey
 
 
 def test_cli_runs_list_empty_and_populated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from test_queue import make_plan
     from xlm.artifacts.ledger import RunLedger
     from xlm.core.paths import ArtifactPaths
-    from xlm.experiments.plans import ExecutablePlan
     from xlm.experiments.queue import ExperimentQueue
-    from xlm.experiments.snapshot import CodeSnapshot
 
     empty = _invoke(["runs", "list"], monkeypatch, tmp_path)
     assert empty.exit_code == 0 and "No runs recorded" in empty.output
 
+    # A current frozen plan: the queue reads execution identity, so the
+    # fixture must be frozen (version 2 with an envelope), not a legacy
+    # version-1 plan without one. Legacy refusal is covered separately by
+    # test_submit_refuses_legacy_unfrozen_plan.
+    plan, plan_path, snapshot_dir = make_plan(tmp_path, "runslist")
     paths = ArtifactPaths(root=tmp_path / "home")
     ledger = RunLedger(paths.ledger / "ledger.sqlite")
-    queue = ExperimentQueue(ledger, paths)
-    snapshot = CodeSnapshot("1", "abc", None, [], {}, 0, "")
-    snap_dir = tmp_path / "snap"
-    snap_dir.mkdir()
-    (snap_dir / "manifest.json").write_text(json.dumps(snapshot.to_dict()), encoding="utf-8")
-    plan = ExecutablePlan(
-        plan_version="1",
-        plan_id="plan_x",
-        plan_hash="h" * 32,
-        draft_id="d",
-        track="baseline",
-        horizon_kind="standalone",
-        resolved_config={},
-        code_snapshot=snapshot,
-        dependency_hash="dep",
-        seeds={"init_seed": 1, "data_seed": 2},
-        budget_valid_targets=10,
-        budget_max_seconds=None,
-        estimated_new_disk_gib=None,
-        gpu_processes=1,
-        evaluation_tier="search",
-        checkpoint_every_valid_targets=10,
-        evaluation_every_valid_targets=10,
-        exposure={},
-        cost_estimate={},
-        storage_estimate_gib=None,
-        blockers=[],
-    )
-    plan_path = tmp_path / "plan.json"
-    plan.save(plan_path)
-    job_id, _ = queue.submit(plan, plan_path, snap_dir, "cpu", authorization_token="t")
+    queue = ExperimentQueue(ledger, paths, tree_root=tmp_path / "ws_runslist")
+    job_id, _ = queue.submit(plan, plan_path, snapshot_dir, "cpu", authorization_token="t")
     listed = _invoke(["runs", "list"], monkeypatch, tmp_path)
     assert listed.exit_code == 0, listed.output
     assert job_id in listed.output

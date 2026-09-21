@@ -131,7 +131,9 @@ def _blimp_subdataset_names(include_path: Path | None, explicit: str | None) -> 
     return []
 
 
-def _verify_inputs_only(inputs: Path, suite: str, output_json: bool) -> None:
+def _verify_inputs_only(
+    inputs: Path, suite: str, output_json: bool, acquisition_store_root: Path | None = None
+) -> None:
     """Verify a declared evaluation-input manifest and run nothing else.
 
     Deliberately self-contained: no checkpoint, no tokenizer, no model
@@ -158,6 +160,7 @@ def _verify_inputs_only(inputs: Path, suite: str, output_json: bool) -> None:
             manifest,
             tier=SuiteTier(suite),
             harness_version=harness_version(),
+            acquisition_store_root=acquisition_store_root,
         )
     except (EvaluationInputError, FinalAuthorizationRequiredError) as exc:
         typer.echo(f"Error: evaluation inputs rejected: {exc}", err=True)
@@ -185,6 +188,8 @@ def _verify_inputs_only(inputs: Path, suite: str, output_json: bool) -> None:
             "NOTE: no acquisition receipt is referenced; provenance beyond this local "
             "artifact is not established by verification alone."
         )
+    for receipt_id in summary["verified_acquisition_receipts"]:
+        typer.echo(f"Acquisition receipt verified: {receipt_id}")
     typer.echo("Nothing was evaluated: --verify-inputs-only checks inputs only.")
     typer.echo("=" * 60)
 
@@ -204,6 +209,7 @@ def _run_tier_suite(
     final_authorization_file: Path | None,
     execution: dict[str, Any] | None = None,
     inputs: Path | None = None,
+    acquisition_store_root: Path | None = None,
 ) -> None:
     from xlm.evaluation.harness import HarnessUnavailableError, harness_version
     from xlm.evaluation.suites import (
@@ -281,6 +287,7 @@ def _run_tier_suite(
                 tier=tier,
                 harness_version=harness_version(),
                 final_authorization=final_auth,
+                acquisition_store_root=acquisition_store_root,
             )
         except (EvaluationInputError, FinalAuthorizationRequiredError) as exc:
             typer.echo(f"Error: evaluation inputs rejected: {exc}", err=True)
@@ -482,6 +489,15 @@ def evaluate_command(
             readable=True,
         ),
     ] = None,
+    acquisition_store_root: Annotated[
+        Path | None,
+        typer.Option(
+            "--acquisition-store-root",
+            help="D01 store root holding acquisition receipts referenced by "
+            "--inputs (its raw_dataset directory). Required when the manifest "
+            "declares acquisition receipts.",
+        ),
+    ] = None,
     verify_inputs_only: Annotated[
         bool,
         typer.Option(
@@ -497,7 +513,7 @@ def evaluate_command(
             raise typer.Exit(code=1)
         # Runs entirely in this process: no frozen worker, no checkpoint, no
         # model allocation, no inference.
-        _verify_inputs_only(inputs, suite, output_json)
+        _verify_inputs_only(inputs, suite, output_json, acquisition_store_root)
         return
     if checkpoint is None:
         typer.echo(
@@ -523,6 +539,7 @@ def evaluate_command(
         "request_only": request_only,
         "final_authorization_file": final_authorization_file,
         "inputs": inputs,
+        "acquisition_store_root": acquisition_store_root,
     }
     if request_only or suite == "final" or suite not in ALL_SUITES:
         _evaluate_in_process(**options)
@@ -548,6 +565,7 @@ def _evaluate_in_process(
     request_only: bool = False,
     final_authorization_file: Path | None = None,
     inputs: Path | None = None,
+    acquisition_store_root: Path | None = None,
     *,
     execution: dict[str, Any] | None = None,
 ) -> None:
@@ -591,4 +609,5 @@ def _evaluate_in_process(
         final_authorization_file=final_authorization_file,
         execution=execution,
         inputs=inputs,
+        acquisition_store_root=acquisition_store_root,
     )

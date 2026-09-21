@@ -27,3 +27,37 @@ A pass-through plugin is a no-op control, not an innovation. A novelty card reco
 ## Session finish
 
 Update `docs/implementation/STATUS.md`, `docs/implementation/reports/PXX.md`, and relevant user docs. Include the next command or prompt. Keep smoke runs bounded; never start the full research campaign as an acceptance test.
+
+## Test execution policy
+
+Use focused testing during repairs, not automatic full audits. The complete
+offline acceptance selection exists for the explicit final
+acceptance/release gate only — never as the default response to an edit, a
+documentation change, or a report correction. Record which tests were and
+were not run; a focused pass is not a full-suite pass.
+
+Three run modes (examples use uv offline with locked dependencies):
+
+- Focused: exact failing nodes plus directly related regressions, e.g.
+  `uv run --offline --locked --extra cpu --extra eval python -m pytest
+  tests/test_x.py::test_y -n 0`. A single test uses `-n 0` to avoid worker
+  startup overhead. Ordinary feedback target: 1–2 minutes.
+- Fast: parallel-safe developer regressions through one pytest-xdist
+  controller, `-n 16 --dist=worksteal --max-worker-restart=0`, excluding
+  `serial`-marked tests. Target: a few minutes.
+- Full: fast selection plus the complementary serial selection (`-n 0`
+  with the `serial` marker). Run only at the final acceptance gate.
+
+Parallelism rules: one xdist controller per session (never nest xdist
+inside outer multi-runner pools); explicit worker counts, never `-n auto`
+or global pytest `addopts` (subprocess tests must not inherit workers);
+`serial` marker only for genuinely exclusive tests (shared-checkout
+mutation, nonisolatable resources, measured timing/inventory checks) —
+those tests still run, in the serial selection. Coordinate worker usage
+with parallel sessions sharing the machine. Set `OMP/MKL/OPENBLAS/NUMEXPR`
+to one thread per worker plus `TOKENIZERS_PARALLELISM=false`; these are
+test-run settings, not production training changes.
+
+No retry-until-green, blanket xfail, weakened assertions, or omitted
+relevant tests to claim speed. Scheduler failures (missing/failed groups)
+fail the aggregate run.

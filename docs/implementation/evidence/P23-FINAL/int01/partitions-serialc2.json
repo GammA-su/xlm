@@ -1,0 +1,1 @@
+{"groups": {"serialc2-queue": ["tests/test_queue.py"], "serialc2-frozen_execution": ["tests/test_frozen_execution.py"], "serialc2-frozen_recovery": ["tests/test_frozen_recovery.py"], "serialc2-configurable_workflow": ["tests/test_configurable_workflow.py"]}}

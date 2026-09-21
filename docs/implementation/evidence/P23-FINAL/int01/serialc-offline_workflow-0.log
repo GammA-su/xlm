@@ -1,0 +1,26 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\xlm-final-integration\.venv-final\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\xlm-final-integration
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0, xdist-3.8.0
+collecting ... collected 4 items
+
+tests/test_offline_workflow.py::test_offline_workflow_from_clean_environment PASSED [ 25%]
+tests/test_offline_workflow.py::test_prepare_restart_reuses_verified_acquisition PASSED [ 50%]
+tests/test_offline_workflow.py::test_each_dimension_uses_its_intended_interface PASSED [ 75%]
+tests/test_offline_workflow.py::test_large_campaigns_prepare_without_launching PASSED [100%]
+
+- generated xml file: D:\Project\xlm-final-integration\data\audit\p23-remediation\stage06\final01\serialc-offline_workflow.xml -
+============================ slowest 10 durations =============================
+217.37s call     tests/test_offline_workflow.py::test_offline_workflow_from_clean_environment
+55.81s call     tests/test_offline_workflow.py::test_prepare_restart_reuses_verified_acquisition
+0.88s call     tests/test_offline_workflow.py::test_large_campaigns_prepare_without_launching
+0.04s call     tests/test_offline_workflow.py::test_each_dimension_uses_its_intended_interface
+0.00s setup    tests/test_offline_workflow.py::test_offline_workflow_from_clean_environment
+0.00s setup    tests/test_offline_workflow.py::test_prepare_restart_reuses_verified_acquisition
+0.00s setup    tests/test_offline_workflow.py::test_each_dimension_uses_its_intended_interface
+0.00s setup    tests/test_offline_workflow.py::test_large_campaigns_prepare_without_launching
+0.00s teardown tests/test_offline_workflow.py::test_offline_workflow_from_clean_environment
+0.00s teardown tests/test_offline_workflow.py::test_prepare_restart_reuses_verified_acquisition
+======================== 4 passed in 274.18s (0:04:34) ========================

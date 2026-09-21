@@ -15,6 +15,7 @@ import json
 import os
 import subprocess
 import sys
+import threading
 import time
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -238,19 +239,34 @@ def main() -> None:
     print(f"scheduling {len(groups)} groups over {options.workers} workers", flush=True)
     started = time.monotonic()
     results: dict[str, dict[str, object]] = {}
+    started_groups: set[str] = set()
+    started_lock = threading.Lock()
+
+    def _tracked_run(name: str, tests: list[str]) -> dict[str, object]:
+        with started_lock:
+            started_groups.add(name)
+        return run_group(name, tests)
+
     with concurrent.futures.ThreadPoolExecutor(max_workers=options.workers) as pool:
         future_to_name = {
-            pool.submit(run_group, name, tests): name for name, tests in groups.items()
+            pool.submit(_tracked_run, name, tests): name for name, tests in groups.items()
         }
         pending = set(future_to_name)
         while pending:
             done, pending = concurrent.futures.wait(
                 pending, timeout=30, return_when=concurrent.futures.FIRST_COMPLETED
             )
-            running = sorted(future_to_name[f] for f in pending)
+            # Executing = started but unfinished (at most worker count); the
+            # rest of pending is still queued, not running.
+            with started_lock:
+                live_started = set(started_groups)
+            pending_names = {future_to_name[f] for f in pending}
+            executing = sorted(pending_names & live_started)
+            queued = sorted(pending_names - live_started)
             finished = sorted(future_to_name[f] for f in done)
             print(
-                f"[{time.monotonic() - started:7.1f}s] finished={finished} running={running}",
+                f"[{time.monotonic() - started:7.1f}s] finished={finished} "
+                f"executing={executing} queued={queued}",
                 flush=True,
             )
             for future in done:

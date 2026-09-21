@@ -1,0 +1,1 @@
+{"groups": {"serialc-artifact_identity": ["tests/test_artifact_identity.py"], "serialc-operator": ["tests/test_operator.py"], "serialc-offline_workflow": ["tests/test_offline_workflow.py"]}}

@@ -1,0 +1,16 @@
+{
+  "receipt_id": "receipt_plan_authored_default_https_0ef2d96bd8313d8da362",
+  "plan_hash": "c3cf59e11150261f1d0dda782fda1aeaea2a4fe0c757c095fccbebfe482c960d",
+  "checkpoint": "D:\\Project\\xlm-final-integration\\data\\audit\\p23-remediation\\stage06\\final01\\combined3\\home\\checkpoints\\run_chain_train_01_final",
+  "chain": [
+    "acquire",
+    "tokenize",
+    "train",
+    "resume",
+    "evaluate",
+    "compare",
+    "export",
+    "reload",
+    "report"
+  ]
+}
