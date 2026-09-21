@@ -2,11 +2,26 @@
 
 from __future__ import annotations
 
+import os
 import socket
 from collections.abc import Generator
 from pathlib import Path
 
 import pytest
+
+
+def pytest_configure(config: pytest.Config) -> None:
+    """Give each xdist worker its own XLM_HOME before anything resolves paths.
+
+    Tests that set XLM_HOME per test (the majority) are unaffected; this only
+    changes the fallback home shared by tests that rely on the environment.
+    Without it, concurrent workers share one home directory and its ledgers.
+    """
+    worker = getattr(config, "workerinput", {}).get("workerid", None)
+    if worker is not None:
+        base = os.environ.get("XLM_HOME")
+        if base:
+            os.environ["XLM_HOME"] = str(Path(base) / f"worker-{worker}")
 
 
 @pytest.fixture(autouse=True)
