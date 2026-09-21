@@ -251,10 +251,12 @@ def test_view_selectors_are_nonempty_over_adapted_fixtures() -> None:
     """Every mix01 selector must match real adapted rows; an empty view blocks the run."""
     registry = load_mix01_views(VIEWS_PATH)
     docs = adapt_all()
-    # 19: the finewiki fixture carries two adaptable rows (live H1 shape plus
-    # one legacy no-heading shape) and each ifm fixture two (declared
-    # token_count plus one bare-text row); every other count is unchanged.
-    assert len(docs) == 19
+    # 20: the finewiki fixture carries two adaptable rows (live H1 shape plus
+    # one legacy no-heading shape), each ifm fixture two (declared
+    # token_count plus one bare-text row), and the finepdfs fixture two (a
+    # valid Docling row plus a mixed-language eng_Latn Docling row that the
+    # routing label still accepts); every other count is unchanged.
+    assert len(docs) == 20
 
     membership = resolve_view_membership(docs, build_source_views(registry))
     for view in registry.views:
@@ -391,7 +393,7 @@ def test_finewiki_title_rendering_without_heading() -> None:
     pdfs.adapt(pdf_rows[0], source_file="f", source_row=0, source_revision="r")
     with pytest.raises(RecordRejectedError, match="rows only"):
         pdfs.adapt(pdf_rows[1], source_file="f", source_row=1, source_revision="r")
-    with pytest.raises(RecordRejectedError, match="publisher-extracted text only"):
+    with pytest.raises(RecordRejectedError, match="RolmOCR image-based OCR"):
         pdfs.adapt(pdf_rows[2], source_file="f", source_row=2, source_revision="r")
 
 

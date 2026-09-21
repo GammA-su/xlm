@@ -1,3 +1,7 @@
-{"text": "Publisher-extracted chapter on elementary number theory and prime distribution.", "language": "eng_Latn"}
-{"text": "Verlagstext über Zahlentheorie auf Deutsch.", "language": "deu_Latn"}
-{"text": "Scanned fallback text that must not substitute for publisher extraction.", "language": "eng_Latn", "ocr_fallback": true}
+{"text": "Docling-extracted chapter on elementary number theory and prime distribution.", "language": "eng_Latn", "extractor": "docling", "is_truncated": false, "token_count": 14, "full_doc_lid": "eng_Latn", "full_doc_lid_score": 0.97, "page_average_lid": "eng_Latn", "page_average_lid_score": 0.91}
+{"text": "Verlagstext über Zahlentheorie auf Deutsch.", "language": "deu_Latn", "extractor": "docling", "is_truncated": false}
+{"text": "RolmOCR image-OCR text that belongs to a separate treatment, not the text-extracted view.", "language": "eng_Latn", "extractor": "rolmOCR", "is_truncated": true}
+{"text": "Row without an extractor field; the stale ghost field cannot satisfy the contract.", "language": "eng_Latn"}
+{"text": "Row with an extractor value outside the known upstream vocabulary.", "language": "eng_Latn", "extractor": "tesseract"}
+{"language": "eng_Latn", "extractor": "docling"}
+{"text": "虽然本段以中文开头，但随后包含 English discussion of number theory for education.", "language": "eng_Latn", "extractor": "docling", "is_truncated": false}

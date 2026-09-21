@@ -121,12 +121,13 @@ views:
     observed_configs: [eng_Latn]
     adapter_id: finepdfs_en
     upstream_selector:
-      description: "English publisher-extracted educational PDF text; no OCR fallback."
+      description: "eng_Latn-routed educational PDF text; Docling/PyMuPDF text-extracted rows only (extractor=docling). RolmOCR image-based OCR rows (extractor=rolmOCR) are rejected; unknown extractors fail closed."
       config_name: eng_Latn
     english_only: true
     live_verified: false
     notes:
-      - "Publisher-extracted text only; OCR is never substituted silently."
+      - "Docling/PyMuPDF text-extracted rows only; RolmOCR image-OCR rows are rejected explicitly, never relabeled."
+      - "english_only states the intended downstream treatment: eng_Latn is the upstream config/routing label, not a monolingual purity guarantee. Live rows may mix languages; downstream language cleaning decides."
 
   - component_id: synth_en_explanations
     source_id: synth
