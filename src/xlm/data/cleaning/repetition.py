@@ -46,6 +46,37 @@ class RepetitionConfig(StrictConfigModel):
     )
 
 
+def is_structural_separator_line(line: str) -> bool:
+    """Return True for Markdown structural separator lines carrying no prose content.
+
+    Recognizes only content-free separator syntax:
+
+    - horizontal rules / dividers consisting solely of ``-``, ``*``, ``_`` or
+      ``=`` (3+ markers, optional surrounding whitespace), e.g. ``---``,
+      ``************``, ``___`` or a setext ``===`` underline;
+    - Markdown table delimiter rows built only from ``|``, ``-``, ``:``,
+      ``+``, ``=`` and whitespace and containing at least one ``-``/``=``
+      span, e.g. ``|---|---|`` or
+      ``|--------|-------|----------|----------------------------------|``.
+
+    Any line containing letters, digits or other punctuation (headings, table
+    headers and body rows, list items, prose) is NOT structural, so repeated
+    prose, headings, navigation loops and OCR loops remain detectable.
+    """
+    stripped = line.strip()
+    if len(stripped) < 3:
+        return False
+    compact = stripped.replace(" ", "").replace("\t", "")
+    if len(compact) < 3:
+        return False
+    chars = set(compact)
+    if chars <= {"-"} or chars <= {"*"} or chars <= {"_"} or chars <= {"="}:
+        return True
+    if "|" in compact and chars <= {"|", "-", ":", "+", "="} and ("-" in compact or "=" in compact):
+        return True
+    return False
+
+
 class RepetitionFilter(BaseTransform):
     """Detects and rejects documents containing excessive repeated lines, loops, or spans.
 
@@ -53,10 +84,16 @@ class RepetitionFilter(BaseTransform):
     - Bounded n-gram and line analysis capping text evaluated to max_analysis_chars.
     - Tracks line repetition ratio, single-line frequency, character runs, and 5-gram loops.
     - Pure filter: does not mutate text (mutates_text = False).
+
+    Structural Markdown separator lines (horizontal rules, table delimiter rows)
+    are excluded from the single-line-frequency and duplicate-line-ratio
+    statistics, and long same-character runs inside such lines are not treated
+    as garbage runs. Thresholds are unchanged: repeated prose/content lines and
+    same-character runs inside content lines are still rejected.
     """
 
     transform_id = "repetition_filter"
-    version = "1"
+    version = "2"
     mutates_text = False
 
     def __init__(self, config: RepetitionConfig | None = None) -> None:
@@ -74,23 +111,57 @@ class RepetitionFilter(BaseTransform):
                 duration_ms=0.0,
             )
 
-        # 1. Check single character runs (e.g. "aaaaaaaaaa...")
-        char_run_pattern = re.compile(rf"(.)\1{{{self.cfg.max_char_run},}}")
-        if char_run_pattern.search(text):
-            duration = (time.monotonic() - start_t) * 1000.0
-            return TransformResult(
-                action=TransformAction.REJECT,
-                document=None,
-                reasons=[f"excessive_repetition:char_run_exceeded_{self.cfg.max_char_run}"],
-                metrics=QualityMetrics(utf8_byte_count=doc.utf8_byte_count),
-                duration_ms=duration,
+        # Inexpensive characterization first so every rejection path reports
+        # measured line/word counts instead of misleading zeros.
+        lines = [line.strip() for line in text.splitlines() if line.strip()]
+        words = text.split()
+        word_count = len(words)
+        line_count = len(lines)
+        content_lines = [line for line in lines if not is_structural_separator_line(line)]
+
+        def base_metrics(
+            duplicate_line_ratio: float = 0.0,
+            max_ngram_repetition_ratio: float = 0.0,
+        ) -> QualityMetrics:
+            return QualityMetrics(
+                utf8_byte_count=doc.utf8_byte_count,
+                word_count=word_count,
+                line_count=line_count,
+                duplicate_line_ratio=duplicate_line_ratio,
+                max_ngram_repetition_ratio=max_ngram_repetition_ratio,
             )
 
-        # 2. Line-level repetition analysis
-        lines = [line.strip() for line in text.splitlines() if line.strip()]
+        # 1. Check single character runs (e.g. "aaaaaaaaaa...") in content
+        # lines only. Long runs inside structural separator lines (Markdown
+        # table delimiters, horizontal-rule dividers) are valid syntax, not
+        # garbage. A run inside any other line still rejects.
+        char_run_pattern = re.compile(rf"(.)\1{{{self.cfg.max_char_run},}}")
+        for raw_line in text.splitlines():
+            if not raw_line.strip():
+                continue
+            if is_structural_separator_line(raw_line):
+                continue
+            if char_run_pattern.search(raw_line):
+                duration = (time.monotonic() - start_t) * 1000.0
+                return TransformResult(
+                    action=TransformAction.REJECT,
+                    document=None,
+                    reasons=[f"excessive_repetition:char_run_exceeded_{self.cfg.max_char_run}"],
+                    metrics=base_metrics(),
+                    duration_ms=duration,
+                )
+
+        # 2. Line-level repetition analysis over content lines only, so that
+        # repeated structural separators (e.g. one `---` per section) cannot
+        # dominate the single-line-frequency statistic of an otherwise
+        # coherent document.
         dup_line_ratio = 0.0
-        if len(lines) > 2:
-            counts = collections.Counter(lines)
+        if len(content_lines) > 2:
+            counts = collections.Counter(content_lines)
+            dup_chars = sum(len(line) * count for line, count in counts.items() if count > 1)
+            total_chars = max(1, sum(len(line) * count for line, count in counts.items()))
+            dup_line_ratio = dup_chars / total_chars
+
             max_freq = max(counts.values()) if counts else 0
             if max_freq > self.cfg.max_line_frequency:
                 duration = (time.monotonic() - start_t) * 1000.0
@@ -98,16 +169,9 @@ class RepetitionFilter(BaseTransform):
                     action=TransformAction.REJECT,
                     document=None,
                     reasons=[f"excessive_repetition:line_frequency_{max_freq}"],
-                    metrics=QualityMetrics(
-                        utf8_byte_count=doc.utf8_byte_count,
-                        duplicate_line_ratio=1.0,
-                    ),
+                    metrics=base_metrics(duplicate_line_ratio=dup_line_ratio),
                     duration_ms=duration,
                 )
-
-            dup_chars = sum(len(line) * count for line, count in counts.items() if count > 1)
-            total_chars = max(1, sum(len(line) * count for line, count in counts.items()))
-            dup_line_ratio = dup_chars / total_chars
 
             if dup_line_ratio > self.cfg.max_duplicate_line_ratio:
                 duration = (time.monotonic() - start_t) * 1000.0
@@ -117,20 +181,17 @@ class RepetitionFilter(BaseTransform):
                     reasons=[
                         f"excessive_repetition:duplicate_line_ratio_{dup_line_ratio:.2f}_exceeded_{self.cfg.max_duplicate_line_ratio:.2f}"
                     ],
-                    metrics=QualityMetrics(
-                        utf8_byte_count=doc.utf8_byte_count,
-                        duplicate_line_ratio=dup_line_ratio,
-                    ),
+                    metrics=base_metrics(duplicate_line_ratio=dup_line_ratio),
                     duration_ms=duration,
                 )
 
         # 3. Bounded 5-gram repetition analysis
         sample_text = text[: self.cfg.max_analysis_chars]
-        words = sample_text.split()
+        sample_words = sample_text.split()
         ngram_repeat_ratio = 0.0
-        if len(words) >= 10:
+        if len(sample_words) >= 10:
             n = 5
-            ngrams = [tuple(words[i : i + n]) for i in range(len(words) - n + 1)]
+            ngrams = [tuple(sample_words[i : i + n]) for i in range(len(sample_words) - n + 1)]
             if ngrams:
                 ngram_counts = collections.Counter(ngrams)
                 repeated_ngrams = sum(c for c in ngram_counts.values() if c > 1)
@@ -144,8 +205,7 @@ class RepetitionFilter(BaseTransform):
                         reasons=[
                             f"excessive_repetition:ngram_repeat_ratio_{ngram_repeat_ratio:.2f}_exceeded_{self.cfg.max_ngram_repetition_ratio:.2f}"
                         ],
-                        metrics=QualityMetrics(
-                            utf8_byte_count=doc.utf8_byte_count,
+                        metrics=base_metrics(
                             duplicate_line_ratio=dup_line_ratio,
                             max_ngram_repetition_ratio=ngram_repeat_ratio,
                         ),
@@ -153,10 +213,7 @@ class RepetitionFilter(BaseTransform):
                     )
 
         duration = (time.monotonic() - start_t) * 1000.0
-        metrics = QualityMetrics(
-            utf8_byte_count=doc.utf8_byte_count,
-            word_count=len(words),
-            line_count=len(lines),
+        metrics = base_metrics(
             duplicate_line_ratio=dup_line_ratio,
             max_ngram_repetition_ratio=ngram_repeat_ratio,
         )
