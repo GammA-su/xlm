@@ -1,7 +1,7 @@
 # P23 readiness closeout — supported workflows on the integrated tree
 
-Date: 2026-09-21. Branch `closeout/readiness` at `a2441af` (readiness
-closeout `49461e5` plus test-perf `a2441af`), integrating `17e386f`
+Date: 2026-09-21. Branch `closeout/readiness` at `35aed0b` (docs-only pilot
+handoff on top of readiness closeout `49461e5` and test-perf `a2441af`), integrating `17e386f`
 (D07+D08 merge of `6405885` and `7427dba` on base `bd01e60`). Worktree
 `D:\Project\xlm-final-integration`, env `.venv-final` (CPython 3.12.13, torch
 2.14.0+cpu, lm-eval 0.4.13, pytest 9.1.1, xdist 3.8.0), offline/locked.
