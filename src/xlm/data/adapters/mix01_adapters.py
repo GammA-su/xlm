@@ -438,15 +438,30 @@ class FinePdfsAdapter:
 
 
 class IfmGeneralAdapter:
-    """IFM Pretrain-Behaviors ``general`` subset (its own schema)."""
+    """IFM Pretrain-Behaviors ``general`` subset: complete training prose.
+
+    Live schema (pinned revision ``3345e13d7f3f6d0ecb5fdd67b37aed289f3191f5``,
+    config ``general``): records carry ``text`` — the complete formatted
+    pretraining document, preserved verbatim — and an optional declared
+    ``token_count``. There are no ``instruction``/``response`` fields, and
+    none are inferred; no ``Instruction:``/``Response:`` prefixes are added.
+    ``token_count`` is preserved in ``source_metadata`` as a declared
+    upstream value only; it never replaces XLM's own tokenizer counts.
+    Rows carry no language field. ``language="en"`` holds because the mix01
+    registry defines this exact view/config as English-only (component
+    ``ifm_behaviors_general_planning``); that provenance is recorded in
+    ``source_metadata["language_provenance"]`` instead of per-record
+    detection, which is never fabricated.
+    """
 
     ADAPTER_ID = "ifm_general"
-    REQUIRED_FIELDS = ("instruction", "response")
+    REQUIRED_FIELDS = ("text",)
 
     def contract(self) -> RowExtractorContract:
         return RowExtractorContract(
             adapter_id=self.ADAPTER_ID,
-            required_fields=["instruction", "response"],
+            text_field="text",
+            required_fields=["text"],
         )
 
     def adapt(
@@ -457,22 +472,36 @@ class IfmGeneralAdapter:
         source_row: int,
         source_revision: str,
     ) -> CanonicalDocument:
-        instruction = str(_require(record, "instruction", self.ADAPTER_ID))
-        response = str(_require(record, "response", self.ADAPTER_ID))
+        text = _require(record, "text", self.ADAPTER_ID)
+        if not isinstance(text, str):
+            raise MissingFieldError(
+                f"adapter '{self.ADAPTER_ID}' requires upstream field 'text' "
+                "to be a string; it cannot be coerced."
+            )
+        source_metadata: dict[str, Any] = {
+            "mix01_component": "ifm_behaviors_general_planning",
+            "subset": "general",
+            "language_provenance": "view English-only (mix01 registry)",
+        }
+        if "token_count" in record and record["token_count"] is not None:
+            token_count = record["token_count"]
+            if not isinstance(token_count, int) or isinstance(token_count, bool) or token_count < 0:
+                raise MissingFieldError(
+                    f"adapter '{self.ADAPTER_ID}' requires upstream field "
+                    "'token_count' to be a non-negative integer when present."
+                )
+            source_metadata["upstream_token_count"] = token_count
         return _canonical_doc(
             doc_id=f"ifm_behaviors:general:{source_row}",
             source_id="ifm_behaviors",
             source_revision=source_revision,
             source_file=source_file,
             source_row=source_row,
-            text=f"Instruction: {instruction.strip()}\nResponse: {response.strip()}",
+            text=text,
             language="en",
             document_kind="prose",
             license_reference="apache-2.0",
-            source_metadata={
-                "mix01_component": "ifm_behaviors_general_planning",
-                "subset": "general",
-            },
+            source_metadata=source_metadata,
         )
 
 

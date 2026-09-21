@@ -156,3 +156,14 @@ launched; no session state lives only in chat.
   Evidence: `final02/finewiki*`, `verify-finewiki-out*`.
 - Operator next: adapt the acquired artifact, then `data clean --input
   <out>/documents.jsonl`. Raw artifact untouched.
+
+## IFM general live-schema repair (2026-09-21, commit pending)
+
+- `IfmGeneralAdapter` now requires `text` only (verbatim, no
+  Instruction/Response prefixes); optional `token_count` preserved as
+  `source_metadata["upstream_token_count"]` (declared, never authoritative);
+  `language="en"` from the registry's English-only view definition,
+  recorded as `language_provenance`. Fixture `ifm_general.jsonl` repaired;
+  legacy instruction/response shape stays refused. Seam reused unchanged:
+  `data adapt --adapter ifm_general` tested on live-shaped rows.
+- Evidence: `final02/ifm*` + `ifm2-*` (37 passed); ruff + `mypy src` exit 0.

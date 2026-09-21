@@ -1,2 +1,6 @@
-{"instruction": "Summarize the water cycle.", "response": "Evaporation, condensation, precipitation and collection move water through the environment."}
-{"instruction": "Name a prime larger than ten."}
+{"text": "Evaporation, condensation, precipitation and collection move water through the environment.", "token_count": 14}
+{"token_count": 5}
+{"text": "   ", "token_count": 0}
+{"instruction": "Summarize the water cycle.", "response": "Evaporation happens."}
+{"text": "Prime numbers larger than ten include eleven.", "token_count": "eleven"}
+{"text": "Eleven is the smallest prime larger than ten."}
