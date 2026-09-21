@@ -721,6 +721,15 @@ def plan_cmd(
         bool,
         typer.Option("--pilot-approved", help="Explicit operator pilot approval for local run."),
     ] = False,
+    attempt: Annotated[
+        int,
+        typer.Option(
+            "--attempt",
+            help="Fresh-attempt counter (default 1). After an expired deadline, "
+            "renew with a higher attempt: identical source/selection/limits, "
+            "new plan identity and journal; the old attempt is preserved.",
+        ),
+    ] = 1,
     authorization_hash: Annotated[
         str | None,
         typer.Option("--authorization-hash", help="Authorization hash for production plan."),
@@ -824,6 +833,7 @@ def plan_cmd(
         limits=limits,
         output_artifact_id=output_artifact_id,
         is_pilot=is_pilot,
+        attempt=attempt,
         row_ranges=bounded_json(row_ranges_path),
         expected_file_digests=bounded_json(expected_digests_path) or {},
     )

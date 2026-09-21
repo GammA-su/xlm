@@ -110,6 +110,18 @@ class AcquisitionPlan(BaseModel):
     output_artifact_id: str
     admitted_source_reference: str | None = None
     is_pilot: bool = True
+    attempt: int = Field(
+        default=1,
+        ge=1,
+        le=999,
+        description=(
+            "Operator-declared fresh-attempt counter. Attempt 1 is the original "
+            "execution identity; a renewed attempt after an expired deadline uses "
+            "a higher attempt with identical source/view/revision/selection/limits, "
+            "yielding a distinct plan identity and journal while the old attempt's "
+            "accounting is preserved untouched."
+        ),
+    )
     authorization: PlanAuthorization | None = None
     plan_hash: str = ""
 
@@ -166,6 +178,12 @@ class AcquisitionPlan(BaseModel):
             "admitted_source_reference": self.admitted_source_reference,
             "is_pilot": self.is_pilot,
         }
+        # Attempt 1 is the legacy identity element: plans written before the
+        # attempt counter existed hash exactly as before, so their recorded
+        # plan_hash values keep verifying. Higher attempts bind a distinct
+        # execution identity (and authorization) to identical behavior.
+        if self.attempt != 1:
+            behavioral_dict["attempt"] = self.attempt
         canonical_json = json.dumps(behavioral_dict, sort_keys=True, separators=(",", ":"))
         return hashlib.sha256(canonical_json.encode("utf-8")).hexdigest()
 

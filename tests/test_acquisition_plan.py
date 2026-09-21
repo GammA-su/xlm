@@ -2,10 +2,15 @@
 
 from __future__ import annotations
 
+import json
+import os
+import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
 import pytest
+from pydantic import ValidationError
 
 from xlm.data.acquisition.plan import (
     AcquisitionLimits,
@@ -431,3 +436,217 @@ def test_production_admission_synthetic_evidence_is_refused(tmp_path: Path) -> N
     )
     with pytest.raises(AuthorizationRequiredError, match="not admitted"):
         resolve_verified_production_admission(_authorized_production_plan(), store)
+
+
+# ------------------------------------------------- fresh attempt after expiry
+
+
+def _attempt_plan_base() -> dict[str, Any]:
+    return {
+        "plan_id": "plan_attempt_base",
+        "source_id": "authored",
+        "view_id": "default",
+        "provider": "https",
+        "repository": "https://127.0.0.1:9/files",
+        "revision": "rev0000000000000000000000000000000000000001",
+        "mode": AcquisitionMode.SELECTED_RECORDS,
+        "selected_files": ["rows.jsonl"],
+        "row_ranges": {"rows.jsonl": (0, 3)},
+        "output_artifact_id": "raw_authored_default",
+        "is_pilot": True,
+        "limits": AcquisitionLimits(
+            max_transferred_bytes=16 * 1024**2,
+            max_records=100,
+            max_requests=20,
+            max_retries=1,
+            overall_deadline_seconds=600.0,
+        ),
+    }
+
+
+def _pilot_authorized(plan: AcquisitionPlan) -> AcquisitionPlan:
+    return plan.model_copy(
+        update={
+            "authorization": PlanAuthorization(
+                authorization_hash=plan.compute_behavioral_hash(),
+                authorized_by="closeout-fixture",
+                authorized_at="2026-09-21T00:00:00Z",
+                scope="pilot",
+                is_pilot_approved=True,
+            )
+        }
+    )
+
+
+def test_attempt_1_preserves_legacy_identity() -> None:
+    """Attempt 1 hashes exactly like a plan written before the counter existed."""
+    import hashlib as _hashlib
+
+    plan = AcquisitionPlan(**_attempt_plan_base())
+    assert plan.attempt == 1
+    dumped = plan.model_dump()
+    legacy_hash = _hashlib.sha256(
+        json.dumps(
+            {
+                "schema_version": dumped["schema_version"],
+                "source_id": dumped["source_id"],
+                "view_id": dumped["view_id"],
+                "provider": dumped["provider"],
+                "repository": dumped["repository"],
+                "revision": dumped["revision"],
+                "mode": dumped["mode"],
+                "selected_files": sorted(dumped["selected_files"]),
+                "row_ranges": dumped["row_ranges"],
+                "sampling_frame": dumped["sampling_frame"],
+                "expected_bytes": dumped["expected_bytes"],
+                "expected_file_digests": dumped["expected_file_digests"],
+                "limits": dumped["limits"],
+                "output_artifact_id": dumped["output_artifact_id"],
+                "admitted_source_reference": dumped["admitted_source_reference"],
+                "is_pilot": dumped["is_pilot"],
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
+    assert plan.compute_behavioral_hash() == legacy_hash
+
+
+def test_legacy_plan_file_without_attempt_loads(tmp_path: Path) -> None:
+    """A plan file written before the counter existed still verifies."""
+    plan = AcquisitionPlan(**_attempt_plan_base()).with_computed_hash()
+    payload = plan.model_dump()
+    del payload["attempt"]
+    legacy_path = tmp_path / "legacy_plan.json"
+    legacy_path.write_text(json.dumps(payload), encoding="utf-8")
+    loaded = load_acquisition_plan(legacy_path)
+    assert loaded.attempt == 1
+    assert loaded.compute_behavioral_hash() == plan.compute_behavioral_hash()
+
+
+def test_attempt_2_yields_distinct_identity_with_identical_behavior(tmp_path: Path) -> None:
+    """Renewal changes execution identity only; behavior is byte-identical."""
+    first = AcquisitionPlan(**_attempt_plan_base())
+    second = AcquisitionPlan(**{**_attempt_plan_base(), "attempt": 2})
+    assert second.compute_behavioral_hash() != first.compute_behavioral_hash()
+    for field in (
+        "source_id",
+        "view_id",
+        "provider",
+        "repository",
+        "revision",
+        "mode",
+        "selected_files",
+        "row_ranges",
+        "limits",
+        "is_pilot",
+    ):
+        assert getattr(second, field) == getattr(first, field)
+    first_path = tmp_path / "plan1.json"
+    second_path = tmp_path / "plan2.json"
+    save_acquisition_plan(first, first_path)
+    save_acquisition_plan(second, second_path)
+    assert load_acquisition_plan(second_path).attempt == 2
+
+
+def test_attempt_bound_to_authorization() -> None:
+    """An authorization hash from attempt 1 is rejected on attempt 2."""
+    first = _pilot_authorized(AcquisitionPlan(**_attempt_plan_base()))
+    validate_plan_authorization(first)
+    second = AcquisitionPlan(**{**_attempt_plan_base(), "attempt": 2})
+    stale = second.model_copy(update={"authorization": first.authorization})
+    with pytest.raises(AuthorizationRequiredError, match="hash mismatch"):
+        validate_plan_authorization(stale)
+    validate_plan_authorization(_pilot_authorized(second))
+
+
+@pytest.mark.parametrize("attempt", [0, -1, 1000])
+def test_attempt_range_rejected(attempt: int) -> None:
+    """The counter is a small positive integer, not free text."""
+    with pytest.raises(ValidationError):
+        AcquisitionPlan(**{**_attempt_plan_base(), "attempt": attempt})
+
+
+def _attempt_cli(home: Path, *args: str, success: bool = True) -> subprocess.CompletedProcess[str]:
+    result = subprocess.run(
+        [sys.executable, "-m", "xlm.cli.main", *args],
+        cwd=Path(__file__).resolve().parents[1],
+        env={**os.environ, "XLM_HOME": str(home)},
+        capture_output=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
+        timeout=120,
+    )
+    assert (result.returncode == 0) == success, result.stdout + result.stderr
+    return result
+
+
+def test_cli_attempt_renewal_offline(tmp_path: Path) -> None:
+    """`data plan --attempt 2` renews identity offline with identical behavior."""
+    catalog = tmp_path / "catalog.json"
+    catalog.write_text(
+        json.dumps(
+            {
+                "catalog_id": "authored",
+                "sources": [
+                    {
+                        "candidate_number": 1,
+                        "source_id": "authored",
+                        "provider": "https",
+                        "repository": "https://127.0.0.1:9/files",
+                        "revision": "rev0000000000000000000000000000000000000001",
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    ranges = tmp_path / "ranges.json"
+    ranges.write_text('{"rows.jsonl": [0, 3]}', encoding="utf-8")
+    home = tmp_path / "home"
+    base_args = [
+        "data",
+        "plan",
+        "--source",
+        "authored",
+        "--catalog",
+        str(catalog),
+        "--files",
+        "rows.jsonl",
+        "--mode",
+        "selected_records",
+        "--row-ranges",
+        str(ranges),
+        "--max-bytes",
+        "16777216",
+        "--max-records",
+        "100",
+        "--pilot-approved",
+    ]
+
+    def plan_cmd(extra: list[str], output: Path) -> dict[str, Any]:
+        _attempt_cli(home, *base_args, "--output", str(output), *extra)
+        return json.loads(output.read_text(encoding="utf-8"))
+
+    first = plan_cmd([], tmp_path / "plan1.json")
+    renewed = plan_cmd(["--attempt", "2"], tmp_path / "plan2.json")
+    assert renewed["attempt"] == 2
+    assert renewed["plan_id"] != first["plan_id"]
+    assert renewed["plan_hash"] != first["plan_hash"]
+    for field in ("source_id", "view_id", "revision", "selected_files", "row_ranges", "limits"):
+        assert renewed[field] == first[field], field
+    # Re-running attempt 1 reproduces the original identity (no silent drift).
+    again = plan_cmd([], tmp_path / "plan1b.json")
+    assert again["plan_id"] == first["plan_id"]
+    assert again["plan_hash"] == first["plan_hash"]
+    # Out-of-range attempts are refused, not silently coerced.
+    _attempt_cli(
+        home,
+        *base_args,
+        "--output",
+        str(tmp_path / "plan0.json"),
+        "--attempt",
+        "0",
+        success=False,
+    )

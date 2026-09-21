@@ -113,3 +113,16 @@ launched; no session state lives only in chat.
   journal preserved, never deleted). Evidence: `final02/cdnfix-*`.
 - Next fetch command (operator, same XLM_HOME, before deadline expiry):
   `uv run --locked --extra cpu --extra eval --no-sync --offline -- xlm data fetch --plan <plan.json> --pilot-approved`
+
+## Fresh-attempt mechanism (2026-09-21, commit pending at write time)
+
+- Finding: `data plan` is deterministic — identical inputs reproduce the old
+  plan_id/hash, and no renew flag existed. Same-inputs replanning cannot
+  create a fresh execution identity.
+- Mechanism: `AcquisitionPlan.attempt` (int 1..999, default 1) +
+  `data plan --attempt N`. Attempt 1 is the legacy identity element (old
+  plan files keep verifying); higher attempts bind a distinct plan_id/hash
+  (and authorization) to identical source/view/revision/selection/limits.
+- Old journal untouched by construction (journal path keys on plan_id).
+- Evidence: `final02/attempt-*` (54 passed: 8 new attempt tests + plan/bounds
+  regressions); ruff format/check + `mypy src` exit 0.
