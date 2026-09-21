@@ -126,3 +126,19 @@ launched; no session state lives only in chat.
 - Old journal untouched by construction (journal path keys on plan_id).
 - Evidence: `final02/attempt-*` (54 passed: 8 new attempt tests + plan/bounds
   regressions); ruff format/check + `mypy src` exit 0.
+
+## Row-group diagnostic enrichment (2026-09-21, commit pending at write time)
+
+- `records.py::check_row_group` refusal condition unchanged
+  (`total_byte_size > max_parser_bytes`); message now reports group index,
+  compared total_byte_size (labeled), bound, num_rows, num_columns, and
+  summed column compressed/uncompressed sizes — all from loaded footer
+  metadata, no extra IO. Shared by whole-file (`inspect_records`) and
+  selected (`selection.py`) paths; propagates via `str(exc)[:500]` into
+  journal `error_reason` and `data status` (message ~200 chars).
+- Evidence: `final02/rowdiag-*` (2 new tests) + `rowdiag-reg-*` (7 existing
+  parquet/selected/record caller tests); ruff + `mypy src` exit 0.
+- Attempt-2 rerun for the diagnostic: PERMITTED (FAILED resumes, spent
+  accounting retained) iff started before its cumulative deadline_at;
+  costs only footer-range requests/KBs. Command (operator, same XLM_HOME):
+  `uv run --locked --extra cpu --extra eval --no-sync --offline -- xlm data fetch --plan <attempt-2-plan.json> --pilot-approved`

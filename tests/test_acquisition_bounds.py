@@ -1025,3 +1025,55 @@ def test_production_fetch_without_admission_is_refused(server: Any, tmp_path: Pa
     )
     result = _production_cli(home, "data", "fetch", "--plan", str(plan_path), success=False)
     assert "no recorded operator admission" in result.stderr
+
+
+# --------------------------------------- row-group refusal diagnostics
+
+
+def _row_group_parquet(tmp_path: Path) -> Path:
+    path = tmp_path / "diagnostic.parquet"
+    pq.write_table(
+        pa.table({"text": ["alpha", "beta", "gamma"], "score": [1, 2, 3]}),
+        path,
+        row_group_size=3,
+    )
+    return path
+
+
+def test_row_group_refusal_reports_numeric_diagnostic(tmp_path: Path) -> None:
+    """Authored offline fixture: the refusal names the compared quantities."""
+    from xlm.data.acquisition.records import RecordLimitError, check_row_group
+
+    path = _row_group_parquet(tmp_path)
+    parquet = pq.ParquetFile(path)
+    meta = parquet.metadata.row_group(0)
+    assert meta.num_rows == 3
+    assert meta.num_columns == 2
+    tight = AcquisitionLimits(max_record_bytes=8, max_parser_bytes=meta.total_byte_size - 1)
+    with pytest.raises(RecordLimitError) as exc_info:
+        check_row_group(parquet, 0, tight)
+    message = str(exc_info.value)
+    assert "row group 0" in message
+    assert f"total_byte_size={meta.total_byte_size}" in message
+    assert f"max_parser_bytes={tight.max_parser_bytes}" in message
+    assert "num_rows=3" in message
+    assert "num_columns=2" in message
+    compressed = sum(meta.column(i).total_compressed_size for i in range(meta.num_columns))
+    uncompressed = sum(meta.column(i).total_uncompressed_size for i in range(meta.num_columns))
+    assert f"columns_total_compressed_size={compressed}" in message
+    assert f"columns_total_uncompressed_size={uncompressed}" in message
+    assert "compared total_byte_size=" in message
+    # Must survive journal truncation (fetcher stores str(exc)[:500]) untruncated.
+    assert len(message) < 500
+
+
+def test_row_group_within_bound_passes(tmp_path: Path) -> None:
+    """Control: the same fixture passes when the bound covers the group."""
+    from xlm.data.acquisition.records import check_row_group
+
+    path = _row_group_parquet(tmp_path)
+    parquet = pq.ParquetFile(path)
+    meta = parquet.metadata.row_group(0)
+    check_row_group(
+        parquet, 0, AcquisitionLimits(max_record_bytes=8, max_parser_bytes=meta.total_byte_size)
+    )

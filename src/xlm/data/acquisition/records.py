@@ -110,7 +110,20 @@ def inspect_records(
 def check_row_group(parquet: pq.ParquetFile, group: int, limits: AcquisitionLimits) -> None:
     metadata = parquet.metadata.row_group(group)
     if metadata.total_byte_size > limits.max_parser_bytes:
-        raise RecordLimitError("Parquet row group exceeds parser byte bound")
+        # All quantities below come from the already-loaded footer metadata;
+        # no additional network IO is performed to build this diagnostic.
+        columns = [metadata.column(index) for index in range(metadata.num_columns)]
+        raise RecordLimitError(
+            f"Parquet row group {group} exceeds parser byte bound: "
+            f"compared total_byte_size={metadata.total_byte_size} against "
+            f"max_parser_bytes={limits.max_parser_bytes}; "
+            f"num_rows={metadata.num_rows}; "
+            f"num_columns={metadata.num_columns}; "
+            f"columns_total_compressed_size="
+            f"{sum(column.total_compressed_size for column in columns)}; "
+            f"columns_total_uncompressed_size="
+            f"{sum(column.total_uncompressed_size for column in columns)}"
+        )
     for index in range(metadata.num_columns):
         column = metadata.column(index)
         if column.total_uncompressed_size > limits.max_decompression_ratio * max(
