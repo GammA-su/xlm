@@ -59,6 +59,7 @@ from xlm.data.sources.transport import (
     MockStreamingTransport,
     SnapshotInfo,
     TransportBudget,
+    is_allowlisted_host,
     validate_host,
 )
 
@@ -102,6 +103,7 @@ __all__ = [
     "check_silent_fallback",
     "compute_probe_fingerprint",
     "evaluate_license_review",
+    "is_allowlisted_host",
     "is_denied_source",
     "load_admission_decision",
     "load_catalog",

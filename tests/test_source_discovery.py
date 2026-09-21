@@ -28,6 +28,7 @@ from xlm.data.sources.transport import (
     MockStreamingTransport,
     SnapshotInfo,
     TransportBudget,
+    is_allowlisted_host,
     validate_host,
 )
 
@@ -331,6 +332,88 @@ def test_malicious_redirect_blocked_by_safe_redirect_handler() -> None:
 
     assert evidence.outcome == ProbeOutcome.BLOCKED_BY_POLICY
     assert "not in the allowlist" in (evidence.reason or "").lower()
+
+
+# ----------------- Hugging Face storage/CDN redirect compatibility (offline)
+
+
+def test_huggingface_cdn_endpoints_accepted() -> None:
+    """Authored offline check: official HF storage/CDN hosts validate.
+
+    Covers the operator-hit redirect target (us.aws.cdn.hf.co) and the other
+    documented endpoint forms. No network is performed; only the host
+    predicate is exercised.
+    """
+    for host in [
+        "huggingface.co",
+        "hf.co",
+        "cdn-lfs.huggingface.co",
+        "cas-server.xethub.hf.co",
+        "cas-server.xethub-eu.hf.co",
+        "transfer.xethub.hf.co",
+        "transfer.xethub-eu.hf.co",
+        "us.aws.cdn.hf.co",
+        "us.gcp.cdn.hf.co",
+        "cdn-lfs-us-1.hf.co",
+        "cdn-lfs-eu-1.hf.co",
+    ]:
+        assert is_allowlisted_host(host) is True
+        validate_host(f"https://{host}/xet-bridge-us/abc123/synth_001.parquet")
+
+
+def test_huggingface_cdn_redirect_accepted_through_prober() -> None:
+    """A redirect onto HF CDN infrastructure is not a policy block."""
+    candidate = CandidateSourceEntry(
+        candidate_number=8,
+        source_id="cdn_source",
+        provider="huggingface",
+        repository="org/cdn-repo",
+    )
+    transport = MockStreamingTransport(
+        snapshot_info=SnapshotInfo(
+            provider="huggingface", target="org/cdn-repo", immutable_revision="sha"
+        ),
+        redirect_target="https://us.aws.cdn.hf.co/xet-bridge-us/abc123/synth_001.parquet",
+    )
+    prober = SourceProber(
+        candidate=candidate,
+        transport=transport,
+        budget=TransportBudget(),
+        evidence_type=EvidenceType.SYNTHETIC_FIXTURE,
+    )
+    evidence = prober.probe()
+    assert evidence.outcome != ProbeOutcome.BLOCKED_BY_POLICY
+
+
+@pytest.mark.parametrize(
+    "host",
+    [
+        "hf.co.evil.example",
+        "evilhf.co",
+        "huggingface.co.attacker.example",
+        "us.aws.cdn.hf.co.evil.example",
+        "attacker-controlled.site",
+        "10.0.0.1",
+    ],
+)
+def test_lookalike_and_non_hf_hosts_refused(host: str) -> None:
+    """Lookalikes, unrelated hosts, and raw IPs never match the HF suffix rule."""
+    assert is_allowlisted_host(host) is False
+    with pytest.raises(HostNotAllowlistedError, match="not in the allowlist"):
+        validate_host(f"https://{host}/payload")
+
+
+def test_cdn_security_boundaries_intact() -> None:
+    """HTTPS/credential/private-network rules still apply on HF-suffixed hosts."""
+    # Cleartext to a CDN host is refused (loopback-only HTTP rule).
+    with pytest.raises(HostNotAllowlistedError, match="cleartext HTTP"):
+        validate_host("http://us.aws.cdn.hf.co/xet-bridge-us/abc123/file.parquet")
+    # Embedded credentials are refused even on a trusted host.
+    with pytest.raises(HostNotAllowlistedError, match="without credentials"):
+        validate_host("https://operator:secret@us.aws.cdn.hf.co/file.parquet")
+    # Non-HTTP(S) schemes are refused even on a trusted host.
+    with pytest.raises(HostNotAllowlistedError, match="only explicit HTTP"):
+        validate_host("file://us.aws.cdn.hf.co/file.parquet")
 
 
 def test_prober_budget_exhaustion_outcome() -> None:

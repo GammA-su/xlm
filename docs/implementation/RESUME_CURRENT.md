@@ -91,3 +91,25 @@ platform audit beyond the 6-group serial selection + 110-test regression;
 live source probe/admission/fetch; hardware profile measurement;
 production tokenizer fit; official benchmarks; GPU runs. No background jobs
 launched; no session state lives only in chat.
+
+## CDN allowlist fix (2026-09-21, commit pending at write time)
+
+- Operator SYNTH pilot (`plan_synth_default_huggingface_90e4fe4bdf7561faa190`)
+  failed safely: `huggingface.co` 302 → `us.aws.cdn.hf.co/xet-bridge-us/...`
+  refused by exact-match `ALLOWLISTED_HOSTS` via `SafeRedirectHandler`.
+- Actual journal inspected (read-only):
+  `D:\Project\xlm-operator-pilot\acquisition\...\scratch\journals\*.progress.json`:
+  status FAILED, requests 2/20 spent (initial + 1 retry), 0 bytes, empty
+  file_progress, deadline_at 1790002458.25 (600 s cumulative).
+- Fix: dot-anchored trusted-suffix rule for HF-operated zones (`.hf.co`,
+  `.huggingface.co`) in `transport.py::is_allowlisted_host`, used by
+  `validate_host` and `reference.py::ModelDownloadPlan.validate`. HTTPS,
+  credential, loopback-HTTP, and default-deny rules untouched.
+- Resume verdict: SAME plan/journal may resume — journal binds plan hash
+  only (no code-version binding), FAILED→IN_PROGRESS is allowed, spent
+  allowance stays charged. Constraint: cumulative deadline; resume must
+  start before deadline_at or it refuses by design ("restart grants no new
+  time") → then a NEW reviewed plan (new id, fresh authorization, old
+  journal preserved, never deleted). Evidence: `final02/cdnfix-*`.
+- Next fetch command (operator, same XLM_HOME, before deadline expiry):
+  `uv run --locked --extra cpu --extra eval --no-sync --offline -- xlm data fetch --plan <plan.json> --pilot-approved`

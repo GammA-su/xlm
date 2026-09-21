@@ -19,7 +19,7 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
-from xlm.data.sources.transport import ALLOWLISTED_HOSTS
+from xlm.data.sources.transport import ALLOWLISTED_HOSTS, is_allowlisted_host
 
 REFERENCE_REGISTRY_VERSION = "1"
 COMMON_SCORING_POLICY: dict[str, Any] = {
@@ -181,7 +181,7 @@ class ModelDownloadPlan:
         if self.max_total_bytes <= 0:
             raise DownloadPlanError("model download refused: byte cap must be positive.")
         for host in self.allowlisted_hosts:
-            if host not in ALLOWLISTED_HOSTS:
+            if not is_allowlisted_host(host):
                 raise DownloadPlanError(f"host '{host}' is not on the XLM allowlist.")
         if not self.scratch_dir:
             raise DownloadPlanError(

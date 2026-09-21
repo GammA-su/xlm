@@ -27,6 +27,16 @@ ALLOWLISTED_HOSTS: frozenset[str] = frozenset(
     ]
 )
 
+#: DNS suffixes exclusively operated by Hugging Face for Hub storage/CDN
+#: delivery (xet-bridge, cas-server, transfer, and cdn-lfs endpoints).
+#: Download redirects from huggingface.co routinely land on these subdomains,
+#: and only the zone owner can mint names under them — so accepting genuine
+#: subdomains trusts no new party beyond the already-allowlisted
+#: huggingface.co itself. Scoping is by DNS-zone ownership: no non-HF
+#: hostname gains any permission from this rule, and lookalikes such as
+#: "hf.co.evil.example" or "evilhf.co" never match a dot-anchored suffix.
+TRUSTED_HUGGINGFACE_SUFFIXES: tuple[str, ...] = (".hf.co", ".huggingface.co")
+
 
 class BudgetExhaustedError(RuntimeError):
     """Raised when the discovery byte ceiling, request count, or stream limit is exceeded."""
@@ -178,6 +188,20 @@ class TransportBudget:
         }
 
 
+def is_allowlisted_host(hostname: str) -> bool:
+    """Shared host predicate: exact allowlist plus genuine HF storage subdomains.
+
+    The suffix rule requires a dot-anchored match under an HF-operated zone,
+    so "us.aws.cdn.hf.co" passes while "evilhf.co",
+    "hf.co.evil.example", and "huggingface.co.attacker.example" do not.
+    Default-deny is preserved: anything else must be an exact allowlist hit.
+    """
+    host = hostname.lower().rstrip(".")
+    if host in ALLOWLISTED_HOSTS:
+        return True
+    return host.endswith(TRUSTED_HUGGINGFACE_SUFFIXES)
+
+
 def validate_host(url: str) -> None:
     """Validate that the given URL's hostname is on the strict allowlist."""
     parsed = urllib.parse.urlparse(url)
@@ -188,9 +212,11 @@ def validate_host(url: str) -> None:
         )
     if parsed.scheme == "http" and hostname not in ("127.0.0.1", "localhost"):
         raise HostNotAllowlistedError("cleartext HTTP is restricted to loopback fixtures")
-    if hostname not in ALLOWLISTED_HOSTS:
+    if not is_allowlisted_host(hostname):
         raise HostNotAllowlistedError(
-            f"Host '{hostname}' in URL '{url}' is not in the allowlist {sorted(ALLOWLISTED_HOSTS)}."
+            f"Host '{hostname}' in URL '{url}' is not in the allowlist "
+            f"{sorted(ALLOWLISTED_HOSTS)} and is not a trusted Hugging Face "
+            "storage subdomain."
         )
 
 
