@@ -51,8 +51,20 @@ def jsonl_records(
 
 
 def inspect_records(
-    path: Path, name: str, limits: AcquisitionLimits, capacity: StorageCapacityManager | None = None
+    path: Path,
+    name: str,
+    limits: AcquisitionLimits,
+    capacity: StorageCapacityManager | None = None,
+    *,
+    perf: Any | None = None,
 ) -> int | None:
+    """Count records without altering bytes, hashes, or identities.
+
+    ``perf`` is observational only (monotonic timings + counters). When
+    supplied, Parquet footer/metadata opening is timed as ``metadata`` and
+    row-group decode/iteration as ``decode``; JSONL scanning is timed as
+    ``decode``. No data path changes.
+    """
     if name.endswith((".jsonl", ".jsonl.gz")):
         parser_limits = limits
         if name.endswith(".gz"):
@@ -68,6 +80,9 @@ def inspect_records(
         count, produced = 0, 0
         with stream:
             for _, offset, raw, _ in jsonl_records(stream, parser_limits, capacity):
+                if perf is not None:
+                    with perf.timed("decode", file=name):
+                        pass
                 count += 1
                 produced = offset + len(raw)
                 if count > limits.max_records:
@@ -81,20 +96,53 @@ def inspect_records(
                     raise RecordLimitError("decompression byte/ratio limit exceeded")
         return count
     if name.endswith(".parquet"):
-        parquet = pq.ParquetFile(
-            path,
-            pre_buffer=False,
-            thrift_string_size_limit=limits.max_parser_bytes,
-            thrift_container_size_limit=limits.max_parser_bytes,
-        )
+        if perf is not None:
+            with perf.timed("metadata", file=name):
+                parquet = pq.ParquetFile(
+                    path,
+                    pre_buffer=False,
+                    thrift_string_size_limit=limits.max_parser_bytes,
+                    thrift_container_size_limit=limits.max_parser_bytes,
+                )
+        else:
+            parquet = pq.ParquetFile(
+                path,
+                pre_buffer=False,
+                thrift_string_size_limit=limits.max_parser_bytes,
+                thrift_container_size_limit=limits.max_parser_bytes,
+            )
         if parquet.metadata.num_rows > limits.max_records:
             raise RecordLimitError("whole-file record limit exceeded")
         count = 0
         for group in range(parquet.num_row_groups):
-            check_row_group(parquet, group, limits)
-            for batch in parquet.iter_batches(batch_size=1, row_groups=[group], use_threads=False):
-                for record in batch.to_pylist():
-                    raw = encode_record(record)
+            if perf is not None:
+                with perf.timed("metadata", file=name):
+                    check_row_group(parquet, group, limits)
+            else:
+                check_row_group(parquet, group, limits)
+            if perf is not None:
+                perf.record_parquet_group()
+            if perf is not None:
+                with perf.timed("decode", file=name):
+                    batches = list(
+                        parquet.iter_batches(batch_size=1, row_groups=[group], use_threads=False)
+                    )
+            else:
+                batches = list(
+                    parquet.iter_batches(batch_size=1, row_groups=[group], use_threads=False)
+                )
+            for batch in batches:
+                if perf is not None:
+                    with perf.timed("decode", file=name):
+                        rows = batch.to_pylist()
+                else:
+                    rows = batch.to_pylist()
+                for record in rows:
+                    if perf is not None:
+                        with perf.timed("decode", file=name):
+                            raw = encode_record(record)
+                    else:
+                        raw = encode_record(record)
                     if len(raw) > limits.max_record_bytes:
                         raise RecordLimitError("Parquet record byte limit exceeded")
                     if capacity:

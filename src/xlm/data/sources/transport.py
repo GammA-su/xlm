@@ -259,14 +259,23 @@ class DiscoveryTransport(Protocol):
 class SafeRedirectHandler(urllib.request.HTTPRedirectHandler):
     """Redirect handler that strictly verifies every redirect target against the host allowlist."""
 
-    def __init__(self, budget: TransportBudget | None = None) -> None:
+    def __init__(self, budget: TransportBudget | None = None, observer: Any = None) -> None:
         super().__init__()
         self.budget = budget
+        # Optional performance observer with a ``record_redirect(host)`` method.
+        # Only the sanitized hostname is ever reported; never the URL or query.
+        self.observer = observer
 
     def redirect_request(
         self, req: urllib.request.Request, fp: Any, code: int, msg: str, headers: Any, newurl: str
     ) -> urllib.request.Request | None:
         validate_host(newurl)
+        if self.observer is not None:
+            hostname = (urllib.parse.urlparse(newurl).hostname or "").lower()
+            try:
+                self.observer.record_redirect(hostname)
+            except Exception:
+                pass
         if self.budget is not None:
             self.budget.read_body(fp, self.budget.max_bytes, retain=False)
             self.budget.record_request()

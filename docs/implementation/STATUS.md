@@ -63,6 +63,7 @@
 | P21 | [Isolation, security and release](prompts/21_isolation_security_release.md) | VERIFIED |
 | P22 | [Campaign bootstrap and runbooks](prompts/22_campaign_bootstrap_and_runbooks.md) | VERIFIED |
 | P23 | [Independent final acceptance](prompts/23_independent_final_acceptance.md) | VERIFIED audit; production BLOCKED |
+| P24 | Acquisition-performance measurement (closeout, no optimization) | IMPLEMENTED / VERIFIED (offline fixtures); live 1/2/4/8 NOT RUN |
 
 ## Acceptance Requirements Ledger
 

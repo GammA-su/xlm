@@ -1019,6 +1019,253 @@ def status_cmd(
         typer.echo("============================================================")
 
 
+@app.command("performance")
+def performance_cmd(
+    plan_path: Annotated[
+        Path,
+        typer.Option("--plan", "-p", help="Path to acquisition plan JSON file."),
+    ],
+    scratch_dir: Annotated[
+        Path | None,
+        typer.Option("--scratch-dir", help="Directory for scratch files and telemetry."),
+    ] = None,
+    as_json: Annotated[
+        bool,
+        typer.Option("--json", help="Output performance telemetry as structured JSON."),
+    ] = False,
+) -> None:
+    """Read existing acquisition-performance telemetry without redoing the fetch.
+
+    Answers "Where did the time go?" and "Was worker parallelism used?"
+    from the versioned sidecar written by the fetch. Never launches network
+    requests and never modifies journals, plans, or artifacts.
+    """
+    try:
+        plan = load_acquisition_plan(plan_path)
+    except Exception as e:
+        typer.echo(f"Error loading plan: {e}", err=True)
+        raise typer.Exit(code=1) from e
+
+    target_scratch = (
+        scratch_dir or ArtifactPaths.from_env().root / "acquisition" / plan.plan_id / "scratch"
+    )
+    sidecar = target_scratch / "performance" / f"{plan.plan_id}.perf.json"
+    if not sidecar.is_file():
+        journal_path = target_scratch / "journals" / f"{plan.plan_id}.progress.json"
+        if journal_path.is_file():
+            try:
+                journal = ProgressJournal(
+                    journal_path, plan.plan_id, plan.compute_behavioral_hash()
+                )
+            except Exception as e:
+                typer.echo(f"Error loading journal: {e}", err=True)
+                raise typer.Exit(code=1) from e
+            st = journal.state
+            if as_json:
+                typer.echo(
+                    json.dumps(
+                        {
+                            "plan_id": st.plan_id,
+                            "status": st.status,
+                            "telemetry_available": False,
+                            "note": "no performance sidecar; pre-telemetry journal still loads",
+                            "transferred_bytes": st.transferred_bytes,
+                            "requests_made": st.requests_made,
+                            "cache_hits": st.cache_hits,
+                            "records_acquired": st.records_acquired,
+                        },
+                        indent=2,
+                    )
+                )
+            else:
+                typer.echo("============================================================")
+                typer.echo(f"Acquisition Performance: {st.plan_id} ({st.status})")
+                typer.echo("Telemetry: not available (pre-telemetry journal still loads)")
+                typer.echo(f"Transferred: {st.transferred_bytes:,} bytes")
+                typer.echo(f"Requests:    {st.requests_made}")
+                typer.echo(f"Cache Hits:  {st.cache_hits}")
+                typer.echo("============================================================")
+            return
+        typer.echo(f"No performance telemetry found at '{sidecar}'. Fetch not yet run.", err=True)
+        raise typer.Exit(code=1)
+
+    from xlm.data.acquisition.perf import load_perf_doc
+
+    try:
+        doc = load_perf_doc(sidecar)
+    except Exception as e:
+        typer.echo(f"Error loading performance telemetry: {e}", err=True)
+        raise typer.Exit(code=1) from e
+
+    if as_json:
+        typer.echo(json.dumps(doc, indent=2))
+        return
+    _print_perf_summary(doc)
+
+
+def _print_perf_summary(doc: dict[str, Any]) -> None:
+    telemetry = doc.get("telemetry", {})
+    rates = doc.get("rates", {})
+    shares = doc.get("time_shares_of_wall", {})
+    wall = float(doc.get("wall_seconds", 0.0) or 0.0)
+    transferred = int(doc.get("transferred_bytes", 0) or 0)
+    decompressed = int(doc.get("decompressed_bytes", 0) or 0)
+    typer.echo("============================================================")
+    typer.echo(f"Acquisition Performance: {doc.get('plan_id')} ({doc.get('status')})")
+    typer.echo(f"Source: {doc.get('source_id')}:{doc.get('view_id')} rev {doc.get('revision')}")
+    typer.echo(f"Mode: {doc.get('mode')} attempt {doc.get('attempt')}")
+    typer.echo(f"Wall: {wall:.3f}s  CPU: {doc.get('cpu_process_seconds')}")
+    typer.echo(
+        f"Transferred: {transferred:,} bytes "
+        f"({transferred / (1024**2):.3f} MiB @ "
+        f"{float(rates.get('application_mb_per_sec', 0.0) or 0.0):.3f} MiB/s)"
+    )
+    typer.echo(
+        f"Decompressed: {decompressed:,} bytes "
+        f"(@ {float(rates.get('decompressed_mb_per_sec', 0.0) or 0.0):.3f} MiB/s)"
+    )
+    typer.echo(
+        f"Scanned: {telemetry.get('scanned_records')} "
+        f"(@ {float(rates.get('records_scanned_per_sec', 0.0) or 0.0):.2f}/s)  "
+        f"Retained: {telemetry.get('retained_records')} "
+        f"(@ {float(rates.get('retained_records_per_sec', 0.0) or 0.0):.2f}/s)"
+    )
+    typer.echo(
+        f"Requests: {telemetry.get('requests')} "
+        f"(@ {float(rates.get('requests_per_sec', 0.0) or 0.0):.2f}/s)  "
+        f"Redirects: {telemetry.get('redirects')}  Retries: {telemetry.get('retries')}"
+    )
+    typer.echo("Where did the time go (share of wall)?")
+    for key in (
+        "request_open",
+        "body_stream",
+        "parquet_metadata",
+        "parquet_decode",
+        "serialize_write",
+        "accounting_lock",
+        "retry_wait",
+    ):
+        typer.echo(f"  - {key}: {float(shares.get(key, 0.0) or 0.0) * 100:.1f}%")
+    typer.echo(f"Slowest stage: {doc.get('slowest_stage')}")
+    typer.echo(
+        f"Workers: configured {doc.get('max_workers_configured')} "
+        f"max observed {telemetry.get('max_active_workers')} "
+        f"avg concurrency {float(doc.get('average_concurrency', 0.0) or 0.0):.2f}"
+    )
+    typer.echo(
+        f"Cache: {doc.get('cache_class')} "
+        f"(hits {doc.get('cache_hits')}, telemetry hits "
+        f"{telemetry.get('cache_hits_telemetry')})"
+    )
+    slowest = doc.get("slowest_requests", []) or []
+    if slowest:
+        typer.echo(f"Slowest requests (top {len(slowest)}):")
+        for item in slowest[:8]:
+            typer.echo(
+                f"  - {item.get('category')}/{item.get('file')} "
+                f"via {item.get('host')}: {float(item.get('seconds', 0.0) or 0.0):.3f}s"
+            )
+    slowest_files = doc.get("slowest_files", []) or []
+    if slowest_files:
+        typer.echo(f"Slowest files (top {len(slowest_files)}):")
+        for item in slowest_files[:8]:
+            typer.echo(f"  - {item.get('file')}: {float(item.get('seconds', 0.0) or 0.0):.3f}s")
+    typer.echo("Notes: application response-body bytes only; no TCP/TLS wire accounting.")
+    typer.echo("============================================================")
+
+
+@app.command("performance-compare")
+def performance_compare_cmd(
+    perf_files: Annotated[
+        list[Path] | None,
+        typer.Option("--perf", help="Performance sidecar JSON files to compare."),
+    ] = None,
+    plan_files: Annotated[
+        list[Path] | None,
+        typer.Option("--plan", help="Acquisition plan files; sidecars resolve via scratch."),
+    ] = None,
+    scratch_dir: Annotated[
+        Path | None,
+        typer.Option(
+            "--scratch-dir",
+            help="Shared scratch root when plans used custom layouts; otherwise per-plan defaults.",
+        ),
+    ] = None,
+    as_json: Annotated[
+        bool,
+        typer.Option("--json", help="Output comparison as structured JSON."),
+    ] = False,
+) -> None:
+    """Compare offline performance sidecars across worker configurations.
+
+    Only compares logically equivalent workloads (same source/view/revision/
+    files/ranges/mode/limits, same cache class, all COMPLETED). Attempt and
+    max_workers may differ — that is the comparison. Never launches fetches.
+    """
+    from xlm.data.acquisition.perf import compare_perf_docs, load_perf_doc
+
+    docs: list[dict[str, Any]] = []
+    for sidecar in perf_files or []:
+        try:
+            docs.append(load_perf_doc(sidecar))
+        except Exception as e:
+            typer.echo(f"Error loading performance telemetry: {e}", err=True)
+            raise typer.Exit(code=1) from e
+    for plan_path in plan_files or []:
+        try:
+            plan = load_acquisition_plan(plan_path)
+        except Exception as e:
+            typer.echo(f"Error loading plan: {e}", err=True)
+            raise typer.Exit(code=1) from e
+        target_scratch = (
+            scratch_dir or ArtifactPaths.from_env().root / "acquisition" / plan.plan_id / "scratch"
+        )
+        sidecar = target_scratch / "performance" / f"{plan.plan_id}.perf.json"
+        try:
+            docs.append(load_perf_doc(sidecar))
+        except Exception as e:
+            typer.echo(f"Error loading performance telemetry: {e}", err=True)
+            raise typer.Exit(code=1) from e
+    if len(docs) < 2:
+        typer.echo(
+            "Comparison needs at least two performance documents "
+            "(--perf sidecars or --plan files).",
+            err=True,
+        )
+        raise typer.Exit(code=1)
+    result = compare_perf_docs(docs)
+    if as_json:
+        typer.echo(json.dumps(result, indent=2))
+        if not result.get("comparable"):
+            raise typer.Exit(code=1)
+        return
+    if not result.get("comparable"):
+        typer.echo("Performance comparison refused: workloads are not equivalent.")
+        for reason in result.get("refusals", []):
+            typer.echo(f"  - {reason}")
+        raise typer.Exit(code=1)
+    typer.echo("============================================================")
+    typer.echo("Acquisition Performance Comparison (equivalent workloads only)")
+    for entry in result.get("entries", []):
+        typer.echo(
+            f"  - {entry.get('plan_id')} attempt {entry.get('attempt')} "
+            f"workers {entry.get('max_workers')}: "
+            f"{float(entry.get('wall_seconds', 0.0) or 0.0):.3f}s, "
+            f"{float(entry.get('application_mb_per_sec', 0.0) or 0.0):.3f} MiB/s app, "
+            f"{float(entry.get('decompressed_mb_per_sec', 0.0) or 0.0):.3f} MiB/s decomp, "
+            f"max concurrency {entry.get('max_active_workers')} "
+            f"(avg {float(entry.get('average_concurrency', 0.0) or 0.0):.2f}), "
+            f"slowest {entry.get('slowest_stage')}, cache {entry.get('cache_class')}"
+        )
+    fastest = result.get("fastest", {})
+    typer.echo(
+        f"Observed fastest (this workload only, not a universal recommendation): "
+        f"{fastest.get('plan_id')} workers {fastest.get('max_workers')} "
+        f"({float(fastest.get('wall_seconds', 0.0) or 0.0):.3f}s)"
+    )
+    typer.echo("============================================================")
+
+
 @app.command("verify")
 def verify_cmd(
     plan_path: Annotated[

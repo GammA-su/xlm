@@ -13,6 +13,14 @@ from xlm.data.acquisition.fetcher import (
     BoundedFetcher,
     DecompressionBombError,
 )
+from xlm.data.acquisition.perf import (
+    MAX_SLOWEST_REQUESTS,
+    PERF_VERSION,
+    PerfTelemetry,
+    cache_class_for,
+    compare_perf_docs,
+    load_perf_doc,
+)
 from xlm.data.acquisition.plan import (
     AcquisitionLimits,
     AcquisitionMode,
@@ -58,6 +66,9 @@ __all__ = [
     "DecompressionBombError",
     "DiskCeilingExceededError",
     "FileProgress",
+    "MAX_SLOWEST_REQUESTS",
+    "PERF_VERSION",
+    "PerfTelemetry",
     "PlanAuthorization",
     "ProgressCorruptionError",
     "ProgressJournal",
@@ -65,7 +76,10 @@ __all__ = [
     "SourceDriftDetectedError",
     "StorageCapacityManager",
     "VerificationError",
+    "cache_class_for",
+    "compare_perf_docs",
     "load_acquisition_plan",
+    "load_perf_doc",
     "save_acquisition_plan",
     "validate_plan_authorization",
 ]

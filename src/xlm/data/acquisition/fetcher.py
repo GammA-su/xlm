@@ -24,6 +24,7 @@ from filelock import FileLock, Timeout
 from xlm.artifacts.manifest import ensure_plain_path
 from xlm.artifacts.store import compute_file_sha256
 from xlm.data.acquisition.disk import AtomicFileWriter, StorageCapacityManager
+from xlm.data.acquisition.perf import PerfTelemetry
 from xlm.data.acquisition.plan import (
     AcquisitionMode,
     AcquisitionPlan,
@@ -142,7 +143,12 @@ class BoundedFetcher:
             per_request_timeout=limits.per_request_timeout_seconds,
             capacity=self.capacity_mgr,
         )
-        self.opener = urllib.request.build_opener(SafeRedirectHandler(self.budget))
+        # Observational only: monotonic timings and counters. Never alters
+        # plan hashes, artifact identity, receipts, or selected-record bytes.
+        self.perf = PerfTelemetry(process_time=time.process_time)
+        self.opener = urllib.request.build_opener(
+            SafeRedirectHandler(self.budget, observer=self.perf)
+        )
 
     def _resolve_url(self, rel_path: str) -> str:
         path = urllib.parse.quote(rel_path, safe="/")
@@ -160,15 +166,23 @@ class BoundedFetcher:
     def _check_deadline(self) -> None:
         self.capacity_mgr.check_deadline()
 
-    def _open(self, rel_path: str, headers: dict[str, str]) -> Any:
+    def _open(self, rel_path: str, headers: dict[str, str], *, category: str | None = None) -> Any:
         url = self._resolve_url(rel_path)
         validate_host(url)
         self.budget.record_request()
-        request = urllib.request.Request(
-            url,
-            headers={"User-Agent": "xlm-acquisition/2", "Accept-Encoding": "identity", **headers},
-        )
-        return self.opener.open(request, timeout=self.plan.limits.per_request_timeout_seconds)
+        host = (urllib.parse.urlparse(url).hostname or "").lower()
+        resolved_category = category or ("range" if "Range" in headers else "open")
+        self.perf.record_request(host=host, file=rel_path)
+        with self.perf.timed("open", host=host, file=rel_path, label=resolved_category):
+            request = urllib.request.Request(
+                url,
+                headers={
+                    "User-Agent": "xlm-acquisition/2",
+                    "Accept-Encoding": "identity",
+                    **headers,
+                },
+            )
+            return self.opener.open(request, timeout=self.plan.limits.per_request_timeout_seconds)
 
     def _retry_error(self, error: BaseException, attempt: int) -> None:
         delay = min(0.1 * 2**attempt, 2.0)
@@ -192,6 +206,7 @@ class BoundedFetcher:
                 raise error
         if attempt >= self.plan.limits.max_retries:
             raise error
+        self.perf.record_retry(delay)
         self._check_deadline()
         deadline = self.journal.state.accounting.deadline_at
         if (
@@ -203,13 +218,19 @@ class BoundedFetcher:
         time.sleep(delay)
         self._check_deadline()
 
-    def fetch_range(self, rel_path: str, start: int, end: int) -> tuple[bytes, int, str | None]:
+    def fetch_range(
+        self, rel_path: str, start: int, end: int, *, purpose: str | None = None
+    ) -> tuple[bytes, int, str | None]:
         """Exact byte ranges only; no ignored-range full-shard fallback."""
         if not 0 <= start <= end or end - start + 1 > self.plan.limits.max_parser_bytes:
             raise ValueError("range exceeds parser bound")
         for attempt in range(self.plan.limits.max_retries + 1):
             try:
-                with self._open(rel_path, {"Range": f"bytes={start}-{end}"}) as response:
+                with self._open(
+                    rel_path,
+                    {"Range": f"bytes={start}-{end}"},
+                    category=purpose or "range",
+                ) as response:
                     match = CONTENT_RANGE_RE.fullmatch(response.headers.get("Content-Range", ""))
                     if (
                         response.status != 206
@@ -220,13 +241,16 @@ class BoundedFetcher:
                         raise ValueError(
                             "inconsistent or ignored Content-Range; whole-shard fallback refused"
                         )
-                    body = self.budget.read_body(response, end - start + 1)
+                    with self.perf.timed("body", file=rel_path):
+                        body = self.budget.read_body(response, end - start + 1)
                     if len(body) != end - start + 1:
                         raise ValueError("range payload length mismatch")
                     etag = response.headers.get("ETag")
                     if not etag or etag.startswith("W/"):
                         raise ValueError("selected ranges require a stable strong ETag")
-                    self.journal.bind_source(rel_path, etag, int(match[3]))
+                    self.perf.record_file_bytes(rel_path, len(body))
+                    with self.perf.timed("accounting"):
+                        self.journal.bind_source(rel_path, etag, int(match[3]))
                     return body, int(match[3]), etag
             except (urllib.error.URLError, OSError, http.client.IncompleteRead) as exc:
                 self._retry_error(exc, attempt)
@@ -236,7 +260,8 @@ class BoundedFetcher:
         final_path, partial = self.output_dir / rel_path, self.partial_dir / f"{rel_path}.part"
         ensure_plain_path(final_path)
         ensure_plain_path(partial)
-        self.journal.save()
+        with self.perf.timed("accounting"):
+            self.journal.save()
         fp = self.journal.state.file_progress.get(rel_path)
         if final_path.exists():
             if not fp or fp.status != "completed" or not fp.content_sha256:
@@ -250,6 +275,7 @@ class BoundedFetcher:
             if actual != expected or actual != fp.content_sha256:
                 raise ProgressCorruptionError("completed original integrity checksum mismatch")
             self.capacity_mgr.record_cache_hit()
+            self.perf.record_cache_hit()
             return final_path
         if fp and fp.status == "completed":
             raise ProgressCorruptionError("completed original is missing; refusing repair")
@@ -258,126 +284,179 @@ class BoundedFetcher:
                 "unowned partial file; cannot infer historical consumption"
             )
         partial.parent.mkdir(parents=True, exist_ok=True)
-        for attempt in range(self.plan.limits.max_retries + 1):
-            self._check_deadline()
-            offset = partial.stat().st_size if partial.exists() else 0
-            fp = self.journal.state.file_progress.get(rel_path)
-            etag = fp.etag if fp else None
-            headers = {"Range": f"bytes={offset}-"} if offset else {}
-            if offset and etag and not etag.startswith("W/"):
-                headers["If-Range"] = etag
-            try:
-                with self._open(rel_path, headers) as response:
-                    new_etag = response.headers.get("ETag")
-                    if offset and etag and new_etag and etag != new_etag:
-                        raise SourceDriftDetectedError("source ETag changed during continuation")
-                    length = response.headers.get("Content-Length")
-                    remaining = int(length) if length is not None else None
-                    if remaining is not None and remaining < 0:
-                        raise ValueError("negative response length")
-                    if response.status == 206:
-                        match = CONTENT_RANGE_RE.fullmatch(
-                            response.headers.get("Content-Range", "")
-                        )
-                        if (
-                            not offset
-                            or not match
-                            or int(match[1]) != offset
-                            or int(match[2]) != int(match[3]) - 1
+        with self.perf.file_worker(rel_path):
+            for attempt in range(self.plan.limits.max_retries + 1):
+                self._check_deadline()
+                offset = partial.stat().st_size if partial.exists() else 0
+                fp = self.journal.state.file_progress.get(rel_path)
+                etag = fp.etag if fp else None
+                headers = {"Range": f"bytes={offset}-"} if offset else {}
+                if offset and etag and not etag.startswith("W/"):
+                    headers["If-Range"] = etag
+                try:
+                    with self._open(rel_path, headers) as response:
+                        new_etag = response.headers.get("ETag")
+                        if offset and etag and new_etag and etag != new_etag:
+                            raise SourceDriftDetectedError(
+                                "source ETag changed during continuation"
+                            )
+                        length = response.headers.get("Content-Length")
+                        remaining = int(length) if length is not None else None
+                        if remaining is not None and remaining < 0:
+                            raise ValueError("negative response length")
+                        if response.status == 206:
+                            match = CONTENT_RANGE_RE.fullmatch(
+                                response.headers.get("Content-Range", "")
+                            )
+                            if (
+                                not offset
+                                or not match
+                                or int(match[1]) != offset
+                                or int(match[2]) != int(match[3]) - 1
+                            ):
+                                raise RuntimeError(
+                                    "Inconsistent Content-Range start/end for continuation"
+                                )
+                            if remaining is not None and remaining != int(match[2]) - offset + 1:
+                                raise ValueError("Content-Range length mismatch")
+                            remaining = int(match[3]) - offset
+                        elif response.status == 200:
+                            if offset:
+                                # Only this plan's verified private prefix may be retired.
+                                AtomicFileWriter.truncate_to_length(partial, 0)
+                                with self.perf.timed("accounting"):
+                                    with self.journal.transaction() as state:
+                                        state.file_progress[rel_path].bytes_downloaded = 0
+                                        state.file_progress[rel_path].verified_prefix_bytes = 0
+                                offset = 0
+                        else:
+                            raise ValueError(f"unexpected response status {response.status}")
+                        if remaining is not None and remaining > self.capacity_mgr.remaining(
+                            "transfer"
                         ):
-                            raise RuntimeError(
-                                "Inconsistent Content-Range start/end for continuation"
+                            raise BudgetExhaustedError(
+                                "Transferred bytes limit: declared response "
+                                "exceeds remaining allowance"
                             )
-                        if remaining is not None and remaining != int(match[2]) - offset + 1:
-                            raise ValueError("Content-Range length mismatch")
-                        remaining = int(match[3]) - offset
-                    elif response.status == 200:
+                        digest = hashlib.sha256()
                         if offset:
-                            # Only this plan's verified private prefix may be retired.
-                            AtomicFileWriter.truncate_to_length(partial, 0)
-                            with self.journal.transaction() as state:
-                                state.file_progress[rel_path].bytes_downloaded = 0
-                                state.file_progress[rel_path].verified_prefix_bytes = 0
-                            offset = 0
-                    else:
-                        raise ValueError(f"unexpected response status {response.status}")
-                    if remaining is not None and remaining > self.capacity_mgr.remaining(
-                        "transfer"
-                    ):
-                        raise BudgetExhaustedError(
-                            "Transferred bytes limit: declared response exceeds remaining allowance"
-                        )
-                    digest = hashlib.sha256()
-                    if offset:
-                        with partial.open("rb") as prior:
-                            while chunk := prior.read(65536):
+                            with partial.open("rb") as prior:
+                                while chunk := prior.read(65536):
+                                    digest.update(chunk)
+                        with partial.open("ab") as output:
+                            while remaining is None or remaining > 0:
+                                self._check_deadline()
+                                amount = min(65536, remaining if remaining is not None else 65536)
+                                amount = min(amount, self.capacity_mgr.remaining("temp"))
+                                if amount <= 0:
+                                    raise BudgetExhaustedError("scratch allowance exhausted")
+                                disk_token = self.capacity_mgr.reserve_disk_space(
+                                    self.scratch_dir, amount
+                                )
+                                with self.perf.timed("body", file=rel_path):
+                                    chunk = self.budget.read_chunk(response, amount)
+                                if not chunk:
+                                    self.capacity_mgr.settle("temp", disk_token, 0)
+                                    if remaining:
+                                        raise http.client.IncompleteRead(b"", remaining)
+                                    break
+                                output.write(chunk)
+                                output.flush()
+                                os.fsync(output.fileno())
+                                self.capacity_mgr.settle("temp", disk_token, len(chunk))
+                                self.perf.record_file_bytes(rel_path, len(chunk))
                                 digest.update(chunk)
-                    with partial.open("ab") as output:
-                        while remaining is None or remaining > 0:
-                            self._check_deadline()
-                            amount = min(65536, remaining if remaining is not None else 65536)
-                            amount = min(amount, self.capacity_mgr.remaining("temp"))
-                            if amount <= 0:
-                                raise BudgetExhaustedError("scratch allowance exhausted")
-                            disk_token = self.capacity_mgr.reserve_disk_space(
-                                self.scratch_dir, amount
+                                offset += len(chunk)
+                                if remaining is not None:
+                                    remaining -= len(chunk)
+                                with self.perf.timed("accounting"):
+                                    self.journal.update_file_progress(
+                                        rel_path,
+                                        len(chunk),
+                                        new_etag,
+                                        prefix_sha256=digest.hexdigest(),
+                                    )
+                        if offset == 0:
+                            raise ValueError("empty original cannot establish a corpus acquisition")
+                        expected_digest = self.plan.expected_file_digests.get(rel_path)
+                        if expected_digest and digest.hexdigest() != expected_digest.lower():
+                            raise ProgressCorruptionError(
+                                "download checksum differs from independent expected digest"
                             )
-                            chunk = self.budget.read_chunk(response, amount)
-                            if not chunk:
-                                self.capacity_mgr.settle("temp", disk_token, 0)
-                                if remaining:
-                                    raise http.client.IncompleteRead(b"", remaining)
-                                break
-                            output.write(chunk)
-                            output.flush()
-                            os.fsync(output.fileno())
-                            self.capacity_mgr.settle("temp", disk_token, len(chunk))
-                            digest.update(chunk)
-                            offset += len(chunk)
-                            if remaining is not None:
-                                remaining -= len(chunk)
-                            self.journal.update_file_progress(
-                                rel_path, len(chunk), new_etag, prefix_sha256=digest.hexdigest()
+                        try:
+                            decompressed_before = self.capacity_mgr.snapshot()["decompressed_bytes"]
+                        except Exception:
+                            decompressed_before = 0
+                        if rel_path.endswith(".parquet"):
+                            records = inspect_records(
+                                partial,
+                                rel_path,
+                                self.plan.limits,
+                                self.capacity_mgr,
+                                perf=self.perf,
                             )
-                    if offset == 0:
-                        raise ValueError("empty original cannot establish a corpus acquisition")
-                    expected_digest = self.plan.expected_file_digests.get(rel_path)
-                    if expected_digest and digest.hexdigest() != expected_digest.lower():
-                        raise ProgressCorruptionError(
-                            "download checksum differs from independent expected digest"
+                        else:
+                            with self.perf.timed("decode", file=rel_path):
+                                records = inspect_records(
+                                    partial,
+                                    rel_path,
+                                    self.plan.limits,
+                                    self.capacity_mgr,
+                                    perf=self.perf,
+                                )
+                        try:
+                            decompressed_after = self.capacity_mgr.snapshot()["decompressed_bytes"]
+                        except Exception:
+                            decompressed_after = decompressed_before
+                        self.perf.record_decompressed(
+                            max(0, decompressed_after - decompressed_before)
                         )
-                    records = inspect_records(
-                        partial, rel_path, self.plan.limits, self.capacity_mgr
-                    )
-                    with self.journal.transaction() as state:
-                        count = sum(
-                            item.record_count or 0
-                            for name, item in state.file_progress.items()
-                            if name != rel_path
+                        with self.perf.timed("accounting"):
+                            with self.journal.transaction() as state:
+                                count = sum(
+                                    item.record_count or 0
+                                    for name, item in state.file_progress.items()
+                                    if name != rel_path
+                                )
+                                if count + (records or 0) > self.plan.limits.max_records:
+                                    raise RecordLimitError("aggregate record limit exceeded")
+                                state.file_progress[rel_path].record_count = records
+                        self.perf.record_scanned(records or 0, file=rel_path)
+                        self.perf.record_retained(records or 0, file=rel_path)
+                        token = self.capacity_mgr.reserve_disk_space(
+                            self.output_dir, offset, is_temp=False
                         )
-                        if count + (records or 0) > self.plan.limits.max_records:
-                            raise RecordLimitError("aggregate record limit exceeded")
-                        state.file_progress[rel_path].record_count = records
-                    token = self.capacity_mgr.reserve_disk_space(
-                        self.output_dir, offset, is_temp=False
-                    )
-                    AtomicFileWriter.atomic_complete(partial, final_path)
-                    self.capacity_mgr.settle("output", token, offset)
-                    self.journal.mark_file_completed(
-                        rel_path, offset, new_etag, digest=digest.hexdigest(), records=records
-                    )
-                    return final_path
-            except (urllib.error.URLError, OSError, http.client.IncompleteRead) as exc:
-                self._retry_error(exc, attempt)
-        raise RuntimeError("file attempts exhausted")
+                        with self.perf.timed("serialize", file=rel_path):
+                            AtomicFileWriter.atomic_complete(partial, final_path)
+                        self.capacity_mgr.settle("output", token, offset)
+                        with self.perf.timed("accounting"):
+                            self.journal.mark_file_completed(
+                                rel_path,
+                                offset,
+                                new_etag,
+                                digest=digest.hexdigest(),
+                                records=records,
+                            )
+                        return final_path
+                except (urllib.error.URLError, OSError, http.client.IncompleteRead) as exc:
+                    self._retry_error(exc, attempt)
+            raise RuntimeError("file attempts exhausted")
 
     def run(self) -> AcquisitionState:
         self.lock_dir.mkdir(parents=True, exist_ok=True)
         self.output_dir.mkdir(parents=True, exist_ok=True)
+        wall_start = time.monotonic()
+        cpu_start: float | None = None
+        try:
+            cpu_start = time.process_time()
+        except Exception:
+            cpu_start = None
+        final_status = "FAILED"
         try:
             with FileLock(str(self.lock_dir / f"acq_{self.plan.plan_id}.lock"), timeout=1):
                 self.capacity_mgr.bind_deadline(self.plan.limits.overall_deadline_seconds)
-                self.journal.set_status("IN_PROGRESS")
+                with self.perf.timed("accounting"):
+                    self.journal.set_status("IN_PROGRESS")
                 try:
                     if self.plan.mode == AcquisitionMode.SELECTED_RECORDS:
                         from xlm.data.acquisition.selection import acquire_selection
@@ -395,17 +474,46 @@ class BoundedFetcher:
                             list(pool.map(self._fetch_file, self.plan.selected_files))
                     self.capacity_mgr.reconcile_disk("temp", self.partial_dir)
                     self.capacity_mgr.reconcile_disk("output", self.output_dir)
-                    self.journal.set_status("COMPLETED")
+                    with self.perf.timed("accounting"):
+                        self.journal.set_status("COMPLETED")
+                    final_status = "COMPLETED"
                 except BaseException as exc:
-                    self.journal.set_status(
+                    final_status = (
                         "INTERRUPTED"
                         if isinstance(exc, (KeyboardInterrupt, BudgetExhaustedError, TimeoutError))
-                        else "FAILED",
-                        str(exc)[:500],
+                        else "FAILED"
                     )
+                    with self.perf.timed("accounting"):
+                        self.journal.set_status(
+                            final_status,
+                            str(exc)[:500],
+                        )
                     raise
                 return self.journal.state
         except Timeout as exc:
             raise AcquisitionLockHeldError(
                 "another process holds this plan's acquisition lock"
             ) from exc
+        finally:
+            # Observational sidecar only. Journal, plan, receipt, and all
+            # selected-record bytes are written (or not) exactly as before.
+            try:
+                state = self.journal.state
+                doc = self.perf.snapshot(
+                    plan=self.plan,
+                    status=final_status,
+                    wall_seconds=max(0.0, time.monotonic() - wall_start),
+                    transferred_bytes=state.transferred_bytes,
+                    journal_decompressed_bytes=state.decompressed_bytes,
+                    journal_requests=state.requests_made,
+                    journal_cache_hits=state.cache_hits,
+                    journal_records=state.records_acquired,
+                )
+                if cpu_start is not None:
+                    try:
+                        doc["cpu_process_seconds"] = max(0.0, time.process_time() - cpu_start)
+                    except Exception:
+                        pass
+                self.perf.write_sidecar(self.scratch_dir, self.plan.plan_id, doc)
+            except Exception:
+                pass
