@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -14,6 +15,7 @@ from xlm.data.acquisition.plan import (
     PlanAuthorization,
     SamplingFrame,
     load_acquisition_plan,
+    plan_requires_production_admission,
     save_acquisition_plan,
     validate_plan_authorization,
 )
@@ -192,3 +194,240 @@ def test_plan_serialization_roundtrip(tmp_path: Path) -> None:
     assert loaded_plan.plan_hash == plan.compute_behavioral_hash()
     assert loaded_plan.sampling_frame.coverage_notes == "First shard covering English articles"
     assert "not a uniform random sample" in loaded_plan.sampling_frame.selection_bias_warning
+
+
+# ------------------------------------------------- production admission scope
+
+
+def _production_plan(**overrides: Any) -> AcquisitionPlan:
+    fields: dict[str, Any] = {
+        "plan_id": "plan_prod_scope",
+        "source_id": "authored",
+        "view_id": "default",
+        "provider": "https",
+        "repository": "https://127.0.0.1:9/files",
+        "revision": "rev0000000000000000000000000000000000000001",
+        "mode": AcquisitionMode.WHOLE_FILE,
+        "selected_files": ["data.jsonl"],
+        "output_artifact_id": "raw_authored_default",
+        "is_pilot": False,
+        "limits": AcquisitionLimits(max_transferred_bytes=4096, max_records=10),
+    }
+    fields.update(overrides)
+    return AcquisitionPlan(**fields)
+
+
+def _production_store(tmp_path: Path) -> Any:
+    from xlm.artifacts.store import ArtifactStore
+    from xlm.core.paths import ArtifactPaths
+
+    return ArtifactStore(ArtifactPaths(root=tmp_path / "home"))
+
+
+def _plant_production_state(
+    tmp_path: Path,
+    *,
+    revision: str | None = None,
+    approved: bool = True,
+    fingerprint: str = "fp_production_1",
+    decision_fingerprint: str | None = None,
+) -> tuple[Any, Any, Any]:
+    """Plant probe evidence plus an admission decision through the real services."""
+    from xlm.artifacts.store import ArtifactStore
+    from xlm.core.paths import ArtifactPaths
+    from xlm.data.sources.admission import save_admission_decision, save_probe_evidence
+    from xlm.data.sources.prober import EvidenceType, ProbeEvidenceRecord, ProbeOutcome
+    from xlm.data.sources.schema import FieldDescriptor, ViewSchema
+
+    store = ArtifactStore(ArtifactPaths(root=tmp_path / "home"))
+    revision = revision or "rev0000000000000000000000000000000000000001"
+    schema = ViewSchema(
+        view_id="default",
+        fields={"text": FieldDescriptor(name="text", type_name="string")},
+        raw_schema_type="arrow",
+    )
+    evidence = ProbeEvidenceRecord(
+        source_id="authored",
+        view_id="default",
+        provider="https",
+        repository="https://127.0.0.1:9/files",
+        immutable_revision=revision,
+        outcome=ProbeOutcome.ACCESSIBLE,
+        evidence_type=EvidenceType.REAL_OBSERVED,
+        probe_fingerprint=fingerprint,
+        verified_schema=schema,
+        declared_license="Apache-2.0",
+    )
+    save_probe_evidence(evidence, store, staging_dir=tmp_path / "staging-probe")
+    decision_kwargs: dict[str, Any] = {
+        "source_id": "authored",
+        "view_id": "default",
+        "provider": "https",
+        "repository": "https://127.0.0.1:9/files",
+        "immutable_revision": revision,
+        "adapter_id": "JsonlAdapter",
+        "probe_fingerprint": decision_fingerprint or fingerprint,
+        "license_review": "approved",
+        "benchmark_risk": "clean",
+        "operator_approved": approved,
+        "operator_notes": "closeout fixture review",
+    }
+    from xlm.data.sources.admission import AdmissionDecision
+
+    save_admission_decision(
+        AdmissionDecision(**decision_kwargs), store, staging_dir=tmp_path / "staging-decision"
+    )
+    return store, evidence, decision_kwargs
+
+
+def _authorized_production_plan(**overrides: Any) -> AcquisitionPlan:
+    plan = _production_plan(**overrides)
+    return plan.model_copy(
+        update={
+            "authorization": PlanAuthorization(
+                authorization_hash=plan.compute_behavioral_hash(),
+                authorized_by="closeout-fixture",
+                authorized_at="2026-09-21T00:00:00Z",
+                scope="production",
+            )
+        }
+    )
+
+
+def test_production_scope_boundary_matches_validator(tmp_path: Path) -> None:
+    pilot = _production_plan(is_pilot=True, limits=AcquisitionLimits(max_transferred_bytes=1024))
+    assert plan_requires_production_admission(pilot) is False
+    assert plan_requires_production_admission(_production_plan()) is True
+    over_threshold = _production_plan(
+        is_pilot=True, limits=AcquisitionLimits(max_transferred_bytes=300 * 1024**2)
+    )
+    assert plan_requires_production_admission(over_threshold) is True
+
+
+def test_production_admission_resolves_for_matching_store_state(tmp_path: Path) -> None:
+    from xlm.data.sources.admission import resolve_verified_production_admission
+
+    store, _, _ = _plant_production_state(tmp_path)
+    plan = _authorized_production_plan()
+    resolve_verified_production_admission(plan, store)
+    validate_plan_authorization(plan, catalog_source_approved=True)
+
+
+def test_production_admission_missing_evidence_is_refused(tmp_path: Path) -> None:
+    from xlm.data.sources.admission import resolve_verified_production_admission
+
+    store = _production_store(tmp_path)
+    with pytest.raises(AuthorizationRequiredError, match="no probe evidence"):
+        resolve_verified_production_admission(_authorized_production_plan(), store)
+
+
+def test_production_admission_missing_decision_is_refused(tmp_path: Path) -> None:
+    from xlm.data.sources.admission import (
+        resolve_verified_production_admission,
+        save_probe_evidence,
+    )
+    from xlm.data.sources.prober import EvidenceType, ProbeEvidenceRecord, ProbeOutcome
+    from xlm.data.sources.schema import FieldDescriptor, ViewSchema
+
+    store = _production_store(tmp_path)
+    schema = ViewSchema(
+        view_id="default",
+        fields={"text": FieldDescriptor(name="text", type_name="string")},
+        raw_schema_type="arrow",
+    )
+    save_probe_evidence(
+        ProbeEvidenceRecord(
+            source_id="authored",
+            view_id="default",
+            provider="https",
+            repository="https://127.0.0.1:9/files",
+            immutable_revision="rev0000000000000000000000000000000000000001",
+            outcome=ProbeOutcome.ACCESSIBLE,
+            evidence_type=EvidenceType.REAL_OBSERVED,
+            probe_fingerprint="fp_production_1",
+            verified_schema=schema,
+            declared_license="Apache-2.0",
+        ),
+        store,
+        staging_dir=tmp_path / "staging-probe",
+    )
+    with pytest.raises(AuthorizationRequiredError, match="no recorded operator admission"):
+        resolve_verified_production_admission(_authorized_production_plan(), store)
+
+
+def test_production_admission_rejected_decision_is_refused(tmp_path: Path) -> None:
+    from xlm.data.sources.admission import resolve_verified_production_admission
+
+    store, _, _ = _plant_production_state(tmp_path, approved=False)
+    with pytest.raises(AuthorizationRequiredError, match="not admitted"):
+        resolve_verified_production_admission(_authorized_production_plan(), store)
+
+
+def test_production_admission_stale_fingerprint_is_refused(tmp_path: Path) -> None:
+    from xlm.data.sources.admission import resolve_verified_production_admission
+
+    store, _, _ = _plant_production_state(tmp_path, decision_fingerprint="fp_stale_unrelated")
+    with pytest.raises(AuthorizationRequiredError, match="not admitted"):
+        resolve_verified_production_admission(_authorized_production_plan(), store)
+
+
+def test_production_admission_revision_mismatch_is_refused(tmp_path: Path) -> None:
+    from xlm.data.sources.admission import resolve_verified_production_admission
+
+    store, _, _ = _plant_production_state(tmp_path)
+    plan = _authorized_production_plan(revision="rev0000000000000000000000000000000000000002")
+    with pytest.raises(AuthorizationRequiredError, match="does not match plan revision"):
+        resolve_verified_production_admission(plan, store)
+
+
+def test_production_admission_synthetic_evidence_is_refused(tmp_path: Path) -> None:
+    from xlm.data.sources.admission import (
+        AdmissionDecision,
+        resolve_verified_production_admission,
+        save_admission_decision,
+        save_probe_evidence,
+    )
+    from xlm.data.sources.prober import EvidenceType, ProbeEvidenceRecord, ProbeOutcome
+    from xlm.data.sources.schema import FieldDescriptor, ViewSchema
+
+    store = _production_store(tmp_path)
+    schema = ViewSchema(
+        view_id="default",
+        fields={"text": FieldDescriptor(name="text", type_name="string")},
+        raw_schema_type="arrow",
+    )
+    save_probe_evidence(
+        ProbeEvidenceRecord(
+            source_id="authored",
+            view_id="default",
+            provider="https",
+            repository="https://127.0.0.1:9/files",
+            immutable_revision="rev0000000000000000000000000000000000000001",
+            outcome=ProbeOutcome.ACCESSIBLE,
+            evidence_type=EvidenceType.SYNTHETIC_FIXTURE,
+            probe_fingerprint="fp_production_1",
+            verified_schema=schema,
+            declared_license="Apache-2.0",
+        ),
+        store,
+        staging_dir=tmp_path / "staging-probe",
+    )
+    save_admission_decision(
+        AdmissionDecision(
+            source_id="authored",
+            view_id="default",
+            provider="https",
+            repository="https://127.0.0.1:9/files",
+            immutable_revision="rev0000000000000000000000000000000000000001",
+            adapter_id="JsonlAdapter",
+            probe_fingerprint="fp_production_1",
+            license_review="approved",
+            benchmark_risk="clean",
+            operator_approved=True,
+            operator_notes="synthetic must still be refused",
+        ),
+        store,
+        staging_dir=tmp_path / "staging-decision",
+    )
+    with pytest.raises(AuthorizationRequiredError, match="not admitted"):
+        resolve_verified_production_admission(_authorized_production_plan(), store)

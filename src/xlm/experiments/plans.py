@@ -247,6 +247,7 @@ def resolve_experiment_plan(
     artifact_paths: ArtifactPaths | None = None,
     snapshot_dir: Path | str | None = None,
     profile_lookup: Mapping[str, Any] | None = None,
+    measured_profile: Mapping[str, Any] | None = None,
     smoke: bool = False,
 ) -> ExecutablePlan:
     """Resolve a draft into an executable plan, collecting blockers, not defaults."""
@@ -276,9 +277,42 @@ def resolve_experiment_plan(
     policy_id = evaluation.policy_artifact if evaluation else None
     artifact_ids["policy_artifact"] = policy_id
 
+    if measured_profile is not None:
+        # Bind one produced profile file to the draft's declared profile
+        # artifact. The lookup key stays the draft's artifact id; the file's
+        # measured identity is validated against this plan below. Importing the
+        # training package here (instead of at module top) keeps base-only
+        # plan resolution free of the torch import chain.
+        from xlm.training.profile import resolve_measured_profile
+
+        if not profile_id:
+            raise ValueError(
+                "--profile was given but the draft declares no resources.profile_artifact "
+                "to bind it to"
+            )
+        composed_model = composed.get("model", {})
+        composed_training = composed.get("training", {})
+        if not isinstance(composed_model, dict) or not isinstance(composed_training, dict):
+            raise ValueError("draft model/training sections must be mappings")
+        profile_lookup = {
+            **(dict(profile_lookup) if profile_lookup else {}),
+            profile_id: resolve_measured_profile(
+                measured_profile,
+                model_config=composed_model,
+                training=composed_training,
+            ),
+        }
+        bound_profile_id: str | None = profile_id
+    else:
+        bound_profile_id = None
+
     for key, artifact_id in artifact_ids.items():
         if not artifact_id:
             blockers.append(PlanBlocker(code=f"missing_{key}", detail=f"'{key}' is null"))
+        elif key == "profile_artifact" and bound_profile_id == artifact_id:
+            # A validated --profile file fulfills this requirement for this plan;
+            # the measured content (not store publication) is what the cost basis uses.
+            continue
         elif find_artifact_dir(paths, artifact_id) is None:
             blockers.append(
                 PlanBlocker(

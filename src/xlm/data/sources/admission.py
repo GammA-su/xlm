@@ -12,6 +12,7 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, Field
 
 from xlm.artifacts.store import ArtifactStore
+from xlm.data.acquisition.plan import AcquisitionPlan, AuthorizationRequiredError
 from xlm.data.sources.catalog import CandidateSourceEntry, DatasetCatalogDraft
 from xlm.data.sources.policy import (
     LEGAL_DISCLAIMER,
@@ -378,3 +379,46 @@ def load_admission_decision(
         return AdmissionDecision.model_validate(raw)
     except Exception:
         return None
+
+
+def resolve_verified_production_admission(plan: AcquisitionPlan, store: ArtifactStore) -> None:
+    """Resolve the stored admission decision authorizing a production plan.
+
+    Binds the exact source/view/revision: loads current probe evidence and the
+    recorded operator decision from the store, re-evaluates the full admission
+    gate (denial, outcome, revision, schema, fingerprint match, license,
+    benchmark risk, operator approval), and requires the decision's revision to
+    equal the plan's revision. Anything missing, rejected, stale, or mismatched
+    raises AuthorizationRequiredError with the specific reason; an admission
+    reference string alone is never sufficient.
+    """
+    evidence = load_probe_evidence(plan.source_id, plan.view_id, store)
+    if evidence is None:
+        raise AuthorizationRequiredError(
+            f"Production acquisition for '{plan.source_id}:{plan.view_id}' has no "
+            "probe evidence in the store; re-probe the source before requesting "
+            "production authorization."
+        )
+    decision = load_admission_decision(plan.source_id, plan.view_id, store)
+    if decision is None:
+        raise AuthorizationRequiredError(
+            f"Production acquisition for '{plan.source_id}:{plan.view_id}' has no "
+            "recorded operator admission decision; record one with 'data admit'."
+        )
+    gate = AdmissionGate.evaluate(evidence, decision)
+    if not gate.admitted:
+        raise AuthorizationRequiredError(
+            f"Production acquisition for '{plan.source_id}:{plan.view_id}' is not "
+            f"admitted ({gate.status.value}): " + "; ".join(gate.reasons)
+        )
+    if decision.immutable_revision != plan.revision:
+        raise AuthorizationRequiredError(
+            f"Admission decision revision '{decision.immutable_revision}' does not "
+            f"match plan revision '{plan.revision}'; re-probe and re-admit."
+        )
+    if evidence.immutable_revision != plan.revision:
+        raise AuthorizationRequiredError(
+            f"Plan revision '{plan.revision}' does not match probed revision "
+            f"'{evidence.immutable_revision}'; the plan does not bind the selected "
+            "snapshot."
+        )

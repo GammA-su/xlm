@@ -926,8 +926,24 @@ def fetch_cmd(
     target_output = output_dir or paths.root / "acquisition" / plan.plan_id / "raw"
     target_scratch = scratch_dir or paths.root / "acquisition" / plan.plan_id / "scratch"
 
+    from xlm.artifacts.store import ArtifactStore
+    from xlm.data.acquisition.plan import plan_requires_production_admission
+    from xlm.data.sources.admission import resolve_verified_production_admission
+
+    catalog_approved = False
+    if plan_requires_production_admission(plan):
+        # Production scope: resolve the stored admission decision bound to this
+        # exact source/view/revision. Pilot plans never enter this branch.
+        resolve_verified_production_admission(plan, ArtifactStore(paths))
+        catalog_approved = True
+
     try:
-        fetcher = BoundedFetcher(plan, scratch_dir=target_scratch, output_dir=target_output)
+        fetcher = BoundedFetcher(
+            plan,
+            scratch_dir=target_scratch,
+            output_dir=target_output,
+            catalog_source_approved=catalog_approved,
+        )
         typer.echo(f"Starting acquisition for plan '{plan.plan_id}'...")
         state = fetcher.run()
         typer.echo(f"Acquisition finished with status: {state.status}")

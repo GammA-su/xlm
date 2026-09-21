@@ -18,6 +18,7 @@ import math
 import shutil
 import subprocess
 import sys
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
@@ -407,6 +408,86 @@ def plan_resources(
             "wait must be re-measured against the production loader.",
         ],
     )
+
+
+def resolve_measured_profile(
+    profile_result: Mapping[str, Any],
+    *,
+    model_config: Mapping[str, Any],
+    training: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Validate a produced profile against a training plan's resolved config.
+
+    Returns the profile's resource-plan mapping for the plan cost basis. Every
+    mismatch is an explicit refusal: a profile for a different model, device,
+    precision, backend, batch, or context must never stand in as a verified
+    production measurement.     Tokenizer identity is tokenizer-agnostic by
+    construction (targets are token counts; tokenizer loading stays hash-first
+    elsewhere) and is documented, not refused, here.
+    """
+    if not isinstance(profile_result, dict) or not isinstance(
+        profile_result.get("profile_version"), str
+    ):
+        raise ValueError("profile file is not a produced profile result (missing profile_version)")
+    request = profile_result.get("request")
+    if not isinstance(request, dict):
+        raise ValueError("profile file has no recorded calibration request")
+    resource_plan = profile_result.get("resource_plan")
+    if not isinstance(resource_plan, dict):
+        raise ValueError("profile file carries no resource plan")
+    throughput = resource_plan.get("throughput_tokens_per_sec_range")
+    if (
+        not isinstance(throughput, list)
+        or len(throughput) != 2
+        or any(isinstance(v, bool) or not isinstance(v, (int, float)) for v in throughput)
+        or not all(math.isfinite(float(v)) and float(v) > 0 for v in throughput)
+    ):
+        raise ValueError("profile has no measured throughput range; not a measured profile")
+    if profile_result.get("selected_microbatch_sequences") is None:
+        raise ValueError("profile selected no feasible microbatch size")
+    for key in (
+        "architecture",
+        "vocab_size",
+        "num_layers",
+        "hidden_size",
+        "num_attention_heads",
+        "intermediate_size",
+        "context_length",
+    ):
+        expected, actual = request.get("model_config", {}).get(key), model_config.get(key)
+        if expected is None or actual is None or expected != actual:
+            raise ValueError(
+                f"profile model mismatch on '{key}': profile measured {expected!r}, "
+                f"plan declares {actual!r}"
+            )
+    pairs = (
+        ("device", request.get("device"), training.get("device")),
+        ("precision", request.get("precision"), training.get("precision")),
+        (
+            "attention_backend",
+            request.get("attention_backend"),
+            model_config.get("attention_backend"),
+        ),
+        (
+            "global_batch_valid_targets",
+            request.get("global_batch_valid_targets"),
+            training.get("global_batch_valid_targets"),
+        ),
+        ("context_length", request.get("context_length"), training.get("context_length")),
+    )
+    for name, expected, actual in pairs:
+        if expected is None or actual is None:
+            raise ValueError(f"profile {name} cannot be verified (missing on one side)")
+        if name == "attention_backend" and actual == "profile_required":
+            raise ValueError(
+                "plan leaves attention_backend as 'profile_required'; declare the backend "
+                "the profile was measured with instead of inheriting it silently"
+            )
+        if expected != actual:
+            raise ValueError(
+                f"profile {name} mismatch: profile measured {expected!r}, plan declares {actual!r}"
+            )
+    return dict(resource_plan)
 
 
 def write_profile_artifacts(result: ProfileResult, output_dir: Path) -> dict[str, Path]:

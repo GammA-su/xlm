@@ -183,6 +183,20 @@ class SourceDriftDetectedError(RuntimeError):
     """Raised when an upstream source entity has drifted from its approved plan identity."""
 
 
+def plan_requires_production_admission(plan: AcquisitionPlan) -> bool:
+    """True when a plan leaves the pilot path (over C13 thresholds or non-pilot).
+
+    Single source of truth for the pilot/production boundary; the validator
+    and the fetch command both use it so they cannot disagree.
+    """
+    return (
+        plan.limits.max_transferred_bytes > 256 * 1024 * 1024
+        or plan.limits.max_records > 25_000
+        or plan.limits.max_output_disk_bytes > 2 * 1024 * 1024 * 1024
+        or not plan.is_pilot
+    )
+
+
 def validate_plan_authorization(
     plan: AcquisitionPlan,
     catalog_source_approved: bool = False,
@@ -211,13 +225,7 @@ def validate_plan_authorization(
         )
 
     # Check limits against pilot boundaries (C13: 256 MiB, 25k records, 2 GiB output)
-    exceeds_pilot = (
-        plan.limits.max_transferred_bytes > 256 * 1024 * 1024
-        or plan.limits.max_records > 25_000
-        or plan.limits.max_output_disk_bytes > 2 * 1024 * 1024 * 1024
-    )
-
-    if exceeds_pilot or not plan.is_pilot:
+    if plan_requires_production_admission(plan):
         # Production execution path
         if not catalog_source_approved:
             raise AuthorizationRequiredError(

@@ -46,6 +46,14 @@ def experiment_plan_cmd(
     snapshot_dir: Annotated[
         Path | None, typer.Option("--snapshot-dir", help="Code snapshot output directory.")
     ] = None,
+    profile_path: Annotated[
+        Path | None,
+        typer.Option(
+            "--profile",
+            help="Produced profile.json whose measured identity is validated against "
+            "this plan and bound to the draft's resources.profile_artifact.",
+        ),
+    ] = None,
     as_json: Annotated[bool, typer.Option("--json", help="Emit the plan as JSON.")] = False,
     smoke: Annotated[
         bool,
@@ -58,6 +66,20 @@ def experiment_plan_cmd(
     """Resolve a draft into an immutable plan. Read-only apart from artifacts."""
     from xlm.experiments.plans import resolve_experiment_plan
 
+    measured_profile = None
+    if profile_path is not None:
+        if profile_path.stat().st_size > 1024**2:
+            typer.echo("Error: profile JSON exceeds 1 MiB.", err=True)
+            raise typer.Exit(code=1)
+        try:
+            measured_profile = json.loads(profile_path.read_text(encoding="utf-8"))
+        except Exception as exc:
+            typer.echo(f"Error: cannot read profile JSON: {exc}", err=True)
+            raise typer.Exit(code=1) from exc
+        if not isinstance(measured_profile, dict):
+            typer.echo("Error: profile JSON must be a mapping.", err=True)
+            raise typer.Exit(code=1)
+
     try:
         plan = resolve_experiment_plan(
             draft,
@@ -65,6 +87,7 @@ def experiment_plan_cmd(
             artifact_paths=_artifacts(),
             snapshot_dir=snapshot_dir,
             smoke=smoke,
+            measured_profile=measured_profile,
         )
     except Exception as exc:
         typer.echo(f"Error: cannot resolve plan: {exc}", err=True)

@@ -27,6 +27,7 @@ from xlm.data.acquisition.progress import ProgressCorruptionError, ProgressJourn
 from xlm.data.acquisition.verifier import AcquisitionVerifier
 from xlm.data.sources.transport import BudgetExhaustedError, HuggingFaceTransport, TransportBudget
 
+PRODUCTION_REVISION = "9" * 40
 PAYLOAD = b'{"text":"authored A"}\n{"text":"authored B"}\n'
 
 
@@ -836,3 +837,191 @@ def test_source_validator_is_durable_across_selected_attempts(tmp_path: Path) ->
     with pytest.raises(ProgressCorruptionError, match="changed"):
         resumed.journal.bind_source("rows.jsonl", '"second"', 44)
     assert not (tmp_path / "out/selected_records.jsonl").exists()
+
+
+# --------------------------------------- production admission fetch (closeout)
+
+
+def _production_cli(
+    home: Path, *args: str, success: bool = True
+) -> subprocess.CompletedProcess[str]:
+    """Run the public CLI with an isolated home; refusals keep their output."""
+    result = subprocess.run(
+        [sys.executable, "-m", "xlm.cli.main", *args],
+        cwd=Path(__file__).resolve().parents[1],
+        env={**os.environ, "XLM_HOME": str(home)},
+        capture_output=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
+        timeout=120,
+    )
+    assert (result.returncode == 0) == success, result.stdout + result.stderr
+    return result
+
+
+def _plant_production_evidence(home: Path, url: str) -> None:
+    """Record probe evidence (no network) so admission and planning can bind it."""
+    from xlm.artifacts.store import ArtifactStore
+    from xlm.core.paths import ArtifactPaths
+    from xlm.data.sources.admission import save_probe_evidence
+    from xlm.data.sources.prober import EvidenceType, ProbeEvidenceRecord, ProbeOutcome
+    from xlm.data.sources.schema import FieldDescriptor, ViewSchema
+
+    store = ArtifactStore(ArtifactPaths(root=home))
+    schema = ViewSchema(
+        view_id="default",
+        fields={"text": FieldDescriptor(name="text", type_name="string")},
+        raw_schema_type="arrow",
+    )
+    evidence = ProbeEvidenceRecord(
+        source_id="authored",
+        view_id="default",
+        provider="https",
+        repository=url,
+        immutable_revision=PRODUCTION_REVISION,
+        outcome=ProbeOutcome.ACCESSIBLE,
+        evidence_type=EvidenceType.REAL_OBSERVED,
+        probe_fingerprint="fp_production_cli",
+        verified_schema=schema,
+        declared_license="Apache-2.0",
+    )
+    save_probe_evidence(evidence, store, staging_dir=home / "staging-probe")
+
+
+def _plant_production_admission(home: Path, url: str) -> None:
+    """Record probe evidence plus an approved admission decision (no network)."""
+    from xlm.artifacts.store import ArtifactStore
+    from xlm.core.paths import ArtifactPaths
+    from xlm.data.sources.admission import save_admission_decision
+
+    _plant_production_evidence(home, url)
+    store = ArtifactStore(ArtifactPaths(root=home))
+    from xlm.data.sources.admission import AdmissionDecision
+
+    save_admission_decision(
+        AdmissionDecision(
+            source_id="authored",
+            view_id="default",
+            provider="https",
+            repository=url,
+            immutable_revision=PRODUCTION_REVISION,
+            adapter_id="JsonlAdapter",
+            probe_fingerprint="fp_production_cli",
+            license_review="approved",
+            benchmark_risk="clean",
+            operator_approved=True,
+            operator_notes="closeout CLI fixture review",
+        ),
+        store,
+        staging_dir=home / "staging-decision",
+    )
+
+
+def _production_catalog(tmp_path: Path, url: str) -> Path:
+    catalog = tmp_path / "catalog.json"
+    catalog.write_text(
+        json.dumps(
+            {
+                "catalog_id": "authored",
+                "sources": [
+                    {
+                        "candidate_number": 1,
+                        "source_id": "authored",
+                        "provider": "https",
+                        "repository": url,
+                        "revision": PRODUCTION_REVISION,
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    return catalog
+
+
+def _production_plan_args(tmp_path: Path, url: str, extra: list[str]) -> list[str]:
+    ranges = tmp_path / "ranges.json"
+    ranges.write_text('{"rows.jsonl":[0,1]}', encoding="utf-8")
+    return [
+        "data",
+        "plan",
+        "--source",
+        "authored",
+        "--catalog",
+        str(_production_catalog(tmp_path, url)),
+        "--files",
+        "rows.jsonl",
+        "--mode",
+        "selected_records",
+        "--row-ranges",
+        str(ranges),
+        "--max-bytes",
+        "300000000",
+        "--max-records",
+        "10",
+    ] + extra
+
+
+def test_production_fetch_with_verified_admission(server: Any, tmp_path: Path) -> None:
+    url, _, _ = server
+    home = tmp_path / "home"
+    _plant_production_admission(home, url)
+    unsigned = _production_cli(
+        home, *_production_plan_args(tmp_path, url, ["--output", str(tmp_path / "plan0.json")])
+    )
+    behavior_hash = [
+        line.split("Behavior Hash:")[1].strip()
+        for line in unsigned.stdout.splitlines()
+        if "Behavior Hash:" in line
+    ][0]
+    plan_path = tmp_path / "plan.json"
+    _production_cli(
+        home,
+        *_production_plan_args(
+            tmp_path,
+            url,
+            ["--authorization-hash", behavior_hash, "--output", str(plan_path)],
+        ),
+    )
+    plan = json.loads(plan_path.read_text(encoding="utf-8"))
+    assert plan["is_pilot"] is False
+    _production_cli(home, "data", "fetch", "--plan", str(plan_path))
+    status = json.loads(
+        _production_cli(home, "data", "status", "--plan", str(plan_path), "--json").stdout
+    )
+    assert status["records_acquired"] == 1
+    raw = home / "acquisition" / plan["plan_id"] / "raw"
+    receipt = json.loads(
+        _production_cli(
+            home, "data", "verify", "--plan", str(plan_path), "--output-dir", str(raw), "--json"
+        ).stdout
+    )
+    assert receipt["receipt_id"] == f"receipt_{plan['plan_id']}"
+    assert receipt["eligibility"] == "admission_required"
+    assert receipt["files"][0]["record_count"] == 1
+
+
+def test_production_fetch_without_admission_is_refused(server: Any, tmp_path: Path) -> None:
+    url, _, _ = server
+    home = tmp_path / "home"
+    _plant_production_evidence(home, url)
+    unsigned = _production_cli(
+        home, *_production_plan_args(tmp_path, url, ["--output", str(tmp_path / "plan0.json")])
+    )
+    behavior_hash = [
+        line.split("Behavior Hash:")[1].strip()
+        for line in unsigned.stdout.splitlines()
+        if "Behavior Hash:" in line
+    ][0]
+    plan_path = tmp_path / "plan.json"
+    _production_cli(
+        home,
+        *_production_plan_args(
+            tmp_path,
+            url,
+            ["--authorization-hash", behavior_hash, "--output", str(plan_path)],
+        ),
+    )
+    result = _production_cli(home, "data", "fetch", "--plan", str(plan_path), success=False)
+    assert "no recorded operator admission" in result.stderr
