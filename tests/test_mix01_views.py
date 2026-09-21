@@ -251,10 +251,10 @@ def test_view_selectors_are_nonempty_over_adapted_fixtures() -> None:
     """Every mix01 selector must match real adapted rows; an empty view blocks the run."""
     registry = load_mix01_views(VIEWS_PATH)
     docs = adapt_all()
-    # 18: the finewiki fixture carries two adaptable rows (live H1 shape plus
-    # one legacy no-heading shape) and the ifm_general fixture two (declared
-    # token_count plus one bare-text row); every other fixture count is unchanged.
-    assert len(docs) == 18
+    # 19: the finewiki fixture carries two adaptable rows (live H1 shape plus
+    # one legacy no-heading shape) and each ifm fixture two (declared
+    # token_count plus one bare-text row); every other count is unchanged.
+    assert len(docs) == 19
 
     membership = resolve_view_membership(docs, build_source_views(registry))
     for view in registry.views:
@@ -413,15 +413,77 @@ def test_ifm_subset_adapters_are_independent() -> None:
         == "ifm_behaviors_general_planning"
     )
 
-    # The schemas are independent: each adapter rejects the other's shape.
+    # Both subsets share the live {text, token_count} shape, so a valid text
+    # row adapts under either adapter by design — but each stamps its own
+    # subset, doc_id, and adapter-bound lineage. Malformed rows stay rejected.
+    cross = planning.adapt(general_rows[0], source_file="f", source_row=0, source_revision="r")
+    assert cross.source_metadata["subset"] == "planning"
+    assert cross.doc_id == "ifm_behaviors:planning:0"
     with pytest.raises(MissingFieldError, match="'text'"):
         general.adapt(general_rows[1], source_file="f", source_row=1, source_revision="r")
     with pytest.raises(MissingFieldError, match="'text'"):
-        general.adapt(planning_rows[0], source_file="f", source_row=0, source_revision="r")
-    with pytest.raises(MissingFieldError, match="'goal'"):
-        planning.adapt(general_rows[0], source_file="f", source_row=0, source_revision="r")
-    with pytest.raises(MissingFieldError, match="plan_steps"):
-        planning.adapt(planning_rows[1], source_file="f", source_row=1, source_revision="r")
+        general.adapt(planning_rows[1], source_file="f", source_row=1, source_revision="r")
+    with pytest.raises(MissingFieldError, match="'text'"):
+        planning.adapt(general_rows[1], source_file="f", source_row=1, source_revision="r")
+
+
+def test_ifm_planning_live_schema() -> None:
+    """Pinned live contract: verbatim text, declared token_count, view-level en."""
+    planning = IfmPlanningAdapter()
+    rows = read_fixture("ifm_planning.jsonl")
+
+    doc = planning.adapt(rows[0], source_file="f", source_row=0, source_revision="r")
+    assert doc.text == rows[0]["text"]
+    assert "Goal:" not in doc.text and "- " not in doc.text.split("\n", 1)[0]
+    assert "Plan:" not in doc.text
+    assert doc.language == "en"
+    assert doc.source_metadata["language_provenance"] == "view English-only (mix01 registry)"
+    assert doc.source_metadata["subset"] == "planning"
+    assert doc.source_metadata["upstream_token_count"] == 21
+    assert doc.source_id == "ifm_behaviors"
+    assert doc.license_reference == "apache-2.0"
+    assert doc.doc_id == "ifm_behaviors:planning:0"
+
+    with pytest.raises(MissingFieldError, match="'text'"):
+        planning.adapt(rows[1], source_file="f", source_row=1, source_revision="r")
+    with pytest.raises(MissingFieldError, match="non-empty"):
+        planning.adapt(rows[2], source_file="f", source_row=2, source_revision="r")
+
+    # The stale goal/plan_steps shape is refused as wrong-schema evidence.
+    with pytest.raises(MissingFieldError, match="'text'"):
+        planning.adapt(rows[3], source_file="f", source_row=3, source_revision="r")
+
+    with pytest.raises(MissingFieldError, match="token_count"):
+        planning.adapt(rows[4], source_file="f", source_row=4, source_revision="r")
+
+    bare = planning.adapt(rows[5], source_file="f", source_row=5, source_revision="r")
+    assert "upstream_token_count" not in bare.source_metadata
+    assert bare.text == rows[5]["text"]
+
+    again = planning.adapt(rows[0], source_file="f", source_row=0, source_revision="r")
+    assert again.to_dict() == doc.to_dict()
+
+
+def test_ifm_subsets_stay_independent() -> None:
+    """General and Planning keep distinct adapter IDs, subsets, and doc IDs."""
+    general_rows = read_fixture("ifm_general.jsonl")
+    planning_rows = read_fixture("ifm_planning.jsonl")
+    general_doc = IfmGeneralAdapter().adapt(
+        general_rows[0], source_file="f", source_row=0, source_revision="r"
+    )
+    planning_doc = IfmPlanningAdapter().adapt(
+        planning_rows[0], source_file="f", source_row=0, source_revision="r"
+    )
+    assert IfmGeneralAdapter.ADAPTER_ID == "ifm_general"
+    assert IfmPlanningAdapter.ADAPTER_ID == "ifm_planning"
+    assert general_doc.source_metadata["subset"] == "general"
+    assert planning_doc.source_metadata["subset"] == "planning"
+    assert general_doc.doc_id != planning_doc.doc_id
+    assert (
+        general_doc.source_metadata["mix01_component"]
+        == planning_doc.source_metadata["mix01_component"]
+        == "ifm_behaviors_general_planning"
+    )
 
 
 def test_ifm_general_live_schema() -> None:
@@ -963,4 +1025,105 @@ def test_data_adapt_ifm_general_live_shape(tmp_path: Path) -> None:
     assert docs[0]["source_metadata"]["subset"] == "general"
     assert docs[0]["language"] == "en"
     assert docs[0]["source_revision"] == IFM_LIVE_REVISION
+    assert docs[1]["source_row"] == 1
+
+
+IFM_PLANNING_REVISION = "3345e13d7f3f6d0ecb5fdd67b37aed289f3191f5"
+IFM_PLANNING_FILE = "planning/planning.chunk0-160f3594ed-00416.parquet"
+
+
+def test_data_adapt_ifm_planning_live_shape(tmp_path: Path) -> None:
+    """The existing seam adapts live-shaped planning {text, token_count} rows."""
+    from xlm.data.acquisition.plan import (
+        AcquisitionLimits,
+        AcquisitionMode,
+        AcquisitionPlan,
+        PlanAuthorization,
+        load_acquisition_plan,
+        save_acquisition_plan,
+    )
+
+    plan = AcquisitionPlan(
+        plan_id="plan_adapt_ifm_planning_fixture",
+        source_id="ifm_behaviors",
+        view_id="planning",
+        provider="huggingface",
+        repository="IFM/Pretrain-Behaviors",
+        revision=IFM_PLANNING_REVISION,
+        mode=AcquisitionMode.SELECTED_RECORDS,
+        selected_files=[IFM_PLANNING_FILE],
+        row_ranges={IFM_PLANNING_FILE: (0, 3)},
+        output_artifact_id="raw_ifm_behaviors_planning",
+        is_pilot=True,
+        limits=AcquisitionLimits(max_transferred_bytes=32 * 1024**2, max_records=100),
+        authorization=PlanAuthorization(
+            authorization_hash="",
+            authorized_by="closeout-fixture",
+            authorized_at="2026-09-21T00:00:00Z",
+            scope="pilot",
+            is_pilot_approved=True,
+        ),
+    )
+    authorized = plan.model_copy(
+        update={
+            "authorization": plan.authorization.model_copy(
+                update={"authorization_hash": plan.compute_behavioral_hash()}
+            )
+        }
+    )
+    plan_path = tmp_path / "plan.json"
+    save_acquisition_plan(authorized, plan_path)
+    plan_hash = load_acquisition_plan(plan_path).compute_behavioral_hash()
+
+    live_rows = [
+        {"text": "First complete planning document.", "token_count": 11},
+        {"text": "Second complete planning document.", "token_count": 13},
+    ]
+    lines = [
+        json.dumps(
+            {
+                **row,
+                "_xlm_acquisition": {
+                    "source_id": "ifm_behaviors",
+                    "repository": "IFM/Pretrain-Behaviors",
+                    "revision": IFM_PLANNING_REVISION,
+                    "source_file": IFM_PLANNING_FILE,
+                    "row_index": row_index,
+                    "selection_hash": plan_hash,
+                },
+            },
+            ensure_ascii=False,
+        )
+        for row_index, row in enumerate(live_rows)
+    ]
+    selected = tmp_path / "selected_records.jsonl"
+    selected.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    out_dir = tmp_path / "canonical"
+    _run_adapt(
+        tmp_path / "home",
+        "data",
+        "adapt",
+        "--plan",
+        str(plan_path),
+        "--adapter",
+        "ifm_planning",
+        "--input",
+        str(selected),
+        "--output-dir",
+        str(out_dir),
+    )
+    docs = [
+        json.loads(line)
+        for line in (out_dir / "documents.jsonl").read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    assert len(docs) == 2
+    assert docs[0]["text"] == "First complete planning document."
+    assert "Goal:" not in docs[0]["text"]
+    assert docs[0]["source_metadata"]["upstream_token_count"] == 11
+    assert docs[0]["source_metadata"]["subset"] == "planning"
+    assert docs[0]["doc_id"] == "ifm_behaviors:planning:0"
+    assert docs[0]["language"] == "en"
+    assert docs[0]["source_revision"] == IFM_PLANNING_REVISION
+    assert docs[0]["source_file"] == IFM_PLANNING_FILE
     assert docs[1]["source_row"] == 1

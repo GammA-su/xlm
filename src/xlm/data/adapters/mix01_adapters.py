@@ -69,6 +69,48 @@ def _require_english(language: str, allowed: tuple[str, ...], adapter_id: str) -
         )
 
 
+def _ifm_text_and_token_count(record: Mapping[str, Any], adapter_id: str) -> tuple[str, int | None]:
+    """Shared IFM prose contract: verbatim string ``text`` plus declared metadata.
+
+    ``token_count`` is optional; when present it must be a non-negative integer
+    and is returned for preservation in ``source_metadata``. It never replaces
+    XLM's own tokenizer counts. Anything malformed is refused, never coerced.
+    """
+    text = _require(record, "text", adapter_id)
+    if not isinstance(text, str):
+        raise MissingFieldError(
+            f"adapter '{adapter_id}' requires upstream field 'text' "
+            "to be a string; it cannot be coerced."
+        )
+    token_count: int | None = None
+    if "token_count" in record and record["token_count"] is not None:
+        token_count = record["token_count"]
+        if not isinstance(token_count, int) or isinstance(token_count, bool) or token_count < 0:
+            raise MissingFieldError(
+                f"adapter '{adapter_id}' requires upstream field "
+                "'token_count' to be a non-negative integer when present."
+            )
+    return text, token_count
+
+
+def _ifm_source_metadata(subset: str, token_count: int | None) -> dict[str, Any]:
+    """Shared IFM lineage: component, subset, and view-level language provenance.
+
+    Rows carry no language field. ``language="en"`` holds because the mix01
+    registry defines this exact view/config as English-only (component
+    ``ifm_behaviors_general_planning``); that provenance is recorded here
+    instead of per-record detection, which is never fabricated.
+    """
+    metadata: dict[str, Any] = {
+        "mix01_component": "ifm_behaviors_general_planning",
+        "subset": subset,
+        "language_provenance": "view English-only (mix01 registry)",
+    }
+    if token_count is not None:
+        metadata["upstream_token_count"] = token_count
+    return metadata
+
+
 def _canonical_doc(
     *,
     doc_id: str,
@@ -472,25 +514,7 @@ class IfmGeneralAdapter:
         source_row: int,
         source_revision: str,
     ) -> CanonicalDocument:
-        text = _require(record, "text", self.ADAPTER_ID)
-        if not isinstance(text, str):
-            raise MissingFieldError(
-                f"adapter '{self.ADAPTER_ID}' requires upstream field 'text' "
-                "to be a string; it cannot be coerced."
-            )
-        source_metadata: dict[str, Any] = {
-            "mix01_component": "ifm_behaviors_general_planning",
-            "subset": "general",
-            "language_provenance": "view English-only (mix01 registry)",
-        }
-        if "token_count" in record and record["token_count"] is not None:
-            token_count = record["token_count"]
-            if not isinstance(token_count, int) or isinstance(token_count, bool) or token_count < 0:
-                raise MissingFieldError(
-                    f"adapter '{self.ADAPTER_ID}' requires upstream field "
-                    "'token_count' to be a non-negative integer when present."
-                )
-            source_metadata["upstream_token_count"] = token_count
+        text, token_count = _ifm_text_and_token_count(record, self.ADAPTER_ID)
         return _canonical_doc(
             doc_id=f"ifm_behaviors:general:{source_row}",
             source_id="ifm_behaviors",
@@ -501,20 +525,33 @@ class IfmGeneralAdapter:
             language="en",
             document_kind="prose",
             license_reference="apache-2.0",
-            source_metadata=source_metadata,
+            source_metadata=_ifm_source_metadata("general", token_count),
         )
 
 
 class IfmPlanningAdapter:
-    """IFM Pretrain-Behaviors ``planning`` subset (its own schema)."""
+    """IFM Pretrain-Behaviors ``planning`` subset: complete training prose.
+
+    Live schema (pinned revision ``3345e13d7f3f6d0ecb5fdd67b37aed289f3191f5``,
+    config ``planning``): records carry ``text`` — the complete formatted
+    pretraining document, preserved verbatim — and an optional declared
+    ``token_count``. There are no ``goal``/``plan_steps`` fields, and none
+    are inferred; no ``Goal:``/``Plan:`` formatting is invented and no
+    structured fields are recovered from prose. ``token_count`` and
+    ``language="en"`` follow the same contract as the ``general`` subset:
+    declared upstream metadata only, and view-level English-only provenance
+    from the mix01 registry (component ``ifm_behaviors_general_planning``,
+    whose ``config_names`` cover ``planning``).
+    """
 
     ADAPTER_ID = "ifm_planning"
-    REQUIRED_FIELDS = ("goal", "plan_steps")
+    REQUIRED_FIELDS = ("text",)
 
     def contract(self) -> RowExtractorContract:
         return RowExtractorContract(
             adapter_id=self.ADAPTER_ID,
-            required_fields=["goal", "plan_steps"],
+            text_field="text",
+            required_fields=["text"],
         )
 
     def adapt(
@@ -525,32 +562,18 @@ class IfmPlanningAdapter:
         source_row: int,
         source_revision: str,
     ) -> CanonicalDocument:
-        goal = str(_require(record, "goal", self.ADAPTER_ID))
-        steps = _require(record, "plan_steps", self.ADAPTER_ID)
-        if (
-            not isinstance(steps, list)
-            or not steps
-            or not all(isinstance(s, str) and s.strip() for s in steps)
-        ):
-            raise MissingFieldError(
-                f"adapter '{self.ADAPTER_ID}' requires a non-empty list of plan step "
-                "strings in 'plan_steps'."
-            )
-        rendered = "\n".join(f"- {s.strip()}" for s in steps)
+        text, token_count = _ifm_text_and_token_count(record, self.ADAPTER_ID)
         return _canonical_doc(
             doc_id=f"ifm_behaviors:planning:{source_row}",
             source_id="ifm_behaviors",
             source_revision=source_revision,
             source_file=source_file,
             source_row=source_row,
-            text=f"Goal: {goal.strip()}\nPlan:\n{rendered}",
+            text=text,
             language="en",
             document_kind="prose",
             license_reference="apache-2.0",
-            source_metadata={
-                "mix01_component": "ifm_behaviors_general_planning",
-                "subset": "planning",
-            },
+            source_metadata=_ifm_source_metadata("planning", token_count),
         )
 
 

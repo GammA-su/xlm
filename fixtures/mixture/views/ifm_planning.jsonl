@@ -1,2 +1,6 @@
-{"goal": "Pack for a day hike.", "plan_steps": ["Check the forecast", "Fill water bottles", "Pack a first-aid kit"]}
-{"goal": "An empty plan is not a plan.", "plan_steps": []}
+{"text": "Check the forecast, fill water bottles, and pack a first-aid kit before a day hike.", "token_count": 21}
+{"token_count": 3}
+{"text": "   ", "token_count": 0}
+{"goal": "Pack for a day hike.", "plan_steps": ["Check the forecast"]}
+{"text": "An empty plan is not a plan.", "token_count": -1}
+{"text": "Fill water bottles before leaving the trailhead."}

@@ -167,3 +167,12 @@ launched; no session state lives only in chat.
   legacy instruction/response shape stays refused. Seam reused unchanged:
   `data adapt --adapter ifm_general` tested on live-shaped rows.
 - Evidence: `final02/ifm*` + `ifm2-*` (37 passed); ruff + `mypy src` exit 0.
+
+## IFM planning live-schema repair (2026-09-21, commit pending)
+
+- `IfmPlanningAdapter` now requires `text` only (verbatim, no Goal/Plan
+  invention); shared `_ifm_text_and_token_count`/`_ifm_source_metadata`
+  helpers with General (same component, view-level en provenance,
+  optional `upstream_token_count`). Stale goal/plan_steps shape stays
+  refused. Fixture `ifm_planning.jsonl` repaired; corpus count 19.
+- Evidence: `final02/ifmp-*` (40 passed); ruff + `mypy src` exit 0.
