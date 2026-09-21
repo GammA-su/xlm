@@ -10,8 +10,12 @@ touched: every view stays NOT LIVE-VERIFIED here by construction.
 from __future__ import annotations
 
 import json
+import os
+import subprocess
+import sys
 from fractions import Fraction
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -247,7 +251,9 @@ def test_view_selectors_are_nonempty_over_adapted_fixtures() -> None:
     """Every mix01 selector must match real adapted rows; an empty view blocks the run."""
     registry = load_mix01_views(VIEWS_PATH)
     docs = adapt_all()
-    assert len(docs) == 16
+    # 17: the finewiki fixture carries two adaptable rows (live H1 shape plus
+    # one legacy no-heading shape); every other fixture count is unchanged.
+    assert len(docs) == 17
 
     membership = resolve_view_membership(docs, build_source_views(registry))
     for view in registry.views:
@@ -346,11 +352,38 @@ def test_english_and_source_filters() -> None:
     wiki = FineWikiAdapter()
     rows = read_fixture("finewiki_en.jsonl")
     doc = wiki.adapt(rows[0], source_file="f", source_row=0, source_revision="r")
-    assert doc.text.startswith("Aqueduct\n\n")
+    # Live schema: the upstream text already carries the "# {title}" heading,
+    # so the adapter must not duplicate the title.
+    assert doc.text == rows[0]["text"]
+    assert doc.text.split("\n", 1)[0] == "# Aqueduct"
+    assert not doc.text.startswith("Aqueduct\n\n")
+    assert doc.language == "en"
+    assert doc.source_id == "finewiki"
+    assert doc.license_reference == "cc-by-sa-4.0"
+    assert doc.source_metadata["config_name"] == "en"
     with pytest.raises(RecordRejectedError, match="rows only"):
         wiki.adapt(rows[1], source_file="f", source_row=1, source_revision="r")
     with pytest.raises(MissingFieldError, match="'text'"):
         wiki.adapt(rows[2], source_file="f", source_row=2, source_revision="r")
+    with pytest.raises(MissingFieldError, match="'in_language'"):
+        wiki.adapt(rows[4], source_file="f", source_row=4, source_revision="r")
+
+
+def test_finewiki_title_rendering_without_heading() -> None:
+    """A record whose text lacks the exact H1 keeps the legacy prepend rendering."""
+    wiki = FineWikiAdapter()
+    rows = read_fixture("finewiki_en.jsonl")
+    doc = wiki.adapt(rows[3], source_file="f", source_row=3, source_revision="r")
+    assert doc.text == "Bare effigy\n\nProse without a heading."
+    # Near-miss headings must not suppress the prepend: only an exact
+    # first-line "# {title}" match counts, never a fuzzy guess.
+    near = wiki.adapt(
+        {"title": "Aqueduct", "text": "#Aqueduct\nNo space after hash.", "in_language": "en"},
+        source_file="f",
+        source_row=9,
+        source_revision="r",
+    )
+    assert near.text == "Aqueduct\n\n#Aqueduct\nNo space after hash."
 
     pdfs = FinePdfsAdapter()
     pdf_rows = read_fixture("finepdfs_en.jsonl")
@@ -582,3 +615,213 @@ def test_pilot_refused_for_unallowlisted_sources_and_over_cap() -> None:
         envelope.require("finewiki", planned_documents=101, planned_bytes=10_000)
     with pytest.raises(PilotNotAuthorizedError, match="exceed the authorized aggregate cap"):
         envelope.require("finewiki", planned_documents=10, planned_bytes=1_000_001)
+
+
+# ------------------------------------------------------- data adapt CLI seam
+
+
+LIVE_REVISION = "8bd13e72e6a002407649b3e898535f42ceb1aeb9"
+LIVE_FILE = "data/enwiki/000_00013.parquet"
+
+
+def _adapt_plan(tmp_path: Path) -> Path:
+    """Authored pilot-shaped plan mirroring the observed live selection."""
+    from xlm.data.acquisition.plan import (
+        AcquisitionLimits,
+        AcquisitionMode,
+        AcquisitionPlan,
+        PlanAuthorization,
+        save_acquisition_plan,
+    )
+
+    plan = AcquisitionPlan(
+        plan_id="plan_adapt_fixture",
+        source_id="finewiki",
+        view_id="en",
+        provider="huggingface",
+        repository="HuggingFaceFW/finewiki",
+        revision=LIVE_REVISION,
+        mode=AcquisitionMode.SELECTED_RECORDS,
+        selected_files=[LIVE_FILE],
+        row_ranges={LIVE_FILE: (0, 3)},
+        output_artifact_id="raw_finewiki_en",
+        is_pilot=True,
+        limits=AcquisitionLimits(max_transferred_bytes=16 * 1024**2, max_records=100),
+        authorization=PlanAuthorization(
+            authorization_hash="",
+            authorized_by="closeout-fixture",
+            authorized_at="2026-09-21T00:00:00Z",
+            scope="pilot",
+            is_pilot_approved=True,
+        ),
+    )
+    authorized = plan.model_copy(
+        update={
+            "authorization": plan.authorization.model_copy(
+                update={"authorization_hash": plan.compute_behavioral_hash()}
+            )
+        }
+    )
+    plan_path = tmp_path / "plan.json"
+    save_acquisition_plan(authorized, plan_path)
+    return plan_path
+
+
+def _adapt_records(plan_hash: str, rows: list[dict[str, Any]]) -> list[str]:
+    lines = []
+    for row_index, row in enumerate(rows):
+        lines.append(
+            json.dumps(
+                {
+                    **row,
+                    "_xlm_acquisition": {
+                        "source_id": "finewiki",
+                        "repository": "HuggingFaceFW/finewiki",
+                        "revision": LIVE_REVISION,
+                        "source_file": LIVE_FILE,
+                        "row_index": row_index,
+                        "selection_hash": plan_hash,
+                    },
+                },
+                ensure_ascii=False,
+            )
+        )
+    return lines
+
+
+def _live_shaped_rows() -> list[dict[str, Any]]:
+    return [
+        {"title": "T1", "text": "# T1\nBody one.", "in_language": "en"},
+        {"title": "T2", "text": "# T2\nBody two.", "in_language": "en"},
+    ]
+
+
+def _run_adapt(home: Path, *args: str, success: bool = True) -> subprocess.CompletedProcess[str]:
+    result = subprocess.run(
+        [sys.executable, "-m", "xlm.cli.main", *args],
+        cwd=REPO_ROOT,
+        env={**os.environ, "XLM_HOME": str(home)},
+        capture_output=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
+        timeout=120,
+    )
+    assert (result.returncode == 0) == success, result.stdout + result.stderr
+    return result
+
+
+def test_data_adapt_selected_records_to_canonical(tmp_path: Path) -> None:
+    """Verified selected rows resolve through the registry adapter to JSONL."""
+    from xlm.data.acquisition.plan import load_acquisition_plan
+
+    plan_path = _adapt_plan(tmp_path)
+    plan_hash = load_acquisition_plan(plan_path).compute_behavioral_hash()
+    selected = tmp_path / "selected_records.jsonl"
+    selected.write_text(
+        "\n".join(_adapt_records(plan_hash, _live_shaped_rows())) + "\n", encoding="utf-8"
+    )
+    out_dir = tmp_path / "canonical"
+    _run_adapt(
+        tmp_path / "home",
+        "data",
+        "adapt",
+        "--plan",
+        str(plan_path),
+        "--adapter",
+        "finewiki_en",
+        "--input",
+        str(selected),
+        "--output-dir",
+        str(out_dir),
+    )
+    docs = [
+        json.loads(line)
+        for line in (out_dir / "documents.jsonl").read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    assert len(docs) == 2
+    assert docs[0]["text"] == "# T1\nBody one."
+    assert docs[0]["language"] == "en"
+    assert docs[0]["source_id"] == "finewiki"
+    assert docs[0]["source_revision"] == LIVE_REVISION
+    assert docs[0]["source_file"] == LIVE_FILE
+    assert docs[0]["source_row"] == 0
+    assert docs[0]["license_reference"] == "cc-by-sa-4.0"
+    # Deterministic re-run produces identical bytes.
+    out_dir2 = tmp_path / "canonical2"
+    _run_adapt(
+        tmp_path / "home",
+        "data",
+        "adapt",
+        "--plan",
+        str(plan_path),
+        "--adapter",
+        "finewiki_en",
+        "--input",
+        str(selected),
+        "--output-dir",
+        str(out_dir2),
+    )
+    assert (out_dir2 / "documents.jsonl").read_bytes() == (out_dir / "documents.jsonl").read_bytes()
+
+
+def test_data_adapt_refusals(tmp_path: Path) -> None:
+    """Foreign locators, unknown adapters, and rejected rows fail closed."""
+    from xlm.data.acquisition.plan import load_acquisition_plan
+
+    plan_path = _adapt_plan(tmp_path)
+    plan_hash = load_acquisition_plan(plan_path).compute_behavioral_hash()
+    home = tmp_path / "home"
+
+    def attempt(
+        rows: list[str], output: Path, adapter: str = "finewiki_en"
+    ) -> subprocess.CompletedProcess[str]:
+        selected = tmp_path / f"sel_{output.name}.jsonl"
+        selected.write_text("\n".join(rows) + "\n", encoding="utf-8")
+        return _run_adapt(
+            home,
+            "data",
+            "adapt",
+            "--plan",
+            str(plan_path),
+            "--adapter",
+            adapter,
+            "--input",
+            str(selected),
+            "--output-dir",
+            str(output),
+            success=False,
+        )
+
+    good = _adapt_records(plan_hash, _live_shaped_rows())
+    assert "unknown adapter" in attempt(good, tmp_path / "o1", adapter="nope").stderr
+    assert (
+        "no _xlm_acquisition locator"
+        in attempt([json.dumps(_live_shaped_rows()[0])], tmp_path / "o2").stderr
+    )
+    foreign = _adapt_records("0" * 64, _live_shaped_rows())
+    assert "selection_hash" in attempt(foreign, tmp_path / "o3").stderr
+    non_en = _adapt_records(
+        plan_hash,
+        [{"title": "T9", "text": "# T9\nTexte.", "in_language": "fr"}],
+    )
+    assert "refused line 1" in attempt(non_en, tmp_path / "o4").stderr
+    # Existing output is never silently overwritten.
+    out_dir = tmp_path / "o5"
+    selected = tmp_path / "sel_o5.jsonl"
+    selected.write_text("\n".join(good) + "\n", encoding="utf-8")
+    _run_adapt(
+        home,
+        "data",
+        "adapt",
+        "--plan",
+        str(plan_path),
+        "--adapter",
+        "finewiki_en",
+        "--input",
+        str(selected),
+        "--output-dir",
+        str(out_dir),
+    )
+    assert "refusing to overwrite" in attempt(good, out_dir).stderr

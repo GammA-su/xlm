@@ -142,3 +142,17 @@ launched; no session state lives only in chat.
   accounting retained) iff started before its cumulative deadline_at;
   costs only footer-range requests/KBs. Command (operator, same XLM_HOME):
   `uv run --locked --extra cpu --extra eval --no-sync --offline -- xlm data fetch --plan <attempt-2-plan.json> --pilot-approved`
+
+## FineWiki live-schema repair + adapt seam (2026-09-21, commit pending)
+
+- `FineWikiAdapter` now requires `in_language` (no invented `language`) and
+  keeps upstream text verbatim when its first line is exactly `# {title}`;
+  otherwise legacy prepend. Fixture `finewiki_en.jsonl` repaired to the
+  pinned live shape. No CLI adapt seam existed: added `xlm data adapt
+  --plan/--adapter/--input/--output-dir`, bound by locator
+  (revision/file/selection-hash) with fail-closed refusals.
+- Verified offline on the 3 real rows (read-only): 3 CanonicalDocuments,
+  lineage/language/license intact, no title dup, byte-identical re-run.
+  Evidence: `final02/finewiki*`, `verify-finewiki-out*`.
+- Operator next: adapt the acquired artifact, then `data clean --input
+  <out>/documents.jsonl`. Raw artifact untouched.

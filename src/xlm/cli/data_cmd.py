@@ -1094,6 +1094,144 @@ def verify_cmd(
         typer.echo("============================================================")
 
 
+@app.command("adapt")
+def adapt_cmd(
+    plan_path: Annotated[
+        Path,
+        typer.Option("--plan", "-p", help="Reviewed acquisition plan JSON file."),
+    ],
+    adapter_id: Annotated[
+        str,
+        typer.Option("--adapter", "-a", help="Tested mix01 adapter identifier."),
+    ],
+    input_path: Annotated[
+        Path,
+        typer.Option("--input", "-i", help="Verified selected_records.jsonl artifact file."),
+    ] = Path("selected_records.jsonl"),
+    output_dir: Annotated[
+        Path,
+        typer.Option("--output-dir", "-o", help="Directory for CanonicalDocument documents.jsonl."),
+    ] = Path("data/canonical/adapted"),
+) -> None:
+    """Adapt verified selected records into CanonicalDocument JSONL via one adapter.
+
+    Each input row must carry its ``_xlm_acquisition`` locator proving it was
+    selected under this exact plan (revision, file, and selection hash are
+    re-checked); rows from any other selection are refused, never coerced.
+    """
+    from xlm.data.adapters.mix01_adapters import ADAPTERS_BY_ID
+
+    try:
+        plan = load_acquisition_plan(plan_path)
+    except Exception as e:
+        typer.echo(f"Error loading plan: {e}", err=True)
+        raise typer.Exit(code=1) from e
+
+    adapter_cls = ADAPTERS_BY_ID.get(adapter_id)
+    if adapter_cls is None:
+        typer.echo(
+            f"Error: unknown adapter '{adapter_id}'. "
+            f"Tested adapters: {', '.join(sorted(ADAPTERS_BY_ID))}.",
+            err=True,
+        )
+        raise typer.Exit(code=1)
+    try:
+        adapter = adapter_cls()
+    except TypeError as e:
+        typer.echo(
+            f"Error: adapter '{adapter_id}' needs constructor parameters "
+            f"({e}); it cannot be selected by 'data adapt' alone.",
+            err=True,
+        )
+        raise typer.Exit(code=1) from e
+
+    try:
+        raw = input_path.read_bytes()
+    except Exception as e:
+        typer.echo(f"Error reading selected records: {e}", err=True)
+        raise typer.Exit(code=1) from e
+    if len(raw) > 64 * 1024 * 1024:
+        typer.echo("Error: selected records input exceeds 64 MiB.", err=True)
+        raise typer.Exit(code=1)
+
+    expected_selection = plan.compute_behavioral_hash()
+    docs: list[CanonicalDocument] = []
+    for line_number, line in enumerate(raw.decode("utf-8").splitlines(), start=1):
+        if not line.strip():
+            continue
+        try:
+            record = json.loads(line)
+        except Exception as e:
+            typer.echo(f"Error: line {line_number} is not a JSON object: {e}", err=True)
+            raise typer.Exit(code=1) from e
+        if not isinstance(record, dict):
+            typer.echo(f"Error: line {line_number} is not a JSON object.", err=True)
+            raise typer.Exit(code=1)
+        locator = record.get("_xlm_acquisition")
+        if not isinstance(locator, dict):
+            typer.echo(
+                f"Error: line {line_number} carries no _xlm_acquisition locator; "
+                "only verified selected records can be adapted.",
+                err=True,
+            )
+            raise typer.Exit(code=1)
+        for key, expected in (
+            ("source_id", plan.source_id),
+            ("revision", plan.revision),
+            ("source_file", None),
+            ("selection_hash", expected_selection),
+        ):
+            actual = locator.get(key)
+            if key == "source_file":
+                if actual not in plan.selected_files:
+                    typer.echo(
+                        f"Error: line {line_number} selects file {actual!r}, "
+                        "outside this plan's selected files.",
+                        err=True,
+                    )
+                    raise typer.Exit(code=1)
+            elif actual != expected:
+                typer.echo(
+                    f"Error: line {line_number} locator {key} {actual!r} does not "
+                    f"match this plan ({expected!r}).",
+                    err=True,
+                )
+                raise typer.Exit(code=1)
+        row_index = locator.get("row_index")
+        if not isinstance(row_index, int) or row_index < 0:
+            typer.echo(f"Error: line {line_number} locator has no valid row_index.", err=True)
+            raise typer.Exit(code=1)
+        try:
+            doc = adapter.adapt(
+                record,
+                source_file=str(locator["source_file"]),
+                source_row=row_index,
+                source_revision=plan.revision,
+            )
+        except Exception as e:
+            typer.echo(f"Error: adapter '{adapter_id}' refused line {line_number}: {e}", err=True)
+            raise typer.Exit(code=1) from e
+        if doc.source_id != plan.source_id:
+            typer.echo(
+                f"Error: adapter '{adapter_id}' produced source '{doc.source_id}', "
+                f"not this plan's '{plan.source_id}'.",
+                err=True,
+            )
+            raise typer.Exit(code=1)
+        docs.append(doc)
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    target = output_dir / "documents.jsonl"
+    if target.exists():
+        typer.echo(
+            f"Error: refusing to overwrite existing '{target}'; use a fresh output dir.",
+            err=True,
+        )
+        raise typer.Exit(code=1)
+    CanonicalDatasetWriter(output_dir).write_jsonl(docs)
+    typer.echo(f"Adapted {len(docs)} record(s) via '{adapter_id}' to: {target}")
+
+
 @app.command("clean")
 def clean_cmd(
     input_path: Annotated[

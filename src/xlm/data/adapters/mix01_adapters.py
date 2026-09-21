@@ -330,16 +330,25 @@ class WikiRewriteAdapter:
 
 
 class FineWikiAdapter:
-    """English Wikipedia article prose (config ``en`` only)."""
+    """English Wikipedia article prose (config ``en`` only).
+
+    Live schema (pinned revision ``8bd13e72e6a002407649b3e898535f42ceb1aeb9``,
+    view ``en``): records carry ``title``, ``text``, and ``in_language`` —
+    there is no ``language`` field, and it must not be invented. The upstream
+    ``text`` is the complete Markdown article whose first line is already the
+    ``# {title}`` heading, so the adapter keeps it verbatim instead of
+    prepending the title a second time. A record whose first line is not
+    exactly that heading keeps the legacy ``"{title}\\n\\n{text}"`` rendering.
+    """
 
     ADAPTER_ID = "finewiki_en"
-    REQUIRED_FIELDS = ("title", "text", "language")
+    REQUIRED_FIELDS = ("title", "text", "in_language")
 
     def contract(self) -> RowExtractorContract:
         return RowExtractorContract(
             adapter_id=self.ADAPTER_ID,
             text_field="text",
-            required_fields=["title", "text", "language"],
+            required_fields=["title", "text", "in_language"],
         )
 
     def adapt(
@@ -352,15 +361,21 @@ class FineWikiAdapter:
     ) -> CanonicalDocument:
         title = str(_require(record, "title", self.ADAPTER_ID))
         text = str(_require(record, "text", self.ADAPTER_ID))
-        language = str(_require(record, "language", self.ADAPTER_ID))
+        language = str(_require(record, "in_language", self.ADAPTER_ID))
         _require_english(language, ("en",), self.ADAPTER_ID)
+        stripped_title = title.strip()
+        stripped_text = text.strip()
+        if stripped_text.split("\n", 1)[0].strip() == f"# {stripped_title}":
+            rendered = stripped_text
+        else:
+            rendered = f"{stripped_title}\n\n{stripped_text}"
         return _canonical_doc(
             doc_id=f"finewiki:{source_row}",
             source_id="finewiki",
             source_revision=source_revision,
             source_file=source_file,
             source_row=source_row,
-            text=f"{title.strip()}\n\n{text.strip()}",
+            text=rendered,
             language="en",
             document_kind="prose",
             license_reference="cc-by-sa-4.0",
