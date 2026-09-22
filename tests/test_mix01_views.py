@@ -272,14 +272,15 @@ def test_view_selectors_are_nonempty_over_adapted_fixtures() -> None:
     """Every mix01 selector must match real adapted rows; an empty view blocks the run."""
     registry = load_mix01_views(VIEWS_PATH)
     docs = adapt_all()
-    # 20: the finewiki fixture carries two adaptable rows (live H1 shape plus
+    # 21: the finewiki fixture carries two adaptable rows (live H1 shape plus
     # one legacy no-heading shape), each ifm fixture two (declared
     # token_count plus one bare-text row), the finepdfs fixture two (a
     # valid Docling row plus a mixed-language eng_Latn Docling row that the
-    # routing label still accepts), and the essential_web fixture three
-    # real-shaped rows cycled across the three explicit slice components;
-    # every other count is unchanged.
-    assert len(docs) == 20
+    # routing label still accepts), the synth fixture two accepted English
+    # rows (a third German row is policy-rejected), and the essential_web
+    # fixture three real-shaped rows cycled across the three explicit slice
+    # components; every other count is unchanged.
+    assert len(docs) == 21
 
     membership = resolve_view_membership(docs, build_source_views(registry))
     for view in registry.views:
@@ -380,19 +381,29 @@ def test_nemotron_organic_synthetic_separation() -> None:
         NemotronOrganicAdapter("High-Quality-Synthetic")
 
 
-def test_synth_requires_context_and_rejects_traces() -> None:
+def test_synth_live_contract_renders_context_question_answer() -> None:
     adapter = SynthExplanationsAdapter()
     rows = read_fixture("synth_en.jsonl")
     doc = adapter.adapt(rows[0], source_file="f", source_row=0, source_revision="r")
-    assert "Context:" in doc.text and "Question:" in doc.text and "Explanation:" in doc.text
-    assert doc.source_metadata["has_context"] is True
+    assert doc.text == (
+        "Context: Moss grows on the north side of trees in damp forests.\n"
+        "Question: Why does moss favor one side?\n"
+        "Answer: Less direct sunlight keeps that side moist, which moss needs to survive."
+    )
+    assert doc.source_metadata["synth_id"] == "authored_1"
+    assert doc.source_metadata["seed_license"] == "CC-By-SA (4.0)"
+    assert doc.source_metadata["reasoning_treatment"] == "excluded"
+    assert doc.language == "en"
 
-    with pytest.raises(MissingFieldError, match="context"):
-        adapter.adapt(rows[1], source_file="f", source_row=1, source_revision="r")
-    with pytest.raises(RecordRejectedError, match="separate treatment"):
+    with pytest.raises(MissingFieldError, match="'query_seed_text'"):
+        adapter.adapt(
+            {k: v for k, v in rows[0].items() if k != "query_seed_text"},
+            source_file="f",
+            source_row=1,
+            source_revision="r",
+        )
+    with pytest.raises(RecordRejectedError, match="explicit 'en' rows only"):
         adapter.adapt(rows[2], source_file="f", source_row=2, source_revision="r")
-    with pytest.raises(RecordRejectedError, match="rows only"):
-        adapter.adapt(rows[3], source_file="f", source_row=3, source_revision="r")
 
 
 def test_english_and_source_filters() -> None:

@@ -149,14 +149,24 @@ views:
     observed_configs: [default]
     adapter_id: synth_en
     upstream_selector:
-      description: "English self-contained explanations with required context."
+      description: "English question-answer pairs with required source context."
       config_name: default
-      requires_context: true
+      required_fields:
+        - synth_id
+        - language
+        - query
+        - query_seed_text
+        - synthetic_answer
+        - seed_license
+      reasoning_content: excluded
     english_only: true
-    live_verified: false
+    live_verified: true
     notes:
       - "Upstream holds 500 synth_001..synth_500.parquet files (observed file tree)."
-      - "Reasoning traces are a separate treatment and are rejected here."
+      - "query_seed_text supplies the necessary source context for the answer."
+      - "synthetic_reasoning is a separate upstream reasoning field present on every observed row; this treatment excludes reasoning CONTENT, not the whole row."
+      - "English filtering is by the actual row language field; the source is not English-pure (a certified row carries language de, and the shard holds null language values)."
+      - "Certified against 3 real pinned rows of synth_001.parquet (offline sample adapter-cert-synth01): German row policy-rejected, two English rows accepted; other shards uninspected."
 
   - component_id: nemotron_wiki_rewrite
     source_id: nemotron_specialized

@@ -481,20 +481,47 @@ class NemotronOrganicAdapter:
 
 
 class SynthExplanationsAdapter:
-    """English SYNTH explanations with required context.
+    """English SYNTH question-answer pairs with required source context.
 
-    The treatment renders necessary context, question and final explanation.
-    Reasoning traces are a separate treatment: a record carrying one is rejected
-    here rather than silently stripped. Missing context fails the record.
+    Live schema (``PleIAs/SYNTH`` @ pinned revision, config ``default``):
+    records carry ``synth_id``, ``language``, ``query``, ``query_seed_text``
+    (the necessary source context), ``synthetic_answer``, and ``seed_license``.
+    The treatment renders exactly::
+
+        Context: <query_seed_text>
+        Question: <query>
+        Answer: <synthetic_answer>
+
+    with source strings preserved faithfully. ``synthetic_reasoning`` is an
+    upstream field present on every row of the observed shard; reasoning
+    CONTENT is deliberately excluded from training text, but the row itself
+    is never rejected merely because reasoning exists. ``query_seed_url`` is
+    optional (2443 nulls observed in the shard). There are no ``context`` /
+    ``question`` / ``explanation`` / ``reasoning_trace`` fields, and none are
+    invented.
     """
 
     ADAPTER_ID = "synth_en"
-    REQUIRED_FIELDS = ("context", "question", "explanation", "language")
+    REQUIRED_FIELDS = (
+        "synth_id",
+        "language",
+        "query",
+        "query_seed_text",
+        "synthetic_answer",
+        "seed_license",
+    )
 
     def contract(self) -> RowExtractorContract:
         return RowExtractorContract(
             adapter_id=self.ADAPTER_ID,
-            required_fields=["context", "question", "explanation", "language"],
+            required_fields=[
+                "synth_id",
+                "language",
+                "query",
+                "query_seed_text",
+                "synthetic_answer",
+                "seed_license",
+            ],
         )
 
     def adapt(
@@ -505,22 +532,88 @@ class SynthExplanationsAdapter:
         source_row: int,
         source_revision: str,
     ) -> CanonicalDocument:
-        context = str(_require(record, "context", self.ADAPTER_ID))
-        question = str(_require(record, "question", self.ADAPTER_ID))
-        explanation = str(_require(record, "explanation", self.ADAPTER_ID))
-        language = str(_require(record, "language", self.ADAPTER_ID))
-        _require_english(language, ("en",), self.ADAPTER_ID)
-
-        trace = record.get("reasoning_trace")
-        if isinstance(trace, str) and trace.strip():
-            raise RecordRejectedError(
-                f"adapter '{self.ADAPTER_ID}' renders explanations, not reasoning "
-                "traces; traces are a separate treatment."
+        synth_id = _require(record, "synth_id", self.ADAPTER_ID)
+        if not isinstance(synth_id, str) or not synth_id.strip():
+            raise MissingFieldError(
+                f"adapter '{self.ADAPTER_ID}' requires upstream field 'synth_id' "
+                "to be a non-empty string; it cannot be coerced."
             )
-        text = (
-            f"Context: {context.strip()}\nQuestion: {question.strip()}"
-            f"\nExplanation: {explanation.strip()}"
-        )
+        query = _require(record, "query", self.ADAPTER_ID)
+        if not isinstance(query, str) or not query:
+            raise MissingFieldError(
+                f"adapter '{self.ADAPTER_ID}' requires upstream field 'query' "
+                "to be a non-empty string; it cannot be coerced."
+            )
+        query_seed_text = _require(record, "query_seed_text", self.ADAPTER_ID)
+        if not isinstance(query_seed_text, str) or not query_seed_text:
+            raise MissingFieldError(
+                f"adapter '{self.ADAPTER_ID}' requires upstream field 'query_seed_text' "
+                "to be a non-empty string; it cannot be coerced."
+            )
+        synthetic_answer = _require(record, "synthetic_answer", self.ADAPTER_ID)
+        if not isinstance(synthetic_answer, str) or not synthetic_answer:
+            raise MissingFieldError(
+                f"adapter '{self.ADAPTER_ID}' requires upstream field 'synthetic_answer' "
+                "to be a non-empty string; it cannot be coerced."
+            )
+        seed_license = _require(record, "seed_license", self.ADAPTER_ID)
+        if not isinstance(seed_license, str) or not seed_license.strip():
+            raise MissingFieldError(
+                f"adapter '{self.ADAPTER_ID}' requires upstream field 'seed_license' "
+                "to be a non-empty string; it cannot be coerced."
+            )
+        if "language" not in record:
+            raise MissingFieldError(
+                f"adapter '{self.ADAPTER_ID}' requires upstream field 'language'; "
+                "it is absent and cannot be guessed."
+            )
+        language = record["language"]
+        if language is None or (isinstance(language, str) and not language.strip()):
+            raise RecordRejectedError(
+                f"adapter '{self.ADAPTER_ID}' keeps explicit 'en' rows only; "
+                "row carries no usable language label."
+            )
+        if not isinstance(language, str):
+            raise MissingFieldError(
+                f"adapter '{self.ADAPTER_ID}' requires upstream field 'language' "
+                "to be a string when present."
+            )
+        if language != "en":
+            raise RecordRejectedError(
+                f"adapter '{self.ADAPTER_ID}' keeps explicit 'en' rows only; "
+                f"row carries language '{language}'."
+            )
+        text = f"Context: {query_seed_text}\nQuestion: {query}\nAnswer: {synthetic_answer}"
+        source_metadata: dict[str, Any] = {
+            "mix01_component": "synth_en_explanations",
+            "config_name": "default",
+            "synth_id": synth_id,
+            "seed_license": seed_license,
+            "reasoning_treatment": "excluded",
+        }
+        for key, metadata_key in (
+            ("exercise", "exercise"),
+            ("model", "model"),
+            ("query_seed_url", "query_seed_url"),
+            ("additional_seed_url", "additional_seed_url"),
+        ):
+            if key not in record or record[key] is None:
+                continue
+            value = record[key]
+            if not isinstance(value, str) or not value.strip():
+                raise MissingFieldError(
+                    f"adapter '{self.ADAPTER_ID}' requires upstream field '{key}' "
+                    "to be a non-empty string when present."
+                )
+            source_metadata[metadata_key] = value
+        if "words" in record and record["words"] is not None:
+            words = record["words"]
+            if isinstance(words, bool) or not isinstance(words, int):
+                raise MissingFieldError(
+                    f"adapter '{self.ADAPTER_ID}' requires upstream field 'words' "
+                    "to be an integer when present."
+                )
+            source_metadata["words"] = words
         return _canonical_doc(
             doc_id=canonical_source_doc_id("synth", source_file, source_row),
             source_id="synth",
@@ -531,11 +624,7 @@ class SynthExplanationsAdapter:
             language="en",
             document_kind="prose",
             license_reference="cc-by-4.0",
-            source_metadata={
-                "mix01_component": "synth_en_explanations",
-                "has_context": True,
-                "config_name": "default",
-            },
+            source_metadata=source_metadata,
         )
 
 
