@@ -564,6 +564,7 @@ def test_public_plan_fetch_status_verify_prepare(server: Any, tmp_path: Path) ->
             },
         ],
     }
+    config_path.parent.mkdir(parents=True, exist_ok=True)
     config_path.write_text(json.dumps(config), encoding="utf-8")
     try:
         cli("prepare", "--config", str(config_path), "--plan-only", "--json")
