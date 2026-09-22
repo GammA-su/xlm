@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import itertools
 import json
+import os
+import urllib.request
+import uuid
 from collections.abc import Iterator
 from datetime import UTC
 from pathlib import Path
@@ -26,6 +29,16 @@ from xlm.data.acquisition import (
     SamplingFrame,
     load_acquisition_plan,
     save_acquisition_plan,
+)
+from xlm.data.acquisition.fetcher import CONTENT_RANGE_RE
+from xlm.data.acquisition.sampling import (
+    FileLayout,
+    SamplingRefusal,
+    SamplingRequest,
+    canonical_range_url,
+    discover_layout_local,
+    discover_layout_over_ranges,
+    plan_sample_blocks,
 )
 from xlm.data.adapters.jsonl import JsonlAdapter
 from xlm.data.adapters.text import TextAdapter
@@ -90,11 +103,15 @@ from xlm.data.sources.policy import (
 )
 from xlm.data.sources.prober import EvidenceType, SourceProber
 from xlm.data.sources.transport import (
+    BudgetExhaustedError,
     DiscoveryTransport,
+    HostNotAllowlistedError,
     HttpsManifestTransport,
     HuggingFaceTransport,
     LocalManifestTransport,
+    SafeRedirectHandler,
     TransportBudget,
+    validate_host,
 )
 from xlm.data.tokens import TokenShardWriter
 
@@ -886,6 +903,312 @@ def plan_cmd(
     typer.echo(f"Pilot Scope:   {resolved_plan.is_pilot} (Approved: {is_appr})")
     typer.echo(f"Saved to:      {out_file}")
     typer.echo("============================================================")
+
+
+def _atomic_write_json(path: Path, payload: Any) -> None:
+    """Write deterministic JSON (sorted keys) via atomic replace."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    text = json.dumps(payload, indent=2, sort_keys=True) + "\n"
+    temporary = path.with_name(path.name + "." + uuid.uuid4().hex + ".tmp")
+    try:
+        with temporary.open("x", encoding="utf-8") as stream:
+            stream.write(text)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+@app.command("sample-blocks")
+def sample_blocks_cmd(
+    source_id: Annotated[
+        str,
+        typer.Option("--source", "-s", help="Unique identifier of data source."),
+    ],
+    files: Annotated[
+        str,
+        typer.Option("--files", "-f", help="Comma-separated candidate Parquet file paths."),
+    ],
+    view_id: Annotated[
+        str, typer.Option("--view", "-v", help="View identifier within source.")
+    ] = "default",
+    catalog_path: Annotated[
+        Path,
+        typer.Option("--catalog", "-c", help="Path to dataset catalog YAML."),
+    ] = Path("manifests/datasets.catalog.yaml"),
+    revision_override: Annotated[
+        str | None,
+        typer.Option("--revision", help="Pin an immutable revision explicitly."),
+    ] = None,
+    seed: Annotated[int, typer.Option("--seed", help="Deterministic sampling seed.")] = 0,
+    mode: Annotated[
+        str,
+        typer.Option("--mode", "-m", help="Block mode: 'rowgroup' or 'contiguous'."),
+    ] = "rowgroup",
+    block_records: Annotated[
+        int,
+        typer.Option("--block-records", help="Minimum records per block (contiguous mode)."),
+    ] = 1000,
+    target_records: Annotated[
+        int, typer.Option("--target-records", help="Goal retained-record count.")
+    ] = 1000,
+    target_tokens: Annotated[
+        float | None,
+        typer.Option("--target-tokens", help="Goal token count (needs --tokens-per-record)."),
+    ] = None,
+    tokens_per_record: Annotated[
+        float | None,
+        typer.Option("--tokens-per-record", help="Operator token factor for estimates."),
+    ] = None,
+    max_overshoot_records: Annotated[
+        int,
+        typer.Option("--max-overshoot-records", help="Allowed records beyond target."),
+    ] = 0,
+    max_blocks_per_file: Annotated[
+        int | None,
+        typer.Option("--max-blocks-per-file", help="Cap row groups spanned per file."),
+    ] = None,
+    max_records: Annotated[
+        int | None,
+        typer.Option("--max-records", help="Hard cap on planned records."),
+    ] = None,
+    max_bytes: Annotated[
+        int | None,
+        typer.Option("--max-bytes", help="Hard cap on estimated uncompressed bytes."),
+    ] = None,
+    max_parser_bytes: Annotated[
+        int, typer.Option("--max-parser-bytes", help="Parser byte bound per row group.")
+    ] = 32 * 1024 * 1024,
+    max_decompression_ratio: Annotated[
+        float, typer.Option("--max-decompression-ratio", help="Decompression ratio bound.")
+    ] = 15.0,
+    local_dir: Annotated[
+        Path | None,
+        typer.Option("--local-dir", help="Local directory holding the candidate files."),
+    ] = None,
+    metadata_bytes: Annotated[
+        int, typer.Option("--metadata-bytes", help="Remote footer-discovery byte budget.")
+    ] = 8 * 1024 * 1024,
+    metadata_requests: Annotated[
+        int, typer.Option("--metadata-requests", help="Remote footer-discovery request budget.")
+    ] = 100,
+    output_path: Annotated[
+        Path,
+        typer.Option("--output", "-o", help="Path to write row-ranges JSON for data plan."),
+    ] = Path("sample-blocks.json"),
+    report_path: Annotated[
+        Path | None,
+        typer.Option("--report", help="Path to write sampling evidence JSON."),
+    ] = None,
+) -> None:
+    """Plan dense row-group-aligned selections without acquiring records.
+
+    Discovers Parquet footers (local files or bounded remote range reads),
+    then derives deterministic ``row_ranges`` usable directly by
+    ``xlm data plan --row-ranges``. Never fetches record payloads.
+    """
+    selected_files = [entry.strip() for entry in files.split(",") if entry.strip()]
+    if not selected_files:
+        typer.echo("Error: At least one candidate file must be specified.", err=True)
+        raise typer.Exit(code=1)
+    if mode not in ("rowgroup", "contiguous"):
+        typer.echo("Error: --mode must be 'rowgroup' or 'contiguous'.", err=True)
+        raise typer.Exit(code=1)
+    if target_tokens is not None and tokens_per_record is None:
+        typer.echo("Error: --target-tokens needs an explicit --tokens-per-record factor.", err=True)
+        raise typer.Exit(code=1)
+    try:
+        catalog = load_catalog(catalog_path)
+    except Exception as e:
+        typer.echo(f"Error loading catalog: {e}", err=True)
+        raise typer.Exit(code=1) from e
+    cand = catalog.get_source(source_id)
+    if not cand:
+        typer.echo(f"Error: Source '{source_id}' not found in catalog.", err=True)
+        raise typer.Exit(code=1)
+    resolved_revision = revision_override
+    if resolved_revision is None:
+        paths = ArtifactPaths.from_env()
+        store = ArtifactStore(paths)
+        evidence = load_probe_evidence(source_id, view_id, store)
+        resolved_revision = (
+            evidence.immutable_revision
+            if evidence and evidence.immutable_revision
+            else cand.revision
+        )
+    if not resolved_revision:
+        typer.echo(
+            f"Error: Source '{source_id}' lacks an immutable revision. "
+            "Probe the source with 'xlm data probe' first or pass --revision.",
+            err=True,
+        )
+        raise typer.Exit(code=1)
+    revision: str = resolved_revision
+    try:
+        if local_dir is not None:
+            layouts: dict[str, FileLayout] = {}
+            for name in selected_files:
+                candidate = local_dir / name
+                if not candidate.is_file():
+                    raise SamplingRefusal(f"local candidate file not found: '{name}'")
+                layouts[name] = discover_layout_local(
+                    candidate,
+                    name=name,
+                    max_parser_bytes=max_parser_bytes,
+                    max_decompression_ratio=max_decompression_ratio,
+                )
+            discovery = "local"
+        else:
+            layouts = _discover_remote_layouts(
+                provider=cand.provider,
+                repository=cand.repository,
+                revision=revision,
+                files=selected_files,
+                max_parser_bytes=max_parser_bytes,
+                max_decompression_ratio=max_decompression_ratio,
+                metadata_bytes=metadata_bytes,
+                metadata_requests=metadata_requests,
+            )
+            discovery = "remote"
+        result = plan_sample_blocks(
+            layouts,
+            SamplingRequest(
+                source_id=source_id,
+                view_id=view_id,
+                revision=revision,
+                files=tuple(selected_files),
+                seed=seed,
+                mode=mode,
+                block_records=block_records,
+                target_records=target_records,
+                max_overshoot_records=max_overshoot_records,
+                max_blocks_per_file=max_blocks_per_file,
+                max_records=max_records,
+                max_uncompressed_bytes=max_bytes,
+                max_parser_bytes=max_parser_bytes,
+                max_decompression_ratio=max_decompression_ratio,
+                tokens_per_record=tokens_per_record,
+            ),
+        )
+    except SamplingRefusal as exc:
+        typer.echo(f"Sampling refused: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    except (BudgetExhaustedError, HostNotAllowlistedError, TimeoutError) as exc:
+        typer.echo(f"Sampling refused: {type(exc).__name__}: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    ranges_payload = {
+        name: [start, stop] for name, (start, stop) in sorted(result.row_ranges.items())
+    }
+    report = result.to_report()
+    report["discovery"] = discovery
+    report["metadata_budgets"] = {
+        "max_bytes": metadata_bytes,
+        "max_requests": metadata_requests,
+    }
+    if target_tokens is not None:
+        report["target_tokens"] = target_tokens
+    resolved_report = report_path or output_path.parent / (output_path.stem + ".evidence.json")
+    _atomic_write_json(output_path, ranges_payload)
+    _atomic_write_json(resolved_report, report)
+    typer.echo("============================================================")
+    typer.echo(f"Sampling Plan: {source_id}:{view_id} rev {revision}")
+    typer.echo(f"Seed: {seed}  Mode: {mode}  Discovery: {discovery}")
+    typer.echo(f"Candidates: {len(selected_files)} file(s)  Selected: {len(result.selected_files)}")
+    for block in result.blocks:
+        typer.echo(
+            f"  - {block.file}: rows [{block.start_row},{block.stop_row}) "
+            f"({block.num_rows} rows, groups [{block.group_start},{block.group_stop_exclusive}))"
+        )
+    typer.echo(
+        f"Requested: {result.requested_records}  Planned: {result.planned_records}  "
+        f"Overshoot: {result.overshoot_records}"
+    )
+    typer.echo(
+        f"Estimated uncompressed: {result.estimated_uncompressed_bytes:,} bytes  "
+        f"compressed: {result.estimated_compressed_bytes:,} bytes  "
+        f"transfer: unknown"
+    )
+    if result.estimated_tokens is not None:
+        typer.echo(f"Estimated tokens: {result.estimated_tokens:,.1f}")
+    for warning in result.warnings:
+        typer.echo(f"Warning: {warning}")
+    typer.echo(f"Row ranges: {output_path}")
+    typer.echo(f"Evidence:   {resolved_report}")
+    typer.echo(
+        f"Next: xlm data plan --source {source_id} --view {view_id} --catalog {catalog_path} "
+        f"--files {','.join(result.selected_files)} --mode selected_records "
+        f"--row-ranges {output_path} --seed {seed} [...]"
+    )
+    typer.echo("============================================================")
+
+
+def _discover_remote_layouts(
+    *,
+    provider: str,
+    repository: str,
+    revision: str,
+    files: list[str],
+    max_parser_bytes: int,
+    max_decompression_ratio: float,
+    metadata_bytes: int,
+    metadata_requests: int,
+) -> dict[str, FileLayout]:
+    """Bounded remote footer discovery: range reads only, never record payloads."""
+    from xlm.data.sources.transport import BudgetExhaustedError
+
+    budget = TransportBudget(max_bytes=metadata_bytes, max_requests=metadata_requests)
+    opener = urllib.request.build_opener(SafeRedirectHandler(budget))
+
+    def fetch_for(rel_path: str) -> Any:
+        url = canonical_range_url(provider, repository, revision, rel_path)
+        validate_host(url)
+
+        def fetch(start: int, end: int) -> tuple[bytes, int]:
+            if not 0 <= start <= end or end - start + 1 > max_parser_bytes:
+                raise SamplingRefusal(f"metadata range for '{rel_path}' exceeds parser bound")
+            budget.record_request()
+            request = urllib.request.Request(
+                url,
+                headers={
+                    "User-Agent": "xlm-acquisition/2",
+                    "Accept-Encoding": "identity",
+                    "Range": f"bytes={start}-{end}",
+                },
+            )
+            try:
+                with opener.open(request, timeout=15.0) as response:
+                    match = CONTENT_RANGE_RE.fullmatch(response.headers.get("Content-Range", ""))
+                    if (
+                        response.status != 206
+                        or not match
+                        or (int(match[1]), int(match[2])) != (start, end)
+                    ):
+                        raise SamplingRefusal(f"metadata range for '{rel_path}' refused by server")
+                    body = budget.read_body(response, end - start + 1)
+                    return body, int(match[3])
+            except SamplingRefusal:
+                raise
+            except BudgetExhaustedError as exc:
+                raise SamplingRefusal(
+                    f"metadata budget exhausted while discovering '{rel_path}': {exc}"
+                ) from exc
+            except Exception as exc:
+                raise SamplingRefusal(
+                    f"cannot discover layout for '{rel_path}': {type(exc).__name__}"
+                ) from exc
+
+        return fetch
+
+    layouts: dict[str, FileLayout] = {}
+    for name in files:
+        layouts[name] = discover_layout_over_ranges(
+            name,
+            fetch_for(name),
+            max_parser_bytes=max_parser_bytes,
+            max_decompression_ratio=max_decompression_ratio,
+        )
+    return layouts
 
 
 @app.command("fetch")
