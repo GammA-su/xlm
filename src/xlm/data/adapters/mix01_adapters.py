@@ -23,16 +23,6 @@ from xlm.data.adapters.source_ids import canonical_source_doc_id
 from xlm.data.normalization import compute_sha256
 from xlm.data.sources.schema import RowExtractorContract
 
-ESSENTIAL_TAXONOMY_COMPONENTS = {
-    "science": "essential_science",
-    "explanation": "essential_science",
-    "practical": "essential_practical",
-    "procedure": "essential_practical",
-    "howto": "essential_practical",
-    "prose": "essential_prose",
-    "general": "essential_prose",
-}
-
 NEMOTRON_ORGANIC_CATEGORIES = ("High-Quality", "Medium-High-Quality")
 
 
@@ -161,22 +151,143 @@ def _canonical_doc(
     )
 
 
-class EssentialWebAdapter:
-    """Essential-Web taxonomy/quality slices. Fail-closed fallback policy.
+ESSENTIAL_WEB_COMPONENTS = (
+    "essential_science",
+    "essential_practical",
+    "essential_prose",
+)
 
-    Missing ``taxonomy`` or ``quality_tier`` metadata is REJECTED, never defaulted:
-    defaulting would silently move a document into a treatment slice it was never
-    selected for. An unrecognized taxonomy value is rejected for the same reason.
+
+def _require_mapping(
+    record: Mapping[str, Any], field_name: str, adapter_id: str
+) -> Mapping[str, Any]:
+    """Fetch a required nested mapping, failing closed on absence or wrong type."""
+    value = _require(record, field_name, adapter_id)
+    if not isinstance(value, Mapping):
+        raise MissingFieldError(
+            f"adapter '{adapter_id}' requires upstream field '{field_name}' "
+            f"to be a mapping, got {type(value).__name__}; it cannot be coerced."
+        )
+    return value
+
+
+def _optional_nonempty_str(mapping: Mapping[str, Any], key: str, adapter_id: str) -> str | None:
+    """Keep a bounded scalar string, or refuse it when malformed (never coerce)."""
+    if key not in mapping or mapping[key] is None:
+        return None
+    value = mapping[key]
+    if not isinstance(value, str) or not value.strip():
+        raise MissingFieldError(
+            f"adapter '{adapter_id}' requires upstream field '{key}' "
+            "to be a non-empty string when present."
+        )
+    return value
+
+
+def _optional_number(mapping: Mapping[str, Any], key: str, adapter_id: str) -> int | float | None:
+    """Keep a bounded scalar number, or refuse it when malformed (never coerce)."""
+    if key not in mapping or mapping[key] is None:
+        return None
+    value = mapping[key]
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise MissingFieldError(
+            f"adapter '{adapter_id}' requires upstream field '{key}' to be a number when present."
+        )
+    return value
+
+
+def _classifier_primary_label(classifier: Mapping[str, Any], adapter_id: str) -> str | None:
+    """Extract ``primary.label`` from one ``eai_taxonomy`` classifier, if well-formed."""
+    if "primary" not in classifier or classifier["primary"] is None:
+        return None
+    primary = classifier["primary"]
+    if not isinstance(primary, Mapping):
+        raise MissingFieldError(
+            f"adapter '{adapter_id}' requires classifier 'primary' "
+            f"to be a mapping, got {type(primary).__name__}."
+        )
+    return _optional_nonempty_str(primary, "label", adapter_id)
+
+
+def _classifier_primary_code(classifier: Mapping[str, Any], adapter_id: str) -> str | None:
+    """Extract ``primary.code`` from one ``eai_taxonomy`` classifier, if well-formed."""
+    if "primary" not in classifier or classifier["primary"] is None:
+        return None
+    primary = classifier["primary"]
+    if not isinstance(primary, Mapping):
+        raise MissingFieldError(
+            f"adapter '{adapter_id}' requires classifier 'primary' "
+            f"to be a mapping, got {type(primary).__name__}."
+        )
+    code = primary.get("code")
+    if code is None:
+        return None
+    if isinstance(code, bool) or not isinstance(code, (int, float, str)):
+        raise MissingFieldError(
+            f"adapter '{adapter_id}' requires classifier 'primary.code' "
+            "to be a string or number when present."
+        )
+    text = str(code).strip()
+    if not text:
+        raise MissingFieldError(
+            f"adapter '{adapter_id}' requires classifier 'primary.code' "
+            "to be non-empty when present."
+        )
+    return text
+
+
+class EssentialWebAdapter:
+    """English-filtered Essential-Web rows (``EssentialAI/essential-web-v1.0``).
+
+    Live schema (pinned revision
+    ``ce4eccc7e9604667b6d7f32cb6274b8b41f3113d``): records carry ``text``,
+    ``eai_taxonomy`` (structured classifiers such as
+    ``free_decimal_correspondence``,
+    ``document_type_v2``, ``bloom_knowledge_domain``), ``quality_signals``
+    (``fasttext`` scores including ``english``, plus ``red_pajama_v2``),
+    integer ``id``, string ``pid``, and ``metadata``. There are no flat
+    ``taxonomy`` / ``quality_tier`` / ``language`` fields, and none are
+    invented: the old flat-taxonomy contract never matched this source.
+
+    Slice assignment is explicit operator configuration, not inference: the
+    constructor takes one of ``essential_science`` / ``essential_practical`` /
+    ``essential_prose`` and records it as ``mix01_component``. Mapping nested
+    classifier labels onto slices without a documented selection policy would
+    be mixture-policy invention, so this adapter never does it. Science /
+    practical / prose subset thresholds remain a separate explicit policy
+    decision.
+
+    Canonical ``language`` is ``en`` because this treatment is the upstream
+    English-filtered view; provenance records that basis truthfully and the
+    upstream fastText English confidence is preserved as bounded metadata.
+    No English-score threshold is applied. Upstream ``text`` is preserved
+    verbatim.
     """
 
     ADAPTER_ID = "essential_web"
-    REQUIRED_FIELDS = ("text", "taxonomy", "quality_tier", "language")
+    REQUIRED_FIELDS = ("text", "eai_taxonomy", "quality_signals", "id", "pid", "metadata")
+
+    def __init__(self, component: str) -> None:
+        if component not in ESSENTIAL_WEB_COMPONENTS:
+            raise ValueError(
+                "essential_web slice assignment is explicit operator configuration; "
+                f"component must be one of {list(ESSENTIAL_WEB_COMPONENTS)}, "
+                f"got '{component}'."
+            )
+        self.component = component
 
     def contract(self) -> RowExtractorContract:
         return RowExtractorContract(
             adapter_id=self.ADAPTER_ID,
             text_field="text",
-            required_fields=["text", "taxonomy", "quality_tier", "language"],
+            required_fields=[
+                "text",
+                "eai_taxonomy",
+                "quality_signals",
+                "id",
+                "pid",
+                "metadata",
+            ],
         )
 
     def adapt(
@@ -187,18 +298,105 @@ class EssentialWebAdapter:
         source_row: int,
         source_revision: str,
     ) -> CanonicalDocument:
-        text = str(_require(record, "text", self.ADAPTER_ID))
-        taxonomy = str(_require(record, "taxonomy", self.ADAPTER_ID))
-        quality = str(_require(record, "quality_tier", self.ADAPTER_ID))
-        language = str(_require(record, "language", self.ADAPTER_ID))
-        _require_english(language, ("en",), self.ADAPTER_ID)
-
-        component = ESSENTIAL_TAXONOMY_COMPONENTS.get(taxonomy)
-        if component is None:
-            raise RecordRejectedError(
-                f"adapter '{self.ADAPTER_ID}' does not recognize taxonomy '{taxonomy}'; "
-                f"known taxonomies: {sorted(ESSENTIAL_TAXONOMY_COMPONENTS)}."
+        text = _require(record, "text", self.ADAPTER_ID)
+        if not isinstance(text, str) or not text:
+            raise MissingFieldError(
+                f"adapter '{self.ADAPTER_ID}' requires upstream field 'text' "
+                "to be a non-empty string; it is preserved verbatim, never coerced."
             )
+        taxonomy = _require_mapping(record, "eai_taxonomy", self.ADAPTER_ID)
+        quality = _require_mapping(record, "quality_signals", self.ADAPTER_ID)
+        fasttext = quality.get("fasttext")
+        if not isinstance(fasttext, Mapping):
+            raise MissingFieldError(
+                f"adapter '{self.ADAPTER_ID}' requires upstream field "
+                "'quality_signals.fasttext' to be a mapping."
+            )
+        english_score = _optional_number(dict(fasttext), "english", self.ADAPTER_ID)
+        if english_score is None:
+            raise MissingFieldError(
+                f"adapter '{self.ADAPTER_ID}' requires upstream field "
+                "'quality_signals.fasttext.english' to be a number."
+            )
+        upstream_id = _require(record, "id", self.ADAPTER_ID)
+        if isinstance(upstream_id, bool) or not isinstance(upstream_id, int):
+            raise MissingFieldError(
+                f"adapter '{self.ADAPTER_ID}' requires upstream field 'id' "
+                "to be an integer document identifier."
+            )
+        pid = _require(record, "pid", self.ADAPTER_ID)
+        if not isinstance(pid, str) or not pid.strip():
+            raise MissingFieldError(
+                f"adapter '{self.ADAPTER_ID}' requires upstream field 'pid' "
+                "to be a non-empty string."
+            )
+        source_metadata_block = _require_mapping(record, "metadata", self.ADAPTER_ID)
+
+        source_metadata: dict[str, Any] = {
+            "mix01_component": self.component,
+            "language_provenance": (
+                "upstream Essential-Web English-filtered treatment; "
+                "fastText English confidence preserved as fasttext_english; "
+                "downstream language cleaning still decides"
+            ),
+            "upstream_id": upstream_id,
+            "pid": pid,
+            "fasttext_english": english_score,
+        }
+        for key, metadata_key in (
+            ("source_domain", "source_domain"),
+            ("snapshot_id", "snapshot_id"),
+        ):
+            value = _optional_nonempty_str(source_metadata_block, key, self.ADAPTER_ID)
+            if value is not None:
+                source_metadata[metadata_key] = value
+        for key, metadata_key in (
+            ("fineweb_edu_approx", "fasttext_fineweb_edu_approx"),
+            ("dclm", "fasttext_dclm"),
+            ("eai_general_math", "fasttext_eai_general_math"),
+            ("eai_open_web_math", "fasttext_eai_open_web_math"),
+            ("eai_web_code", "fasttext_eai_web_code"),
+        ):
+            score = _optional_number(dict(fasttext), key, self.ADAPTER_ID)
+            if score is not None:
+                source_metadata[metadata_key] = score
+        fdc = taxonomy.get("free_decimal_correspondence")
+        if isinstance(fdc, Mapping):
+            code = _classifier_primary_code(fdc, self.ADAPTER_ID)
+            if code is not None:
+                source_metadata["fdc_primary_code"] = code
+            primary = fdc.get("primary")
+            labels = (
+                primary.get("labels")
+                if isinstance(primary, Mapping) and isinstance(primary.get("labels"), Mapping)
+                else None
+            )
+            if labels is not None:
+                for level in ("level_1", "level_2", "level_3"):
+                    value = _optional_nonempty_str(labels, level, self.ADAPTER_ID)
+                    if value is not None:
+                        source_metadata[f"fdc_{level}"] = value
+        elif fdc is not None:
+            raise MissingFieldError(
+                f"adapter '{self.ADAPTER_ID}' requires "
+                "'eai_taxonomy.free_decimal_correspondence' to be a mapping when present."
+            )
+        for classifier_key, metadata_key in (
+            ("document_type_v2", "document_type_v2_primary"),
+            ("bloom_knowledge_domain", "bloom_knowledge_domain_primary"),
+            ("bloom_cognitive_process", "bloom_cognitive_process_primary"),
+        ):
+            classifier = taxonomy.get(classifier_key)
+            if classifier is None:
+                continue
+            if not isinstance(classifier, Mapping):
+                raise MissingFieldError(
+                    f"adapter '{self.ADAPTER_ID}' requires "
+                    f"'eai_taxonomy.{classifier_key}' to be a mapping when present."
+                )
+            label = _classifier_primary_label(classifier, self.ADAPTER_ID)
+            if label is not None:
+                source_metadata[metadata_key] = label
         return _canonical_doc(
             doc_id=canonical_source_doc_id("essential_web", source_file, source_row),
             source_id="essential_web",
@@ -208,12 +406,8 @@ class EssentialWebAdapter:
             text=text,
             language="en",
             document_kind="prose",
-            license_reference="unknown",
-            source_metadata={
-                "mix01_component": component,
-                "taxonomy": taxonomy,
-                "quality_tier": quality,
-            },
+            license_reference="odc-by",
+            source_metadata=source_metadata,
         )
 
 

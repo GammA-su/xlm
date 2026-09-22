@@ -85,7 +85,6 @@ def adapt_all() -> list[CanonicalDocument]:
     """Adapt every fixture row that its view accepts; rejections stay rejected."""
     docs: list[CanonicalDocument] = []
     plans: list[tuple[str, object]] = [
-        ("essential_web.jsonl", EssentialWebAdapter()),
         ("nemotron_organic.jsonl", NemotronOrganicAdapter("High-Quality")),
         ("nemotron_organic.jsonl", NemotronOrganicAdapter("Medium-High-Quality")),
         ("synth_en.jsonl", SynthExplanationsAdapter()),
@@ -111,6 +110,27 @@ def adapt_all() -> list[CanonicalDocument]:
                 )
             except (MissingFieldError, RecordRejectedError):
                 continue
+    # Essential-Web slices are explicit operator configuration, not inference:
+    # cycle fixture rows across the three supported components so every slice
+    # view selects real-shaped rows.
+    essential_components = (
+        EssentialWebAdapter("essential_science"),
+        EssentialWebAdapter("essential_practical"),
+        EssentialWebAdapter("essential_prose"),
+    )
+    for row_index, record in enumerate(read_fixture("essential_web.jsonl")):
+        adapter = essential_components[row_index % len(essential_components)]
+        try:
+            docs.append(
+                adapter.adapt(
+                    record,
+                    source_file="essential_web.jsonl",
+                    source_row=row_index,
+                    source_revision="fixture_rev",
+                )
+            )
+        except (MissingFieldError, RecordRejectedError):
+            continue
     return docs
 
 
@@ -254,9 +274,11 @@ def test_view_selectors_are_nonempty_over_adapted_fixtures() -> None:
     docs = adapt_all()
     # 20: the finewiki fixture carries two adaptable rows (live H1 shape plus
     # one legacy no-heading shape), each ifm fixture two (declared
-    # token_count plus one bare-text row), and the finepdfs fixture two (a
+    # token_count plus one bare-text row), the finepdfs fixture two (a
     # valid Docling row plus a mixed-language eng_Latn Docling row that the
-    # routing label still accepts); every other count is unchanged.
+    # routing label still accepts), and the essential_web fixture three
+    # real-shaped rows cycled across the three explicit slice components;
+    # every other count is unchanged.
     assert len(docs) == 20
 
     membership = resolve_view_membership(docs, build_source_views(registry))
@@ -291,25 +313,46 @@ def test_empty_selector_is_refused_by_gating() -> None:
 # ------------------------------------------------------------------- adapters
 
 
-def test_essential_taxonomy_slices_and_fail_closed_fallback() -> None:
-    adapter = EssentialWebAdapter()
+def test_essential_web_live_contract_and_explicit_slices() -> None:
     rows = read_fixture("essential_web.jsonl")
-    science = adapter.adapt(rows[0], source_file="f", source_row=0, source_revision="r")
-    assert science.source_metadata["mix01_component"] == "essential_science"
-    practical = adapter.adapt(rows[1], source_file="f", source_row=1, source_revision="r")
-    assert practical.source_metadata["mix01_component"] == "essential_practical"
-    prose = adapter.adapt(rows[2], source_file="f", source_row=2, source_revision="r")
-    assert prose.source_metadata["mix01_component"] == "essential_prose"
+    science = EssentialWebAdapter("essential_science")
+    assert science.component == "essential_science"
+    with pytest.raises(ValueError, match="explicit operator configuration"):
+        EssentialWebAdapter("taxonomy:science")
 
-    # Missing quality metadata fails closed: no silent default slice.
-    with pytest.raises(MissingFieldError, match="quality_tier"):
-        adapter.adapt(rows[3], source_file="f", source_row=3, source_revision="r")
-    # Unknown taxonomy joins no slice.
-    with pytest.raises(RecordRejectedError, match="does not recognize taxonomy"):
-        adapter.adapt(rows[4], source_file="f", source_row=4, source_revision="r")
-    # Non-English rows never pass.
-    with pytest.raises(RecordRejectedError, match=r"keeps \('en',\) rows only"):
-        adapter.adapt(rows[5], source_file="f", source_row=5, source_revision="r")
+    first = science.adapt(rows[0], source_file="f", source_row=0, source_revision="r")
+    assert first.source_metadata["mix01_component"] == "essential_science"
+    assert first.source_metadata["upstream_id"] == 111
+    assert first.source_metadata["pid"] == "authored-pid-0"
+    assert first.source_metadata["fasttext_english"] == 0.97
+    assert first.source_metadata["document_type_v2_primary"] == "Personal Blog"
+    assert first.source_id == "essential_web"
+    assert first.language == "en"
+    assert "taxonomy" not in first.source_metadata
+    assert "quality_tier" not in first.source_metadata
+
+    # Same row under another explicit slice: same document, other assignment.
+    practical = EssentialWebAdapter("essential_practical").adapt(
+        rows[0], source_file="f", source_row=0, source_revision="r"
+    )
+    assert practical.doc_id == first.doc_id
+    assert practical.source_metadata["mix01_component"] == "essential_practical"
+
+    # Old flat-taxonomy shapes are refused as wrong-schema evidence.
+    with pytest.raises(MissingFieldError, match="'eai_taxonomy'"):
+        science.adapt(
+            {"text": "t", "taxonomy": "science", "quality_tier": "high", "language": "en"},
+            source_file="f",
+            source_row=0,
+            source_revision="r",
+        )
+    with pytest.raises(MissingFieldError, match="'quality_signals'"):
+        science.adapt(
+            {"text": "t", "eai_taxonomy": {}, "id": 1, "pid": "p", "metadata": {}},
+            source_file="f",
+            source_row=0,
+            source_revision="r",
+        )
 
 
 def test_nemotron_organic_synthetic_separation() -> None:
@@ -586,7 +629,7 @@ def test_remaining_adapters_render_and_reject() -> None:
 def test_adapter_contracts_detect_missing_fields() -> None:
     """Each adapter's extractor contract must fail exactly on its required fields."""
     cases = [
-        ("essential_web.jsonl", EssentialWebAdapter()),
+        ("essential_web.jsonl", EssentialWebAdapter("essential_science")),
         ("nemotron_organic.jsonl", NemotronOrganicAdapter("High-Quality")),
         ("synth_en.jsonl", SynthExplanationsAdapter()),
         ("wiki_rewrite.jsonl", WikiRewriteAdapter()),

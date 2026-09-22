@@ -7,8 +7,9 @@
 #
 # Live-discovery snapshot (metadata only, 2026-09-19; ~2.8 MiB / ~28 requests):
 #   data/probe/p13_mix01_snapshot.json and data/probe/p13_mix01_configs.json
-# `live_verified: false` everywhere: no adapter has been tested against live rows
-# and no operator admission exists. Nothing here authorizes a production run.
+# `live_verified: false` everywhere except the three Essential-Web slices, whose
+# adapter was certified against 3 real pinned rows (offline sample
+# adapter-cert-essential-web01). Nothing here authorizes a production run.
 schema_version: 1
 kind: mix01_view_registry
 registry_id: mix01_views_v1
@@ -16,51 +17,62 @@ views:
   - component_id: essential_science
     source_id: essential_web
     repository: EssentialAI/essential-web-v1.0
-    observed_revision: null
-    observed_license: null
+    observed_revision: ce4eccc7e9604667b6d7f32cb6274b8b41f3113d
+    observed_license: odc-by
     observed_configs: []
     adapter_id: essential_web
     upstream_selector:
-      description: "Science/explanation slice via real taxonomy and quality fields."
-      taxonomy_values: [science, explanation]
-      quality_field: quality_tier
+      description: "Science slice by explicit operator component selection."
+      eai_taxonomy_paths:
+        - eai_taxonomy.free_decimal_correspondence.primary.code
+        - eai_taxonomy.document_type_v2.primary.label
+      quality_paths:
+        - quality_signals.fasttext.english
     english_only: true
-    live_verified: false
+    live_verified: true
     notes:
-      - "Snapshot API response exceeded the 512 KiB metadata cap; revision unresolved."
-      - "Missing taxonomy or quality metadata is rejected fail-closed (no silent pass)."
+      - "Certified against 3 real pinned rows (offline sample adapter-cert-essential-web01)."
+      - "Flat taxonomy/quality_tier fields do not exist upstream and were removed."
 
   - component_id: essential_practical
     source_id: essential_web
     repository: EssentialAI/essential-web-v1.0
-    observed_revision: null
-    observed_license: null
+    observed_revision: ce4eccc7e9604667b6d7f32cb6274b8b41f3113d
+    observed_license: odc-by
     observed_configs: []
     adapter_id: essential_web
     upstream_selector:
-      description: "Practical-procedure slice via real taxonomy and quality fields."
-      taxonomy_values: [practical, procedure, howto]
-      quality_field: quality_tier
+      description: "Practical slice by explicit operator component selection."
+      eai_taxonomy_paths:
+        - eai_taxonomy.free_decimal_correspondence.primary.code
+        - eai_taxonomy.document_type_v2.primary.label
+      quality_paths:
+        - quality_signals.fasttext.english
     english_only: true
-    live_verified: false
+    live_verified: true
     notes:
-      - "Snapshot API response exceeded the 512 KiB metadata cap; revision unresolved."
+      - "Certified against 3 real pinned rows (offline sample adapter-cert-essential-web01)."
+      - "Flat taxonomy/quality_tier fields do not exist upstream and were removed."
 
   - component_id: essential_prose
     source_id: essential_web
     repository: EssentialAI/essential-web-v1.0
-    observed_revision: null
-    observed_license: null
+    observed_revision: ce4eccc7e9604667b6d7f32cb6274b8b41f3113d
+    observed_license: odc-by
     observed_configs: []
     adapter_id: essential_web
     upstream_selector:
-      description: "Varied-prose slice via real taxonomy and quality fields."
-      taxonomy_values: [prose, general]
-      quality_field: quality_tier
+      description: "Prose slice by explicit operator component selection."
+      eai_taxonomy_paths:
+        - eai_taxonomy.free_decimal_correspondence.primary.code
+        - eai_taxonomy.document_type_v2.primary.label
+      quality_paths:
+        - quality_signals.fasttext.english
     english_only: true
-    live_verified: false
+    live_verified: true
     notes:
-      - "Snapshot API response exceeded the 512 KiB metadata cap; revision unresolved."
+      - "Certified against 3 real pinned rows (offline sample adapter-cert-essential-web01)."
+      - "Flat taxonomy/quality_tier fields do not exist upstream and were removed."
 
   - component_id: nemotron_organic_high
     source_id: nemotron_cc21

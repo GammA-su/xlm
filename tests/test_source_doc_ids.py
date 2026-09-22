@@ -41,9 +41,11 @@ def _records() -> dict[str, dict[str, object]]:
     return {
         "essential_web": {
             "text": "t",
-            "taxonomy": "science",
-            "quality_tier": "q",
-            "language": "en",
+            "eai_taxonomy": {},
+            "quality_signals": {"fasttext": {"english": 0.9}},
+            "id": 7,
+            "pid": "pid-7",
+            "metadata": {},
         },
         "nemotron": {"text": "t", "quality_category": "High-Quality"},
         "synth": {
@@ -66,7 +68,7 @@ def _adapters() -> dict[str, tuple[object, str, str]]:
     records = _records()
     return {
         "essential_web": (
-            EssentialWebAdapter(),
+            EssentialWebAdapter("essential_science"),
             records["essential_web"],
             "essential_web",
         ),
