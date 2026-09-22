@@ -244,6 +244,21 @@ class AcquisitionPlan(BaseModel):
         )
         return normalized.compute_behavioral_hash()
 
+    def accepted_selection_hashes(self) -> set[str]:
+        """Locator selection hashes honored by verification and adaptation.
+
+        The logical hash (new fetcher output), the intermediate
+        worker-normalized hash (first concurrency fix, e.g. FinePDF attempts
+        13/14), and the behavioral hash (hand-built selections in existing
+        tests). Foreign selections match none and stay refused.
+        """
+
+        return {
+            self.compute_selection_hash(),
+            self.compute_legacy_worker_normalized_hash(),
+            self.compute_behavioral_hash(),
+        }
+
     def with_computed_hash(self) -> AcquisitionPlan:
         """Return a copy of the plan with the canonical behavioral plan_hash populated."""
         b_hash = self.compute_behavioral_hash()

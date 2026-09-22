@@ -1700,6 +1700,14 @@ def adapt_cmd(
         Path,
         typer.Option("--output-dir", "-o", help="Directory for CanonicalDocument documents.jsonl."),
     ] = Path("data/canonical/adapted"),
+    on_reject: Annotated[
+        str,
+        typer.Option(
+            "--on-reject",
+            help="Policy-rejection handling: 'fail' aborts on the first reject; "
+            "'record' records recognized RecordRejectedError policy rejects and continues.",
+        ),
+    ] = "fail",
 ) -> None:
     """Adapt verified selected records into CanonicalDocument JSONL via one adapter.
 
@@ -1707,7 +1715,21 @@ def adapt_cmd(
     selected under this exact plan (revision, file, and selection hash are
     re-checked); rows from any other selection are refused, never coerced.
     """
-    from xlm.data.adapters.mix01_adapters import ADAPTERS_BY_ID
+    from xlm.data.adapters.mix01_adapters import ADAPTERS_BY_ID, RecordRejectedError
+    from xlm.data.adapters.rejections import (
+        DOCUMENTS_FILENAME,
+        REJECTIONS_FILENAME,
+        SUMMARY_FILENAME,
+        build_rejection_record,
+        build_summary,
+        publish_atomically,
+        serialize_documents,
+        serialize_rejections,
+    )
+
+    if on_reject not in ("fail", "record"):
+        typer.echo("Error: --on-reject must be 'fail' or 'record'.", err=True)
+        raise typer.Exit(code=1)
 
     try:
         plan = load_acquisition_plan(plan_path)
@@ -1742,8 +1764,10 @@ def adapt_cmd(
         typer.echo("Error: selected records input exceeds 64 MiB.", err=True)
         raise typer.Exit(code=1)
 
-    expected_selection = plan.compute_behavioral_hash()
+    expected_selection = plan.accepted_selection_hashes()
     docs: list[CanonicalDocument] = []
+    rejections: list[dict[str, Any]] = []
+    total_input_records = 0
     for line_number, line in enumerate(raw.decode("utf-8").splitlines(), start=1):
         if not line.strip():
             continue
@@ -1767,7 +1791,6 @@ def adapt_cmd(
             ("source_id", plan.source_id),
             ("revision", plan.revision),
             ("source_file", None),
-            ("selection_hash", expected_selection),
         ):
             actual = locator.get(key)
             if key == "source_file":
@@ -1785,6 +1808,13 @@ def adapt_cmd(
                     err=True,
                 )
                 raise typer.Exit(code=1)
+        if locator.get("selection_hash") not in expected_selection:
+            typer.echo(
+                f"Error: line {line_number} locator selection_hash "
+                f"{locator.get('selection_hash')!r} does not match this plan.",
+                err=True,
+            )
+            raise typer.Exit(code=1)
         row_index = locator.get("row_index")
         if not isinstance(row_index, int) or row_index < 0:
             typer.echo(f"Error: line {line_number} locator has no valid row_index.", err=True)
@@ -1796,6 +1826,28 @@ def adapt_cmd(
                 source_row=row_index,
                 source_revision=plan.revision,
             )
+        except RecordRejectedError as e:
+            if on_reject != "record":
+                typer.echo(
+                    f"Error: adapter '{adapter_id}' refused line {line_number}: {e}", err=True
+                )
+                raise typer.Exit(code=1) from e
+            rejections.append(
+                build_rejection_record(
+                    input_line=line_number,
+                    source_id=plan.source_id,
+                    source_revision=plan.revision,
+                    source_file=str(locator["source_file"]),
+                    source_row=row_index,
+                    adapter_id=adapter_id,
+                    error=e,
+                    original_record_sha256=locator.get("original_record_sha256")
+                    if isinstance(locator.get("original_record_sha256"), str)
+                    else None,
+                )
+            )
+            total_input_records += 1
+            continue
         except Exception as e:
             typer.echo(f"Error: adapter '{adapter_id}' refused line {line_number}: {e}", err=True)
             raise typer.Exit(code=1) from e
@@ -1807,17 +1859,46 @@ def adapt_cmd(
             )
             raise typer.Exit(code=1)
         docs.append(doc)
+        total_input_records += 1
 
-    output_dir.mkdir(parents=True, exist_ok=True)
-    target = output_dir / "documents.jsonl"
-    if target.exists():
-        typer.echo(
-            f"Error: refusing to overwrite existing '{target}'; use a fresh output dir.",
-            err=True,
-        )
-        raise typer.Exit(code=1)
-    CanonicalDatasetWriter(output_dir).write_jsonl(docs)
-    typer.echo(f"Adapted {len(docs)} record(s) via '{adapter_id}' to: {target}")
+    if on_reject == "fail":
+        output_dir.mkdir(parents=True, exist_ok=True)
+        target = output_dir / "documents.jsonl"
+        if target.exists():
+            typer.echo(
+                f"Error: refusing to overwrite existing '{target}'; use a fresh output dir.",
+                err=True,
+            )
+            raise typer.Exit(code=1)
+        CanonicalDatasetWriter(output_dir).write_jsonl(docs)
+        typer.echo(f"Adapted {len(docs)} record(s) via '{adapter_id}' to: {target}")
+        return
+
+    document_lines = serialize_documents(docs)
+    rejection_lines = serialize_rejections(rejections)
+    summary = build_summary(
+        adapter_id=adapter_id,
+        source_id=plan.source_id,
+        source_revision=plan.revision,
+        plan_id=plan.plan_id,
+        plan_hash=plan.compute_behavioral_hash(),
+        on_reject=on_reject,
+        total_input_records=total_input_records,
+        document_lines=document_lines,
+        rejection_lines=rejection_lines,
+        rejection_records=rejections,
+    )
+    try:
+        published = publish_atomically(output_dir, document_lines, rejection_lines, summary)
+    except FileExistsError as e:
+        typer.echo(f"Error: {e}", err=True)
+        raise typer.Exit(code=1) from e
+    typer.echo(
+        f"Adapted {len(document_lines)} record(s) via '{adapter_id}' to: "
+        f"{published[DOCUMENTS_FILENAME]} "
+        f"({len(rejection_lines)} rejection(s) in {published[REJECTIONS_FILENAME]}, "
+        f"summary in {published[SUMMARY_FILENAME]})"
+    )
 
 
 @app.command("clean")

@@ -155,11 +155,7 @@ class AcquisitionVerifier:
         #   e.g. FinePDF attempts 13/14 already acquired)
         # New acquisitions always write the logical hash so attempt/workers
         # never change bytes; old raw artifacts keep verifying.
-        accepted_hashes = {
-            self.plan.compute_selection_hash(),
-            self.plan.compute_legacy_worker_normalized_hash(),
-            self.plan.compute_behavioral_hash(),
-        }
+        accepted_hashes = self.plan.accepted_selection_hashes()
         count = 0
         with path.open("rb") as stream:
             while raw := stream.readline(self.plan.limits.max_record_bytes + 8193):
