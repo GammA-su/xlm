@@ -1077,7 +1077,29 @@ class IfmPlanningAdapter:
 
 
 class CommonPileAdapter:
-    """Selected complementary Common Pile prose."""
+    """Normalized Common Pile prose rows (``text`` only, component from path).
+
+    Pinned source (``common-pile/comma_v0.1_training_dataset`` @ observed
+    revision): every inspected row is exactly ``{"text": str}`` across many
+    independent top-level components (``news/…``, ``libretexts/…``,
+    ``public_domain_review/…``, and 28 more). The row carries no component,
+    language, or license field.
+
+    The upstream component is the top-level source directory of the relative
+    source file (``news/news.chunk.09.jsonl.gz`` → ``news``). A componentless
+    or malformed path is refused fail-closed rather than assigned a guessed
+    component. Which of the 31 components belong in the final Mix-01
+    treatment — including weights and per-component licensing/admission — is
+    a separate mixture-policy decision this adapter never makes.
+
+    Canonical ``language`` is ``en`` because ``common_pile_prose`` is defined
+    as an English-only downstream treatment; raw rows expose no language
+    field and 9 samples prove nothing corpus-wide, so provenance records that
+    basis truthfully and downstream language cleaning still decides. The
+    observed repository license is null, so ``license_reference`` stays the
+    truthful ``unknown`` placeholder with a provenance note. Upstream text is
+    preserved verbatim.
+    """
 
     ADAPTER_ID = "common_pile"
     REQUIRED_FIELDS = ("text",)
@@ -1089,6 +1111,35 @@ class CommonPileAdapter:
             required_fields=["text"],
         )
 
+    @staticmethod
+    def upstream_component(source_file: str) -> str:
+        """Derive the top-level Common Pile component from a relative path.
+
+        Normalizes separators to ``/`` (matching the central file-key
+        convention, so Windows vs POSIX spellings agree) and returns the
+        first path segment. Refuses empty, componentless, or dot-segment
+        paths fail-closed.
+        """
+        if not isinstance(source_file, str) or not source_file:
+            raise MissingFieldError(
+                "adapter 'common_pile' requires a non-empty source_file to "
+                "derive the upstream component."
+            )
+        normalized = source_file.replace("\\", "/")
+        raw_segments = normalized.split("/")
+        if ".." in raw_segments:
+            raise MissingFieldError(
+                f"adapter 'common_pile' cannot derive an upstream component from "
+                f"source_file {source_file!r}."
+            )
+        segments = [segment for segment in raw_segments if segment not in ("", ".")]
+        if len(segments) < 2:
+            raise MissingFieldError(
+                f"adapter 'common_pile' cannot derive an upstream component from "
+                f"componentless source_file {source_file!r}."
+            )
+        return segments[0]
+
     def adapt(
         self,
         record: Mapping[str, Any],
@@ -1097,7 +1148,13 @@ class CommonPileAdapter:
         source_row: int,
         source_revision: str,
     ) -> CanonicalDocument:
-        text = str(_require(record, "text", self.ADAPTER_ID))
+        text = _require(record, "text", self.ADAPTER_ID)
+        if not isinstance(text, str) or not text:
+            raise MissingFieldError(
+                f"adapter '{self.ADAPTER_ID}' requires upstream field 'text' "
+                "to be a non-empty string; it is preserved verbatim, never coerced."
+            )
+        component = self.upstream_component(source_file)
         return _canonical_doc(
             doc_id=canonical_source_doc_id("common_pile", source_file, source_row),
             source_id="common_pile",
@@ -1108,7 +1165,19 @@ class CommonPileAdapter:
             language="en",
             document_kind="prose",
             license_reference="unknown",
-            source_metadata={"mix01_component": "common_pile_prose"},
+            source_metadata={
+                "mix01_component": "common_pile_prose",
+                "upstream_component": component,
+                "language_provenance": (
+                    "Common Pile raw rows expose no language field; this XLM "
+                    "treatment is intended to select English prose externally; "
+                    "downstream language cleaning still decides."
+                ),
+                "license_provenance": (
+                    "No single repository-level or row-level license was observed; "
+                    "component-level licensing requires separate admission review."
+                ),
+            },
         )
 
 

@@ -225,13 +225,17 @@ views:
     observed_configs: []
     adapter_id: common_pile
     upstream_selector:
-      description: "Selected complementary prose; license and subset naming unresolved."
-      config_name: null
+      description: "Normalized text-only rows; upstream component is the top-level source directory of the file path."
+      required_fields: [text]
+      component_from_path: true
     english_only: true
-    live_verified: false
+    live_verified: true
     notes:
       - "Declared license unresolved in snapshot metadata; license review pending."
       - "No config list in card metadata; subset naming unresolved."
+      - "Certified against 9 real pinned rows from news, libretexts, and public_domain_review (offline sample adapter-cert-common-pile01); this does NOT certify the other 28 components and does NOT constitute production admission."
+      - "Raw rows expose no language field; English-only is a downstream treatment intention, not a row-schema fact."
+      - "Final Mix-01 component allowlist, weights, and per-component licensing/admission remain unresolved policy decisions."
 
   - component_id: simple_stories
     source_id: simple_stories

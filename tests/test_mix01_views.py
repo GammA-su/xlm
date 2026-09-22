@@ -93,7 +93,6 @@ def adapt_all() -> list[CanonicalDocument]:
         ("finepdfs_en.jsonl", FinePdfsAdapter()),
         ("ifm_general.jsonl", IfmGeneralAdapter()),
         ("ifm_planning.jsonl", IfmPlanningAdapter()),
-        ("common_pile.jsonl", CommonPileAdapter()),
         ("simple_stories.jsonl", SimpleStoriesAdapter()),
         ("txt360_web.jsonl", Txt360WebAdapter()),
     ]
@@ -125,6 +124,22 @@ def adapt_all() -> list[CanonicalDocument]:
                 adapter.adapt(
                     record,
                     source_file="essential_web.jsonl",
+                    source_row=row_index,
+                    source_revision="fixture_rev",
+                )
+            )
+        except (MissingFieldError, RecordRejectedError):
+            continue
+    # Common Pile rows carry no component field: the upstream component comes
+    # from the source path, so the fixture is adapted under an authored
+    # component directory (never a claim about final Mix-01 selection).
+    pile_adapter = CommonPileAdapter()
+    for row_index, record in enumerate(read_fixture("common_pile.jsonl")):
+        try:
+            docs.append(
+                pile_adapter.adapt(
+                    record,
+                    source_file="fixture/common_pile.jsonl",
                     source_row=row_index,
                     source_revision="fixture_rev",
                 )
@@ -604,15 +619,29 @@ def test_remaining_adapters_render_and_reject() -> None:
         )
 
     pile_rows = read_fixture("common_pile.jsonl")
-    assert (
-        CommonPileAdapter()
-        .adapt(pile_rows[0], source_file=source_file, source_row=0, source_revision=revision)
-        .source_metadata["mix01_component"]
-        == "common_pile_prose"
+    pile_doc = CommonPileAdapter().adapt(
+        pile_rows[0],
+        source_file="news/common_pile.jsonl",
+        source_row=0,
+        source_revision=revision,
     )
+    assert pile_doc.source_metadata["mix01_component"] == "common_pile_prose"
+    assert pile_doc.source_metadata["upstream_component"] == "news"
+    assert pile_doc.text == pile_rows[0]["text"]
+    assert pile_doc.license_reference == "unknown"
     with pytest.raises(MissingFieldError, match="'text'"):
         CommonPileAdapter().adapt(
-            pile_rows[1], source_file=source_file, source_row=1, source_revision=revision
+            pile_rows[1],
+            source_file="news/common_pile.jsonl",
+            source_row=1,
+            source_revision=revision,
+        )
+    with pytest.raises(MissingFieldError, match="componentless"):
+        CommonPileAdapter().adapt(
+            pile_rows[0],
+            source_file="common_pile.jsonl",
+            source_row=0,
+            source_revision=revision,
         )
 
     story_rows = read_fixture("simple_stories.jsonl")
