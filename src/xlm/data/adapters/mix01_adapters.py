@@ -1182,14 +1182,62 @@ class CommonPileAdapter:
 
 
 class SimpleStoriesAdapter:
-    """Small coherent-story component."""
+    """English SimpleStories narratives (``SimpleStories/SimpleStories``).
+
+    Live train/test schema (pinned revision): records carry ``story`` plus
+    bounded scalar provenance (topic/theme/style/feature/grammar/persona
+    strings, word/character/paragraph counts, readability statistics,
+    completion counts, ``generation_id``, ``model``). The only semantically
+    necessary content field is ``story``, which is required non-empty,
+    preserved verbatim, and never ``str()``-coerced. Optional provenance is
+    preserved only when well-formed (strings stay strings, numbers stay
+    numbers — empty strings kept as valid upstream values); malformed
+    optional values are refused, never silently stringified or skipped.
+    Story-only rows remain supported. There is no row-level language field.
+
+    Canonical ``language`` is ``en`` because this XLM treatment is defined as
+    the English SimpleStories component; provenance records that basis
+    truthfully and downstream language cleaning still applies.
+    ``license_reference`` is the dataset-level MIT license from pinned
+    repository metadata. ``generation_id``/``model`` are provenance only,
+    never identity: canonical identity stays the centralized file+row scheme.
+    """
 
     ADAPTER_ID = "simple_stories"
     REQUIRED_FIELDS = ("story",)
 
+    #: Optional bounded string provenance keys (empty strings are valid values).
+    OPTIONAL_STRING_FIELDS = (
+        "topic",
+        "theme",
+        "style",
+        "feature",
+        "grammar",
+        "persona",
+        "initial_word_type",
+        "initial_letter",
+        "generation_id",
+        "model",
+    )
+
+    #: Optional bounded numeric provenance keys (ints stay ints, floats stay floats).
+    OPTIONAL_NUMERIC_FIELDS = (
+        "word_count",
+        "character_count",
+        "num_paragraphs",
+        "avg_word_length",
+        "avg_sentence_length",
+        "flesch_reading_ease",
+        "flesch_kincaid_grade",
+        "dale_chall_readability_score",
+        "num_stories_in_completion",
+        "expected_num_stories_in_completion",
+    )
+
     def contract(self) -> RowExtractorContract:
         return RowExtractorContract(
             adapter_id=self.ADAPTER_ID,
+            text_field="story",
             required_fields=["story"],
         )
 
@@ -1201,7 +1249,41 @@ class SimpleStoriesAdapter:
         source_row: int,
         source_revision: str,
     ) -> CanonicalDocument:
-        story = str(_require(record, "story", self.ADAPTER_ID))
+        story = _require(record, "story", self.ADAPTER_ID)
+        if not isinstance(story, str) or not story:
+            raise MissingFieldError(
+                f"adapter '{self.ADAPTER_ID}' requires upstream field 'story' "
+                "to be a non-empty string; it is preserved verbatim, never coerced."
+            )
+        source_metadata: dict[str, Any] = {
+            "mix01_component": "simple_stories",
+            "language_provenance": (
+                "SimpleStories treatment is English; no row-level language field "
+                "exists in the certified schema; downstream language cleaning "
+                "still applies"
+            ),
+            "license_provenance": "dataset-level MIT license from pinned repository metadata",
+        }
+        for key in self.OPTIONAL_STRING_FIELDS:
+            if key not in record or record[key] is None:
+                continue
+            value = record[key]
+            if not isinstance(value, str):
+                raise MissingFieldError(
+                    f"adapter '{self.ADAPTER_ID}' requires upstream field '{key}' "
+                    "to be a string when present."
+                )
+            source_metadata[key] = value
+        for key in self.OPTIONAL_NUMERIC_FIELDS:
+            if key not in record or record[key] is None:
+                continue
+            value = record[key]
+            if isinstance(value, bool) or not isinstance(value, (int, float)):
+                raise MissingFieldError(
+                    f"adapter '{self.ADAPTER_ID}' requires upstream field '{key}' "
+                    "to be a number when present."
+                )
+            source_metadata[key] = value
         return _canonical_doc(
             doc_id=canonical_source_doc_id("simple_stories", source_file, source_row),
             source_id="simple_stories",
@@ -1212,7 +1294,7 @@ class SimpleStoriesAdapter:
             language="en",
             document_kind="prose",
             license_reference="mit",
-            source_metadata={"mix01_component": "simple_stories"},
+            source_metadata=source_metadata,
         )
 
 

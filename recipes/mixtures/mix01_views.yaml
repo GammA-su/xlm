@@ -245,12 +245,15 @@ views:
     observed_configs: [default]
     adapter_id: simple_stories
     upstream_selector:
-      description: "Small coherent-story component."
+      description: "English SimpleStories narratives keyed on the story field."
       config_name: default
+      required_fields: [story]
     english_only: true
-    live_verified: false
+    live_verified: true
     notes:
-      - "Upstream file processed.parquet observed in file tree."
+      - "Canonical configured train/test storage is under data/*.parquet; train and test schemas were observed equal at the pinned revision."
+      - "processed.parquet is a distinct auxiliary artifact with a reduced schema and is not the train-schema authority."
+      - "Certified by direct adaptation of 3 pinned train rows (train-00003-of-00007) plus 3 pinned test rows (test-00000-of-00001); train rows are certification evidence only, never training input; not production admission."
 
   - component_id: txt360_web
     source_id: txt360_v2
