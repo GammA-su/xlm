@@ -22,6 +22,18 @@ Bounds (all enforced by construction):
 Bytes throughout mean application response-body bytes (the existing
 ``TransportBudget`` meaning). No TCP/TLS wire accounting is claimed and no
 provider billing can be derived from these numbers.
+
+Request semantics: ``logical_requests`` counts attempted request opens
+(``record_request``); ``redirect_requests`` counts followed redirects;
+``accounted_network_requests`` (``logical + redirect``) reconciles with the
+journal/status ``requests_made``, which charges both. Do not read
+``logical_requests`` alone as the budget charge.
+
+Timing semantics: ``parquet_decode``/``decode_seconds`` is inclusive
+Parquet row-group processing time (footer/metadata handling plus
+blocking range I/O nested inside iteration plus CPU decode), not pure CPU.
+Compare it against wall time, never as CPU-only; whole-run process CPU
+can be far smaller.
 """
 
 from __future__ import annotations
@@ -151,6 +163,10 @@ class PerfTelemetry:
         ``decode``, ``serialize``, ``accounting``); hosts are sanitized
         hostnames only. Multi-worker overlap means category sums can exceed
         wall time; shares are reported against wall with that caveat.
+
+        ``decode`` is inclusive Parquet row-group processing time: it wraps
+        iteration that performs nested bounded range I/O (timed separately
+        as ``open``/``body``) plus CPU decode. Never present it as CPU-only.
         """
         start = self._now()
         try:
@@ -274,7 +290,12 @@ class PerfTelemetry:
 
     @contextmanager
     def file_worker(self, file: str) -> Iterator[None]:
-        """Track one file's worker lifetime: wall share plus concurrency."""
+        """Track one file's worker lifetime: wall share plus concurrency.
+
+        Callers must hold this around the actual file operation (network
+        ranges, Parquet decode, record serialization), not merely around
+        executor submission, so ``max_active_workers`` reflects real overlap.
+        """
         start = self._now()
         with self._lock:
             self._active_workers += 1
@@ -315,7 +336,10 @@ class PerfTelemetry:
             by_host = {host: dict(entry) for host, entry in self.by_host.items()}
             counters = {
                 "requests": self.requests,
+                "logical_requests": self.requests,
                 "redirects": self.redirects,
+                "redirect_requests": self.redirects,
+                "accounted_network_requests": self.requests + self.redirects,
                 "retries": self.retries,
                 "retry_wait_seconds": self.retry_wait_seconds,
                 "open_seconds": self.open_seconds,
@@ -414,10 +438,24 @@ class PerfTelemetry:
             "time_shares_of_wall": shares,
             "slowest_stage": slowest_stage_of(shares),
             "average_concurrency": _safe_div(counters["worker_seconds"], wall_seconds),
+            "request_accounting": {
+                "logical_requests": counters["logical_requests"],
+                "redirect_requests": counters["redirect_requests"],
+                "accounted_network_requests": counters["accounted_network_requests"],
+                "journal_requests_made": journal_requests,
+                "reconciled": bool(counters["accounted_network_requests"] == journal_requests),
+            },
             "notes": [
                 "Bytes are application response-body bytes; no TCP/TLS wire accounting.",
                 "Category sums may exceed wall time under multi-worker overlap.",
                 "Hosts are sanitized hostnames; no URLs, queries, or credentials stored.",
+                "requests=logical opens; redirects are followed hops; "
+                "accounted_network_requests=logical+redirect reconciles with "
+                "journal requests_made (budget charges both).",
+                "parquet_decode is inclusive row-group processing time including "
+                "nested range I/O plus CPU decode, not CPU-only; compare to wall, "
+                "not to process CPU.",
+                "average_concurrency is observational only and never alters identity.",
             ],
         }
 
@@ -549,6 +587,14 @@ def compare_perf_docs(docs: list[dict[str, Any]]) -> dict[str, Any]:
         rates = doc.get("rates", {})
         shares = doc.get("time_shares_of_wall", {})
         telemetry = doc.get("telemetry", {})
+        logical = telemetry.get("logical_requests", telemetry.get("requests"))
+        redirect = telemetry.get("redirect_requests", telemetry.get("redirects"))
+        accounted = telemetry.get("accounted_network_requests")
+        if accounted is None and logical is not None and redirect is not None:
+            try:
+                accounted = int(logical) + int(redirect)
+            except (TypeError, ValueError):
+                accounted = None
         entries.append(
             {
                 "plan_id": doc.get("plan_id"),
@@ -573,6 +619,10 @@ def compare_perf_docs(docs: list[dict[str, Any]]) -> dict[str, Any]:
                 "cache_class": _doc_cache_class(doc),
                 "cache_hits": doc.get("cache_hits"),
                 "requests": telemetry.get("requests"),
+                "logical_requests": logical,
+                "redirect_requests": redirect,
+                "accounted_network_requests": accounted,
+                "journal_requests_made": doc.get("requests_made"),
                 "retries": telemetry.get("retries"),
                 "slowest_stage": doc.get("slowest_stage"),
             }

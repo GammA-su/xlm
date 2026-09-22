@@ -1131,9 +1131,15 @@ def _print_perf_summary(doc: dict[str, Any]) -> None:
         f"(@ {float(rates.get('retained_records_per_sec', 0.0) or 0.0):.2f}/s)"
     )
     typer.echo(
-        f"Requests: {telemetry.get('requests')} "
+        f"Logical requests: {telemetry.get('logical_requests', telemetry.get('requests'))} "
         f"(@ {float(rates.get('requests_per_sec', 0.0) or 0.0):.2f}/s)  "
-        f"Redirects: {telemetry.get('redirects')}  Retries: {telemetry.get('retries')}"
+        f"Redirects: {telemetry.get('redirect_requests', telemetry.get('redirects'))}  "
+        f"Retries: {telemetry.get('retries')}"
+    )
+    typer.echo(
+        f"Accounted network requests: "
+        f"{telemetry.get('accounted_network_requests', telemetry.get('requests'))} "
+        f"(journal requests_made {doc.get('requests_made')})"
     )
     typer.echo("Where did the time go (share of wall)?")
     for key in (
@@ -1171,6 +1177,10 @@ def _print_perf_summary(doc: dict[str, Any]) -> None:
         for item in slowest_files[:8]:
             typer.echo(f"  - {item.get('file')}: {float(item.get('seconds', 0.0) or 0.0):.3f}s")
     typer.echo("Notes: application response-body bytes only; no TCP/TLS wire accounting.")
+    typer.echo(
+        "Notes: parquet_decode is inclusive row-group processing (range I/O + CPU "
+        "decode), not CPU-only; accounted requests = logical + redirects."
+    )
     typer.echo("============================================================")
 
 

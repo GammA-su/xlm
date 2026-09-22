@@ -187,6 +187,22 @@ class AcquisitionPlan(BaseModel):
         canonical_json = json.dumps(behavioral_dict, sort_keys=True, separators=(",", ":"))
         return hashlib.sha256(canonical_json.encode("utf-8")).hexdigest()
 
+    def compute_selection_hash(self) -> str:
+        """Stable selected-record identity independent of file-worker concurrency.
+
+        Normalizes ``max_workers`` to 1 so ``max_workers=1/2/4`` produce
+        byte-identical ``selected_records.jsonl`` for identical source data,
+        files, row ranges, revision, and remaining limits. All other
+        behavioral fields (including ``attempt`` and remaining limits) still
+        bind identity. Journals, receipts, and authorizations keep using
+        :meth:`compute_behavioral_hash`; only the per-record
+        ``selection_hash`` locator uses this.
+        """
+        normalized = self.model_copy(
+            update={"limits": self.limits.model_copy(update={"max_workers": 1})}
+        )
+        return normalized.compute_behavioral_hash()
+
     def with_computed_hash(self) -> AcquisitionPlan:
         """Return a copy of the plan with the canonical behavioral plan_hash populated."""
         b_hash = self.compute_behavioral_hash()

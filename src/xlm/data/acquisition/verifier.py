@@ -149,6 +149,13 @@ class AcquisitionVerifier:
         )
         if expected_count > self.plan.limits.max_records:
             raise VerificationError("selected record limit exceeded")
+        # Worker-independent locator (new) plus legacy behavioral hash (old
+        # single-worker artifacts) both verify; new acquisitions always write
+        # the worker-independent hash so max_workers never changes bytes.
+        accepted_hashes = {
+            self.plan.compute_selection_hash(),
+            self.plan.compute_behavioral_hash(),
+        }
         count = 0
         with path.open("rb") as stream:
             while raw := stream.readline(self.plan.limits.max_record_bytes + 8193):
@@ -161,8 +168,9 @@ class AcquisitionVerifier:
                     locator.get("source_file"),
                     locator.get("row_index"),
                     locator.get("revision"),
-                    locator.get("selection_hash"),
-                ) != (name, index, self.plan.revision, self.plan.compute_behavioral_hash()):
+                ) != (name, index, self.plan.revision) or locator.get(
+                    "selection_hash"
+                ) not in accepted_hashes:
                     raise VerificationError("original row locator or selection identity mismatch")
                 count += 1
         if count != expected_count:

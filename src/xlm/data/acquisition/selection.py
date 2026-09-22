@@ -6,6 +6,10 @@ import hashlib
 import io
 import json
 import os
+import threading
+import uuid
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import pyarrow.parquet as pq
@@ -203,6 +207,237 @@ def _parquet_selection(fetcher: BoundedFetcher, name: str, start: int, stop: int
             base = end
 
 
+def _select_one_source_to_chunk(
+    fetcher: BoundedFetcher,
+    source: str,
+    chunk_path: Path,
+    selection_hash: str,
+    destination_name: str,
+    stop_event: threading.Event,
+    retained_total: list[int],
+    retained_lock: threading.Lock,
+) -> dict[str, Any]:
+    """Fetch one independent selected file into its own bounded chunk file.
+
+    All global budgets (transfer/decompressed/requests/scanned/deadline) reuse
+    the fetcher's shared durable reservation model, so concurrent workers
+    contend exactly. Returns per-file count/size for the ordered merge.
+    Raises the original worker exception unchanged for deterministic reporting.
+    """
+    plan = fetcher.plan
+    start, stop = plan.row_ranges[source] if plan.row_ranges else (0, 0)
+    with fetcher.perf.file_worker(source):
+        ensure_plain_path(chunk_path)
+        digest = hashlib.sha256()
+        count, size = 0, 0
+        with chunk_path.open("xb") as output:
+            iterator = (
+                _jsonl_selection(fetcher, source, start, stop)
+                if source.endswith(".jsonl")
+                else _parquet_selection(fetcher, source, start, stop)
+            )
+            for record, raw, locator in iterator:
+                if stop_event.is_set():
+                    raise RuntimeError("concurrent file worker cancelled after sibling failure")
+                fetcher._check_deadline()
+                with fetcher.perf.timed("serialize", file=source):
+                    payload = selected_record(
+                        record,
+                        {
+                            **locator,
+                            "source_id": plan.source_id,
+                            "repository": plan.repository,
+                            "revision": plan.revision,
+                            "source_file": source,
+                            "selection_hash": selection_hash,
+                        },
+                        raw,
+                    )
+                if len(payload) > plan.limits.max_record_bytes + 8192:
+                    raise RecordLimitError(
+                        "selected record plus locator exceeds bounded serialization"
+                    )
+                with retained_lock:
+                    retained_total[0] += 1
+                    if retained_total[0] > plan.limits.max_records:
+                        raise RecordLimitError("selected record limit exceeded")
+                token = fetcher.capacity_mgr.reserve_disk_space(fetcher.scratch_dir, len(payload))
+                with fetcher.perf.timed("serialize", file=source):
+                    output.write(payload)
+                    output.flush()
+                    os.fsync(output.fileno())
+                fetcher.capacity_mgr.settle("temp", token, len(payload))
+                fetcher.perf.record_file_bytes(destination_name, len(payload))
+                digest.update(payload)
+                count, size = count + 1, size + len(payload)
+        return {"source": source, "count": count, "size": size, "path": str(chunk_path)}
+
+
+def _acquire_selection_serial(
+    fetcher: BoundedFetcher, destination: Path, name: str, selection_hash: str
+) -> None:
+    """Original serial path: plan order, single temp file, byte-identical merge."""
+    plan = fetcher.plan
+    temporary = fetcher.partial_dir / f"selection-{uuid.uuid4().hex}.part"
+    ensure_plain_path(temporary)
+    digest, count, size = hashlib.sha256(), 0, 0
+    with temporary.open("xb") as output:
+        for source in plan.selected_files:
+            start, stop = plan.row_ranges[source] if plan.row_ranges else (0, 0)
+            with fetcher.perf.file_worker(source):
+                iterator = (
+                    _jsonl_selection(fetcher, source, start, stop)
+                    if source.endswith(".jsonl")
+                    else _parquet_selection(fetcher, source, start, stop)
+                )
+                for record, raw, locator in iterator:
+                    with fetcher.perf.timed("serialize", file=source):
+                        payload = selected_record(
+                            record,
+                            {
+                                **locator,
+                                "source_id": plan.source_id,
+                                "repository": plan.repository,
+                                "revision": plan.revision,
+                                "source_file": source,
+                                "selection_hash": selection_hash,
+                            },
+                            raw,
+                        )
+                    if len(payload) > plan.limits.max_record_bytes + 8192:
+                        raise RecordLimitError(
+                            "selected record plus locator exceeds bounded serialization"
+                        )
+                    token = fetcher.capacity_mgr.reserve_disk_space(
+                        fetcher.scratch_dir, len(payload)
+                    )
+                    with fetcher.perf.timed("serialize", file=source):
+                        output.write(payload)
+                        output.flush()
+                        os.fsync(output.fileno())
+                    fetcher.capacity_mgr.settle("temp", token, len(payload))
+                    fetcher.perf.record_file_bytes(name, len(payload))
+                    digest.update(payload)
+                    count, size = count + 1, size + len(payload)
+                    if count > plan.limits.max_records:
+                        raise RecordLimitError("selected record limit exceeded")
+    token = fetcher.capacity_mgr.reserve_disk_space(fetcher.output_dir, size, is_temp=False)
+    with fetcher.perf.timed("serialize", file=name):
+        AtomicFileWriter.atomic_complete(temporary, destination)
+    fetcher.capacity_mgr.settle("output", token, size)
+    with fetcher.perf.timed("accounting"):
+        fetcher.journal.mark_file_completed(name, size, digest=digest.hexdigest(), records=count)
+
+
+def _acquire_selection_parallel(
+    fetcher: BoundedFetcher,
+    destination: Path,
+    name: str,
+    selection_hash: str,
+    workers: int,
+) -> None:
+    """Bounded file-level parallelism with deterministic ordered merge.
+
+    Unit of concurrency is independent selected source files (never
+    per-request/per-column). Workers write per-file chunk files concurrently;
+    the main thread merges chunks in ``plan.selected_files`` order so
+    completion order never affects bytes. Memory stays bounded by streaming
+    chunk files (no in-memory buffering of large selections).
+    """
+    plan = fetcher.plan
+    run_id = uuid.uuid4().hex
+    chunk_paths = [
+        fetcher.partial_dir / f"selection-{run_id}-{index}.part"
+        for index, _ in enumerate(plan.selected_files)
+    ]
+    for path in chunk_paths:
+        ensure_plain_path(path)
+    temporary = fetcher.partial_dir / f"selection-{run_id}.part"
+    ensure_plain_path(temporary)
+    stop_event = threading.Event()
+    retained_total: list[int] = [0]
+    retained_lock = threading.Lock()
+
+    def _run_source(index_source: tuple[int, str]) -> dict[str, Any]:
+        index, source = index_source
+        return _select_one_source_to_chunk(
+            fetcher,
+            source,
+            chunk_paths[index],
+            selection_hash,
+            name,
+            stop_event,
+            retained_total,
+            retained_lock,
+        )
+
+    indexed = list(enumerate(plan.selected_files))
+    per_file: list[dict[str, Any]] | None = None
+    try:
+        with ThreadPoolExecutor(
+            max_workers=min(workers, len(plan.selected_files)),
+            thread_name_prefix="xlm-select",
+        ) as pool:
+            futures = [pool.submit(_run_source, item) for item in indexed]
+            try:
+                # Collect in plan order for deterministic failure reporting.
+                ordered = [future.result() for future in futures]
+            except BaseException:
+                stop_event.set()
+                for future in futures:
+                    future.cancel()
+                raise
+            per_file = ordered
+        assert per_file is not None
+        by_source = {entry["source"]: entry for entry in per_file}
+        total_size = sum(int(entry["size"]) for entry in per_file)
+        # Reserve the merged staging before copying: fail-closed if 2x temp exceeds bound.
+        merge_token = fetcher.capacity_mgr.reserve_disk_space(fetcher.scratch_dir, total_size)
+        digest, count, size = hashlib.sha256(), 0, 0
+        try:
+            with temporary.open("xb") as output:
+                for source in plan.selected_files:
+                    entry = by_source[source]
+                    chunk = Path(str(entry["path"]))
+                    with chunk.open("rb") as stream:
+                        while True:
+                            block = stream.read(65536)
+                            if not block:
+                                break
+                            with fetcher.perf.timed("serialize", file=source):
+                                output.write(block)
+                                output.flush()
+                            digest.update(block)
+                    count += int(entry["count"])
+                    size += int(entry["size"])
+                    if count > plan.limits.max_records:
+                        raise RecordLimitError("selected record limit exceeded")
+        except BaseException:
+            temporary.unlink(missing_ok=True)
+            fetcher.capacity_mgr.settle("temp", merge_token, 0)
+            raise
+        # Account the merged staging, then retire chunk files (bounded 2x peak).
+        fetcher.capacity_mgr.settle("temp", merge_token, total_size)
+        # Ensure merged staging is durable before publication.
+        with temporary.open("r+b") as durable:
+            durable.flush()
+            os.fsync(durable.fileno())
+        token = fetcher.capacity_mgr.reserve_disk_space(fetcher.output_dir, size, is_temp=False)
+        with fetcher.perf.timed("serialize", file=name):
+            AtomicFileWriter.atomic_complete(temporary, destination)
+        fetcher.capacity_mgr.settle("output", token, size)
+        with fetcher.perf.timed("accounting"):
+            fetcher.journal.mark_file_completed(
+                name, size, digest=digest.hexdigest(), records=count
+            )
+    finally:
+        for path in chunk_paths:
+            try:
+                path.unlink(missing_ok=True)
+            except OSError:
+                pass
+
+
 def acquire_selection(fetcher: BoundedFetcher) -> None:
     """Retry private selections with spent budgets intact; completed outputs are immutable."""
     plan = fetcher.plan
@@ -234,56 +469,12 @@ def acquire_selection(fetcher: BoundedFetcher) -> None:
         raise ProgressCorruptionError("completed selection missing; refusing repair")
     fetcher.partial_dir.mkdir(parents=True, exist_ok=True)
     # Exclusive fresh private attempt; earlier interrupted staging remains charged.
-    import uuid
-
-    temporary = fetcher.partial_dir / f"selection-{uuid.uuid4().hex}.part"
-    ensure_plain_path(temporary)
     fetcher.capacity_mgr.reconcile_disk("temp", fetcher.partial_dir)
     fetcher.capacity_mgr.reconcile_disk("output", fetcher.output_dir)
-    digest, count, size = hashlib.sha256(), 0, 0
-    with temporary.open("xb") as output:
-        for source in plan.selected_files:
-            start, stop = plan.row_ranges[source]
-            with fetcher.perf.file_worker(source):
-                iterator = (
-                    _jsonl_selection(fetcher, source, start, stop)
-                    if source.endswith(".jsonl")
-                    else _parquet_selection(fetcher, source, start, stop)
-                )
-                for record, raw, locator in iterator:
-                    with fetcher.perf.timed("serialize", file=source):
-                        payload = selected_record(
-                            record,
-                            {
-                                **locator,
-                                "source_id": plan.source_id,
-                                "repository": plan.repository,
-                                "revision": plan.revision,
-                                "source_file": source,
-                                "selection_hash": plan.compute_behavioral_hash(),
-                            },
-                            raw,
-                        )
-                    if len(payload) > plan.limits.max_record_bytes + 8192:
-                        raise RecordLimitError(
-                            "selected record plus locator exceeds bounded serialization"
-                        )
-                    token = fetcher.capacity_mgr.reserve_disk_space(
-                        fetcher.scratch_dir, len(payload)
-                    )
-                    with fetcher.perf.timed("serialize", file=source):
-                        output.write(payload)
-                        output.flush()
-                        os.fsync(output.fileno())
-                    fetcher.capacity_mgr.settle("temp", token, len(payload))
-                    fetcher.perf.record_file_bytes(name, len(payload))
-                    digest.update(payload)
-                    count, size = count + 1, size + len(payload)
-                    if count > plan.limits.max_records:
-                        raise RecordLimitError("selected record limit exceeded")
-    token = fetcher.capacity_mgr.reserve_disk_space(fetcher.output_dir, size, is_temp=False)
-    with fetcher.perf.timed("serialize", file=name):
-        AtomicFileWriter.atomic_complete(temporary, destination)
-    fetcher.capacity_mgr.settle("output", token, size)
-    with fetcher.perf.timed("accounting"):
-        fetcher.journal.mark_file_completed(name, size, digest=digest.hexdigest(), records=count)
+    # Worker-independent locator identity: max_workers must not change bytes.
+    selection_hash = plan.compute_selection_hash()
+    workers = max(1, min(plan.limits.max_workers, len(plan.selected_files)))
+    if workers <= 1:
+        _acquire_selection_serial(fetcher, destination, name, selection_hash)
+    else:
+        _acquire_selection_parallel(fetcher, destination, name, selection_hash, workers)
