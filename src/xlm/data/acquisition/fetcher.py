@@ -35,12 +35,29 @@ from xlm.data.acquisition.progress import AcquisitionState, ProgressCorruptionEr
 from xlm.data.acquisition.records import RecordLimitError, inspect_records
 from xlm.data.sources.transport import (
     BudgetExhaustedError,
+    PooledRangeClient,
+    RedirectTargetCache,
     SafeRedirectHandler,
     TransportBudget,
+    _PoolFallbackRequired,
     validate_host,
 )
 
 CONTENT_RANGE_RE = re.compile(r"^bytes (\d+)-(\d+)/(\d+)$")
+
+#: Pooled direct statuses that invalidate a cached redirect target and
+#: re-resolve canonically inside existing retry budgets. Never logged with
+#: URLs: the surfaced error carries file plus status only.
+_CACHED_TARGET_EXPIRY_CODES: frozenset[int] = frozenset([400, 401, 403, 404, 410])
+_CACHED_TARGET_REDIRECT_CODES: frozenset[int] = frozenset([301, 302, 303, 307, 308])
+
+
+class _CachedTargetExpiredError(OSError):
+    """Internal: cached redirect target expired; retry canonically.
+
+    Carries file plus status only — never the signed target URL — so journal
+    error reasons cannot persist query signatures or tokens.
+    """
 
 
 class AcquisitionLockHeldError(RuntimeError):
@@ -105,6 +122,9 @@ class BoundedFetcher:
         scratch_dir: Path,
         output_dir: Path,
         catalog_source_approved: bool = False,
+        *,
+        enable_redirect_cache: bool = True,
+        enable_connection_pool: bool = True,
     ) -> None:
         validate_plan_authorization(plan, catalog_source_approved)
         for path in (scratch_dir, output_dir):
@@ -149,6 +169,25 @@ class BoundedFetcher:
         self.opener = urllib.request.build_opener(
             SafeRedirectHandler(self.budget, observer=self.perf)
         )
+        # Transport optimizations (execution-only toggles, never plan identity):
+        # redirect-target reuse skips repeated repository resolutions; the pooled
+        # keep-alive client reuses CDN connections for cached-target Range GETs.
+        # Both are independently measurable via telemetry and disableable in tests.
+        self.enable_redirect_cache = enable_redirect_cache
+        self.enable_connection_pool = enable_connection_pool
+        self.redirect_cache = RedirectTargetCache(max_entries=256)
+        self.pooled: PooledRangeClient | None = (
+            PooledRangeClient(observer=self.perf) if enable_connection_pool else None
+        )
+
+    def close(self) -> None:
+        """Release pooled keep-alive connections; idempotent and exception-safe."""
+        pooled, self.pooled = self.pooled, None
+        if pooled is not None:
+            try:
+                pooled.close()
+            except Exception:
+                pass
 
     def _resolve_url(self, rel_path: str) -> str:
         path = urllib.parse.quote(rel_path, safe="/")
@@ -166,23 +205,86 @@ class BoundedFetcher:
     def _check_deadline(self) -> None:
         self.capacity_mgr.check_deadline()
 
+    def _cache_key(self, rel_path: str) -> tuple[str, str, str, str]:
+        return (self.plan.provider, self.plan.repository, self.plan.revision, rel_path)
+
+    def _base_headers(self, headers: dict[str, str]) -> dict[str, str]:
+        return {
+            "User-Agent": "xlm-acquisition/2",
+            "Accept-Encoding": "identity",
+            **headers,
+        }
+
+    def _count_error_body(self, error: urllib.error.HTTPError) -> None:
+        """Charge one bounded error body without leaking its URL upstream."""
+        try:
+            with error:
+                self.budget.read_body(error, self.plan.limits.max_transferred_bytes, retain=False)
+        except BudgetExhaustedError:
+            raise
+        except Exception:
+            pass
+
+    def _open_direct(self, target: str, headers: dict[str, str], timeout: float) -> Any:
+        """GET an already-validated cached target; never follows redirects here."""
+        pooled = self.pooled
+        if pooled is not None:
+            try:
+                return pooled.request_direct(target, self._base_headers(headers), timeout)
+            except _PoolFallbackRequired:
+                pass
+        request = urllib.request.Request(target, headers=self._base_headers(headers))
+        return self.opener.open(request, timeout=timeout)
+
     def _open(self, rel_path: str, headers: dict[str, str], *, category: str | None = None) -> Any:
         url = self._resolve_url(rel_path)
         validate_host(url)
         self.budget.record_request()
-        host = (urllib.parse.urlparse(url).hostname or "").lower()
         resolved_category = category or ("range" if "Range" in headers else "open")
+        timeout = self.plan.limits.per_request_timeout_seconds
+        key = self._cache_key(rel_path)
+        target = self.redirect_cache.get(key) if self.enable_redirect_cache else None
+        if target is not None:
+            # Revalidate with the same trust rules as ordinary redirects.
+            validate_host(target)
+            host = (urllib.parse.urlparse(target).hostname or "").lower()
+            self.perf.record_request(host=host, file=rel_path)
+            self.perf.record_redirect_cache_hit()
+            with self.perf.timed("open", host=host, file=rel_path, label=resolved_category):
+                try:
+                    response = self._open_direct(target, headers, timeout)
+                except urllib.error.HTTPError as exc:
+                    if exc.code in _CACHED_TARGET_EXPIRY_CODES or (
+                        exc.code in _CACHED_TARGET_REDIRECT_CODES
+                    ):
+                        self._count_error_body(exc)
+                        if self.redirect_cache.invalidate(key):
+                            self.perf.record_redirect_cache_invalidation()
+                        raise _CachedTargetExpiredError(
+                            f"cached redirect target refused for {rel_path}: HTTP {exc.code}"
+                        ) from exc
+                    raise
+            final = getattr(response, "geturl", lambda: target)()
+            if final != target:
+                # Provider moved the destination: revalidate, swap, keep going.
+                validate_host(final)
+                self.redirect_cache.invalidate(key)
+                self.redirect_cache.put(key, final)
+                self.perf.record_redirect_cache_invalidation()
+            return response
+        host = (urllib.parse.urlparse(url).hostname or "").lower()
         self.perf.record_request(host=host, file=rel_path)
+        if self.enable_redirect_cache:
+            self.perf.record_redirect_cache_miss()
         with self.perf.timed("open", host=host, file=rel_path, label=resolved_category):
-            request = urllib.request.Request(
-                url,
-                headers={
-                    "User-Agent": "xlm-acquisition/2",
-                    "Accept-Encoding": "identity",
-                    **headers,
-                },
-            )
-            return self.opener.open(request, timeout=self.plan.limits.per_request_timeout_seconds)
+            request = urllib.request.Request(url, headers=self._base_headers(headers))
+            response = self.opener.open(request, timeout=timeout)
+        if self.enable_redirect_cache:
+            final = getattr(response, "geturl", lambda: url)()
+            if final != url:
+                validate_host(final)
+                self.redirect_cache.put(key, final)
+        return response
 
     def _retry_error(self, error: BaseException, attempt: int) -> None:
         delay = min(0.1 * 2**attempt, 2.0)
@@ -515,5 +617,9 @@ class BoundedFetcher:
                     except Exception:
                         pass
                 self.perf.write_sidecar(self.scratch_dir, self.plan.plan_id, doc)
+            except Exception:
+                pass
+            try:
+                self.close()
             except Exception:
                 pass

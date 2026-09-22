@@ -24,10 +24,15 @@ Bytes throughout mean application response-body bytes (the existing
 provider billing can be derived from these numbers.
 
 Request semantics: ``logical_requests`` counts attempted request opens
-(``record_request``); ``redirect_requests`` counts followed redirects;
-``accounted_network_requests`` (``logical + redirect``) reconciles with the
-journal/status ``requests_made``, which charges both. Do not read
-``logical_requests`` alone as the budget charge.
+(``record_request``); ``redirect_requests`` counts redirects actually
+followed; ``accounted_network_requests`` (``logical + redirect``) reconciles
+with the journal/status ``requests_made``, which charges both. Do not read
+``logical_requests`` alone as the budget charge. With redirect-target reuse,
+repeated ranges hit ``redirect_target_cache_hits`` (direct, no hop) while
+``redirect_target_cache_misses`` count canonical resolutions and
+``redirect_target_invalidations`` count expiry-triggered re-resolutions;
+``connection_reuses``/``connection_creations`` cover pooled cached-target
+Range GETs only.
 
 Timing semantics: ``parquet_decode``/``decode_seconds`` is inclusive
 Parquet row-group processing time (footer/metadata handling plus
@@ -126,6 +131,11 @@ class PerfTelemetry:
         self._lock = threading.Lock()
         self.requests = 0
         self.redirects = 0
+        self.redirect_cache_hits = 0
+        self.redirect_cache_misses = 0
+        self.redirect_cache_invalidations = 0
+        self.connection_reuses = 0
+        self.connection_creations = 0
         self.retries = 0
         self.retry_wait_seconds = 0.0
         self.open_seconds = 0.0
@@ -253,6 +263,31 @@ class PerfTelemetry:
             if safe_host:
                 self.by_host.setdefault(safe_host, {"requests": 0, "open_seconds": 0.0})
 
+    def record_redirect_cache_hit(self) -> None:
+        """Count one range operation served from a cached redirect target."""
+        with self._lock:
+            self.redirect_cache_hits += 1
+
+    def record_redirect_cache_miss(self) -> None:
+        """Count one canonical resolution performed with an empty cache entry."""
+        with self._lock:
+            self.redirect_cache_misses += 1
+
+    def record_redirect_cache_invalidation(self) -> None:
+        """Count one cached target discarded for expiry/auth/redirect semantics."""
+        with self._lock:
+            self.redirect_cache_invalidations += 1
+
+    def record_connection_reuse(self) -> None:
+        """Count one pooled keep-alive connection checkout (no new handshake)."""
+        with self._lock:
+            self.connection_reuses += 1
+
+    def record_connection_creation(self) -> None:
+        """Count one newly opened pooled connection (fresh TCP/TLS handshake)."""
+        with self._lock:
+            self.connection_creations += 1
+
     def record_retry(self, waited_seconds: float) -> None:
         """Count one scheduled re-attempt plus its bounded backoff wait."""
         with self._lock:
@@ -340,6 +375,11 @@ class PerfTelemetry:
                 "redirects": self.redirects,
                 "redirect_requests": self.redirects,
                 "accounted_network_requests": self.requests + self.redirects,
+                "redirect_target_cache_hits": self.redirect_cache_hits,
+                "redirect_target_cache_misses": self.redirect_cache_misses,
+                "redirect_target_invalidations": self.redirect_cache_invalidations,
+                "connection_reuses": self.connection_reuses,
+                "connection_creations": self.connection_creations,
                 "retries": self.retries,
                 "retry_wait_seconds": self.retry_wait_seconds,
                 "open_seconds": self.open_seconds,
@@ -442,6 +482,11 @@ class PerfTelemetry:
                 "logical_requests": counters["logical_requests"],
                 "redirect_requests": counters["redirect_requests"],
                 "accounted_network_requests": counters["accounted_network_requests"],
+                "redirect_target_cache_hits": counters["redirect_target_cache_hits"],
+                "redirect_target_cache_misses": counters["redirect_target_cache_misses"],
+                "redirect_target_invalidations": counters["redirect_target_invalidations"],
+                "connection_reuses": counters["connection_reuses"],
+                "connection_creations": counters["connection_creations"],
                 "journal_requests_made": journal_requests,
                 "reconciled": bool(counters["accounted_network_requests"] == journal_requests),
             },
@@ -452,6 +497,12 @@ class PerfTelemetry:
                 "requests=logical opens; redirects are followed hops; "
                 "accounted_network_requests=logical+redirect reconciles with "
                 "journal requests_made (budget charges both).",
+                "redirect_target_cache_hits served direct with no hop; misses "
+                "resolved canonically; invalidations re-resolved on expiry/auth.",
+                "connection_reuses/creations cover pooled cached-target Range "
+                "GETs only; canonical resolutions stay on the urllib opener.",
+                "Signed redirect targets live only in fetcher memory; never in "
+                "sidecars, journals, receipts, or logs.",
                 "parquet_decode is inclusive row-group processing time including "
                 "nested range I/O plus CPU decode, not CPU-only; compare to wall, "
                 "not to process CPU.",
@@ -623,6 +674,11 @@ def compare_perf_docs(docs: list[dict[str, Any]]) -> dict[str, Any]:
                 "redirect_requests": redirect,
                 "accounted_network_requests": accounted,
                 "journal_requests_made": doc.get("requests_made"),
+                "redirect_target_cache_hits": telemetry.get("redirect_target_cache_hits", 0),
+                "redirect_target_cache_misses": telemetry.get("redirect_target_cache_misses", 0),
+                "redirect_target_invalidations": telemetry.get("redirect_target_invalidations", 0),
+                "connection_reuses": telemetry.get("connection_reuses", 0),
+                "connection_creations": telemetry.get("connection_creations", 0),
                 "retries": telemetry.get("retries"),
                 "slowest_stage": doc.get("slowest_stage"),
             }

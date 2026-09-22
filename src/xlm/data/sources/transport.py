@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import hashlib
+import http.client
+import io
 import json
 import threading
 import time
@@ -280,6 +282,347 @@ class SafeRedirectHandler(urllib.request.HTTPRedirectHandler):
             self.budget.read_body(fp, self.budget.max_bytes, retain=False)
             self.budget.record_request()
         return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+#: HTTP statuses from a cached redirect target that mean the signed target
+#: expired or was revoked (not a transient). The caller must invalidate the
+#: cached entry and re-resolve through the canonical repository URL once,
+#: inside existing retry budgets. Never retried silently against the stale target.
+CACHED_TARGET_EXPIRY_STATUSES: frozenset[int] = frozenset([400, 401, 403, 404, 410])
+
+#: Redirect statuses a pooled direct request never follows itself. A 3xx from
+#: an already-resolved target means the provider changed destination: invalidate
+#: and re-resolve canonically rather than chasing unvalidated hops.
+CACHED_TARGET_REDIRECT_STATUSES: frozenset[int] = frozenset([301, 302, 303, 307, 308])
+
+#: Upper bound for an error body consumed from a pooled direct request before
+#: surfacing a redacted expiry error. Real auth errors are tiny; the cap keeps
+#: a malicious endpoint from forcing an unbounded read.
+_POOLED_ERROR_BODY_CAP = 65536
+
+
+class RedirectTargetCache:
+    """Process-local bounded reuse of resolved redirect targets.
+
+    Keyed by immutable selection identity
+    ``(provider, repository, revision, source file)`` — never by hostname
+    alone, so different files or revisions never cross-use targets.
+
+    Entries live only in memory on the owning fetcher (no artifact, telemetry,
+    log, journal, or receipt persistence — signed query strings never leave
+    this object). Every target is revalidated with :func:`validate_host`
+    before use, with the same HTTPS/allowlist/SSRF rules as ordinary
+    redirects. Stale entries are invalidated on expiry/auth/redirect
+    semantics and re-resolved canonically inside existing retry budgets.
+    """
+
+    def __init__(self, max_entries: int = 256) -> None:
+        self._max_entries = max(1, max_entries)
+        self._lock = threading.RLock()
+        self._targets: dict[tuple[str, str, str, str], str] = {}
+
+    def get(self, key: tuple[str, str, str, str]) -> str | None:
+        with self._lock:
+            target = self._targets.get(key)
+            if target is None:
+                return None
+            # LRU refresh without growth.
+            del self._targets[key]
+            self._targets[key] = target
+            return target
+
+    def put(self, key: tuple[str, str, str, str], target_url: str) -> None:
+        validate_host(target_url)
+        with self._lock:
+            if key in self._targets:
+                del self._targets[key]
+            elif len(self._targets) >= self._max_entries:
+                oldest = next(iter(self._targets))
+                del self._targets[oldest]
+            self._targets[key] = target_url
+
+    def invalidate(self, key: tuple[str, str, str, str]) -> bool:
+        with self._lock:
+            return self._targets.pop(key, None) is not None
+
+    def __len__(self) -> int:
+        with self._lock:
+            return len(self._targets)
+
+
+def _pool_bypassed_for_url(url: str) -> bool:
+    """True when a configured proxy would handle ``url`` (pool must not bypass it)."""
+    try:
+        proxies = urllib.request.getproxies()
+    except Exception:
+        return True
+    if not proxies:
+        return False
+    scheme = (urllib.parse.urlparse(url).scheme or "").lower()
+    proxy = proxies.get(scheme) or proxies.get("all")
+    if not proxy:
+        return False
+    host = (urllib.parse.urlparse(url).hostname or "").lower()
+    try:
+        return not urllib.request.proxy_bypass(host)
+    except Exception:
+        return True
+
+
+class _PoolFallbackRequired(RuntimeError):
+    """Internal: pooled direct attempt unavailable; use the urllib opener path."""
+
+
+class PooledRangeResponse:
+    """Response wrapper around one pooled ``http.client`` connection.
+
+    Exposes the narrow surface acquisition uses (``status``, ``headers``,
+    ``read``, ``geturl``, context manager). Returning the connection to the
+    pool happens only after a fully consumed successful body; partial reads,
+    errors, or ``Connection: close`` peers close the socket instead.
+    """
+
+    def __init__(
+        self,
+        *,
+        conn: http.client.HTTPConnection,
+        resp: http.client.HTTPResponse,
+        url: str,
+        pool: PooledRangeClient,
+        pool_key: tuple[str, str, int],
+        expected_length: int | None,
+    ) -> None:
+        self._conn = conn
+        self._resp = resp
+        self._url = url
+        self._pool = pool
+        self._pool_key = pool_key
+        self._expected = expected_length
+        self._read_bytes = 0
+        self._closed = False
+        self.status: int = resp.status
+        self.headers: Any = resp.headers
+        self.reason: str = resp.reason
+
+    def geturl(self) -> str:
+        return self._url
+
+    def read(self, amount: int = -1) -> bytes:
+        if self._closed:
+            return b""
+        if amount is not None and amount < 0:
+            # Callers always use bounded reads; refuse unbounded pooling reads.
+            raise ValueError("unbounded pooled read refused")
+        chunk = self._resp.read(amount)
+        self._read_bytes += len(chunk)
+        return chunk
+
+    def close(self) -> None:
+        if self._closed:
+            return
+        self._closed = True
+        complete = (
+            self._expected is not None and self._read_bytes >= self._expected and self.status < 400
+        )
+        try:
+            if complete and self._resp.getheader("Connection", "").lower() != "close":
+                self._pool._release(self._conn, self._pool_key)
+            else:
+                try:
+                    self._conn.close()
+                except Exception:
+                    pass
+        finally:
+            self._pool._forget_in_use(self._conn, self._pool_key)
+
+    def __enter__(self) -> PooledRangeResponse:
+        return self
+
+    def __exit__(self, *exc_info: Any) -> None:
+        self.close()
+
+
+class PooledRangeClient:
+    """Narrow stdlib connection reuse for cached-target direct Range GETs.
+
+    One client per fetcher; connections pooled per ``(scheme, host, port)``
+    with hard bounds and no cross-thread socket sharing (checkout is
+    exclusive; a worker holds its connection only for one request). Only
+    already-validated redirect targets are fetched here — canonical
+    repository resolution (with redirect validation) stays on the urllib
+    opener. Redirects are never followed inside the pool: a 3xx from a
+    cached target surfaces as an error so the caller invalidates.
+    """
+
+    def __init__(
+        self,
+        *,
+        max_per_host: int = 8,
+        max_total: int = 32,
+        observer: Any | None = None,
+    ) -> None:
+        self._max_per_host = max(1, max_per_host)
+        self._max_total = max(1, max_total)
+        self._observer = observer
+        self._lock = threading.Lock()
+        self._idle: dict[tuple[str, str, int], list[http.client.HTTPConnection]] = {}
+        self._in_use: set[int] = set()
+        self._per_host_in_use: dict[tuple[str, str, int], int] = {}
+        self._total = 0
+        self._closed = False
+
+    def _note(self, method: str) -> None:
+        observer = self._observer
+        if observer is None:
+            return
+        try:
+            getattr(observer, method)()
+        except Exception:
+            pass
+
+    def _forget_in_use(self, conn: http.client.HTTPConnection, key: tuple[str, str, int]) -> None:
+        with self._lock:
+            self._in_use.discard(id(conn))
+            self._per_host_in_use[key] = max(0, self._per_host_in_use.get(key, 1) - 1)
+
+    def _release(self, conn: http.client.HTTPConnection, key: tuple[str, str, int]) -> None:
+        with self._lock:
+            self._in_use.discard(id(conn))
+            self._per_host_in_use[key] = max(0, self._per_host_in_use.get(key, 1) - 1)
+            if self._closed:
+                try:
+                    conn.close()
+                except Exception:
+                    pass
+                self._total = max(0, self._total - 1)
+                return
+            idle = self._idle.setdefault(key, [])
+            if len(idle) >= self._max_per_host:
+                try:
+                    conn.close()
+                except Exception:
+                    pass
+                self._total = max(0, self._total - 1)
+                return
+            idle.append(conn)
+
+    def _drop(self, conn: http.client.HTTPConnection, key: tuple[str, str, int]) -> None:
+        """Forget one dead connection: uncheckout plus total adjustment."""
+        with self._lock:
+            self._in_use.discard(id(conn))
+            self._per_host_in_use[key] = max(0, self._per_host_in_use.get(key, 1) - 1)
+            self._total = max(0, self._total - 1)
+        try:
+            conn.close()
+        except Exception:
+            pass
+
+    def request_direct(
+        self, url: str, headers: dict[str, str], timeout: float
+    ) -> PooledRangeResponse:
+        """GET ``url`` over a reused connection; never follows redirects."""
+        validate_host(url)
+        if _pool_bypassed_for_url(url):
+            raise _PoolFallbackRequired("proxy configured; use opener path")
+        parsed = urllib.parse.urlparse(url)
+        if parsed.username or parsed.password:
+            raise _PoolFallbackRequired("credentials in URL; use opener path")
+        scheme = (parsed.scheme or "").lower()
+        host = (parsed.hostname or "").lower()
+        if scheme not in ("https", "http"):
+            raise _PoolFallbackRequired("unsupported scheme; use opener path")
+        if scheme == "http" and host not in ("127.0.0.1", "localhost"):
+            raise _PoolFallbackRequired("cleartext non-loopback; use opener path")
+        port = parsed.port or (443 if scheme == "https" else 80)
+        key = (scheme, host, port)
+        selector = parsed.path or "/"
+        if parsed.query:
+            selector += "?" + parsed.query
+        conn: http.client.HTTPConnection | None = None
+        with self._lock:
+            if self._closed:
+                raise _PoolFallbackRequired("pool closed; use opener path")
+            idle = self._idle.get(key, [])
+            if idle:
+                conn = idle.pop()
+                self._in_use.add(id(conn))
+                self._per_host_in_use[key] = self._per_host_in_use.get(key, 0) + 1
+        if conn is not None:
+            self._note("record_connection_reuse")
+        else:
+            with self._lock:
+                if self._total >= self._max_total:
+                    raise _PoolFallbackRequired("pool saturated; use opener path")
+                if (
+                    self._per_host_in_use.get(key, 0) + len(self._idle.get(key, []))
+                    >= self._max_per_host
+                ):
+                    raise _PoolFallbackRequired("per-host pool full; use opener path")
+                self._total += 1
+            try:
+                conn = (
+                    http.client.HTTPSConnection(host, port, timeout=timeout)
+                    if scheme == "https"
+                    else http.client.HTTPConnection(host, port, timeout=timeout)
+                )
+            except Exception:
+                with self._lock:
+                    self._total = max(0, self._total - 1)
+                raise
+            with self._lock:
+                self._in_use.add(id(conn))
+                self._per_host_in_use[key] = self._per_host_in_use.get(key, 0) + 1
+            self._note("record_connection_creation")
+        assert conn is not None
+        send_headers = dict(headers)
+        send_headers.setdefault("Connection", "keep-alive")
+        try:
+            conn.request("GET", selector, headers=send_headers)
+            resp = conn.getresponse()
+        except Exception:
+            self._drop(conn, key)
+            raise
+        if resp.status in CACHED_TARGET_REDIRECT_STATUSES or (
+            resp.status in CACHED_TARGET_EXPIRY_STATUSES and resp.status != 200
+        ):
+            body = resp.read(_POOLED_ERROR_BODY_CAP + 1)
+            self._drop(conn, key)
+            raise urllib.error.HTTPError(
+                url, resp.status, resp.reason, resp.headers, io.BytesIO(body)
+            )
+        if resp.status >= 400:
+            body = resp.read(_POOLED_ERROR_BODY_CAP + 1)
+            self._drop(conn, key)
+            raise urllib.error.HTTPError(
+                url, resp.status, resp.reason, resp.headers, io.BytesIO(body)
+            )
+        length_header = resp.getheader("Content-Length")
+        try:
+            expected = int(length_header) if length_header is not None else None
+        except ValueError:
+            expected = None
+        if expected is not None and expected < 0:
+            self._drop(conn, key)
+            raise ValueError("negative response length")
+        return PooledRangeResponse(
+            conn=conn, resp=resp, url=url, pool=self, pool_key=key, expected_length=expected
+        )
+
+    def close(self) -> None:
+        with self._lock:
+            if self._closed:
+                return
+            self._closed = True
+            idle = self._idle
+            self._idle = {}
+            dropped = sum(len(conns) for conns in idle.values())
+            self._total = max(0, self._total - dropped)
+        for conns in idle.values():
+            for conn in conns:
+                try:
+                    conn.close()
+                except Exception:
+                    pass
 
 
 class HuggingFaceTransport:

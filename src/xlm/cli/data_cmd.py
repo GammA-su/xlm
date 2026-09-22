@@ -1141,6 +1141,14 @@ def _print_perf_summary(doc: dict[str, Any]) -> None:
         f"{telemetry.get('accounted_network_requests', telemetry.get('requests'))} "
         f"(journal requests_made {doc.get('requests_made')})"
     )
+    typer.echo(
+        f"Redirect-target cache: hits {telemetry.get('redirect_target_cache_hits', 0)} "
+        f"misses {telemetry.get('redirect_target_cache_misses', 0)} "
+        f"invalidations {telemetry.get('redirect_target_invalidations', 0)}  "
+        f"Connections (pooled direct only): reuses "
+        f"{telemetry.get('connection_reuses', 0)} creations "
+        f"{telemetry.get('connection_creations', 0)}"
+    )
     typer.echo("Where did the time go (share of wall)?")
     for key in (
         "request_open",
