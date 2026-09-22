@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from xlm.core.contracts import CanonicalDocument
+from xlm.data.adapters.source_ids import canonical_source_doc_id
 from xlm.data.normalization import canonical_normalize, compute_sha256, decode_utf8_strict
 
 DEFAULT_MAX_RECORD_BYTES = 50 * 1024 * 1024  # 50 MB bound per record
@@ -102,8 +103,10 @@ class JsonlAdapter:
         # Validate doc ID
         doc_id_val = record.get(self.id_field)
         if doc_id_val is None:
-            # If id not present in json, create deterministic row locator
-            doc_id = f"{self.source_id}_{Path(source_file).stem}_{source_row}"
+            # No trustworthy upstream ID: fall back to the centralized file-row
+            # convention over the available source-file spelling. Upstream IDs
+            # are preferred whenever present and pass through untouched below.
+            doc_id = canonical_source_doc_id(self.source_id, source_file, source_row)
         elif isinstance(doc_id_val, str | int):
             doc_id = str(doc_id_val)
         else:

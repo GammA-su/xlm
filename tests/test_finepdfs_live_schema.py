@@ -26,6 +26,7 @@ from xlm.data.adapters.mix01_adapters import (
     MissingFieldError,
     RecordRejectedError,
 )
+from xlm.data.adapters.source_ids import canonical_source_doc_id
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -70,7 +71,7 @@ def test_valid_docling_row_accepted_with_live_contract() -> None:
     assert doc.language == "en"
     assert doc.source_id == "finepdfs_edu"
     assert doc.license_reference == "odc-by"
-    assert doc.doc_id == "finepdfs:000_00083:0"
+    assert doc.doc_id == canonical_source_doc_id("finepdfs", FINEPDFS_FILE, 0)
     assert doc.source_revision == FINEPDFS_REVISION
     assert doc.source_file == FINEPDFS_FILE
     assert doc.source_row == 0
@@ -255,11 +256,11 @@ def test_malformed_optionals_refused() -> None:
 
 
 def test_doc_id_unique_across_files_for_same_row() -> None:
-    """Acquisition row_index is file-local: the file stem disambiguates."""
+    """Acquisition row_index is file-local: the file key disambiguates."""
     first = adapt(live_row(), source_file=FINEPDFS_FILE, source_row=0)
     second = adapt(live_row(), source_file=FINEPDFS_FILE_2, source_row=0)
-    assert first.doc_id == "finepdfs:000_00083:0"
-    assert second.doc_id == "finepdfs:000_00084:0"
+    assert first.doc_id == canonical_source_doc_id("finepdfs", FINEPDFS_FILE, 0)
+    assert second.doc_id == canonical_source_doc_id("finepdfs", FINEPDFS_FILE_2, 0)
     assert first.doc_id != second.doc_id
 
 
@@ -379,7 +380,7 @@ def test_data_adapt_docling_row_to_canonical(tmp_path: Path) -> None:
         if line.strip()
     ]
     assert len(docs) == 2
-    assert docs[0]["doc_id"] == "finepdfs:000_00083:0"
+    assert docs[0]["doc_id"] == canonical_source_doc_id("finepdfs", FINEPDFS_FILE, 0)
     assert docs[0]["text"] == live_row()["text"]
     assert docs[0]["language"] == "en"
     assert docs[0]["source_id"] == "finepdfs_edu"
@@ -388,7 +389,7 @@ def test_data_adapt_docling_row_to_canonical(tmp_path: Path) -> None:
     assert docs[0]["source_row"] == 0
     assert docs[0]["source_metadata"]["extractor"] == "docling"
     assert "ocr_fallback" not in docs[0]["source_metadata"]
-    assert docs[1]["doc_id"] == "finepdfs:000_00083:1"
+    assert docs[1]["doc_id"] == canonical_source_doc_id("finepdfs", FINEPDFS_FILE, 1)
     out_dir2 = tmp_path / "canonical2"
     _run_adapt(
         tmp_path / "home",

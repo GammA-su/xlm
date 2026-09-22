@@ -16,10 +16,10 @@ registry's ``live_verified=False`` status until a real pilot tests them.
 from __future__ import annotations
 
 from collections.abc import Mapping
-from pathlib import Path
 from typing import Any
 
 from xlm.core.contracts import CanonicalDocument
+from xlm.data.adapters.source_ids import canonical_source_doc_id
 from xlm.data.normalization import compute_sha256
 from xlm.data.sources.schema import RowExtractorContract
 
@@ -200,7 +200,7 @@ class EssentialWebAdapter:
                 f"known taxonomies: {sorted(ESSENTIAL_TAXONOMY_COMPONENTS)}."
             )
         return _canonical_doc(
-            doc_id=f"essential_web:{source_row}",
+            doc_id=canonical_source_doc_id("essential_web", source_file, source_row),
             source_id="essential_web",
             source_revision=source_revision,
             source_file=source_file,
@@ -267,7 +267,9 @@ class NemotronOrganicAdapter:
                 f"row carries category '{category}'."
             )
         return _canonical_doc(
-            doc_id=f"nemotron_cc21:{self.config_name}:{source_row}",
+            doc_id=canonical_source_doc_id(
+                f"nemotron_cc21:{self.config_name}", source_file, source_row
+            ),
             source_id="nemotron_cc21",
             source_revision=source_revision,
             source_file=source_file,
@@ -326,7 +328,7 @@ class SynthExplanationsAdapter:
             f"\nExplanation: {explanation.strip()}"
         )
         return _canonical_doc(
-            doc_id=f"synth:{source_row}",
+            doc_id=canonical_source_doc_id("synth", source_file, source_row),
             source_id="synth",
             source_revision=source_revision,
             source_file=source_file,
@@ -366,7 +368,7 @@ class WikiRewriteAdapter:
     ) -> CanonicalDocument:
         text = str(_require(record, "text", self.ADAPTER_ID))
         return _canonical_doc(
-            doc_id=f"wiki_rewrite:{source_row}",
+            doc_id=canonical_source_doc_id("wiki_rewrite", source_file, source_row),
             source_id="nemotron_specialized",
             source_revision=source_revision,
             source_file=source_file,
@@ -423,7 +425,7 @@ class FineWikiAdapter:
         else:
             rendered = f"{stripped_title}\n\n{stripped_text}"
         return _canonical_doc(
-            doc_id=f"finewiki:{source_row}",
+            doc_id=canonical_source_doc_id("finewiki", source_file, source_row),
             source_id="finewiki",
             source_revision=source_revision,
             source_file=source_file,
@@ -532,11 +534,13 @@ class FinePdfsAdapter:
     ``token_count`` is declared upstream metadata only and never replaces
     XLM's own tokenizer accounting.
 
-    Document identity incorporates the source file stem
-    (``finepdfs:{stem}:{row}``): acquisition ``row_index`` locators are
-    file-local, so a bare row number would collide across the many Parquet
-    shards. The file stem is the upstream shard identity from the plan
-    locator, so IDs stay deterministic across reruns.
+    Document identity follows the centralized file-row convention
+    (``finepdfs:v1:<file-key>:<row>`` via ``canonical_source_doc_id``):
+    acquisition ``row_index`` locators are file-local, so a bare row number
+    would collide across the many Parquet shards, and a bare file stem would
+    collide across directories holding same-named shards. The file key is a
+    stable digest of the full upstream relative path, so IDs stay
+    deterministic across reruns.
     """
 
     ADAPTER_ID = "finepdfs_en"
@@ -603,7 +607,7 @@ class FinePdfsAdapter:
                 source_metadata[metadata_key] = scalar
 
         return _canonical_doc(
-            doc_id=f"finepdfs:{Path(source_file).stem}:{source_row}",
+            doc_id=canonical_source_doc_id("finepdfs", source_file, source_row),
             source_id="finepdfs_edu",
             source_revision=source_revision,
             source_file=source_file,
@@ -653,7 +657,7 @@ class IfmGeneralAdapter:
     ) -> CanonicalDocument:
         text, token_count = _ifm_text_and_token_count(record, self.ADAPTER_ID)
         return _canonical_doc(
-            doc_id=f"ifm_behaviors:general:{source_row}",
+            doc_id=canonical_source_doc_id("ifm_behaviors:general", source_file, source_row),
             source_id="ifm_behaviors",
             source_revision=source_revision,
             source_file=source_file,
@@ -701,7 +705,7 @@ class IfmPlanningAdapter:
     ) -> CanonicalDocument:
         text, token_count = _ifm_text_and_token_count(record, self.ADAPTER_ID)
         return _canonical_doc(
-            doc_id=f"ifm_behaviors:planning:{source_row}",
+            doc_id=canonical_source_doc_id("ifm_behaviors:planning", source_file, source_row),
             source_id="ifm_behaviors",
             source_revision=source_revision,
             source_file=source_file,
@@ -737,7 +741,7 @@ class CommonPileAdapter:
     ) -> CanonicalDocument:
         text = str(_require(record, "text", self.ADAPTER_ID))
         return _canonical_doc(
-            doc_id=f"common_pile:{source_row}",
+            doc_id=canonical_source_doc_id("common_pile", source_file, source_row),
             source_id="common_pile",
             source_revision=source_revision,
             source_file=source_file,
@@ -772,7 +776,7 @@ class SimpleStoriesAdapter:
     ) -> CanonicalDocument:
         story = str(_require(record, "story", self.ADAPTER_ID))
         return _canonical_doc(
-            doc_id=f"simple_stories:{source_row}",
+            doc_id=canonical_source_doc_id("simple_stories", source_file, source_row),
             source_id="simple_stories",
             source_revision=source_revision,
             source_file=source_file,
@@ -814,7 +818,7 @@ class Txt360WebAdapter:
                 f"row carries band '{band}'."
             )
         return _canonical_doc(
-            doc_id=f"txt360:{source_row}",
+            doc_id=canonical_source_doc_id("txt360", source_file, source_row),
             source_id="txt360_v2",
             source_revision=source_revision,
             source_file=source_file,

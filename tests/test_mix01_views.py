@@ -36,6 +36,7 @@ from xlm.data.adapters.mix01_adapters import (
     Txt360WebAdapter,
     WikiRewriteAdapter,
 )
+from xlm.data.adapters.source_ids import canonical_source_doc_id
 from xlm.data.pools.views import SourceView, ViewSelector, resolve_view_membership
 from xlm.data.sources.mix01 import (
     ComponentReadiness,
@@ -420,7 +421,7 @@ def test_ifm_subset_adapters_are_independent() -> None:
     # subset, doc_id, and adapter-bound lineage. Malformed rows stay rejected.
     cross = planning.adapt(general_rows[0], source_file="f", source_row=0, source_revision="r")
     assert cross.source_metadata["subset"] == "planning"
-    assert cross.doc_id == "ifm_behaviors:planning:0"
+    assert cross.doc_id == canonical_source_doc_id("ifm_behaviors:planning", "f", 0)
     with pytest.raises(MissingFieldError, match="'text'"):
         general.adapt(general_rows[1], source_file="f", source_row=1, source_revision="r")
     with pytest.raises(MissingFieldError, match="'text'"):
@@ -444,7 +445,7 @@ def test_ifm_planning_live_schema() -> None:
     assert doc.source_metadata["upstream_token_count"] == 21
     assert doc.source_id == "ifm_behaviors"
     assert doc.license_reference == "apache-2.0"
-    assert doc.doc_id == "ifm_behaviors:planning:0"
+    assert doc.doc_id == canonical_source_doc_id("ifm_behaviors:planning", "f", 0)
 
     with pytest.raises(MissingFieldError, match="'text'"):
         planning.adapt(rows[1], source_file="f", source_row=1, source_revision="r")
@@ -501,7 +502,7 @@ def test_ifm_general_live_schema() -> None:
     assert doc.source_metadata["upstream_token_count"] == 14
     assert doc.source_id == "ifm_behaviors"
     assert doc.license_reference == "apache-2.0"
-    assert doc.doc_id == "ifm_behaviors:general:0"
+    assert doc.doc_id == canonical_source_doc_id("ifm_behaviors:general", "f", 0)
 
     # Missing and empty text are refused, never defaulted.
     with pytest.raises(MissingFieldError, match="'text'"):
@@ -1124,7 +1125,9 @@ def test_data_adapt_ifm_planning_live_shape(tmp_path: Path) -> None:
     assert "Goal:" not in docs[0]["text"]
     assert docs[0]["source_metadata"]["upstream_token_count"] == 11
     assert docs[0]["source_metadata"]["subset"] == "planning"
-    assert docs[0]["doc_id"] == "ifm_behaviors:planning:0"
+    assert docs[0]["doc_id"] == canonical_source_doc_id(
+        "ifm_behaviors:planning", IFM_PLANNING_FILE, 0
+    )
     assert docs[0]["language"] == "en"
     assert docs[0]["source_revision"] == IFM_PLANNING_REVISION
     assert docs[0]["source_file"] == IFM_PLANNING_FILE
