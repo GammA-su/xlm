@@ -397,7 +397,7 @@ def test_selected_records_have_exact_original_locators(
     assert [record["_xlm_acquisition"]["row_index"] for record in records] == list(range(*interval))
     assert all(record["_xlm_acquisition"]["source_file"] == name for record in records)
     assert all(
-        record["_xlm_acquisition"]["selection_hash"] == plan.compute_behavioral_hash()
+        record["_xlm_acquisition"]["selection_hash"] == plan.compute_selection_hash()
         for record in records
     )
     assert state.records_acquired == len(texts) and not (tmp_path / "out" / name).exists()

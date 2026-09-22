@@ -188,16 +188,57 @@ class AcquisitionPlan(BaseModel):
         return hashlib.sha256(canonical_json.encode("utf-8")).hexdigest()
 
     def compute_selection_hash(self) -> str:
-        """Stable selected-record identity independent of file-worker concurrency.
+        """Logical upstream selection identity for ``selected_records.jsonl`` bytes.
 
-        Normalizes ``max_workers`` to 1 so ``max_workers=1/2/4`` produce
-        byte-identical ``selected_records.jsonl`` for identical source data,
-        files, row ranges, revision, and remaining limits. All other
-        behavioral fields (including ``attempt`` and remaining limits) still
-        bind identity. Journals, receipts, and authorizations keep using
-        :meth:`compute_behavioral_hash`; only the per-record
-        ``selection_hash`` locator uses this.
+        Contract (deterministic-output semantics only):
+        Included (logical selection):
+        - ``schema_version``, ``source_id``, ``view_id``, ``provider``,
+          ``repository``, immutable ``revision``, ``mode``
+        - ``selected_files`` in plan order (output concatenation order),
+          ``row_ranges``, ``sampling_frame`` (seed/method), ``expected_bytes``,
+          ``expected_file_digests``, ``admitted_source_reference``, ``is_pilot``
+        - resource ``limits`` with ``max_workers`` normalized to 1 (concurrency
+          must not change bytes; other bounds stay bound and fail-closed)
+        Excluded (execution identity, never changes bytes):
+        - ``attempt`` number, ``plan_id``/``plan_hash``, ``authorization``
+          (hash/timestamp), ``output_artifact_id`` (derived output naming),
+          runtime deadlines, observational telemetry.
+        Execution identity stays in :meth:`compute_behavioral_hash`,
+        journals, receipts, and authorizations; only the per-record
+        ``selection_hash`` locator uses this. Attempt renewal therefore keeps
+        an independently auditable execution identity while producing
+        byte-identical selection bytes for identical logical selection.
         """
+
+        limits = self.limits.model_copy(update={"max_workers": 1}).model_dump()
+        logical_dict: dict[str, Any] = {
+            "schema_version": self.schema_version,
+            "source_id": self.source_id,
+            "view_id": self.view_id,
+            "provider": self.provider,
+            "repository": self.repository,
+            "revision": self.revision,
+            "mode": self.mode.value,
+            "selected_files": list(self.selected_files),
+            "row_ranges": self.row_ranges,
+            "sampling_frame": self.sampling_frame.model_dump(),
+            "expected_bytes": self.expected_bytes,
+            "expected_file_digests": dict(sorted(self.expected_file_digests.items())),
+            "limits": limits,
+            "admitted_source_reference": self.admitted_source_reference,
+            "is_pilot": self.is_pilot,
+        }
+        canonical_json = json.dumps(logical_dict, sort_keys=True, separators=(",", ":"))
+        return hashlib.sha256(canonical_json.encode("utf-8")).hexdigest()
+
+    def compute_legacy_worker_normalized_hash(self) -> str:
+        """Intermediate post-fix hash (workers→1, attempt still bound).
+
+        Preserved only to verify acquisitions already written with the
+        first concurrency fix (e.g. FinePDF attempts 13/14) where ``attempt``
+        was still included. New acquisitions use :meth:`compute_selection_hash`.
+        """
+
         normalized = self.model_copy(
             update={"limits": self.limits.model_copy(update={"max_workers": 1})}
         )

@@ -149,11 +149,15 @@ class AcquisitionVerifier:
         )
         if expected_count > self.plan.limits.max_records:
             raise VerificationError("selected record limit exceeded")
-        # Worker-independent locator (new) plus legacy behavioral hash (old
-        # single-worker artifacts) both verify; new acquisitions always write
-        # the worker-independent hash so max_workers never changes bytes.
+        # Logical selection (new) plus two historical forms, all read-only:
+        # - behavioral: pre-concurrency acquisitions (attempt 1, workers 1)
+        # - legacy worker-normalized: first concurrency fix (workers→1, attempt bound,
+        #   e.g. FinePDF attempts 13/14 already acquired)
+        # New acquisitions always write the logical hash so attempt/workers
+        # never change bytes; old raw artifacts keep verifying.
         accepted_hashes = {
             self.plan.compute_selection_hash(),
+            self.plan.compute_legacy_worker_normalized_hash(),
             self.plan.compute_behavioral_hash(),
         }
         count = 0

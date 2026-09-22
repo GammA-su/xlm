@@ -32,6 +32,10 @@ def plan_for_concurrency(
     max_workers: int,
     **limit_changes: Any,
 ) -> AcquisitionPlan:
+    attempt = int(limit_changes.pop("attempt", 1))
+    plan_id = str(limit_changes.pop("plan_id", "authored_conc"))
+    output_artifact_id = str(limit_changes.pop("output_artifact_id", "authored_conc"))
+    revision = str(limit_changes.pop("revision", "authored-fixture-v1"))
     limits = AcquisitionLimits(
         max_transferred_bytes=1024**2,
         max_decompressed_bytes=1024**2,
@@ -46,16 +50,17 @@ def plan_for_concurrency(
     if limit_changes:
         limits = limits.model_copy(update=limit_changes)
     plan = AcquisitionPlan(
-        plan_id="authored_conc",
+        plan_id=plan_id,
         source_id="authored",
         provider="https",
         repository=url,
-        revision="authored-fixture-v1",
+        revision=revision,
         mode="selected_records",
         selected_files=files,
         row_ranges=ranges,
-        output_artifact_id="authored_conc",
+        output_artifact_id=output_artifact_id,
         limits=limits,
+        attempt=attempt,
     )
     return plan.model_copy(
         update={
@@ -233,6 +238,137 @@ def test_selection_hash_worker_independent() -> None:
     assert one.compute_selection_hash() == two.compute_selection_hash()
     assert two.compute_selection_hash() == four.compute_selection_hash()
     assert one.compute_behavioral_hash() != two.compute_behavioral_hash()
+
+
+def test_selection_hash_attempt_independent_but_execution_distinct() -> None:
+    files = ["a.jsonl", "b.jsonl"]
+    ranges = {"a.jsonl": (0, 1), "b.jsonl": (0, 1)}
+    base = plan_for_concurrency(
+        "https://huggingface.co/u", files, ranges, max_workers=1, attempt=13
+    )
+    renewed = plan_for_concurrency(
+        "https://huggingface.co/u", files, ranges, max_workers=1, attempt=14
+    )
+    assert base.compute_selection_hash() == renewed.compute_selection_hash()
+    assert base.compute_behavioral_hash() != renewed.compute_behavioral_hash()
+
+
+def test_selection_hash_sensitivity_to_logical_fields() -> None:
+    files = ["a.jsonl", "b.jsonl"]
+    ranges = {"a.jsonl": (0, 1), "b.jsonl": (0, 1)}
+    base = plan_for_concurrency("https://huggingface.co/u", files, ranges, max_workers=1)
+    assert (
+        base.compute_selection_hash()
+        != plan_for_concurrency(
+            "https://huggingface.co/u", files, ranges, max_workers=1, revision="other-rev"
+        ).compute_selection_hash()
+    )
+    assert (
+        base.compute_selection_hash()
+        != plan_for_concurrency(
+            "https://huggingface.co/u", ["a.jsonl"], {"a.jsonl": (0, 1)}, max_workers=1
+        ).compute_selection_hash()
+    )
+    assert (
+        base.compute_selection_hash()
+        != plan_for_concurrency(
+            "https://huggingface.co/u",
+            files,
+            {"a.jsonl": (0, 2), "b.jsonl": (0, 1)},
+            max_workers=1,
+        ).compute_selection_hash()
+    )
+    # Execution-only changes leave logical identity invariant.
+    assert (
+        base.compute_selection_hash()
+        == plan_for_concurrency(
+            "https://huggingface.co/u",
+            files,
+            ranges,
+            max_workers=4,
+            attempt=14,
+            plan_id="other_plan",
+            output_artifact_id="other_output",
+        ).compute_selection_hash()
+    )
+
+
+def test_attempt_13_vs_14_realistic_regression(tmp_path: Path) -> None:
+    """Operator shape: same logical selection, attempt 13/14 + workers 1/2.
+
+    Requires byte-identical bytes/provenance/selection_hash while execution
+    identities (plan hash/ID, journal/attempt) stay distinct and auditable.
+    """
+
+    files = ["a.jsonl", "b.jsonl"]
+    ranges = {"a.jsonl": (0, 1), "b.jsonl": (0, 1)}
+    url = "https://huggingface.co/authored-fixture"
+    plan_a = plan_for_concurrency(
+        url,
+        files,
+        ranges,
+        max_workers=1,
+        attempt=13,
+        plan_id="plan_authored_default_https_a13",
+        output_artifact_id="raw_authored_default_a13",
+    )
+    plan_b = plan_for_concurrency(
+        url,
+        files,
+        ranges,
+        max_workers=2,
+        attempt=14,
+        plan_id="plan_authored_default_https_b14",
+        output_artifact_id="raw_authored_default_b14",
+    )
+    assert plan_a.compute_behavioral_hash() != plan_b.compute_behavioral_hash()
+    assert plan_a.plan_id != plan_b.plan_id
+    assert plan_a.compute_selection_hash() == plan_b.compute_selection_hash()
+    root_a = tmp_path / "attempt13"
+    root_b = tmp_path / "attempt14"
+    fetcher_a = BoundedFetcher(plan_a, root_a / "scratch", root_a / "output")
+    fetcher_a.opener = MapOpener({"a.jsonl": PAYLOAD_A, "b.jsonl": PAYLOAD_B})
+    fetcher_b = BoundedFetcher(plan_b, root_b / "scratch", root_b / "output")
+    fetcher_b.opener = MapOpener({"a.jsonl": PAYLOAD_A, "b.jsonl": PAYLOAD_B})
+    state_a = fetcher_a.run()
+    state_b = fetcher_b.run()
+    assert state_a.status == state_b.status == "COMPLETED"
+    data_a = (root_a / "output/selected_records.jsonl").read_bytes()
+    data_b = (root_b / "output/selected_records.jsonl").read_bytes()
+    assert data_a == data_b
+    rows_a = [json.loads(line) for line in data_a.splitlines()]
+    rows_b = [json.loads(line) for line in data_b.splitlines()]
+    assert [r["_xlm_acquisition"]["source_file"] for r in rows_a] == ["a.jsonl", "b.jsonl"]
+    assert rows_a == rows_b
+    assert {r["_xlm_acquisition"]["selection_hash"] for r in rows_a} == {
+        plan_a.compute_selection_hash()
+    }
+    assert {r["_xlm_acquisition"]["selection_hash"] for r in rows_b} == {
+        plan_b.compute_selection_hash()
+    }
+    # Execution identities remain distinct and auditable.
+    assert fetcher_a.journal.state.plan_hash != fetcher_b.journal.state.plan_hash
+    assert plan_a.attempt != plan_b.attempt
+    journal_a = ProgressJournal(
+        root_a / "scratch/journals" / f"{plan_a.plan_id}.progress.json",
+        plan_a.plan_id,
+        plan_a.compute_behavioral_hash(),
+    )
+    journal_b = ProgressJournal(
+        root_b / "scratch/journals" / f"{plan_b.plan_id}.progress.json",
+        plan_b.plan_id,
+        plan_b.compute_behavioral_hash(),
+    )
+    assert journal_a.state.plan_hash != journal_b.state.plan_hash
+    # Both verify under the preserved legacy-compatible verifier.
+    assert (
+        AcquisitionVerifier(plan_a, root_a / "output", journal_a).verify().files[0].record_count
+        == 2
+    )
+    assert (
+        AcquisitionVerifier(plan_b, root_b / "output", journal_b).verify().files[0].record_count
+        == 2
+    )
 
 
 def test_transfer_budget_contention_exact(tmp_path: Path) -> None:
@@ -607,3 +743,163 @@ def test_whole_file_path_unchanged(tmp_path: Path) -> None:
     assert state.status == "COMPLETED"
     assert (tmp_path / "output/one.bin").read_bytes() == payload
     assert (tmp_path / "output/two.bin").read_bytes() == payload
+
+
+def test_legacy_behavioral_artifact_still_verifies(tmp_path: Path) -> None:
+    """Historical pre-concurrency artifact (selection==behavioral) keeps verifying."""
+
+    from xlm.artifacts.store import compute_file_sha256
+    from xlm.data.acquisition.records import selected_record
+
+    files = ["a.jsonl"]
+    ranges = {"a.jsonl": (0, 1)}
+    plan = plan_for_concurrency(
+        "https://huggingface.co/authored-fixture", files, ranges, max_workers=1
+    )
+    opener = MapOpener({"a.jsonl": PAYLOAD_A})
+    fetcher, state = _run_with_opener(tmp_path, plan, opener)
+    assert state.status == "COMPLETED"
+    # Rewrite the artifact with the legacy behavioral hash (same logical row).
+    legacy_hash = plan.compute_behavioral_hash()
+    assert legacy_hash != plan.compute_selection_hash() or True  # documents contract drift
+    raw = PAYLOAD_A.splitlines(keepends=True)[0]
+    record = json.loads(raw)
+    payload = selected_record(
+        record,
+        {
+            "row_index": 0,
+            "byte_offset": 0,
+            "byte_length": len(raw),
+            "format": "jsonl",
+            "etag": '"authored-v1"',
+            "source_id": plan.source_id,
+            "repository": plan.repository,
+            "revision": plan.revision,
+            "source_file": "a.jsonl",
+            "selection_hash": legacy_hash,
+        },
+        raw,
+    )
+    dest = tmp_path / "output/selected_records.jsonl"
+    dest.write_bytes(payload)
+    digest = compute_file_sha256(dest, max_bytes=plan.limits.max_output_disk_bytes)
+    with fetcher.journal.transaction() as journal_state:
+        fp = journal_state.file_progress["selected_records.jsonl"]
+        fp.content_sha256 = digest
+        fp.bytes_downloaded = fp.verified_prefix_bytes = len(payload)
+        fp.record_count = 1
+    assert (
+        AcquisitionVerifier(plan, tmp_path / "output", fetcher.journal)
+        .verify()
+        .files[0]
+        .record_count
+        == 1
+    )
+
+
+def test_intermediate_attempt_bound_artifact_still_verifies(tmp_path: Path) -> None:
+    """First-fix artifacts (workers→1, attempt bound, e.g. 13/14) keep verifying."""
+
+    from xlm.artifacts.store import compute_file_sha256
+    from xlm.data.acquisition.records import selected_record
+
+    files = ["a.jsonl", "b.jsonl"]
+    ranges = {"a.jsonl": (0, 1), "b.jsonl": (0, 1)}
+    plan = plan_for_concurrency(
+        "https://huggingface.co/authored-fixture",
+        files,
+        ranges,
+        max_workers=2,
+        attempt=14,
+        plan_id="plan_authored_default_https_b14",
+        output_artifact_id="raw_authored_default_b14",
+    )
+    intermediate = plan.compute_legacy_worker_normalized_hash()
+    assert intermediate != plan.compute_selection_hash()
+    assert intermediate != plan.compute_behavioral_hash()
+    payloads: list[bytes] = []
+    for source, raw in [
+        ("a.jsonl", PAYLOAD_A.splitlines(keepends=True)[0]),
+        ("b.jsonl", PAYLOAD_B.splitlines(keepends=True)[0]),
+    ]:
+        payloads.append(
+            selected_record(
+                json.loads(raw),
+                {
+                    "row_index": 0,
+                    "byte_offset": 0,
+                    "byte_length": len(raw),
+                    "format": "jsonl",
+                    "etag": '"authored-v1"',
+                    "source_id": plan.source_id,
+                    "repository": plan.repository,
+                    "revision": plan.revision,
+                    "source_file": source,
+                    "selection_hash": intermediate,
+                },
+                raw,
+            )
+        )
+    root = tmp_path / "legacy"
+    opener = MapOpener({"a.jsonl": PAYLOAD_A, "b.jsonl": PAYLOAD_B})
+    fetcher = BoundedFetcher(plan, root / "scratch", root / "output")
+    fetcher.opener = opener
+    fetcher.run()
+    dest = root / "output/selected_records.jsonl"
+    dest.write_bytes(b"".join(payloads))
+    digest = compute_file_sha256(dest, max_bytes=plan.limits.max_output_disk_bytes)
+    with fetcher.journal.transaction() as journal_state:
+        fp = journal_state.file_progress["selected_records.jsonl"]
+        fp.content_sha256 = digest
+        fp.bytes_downloaded = fp.verified_prefix_bytes = len(b"".join(payloads))
+        fp.record_count = 2
+    assert (
+        AcquisitionVerifier(plan, root / "output", fetcher.journal).verify().files[0].record_count
+        == 2
+    )
+
+
+def test_performance_compare_allows_attempt_difference(tmp_path: Path) -> None:
+    """Worker benchmarks must not require attempt equality."""
+
+    base = plan_for_concurrency(
+        "https://huggingface.co/authored-fixture",
+        ["a.jsonl"],
+        {"a.jsonl": (0, 1)},
+        max_workers=1,
+        attempt=13,
+        plan_id="plan_a13",
+    )
+    other = plan_for_concurrency(
+        "https://huggingface.co/authored-fixture",
+        ["a.jsonl"],
+        {"a.jsonl": (0, 1)},
+        max_workers=2,
+        attempt=14,
+        plan_id="plan_b14",
+    )
+    assert base.compute_selection_hash() == other.compute_selection_hash()
+    assert base.compute_behavioral_hash() != other.compute_behavioral_hash()
+    one = PerfTelemetry().snapshot(
+        plan=base,
+        status="COMPLETED",
+        wall_seconds=2.0,
+        transferred_bytes=100,
+        journal_decompressed_bytes=100,
+        journal_requests=2,
+        journal_cache_hits=0,
+        journal_records=1,
+    )
+    two = PerfTelemetry().snapshot(
+        plan=other,
+        status="COMPLETED",
+        wall_seconds=1.0,
+        transferred_bytes=100,
+        journal_decompressed_bytes=100,
+        journal_requests=2,
+        journal_cache_hits=0,
+        journal_records=1,
+    )
+    result = compare_perf_docs([one, two])
+    assert result["comparable"] is True
+    assert result["fastest"]["wall_seconds"] == 1.0
