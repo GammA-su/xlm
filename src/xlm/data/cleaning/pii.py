@@ -32,6 +32,33 @@ SECRET_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     ("ssn", re.compile(r"\b\d{3}-\d{2}-\d{4}\b")),
 ]
 
+#: Reserved documentation domains (RFC 2606 section 3, RFC 6761 section 6.5)
+#: whose addresses are placeholders, never personal destinations. Matching is
+#: exact-host-or-dot-suffix on the lowercased domain, so subdomains such as
+#: ``mail.example.com`` are placeholders while ``notreallyexample.com``,
+#: ``my-example.com``, and ``example.org.attacker.com`` are not.
+RESERVED_EXAMPLE_DOMAINS: frozenset[str] = frozenset(
+    {"example.com", "example.net", "example.org", "example"}
+)
+
+
+def is_reserved_example_email(matched_email: str) -> bool:
+    """True when a regex-matched address sits on a reserved example domain."""
+    _, separator, domain = matched_email.rpartition("@")
+    if not separator:
+        return False
+    domain = domain.lower()
+    if domain in RESERVED_EXAMPLE_DOMAINS:
+        return True
+    return any(domain.endswith(f".{reserved}") for reserved in RESERVED_EXAMPLE_DOMAINS)
+
+
+def _redact_email_match(match: re.Match[str]) -> str:
+    """Redact genuine addresses; leave reserved placeholders byte-identical."""
+    if is_reserved_example_email(match.group(0)):
+        return match.group(0)
+    return "[REDACTED_EMAIL_ADDRESS]"
+
 
 def redact_sensitive_text(text: str) -> str:
     """Sanitize text by replacing detected secrets and PII with inert placeholder tokens.
@@ -42,7 +69,10 @@ def redact_sensitive_text(text: str) -> str:
         return ""
     sanitized = text
     for sec_type, pattern in SECRET_PATTERNS:
-        sanitized = pattern.sub(f"[REDACTED_{sec_type.upper()}]", sanitized)
+        if sec_type == "email_address":
+            sanitized = pattern.sub(_redact_email_match, sanitized)
+        else:
+            sanitized = pattern.sub(f"[REDACTED_{sec_type.upper()}]", sanitized)
     return sanitized
 
 
@@ -90,8 +120,18 @@ class PiiSecretFilter(BaseTransform):
             )
 
         detected_types: list[str] = []
+        reserved_placeholders_ignored = 0
         for sec_type, pattern in SECRET_PATTERNS:
-            if pattern.search(text):
+            if sec_type == "email_address":
+                genuine_found = False
+                for match in pattern.finditer(text):
+                    if is_reserved_example_email(match.group(0)):
+                        reserved_placeholders_ignored += 1
+                    else:
+                        genuine_found = True
+                if genuine_found:
+                    detected_types.append(sec_type)
+            elif pattern.search(text):
                 detected_types.append(sec_type)
 
         duration = (time.monotonic() - start_t) * 1000.0
@@ -99,6 +139,7 @@ class PiiSecretFilter(BaseTransform):
             utf8_byte_count=doc.utf8_byte_count,
             word_count=len(text.split()),
             detected_secrets=detected_types,
+            reserved_email_placeholders_ignored=reserved_placeholders_ignored,
         )
 
         if not detected_types:

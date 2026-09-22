@@ -54,6 +54,7 @@ class QualityMetrics:
     has_html_markup: bool = False
     boilerplate_paragraphs_removed: int = 0
     detected_secrets: list[str] = field(default_factory=list)
+    reserved_email_placeholders_ignored: int = 0
     spans: list[TextSpan] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
