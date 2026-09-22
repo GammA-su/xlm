@@ -629,16 +629,35 @@ class SynthExplanationsAdapter:
 
 
 class WikiRewriteAdapter:
-    """The specialized Wiki-Rewrite component only."""
+    """English Wikipedia rewrites (``Nemotron-Pretraining-Wiki-Rewrite`` only).
+
+    Live schema (``nvidia/Nemotron-Pretraining-Specialized-v1`` @ pinned
+    revision, 1M-row shard): records carry ``text``, ``license``,
+    ``metadata`` (mapping with ``category`` and ``models_used``), and
+    ``uuid``. There is no row-level ``language`` field.
+
+    The adapter requires the exact component category
+    ``Nemotron-Pretraining-Wiki-Rewrite``: a row from another Specialized-v1
+    component sharing this general schema is a policy exclusion
+    (``RecordRejectedError``), never silently absorbed. Upstream ``text`` is
+    preserved verbatim — no stripping, prefixing, or coercion.
+
+    Canonical ``language`` is ``en`` because this exact upstream component is
+    documented as rewritten English Wikipedia; provenance records that basis
+    truthfully. ``license_reference`` keeps the dataset-level license
+    (``cc-by-4.0``) per XLM convention while the real row-level license is
+    preserved separately as ``upstream_license`` metadata.
+    """
 
     ADAPTER_ID = "wiki_rewrite"
-    REQUIRED_FIELDS = ("text",)
+    REQUIRED_FIELDS = ("text", "license", "metadata", "uuid")
+    WIKI_REWRITE_CATEGORY = "Nemotron-Pretraining-Wiki-Rewrite"
 
     def contract(self) -> RowExtractorContract:
         return RowExtractorContract(
             adapter_id=self.ADAPTER_ID,
             text_field="text",
-            required_fields=["text"],
+            required_fields=["text", "license", "metadata", "uuid"],
         )
 
     def adapt(
@@ -649,7 +668,66 @@ class WikiRewriteAdapter:
         source_row: int,
         source_revision: str,
     ) -> CanonicalDocument:
-        text = str(_require(record, "text", self.ADAPTER_ID))
+        text = _require(record, "text", self.ADAPTER_ID)
+        if not isinstance(text, str) or not text:
+            raise MissingFieldError(
+                f"adapter '{self.ADAPTER_ID}' requires upstream field 'text' "
+                "to be a non-empty string; it is preserved verbatim, never coerced."
+            )
+        upstream_license = _require(record, "license", self.ADAPTER_ID)
+        if not isinstance(upstream_license, str) or not upstream_license.strip():
+            raise MissingFieldError(
+                f"adapter '{self.ADAPTER_ID}' requires upstream field 'license' "
+                "to be a non-empty string."
+            )
+        metadata = _require(record, "metadata", self.ADAPTER_ID)
+        if not isinstance(metadata, Mapping):
+            raise MissingFieldError(
+                f"adapter '{self.ADAPTER_ID}' requires upstream field 'metadata' "
+                f"to be a mapping, got {type(metadata).__name__}."
+            )
+        category = metadata.get("category")
+        if category is None:
+            raise MissingFieldError(
+                f"adapter '{self.ADAPTER_ID}' requires upstream field "
+                "'metadata.category'; it is absent and cannot be guessed."
+            )
+        if not isinstance(category, str) or not category.strip():
+            raise MissingFieldError(
+                f"adapter '{self.ADAPTER_ID}' requires upstream field "
+                "'metadata.category' to be a non-empty string."
+            )
+        if category != self.WIKI_REWRITE_CATEGORY:
+            raise RecordRejectedError(
+                f"adapter '{self.ADAPTER_ID}' selects category "
+                f"'{self.WIKI_REWRITE_CATEGORY}' only; row carries category '{category}'."
+            )
+        upstream_uuid = _require(record, "uuid", self.ADAPTER_ID)
+        if not isinstance(upstream_uuid, str) or not upstream_uuid.strip():
+            raise MissingFieldError(
+                f"adapter '{self.ADAPTER_ID}' requires upstream field 'uuid' "
+                "to be a non-empty string."
+            )
+        source_metadata: dict[str, Any] = {
+            "mix01_component": "nemotron_wiki_rewrite",
+            "config_name": "Nemotron-Pretraining-Wiki-Rewrite",
+            "upstream_uuid": upstream_uuid,
+            "upstream_license": upstream_license,
+            "category": category,
+            "language_provenance": (
+                "upstream Nemotron Wiki-Rewrite treatment is documented as "
+                "rewritten English Wikipedia; no row-level language field "
+                "exists; downstream language cleaning still applies"
+            ),
+        }
+        models_used = metadata.get("models_used")
+        if models_used is not None:
+            if not isinstance(models_used, str) or not models_used.strip():
+                raise MissingFieldError(
+                    f"adapter '{self.ADAPTER_ID}' requires upstream field "
+                    "'metadata.models_used' to be a non-empty string when present."
+                )
+            source_metadata["models_used"] = models_used
         return _canonical_doc(
             doc_id=canonical_source_doc_id("wiki_rewrite", source_file, source_row),
             source_id="nemotron_specialized",
@@ -660,10 +738,7 @@ class WikiRewriteAdapter:
             language="en",
             document_kind="prose",
             license_reference="cc-by-4.0",
-            source_metadata={
-                "mix01_component": "nemotron_wiki_rewrite",
-                "config_name": "Nemotron-Pretraining-Wiki-Rewrite",
-            },
+            source_metadata=source_metadata,
         )
 
 

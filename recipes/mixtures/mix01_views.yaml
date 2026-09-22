@@ -176,11 +176,15 @@ views:
     observed_configs: [Nemotron-Pretraining-Wiki-Rewrite]
     adapter_id: wiki_rewrite
     upstream_selector:
-      description: "Only the specialized Wiki-Rewrite component, nothing else."
+      description: "Only the Nemotron-Pretraining-Wiki-Rewrite category component."
       config_name: Nemotron-Pretraining-Wiki-Rewrite
+      required_fields: [text, license, metadata, uuid]
+      category_field: metadata.category
     english_only: true
-    live_verified: false
-    notes: []
+    live_verified: true
+    notes:
+      - "Certified against 3 real pinned rows of part_000003.parquet (offline sample adapter-cert-wiki-rewrite01): all accepted with verbatim text."
+      - "Real schema is text/license/metadata{category,models_used}/uuid; no row-level language field exists; component is documented as rewritten English Wikipedia."
 
   - component_id: finewiki_en
     source_id: finewiki

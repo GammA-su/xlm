@@ -56,7 +56,12 @@ def _records() -> dict[str, dict[str, object]]:
             "synthetic_answer": "Because of Rayleigh scattering.",
             "seed_license": "CC-By-SA (4.0)",
         },
-        "wiki_rewrite": {"text": "t"},
+        "wiki_rewrite": {
+            "text": "t",
+            "license": "cc-by-sa-4.0,gfdl",
+            "metadata": {"category": "Nemotron-Pretraining-Wiki-Rewrite"},
+            "uuid": "authored-uuid",
+        },
         "finewiki": {"title": "T", "text": "body", "in_language": "en"},
         "finepdfs": {"text": "t", "language": "eng_Latn", "extractor": "docling"},
         "ifm": {"text": "t"},

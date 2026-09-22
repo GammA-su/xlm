@@ -585,12 +585,19 @@ def test_ifm_general_live_schema() -> None:
 def test_remaining_adapters_render_and_reject() -> None:
     revision, source_file = "r", "f"
     wiki_rows = read_fixture("wiki_rewrite.jsonl")
-    assert (
-        WikiRewriteAdapter()
-        .adapt(wiki_rows[0], source_file=source_file, source_row=0, source_revision=revision)
-        .source_metadata["mix01_component"]
-        == "nemotron_wiki_rewrite"
+    wiki_doc = WikiRewriteAdapter().adapt(
+        wiki_rows[0], source_file=source_file, source_row=0, source_revision=revision
     )
+    assert wiki_doc.source_metadata["mix01_component"] == "nemotron_wiki_rewrite"
+    assert wiki_doc.source_metadata["upstream_uuid"] == "11111111-1111-4111-8111-111111111111"
+    assert wiki_doc.source_metadata["upstream_license"] == "cc-by-sa-4.0,gfdl"
+    assert wiki_doc.source_metadata["models_used"] == "Qwen3-30B-A3B"
+    assert wiki_doc.license_reference == "cc-by-4.0"
+    assert wiki_doc.text == wiki_rows[0]["text"]
+    bare_models = WikiRewriteAdapter().adapt(
+        wiki_rows[1], source_file=source_file, source_row=1, source_revision=revision
+    )
+    assert "models_used" not in bare_models.source_metadata
     with pytest.raises(MissingFieldError, match="'text'"):
         WikiRewriteAdapter().adapt(
             wiki_rows[2], source_file=source_file, source_row=2, source_revision=revision
