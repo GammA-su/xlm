@@ -128,11 +128,27 @@ class CausalStreamPacker:
         and was already a target there, so it is not counted twice.
         """
         # BOS is context only: it is never itself a target position (C07, C11).
-        ignore = {
-            i
-            for i, tid in enumerate(window_ids[1:])
-            if tid in (self.bos_token_id, self.pad_token_id)
-        }
+        # Structural IDs are sparse in ordinary text. Native list searches avoid
+        # a Python branch per content token; dense controls use the old scan.
+        ignore: set[int] = set()
+        for special in (self.bos_token_id, self.pad_token_id):
+            position = 1
+            while True:
+                try:
+                    position = window_ids.index(special, position)
+                except ValueError:
+                    break
+                ignore.add(position - 1)
+                position += 1
+                if len(ignore) > 8:
+                    ignore = {
+                        i
+                        for i, tid in enumerate(window_ids[1:])
+                        if tid in (self.bos_token_id, self.pad_token_id)
+                    }
+                    break
+            if len(ignore) > 8:
+                break
 
         inputs, labels, mask, is_partial = shift_window(
             window_ids, self.context_length, self.pad_token_id, ignore
