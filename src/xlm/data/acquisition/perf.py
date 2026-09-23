@@ -136,6 +136,12 @@ class PerfTelemetry:
         self.redirect_cache_invalidations = 0
         self.connection_reuses = 0
         self.connection_creations = 0
+        self.projection_selected_bytes = 0
+        self.projection_skipped_bytes = 0
+        self.coalesced_ranges = 0
+        self.coalesced_gap_bytes = 0
+        self.column_chunks_read = 0
+        self.peak_rss_bytes = 0
         self.retries = 0
         self.retry_wait_seconds = 0.0
         self.open_seconds = 0.0
@@ -143,6 +149,7 @@ class PerfTelemetry:
         self.metadata_seconds = 0.0
         self.decode_seconds = 0.0
         self.serialize_seconds = 0.0
+        self.write_seconds = 0.0
         self.accounting_seconds = 0.0
         self.cache_hits = 0
         self.scanned_records = 0
@@ -170,7 +177,7 @@ class PerfTelemetry:
         """Time one observational span and attribute it to ``category``.
 
         Categories are fixed caller labels (``open``, ``body``, ``metadata``,
-        ``decode``, ``serialize``, ``accounting``); hosts are sanitized
+        ``decode``, ``serialize``, ``write``, ``accounting``); hosts are sanitized
         hostnames only. Multi-worker overlap means category sums can exceed
         wall time; shares are reported against wall with that caveat.
 
@@ -226,6 +233,12 @@ class PerfTelemetry:
                         self.files.setdefault(file, self._new_file_entry())[
                             "serialize_seconds"
                         ] += elapsed
+                elif category == "write":
+                    self.write_seconds += elapsed
+                    if file:
+                        self.files.setdefault(file, self._new_file_entry())["write_seconds"] += (
+                            elapsed
+                        )
                 elif category == "accounting":
                     self.accounting_seconds += elapsed
 
@@ -240,6 +253,7 @@ class PerfTelemetry:
             "decode_seconds": 0.0,
             "metadata_seconds": 0.0,
             "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
         }
 
     # -- counters ----------------------------------------------------------
@@ -317,9 +331,39 @@ class PerfTelemetry:
         with self._lock:
             self.parquet_groups += 1
 
+    def record_projection(self, *, selected_bytes: int, skipped_bytes: int) -> None:
+        """Charge footer-known selected vs skipped column bytes for one group."""
+        with self._lock:
+            self.projection_selected_bytes += max(0, selected_bytes)
+            self.projection_skipped_bytes += max(0, skipped_bytes)
+
+    def record_coalesced_ranges(self, *, ranges: int, gap_bytes: int) -> None:
+        """Count merged column-data spans fetched plus unused gap bytes inside."""
+        with self._lock:
+            self.coalesced_ranges += max(0, ranges)
+            self.coalesced_gap_bytes += max(0, gap_bytes)
+
+    def record_column_chunks(self, count: int) -> None:
+        with self._lock:
+            self.column_chunks_read += max(0, count)
+
+    def record_peak_rss(self, rss_bytes: int) -> None:
+        """Track the maximum observed worker RSS (observational only)."""
+        with self._lock:
+            self.peak_rss_bytes = max(self.peak_rss_bytes, max(0, rss_bytes))
+
     def record_file_bytes(self, file: str, count: int) -> None:
         with self._lock:
             self.files.setdefault(file, self._new_file_entry())["bytes"] += max(0, count)
+
+    def record_write_seconds(self, seconds: float, *, file: str = "") -> None:
+        """Attribute staged file-write seconds measured by the streaming writer."""
+        with self._lock:
+            self.write_seconds += max(0.0, seconds)
+            if file:
+                self.files.setdefault(file, self._new_file_entry())["write_seconds"] += max(
+                    0.0, seconds
+                )
 
     # -- file-worker concurrency -------------------------------------------
 
@@ -380,6 +424,12 @@ class PerfTelemetry:
                 "redirect_target_invalidations": self.redirect_cache_invalidations,
                 "connection_reuses": self.connection_reuses,
                 "connection_creations": self.connection_creations,
+                "projection_selected_bytes": self.projection_selected_bytes,
+                "projection_skipped_bytes": self.projection_skipped_bytes,
+                "coalesced_ranges": self.coalesced_ranges,
+                "coalesced_gap_bytes": self.coalesced_gap_bytes,
+                "column_chunks_read": self.column_chunks_read,
+                "peak_rss_bytes": self.peak_rss_bytes,
                 "retries": self.retries,
                 "retry_wait_seconds": self.retry_wait_seconds,
                 "open_seconds": self.open_seconds,
@@ -387,6 +437,7 @@ class PerfTelemetry:
                 "metadata_seconds": self.metadata_seconds,
                 "decode_seconds": self.decode_seconds,
                 "serialize_seconds": self.serialize_seconds,
+                "write_seconds": self.write_seconds,
                 "accounting_seconds": self.accounting_seconds,
                 "cache_hits_telemetry": self.cache_hits,
                 "scanned_records": self.scanned_records,
@@ -402,7 +453,9 @@ class PerfTelemetry:
             "body_stream": _safe_div(counters["body_seconds"], wall_seconds),
             "parquet_metadata": _safe_div(counters["metadata_seconds"], wall_seconds),
             "parquet_decode": _safe_div(counters["decode_seconds"], wall_seconds),
-            "serialize_write": _safe_div(counters["serialize_seconds"], wall_seconds),
+            "serialize_write": _safe_div(
+                counters["serialize_seconds"] + counters["write_seconds"], wall_seconds
+            ),
             "accounting_lock": _safe_div(counters["accounting_seconds"], wall_seconds),
             "retry_wait": _safe_div(counters["retry_wait_seconds"], wall_seconds),
         }
@@ -435,6 +488,12 @@ class PerfTelemetry:
                 name: [int(start), int(stop)]
                 for name, (start, stop) in sorted((plan.row_ranges or {}).items())
             },
+            "projected_fields": (
+                sorted(plan.projected_fields)
+                if getattr(plan, "projected_fields", None) is not None
+                else None
+            ),
+            "range_coalesce_bytes": getattr(plan, "range_coalesce_bytes", None),
             "limits": {
                 "max_transferred_bytes": limits.max_transferred_bytes,
                 "max_decompressed_bytes": limits.max_decompressed_bytes,
@@ -487,6 +546,8 @@ class PerfTelemetry:
                 "redirect_target_invalidations": counters["redirect_target_invalidations"],
                 "connection_reuses": counters["connection_reuses"],
                 "connection_creations": counters["connection_creations"],
+                "coalesced_ranges": counters["coalesced_ranges"],
+                "coalesced_gap_bytes": counters["coalesced_gap_bytes"],
                 "journal_requests_made": journal_requests,
                 "reconciled": bool(counters["accounted_network_requests"] == journal_requests),
             },
@@ -501,6 +562,11 @@ class PerfTelemetry:
                 "resolved canonically; invalidations re-resolved on expiry/auth.",
                 "connection_reuses/creations cover pooled cached-target Range "
                 "GETs only; canonical resolutions stay on the urllib opener.",
+                "projection_selected/skipped_bytes come from footer metadata for "
+                "touched row groups; coalesced_ranges counts merged column-data "
+                "spans; peak_rss_bytes is a best-effort worker maximum.",
+                "serialize_write share covers serialize plus file-write time, so it "
+                "stays comparable with pre-write-split sidecars.",
                 "Signed redirect targets live only in fetcher memory; never in "
                 "sidecars, journals, receipts, or logs.",
                 "parquet_decode is inclusive row-group processing time including "
@@ -571,11 +637,11 @@ def compare_perf_docs(docs: list[dict[str, Any]]) -> dict[str, Any]:
     """Compare performance sidecars from separate attempts of one workload.
 
     Equivalence is strict on workload identity (source, view, revision,
-    provider semantics, files, row ranges, mode, byte/record/parser/
-    decompression limits) and run class (all COMPLETED, same cache class).
-    Attempt number, plan identity, and max_workers may differ — that is the
-    point of the comparison. Anything else is refused with explicit reasons,
-    never silently merged.
+    provider semantics, files, row ranges, mode, projected fields,
+    byte/record/parser/decompression limits) and run class (all COMPLETED,
+    same cache class). Attempt number, plan identity, max_workers, and range
+    coalescing may differ — those are the comparison dimensions. Anything
+    else is refused with explicit reasons, never silently merged.
     """
     refusals: list[str] = []
     if len(docs) < 2:
@@ -608,6 +674,11 @@ def compare_perf_docs(docs: list[dict[str, Any]]) -> dict[str, Any]:
                         f"document {index} ({doc.get('plan_id')}): {key} differs "
                         f"({doc.get(key)!r} != {first.get(key)!r})"
                     )
+            if (doc.get("projected_fields") or None) != (first.get("projected_fields") or None):
+                refusals.append(
+                    f"document {index} ({doc.get('plan_id')}): projected fields differ "
+                    "(different acquired artifacts are never ranked together)"
+                )
         limit_keys = (
             "max_transferred_bytes",
             "max_decompressed_bytes",
@@ -679,6 +750,13 @@ def compare_perf_docs(docs: list[dict[str, Any]]) -> dict[str, Any]:
                 "redirect_target_invalidations": telemetry.get("redirect_target_invalidations", 0),
                 "connection_reuses": telemetry.get("connection_reuses", 0),
                 "connection_creations": telemetry.get("connection_creations", 0),
+                "projected_fields": doc.get("projected_fields"),
+                "range_coalesce_bytes": doc.get("range_coalesce_bytes"),
+                "projection_skipped_bytes": telemetry.get("projection_skipped_bytes", 0),
+                "coalesced_ranges": telemetry.get("coalesced_ranges", 0),
+                "coalesced_gap_bytes": telemetry.get("coalesced_gap_bytes", 0),
+                "column_chunks_read": telemetry.get("column_chunks_read", 0),
+                "peak_rss_bytes": telemetry.get("peak_rss_bytes", 0),
                 "retries": telemetry.get("retries"),
                 "slowest_stage": doc.get("slowest_stage"),
             }

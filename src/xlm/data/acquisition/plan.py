@@ -100,6 +100,21 @@ class AcquisitionPlan(BaseModel):
     mode: AcquisitionMode = AcquisitionMode.WHOLE_FILE
     selected_files: list[str] = Field(min_length=1)
     row_ranges: dict[str, tuple[int, int]] | None = None
+    projected_fields: list[str] | None = Field(
+        default=None,
+        description=(
+            "Optional explicit Parquet column projection for selected_records. "
+            "None preserves legacy all-columns behavior with identical identity."
+        ),
+    )
+    range_coalesce_bytes: int | None = Field(
+        default=None,
+        ge=0,
+        description=(
+            "Optional explicit gap threshold for coalescing adjacent Parquet "
+            "column-chunk ranges. None preserves legacy exact-range behavior."
+        ),
+    )
     sampling_frame: SamplingFrame = Field(default_factory=SamplingFrame)
     expected_bytes: int | None = None
     expected_file_digests: dict[str, str] = Field(
@@ -150,8 +165,17 @@ class AcquisitionPlan(BaseModel):
                 > self.limits.max_records
             ):
                 raise ValueError("selected row ranges exceed record limit")
+            if self.projected_fields is not None and (
+                not self.projected_fields
+                or any(not isinstance(name, str) or not name for name in self.projected_fields)
+            ):
+                raise ValueError("projected fields must be a nonempty list of names")
         elif self.row_ranges:
             raise ValueError("whole-file mode cannot declare selected row ranges")
+        if self.mode != AcquisitionMode.SELECTED_RECORDS and (
+            self.projected_fields is not None or self.range_coalesce_bytes is not None
+        ):
+            raise ValueError("whole-file mode cannot declare projection/coalescing options")
         return self
 
     def compute_behavioral_hash(self) -> str:
@@ -184,6 +208,13 @@ class AcquisitionPlan(BaseModel):
         # execution identity (and authorization) to identical behavior.
         if self.attempt != 1:
             behavioral_dict["attempt"] = self.attempt
+        # Projection/coalescing options are bound only when explicitly set:
+        # None preserves the legacy all-columns exact-range identity so old
+        # plans keep verifying and never silently reuse a new artifact.
+        if self.projected_fields is not None:
+            behavioral_dict["projected_fields"] = sorted(self.projected_fields)
+        if self.range_coalesce_bytes is not None:
+            behavioral_dict["range_coalesce_bytes"] = self.range_coalesce_bytes
         canonical_json = json.dumps(behavioral_dict, sort_keys=True, separators=(",", ":"))
         return hashlib.sha256(canonical_json.encode("utf-8")).hexdigest()
 
@@ -199,9 +230,13 @@ class AcquisitionPlan(BaseModel):
           ``expected_file_digests``, ``admitted_source_reference``, ``is_pilot``
         - resource ``limits`` with ``max_workers`` normalized to 1 (concurrency
           must not change bytes; other bounds stay bound and fail-closed)
+        - ``projected_fields`` when explicitly set (projection changes which
+          source fields reach published records, so it binds selection
+          identity; ``None`` preserves the legacy all-columns identity)
         Excluded (execution identity, never changes bytes):
         - ``attempt`` number, ``plan_id``/``plan_hash``, ``authorization``
           (hash/timestamp), ``output_artifact_id`` (derived output naming),
+          ``range_coalesce_bytes`` (transport framing only; records identical),
           runtime deadlines, observational telemetry.
         Execution identity stays in :meth:`compute_behavioral_hash`,
         journals, receipts, and authorizations; only the per-record
@@ -228,6 +263,8 @@ class AcquisitionPlan(BaseModel):
             "admitted_source_reference": self.admitted_source_reference,
             "is_pilot": self.is_pilot,
         }
+        if self.projected_fields is not None:
+            logical_dict["projected_fields"] = sorted(self.projected_fields)
         canonical_json = json.dumps(logical_dict, sort_keys=True, separators=(",", ":"))
         return hashlib.sha256(canonical_json.encode("utf-8")).hexdigest()
 

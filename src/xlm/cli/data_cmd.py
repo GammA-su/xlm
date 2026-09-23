@@ -771,6 +771,27 @@ def plan_cmd(
             help="JSON original filename to independently reviewed SHA-256 mapping.",
         ),
     ] = None,
+    project_fields: Annotated[
+        str | None,
+        typer.Option(
+            "--project-fields",
+            help="Comma-separated Parquet columns for selected_records (identity-bound).",
+        ),
+    ] = None,
+    adapter_spec: Annotated[
+        str | None,
+        typer.Option(
+            "--adapter-spec",
+            help="Adapter spec 'adapter_id[:config]' resolving certified projection columns.",
+        ),
+    ] = None,
+    coalesce_bytes: Annotated[
+        int | None,
+        typer.Option(
+            "--coalesce-bytes",
+            help="Gap threshold for coalescing adjacent Parquet column ranges.",
+        ),
+    ] = None,
 ) -> None:
     """Generate and validate an acquisition plan adhering to Contracts C01 and C04."""
     try:
@@ -822,6 +843,23 @@ def plan_cmd(
         if (max_bytes, max_records, max_output_disk) != (256 * 1024**2, 25000, 2 * 1024**3):
             raise ValueError("use either --limits or the convenience limit flags, not both")
         limits = AcquisitionLimits.model_validate(bounded_json(limits_path))
+    if project_fields is not None and adapter_spec is not None:
+        typer.echo("Error: use either --project-fields or --adapter-spec, not both.", err=True)
+        raise typer.Exit(code=1)
+    resolved_projection: list[str] | None = None
+    if adapter_spec is not None:
+        from xlm.data.adapters.columns import columns_for, parse_adapter_spec
+
+        try:
+            resolved_projection = list(columns_for(*parse_adapter_spec(adapter_spec)))
+        except ValueError as e:
+            typer.echo(f"Error: invalid --adapter-spec: {e}", err=True)
+            raise typer.Exit(code=1) from e
+    elif project_fields is not None:
+        resolved_projection = [name.strip() for name in project_fields.split(",") if name.strip()]
+        if not resolved_projection:
+            typer.echo("Error: --project-fields must list at least one column.", err=True)
+            raise typer.Exit(code=1)
     sampling = SamplingFrame(
         selected_files=selected_files,
         selection_seed=seed,
@@ -853,6 +891,8 @@ def plan_cmd(
         attempt=attempt,
         row_ranges=bounded_json(row_ranges_path),
         expected_file_digests=bounded_json(expected_digests_path) or {},
+        projected_fields=resolved_projection,
+        range_coalesce_bytes=coalesce_bytes,
     )
     identity_suffix = initial_plan.compute_behavioral_hash()[:20]
     initial_plan = initial_plan.model_copy(
@@ -896,6 +936,10 @@ def plan_cmd(
     typer.echo(f"Repository:    {resolved_plan.repository} (revision: {resolved_plan.revision})")
     typer.echo(f"Mode:          {resolved_plan.mode.value}")
     typer.echo(f"Selected:      {len(resolved_plan.selected_files)} file(s)")
+    if resolved_plan.projected_fields is not None:
+        typer.echo(f"Projected:     {', '.join(sorted(resolved_plan.projected_fields))}")
+    if resolved_plan.range_coalesce_bytes is not None:
+        typer.echo(f"Coalesce:      <= {resolved_plan.range_coalesce_bytes:,} byte gaps")
     typer.echo(f"Transferred:   <= {resolved_plan.limits.max_transferred_bytes:,} bytes")
     typer.echo(f"Output Disk:   <= {resolved_plan.limits.max_output_disk_bytes:,} bytes")
     typer.echo(f"Behavior Hash: {resolved_plan.plan_hash}")
@@ -1472,6 +1516,20 @@ def _print_perf_summary(doc: dict[str, Any]) -> None:
         f"{telemetry.get('connection_reuses', 0)} creations "
         f"{telemetry.get('connection_creations', 0)}"
     )
+    if doc.get("projected_fields") is not None:
+        skipped = int(telemetry.get("projection_skipped_bytes", 0) or 0)
+        selected = int(telemetry.get("projection_selected_bytes", 0) or 0)
+        total = selected + skipped
+        ratio = (skipped / total) if total > 0 else 0.0
+        typer.echo(
+            f"Projection: {', '.join(doc.get('projected_fields') or [])}  "
+            f"skipped {skipped:,} bytes ({ratio * 100:.1f}%)  "
+            f"coalesced {telemetry.get('coalesced_ranges', 0)} ranges "
+            f"(gap {telemetry.get('coalesced_gap_bytes', 0):,} bytes)  "
+            f"column chunks {telemetry.get('column_chunks_read', 0)}"
+        )
+    if telemetry.get("peak_rss_bytes"):
+        typer.echo(f"Peak worker RSS: {int(telemetry['peak_rss_bytes']):,} bytes")
     typer.echo("Where did the time go (share of wall)?")
     for key in (
         "request_open",

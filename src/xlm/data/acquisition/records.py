@@ -5,6 +5,8 @@ from __future__ import annotations
 import gzip
 import hashlib
 import json
+import os
+import time
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any, Protocol
@@ -201,3 +203,78 @@ def selected_record(record: dict[str, Any], locator: dict[str, Any], raw: bytes)
             },
         }
     )
+
+
+class StreamingJsonlWriter:
+    """High-throughput deterministic JSONL staging writer.
+
+    Buffers encoded lines and flushes large binary blocks, so a dense
+    selection costs O(blocks) file writes and one fsync instead of O(records)
+    writes plus per-record fsync. Content hash, byte size, and record count
+    accumulate in the single streaming pass (written, counted, and hashed
+    together — no re-hashing). Row order is call order, so output bytes are
+    identical to the per-record writer for the same inputs. Peak RSS is
+    sampled per flush on a best-effort basis and never fails the write.
+    """
+
+    def __init__(self, path: Path, *, buffer_bytes: int = 262144) -> None:
+        self._stream = path.open("xb")
+        self._buffer = bytearray()
+        self._bound = max(65536, buffer_bytes)
+        self.digest = hashlib.sha256()
+        self.count = 0
+        self.size = 0
+        self.peak_rss_bytes = 0
+        self.flush_seconds = 0.0
+
+    def write_line(self, payload: bytes) -> None:
+        """Append one ``\\n``-terminated encoded record."""
+        self._buffer += payload
+        self.digest.update(payload)
+        self.count += 1
+        self.size += len(payload)
+        if len(self._buffer) >= self._bound:
+            self.flush()
+
+    def write_raw(self, block: bytes) -> None:
+        """Append pre-framed bytes (ordered-merge path); hash/size only."""
+        self._buffer += block
+        self.digest.update(block)
+        self.size += len(block)
+        if len(self._buffer) >= self._bound:
+            self.flush()
+
+    def _sample_rss(self) -> None:
+        try:
+            import psutil
+
+            rss = int(psutil.Process().memory_info().rss)
+        except Exception:
+            return
+        if rss > self.peak_rss_bytes:
+            self.peak_rss_bytes = rss
+
+    def flush(self) -> None:
+        if self._buffer:
+            started = time.monotonic()
+            self._stream.write(self._buffer)
+            self._stream.flush()
+            self._buffer = bytearray()
+            self.flush_seconds += max(0.0, time.monotonic() - started)
+            self._sample_rss()
+
+    def close(self) -> None:
+        try:
+            self.flush()
+            started = time.monotonic()
+            self._stream.flush()
+            os.fsync(self._stream.fileno())
+            self.flush_seconds += max(0.0, time.monotonic() - started)
+        finally:
+            self._stream.close()
+
+    def __enter__(self) -> StreamingJsonlWriter:
+        return self
+
+    def __exit__(self, *exc_info: Any) -> None:
+        self.close()
