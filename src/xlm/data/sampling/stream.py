@@ -25,6 +25,7 @@ from xlm.data.sampling.scheduler import (
     ScheduleState,
     SourceExhaustedError,
 )
+from xlm.data.sampling.trace import target_trace_digest
 from xlm.data.token_cache import TokenMapCache
 from xlm.data.tokens import TokenShardReader
 
@@ -222,6 +223,7 @@ class MixtureBatcher:
                 if not isinstance(loaded, dict):
                     raise MixtureStreamError("document index entry must be an object")
                 record = dict(loaded)
+                record["_xlm_index_after"] = index.tell()
                 begin, count = int(record["token_start"]), int(record["token_count"])
                 if begin <= position < begin + count:
                     if cached is not None:
@@ -273,7 +275,14 @@ class MixtureBatcher:
         self._window_positions = ([cursor - 1] if carry is not None else []) + list(
             range(cursor, cursor + take)
         )
-        self._window_records = [self._document_at(source_id, p) for p in self._window_positions]
+        self._window_records = []
+        position = self._window_positions[0]
+        stop = self._window_positions[-1] + 1
+        while position < stop:
+            record = self._document_at(source_id, position)
+            end = min(stop, int(record["token_start"]) + int(record["token_count"]))
+            self._window_records.extend([record] * (end - position))
+            position = end
 
         self._uncommitted["cursors"][source_id] = cursor + take
         # Overlap exactly the last context token, so the next window's first target is
@@ -377,6 +386,11 @@ class MixtureBatcher:
                             last_kept = index
                 self._uncommitted["cursors"][source_id] = self._window_positions[last_kept + 1] + 1
                 self._uncommitted["carry_token"][source_id] = packed.labels[last_kept]
+                # A speculative window can span more than two short documents.
+                # Anchor index lookup at the last consumed record, not its suffix.
+                kept_record = self._window_records[last_kept + 1]
+                self._document_cache[source_id] = (kept_record, kept_record["_xlm_index_after"])
+                self._previous_document.pop(source_id, None)
                 valid = packed.valid_targets
 
             eos_targets = sum(
@@ -390,8 +404,6 @@ class MixtureBatcher:
                 if not flag and token == self.bos_token_id
             )
             padding = sum(1 for flag in packed.loss_mask if not flag) - bos_excluded
-            from xlm.artifacts.manifest import identity_digest
-
             for index, flag in enumerate(packed.loss_mask):
                 if not flag:
                     continue
@@ -404,8 +416,8 @@ class MixtureBatcher:
                     "byte_span": list(packed.byte_spans[index]),
                     "epoch": self._uncommitted["epochs"][source_id],
                 }
-                self._uncommitted["trace_digest"] = identity_digest(
-                    {"previous": self._uncommitted["trace_digest"], "target": trace}
+                self._uncommitted["trace_digest"] = target_trace_digest(
+                    self._uncommitted["trace_digest"], trace
                 )
                 if trace["byte_span"][0] < 0:
                     self._uncommitted["byte_coverage_complete"] = False
