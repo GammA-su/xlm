@@ -2,8 +2,12 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
-from collections.abc import Iterable, Sequence
+import struct
+import tempfile
+from collections.abc import Iterable, Iterator, Sequence
+from contextlib import contextmanager
 from pathlib import Path
 
 from tokenizers import Tokenizer
@@ -39,6 +43,49 @@ def _get_gpt2_bytes_to_unicode() -> dict[int, str]:
 
 _B2U = _get_gpt2_bytes_to_unicode()
 _U2B = {v: k for k, v in _B2U.items()}
+
+
+@contextmanager
+def _fit_text_stream(
+    documents: Iterable[CanonicalDocument],
+    max_docs: int,
+    max_bytes: int,
+) -> Iterator[tuple[Iterator[str], str]]:
+    """Validate selection before fitting; spool text without retaining the corpus.
+
+    Length framing preserves embedded newlines/NULs and exact document boundaries.
+    Scratch is canonical sample bytes plus eight bytes per selected document.
+    The backend still owns its merge frontier; this only bounds Python preparation.
+    """
+    digest = hashlib.sha256()
+    total_bytes = count = 0
+    with tempfile.TemporaryFile(mode="w+b") as spool:
+        for doc in documents:
+            if doc.split != "train":
+                raise ValueError(
+                    f"Contract violation: Document '{doc.doc_id}' belongs to split '{doc.split}', "
+                    "not 'train'. Only 'train' split documents may be used for tokenizer fitting."
+                )
+            if count >= max_docs or total_bytes + doc.utf8_byte_count > max_bytes:
+                break
+            raw = canonical_normalize(doc.text).encode("utf-8")
+            spool.write(struct.pack("<Q", len(raw)))
+            spool.write(raw)
+            if count:
+                digest.update(b"\n")
+            digest.update(f"{doc.source_id}:{doc.doc_id}:{doc.clean_hash}".encode())
+            total_bytes += doc.utf8_byte_count
+            count += 1
+        if not count:
+            raise ValueError("No valid training documents provided for tokenizer training.")
+        spool.seek(0)
+
+        def texts() -> Iterator[str]:
+            while header := spool.read(8):
+                size = struct.unpack("<Q", header)[0]
+                yield spool.read(size).decode("utf-8")
+
+        yield texts(), digest.hexdigest()
 
 
 class ByteLevelBPETokenizer(BaseTokenizer):
@@ -288,34 +335,6 @@ class ByteLevelBPETokenizer(BaseTokenizer):
                 f"{MINIMUM_VOCAB_SIZE} (4 special tokens + 256 byte symbols)"
             )
 
-        # Build training stream in bounded chunks while validating splits
-        train_texts: list[str] = []
-        doc_hashes: list[str] = []
-        total_bytes = 0
-        doc_count = 0
-
-        for doc in documents:
-            if doc.split != "train":
-                raise ValueError(
-                    f"Contract violation: Document '{doc.doc_id}' belongs to split '{doc.split}', "
-                    "not 'train'. Only 'train' split documents may be used for tokenizer fitting."
-                )
-            if doc_count >= max_train_docs:
-                break
-            if total_bytes + doc.utf8_byte_count > max_train_bytes:
-                break
-
-            clean_text = canonical_normalize(doc.text)
-            train_texts.append(clean_text)
-            doc_hashes.append(f"{doc.source_id}:{doc.doc_id}:{doc.clean_hash}")
-            total_bytes += doc.utf8_byte_count
-            doc_count += 1
-
-        if not train_texts:
-            raise ValueError("No valid training documents provided for tokenizer training.")
-
-        training_input_hash = compute_sha256("\n".join(doc_hashes))
-
         # Initialize base tokenizer with BPE model
         base_tok = Tokenizer(BPE(unk_token="<unk>"))
         base_tok.pre_tokenizer = ByteLevel(add_prefix_space=False, use_regex=True)
@@ -329,7 +348,11 @@ class ByteLevelBPETokenizer(BaseTokenizer):
             show_progress=False,
         )
 
-        base_tok.train_from_iterator(train_texts, trainer=trainer)
+        with _fit_text_stream(documents, max_train_docs, max_train_bytes) as (
+            texts,
+            training_input_hash,
+        ):
+            base_tok.train_from_iterator(texts, trainer=trainer)
 
         # Literal special-token protection:
         # Clear added_tokens from tokenizer structure so literal strings in user text

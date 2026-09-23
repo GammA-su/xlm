@@ -92,16 +92,16 @@ def train(
         raise typer.Exit(code=1)
 
     # Read and explicitly select ONLY train documents
-    all_docs = list(CanonicalDatasetReader.read_jsonl(jsonl_file))
-    train_docs = [d for d in all_docs if d.split == "train"]
+    total_count = train_count = 0
+    for doc in CanonicalDatasetReader.read_jsonl(jsonl_file):
+        total_count += 1
+        train_count += doc.split == "train"
 
-    if not train_docs:
+    if not train_count:
         typer.echo("Error: No documents with split=='train' found in dataset.", err=True)
         raise typer.Exit(code=1)
 
-    typer.echo(
-        f"Loaded {len(train_docs)} training documents (filtered from {len(all_docs)} total)."
-    )
+    typer.echo(f"Loaded {train_count} training documents (filtered from {total_count} total).")
 
     staging_dir = output_dir or (Path(".staging") / f"tokenizer_{tok_type}_{vocab_size}")
     staging_dir.mkdir(parents=True, exist_ok=True)
@@ -112,7 +112,9 @@ def train(
     elif tok_type == "bpe":
         try:
             tokenizer = ByteLevelBPETokenizer.train_from_documents(
-                documents=train_docs,
+                documents=(
+                    d for d in CanonicalDatasetReader.read_jsonl(jsonl_file) if d.split == "train"
+                ),
                 target_vocab_size=vocab_size,
                 is_production_baseline=is_production,
             )

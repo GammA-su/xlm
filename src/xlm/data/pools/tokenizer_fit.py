@@ -129,6 +129,12 @@ def _order_key(seed: int, doc_id: str) -> str:
     return hashlib.blake2b(f"{seed}:{doc_id}".encode(), digest_size=16).hexdigest()
 
 
+@dataclass(frozen=True, slots=True)
+class _FitCandidate:
+    split: str
+    utf8_byte_count: int
+
+
 def build_tokenizer_fit_manifest(
     documents: Iterable[CanonicalDocument],
     doc_ids_by_view: dict[str, list[str]],
@@ -143,7 +149,9 @@ def build_tokenizer_fit_manifest(
     diagnostic comparison unsound (C05, C06).
     """
     cfg = config or TokenizerFitConfig()
-    by_id = {doc.doc_id: doc for doc in documents}
+    # Selection never reads text or provenance. Keep last-ID-wins behavior while
+    # releasing each caller-owned document as the input iterator advances.
+    by_id = {doc.doc_id: _FitCandidate(doc.split, doc.utf8_byte_count) for doc in documents}
 
     view_of_doc: dict[str, str] = {}
     for view_id, ids in doc_ids_by_view.items():
