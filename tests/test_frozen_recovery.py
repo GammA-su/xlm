@@ -10,6 +10,7 @@ import time
 from pathlib import Path
 
 import psutil
+import pytest
 import torch
 
 from test_frozen_execution import frozen_fixture
@@ -17,6 +18,7 @@ from xlm.experiments.execution import read_json
 from xlm.experiments.queue import ExperimentQueue, QueueJob
 
 
+@pytest.mark.serial
 def test_real_crash_preserves_committed_boundary_on_retry(tmp_path: Path) -> None:
     plan, queue, job_id, _, _ = frozen_fixture(
         tmp_path,

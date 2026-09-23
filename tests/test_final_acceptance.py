@@ -200,6 +200,7 @@ def test_cli_missing_data_is_refused_even_in_dry_run(tmp_path: Path, dry_run: bo
     assert not list((tmp_path / "home").rglob("model.pt"))
 
 
+@pytest.mark.serial
 def test_cli_resume_reconstructs_real_settings_and_exact_nonmultiple_budget(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

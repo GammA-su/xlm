@@ -136,6 +136,7 @@ def test_execution_requires_explicit_authorization(tmp_path: Path) -> None:
         run_prepare(config, path, tmp_path / "home", REPO_ROOT, authorize=False)
 
 
+@pytest.mark.serial
 def test_full_toy_run_reuses_on_repeat(tmp_path: Path) -> None:
     config, path = _config(tmp_path)
     home = tmp_path / "home"
@@ -156,6 +157,7 @@ def test_full_toy_run_reuses_on_repeat(tmp_path: Path) -> None:
     assert any(s.action == "forced" for s in third.stages)
 
 
+@pytest.mark.serial
 def test_partial_outputs_resume_without_redo(tmp_path: Path) -> None:
     config, path = _config(tmp_path)
     home = tmp_path / "home"
@@ -170,6 +172,7 @@ def test_partial_outputs_resume_without_redo(tmp_path: Path) -> None:
     assert by_id["clean"] == "reused"
 
 
+@pytest.mark.serial
 def test_failed_stage_stops_with_reason_and_state(tmp_path: Path) -> None:
     config, path = _config(tmp_path)
     broken = config.model_copy(

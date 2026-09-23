@@ -8,7 +8,10 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
 
+
+@pytest.mark.serial
 def test_cli_demo_subprocess() -> None:
     """Verify xlm demo runs cleanly via subprocess to 200 targets."""
     result = subprocess.run(
@@ -61,6 +64,7 @@ def test_cli_run_inspect_subprocess(tmp_path: Path) -> None:
     assert parsed["step"] == 5
 
 
+@pytest.mark.serial
 def test_cli_train_and_resume_subprocess(tmp_path: Path) -> None:
     """Verify xlm train and xlm resume subprocess workflow."""
     plan_data = {

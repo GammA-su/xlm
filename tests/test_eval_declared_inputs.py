@@ -19,6 +19,8 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+
+pytestmark = pytest.mark.optional_dependency
 import yaml
 
 pytest.importorskip("torch")

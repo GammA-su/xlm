@@ -176,6 +176,7 @@ def factory(config, *, artifact):
 
 
 @pytest.mark.parametrize("auxiliary", [False, True])
+@pytest.mark.serial
 def test_public_two_source_prepare_direct_queue_and_resume(tmp_path: Path, auxiliary: bool) -> None:
     from test_frozen_execution import authored_tree
 

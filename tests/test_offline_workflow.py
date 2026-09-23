@@ -14,6 +14,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+import pytest
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -69,6 +71,7 @@ def _tiny_plan(path: Path, plan_id: str = "toy_flow") -> None:
     path.write_text(json.dumps(plan), encoding="utf-8")
 
 
+@pytest.mark.serial
 def test_offline_workflow_from_clean_environment(tmp_path: Path) -> None:
     """prepare -> train -> evaluate -> compare -> export, all from scratch."""
     home = tmp_path / "home"
@@ -341,6 +344,7 @@ def _comparison_plan(path: Path, plan_id: str) -> None:
     )
 
 
+@pytest.mark.serial
 def test_prepare_restart_reuses_verified_acquisition(tmp_path: Path) -> None:
     home = tmp_path / "home"
     out_root = tmp_path / "out"

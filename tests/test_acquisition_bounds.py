@@ -145,6 +145,7 @@ def test_original_concurrent_reservations_share_allowance() -> None:
     assert manager.remaining("transfer") == 1096
 
 
+@pytest.mark.serial
 def test_fresh_process_reservations_and_killed_owner_remain_spent(tmp_path: Path) -> None:
     journal_path = tmp_path / "account.json"
     worker = tmp_path / "reserve.py"
@@ -175,6 +176,7 @@ os._exit(0)
     assert manager.snapshot()["reserved_transfer_bytes"] == 3000
 
 
+@pytest.mark.serial
 def test_killed_download_resumes_in_a_fresh_process_without_new_allowance(tmp_path: Path) -> None:
     payload = (b'{"text":"' + b"A" * 40000 + b'"}\n') * 4
     prefix_sent = threading.Event()
@@ -637,6 +639,7 @@ def test_nested_acquisition_consumes_parent_preparation_budget(server: Any, tmp_
     assert len(calls) == 1 and raw.read_bytes() == PAYLOAD
 
 
+@pytest.mark.serial
 def test_selected_private_attempt_resumes_in_new_process(
     server: Any, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

@@ -30,6 +30,7 @@ def run(root: Path, source: Path, mode: str, workers: int = 2) -> Any:
     )
 
 
+@pytest.mark.serial
 def test_dynamic_and_static_shard_manifests_exact(tmp_path: Path) -> None:
     source = tmp_path / "input.jsonl"
     source.write_text("\n".join(gen_mixed(80, 293)) + "\n", encoding="utf-8")

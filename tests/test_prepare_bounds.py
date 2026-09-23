@@ -23,6 +23,7 @@ def config_for(root: Path, **budgets: int | float) -> PrepareConfig:
     )
 
 
+@pytest.mark.serial
 def test_child_stdout_and_stderr_are_bounded_and_accounted(tmp_path: Path) -> None:
     config = config_for(tmp_path, max_subprocess_output_bytes=1024)
     bounds = PrepareBounds(config, tmp_path / "out", tmp_path / "home")
@@ -47,6 +48,7 @@ def test_child_stdout_and_stderr_are_bounded_and_accounted(tmp_path: Path) -> No
         "import os; os.write(1,b'A'*8192)",
     ],
 )
+@pytest.mark.serial
 def test_child_output_accounting_covers_write_orders(tmp_path: Path, program: str) -> None:
     """Concurrent pipe readers fill one aggregate allowance without losing commits.
 
@@ -72,6 +74,7 @@ def test_child_output_accounting_covers_write_orders(tmp_path: Path, program: st
     assert restored.capacity.remaining("transfer") < 1024
 
 
+@pytest.mark.serial
 def test_child_output_categorizes_every_returned_byte_under_tiny_allowance(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -170,6 +173,7 @@ def test_child_output_categorizes_every_returned_byte_under_tiny_allowance(
     assert restored.capacity.remaining("transfer") == 0
 
 
+@pytest.mark.serial
 def test_child_output_tiny_allowance_over_real_pipes(tmp_path: Path) -> None:
     """Same 16-byte cap over real pipes: exact fill, bounded spool, no leak."""
     import json as json_module
@@ -316,6 +320,7 @@ def test_prepare_aggregate_output_guard(tmp_path: Path) -> None:
         bounds.check()
 
 
+@pytest.mark.serial
 def test_timed_out_child_and_descendant_are_stopped(tmp_path: Path) -> None:
     import time
 

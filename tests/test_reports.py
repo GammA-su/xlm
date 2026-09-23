@@ -392,6 +392,7 @@ def test_cli_report_campaign_and_data(tmp_path: Path, monkeypatch: pytest.Monkey
     assert "<script>" not in (tmp_path / "d.html").read_text(encoding="utf-8")
 
 
+@pytest.mark.serial
 def test_cli_runs_list_empty_and_populated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     from test_queue import make_plan
     from xlm.artifacts.ledger import RunLedger

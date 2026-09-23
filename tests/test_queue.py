@@ -160,6 +160,7 @@ def submit_toy(
 # ------------------------------------------------------------------ submission
 
 
+@pytest.mark.serial
 def test_submit_deduplicates_identical_plans(tmp_path: Path) -> None:
     plan, plan_path, snapshot_dir = make_plan(tmp_path, "dup")
     queue = make_queue(tmp_path, "dup", tmp_path / "ws_dup")
@@ -175,6 +176,7 @@ def test_submit_deduplicates_identical_plans(tmp_path: Path) -> None:
     assert len(queue.list_jobs()) == 1
 
 
+@pytest.mark.serial
 def test_submit_refuses_blocked_plans_and_missing_snapshots(tmp_path: Path) -> None:
     from xlm.experiments.plans import PlanBlocker
 
@@ -233,6 +235,7 @@ def test_submit_refuses_legacy_unfrozen_plan(tmp_path: Path) -> None:
         queue.submit(plan, plan_path, snap_dir, "cpu", authorization_token="tok")
 
 
+@pytest.mark.serial
 def test_submit_allows_explicit_duplicates(tmp_path: Path) -> None:
     plan, plan_path, snapshot_dir = make_plan(tmp_path, "dup2")
     queue = make_queue(tmp_path, "dup2", tmp_path / "ws_dup2")
@@ -270,6 +273,7 @@ def test_stale_lease_is_reclaimable_and_recorded(tmp_path: Path) -> None:
     assert record["previous_holder"] == "crashed_job"
 
 
+@pytest.mark.serial
 def test_cpu_environment_refuses_cuda_job_without_execution(tmp_path: Path) -> None:
     # CPU-only evidence: mismatched devices fail before any GPU execution.
     plan, plan_path, snapshot_dir = make_plan(tmp_path, "gpu")
@@ -299,6 +303,7 @@ def test_cpu_environment_refuses_cuda_job_without_execution(tmp_path: Path) -> N
 # ------------------------------------------------------------------- execution
 
 
+@pytest.mark.serial
 def test_toy_campaign_runs_sequentially_to_success(tmp_path: Path) -> None:
     # One queue drains three toy jobs in submission order. All fixture trees
     # carry identical file contents, so one tree root verifies every snapshot.
@@ -325,6 +330,7 @@ def test_toy_campaign_runs_sequentially_to_success(tmp_path: Path) -> None:
         assert len(attempts) == 1 and attempts[0]["state"] == "SUCCEEDED"
 
 
+@pytest.mark.serial
 def test_changed_live_tree_preserves_frozen_run(tmp_path: Path) -> None:
     plan, plan_path, snapshot_dir = make_plan(tmp_path, "frozen")
     tree = tmp_path / "ws_frozen"
@@ -338,6 +344,7 @@ def test_changed_live_tree_preserves_frozen_run(tmp_path: Path) -> None:
     assert current is not None and current.state == RunStatus.SUCCEEDED.value
 
 
+@pytest.mark.serial
 def test_failed_jobs_keep_evidence_and_stay_terminal(tmp_path: Path) -> None:
     """Execution failures are terminal, recorded, and never silently rerun."""
     plan, plan_path, snapshot_dir = make_plan(
@@ -366,6 +373,7 @@ def test_failed_jobs_keep_evidence_and_stay_terminal(tmp_path: Path) -> None:
     assert "authored worker failure" in (attempts[0]["reason"] or "")
 
 
+@pytest.mark.serial
 def test_crash_recovery_requeues_once_when_retries_remain(tmp_path: Path) -> None:
     plan, plan_path, snapshot_dir = make_plan(tmp_path, "crash")
     queue = ExperimentQueue(
@@ -411,6 +419,7 @@ def simulate_crash(queue: ExperimentQueue, job_id: str) -> Any:
     )
 
 
+@pytest.mark.serial
 def test_crash_without_retries_fails_loudly(tmp_path: Path) -> None:
     plan, plan_path, snapshot_dir = make_plan(tmp_path, "crash0")
     queue = make_queue(tmp_path, "crash0", tmp_path / "ws_crash0")
@@ -422,6 +431,7 @@ def test_crash_without_retries_fails_loudly(tmp_path: Path) -> None:
     assert "retry budget exhausted" in (failed.last_reason or "")
 
 
+@pytest.mark.serial
 def test_cancel_stops_a_queued_job_and_a_running_job(tmp_path: Path) -> None:
     plan, plan_path, snapshot_dir = make_plan(tmp_path, "cancelq")
     queue = make_queue(tmp_path, "cancelq", tmp_path / "ws_cancelq")
@@ -469,6 +479,7 @@ def test_prep_pool_is_bounded_and_ordered(tmp_path: Path) -> None:
         pool.shutdown()
 
 
+@pytest.mark.serial
 def test_status_lists_jobs_with_attempts(tmp_path: Path) -> None:
     plan, plan_path, snapshot_dir = make_plan(tmp_path, "st")
     queue = make_queue(tmp_path, "st", tmp_path / "ws_st")

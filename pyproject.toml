@@ -117,6 +117,9 @@ markers = [
     "network: tests that require network access (offline by default)",
     "cuda: tests that require an NVIDIA CUDA GPU",
     "slow: tests that take longer than a few seconds",
+    "performance: explicit timing/throughput matrices; original large evidence, excluded from correctness gates",
+    "scale: large correctness/resource-bound tests required by final offline acceptance",
+    "optional_dependency: explicit installed-capability tests (never installs or downloads dependencies)",
     "operator: tests that require isolated operator privileges",
     "serial: tests requiring exclusive execution (shared-checkout mutation, nonisolatable resources, measured timing/inventory checks); run with -n 0, never under xdist",
 ]

@@ -29,6 +29,7 @@ def prepare(root: Path) -> tuple[Path, Path, list]:
     return root / "input", root / "tokenizer", docs
 
 
+@pytest.mark.serial
 def test_worker_count_and_assembly_bytes_exact(tmp_path: Path) -> None:
     source, tokenizer, _ = prepare(tmp_path)
     indexes = []

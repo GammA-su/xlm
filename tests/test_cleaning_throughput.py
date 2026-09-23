@@ -625,6 +625,7 @@ def test_engine_matches_reference_legacy(tmp_path: Path) -> None:
     assert (out / "cleaning_throughput.json").is_file()
 
 
+@pytest.mark.serial
 def test_workers_1_2_4_agree(tmp_path: Path) -> None:
     lines = gen_mixed(600, 32)
     selected = tmp_path / "w.jsonl"
@@ -710,6 +711,7 @@ def test_assembly_spanning_copy_blocks(tmp_path: Path) -> None:
     assert _read_accepted(out) == ref_docs
 
 
+@pytest.mark.serial
 def test_max_docs_matches_reference(tmp_path: Path) -> None:
     lines = gen_mixed(200, 36)
     ref_docs, ref_q, ref_summary = _reference_run(tmp_path, lines, "cap", max_docs=50)
@@ -861,6 +863,7 @@ def test_worker_failure_aborts_without_publication(tmp_path: Path) -> None:
 # CLI surface.
 
 
+@pytest.mark.serial
 def test_cli_clean_legacy_and_sharded(tmp_path: Path) -> None:
     lines = gen_mixed(120, 41)
     selected = tmp_path / "cli.jsonl"
@@ -893,6 +896,7 @@ def test_cli_clean_legacy_and_sharded(tmp_path: Path) -> None:
     assert _read_accepted(tmp_path / "cli_sh") == _read_accepted(tmp_path / "cli_leg")
 
 
+@pytest.mark.serial
 def test_cli_clean_manifest_input_and_errors(tmp_path: Path) -> None:
     lines = gen_mixed(80, 42)
     selected = tmp_path / "e.jsonl"
@@ -961,6 +965,8 @@ def _benchmark_table(tag: str, rows: list[tuple]) -> None:
 
 
 @pytest.mark.slow
+@pytest.mark.performance
+@pytest.mark.serial
 def test_benchmark_10k_mixed_workers(tmp_path: Path) -> None:
     import psutil
 
@@ -980,6 +986,8 @@ def test_benchmark_10k_mixed_workers(tmp_path: Path) -> None:
 
 
 @pytest.mark.slow
+@pytest.mark.performance
+@pytest.mark.serial
 def test_benchmark_100k_mixed_endpoints(tmp_path: Path) -> None:
     lines = gen_mixed(100_000, 46)
     selected = tmp_path / "bench100k.jsonl"
@@ -1002,6 +1010,8 @@ def test_benchmark_100k_mixed_endpoints(tmp_path: Path) -> None:
 
 
 @pytest.mark.slow
+@pytest.mark.performance
+@pytest.mark.serial
 def test_benchmark_128mib_sharded_workers(tmp_path: Path) -> None:
     import psutil
 
@@ -1035,6 +1045,8 @@ def test_benchmark_128mib_sharded_workers(tmp_path: Path) -> None:
 
 
 @pytest.mark.slow
+@pytest.mark.scale
+@pytest.mark.serial
 def test_memory_bound_heavy_docs(tmp_path: Path) -> None:
     import psutil
 

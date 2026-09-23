@@ -264,6 +264,7 @@ def test_embedding_validation_structural_failures(tmp_path: Path) -> None:
         load_embedding_manifest(tmp_path / "missing.json")
 
 
+@pytest.mark.optional_dependency
 def test_capabilities_and_backend_resolution() -> None:
     caps = describe_capabilities()
     assert caps["faiss_available"] is False
@@ -287,6 +288,7 @@ def test_capabilities_and_backend_resolution() -> None:
             resolve_backend("numpy")
 
 
+@pytest.mark.optional_dependency
 def test_numpy_backend_matches_python_backend() -> None:
     numpy = pytest.importorskip("numpy")
     assert numpy is not None

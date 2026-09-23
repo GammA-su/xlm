@@ -171,6 +171,7 @@ def test_signature_view_sharing_matches() -> None:
         ) == shingles(text, hasher.config.shingle_size)
 
 
+@pytest.mark.optional_dependency
 def test_kernel_matches_reference_when_numpy_present() -> None:
     numpy = pytest.importorskip("numpy")
     assert numpy is not None
@@ -235,8 +236,9 @@ def test_clean_hash_is_not_exact_identity(tmp_path: Path) -> None:
 # Engine vs reference and layout/worker invariance (P28-AC).
 
 
-def test_engine_matches_reference(tmp_path: Path) -> None:
-    lines = gen_dedup(1500, 51)
+@pytest.mark.scale
+def test_engine_matches_reference(tmp_path: Path, documents: int = 1500) -> None:
+    lines = gen_dedup(documents, 51)
     ref_survivors, ref_result = _reference_run(tmp_path, lines, "ref1500")
     selected = tmp_path / "ref1500.jsonl"
     selected.write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -247,8 +249,10 @@ def test_engine_matches_reference(tmp_path: Path) -> None:
     assert (out / "dedup_throughput.json").is_file()
 
 
-def test_workers_and_layouts_agree(tmp_path: Path) -> None:
-    lines = gen_dedup(1200, 52)
+@pytest.mark.scale
+@pytest.mark.serial
+def test_workers_and_layouts_agree(tmp_path: Path, documents: int = 1200) -> None:
+    lines = gen_dedup(documents, 52)
     selected = tmp_path / "w.jsonl"
     selected.write_text("\n".join(lines) + "\n", encoding="utf-8")
     manifest_dir = tmp_path / "w_shards"
@@ -269,8 +273,9 @@ def test_workers_and_layouts_agree(tmp_path: Path) -> None:
     assert runs[0] == runs[1] == runs[2] == runs[3]
 
 
-def test_sharded_output_equivalence(tmp_path: Path) -> None:
-    lines = gen_dedup(800, 53)
+@pytest.mark.scale
+def test_sharded_output_equivalence(tmp_path: Path, documents: int = 800) -> None:
+    lines = gen_dedup(documents, 53)
     selected = tmp_path / "s.jsonl"
     selected.write_text("\n".join(lines) + "\n", encoding="utf-8")
     legacy_out, legacy_result, _ = _engine_run(tmp_path, selected, "leg")
@@ -280,8 +285,9 @@ def test_sharded_output_equivalence(tmp_path: Path) -> None:
     assert (shard_out / "dataset-manifest.json").is_file()
 
 
-def test_output_shard_sizes_preserve_decisions(tmp_path: Path) -> None:
-    lines = gen_dedup(600, 54)
+@pytest.mark.scale
+def test_output_shard_sizes_preserve_decisions(tmp_path: Path, documents: int = 600) -> None:
+    lines = gen_dedup(documents, 54)
     selected = tmp_path / "z.jsonl"
     selected.write_text("\n".join(lines) + "\n", encoding="utf-8")
     streams = []
@@ -291,10 +297,11 @@ def test_output_shard_sizes_preserve_decisions(tmp_path: Path) -> None:
     assert streams[0] == streams[1] == streams[2]
 
 
-def test_exact_only_and_threshold_modes(tmp_path: Path) -> None:
+@pytest.mark.scale
+def test_exact_only_and_threshold_modes(tmp_path: Path, documents: int = 400) -> None:
     from xlm.data.dedup.minhash import MinHashConfig
 
-    lines = gen_dedup(400, 55)
+    lines = gen_dedup(documents, 55)
     ref_exact, _ = _reference_run(tmp_path, lines, "exactref", enable_near_duplicates=False)
     selected = tmp_path / "exact.jsonl"
     selected.write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -362,6 +369,7 @@ def test_worker_failure_aborts_without_publication(tmp_path: Path) -> None:
 # CLI surface.
 
 
+@pytest.mark.serial
 def test_cli_dedup_legacy_and_sharded(tmp_path: Path) -> None:
     lines = gen_dedup(300, 57)
     selected = tmp_path / "cli.jsonl"
@@ -393,6 +401,7 @@ def test_cli_dedup_legacy_and_sharded(tmp_path: Path) -> None:
     assert _read_survivors(tmp_path / "cli_sh") == _read_survivors(tmp_path / "cli_leg")
 
 
+@pytest.mark.serial
 def test_cli_dedup_manifest_input_and_errors(tmp_path: Path) -> None:
     lines = gen_dedup(200, 58)
     selected = tmp_path / "e.jsonl"
@@ -447,6 +456,8 @@ def _benchmark_table(tag: str, rows: list[tuple]) -> None:
 
 
 @pytest.mark.slow
+@pytest.mark.performance
+@pytest.mark.serial
 def test_benchmark_10k_workers(tmp_path: Path) -> None:
     lines = gen_dedup(10_000, 59)
     selected = tmp_path / "bench10k.jsonl"
@@ -465,6 +476,8 @@ def test_benchmark_10k_workers(tmp_path: Path) -> None:
 
 
 @pytest.mark.slow
+@pytest.mark.performance
+@pytest.mark.serial
 def test_benchmark_100k_endpoints(tmp_path: Path) -> None:
     lines = gen_dedup(100_000, 60)
     selected = tmp_path / "bench100k.jsonl"
@@ -487,6 +500,8 @@ def test_benchmark_100k_endpoints(tmp_path: Path) -> None:
 
 
 @pytest.mark.slow
+@pytest.mark.performance
+@pytest.mark.serial
 def test_benchmark_long_docs(tmp_path: Path) -> None:
     rng = random.Random(61)
     lines = [json.dumps(_doc_dict(f"long-{i:04d}", _prose(rng, 2500), i)) for i in range(2000)]
@@ -505,6 +520,8 @@ def test_benchmark_long_docs(tmp_path: Path) -> None:
 
 
 @pytest.mark.slow
+@pytest.mark.scale
+@pytest.mark.serial
 def test_memory_bound(tmp_path: Path) -> None:
     import psutil
 

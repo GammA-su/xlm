@@ -109,6 +109,7 @@ def frozen_fixture(
     return plan, queue, job_id, tree, snapshot_path
 
 
+@pytest.mark.serial
 def test_independent_persisted_bindings_refuse_before_worker(tmp_path: Path) -> None:
     from xlm.experiments.execution import read_json, write_json
 
@@ -143,6 +144,7 @@ def test_independent_persisted_bindings_refuse_before_worker(tmp_path: Path) -> 
         assert not (Path(job.work_dir) / "worker-1").exists()
 
 
+@pytest.mark.serial
 def test_authority_and_recomputed_envelope_fields_are_checked(tmp_path: Path) -> None:
     import copy
 
@@ -175,6 +177,7 @@ def test_authority_and_recomputed_envelope_fields_are_checked(tmp_path: Path) ->
             validate_envelope(envelope, snapshot, check_environment=False)
 
 
+@pytest.mark.serial
 def test_actual_environment_mismatch_fails_in_real_worker(tmp_path: Path) -> None:
     from xlm.artifacts.manifest import identity_digest
 
@@ -198,6 +201,7 @@ def test_actual_environment_mismatch_fails_in_real_worker(tmp_path: Path) -> Non
     assert observed["exit_code"] != 0
 
 
+@pytest.mark.serial
 def test_public_queue_and_diagnostic_receipt_keep_separate_provenance(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -244,6 +248,7 @@ def test_public_queue_and_diagnostic_receipt_keep_separate_provenance(
     )
 
 
+@pytest.mark.serial
 def test_changed_tokenizer_and_real_shard_are_rejected(tmp_path: Path) -> None:
     from test_token_shards import make_doc
     from xlm.data.tokens import TokenShardWriter
@@ -277,6 +282,7 @@ def test_changed_tokenizer_and_real_shard_are_rejected(tmp_path: Path) -> None:
         validate_envelope(plan.execution_envelope, snapshot, check_environment=False)
 
 
+@pytest.mark.serial
 def test_real_worker_output_bound_and_terminal_failure(tmp_path: Path) -> None:
     plan, queue, job_id, _, snapshot = frozen_fixture(
         tmp_path, 'print("x" * (17 * 1024**2), flush=True)'
@@ -296,6 +302,7 @@ def test_real_worker_output_bound_and_terminal_failure(tmp_path: Path) -> None:
     assert not list((snapshot / "code").rglob("__pycache__"))
 
 
+@pytest.mark.serial
 def test_worker_rejects_cli_override_outside_frozen_envelope(tmp_path: Path) -> None:
     from xlm.experiments.environment import runtime_locations
     from xlm.experiments.execution import write_json
@@ -456,6 +463,7 @@ def test_relocated_locked_environment_ignores_editable_hooks_and_bytecode(
         environment.installed_runtime(snapshot / "code/uv.lock", ["cpu"], site)
 
 
+@pytest.mark.serial
 def test_real_frozen_worker_trains_and_publishes(tmp_path: Path) -> None:
     plan, queue, job_id, _, snapshot = frozen_fixture(
         tmp_path, 'print("D06_AUTHORED_A", flush=True)'
@@ -479,6 +487,7 @@ def test_real_frozen_worker_trains_and_publishes(tmp_path: Path) -> None:
     assert json.loads((checkpoint / "runtime.json").read_text())["plan_hash"] == plan.plan_hash
 
 
+@pytest.mark.serial
 def test_intact_a_executes_after_live_b_and_import_override(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -506,6 +515,7 @@ def test_intact_a_executes_after_live_b_and_import_override(
 
 
 @pytest.mark.parametrize("damage", ["tamper", "missing", "extra"])
+@pytest.mark.serial
 def test_snapshot_damage_rejects_before_worker(tmp_path: Path, damage: str) -> None:
     _, queue, job_id, _, snapshot = frozen_fixture(tmp_path)
     path = snapshot / "code/src/xlm/training/trainer.py"

@@ -668,6 +668,8 @@ def _large_texts(n: int, size: int, tag: str) -> list[str]:
 
 
 @pytest.mark.slow
+@pytest.mark.scale
+@pytest.mark.serial
 def test_large_benchmark_128mib(tmp_path: Path) -> None:
     import psutil
 
@@ -715,6 +717,8 @@ def test_large_benchmark_128mib(tmp_path: Path) -> None:
     assert growth_mib < 1024
 
 
+@pytest.mark.performance
+@pytest.mark.serial
 def test_shard_size_comparison_table(tmp_path: Path) -> None:
 
     texts = _large_texts(1500, 4000, "table")

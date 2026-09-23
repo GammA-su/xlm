@@ -8,7 +8,10 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
 
+
+@pytest.mark.serial
 def test_cli_demo_complete_vertical_slice_subprocess() -> None:
     """Verify extended xlm demo runs cleanly through vertical slice."""
     result = subprocess.run(
@@ -28,6 +31,7 @@ def test_cli_demo_complete_vertical_slice_subprocess() -> None:
     assert "Document Text BPB" in result.stdout
 
 
+@pytest.mark.serial
 def test_cli_evaluate_and_generate_subprocess(tmp_path: Path) -> None:
     """Verify xlm evaluate and xlm generate commands run cleanly on a saved checkpoint."""
 

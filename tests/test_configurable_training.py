@@ -87,6 +87,7 @@ def test_uncapped_authored_stream_positive_control(tmp_path: Path) -> None:
     )
 
 
+@pytest.mark.serial
 def test_public_cli_executes_registered_objective(tmp_path: Path) -> None:
     from xlm.config import schemas  # register the existing built-ins
     from xlm.core.registry import objectives

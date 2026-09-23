@@ -24,6 +24,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
 import torch
 
 from xlm.artifacts.ledger import RunLedger
@@ -223,6 +224,7 @@ if __name__ == "__main__":
 """
 
 
+@pytest.mark.serial
 def test_cpu_fresh_process_continuation_parity(tmp_path: Path) -> None:
     """Verify bitwise equality between uninterrupted and resumed runs at 200 targets."""
     artifact_root = tmp_path / "artifacts"

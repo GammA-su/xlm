@@ -15,6 +15,8 @@ from typing import Any
 
 import pytest
 
+pytestmark = pytest.mark.optional_dependency
+
 pytest.importorskip("torch")
 pytest.importorskip("lm_eval")
 pytest.importorskip("datasets")
