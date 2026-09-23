@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import collections
+import itertools
 import re
 import time
 
@@ -66,6 +67,10 @@ def is_structural_separator_line(line: str) -> bool:
     """
     stripped = line.strip()
     if len(stripped) < 3:
+        return False
+    # Every accepted grammar uses only these markers. Ordinary prose can fail
+    # before constructing a set of all characters in a potentially huge line.
+    if stripped[0] not in "-*_=|:+":
         return False
     compact = stripped.replace(" ", "").replace("\t", "")
     if len(compact) < 3:
@@ -197,15 +202,18 @@ class RepetitionFilter(BaseTransform):
                 )
 
         # 3. Bounded 5-gram repetition analysis
-        sample_text = text[: self.cfg.max_analysis_chars]
-        sample_words = sample_text.split()
+        sample_words = (
+            words
+            if len(text) <= self.cfg.max_analysis_chars
+            else text[: self.cfg.max_analysis_chars].split()
+        )
         ngram_repeat_ratio = 0.0
         if len(sample_words) >= 10:
             n = 5
-            # P27B-I: count tuple n-grams from a generator instead of a
-            # materialized list of tuples; the multiset counted (hence every
-            # count, the ratio, and the reason string) is identical.
-            ngrams = (tuple(sample_words[i : i + n]) for i in range(len(sample_words) - n + 1))
+            # zip creates the same exact tuples in C, without a temporary list
+            # slice or Python generator step for each window. Counter still
+            # compares full tuples; hash collisions cannot change counts.
+            ngrams = zip(*(itertools.islice(sample_words, i, None) for i in range(n)), strict=False)
             ngram_counts = collections.Counter(ngrams)
             if ngram_counts:
                 repeated_ngrams = sum(c for c in ngram_counts.values() if c > 1)
