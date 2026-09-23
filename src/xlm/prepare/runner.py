@@ -13,6 +13,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import shutil
 import sys
 import uuid
 from dataclasses import asdict, dataclass, field
@@ -22,9 +23,9 @@ from typing import Any
 
 from filelock import FileLock
 
-from xlm.artifacts.manifest import ensure_plain_path, validate_component
+from xlm.artifacts.manifest import comparable_resolved, ensure_plain_path, validate_component
 from xlm.prepare.bounds import PrepareBounds
-from xlm.prepare.config import PrepareConfig
+from xlm.prepare.config import PrepareConfig, PrepareStageSpec
 from xlm.prepare.integrity import bounded_files
 from xlm.prepare.planner import (
     build_variable_mapping,
@@ -116,6 +117,66 @@ def _write_state(
     tmp.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
     tmp.replace(path)
     return path
+
+
+def _clear_declared_outputs(
+    spec: PrepareStageSpec,
+    variables: dict[str, str],
+    config_dir: Path,
+    output_root: Path,
+) -> None:
+    """Remove a stage's declared outputs before it (re)runs.
+
+    Immutable writers (token shards publish manifest-last and refuse to
+    write into a directory that already holds payloads) cannot rebuild in
+    place, so a legitimate rerun — a forced rebuild or a lineage-stale
+    rerun after an upstream stage reran — must start from a clean slate.
+    Reuse is untouched: this runs only for stages about to execute, never
+    for reused, blocked, or check-only stages (which declare no outputs).
+
+    Clearing is fail-closed: every declared path is validated before
+    anything is removed. Paths must resolve inside the output root (a
+    stage can never delete repo, home, or absolute-elsewhere files), must
+    not be the prepare state or lock file, and symlinks are unlinked,
+    never followed. A corrupt artifact at a declared path is therefore
+    replaced only by that path owner's own rerun — writers still fail
+    closed on anything unexpected found mid-run, and post-run
+    verification still decides succeeded vs partial.
+    """
+    targets: list[Path] = []
+    root = comparable_resolved(output_root)
+    for raw in spec.outputs:
+        resolved = resolve_variables(raw, variables, where=f"stage '{spec.stage_id}' outputs")
+        path = Path(resolved)
+        if not path.is_absolute():
+            path = config_dir / path
+        if comparable_resolved(path).parent == root and path.name in (
+            STATE_FILENAME,
+            ".prepare.lock",
+        ):
+            raise PrepareRunError(
+                f"stage '{spec.stage_id}' must not declare prepare state as an output: {raw}"
+            )
+        if comparable_resolved(path) == root:
+            raise PrepareRunError(
+                f"stage '{spec.stage_id}' must not declare the whole output root "
+                f"as an output: {raw}"
+            )
+        if root not in comparable_resolved(path).parents:
+            raise PrepareRunError(
+                f"stage '{spec.stage_id}' declares an output outside the output root, "
+                f"refusing to clear: {raw}"
+            )
+        targets.append(path)
+    for path in targets:
+        if path.is_symlink():
+            path.unlink()
+        elif path.is_dir():
+            ensure_plain_path(path)
+            shutil.rmtree(path)
+        elif path.is_file():
+            ensure_plain_path(path)
+            path.unlink(missing_ok=True)
 
 
 def _copy_bounded(
@@ -297,6 +358,9 @@ def _run_prepare(
             continue
 
         action = "forced" if force else ("resumed" if previous else "ran")
+        # A stage about to (re)run owns its declared outputs: clear them so
+        # immutable writers can rebuild. Reused stages never reach here.
+        _clear_declared_outputs(spec, variables, config_file.parent, output_root)
         try:
             if spec.kind == "local_copy":
                 destinations = [

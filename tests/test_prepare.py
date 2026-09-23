@@ -278,3 +278,57 @@ def test_cli_maintenance_dry_run_lists_scratch(
     capped = _invoke(["maintenance", "--apply", "--max-bytes", "0"], monkeypatch, tmp_path)
     assert capped.exit_code == 1
     assert (scratch / "big.json").is_file(), "refused removal must delete nothing"
+
+
+def test_clear_declared_outputs_removes_only_owned_paths(tmp_path: Path) -> None:
+    """Rerun clearing removes declared files/dirs, unlinks (never follows)
+    symlinks, skips missing paths, and refuses anything outside the output
+    root or the prepare state itself."""
+    from xlm.prepare.config import PrepareStageSpec
+    from xlm.prepare.runner import _clear_declared_outputs
+
+    out = tmp_path / "out"
+    out.mkdir()
+    variables = {"output_root": str(out)}
+    spec = PrepareStageSpec(
+        stage_id="s",
+        kind="run",
+        command=["x"],
+        outputs=["{output_root}/shards/fixture_cleaning", "{output_root}/report.json"],
+    )
+    shard_dir = out / "shards" / "fixture_cleaning"
+    shard_dir.mkdir(parents=True)
+    (shard_dir / "tokens.bin").write_bytes(b"payloads")
+    (out / "report.json").write_text("{}", encoding="utf-8")
+    keep = out / "keep.json"
+    keep.write_text("{}", encoding="utf-8")
+
+    _clear_declared_outputs(spec, variables, tmp_path, out)
+    assert not (shard_dir).exists()
+    assert not (out / "report.json").exists()
+    assert keep.is_file(), "unrelated outputs must survive clearing"
+    # Idempotent on missing paths.
+    _clear_declared_outputs(spec, variables, tmp_path, out)
+
+    outside = PrepareStageSpec(
+        stage_id="evil", kind="run", command=["x"], outputs=[str(tmp_path / "other.json")]
+    )
+    (tmp_path / "other.json").write_text("{}", encoding="utf-8")
+    with pytest.raises(PrepareRunError, match="outside the output root"):
+        _clear_declared_outputs(outside, variables, tmp_path, out)
+    assert (tmp_path / "other.json").is_file(), "refused clearing must delete nothing"
+
+    whole_root = PrepareStageSpec(
+        stage_id="greedy", kind="run", command=["x"], outputs=["{output_root}"]
+    )
+    with pytest.raises(PrepareRunError, match="whole output root"):
+        _clear_declared_outputs(whole_root, variables, tmp_path, out)
+
+    state_like = PrepareStageSpec(
+        stage_id="greedy2",
+        kind="run",
+        command=["x"],
+        outputs=["{output_root}/prepare_state.json"],
+    )
+    with pytest.raises(PrepareRunError, match="prepare state"):
+        _clear_declared_outputs(state_like, variables, tmp_path, out)
