@@ -413,10 +413,10 @@ def test_adapt_throughput_reported(tmp_path: Path) -> None:
     assert result.exit_code == 0, result.output
     assert "Adapt throughput:" in result.output and "/s" in result.output
     print(f"adapt 2k wall={wall:.2f}s")
+
+
 @pytest.mark.performance
 @pytest.mark.serial
-
-
 def test_large_scale_jsonl_vs_ipc(tmp_path: Path) -> None:
     import pyarrow as pa
     import pyarrow.parquet as pq  # noqa: F401  (import parity check only)
