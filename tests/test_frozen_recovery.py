@@ -13,7 +13,8 @@ import psutil
 import torch
 
 from test_frozen_execution import frozen_fixture
-from xlm.experiments.queue import QueueJob
+from xlm.experiments.execution import read_json
+from xlm.experiments.queue import ExperimentQueue, QueueJob
 
 
 def test_real_crash_preserves_committed_boundary_on_retry(tmp_path: Path) -> None:
@@ -70,6 +71,7 @@ def test_real_crash_preserves_committed_boundary_on_retry(tmp_path: Path) -> Non
                     except psutil.NoSuchProcess:
                         pass
             proc.wait(timeout=10)
+            _wait_for_recorded_processes_to_exit(queue, job_id)
     original = (step / "manifest.json").read_bytes()
     current = queue.get_job(job_id)
     assert current is not None and current.state == "RUNNING"
@@ -88,3 +90,40 @@ def test_real_crash_preserves_committed_boundary_on_retry(tmp_path: Path) -> Non
     assert all(torch.equal(before[k], after[k]) for k in before)
     assert (step / "manifest.json").read_bytes() == original
     assert [item["state"] for item in queue.attempts(job_id)] == ["INTERRUPTED", "SUCCEEDED"]
+
+
+def _wait_for_recorded_processes_to_exit(queue: ExperimentQueue, job_id: str) -> None:
+    """Wait until every process recorded in the job identity files has exited.
+
+    Killing a process tree is asynchronous: the worker (torch teardown takes
+    seconds) may still be alive when ``Popen.wait`` returns for the parent.
+    Recovery must never reap a live owner, so the test has to synchronize on
+    actual death instead of assuming it. A timeout here fails loudly — that
+    would mean the kill did not take, which is a real defect, not slowness.
+    """
+    identity_files = [queue.paths.runs / job_id / "runner_identity.json"]
+    identity_files.extend(sorted((queue.paths.runs / job_id).rglob("process_identity.json")))
+    identity_files.extend(sorted((queue.paths.runs / job_id).rglob("worker_identity.json")))
+    wanted: dict[int, float] = {}
+    for path in identity_files:
+        if not path.is_file():
+            continue
+        try:
+            identity = read_json(path)
+            wanted[int(identity["pid"])] = float(identity["create_time"])
+        except (KeyError, TypeError, ValueError):
+            continue
+    deadline = time.monotonic() + 120
+    while wanted:
+        for pid in list(wanted):
+            try:
+                alive = psutil.Process(pid).create_time() == wanted[pid]
+            except psutil.NoSuchProcess:
+                alive = False
+            if not alive:
+                del wanted[pid]
+        if wanted and time.monotonic() < deadline:
+            time.sleep(0.2)
+        elif wanted:
+            break
+    assert not wanted, f"recorded owner processes did not exit after kill: {sorted(wanted)}"
