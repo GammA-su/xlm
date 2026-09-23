@@ -29,6 +29,13 @@ Correctness contract (P27B-G):
 
 from __future__ import annotations
 
+# Exact str predicates over the ASCII domain, including U+001C..U+001F
+# whitespace. Immutable deletion sets let CPython count in C without per-char
+# Python calls; non-ASCII text keeps the full Unicode reference below.
+_ASCII_ALPHA = bytes(i for i in range(128) if chr(i).isalpha())
+_ASCII_DIGITS = bytes(i for i in range(128) if chr(i).isdigit())
+_ASCII_SPACE = bytes(i for i in range(128) if chr(i).isspace())
+
 
 class CharStats:
     """Integer character-class counts for one text version.
@@ -70,6 +77,22 @@ def compute_char_stats(text: str) -> CharStats:
       positions evaluated the same way (length-filter density accounting
       evaluates every character; whitespace simply never satisfies it).
     """
+    if text.isascii():
+        raw = text.encode("ascii")
+        size = len(raw)
+        alpha = size - len(raw.translate(None, _ASCII_ALPHA))
+        digits = size - len(raw.translate(None, _ASCII_DIGITS))
+        non_ws = len(raw.translate(None, _ASCII_SPACE))
+        alnum = alpha + digits
+        return CharStats(
+            alpha=alpha,
+            latin=alpha,
+            alnum=alnum,
+            non_ws=non_ws,
+            symbols=non_ws - alnum,
+            digits=digits,
+        )
+
     alpha = latin = alnum = non_ws = symbols = digits = 0
     for char in text:
         if char.isalpha():
