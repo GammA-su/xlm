@@ -1,5 +1,17 @@
 # Implementation status
 
+> **P27A production sharding (2026-09-23): IMPLEMENTED / VERIFIED (bounded
+> offline)** on `perf/p27a-production-sharding` (parent `0675331`).
+> Deterministic size-sharded datasets (`dataset-manifest.json` v1), streaming
+> 64 MiB input budget, atomic per-shard publish with manifest-last ordering,
+> manifest-dir adapt input, `--output-shard-bytes` adapt path, strict
+> verifier, and `adopt` verified-prefix primitive (resume wiring deferred).
+> 28 focused + 3 serial + 1 slow test passed; ruff/mypy clean on scoped
+> sources. 128 MiB synthetic benchmark: 2 shards, 1.5 s, 2753 rec/s,
+> RSS +2.2 MiB. Full suite NOT RUN (final gate only). See
+> [reports/P27A.md](reports/P27A.md). Overall production acceptance remains
+> BLOCKED; main is unchanged.
+
 > **D02 + D04/D05 + D07 + D08 integrated (2026-09-20): IMPLEMENTED / INTEGRATED
 > (bounded Windows CPU offline)** on `integrate/d07-d08`. Merges `fix/d08`
 > (D02 closeout + D08 analysis repair) and `fix/d07` (single-copy export);

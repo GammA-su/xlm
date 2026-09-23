@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import itertools
 import json
 import os
@@ -1789,6 +1790,21 @@ def adapt_cmd(
             help="Streaming batch size; performance only, never output semantics.",
         ),
     ] = 512,
+    max_input_bytes: Annotated[
+        int,
+        typer.Option(
+            "--max-input-bytes",
+            help="Bounded streaming input byte budget (default 64 MiB).",
+        ),
+    ] = 64 * 1024 * 1024,
+    output_shard_bytes: Annotated[
+        int | None,
+        typer.Option(
+            "--output-shard-bytes",
+            help="Shard canonical output by target serialized bytes "
+            "(deterministic dataset manifest); omit for legacy single file.",
+        ),
+    ] = None,
 ) -> None:
     """Adapt verified selected records into CanonicalDocument JSONL via one adapter.
 
@@ -1798,10 +1814,9 @@ def adapt_cmd(
     """
     import time
 
+    from xlm.data.acquisition.records import StreamingJsonlWriter
     from xlm.data.adapters.mix01_adapters import ADAPTERS_BY_ID, RecordRejectedError
     from xlm.data.adapters.rejections import (
-        ADAPT_INPUT_MAX_BYTES,
-        ADAPT_READ_CHUNK_BYTES,
         DOCUMENTS_FILENAME,
         REJECTIONS_FILENAME,
         SUMMARY_FILENAME,
@@ -1811,12 +1826,24 @@ def adapt_cmd(
         serialize_document,
         serialize_rejection,
     )
+    from xlm.data.datasets.shards import (
+        MANIFEST_FILENAME,
+        ShardedJsonlWriter,
+        input_byte_size,
+        iter_input_blocks,
+    )
 
     if on_reject not in ("fail", "record"):
         typer.echo("Error: --on-reject must be 'fail' or 'record'.", err=True)
         raise typer.Exit(code=1)
     if batch_records < 1:
         typer.echo("Error: --batch-records must be positive.", err=True)
+        raise typer.Exit(code=1)
+    if max_input_bytes < 1:
+        typer.echo("Error: --max-input-bytes must be positive.", err=True)
+        raise typer.Exit(code=1)
+    if output_shard_bytes is not None and output_shard_bytes < 1:
+        typer.echo("Error: --output-shard-bytes must be positive.", err=True)
         raise typer.Exit(code=1)
 
     try:
@@ -1855,17 +1882,59 @@ def adapt_cmd(
         raise typer.Exit(code=1) from e
 
     try:
-        input_size = input_path.stat().st_size
+        input_size = input_byte_size(input_path)
     except Exception as e:
         typer.echo(f"Error reading selected records: {e}", err=True)
         raise typer.Exit(code=1) from e
-    if input_size > ADAPT_INPUT_MAX_BYTES:
-        typer.echo("Error: selected records input exceeds 64 MiB.", err=True)
+    if input_size > max_input_bytes:
+        typer.echo(
+            f"Error: selected records input exceeds limit "
+            f"({input_size:,} > {max_input_bytes:,} bytes).",
+            err=True,
+        )
         raise typer.Exit(code=1)
 
     expected_selection = plan.accepted_selection_hashes()
+    sharded = output_shard_bytes is not None
+    staged: StagedAdaptation | None = None
+    sharded_docs: ShardedJsonlWriter | None = None
     try:
-        staged = StagedAdaptation(output_dir, with_ledger=(on_reject == "record"))
+        if sharded:
+            assert output_shard_bytes is not None
+            for legacy in (
+                output_dir / DOCUMENTS_FILENAME,
+                output_dir / REJECTIONS_FILENAME,
+                output_dir / SUMMARY_FILENAME,
+            ):
+                if legacy.exists():
+                    raise FileExistsError(
+                        f"refusing to overwrite existing '{legacy}'; use a fresh output dir"
+                    )
+            sharded_docs = ShardedJsonlWriter(
+                output_dir,
+                dataset_id=plan.output_artifact_id,
+                target_shard_bytes=output_shard_bytes,
+                source_artifact={
+                    "plan_id": plan.plan_id,
+                    "plan_hash": plan.compute_behavioral_hash(),
+                    "source_id": plan.source_id,
+                    "view_id": plan.view_id,
+                    "revision": plan.revision,
+                },
+                producer={
+                    "adapter_id": adapter_id,
+                    "on_reject": on_reject,
+                    "output_shard_bytes": output_shard_bytes,
+                    "tool": "xlm-data-adapt",
+                },
+            )
+        else:
+            if (output_dir / MANIFEST_FILENAME).exists():
+                raise FileExistsError(
+                    f"refusing to mix legacy output with published dataset manifest "
+                    f"'{output_dir / MANIFEST_FILENAME}'; use a fresh output dir"
+                )
+            staged = StagedAdaptation(output_dir, with_ledger=(on_reject == "record"))
     except FileExistsError as e:
         typer.echo(f"Error: {e}", err=True)
         raise typer.Exit(code=1) from e
@@ -1879,7 +1948,11 @@ def adapt_cmd(
     buffer = bytearray()
     wall_start = time.monotonic()
 
-    def run_batch(batch: list[tuple[int, bytes]]) -> None:
+    def run_batch(
+        batch: list[tuple[int, bytes]],
+        write_document: Any,
+        write_rejection: Any,
+    ) -> None:
         """Adapt one bounded batch; fatal errors abort via typer.Exit."""
         nonlocal total_input_records
         nonlocal parse_seconds
@@ -1956,7 +2029,7 @@ def adapt_cmd(
                     )
                     raise typer.Exit(code=1) from e
                 started = time.monotonic()
-                staged.write_rejection_line(
+                write_rejection(
                     serialize_rejection(
                         build_rejection_record(
                             input_line=current_line,
@@ -1993,45 +2066,172 @@ def adapt_cmd(
                 )
                 raise typer.Exit(code=1)
             started = time.monotonic()
-            staged.write_document_line(serialize_document(doc))
+            write_document(serialize_document(doc), doc.doc_id)
             serialize_seconds += time.monotonic() - started
             total_input_records += 1
 
+    ledger_writer: StreamingJsonlWriter | None = None
+    ledger_temp: Path | None = None
+    ledger_count = 0
+
+    def legacy_write_document(line: str, doc_id: str) -> None:
+        if staged is None:
+            raise ValueError("legacy sink without staged outputs")
+        staged.write_document_line(line)
+
+    def legacy_write_rejection(line: str, code: str) -> None:
+        if staged is None:
+            raise ValueError("legacy sink without staged outputs")
+        staged.write_rejection_line(line, code)
+
+    def sharded_write_document(line: str, doc_id: str) -> None:
+        if sharded_docs is None:
+            raise ValueError("sharded sink without a dataset writer")
+        sharded_docs.write_line(line, doc_id)
+
+    def sharded_write_rejection(line: str, code: str) -> None:
+        nonlocal ledger_writer, ledger_temp, ledger_count
+        if ledger_writer is None:
+            output_dir.mkdir(parents=True, exist_ok=True)
+            ledger_temp = output_dir / f"{REJECTIONS_FILENAME}.{uuid.uuid4().hex}.tmp"
+            ledger_writer = StreamingJsonlWriter(ledger_temp)
+        data = line.encode() + b"\n"
+        assert ledger_writer is not None
+        ledger_writer.write_raw(data)
+        ledger_count += 1
+
+    if sharded:
+        write_document = sharded_write_document
+        write_rejection = sharded_write_rejection
+    else:
+        write_document = legacy_write_document
+        write_rejection = legacy_write_rejection
+
+    def abort_outputs() -> None:
+        if staged is not None:
+            staged.abort()
+        if sharded_docs is not None:
+            sharded_docs.abandon()
+        if ledger_writer is not None:
+            try:
+                ledger_writer.close()
+            except Exception:
+                pass
+        if ledger_temp is not None:
+            ledger_temp.unlink(missing_ok=True)
+
     try:
-        with input_path.open("rb") as stream:
-            while True:
-                chunk = stream.read(ADAPT_READ_CHUNK_BYTES)
-                input_bytes += len(chunk)
-                if input_bytes > ADAPT_INPUT_MAX_BYTES:
-                    typer.echo("Error: selected records input exceeds 64 MiB.", err=True)
-                    raise typer.Exit(code=1)
-                buffer += chunk
-                *lines, remainder = bytes(buffer).split(b"\n")
-                buffer = bytearray(remainder)
-                if not chunk and buffer:
-                    lines.append(bytes(buffer))
-                    buffer = bytearray()
-                for raw in lines:
-                    line_number += 1
-                    if not raw.strip():
-                        continue
-                    pending.append((line_number, raw))
-                    if len(pending) >= batch_records:
-                        run_batch(pending)
-                        pending = []
-                if not chunk:
-                    break
+        for chunk, _shard_id, _ordinal in iter_input_blocks(input_path):
+            input_bytes += len(chunk)
+            if input_bytes > max_input_bytes:
+                typer.echo(
+                    f"Error: selected records input exceeds limit "
+                    f"({input_bytes:,} > {max_input_bytes:,} bytes).",
+                    err=True,
+                )
+                raise typer.Exit(code=1)
+            buffer += chunk
+            *lines, remainder = bytes(buffer).split(b"\n")
+            buffer = bytearray(remainder)
+            for raw in lines:
+                line_number += 1
+                if not raw.strip():
+                    continue
+                pending.append((line_number, raw))
+                if len(pending) >= batch_records:
+                    run_batch(pending, write_document, write_rejection)
+                    pending = []
+        if buffer:
+            line_number += 1
+            if bytes(buffer).strip():
+                pending.append((line_number, bytes(buffer)))
+            buffer = bytearray()
         if pending:
-            run_batch(pending)
+            run_batch(pending, write_document, write_rejection)
             pending = []
     except typer.Exit:
-        staged.abort()
+        abort_outputs()
         raise
     except Exception as e:
-        staged.abort()
+        abort_outputs()
         typer.echo(f"Error: adaptation failed: {e}", err=True)
         raise typer.Exit(code=1) from e
     wall_seconds = max(0.0, time.monotonic() - wall_start)
+    if sharded:
+        assert sharded_docs is not None
+        manifest_started = time.monotonic()
+        manifest = sharded_docs.finish()
+        manifest_seconds = max(0.0, time.monotonic() - manifest_started)
+        if ledger_writer is None:
+            output_dir.mkdir(parents=True, exist_ok=True)
+            ledger_temp = output_dir / f"{REJECTIONS_FILENAME}.{uuid.uuid4().hex}.tmp"
+            ledger_writer = StreamingJsonlWriter(ledger_temp)
+        assert ledger_temp is not None
+        ledger_writer.close()
+        ledger_digest = ledger_writer.digest.hexdigest()
+        accepted_records = sum(entry.doc_count for entry in manifest.shards)
+        rejected_records = ledger_count
+        manifest_sha = hashlib.sha256(
+            (json.dumps(manifest.to_dict(), indent=2, sort_keys=True) + "\n").encode()
+        ).hexdigest()
+        sharded_summary = {
+            "adaptation_summary_version": 1,
+            "adapter_id": adapter_id,
+            "source_id": plan.source_id,
+            "source_revision": plan.revision,
+            "plan_id": plan.plan_id,
+            "plan_hash": plan.compute_behavioral_hash(),
+            "on_reject": on_reject,
+            "total_input_records": total_input_records,
+            "accepted_records": accepted_records,
+            "rejected_records": rejected_records,
+            "rejection_counts_by_code": dict(sorted(rejection_counts.items())),
+            "max_input_bytes": max_input_bytes,
+            "output_shard_bytes": output_shard_bytes,
+            "documents": {
+                "count": accepted_records,
+                "bytes": manifest.total_bytes,
+                "aggregate_sha256": manifest.aggregate_sha256,
+            },
+            "manifest": {"file": MANIFEST_FILENAME, "sha256": manifest_sha},
+            "shards": [entry.to_dict() for entry in manifest.shards],
+            "rejections": {
+                "file": REJECTIONS_FILENAME,
+                "count": rejected_records,
+                "sha256": ledger_digest,
+            },
+        }
+        summary_temp = output_dir / f"{SUMMARY_FILENAME}.{uuid.uuid4().hex}.tmp"
+        try:
+            with summary_temp.open("xb") as stream:
+                stream.write(
+                    (json.dumps(sharded_summary, indent=2, sort_keys=True) + "\n").encode()
+                )
+                stream.flush()
+                os.fsync(stream.fileno())
+            os.replace(ledger_temp, output_dir / REJECTIONS_FILENAME)
+            os.replace(summary_temp, output_dir / SUMMARY_FILENAME)
+        finally:
+            ledger_temp.unlink(missing_ok=True)
+            summary_temp.unlink(missing_ok=True)
+        published_docs = str(output_dir)
+        throughput = total_input_records / wall_seconds if wall_seconds > 0 else 0.0
+        throughput_mib = (input_bytes / (1024**2)) / wall_seconds if wall_seconds > 0 else 0.0
+        oversize = sum(1 for entry in manifest.shards if entry.oversize)
+        typer.echo(
+            f"Adapted {accepted_records} record(s) via '{adapter_id}' to: {published_docs} "
+            f"({len(manifest.shards)} shards, {rejected_records} rejection(s))"
+        )
+        typer.echo(
+            f"Adapt throughput: {total_input_records} records in {wall_seconds:.2f}s "
+            f"({throughput:.1f}/s, {throughput_mib:.3f} MiB/s input, batch {batch_records}, "
+            f"parse {parse_seconds:.2f}s adapt {adapter_seconds:.2f}s "
+            f"serialize {serialize_seconds:.2f}s write {sharded_docs.flush_seconds:.2f}s "
+            f"manifest {manifest_seconds:.2f}s shards {len(manifest.shards)} "
+            f"oversize {oversize} peak_rss {sharded_docs.peak_rss_bytes:,}B)"
+        )
+        return
+    assert staged is not None
     accepted_records = staged.accepted_records
     rejected_records = staged.rejected_records
     summary: dict[str, Any] | None = None
@@ -2049,6 +2249,8 @@ def adapt_cmd(
             rejection_counts_by_code=dict(rejection_counts),
             document_sha256=staged.document_digest,
             rejection_sha256=staged.rejection_digest,
+            max_input_bytes=max_input_bytes,
+            output_shard_bytes=output_shard_bytes,
         )
     try:
         published = staged.finish(summary)

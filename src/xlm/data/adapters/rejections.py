@@ -106,6 +106,8 @@ def build_summary(
     rejection_counts_by_code: dict[str, int],
     document_sha256: str,
     rejection_sha256: str,
+    max_input_bytes: int | None = None,
+    output_shard_bytes: int | None = None,
 ) -> dict[str, Any]:
     """Deterministic adaptation summary (no timestamps, paths, or timing)."""
     return {
@@ -120,6 +122,8 @@ def build_summary(
         "accepted_records": accepted_records,
         "rejected_records": rejected_records,
         "rejection_counts_by_code": dict(sorted(rejection_counts_by_code.items())),
+        "max_input_bytes": max_input_bytes,
+        "output_shard_bytes": output_shard_bytes,
         "documents": {
             "file": DOCUMENTS_FILENAME,
             "count": accepted_records,
