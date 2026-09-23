@@ -1,5 +1,20 @@
 # Implementation status
 
+> **P27B cleaning throughput (2026-09-23): IMPLEMENTED / VERIFIED (bounded
+> offline)** on `perf/p27b-cleaning-throughput` (parent `34122ad`).
+> Exact micro-optimizations (shared lazy text features, fused char scans,
+> compile-once matchers, PII hint gate, copy shortcut, buffered quarantine:
+> mixed-5k wall 6.42 s → 5.14 s) plus a deterministic sharded cleaning
+> engine (verified manifest/dir/file/Parquet input, legacy or sharded
+> accepted/quarantine output, process-level shard parallelism, ordered
+> assembly, quarantine caps in global order). Scaling: 10k mixed
+> 964 → 3232 docs/s w1→w8; 100k mixed (243 MiB) 956 → 4235 docs/s;
+> 128 MiB 62 → 216 docs/s with RSS growth ≤ 5.3 MiB. 28 new tests +
+> 145 focused regressions passed; ruff/mypy clean. Dedup precompute
+> correctly omitted (`clean_hash` is already free). Full suite NOT RUN
+> (final gate only). See [reports/P27B.md](reports/P27B.md). Overall
+> production acceptance remains BLOCKED; main is unchanged.
+
 > **P27A production sharding (2026-09-23): IMPLEMENTED / VERIFIED (bounded
 > offline)** on `perf/p27a-production-sharding` (parent `0675331`).
 > Deterministic size-sharded datasets (`dataset-manifest.json` v1), streaming

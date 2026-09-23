@@ -6,7 +6,7 @@ import json
 import os
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Any
+from typing import Any, Protocol
 
 from pydantic import Field
 
@@ -15,6 +15,18 @@ from xlm.core.contracts import CanonicalDocument
 from xlm.data.cleaning.base import CleaningBudgetExhaustedError
 from xlm.data.cleaning.pii import redact_sensitive_text
 from xlm.data.cleaning.types import QualityMetrics
+
+
+class QuarantineRecorder(Protocol):
+    """Structural sink for rejected documents (reference manager or buffered writer)."""
+
+    def record_rejection(
+        self,
+        doc: CanonicalDocument,
+        reasons: list[str],
+        stage_name: str,
+        metrics: QualityMetrics | None = None,
+    ) -> None: ...
 
 
 class QuarantinePolicy(StrictConfigModel):
@@ -42,6 +54,59 @@ class QuarantinePolicy(StrictConfigModel):
         default=True,
         description="Apply owner-only file permissions where the platform supports it.",
     )
+
+
+def is_secret_rejection(reasons: list[str]) -> bool:
+    """True when rejection reasons carry secrets (quarantine stores metadata only)."""
+    return any(
+        r.startswith("detected_secret:") or r.startswith("canary_credential") for r in reasons
+    )
+
+
+def build_quarantine_entry(
+    doc: CanonicalDocument,
+    reasons: list[str],
+    stage_name: str,
+    metrics: QualityMetrics | None,
+    policy: QuarantinePolicy,
+    recorded_at: str,
+) -> tuple[bytes, int]:
+    """Build one quarantine JSONL line and its UTF-8 byte length (pure function).
+
+    The emitted bytes are exactly what :meth:`QuarantineManager.record_rejection`
+    writes: same keys in the same order, same secret-omission and preview rules,
+    same metrics rendering. Both the reference manager and the buffered
+    throughput writer share this function so neither can drift from the other.
+    """
+    secret_omitted = is_secret_rejection(reasons)
+
+    sanitized_preview: str | None = None
+    if policy.store_previews and not secret_omitted and doc.text:
+        # Non-secret rejections get a bounded, sanitized preview
+        raw_preview = doc.text[: policy.max_preview_chars]
+        sanitized_preview = redact_sensitive_text(raw_preview)
+
+    # Build sanitized quarantine entry
+    entry: dict[str, Any] = {
+        "doc_id": doc.doc_id,
+        "source_id": doc.source_id,
+        "source_file": doc.source_file,
+        "source_row": doc.source_row,
+        "raw_hash": doc.raw_hash,
+        "split": doc.split,
+        "reasons": reasons,
+        "stage": stage_name,
+        "utf8_byte_count": doc.utf8_byte_count,
+        "is_secret_omitted": secret_omitted,
+        "sanitized_preview": sanitized_preview,
+        "recorded_at": recorded_at,
+    }
+    if metrics:
+        entry["metrics"] = metrics.to_dict()
+
+    line = json.dumps(entry, ensure_ascii=False) + "\n"
+    payload = line.encode("utf-8")
+    return payload, len(payload)
 
 
 class QuarantineManager:
@@ -114,40 +179,17 @@ class QuarantineManager:
                 f"Quarantine storage exceeded ceiling of {self.max_quarantine_bytes:,} bytes."
             )
 
-        # Check if rejection contains detected secrets
-        is_secret_rejection = any(
-            r.startswith("detected_secret:") or r.startswith("canary_credential") for r in reasons
+        payload, line_bytes = build_quarantine_entry(
+            doc,
+            reasons,
+            stage_name,
+            metrics,
+            self.policy,
+            datetime.now(UTC).isoformat(),
         )
 
-        sanitized_preview: str | None = None
-        if self.policy.store_previews and not is_secret_rejection and doc.text:
-            # Non-secret rejections get a bounded, sanitized preview
-            raw_preview = doc.text[: self.max_preview_chars]
-            sanitized_preview = redact_sensitive_text(raw_preview)
-
-        # Build sanitized quarantine entry
-        entry: dict[str, Any] = {
-            "doc_id": doc.doc_id,
-            "source_id": doc.source_id,
-            "source_file": doc.source_file,
-            "source_row": doc.source_row,
-            "raw_hash": doc.raw_hash,
-            "split": doc.split,
-            "reasons": reasons,
-            "stage": stage_name,
-            "utf8_byte_count": doc.utf8_byte_count,
-            "is_secret_omitted": is_secret_rejection,
-            "sanitized_preview": sanitized_preview,
-            "recorded_at": datetime.now(UTC).isoformat(),
-        }
-        if metrics:
-            entry["metrics"] = metrics.to_dict()
-
-        line = json.dumps(entry, ensure_ascii=False) + "\n"
-        line_bytes = len(line.encode("utf-8"))
-
-        with self.quarantine_file.open("a", encoding="utf-8") as f:
-            f.write(line)
+        with self.quarantine_file.open("ab") as f:
+            f.write(payload)
 
         self._apply_file_security(self.quarantine_file)
         self.recorded_count += 1

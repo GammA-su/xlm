@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import hashlib
-import itertools
 import json
 import os
 import urllib.request
@@ -53,8 +52,10 @@ from xlm.data.cleaning import (
     PipelineExecutionSummary,
     QualityReporter,
     QuarantineManager,
+    QuarantinePolicy,
     StageStats,
     create_pipeline_preset,
+    run_sharded_clean,
 )
 from xlm.data.dedup import (
     DedupConfig,
@@ -2321,47 +2322,227 @@ def clean_cmd(
             help="Generate quality report automatically in output directory.",
         ),
     ] = True,
+    workers: Annotated[
+        int,
+        typer.Option(
+            "--workers",
+            help="Cleaning worker processes (shard-level parallelism; "
+            "outputs are identical for any count).",
+        ),
+    ] = 4,
+    input_shard_bytes: Annotated[
+        int,
+        typer.Option(
+            "--input-shard-bytes",
+            help="Target byte size for splitting single-file input into "
+            "deterministic work units (smaller balances workers better; "
+            "below ~1 MiB per-unit overhead dominates).",
+        ),
+    ] = 16 * 1024 * 1024,
+    output_shard_bytes: Annotated[
+        int | None,
+        typer.Option(
+            "--output-shard-bytes",
+            help="Shard accepted output by target serialized bytes "
+            "(deterministic clean manifest); omit for legacy single file.",
+        ),
+    ] = None,
+    quarantine_shard_bytes: Annotated[
+        int | None,
+        typer.Option(
+            "--quarantine-shard-bytes",
+            help="Shard quarantine output by target bytes; omit for a single quarantine.jsonl.",
+        ),
+    ] = None,
+    max_input_bytes: Annotated[
+        int,
+        typer.Option(
+            "--max-input-bytes",
+            help="Refuse clean inputs larger than this budget (default 2 GiB).",
+        ),
+    ] = 2 * 1024 * 1024 * 1024,
 ) -> None:
-    """Execute composable data cleaning and filtering pipeline adhering to C01, C02, and C03."""
+    """Execute composable data cleaning and filtering pipeline adhering to C01, C02, and C03.
+
+    Canonical input (a ``documents.jsonl`` file, a verified P27A shard
+    manifest directory, a plain directory of JSONL shards, or Parquet) runs
+    through the deterministic sharded cleaning engine: independent work
+    units, one pipeline per worker process, ordered assembly into legacy
+    single-file or sharded output. Raw (non-canonical) single-file input
+    keeps the original streaming orchestration unchanged.
+    """
     if not input_path.exists():
         typer.echo(f"Error: Input path '{input_path}' does not exist.", err=True)
+        raise typer.Exit(code=1)
+    if workers < 1:
+        typer.echo("Error: --workers must be positive.", err=True)
+        raise typer.Exit(code=1)
+    if input_shard_bytes < 1:
+        typer.echo("Error: --input-shard-bytes must be positive.", err=True)
+        raise typer.Exit(code=1)
+    if output_shard_bytes is not None and output_shard_bytes < 1:
+        typer.echo("Error: --output-shard-bytes must be positive.", err=True)
+        raise typer.Exit(code=1)
+    if quarantine_shard_bytes is not None and quarantine_shard_bytes < 1:
+        typer.echo("Error: --quarantine-shard-bytes must be positive.", err=True)
+        raise typer.Exit(code=1)
+    if max_input_bytes < 1:
+        typer.echo("Error: --max-input-bytes must be positive.", err=True)
         raise typer.Exit(code=1)
 
     output_dir.mkdir(parents=True, exist_ok=True)
     q_dir = quarantine_dir or (output_dir / "quarantine")
-    quarantine_mgr = QuarantineManager(q_dir)
 
     try:
-        pipeline = create_pipeline_preset(preset)
+        create_pipeline_preset(preset)
     except ValueError as e:
         typer.echo(f"Error: {e}", err=True)
         raise typer.Exit(code=1) from e
 
-    # Determine input loader. Directories stream every shard in stable sorted order;
-    # reading only the first shard would silently drop the rest of the corpus.
-    docs: Iterator[CanonicalDocument]
+    if _clean_input_is_raw(input_path):
+        _run_legacy_raw_clean(input_path, output_dir, preset, q_dir, max_docs, publish, report)
+        return
+
+    policy = QuarantinePolicy()
     try:
-        if input_path.is_file():
-            if input_path.suffix == ".parquet":
-                docs = CanonicalDatasetReader.read_parquet(input_path)
-            else:
-                # Canonical JSONL when the first record parses as a canonical record,
-                # otherwise fall back to the raw JSONL adapter.
-                try:
-                    docs_iter = CanonicalDatasetReader.read_jsonl(input_path)
-                    first = next(docs_iter, None)
-                    if first is not None:
-                        docs = itertools.chain([first], docs_iter)
-                    else:
-                        docs = iter([])
-                except (ValueError, TypeError):
-                    adapter = JsonlAdapter(source_id="raw_input")
-                    docs = adapter.process_file(input_path)
-        else:
-            docs = CanonicalDatasetReader.read_shards(input_path)
+        summary, timing, assembled, throughput, _manifest = run_sharded_clean(
+            input_path=input_path,
+            output_dir=output_dir,
+            preset=preset,
+            workers=workers,
+            input_shard_bytes=input_shard_bytes,
+            output_shard_bytes=output_shard_bytes,
+            quarantine_dir=q_dir,
+            quarantine_shard_bytes=quarantine_shard_bytes,
+            quarantine_policy=policy,
+            max_docs=max_docs,
+            max_input_bytes=max_input_bytes,
+        )
     except (FileNotFoundError, NotADirectoryError, ValueError, TypeError) as e:
-        typer.echo(f"Error loading input documents: {e}", err=True)
+        typer.echo(f"Error cleaning documents: {e}", err=True)
         raise typer.Exit(code=1) from e
+    except RuntimeError as e:
+        typer.echo(f"Error cleaning documents: {e}", err=True)
+        raise typer.Exit(code=1) from e
+
+    if output_shard_bytes is None and HAS_PYARROW:
+        writer = CanonicalDatasetWriter(output_dir)
+        try:
+            writer.write_parquet_stream(
+                CanonicalDatasetReader.read_jsonl(output_dir / "documents.jsonl"),
+                filename="documents.parquet",
+            )
+        except Exception as e:
+            typer.echo(f"Error writing Parquet view: {e}", err=True)
+            raise typer.Exit(code=1) from e
+    elif output_shard_bytes is not None:
+        typer.echo("Note: sharded clean output carries no Parquet view (manifest + shards).")
+    else:
+        typer.echo("Note: pyarrow unavailable; wrote JSONL only (no Parquet view).")
+
+    summary_path = output_dir / "cleaning_summary.json"
+
+    reporter = QualityReporter(summary)
+    if report:
+        md_p, html_p = reporter.save_reports(output_dir)
+        typer.echo(f"Quality report generated: {md_p} and {html_p}")
+
+    if publish and summary.completed and not summary.is_partial_sample:
+        paths = ArtifactPaths.from_env()
+        store = ArtifactStore(paths)
+        art_id = f"clean_{preset}_{summary.pipeline_hash[:12]}"
+        files_to_publish: dict[str, Path] = {
+            "cleaning_summary.json": summary_path,
+        }
+        for name in assembled.accepted_files:
+            files_to_publish[name] = output_dir / name
+        if assembled.manifest_file is not None:
+            files_to_publish[assembled.manifest_file] = output_dir / assembled.manifest_file
+        if (output_dir / "documents.parquet").exists():
+            files_to_publish["documents.parquet"] = output_dir / "documents.parquet"
+        if (output_dir / "quality_report.md").exists():
+            files_to_publish["quality_report.md"] = output_dir / "quality_report.md"
+
+        published_dir = store.publish_artifact(
+            artifact_id=art_id,
+            kind="clean_dataset",
+            files=files_to_publish,
+            producer_code_hash=compute_sha256("xlm.cli.data_cmd:clean_cmd")[:16],
+            dependency_hash=compute_sha256("uv.lock")[:16],
+            resolved_config_hash=summary.pipeline_hash,
+            metadata={
+                "domain_preset": preset,
+                "document_yield_ratio": summary.document_yield_ratio,
+                "byte_yield_ratio": summary.byte_yield_ratio,
+                "total_output_docs": summary.total_output_docs,
+            },
+        )
+        typer.echo(f"Successfully published clean_dataset artifact to: {published_dir}")
+
+    typer.echo("============================================================")
+    typer.echo(f"Pipeline Completed: {preset} (Hash: {summary.pipeline_hash[:16]}...)")
+    typer.echo(
+        f"Input:       {summary.total_input_docs:,} docs ({summary.total_input_bytes:,} bytes)"
+    )
+    typer.echo(
+        f"Retained:    {summary.total_output_docs:,} docs ({summary.total_output_bytes:,} bytes)"
+    )
+    typer.echo(
+        f"Yield:       {summary.document_yield_ratio * 100:.1f}% docs "
+        f"({summary.byte_yield_ratio * 100:.1f}% bytes)"
+    )
+    typer.echo(f"Rejected:    {summary.total_rejected_docs:,} docs")
+    typer.echo(f"Quarantine:  {throughput['quarantine_records']:,} records stored in {q_dir}")
+    typer.echo(f"Output:      {output_dir}")
+    typer.echo(
+        f"Clean throughput: {summary.total_input_docs:,} docs in "
+        f"{throughput['wall_seconds']:.2f}s ({throughput['docs_per_second']:,.0f}/s, "
+        f"{throughput['input_mib_per_second']:.2f} MiB/s in, "
+        f"{throughput['output_mib_per_second']:.2f} MiB/s out, "
+        f"workers {throughput['workers']}, input_shards {throughput['input_shards']}, "
+        f"output_shards {throughput['output_shards']})"
+    )
+    stage_parts = ", ".join(
+        f"{name} {secs:.2f}s" for name, secs in throughput["stage_seconds"].items()
+    )
+    typer.echo(
+        f"Stage seconds: parse {throughput['parse_seconds']:.2f}s, {stage_parts}, "
+        f"serialize {throughput['serialization_seconds']:.2f}s, "
+        f"write {throughput['accepted_write_seconds']:.2f}s, "
+        f"quarantine {throughput['quarantine_seconds']:.2f}s, "
+        f"fsync {throughput['fsync_seconds']:.2f}s"
+    )
+    typer.echo("============================================================")
+
+
+def _clean_input_is_raw(input_path: Path) -> bool:
+    """True when a single input file does not hold canonical records."""
+    if input_path.is_dir() or input_path.suffix == ".parquet":
+        return False
+    try:
+        docs_iter = CanonicalDatasetReader.read_jsonl(input_path)
+        first = next(docs_iter, None)
+        if first is not None:
+            return False
+        return True
+    except (ValueError, TypeError):
+        return True
+
+
+def _run_legacy_raw_clean(
+    input_path: Path,
+    output_dir: Path,
+    preset: str,
+    q_dir: Path,
+    max_docs: int | None,
+    publish: bool,
+    report: bool,
+) -> None:
+    """Clean raw (non-canonical) single-file input with the original orchestration."""
+    quarantine_mgr = QuarantineManager(q_dir)
+    pipeline = create_pipeline_preset(preset)
+    adapter = JsonlAdapter(source_id="raw_input")
+    docs = adapter.process_file(input_path)
 
     typer.echo(f"Starting cleaning pipeline with preset '{preset}'...")
     accepted_iter, summary = pipeline.run_stream(
@@ -2370,12 +2551,9 @@ def clean_cmd(
         max_docs=max_docs,
     )
 
-    # Stream accepted records straight to disk; never hold the accepted corpus in RAM.
     writer = CanonicalDatasetWriter(output_dir)
     jsonl_path = writer.write_jsonl(accepted_iter, filename="documents.jsonl")
 
-    # Parquet is produced by re-reading the JSONL shard, which keeps the second
-    # write bounded as well. A Parquet failure is reported, never silently ignored.
     if HAS_PYARROW:
         writer.write_parquet_stream(
             CanonicalDatasetReader.read_jsonl(jsonl_path),

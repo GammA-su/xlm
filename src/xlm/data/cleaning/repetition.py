@@ -11,6 +11,7 @@ from pydantic import Field
 from xlm.config.schemas import StrictConfigModel
 from xlm.core.contracts import CanonicalDocument
 from xlm.data.cleaning.base import BaseTransform
+from xlm.data.cleaning.features import TextFeatures
 from xlm.data.cleaning.types import QualityMetrics, TransformAction, TransformResult
 
 
@@ -99,8 +100,14 @@ class RepetitionFilter(BaseTransform):
     def __init__(self, config: RepetitionConfig | None = None) -> None:
         super().__init__(config or RepetitionConfig())
         self.cfg: RepetitionConfig = self.config  # type: ignore
+        # P27B-F: the character-run pattern depends only on configuration, so it
+        # is compiled once per filter instance (hence once per worker process),
+        # never per document. The pattern string is unchanged.
+        self._char_run_re = re.compile(rf"(.)\1{{{self.cfg.max_char_run},}}")
 
-    def apply(self, doc: CanonicalDocument) -> TransformResult:
+    def apply(
+        self, doc: CanonicalDocument, features: TextFeatures | None = None
+    ) -> TransformResult:
         start_t = time.monotonic()
         text = doc.text
         if not text:
@@ -113,8 +120,12 @@ class RepetitionFilter(BaseTransform):
 
         # Inexpensive characterization first so every rejection path reports
         # measured line/word counts instead of misleading zeros.
-        lines = [line.strip() for line in text.splitlines() if line.strip()]
-        words = text.split()
+        # P27B-G: the word split and the raw line split are shared with the
+        # other stages observing this same text version when a feature cache
+        # is supplied; the direct computation is otherwise unchanged.
+        words = features.words(text) if features is not None else text.split()
+        raw_lines = features.lines(text) if features is not None else text.splitlines()
+        lines = [line.strip() for line in raw_lines if line.strip()]
         word_count = len(words)
         line_count = len(lines)
         content_lines = [line for line in lines if not is_structural_separator_line(line)]
@@ -135,8 +146,8 @@ class RepetitionFilter(BaseTransform):
         # lines only. Long runs inside structural separator lines (Markdown
         # table delimiters, horizontal-rule dividers) are valid syntax, not
         # garbage. A run inside any other line still rejects.
-        char_run_pattern = re.compile(rf"(.)\1{{{self.cfg.max_char_run},}}")
-        for raw_line in text.splitlines():
+        char_run_pattern = self._char_run_re
+        for raw_line in raw_lines:
             if not raw_line.strip():
                 continue
             if is_structural_separator_line(raw_line):
@@ -191,11 +202,14 @@ class RepetitionFilter(BaseTransform):
         ngram_repeat_ratio = 0.0
         if len(sample_words) >= 10:
             n = 5
-            ngrams = [tuple(sample_words[i : i + n]) for i in range(len(sample_words) - n + 1)]
-            if ngrams:
-                ngram_counts = collections.Counter(ngrams)
+            # P27B-I: count tuple n-grams from a generator instead of a
+            # materialized list of tuples; the multiset counted (hence every
+            # count, the ratio, and the reason string) is identical.
+            ngrams = (tuple(sample_words[i : i + n]) for i in range(len(sample_words) - n + 1))
+            ngram_counts = collections.Counter(ngrams)
+            if ngram_counts:
                 repeated_ngrams = sum(c for c in ngram_counts.values() if c > 1)
-                ngram_repeat_ratio = repeated_ngrams / len(ngrams)
+                ngram_repeat_ratio = repeated_ngrams / sum(ngram_counts.values())
 
                 if ngram_repeat_ratio > self.cfg.max_ngram_repetition_ratio:
                     duration = (time.monotonic() - start_t) * 1000.0

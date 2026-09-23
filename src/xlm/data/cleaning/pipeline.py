@@ -13,12 +13,13 @@ from typing import Any
 from xlm.core.contracts import CanonicalDocument
 from xlm.data.cleaning.base import BaseTransform, IncompatiblePipelineError
 from xlm.data.cleaning.boilerplate import BoilerplateTransform
+from xlm.data.cleaning.features import TextFeatures
 from xlm.data.cleaning.html import HtmlExtractionTransform
 from xlm.data.cleaning.language import LanguageFilter
 from xlm.data.cleaning.length_noise import LengthFilter, NoiseFilter
 from xlm.data.cleaning.normalization import CanonicalNormalizationTransform
 from xlm.data.cleaning.pii import PiiSecretFilter
-from xlm.data.cleaning.quarantine import QuarantineManager
+from xlm.data.cleaning.quarantine import QuarantineRecorder
 from xlm.data.cleaning.repetition import RepetitionFilter
 from xlm.data.cleaning.structured import StructuredExampleRenderTransform
 from xlm.data.cleaning.types import TransformAction
@@ -117,7 +118,7 @@ class CleaningPipeline:
     def run_stream(
         self,
         documents: Iterable[CanonicalDocument],
-        quarantine_mgr: QuarantineManager | None = None,
+        quarantine_mgr: QuarantineRecorder | None = None,
         max_docs: int | None = None,
     ) -> tuple[Iterator[CanonicalDocument], PipelineExecutionSummary]:
         """Execute the pipeline over documents in genuinely streaming mode.
@@ -165,12 +166,17 @@ class CleaningPipeline:
         self,
         documents: Iterable[CanonicalDocument],
         summary: PipelineExecutionSummary,
-        quarantine_mgr: QuarantineManager | None,
+        quarantine_mgr: QuarantineRecorder | None,
         max_docs: int | None,
     ) -> Iterator[CanonicalDocument]:
         """Drive documents through every stage, yielding survivors one at a time."""
         start_t = time.monotonic()
         stage_stats = summary.stage_metrics
+        # P27B-G: one shared per-document feature cache. Stages observe the
+        # evolving text through it; any stage that creates a new text object
+        # implicitly invalidates previously derived values. Released after
+        # each document so no working set outlives its document.
+        features = TextFeatures()
 
         for doc in documents:
             if max_docs is not None and summary.total_input_docs >= max_docs:
@@ -188,7 +194,7 @@ class CleaningPipeline:
                 st.input_docs += 1
                 st.input_bytes += current_doc.utf8_byte_count
 
-                res = transform.apply(current_doc)
+                res = transform.apply(current_doc, features)
                 st.duration_ms += res.duration_ms
 
                 if res.action == TransformAction.REJECT:
@@ -212,6 +218,10 @@ class CleaningPipeline:
                 if res.document is not None:
                     current_doc = res.document
                 st.output_bytes += current_doc.utf8_byte_count
+
+            # The document is fully characterized; drop its cached working
+            # set before emitting so peak memory stays per-document.
+            features.release()
 
             if not rejected:
                 summary.total_output_docs += 1

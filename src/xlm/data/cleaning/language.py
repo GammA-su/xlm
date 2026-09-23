@@ -11,7 +11,12 @@ from pydantic import Field
 from xlm.config.schemas import StrictConfigModel
 from xlm.core.contracts import CanonicalDocument
 from xlm.data.cleaning.base import BaseTransform, BlockedCapabilityError
+from xlm.data.cleaning.features import TextFeatures
 from xlm.data.cleaning.types import QualityMetrics, TransformAction, TransformResult
+
+# P27B-F: the word tokenizer is configuration-independent, so it is compiled
+# once at module import instead of relying on per-call recompilation.
+_WORD_RE = re.compile(r"\b[a-zA-Z]{2,}\b")
 
 # Top common English stop words for fast, deterministic heuristic classification
 ENGLISH_STOP_WORDS = {
@@ -119,16 +124,41 @@ class LanguageFilter(BaseTransform):
                     "Capability blocked per Contract C03 / Amendment 4."
                 )
 
-    def _heuristic_classify(self, doc: CanonicalDocument) -> tuple[str, float | None]:
+    def _heuristic_classify(
+        self, doc: CanonicalDocument, features: TextFeatures | None = None
+    ) -> tuple[str, float | None]:
         """Classify language using deterministic stop-word and alphabet heuristics."""
-        text = doc.text.strip()
+        raw = doc.text
+        text = raw.strip()
         if not text:
             return "unknown", None
 
         # Check for code or math kinds
         is_technical = doc.document_kind in ("code", "math")
-        words = [w.lower() for w in re.findall(r"\b[a-zA-Z]{2,}\b", text)]
+        words = [w.lower() for w in _WORD_RE.findall(text)]
         word_count = len(words)
+
+        # P27B-G/H: Latin and alphabetic tallies come from the shared one-pass
+        # character statistics over the unstripped text when available; the
+        # fused local loop otherwise computes exactly the integers the two
+        # reference generator passes did. Sharing the unstripped tallies is
+        # exact: stripped-away characters are leading/trailing whitespace,
+        # which satisfies neither ``isalpha`` nor ``isascii and isalpha``,
+        # so both counts are unchanged by stripping. (The word pattern still
+        # runs on the stripped text, exactly as the reference.)
+        # Tallies are computed only on the paths where the reference computes
+        # them; the cache simply shares the work with later stages.
+        def latin_alpha() -> tuple[int, int]:
+            if features is not None:
+                stats = features.chars(raw)
+                return stats.latin, stats.alpha
+            latin_chars = total_alpha = 0
+            for char in text:
+                if char.isalpha():
+                    total_alpha += 1
+                    if char.isascii():
+                        latin_chars += 1
+            return latin_chars, total_alpha
 
         # Short text, code, or math lacks sufficient statistical power for confident linguistic
         # classification
@@ -136,15 +166,13 @@ class LanguageFilter(BaseTransform):
             if is_technical or doc.source_metadata.get("is_educational_density"):
                 return "ambiguous", None
             # Check script
-            latin_chars = sum(1 for c in text if c.isascii() and c.isalpha())
-            total_alpha = sum(1 for c in text if c.isalpha())
+            latin_chars, total_alpha = latin_alpha()
             if total_alpha > 0 and (latin_chars / total_alpha) < 0.5:
                 return "non_en", 0.85
             return "ambiguous", None
 
         # Count Latin letters vs total alphabetic characters
-        latin_chars = sum(1 for c in text if c.isascii() and c.isalpha())
-        total_alpha = sum(1 for c in text if c.isalpha())
+        latin_chars, total_alpha = latin_alpha()
         if total_alpha == 0:
             return "ambiguous", None
 
@@ -170,11 +198,13 @@ class LanguageFilter(BaseTransform):
 
         return "ambiguous", None
 
-    def apply(self, doc: CanonicalDocument) -> TransformResult:
+    def apply(
+        self, doc: CanonicalDocument, features: TextFeatures | None = None
+    ) -> TransformResult:
         start_t = time.monotonic()
 
         if self.cfg.mode == "heuristic":
-            lang, conf = self._heuristic_classify(doc)
+            lang, conf = self._heuristic_classify(doc, features)
             method = "heuristic"
         elif self.cfg.mode == "classifier":
             # For testing with test doubles, or local model plugins
@@ -184,9 +214,13 @@ class LanguageFilter(BaseTransform):
             raise ValueError(f"Unknown language filter mode: '{self.cfg.mode}'")
 
         duration = (time.monotonic() - start_t) * 1000.0
+        if features is not None:
+            language_words = features.words(doc.text)
+        else:
+            language_words = doc.text.split()
         metrics = QualityMetrics(
             utf8_byte_count=doc.utf8_byte_count,
-            word_count=len(doc.text.split()),
+            word_count=len(language_words),
             language=lang,
             language_confidence=conf,
             language_method=method,

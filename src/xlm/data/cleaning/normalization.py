@@ -9,6 +9,7 @@ from pydantic import Field
 from xlm.config.schemas import StrictConfigModel
 from xlm.core.contracts import CanonicalDocument
 from xlm.data.cleaning.base import BaseTransform
+from xlm.data.cleaning.features import TextFeatures
 from xlm.data.cleaning.types import QualityMetrics, TransformAction, TransformResult
 from xlm.data.normalization import canonical_normalize
 
@@ -38,7 +39,9 @@ class CanonicalNormalizationTransform(BaseTransform):
     def __init__(self, config: CanonicalNormalizationConfig | None = None) -> None:
         super().__init__(config or CanonicalNormalizationConfig())
 
-    def apply(self, doc: CanonicalDocument) -> TransformResult:
+    def apply(
+        self, doc: CanonicalDocument, features: TextFeatures | None = None
+    ) -> TransformResult:
         start_t = time.monotonic()
 
         # Idempotence comes from canonical_normalize itself being idempotent
@@ -51,10 +54,16 @@ class CanonicalNormalizationTransform(BaseTransform):
         )
 
         duration = (time.monotonic() - start_t) * 1000.0
+        if features is not None:
+            words = features.words(normalized_text)
+            lines = features.lines(normalized_text)
+        else:
+            words = normalized_text.split()
+            lines = normalized_text.splitlines()
         metrics = QualityMetrics(
             utf8_byte_count=new_doc.utf8_byte_count,
-            word_count=len(normalized_text.split()),
-            line_count=len(normalized_text.splitlines()) if normalized_text else 0,
+            word_count=len(words),
+            line_count=len(lines) if normalized_text else 0,
         )
 
         return TransformResult(

@@ -13,6 +13,7 @@ from pydantic import Field
 from xlm.config.schemas import StrictConfigModel
 from xlm.core.contracts import CanonicalDocument
 from xlm.data.cleaning.base import BaseTransform
+from xlm.data.cleaning.features import TextFeatures
 from xlm.data.cleaning.types import QualityMetrics, TransformAction, TransformResult
 
 SECRET_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
@@ -39,6 +40,27 @@ SECRET_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
 #: ``my-example.com``, and ``example.org.attacker.com`` are not.
 RESERVED_EXAMPLE_DOMAINS: frozenset[str] = frozenset(
     {"example.com", "example.net", "example.org", "example"}
+)
+
+#: P27B-K: single-pass presence hint over the seven non-email secret patterns.
+#: Each alternative is byte-for-byte the corresponding SECRET_PATTERNS member
+#: with inline flags rewritten to scoped form (``(?i:...)``), so the hint
+#: matches a text if and only if at least one detailed pattern matches it.
+#: A miss skips all seven detailed scans; a hit runs the unchanged detailed
+#: path, preserving detected-type order, reason strings, and overlap
+#: semantics exactly.
+_NON_EMAIL_HINT_RE: re.Pattern[str] = re.compile(
+    "|".join(
+        [
+            r"hf_[A-Za-z0-9]{34,}",
+            r"AKIA[0-9A-Z]{16}",
+            r"ghp_[A-Za-z0-9]{36,}",
+            r"(?i:\bbearer\s+[A-Za-z0-9_\-\.]{20,}\b)",
+            r"-----BEGIN (?:RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----",
+            r"CANARY_SECRET_[A-Za-z0-9_]+",
+            r"\b\d{3}-\d{2}-\d{4}\b",
+        ]
+    )
 )
 
 
@@ -108,7 +130,9 @@ class PiiSecretFilter(BaseTransform):
         self.cfg: PiiConfig = self.config  # type: ignore
         self.mutates_text = self.cfg.action == "redact"
 
-    def apply(self, doc: CanonicalDocument) -> TransformResult:
+    def apply(
+        self, doc: CanonicalDocument, features: TextFeatures | None = None
+    ) -> TransformResult:
         start_t = time.monotonic()
         text = doc.text
         if not text:
@@ -121,6 +145,12 @@ class PiiSecretFilter(BaseTransform):
 
         detected_types: list[str] = []
         reserved_placeholders_ignored = 0
+        # P27B-K: the combined hint gates the seven non-email scans. On a miss
+        # none of them can match, so they are skipped; on a hit the detailed
+        # per-pattern path below is unchanged, preserving detected-type order,
+        # reason strings, and overlap behavior exactly. The email scan always
+        # runs because reserved-placeholder counts feed metrics unconditionally.
+        non_email_may_match = _NON_EMAIL_HINT_RE.search(text) is not None
         for sec_type, pattern in SECRET_PATTERNS:
             if sec_type == "email_address":
                 genuine_found = False
@@ -131,13 +161,13 @@ class PiiSecretFilter(BaseTransform):
                         genuine_found = True
                 if genuine_found:
                     detected_types.append(sec_type)
-            elif pattern.search(text):
+            elif non_email_may_match and pattern.search(text):
                 detected_types.append(sec_type)
 
         duration = (time.monotonic() - start_t) * 1000.0
         metrics = QualityMetrics(
             utf8_byte_count=doc.utf8_byte_count,
-            word_count=len(text.split()),
+            word_count=len(features.words(text)) if features is not None else len(text.split()),
             detected_secrets=detected_types,
             reserved_email_placeholders_ignored=reserved_placeholders_ignored,
         )

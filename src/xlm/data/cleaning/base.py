@@ -10,6 +10,7 @@ from typing import Any
 
 from xlm.config.schemas import StrictConfigModel
 from xlm.core.contracts import CanonicalDocument
+from xlm.data.cleaning.features import TextFeatures
 from xlm.data.cleaning.types import TextSpan, TransformResult
 from xlm.data.normalization import compute_sha256
 
@@ -52,8 +53,15 @@ class BaseTransform(ABC):
         return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
     @abstractmethod
-    def apply(self, doc: CanonicalDocument) -> TransformResult:
-        """Apply transform to a single document. Must NOT mutate the input document."""
+    def apply(
+        self, doc: CanonicalDocument, features: TextFeatures | None = None
+    ) -> TransformResult:
+        """Apply transform to a single document. Must NOT mutate the input document.
+
+        ``features`` is an optional per-document shared cache (P27B-G); when
+        None the stage computes every characterization directly, exactly as
+        the reference implementation does.
+        """
 
     def apply_batch(self, docs: Iterable[CanonicalDocument]) -> Iterator[TransformResult]:
         """Apply transform to an iterable of documents in streaming fashion."""
@@ -78,16 +86,27 @@ class BaseTransform(ABC):
           license reference, parent IDs, and split.
         - Updates clean_hash and utf8_byte_count to match new_text exactly.
         - Appends transform stage to transform_log.
+
+        Throughput note (P27B-P): when the stage leaves the text unchanged,
+        the hash and byte count are by definition identical to the input's,
+        so they are reused instead of re-encoded and re-hashed. The emitted
+        record (log entry included) is exactly the record the naive copy
+        produces.
         """
-        utf8_bytes = len(new_text.encode("utf-8"))
-        clean_h = compute_sha256(new_text)
+        text_unchanged = new_text == doc.text
+        if text_unchanged:
+            utf8_bytes = doc.utf8_byte_count
+            clean_h = doc.clean_hash
+        else:
+            utf8_bytes = len(new_text.encode("utf-8"))
+            clean_h = compute_sha256(new_text)
 
         new_transform_log = list(doc.transform_log)
         stage_entry: dict[str, Any] = {
             "stage": stage_name,
             "transform_id": self.transform_id,
             "transform_version": self.version,
-            "text_mutated": new_text != doc.text,
+            "text_mutated": not text_unchanged,
             "prev_byte_count": doc.utf8_byte_count,
             "new_byte_count": utf8_bytes,
         }

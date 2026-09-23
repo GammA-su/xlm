@@ -13,6 +13,7 @@ from pydantic import Field
 from xlm.config.schemas import StrictConfigModel
 from xlm.core.contracts import CanonicalDocument
 from xlm.data.cleaning.base import BaseTransform
+from xlm.data.cleaning.features import TextFeatures
 from xlm.data.cleaning.types import QualityMetrics, TransformAction, TransformResult
 
 # Standard standalone boilerplate patterns
@@ -98,7 +99,9 @@ class BoilerplateTransform(BaseTransform):
                 return True
         return False
 
-    def apply(self, doc: CanonicalDocument) -> TransformResult:
+    def apply(
+        self, doc: CanonicalDocument, features: TextFeatures | None = None
+    ) -> TransformResult:
         start_t = time.monotonic()
         if not self.cfg.enabled:
             return TransformResult(
@@ -134,14 +137,20 @@ class BoilerplateTransform(BaseTransform):
 
         if removed_count == 0:
             # No changes
+            if features is not None:
+                no_change_words = features.words(doc.text)
+                no_change_lines = features.lines(doc.text)
+            else:
+                no_change_words = doc.text.split()
+                no_change_lines = doc.text.splitlines()
             return TransformResult(
                 action=TransformAction.ACCEPT,
                 document=doc,
                 reasons=[],
                 metrics=QualityMetrics(
                     utf8_byte_count=doc.utf8_byte_count,
-                    word_count=len(doc.text.split()),
-                    line_count=len(doc.text.splitlines()),
+                    word_count=len(no_change_words),
+                    line_count=len(no_change_lines),
                     boilerplate_paragraphs_removed=0,
                 ),
                 duration_ms=duration,
@@ -154,10 +163,16 @@ class BoilerplateTransform(BaseTransform):
             metadata_updates={"boilerplate_removed_count": removed_count},
         )
 
+        if features is not None:
+            kept_words = features.words(new_text)
+            kept_lines = features.lines(new_text)
+        else:
+            kept_words = new_text.split()
+            kept_lines = new_text.splitlines()
         metrics = QualityMetrics(
             utf8_byte_count=new_doc.utf8_byte_count,
-            word_count=len(new_text.split()),
-            line_count=len(new_text.splitlines()),
+            word_count=len(kept_words),
+            line_count=len(kept_lines),
             boilerplate_paragraphs_removed=removed_count,
         )
 

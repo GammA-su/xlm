@@ -10,6 +10,7 @@ from pydantic import Field
 from xlm.config.schemas import StrictConfigModel
 from xlm.core.contracts import CanonicalDocument
 from xlm.data.cleaning.base import BaseTransform
+from xlm.data.cleaning.features import TextFeatures
 from xlm.data.cleaning.types import QualityMetrics, TransformAction, TransformResult
 
 # Control characters excluding \t (0x09), \n (0x0a), \r (0x0d)
@@ -71,7 +72,9 @@ class LengthFilter(BaseTransform):
         super().__init__(config or LengthConfig())
         self.cfg: LengthConfig = self.config  # type: ignore
 
-    def _is_high_density_educational(self, doc: CanonicalDocument, words: list[str]) -> bool:
+    def _is_high_density_educational(
+        self, doc: CanonicalDocument, words: list[str], features: TextFeatures | None = None
+    ) -> bool:
         """Heuristically detect short, compact mathematical, scientific, or code text."""
         if doc.document_kind in ("math", "code"):
             return True
@@ -82,23 +85,33 @@ class LengthFilter(BaseTransform):
         has_keywords = bool(MATH_OR_CODE_TOKENS.search(text))
 
         if has_symbols or has_keywords:
-            alpha_num = sum(1 for c in text if c.isalnum())
+            # P27B-G: the alphanumeric tally is shared with the language and
+            # noise character statistics when available; the direct count is
+            # otherwise unchanged.
+            if features is not None:
+                alpha_num = features.chars(text).alnum
+            else:
+                alpha_num = sum(1 for c in text if c.isalnum())
             total = max(1, len(text.strip()))
             # High alphanumeric/token density
             return (alpha_num / total) > 0.60
         return False
 
-    def apply(self, doc: CanonicalDocument) -> TransformResult:
+    def apply(
+        self, doc: CanonicalDocument, features: TextFeatures | None = None
+    ) -> TransformResult:
         start_t = time.monotonic()
         byte_count = doc.utf8_byte_count
-        words = doc.text.split()
+        words = features.words(doc.text) if features is not None else doc.text.split()
         word_count = len(words)
 
         duration = (time.monotonic() - start_t) * 1000.0
         metrics = QualityMetrics(
             utf8_byte_count=byte_count,
             word_count=word_count,
-            line_count=len(doc.text.splitlines()),
+            line_count=len(
+                features.lines(doc.text) if features is not None else doc.text.splitlines()
+            ),
         )
 
         # 1. Hard maximum bounds check (never bypassable)
@@ -123,7 +136,7 @@ class LengthFilter(BaseTransform):
         # 2. Minimum bounds check with educational density heuristic
         is_edu = False
         if self.cfg.allow_educational_short_exemption:
-            is_edu = self._is_high_density_educational(doc, words)
+            is_edu = self._is_high_density_educational(doc, words, features)
             metrics.is_educational_density = is_edu
 
         effective_min_bytes = self.cfg.min_educational_bytes if is_edu else self.cfg.min_bytes
@@ -206,7 +219,9 @@ class NoiseFilter(BaseTransform):
         super().__init__(config or NoiseConfig())
         self.cfg: NoiseConfig = self.config  # type: ignore
 
-    def apply(self, doc: CanonicalDocument) -> TransformResult:
+    def apply(
+        self, doc: CanonicalDocument, features: TextFeatures | None = None
+    ) -> TransformResult:
         start_t = time.monotonic()
         text = doc.text
         if not text:
@@ -234,15 +249,27 @@ class NoiseFilter(BaseTransform):
         if len(mojibake_matches) > self.cfg.max_mojibake_occurrences:
             reasons.append(f"encoding_noise:mojibake_{len(mojibake_matches)}")
 
-        # 4. Symbol density calculation
-        non_ws_chars = [c for c in text if not c.isspace()]
-        total_non_ws = len(non_ws_chars)
+        # 4. Symbol density calculation.
+        # P27B-G/H: one shared character-statistics pass replaces building the
+        # non-whitespace list plus two generator sums; the integers (and hence
+        # both ratios and the formatted reason string) are identical.
+        if features is not None:
+            stats = features.chars(text)
+            total_non_ws, symbols, digits = stats.non_ws, stats.symbols, stats.digits
+        else:
+            total_non_ws = symbols = digits = 0
+            for char in text:
+                if char.isspace():
+                    continue
+                total_non_ws += 1
+                if char.isdigit():
+                    digits += 1
+                elif not char.isalnum():
+                    symbols += 1
         symbol_ratio = 0.0
         digit_ratio = 0.0
 
         if total_non_ws > 0:
-            symbols = sum(1 for c in non_ws_chars if not c.isalnum())
-            digits = sum(1 for c in non_ws_chars if c.isdigit())
             symbol_ratio = symbols / total_non_ws
             digit_ratio = digits / total_non_ws
 
@@ -257,10 +284,16 @@ class NoiseFilter(BaseTransform):
                 )
 
         duration = (time.monotonic() - start_t) * 1000.0
+        if features is not None:
+            noise_words = features.words(text)
+            noise_lines = features.lines(text)
+        else:
+            noise_words = text.split()
+            noise_lines = text.splitlines()
         metrics = QualityMetrics(
             utf8_byte_count=doc.utf8_byte_count,
-            word_count=len(text.split()),
-            line_count=len(text.splitlines()),
+            word_count=len(noise_words),
+            line_count=len(noise_lines),
             symbol_ratio=symbol_ratio,
             digit_ratio=digit_ratio,
         )

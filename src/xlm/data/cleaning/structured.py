@@ -14,6 +14,7 @@ from pydantic import Field
 from xlm.config.schemas import StrictConfigModel
 from xlm.core.contracts import CanonicalDocument
 from xlm.data.cleaning.base import BaseTransform
+from xlm.data.cleaning.features import TextFeatures
 from xlm.data.cleaning.types import QualityMetrics, TextSpan, TransformAction, TransformResult
 
 THINK_TAG_RE = re.compile(r"<think>(.*?)</think>", re.DOTALL)
@@ -197,8 +198,11 @@ class StructuredExampleRenderTransform(BaseTransform):
         rendered_text = "".join(pieces)
         return rendered_text, spans, []
 
-    def apply(self, doc: CanonicalDocument) -> TransformResult:
+    def apply(
+        self, doc: CanonicalDocument, features: TextFeatures | None = None
+    ) -> TransformResult:
         start_t = time.monotonic()
+        _ = features  # structured rendering derives no shared text features.
         meta = doc.source_metadata
 
         # Determine schema type

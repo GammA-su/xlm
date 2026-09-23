@@ -11,6 +11,7 @@ from pydantic import Field
 from xlm.config.schemas import StrictConfigModel
 from xlm.core.contracts import CanonicalDocument
 from xlm.data.cleaning.base import BaseTransform
+from xlm.data.cleaning.features import TextFeatures
 from xlm.data.cleaning.types import QualityMetrics, TransformAction, TransformResult
 
 # Regex matching unmistakable HTML structural patterns or markup tags
@@ -127,7 +128,9 @@ class HtmlExtractionTransform(BaseTransform):
         super().__init__(config or HtmlExtractionConfig())
         self.cfg: HtmlExtractionConfig = self.config  # type: ignore
 
-    def apply(self, doc: CanonicalDocument) -> TransformResult:
+    def apply(
+        self, doc: CanonicalDocument, features: TextFeatures | None = None
+    ) -> TransformResult:
         start_t = time.monotonic()
         if not self.cfg.enabled:
             return TransformResult(
@@ -230,9 +233,13 @@ class HtmlExtractionTransform(BaseTransform):
         )
 
         duration = (time.monotonic() - start_t) * 1000.0
+        if features is not None:
+            extracted_words = features.words(cleaned_text)
+        else:
+            extracted_words = cleaned_text.split()
         metrics = QualityMetrics(
             utf8_byte_count=new_doc.utf8_byte_count,
-            word_count=len(cleaned_text.split()),
+            word_count=len(extracted_words),
             line_count=len(cleaned_lines),
             has_html_markup=True,
         )

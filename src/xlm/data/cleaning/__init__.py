@@ -10,6 +10,7 @@ from xlm.data.cleaning.base import (
     IncompatiblePipelineError,
 )
 from xlm.data.cleaning.boilerplate import BoilerplateConfig, BoilerplateTransform
+from xlm.data.cleaning.features import CharStats, TextFeatures, compute_char_stats
 from xlm.data.cleaning.html import HtmlExtractionConfig, HtmlExtractionTransform
 from xlm.data.cleaning.language import LanguageConfig, LanguageFilter
 from xlm.data.cleaning.length_noise import (
@@ -29,9 +30,28 @@ from xlm.data.cleaning.pipeline import (
     StageStats,
     create_pipeline_preset,
 )
-from xlm.data.cleaning.quarantine import QuarantineManager, QuarantinePolicy
+from xlm.data.cleaning.quarantine import (
+    QuarantineManager,
+    QuarantinePolicy,
+    QuarantineRecorder,
+    build_quarantine_entry,
+    is_secret_rejection,
+)
 from xlm.data.cleaning.repetition import RepetitionConfig, RepetitionFilter
 from xlm.data.cleaning.reporting import QualityReporter
+from xlm.data.cleaning.sharded import (
+    CLEAN_MANIFEST_FILENAME,
+    QUARANTINE_FILENAME,
+    QUARANTINE_MANIFEST_FILENAME,
+    AssembledClean,
+    CleanUnit,
+    UnitTiming,
+    assemble_output_shards,
+    clean_unit_worker,
+    merge_unit_results,
+    plan_clean_units,
+    run_sharded_clean,
+)
 from xlm.data.cleaning.structured import (
     StructuredExampleRenderTransform,
     StructuredRenderConfig,
@@ -131,14 +151,18 @@ def _register_default_transforms() -> None:
 _register_default_transforms()
 
 __all__ = [
+    "AssembledClean",
     "BaseTransform",
     "BlockedCapabilityError",
     "BoilerplateConfig",
     "BoilerplateTransform",
+    "CLEAN_MANIFEST_FILENAME",
     "CanonicalNormalizationConfig",
     "CanonicalNormalizationTransform",
+    "CharStats",
     "CleaningBudgetExhaustedError",
     "CleaningPipeline",
+    "CleanUnit",
     "HtmlExtractionConfig",
     "HtmlExtractionTransform",
     "IncompatiblePipelineError",
@@ -151,18 +175,31 @@ __all__ = [
     "PipelineExecutionSummary",
     "PiiConfig",
     "PiiSecretFilter",
+    "QUARANTINE_FILENAME",
+    "QUARANTINE_MANIFEST_FILENAME",
     "QualityMetrics",
     "QualityReporter",
     "QuarantineManager",
     "QuarantinePolicy",
+    "QuarantineRecorder",
     "RepetitionConfig",
     "RepetitionFilter",
     "StageStats",
     "StructuredExampleRenderTransform",
     "StructuredRenderConfig",
+    "TextFeatures",
     "TextSpan",
     "TransformAction",
     "TransformResult",
+    "UnitTiming",
+    "assemble_output_shards",
+    "build_quarantine_entry",
+    "clean_unit_worker",
+    "compute_char_stats",
     "create_pipeline_preset",
+    "is_secret_rejection",
+    "merge_unit_results",
+    "plan_clean_units",
     "redact_sensitive_text",
+    "run_sharded_clean",
 ]
