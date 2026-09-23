@@ -2,8 +2,14 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
+import stat
+from collections.abc import Iterator, Mapping
 from pathlib import Path
+from types import MappingProxyType
 
+import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
 
@@ -117,9 +123,41 @@ def test_source_prober_denied_fineweb_policy_block() -> None:
     assert "denied_by_policy" in evidence.unresolved_requirements
 
 
-def test_nested_field_schema_inspection() -> None:
+@pytest.fixture(scope="session")
+def nested_parquet_samples(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> Iterator[Mapping[str, Path]]:
+    """Session-only authored schemas; immutable files, never a checkout prerequisite."""
+    records = {
+        "nested": [
+            {
+                "doc_id": "authored-1",
+                "text": "Authored schema fixture.",
+                "metadata": {"taxonomy": "science", "quality_score": 0.75},
+            }
+        ],
+        "mismatched": [{"doc_id": "authored-2", "body": "No text or QA fields."}],
+    }
+    key = hashlib.sha256(
+        json.dumps({"generator": "nested-parquet-v1", "records": records}, sort_keys=True).encode()
+    ).hexdigest()
+    root = tmp_path_factory.mktemp(f"nested-{key[:12]}")
+    paths = {}
+    digests = {}
+    for name, rows in records.items():
+        path = root / f"{name}.parquet"
+        pq.write_table(pa.Table.from_pylist(rows), path, compression="NONE")
+        paths[name] = path
+        digests[name] = hashlib.sha256(path.read_bytes()).hexdigest()
+        path.chmod(stat.S_IREAD)
+    yield MappingProxyType(paths)
+    for name, path in paths.items():
+        assert hashlib.sha256(path.read_bytes()).hexdigest() == digests[name]
+
+
+def test_nested_field_schema_inspection(nested_parquet_samples: Mapping[str, Path]) -> None:
     """Verify Arrow schema inspection parses nested struct fields from real Parquet fixture."""
-    parquet_path = Path("fixtures/sources/sample_nested/nested_sample.parquet")
+    parquet_path = nested_parquet_samples["nested"]
     assert parquet_path.is_file(), f"Fixture missing: {parquet_path}"
 
     pq_file = pq.ParquetFile(parquet_path)
@@ -142,9 +180,9 @@ def test_nested_field_schema_inspection() -> None:
     assert "string" in meta_field.nested_fields["taxonomy"].type_name.lower()
 
 
-def test_missing_text_field_explicit_handling() -> None:
+def test_missing_text_field_explicit_handling(nested_parquet_samples: Mapping[str, Path]) -> None:
     """Verify that schema mismatch flags missing text column against contract without guessing."""
-    parquet_path = Path("fixtures/sources/sample_nested/mismatched_sample.parquet")
+    parquet_path = nested_parquet_samples["mismatched"]
     assert parquet_path.is_file(), f"Fixture missing: {parquet_path}"
 
     pq_file = pq.ParquetFile(parquet_path)
