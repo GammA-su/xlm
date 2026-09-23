@@ -120,6 +120,7 @@ markers = [
     "performance: explicit timing/throughput matrices; original large evidence, excluded from correctness gates",
     "scale: large correctness/resource-bound tests required by final offline acceptance",
     "optional_dependency: explicit installed-capability tests (never installs or downloads dependencies)",
+    "environment_setup: explicitly authorized environment construction; may run offline uv sync",
     "operator: tests that require isolated operator privileges",
     "serial: tests requiring exclusive execution (shared-checkout mutation, nonisolatable resources, measured timing/inventory checks); run with -n 0, never under xdist",
 ]

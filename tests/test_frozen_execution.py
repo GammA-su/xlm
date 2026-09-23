@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import shutil
-from dataclasses import replace
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 import pytest
@@ -18,6 +19,41 @@ from xlm.experiments.queue import ExperimentQueue
 from xlm.experiments.snapshot import capture_snapshot
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+@dataclass(frozen=True)
+class FrozenSeed:
+    """Immutable bytes only; ledgers, queues and model objects are never shared."""
+
+    files: tuple[tuple[str, bytes], ...]
+    identity: str
+
+
+def _seed_identity(files: tuple[tuple[str, bytes], ...]) -> str:
+    digest = hashlib.sha256(b"frozen-authored-seed-v1\0")
+    for name, payload in files:
+        for value in (name.encode(), payload):
+            digest.update(len(value).to_bytes(8, "little"))
+            digest.update(value)
+    return digest.hexdigest()
+
+
+@pytest.fixture(scope="session")
+def frozen_seed(tmp_path_factory: pytest.TempPathFactory) -> FrozenSeed:
+    """Run the real generator once, retaining its exact code/config/runtime identity.
+
+    The byte snapshot includes generator output, seed, record count, config and
+    dependency hashes. It lives only in this pytest session, never across commits.
+    Every consumer gets new files and a new queue. Worker integrity checks still
+    hash the actual installed runtime; no verifier is patched or cached.
+    """
+    root = tmp_path_factory.mktemp("frozen-seed")
+    frozen_fixture(root)
+    paths = [root / "plan.json"]
+    paths += [p for name in ("tree", "snapshot") for p in (root / name).rglob("*") if p.is_file()]
+    files = tuple((p.relative_to(root).as_posix(), p.read_bytes()) for p in sorted(paths))
+    assert sum(len(data) for _, data in files) < 32 * 1024**2
+    return FrozenSeed(files, _seed_identity(files))
 
 
 def authored_tree(tree: Path, behavior: str | None = None) -> Path:
@@ -44,8 +80,18 @@ def authored_tree(tree: Path, behavior: str | None = None) -> Path:
 
 
 def frozen_fixture(
-    tmp_path: Path, behavior: str | None = None
+    tmp_path: Path, behavior: str | None = None, *, seed: FrozenSeed | None = None
 ) -> tuple[ExecutablePlan, ExperimentQueue, str, Path, Path]:
+    if seed is not None:
+        if behavior is not None:
+            raise ValueError("custom trainer behavior requires its own fresh frozen fixture")
+        assert _seed_identity(seed.files) == seed.identity
+        for name, payload in seed.files:
+            path = tmp_path / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with path.open("xb") as stream:
+                stream.write(payload)
+        return _admit_fixture(ExecutablePlan.load(tmp_path / "plan.json"), tmp_path)
     tree = authored_tree(tmp_path / "tree", behavior)
     snapshot_path = tmp_path / "snapshot"
     snapshot = capture_snapshot(tree, snapshot_path, max_snapshot_bytes=16 * 1024**2)
@@ -102,6 +148,13 @@ def frozen_fixture(
         storage_estimate_gib=0.01,
     )
     freeze_execution(plan, snapshot_path, ["cpu"])
+    return _admit_fixture(plan, tmp_path)
+
+
+def _admit_fixture(
+    plan: ExecutablePlan, tmp_path: Path
+) -> tuple[ExecutablePlan, ExperimentQueue, str, Path, Path]:
+    tree, snapshot_path = tmp_path / "tree", tmp_path / "snapshot"
     path = plan.save(tmp_path / "plan.json")
     paths = ArtifactPaths(root=tmp_path / "home")
     queue = ExperimentQueue(RunLedger(paths.ledger / "ledger.sqlite"), paths, tree_root=tree)
@@ -110,10 +163,27 @@ def frozen_fixture(
 
 
 @pytest.mark.serial
-def test_independent_persisted_bindings_refuse_before_worker(tmp_path: Path) -> None:
+def test_frozen_seed_copies_are_private(tmp_path: Path, frozen_seed: FrozenSeed) -> None:
+    left = frozen_fixture(tmp_path / "left", seed=frozen_seed)
+    right = frozen_fixture(tmp_path / "right", seed=frozen_seed)
+    assert left[0].to_dict() == right[0].to_dict()
+    assert left[1].paths.root != right[1].paths.root
+    relative = "code/src/xlm/training/trainer.py"
+    expected = (right[4] / relative).read_bytes()
+    (left[4] / relative).write_text("private mutation\n", encoding="utf-8")
+    left[0].resolved_config["training"]["init_seed"] = 999
+    assert (right[4] / relative).read_bytes() == expected
+    assert right[0].resolved_config["training"]["init_seed"] == 7
+    assert _seed_identity(frozen_seed.files) == frozen_seed.identity
+
+
+@pytest.mark.serial
+def test_independent_persisted_bindings_refuse_before_worker(
+    tmp_path: Path, frozen_seed: FrozenSeed
+) -> None:
     from xlm.experiments.execution import read_json, write_json
 
-    plan, queue, _, _, snapshot = frozen_fixture(tmp_path)
+    plan, queue, _, _, snapshot = frozen_fixture(tmp_path, seed=frozen_seed)
     for case in ("plan", "job", "authorization", "missing_admission", "invalid_json"):
         job_id, _ = queue.submit(
             plan, tmp_path / "plan.json", snapshot, "cpu", "smoke", allow_duplicate=True
@@ -145,14 +215,16 @@ def test_independent_persisted_bindings_refuse_before_worker(tmp_path: Path) -> 
 
 
 @pytest.mark.serial
-def test_authority_and_recomputed_envelope_fields_are_checked(tmp_path: Path) -> None:
+def test_authority_and_recomputed_envelope_fields_are_checked(
+    tmp_path: Path, frozen_seed: FrozenSeed
+) -> None:
     import copy
 
     from xlm.artifacts.manifest import identity_digest
     from xlm.experiments.authorization import AuthorizationError, issue_ticket
     from xlm.experiments.execution import validate_envelope
 
-    plan, queue, _, _, snapshot = frozen_fixture(tmp_path)
+    plan, queue, _, _, snapshot = frozen_fixture(tmp_path, seed=frozen_seed)
     assert plan.execution_envelope is not None
     for wrong_hash, targets in (("wrong", 8), (plan.plan_hash, 1)):
         ticket = issue_ticket(wrong_hash, targets, "authored operator", "test")
@@ -178,10 +250,12 @@ def test_authority_and_recomputed_envelope_fields_are_checked(tmp_path: Path) ->
 
 
 @pytest.mark.serial
-def test_actual_environment_mismatch_fails_in_real_worker(tmp_path: Path) -> None:
+def test_actual_environment_mismatch_fails_in_real_worker(
+    tmp_path: Path, frozen_seed: FrozenSeed
+) -> None:
     from xlm.artifacts.manifest import identity_digest
 
-    plan, queue, _, _, snapshot = frozen_fixture(tmp_path)
+    plan, queue, _, _, snapshot = frozen_fixture(tmp_path, seed=frozen_seed)
     assert plan.execution_envelope is not None
     envelope = plan.execution_envelope
     envelope["environment"]["installed_files_hash"] = "0" * 64
@@ -249,13 +323,15 @@ def test_public_queue_and_diagnostic_receipt_keep_separate_provenance(
 
 
 @pytest.mark.serial
-def test_changed_tokenizer_and_real_shard_are_rejected(tmp_path: Path) -> None:
+def test_changed_tokenizer_and_real_shard_are_rejected(
+    tmp_path: Path, frozen_seed: FrozenSeed
+) -> None:
     from test_token_shards import make_doc
     from xlm.data.tokens import TokenShardWriter
     from xlm.experiments.execution import validate_envelope
     from xlm.tokenizers.byte import ByteTokenizer
 
-    plan, _, _, _, snapshot = frozen_fixture(tmp_path)
+    plan, _, _, _, snapshot = frozen_fixture(tmp_path, seed=frozen_seed)
     tokenizer = tmp_path / "tokenizer"
     ByteTokenizer().save(tokenizer)
     shard = tmp_path / "shard"
@@ -303,12 +379,14 @@ def test_real_worker_output_bound_and_terminal_failure(tmp_path: Path) -> None:
 
 
 @pytest.mark.serial
-def test_worker_rejects_cli_override_outside_frozen_envelope(tmp_path: Path) -> None:
+def test_worker_rejects_cli_override_outside_frozen_envelope(
+    tmp_path: Path, frozen_seed: FrozenSeed
+) -> None:
     from xlm.experiments.environment import runtime_locations
     from xlm.experiments.execution import write_json
     from xlm.experiments.launcher import launch_worker
 
-    plan, _, _, _, snapshot = frozen_fixture(tmp_path)
+    plan, _, _, _, snapshot = frozen_fixture(tmp_path, seed=frozen_seed)
     path = tmp_path / "train.json"
     write_json(path, {**plan.resolved_config, "id": "authored"})
     with pytest.raises(RuntimeError, match="max_targets.*differs from frozen execution"):
@@ -390,15 +468,16 @@ def test_snapshot_reuse_conflicts_and_paths(tmp_path: Path) -> None:
 # Measured environment-inventory timing: exclusive execution only (see
 # pyproject serial marker). Flagged for D06 review; behavior unchanged.
 @pytest.mark.serial
+@pytest.mark.environment_setup
 def test_relocated_locked_environment_ignores_editable_hooks_and_bytecode(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, frozen_seed: FrozenSeed
 ) -> None:
     import py_compile
     import subprocess
 
     from xlm.experiments import environment
 
-    plan, queue, _, _, snapshot = frozen_fixture(tmp_path)
+    plan, queue, _, _, snapshot = frozen_fixture(tmp_path, seed=frozen_seed)
     venv = tmp_path / "relocated-venv"
     result = subprocess.run(
         ["uv", "sync", "--offline", "--locked", "--extra", "cpu", "--extra", "eval"],
@@ -516,8 +595,10 @@ def test_intact_a_executes_after_live_b_and_import_override(
 
 @pytest.mark.parametrize("damage", ["tamper", "missing", "extra"])
 @pytest.mark.serial
-def test_snapshot_damage_rejects_before_worker(tmp_path: Path, damage: str) -> None:
-    _, queue, job_id, _, snapshot = frozen_fixture(tmp_path)
+def test_snapshot_damage_rejects_before_worker(
+    tmp_path: Path, damage: str, frozen_seed: FrozenSeed
+) -> None:
+    _, queue, job_id, _, snapshot = frozen_fixture(tmp_path, seed=frozen_seed)
     path = snapshot / "code/src/xlm/training/trainer.py"
     if damage == "missing":
         path.unlink()
