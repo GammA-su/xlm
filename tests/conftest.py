@@ -10,6 +10,13 @@ from pathlib import Path
 import pytest
 
 
+@pytest.fixture(scope="session")
+def installed_eval_runtime() -> None:
+    """Import optional harness packages only when their tests actually execute."""
+    pytest.importorskip("lm_eval")
+    pytest.importorskip("datasets")
+
+
 def pytest_configure(config: pytest.Config) -> None:
     """Give each xdist worker its own XLM_HOME before anything resolves paths.
 

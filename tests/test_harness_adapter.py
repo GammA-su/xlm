@@ -15,11 +15,9 @@ from typing import Any
 
 import pytest
 
-pytestmark = pytest.mark.optional_dependency
+pytestmark = [pytest.mark.optional_dependency, pytest.mark.usefixtures("installed_eval_runtime")]
 
 pytest.importorskip("torch")
-pytest.importorskip("lm_eval")
-pytest.importorskip("datasets")
 
 import torch  # noqa: E402
 

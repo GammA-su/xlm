@@ -19,13 +19,11 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-
-pytestmark = pytest.mark.optional_dependency
 import yaml
 
+pytestmark = [pytest.mark.optional_dependency, pytest.mark.usefixtures("installed_eval_runtime")]
+
 pytest.importorskip("torch")
-pytest.importorskip("lm_eval")
-pytest.importorskip("datasets")
 
 from xlm.evaluation.coverage import CoverageStatus  # noqa: E402
 from xlm.evaluation.evidence import (  # noqa: E402

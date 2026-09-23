@@ -430,6 +430,7 @@ def test_harness_identity_changes_with_every_component() -> None:
     )
 
 
+@pytest.mark.optional_dependency
 def test_installed_harness_version_matches_the_pin_when_present() -> None:
     installed = harness_version()
     if installed is None:
