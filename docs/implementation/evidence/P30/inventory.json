@@ -1,0 +1,86 @@
+{
+  "starting_head": "6bdca915005e2863e1c80b962dff6a053ab5b680",
+  "original_count": 1667,
+  "current_count": 1673,
+  "original_modules": 117,
+  "current_modules": 118,
+  "directory": "tests",
+  "missing_original_nodes": [],
+  "added_nodes": [
+    "tests/test_dedup_small_oracles.py::test_small_lexical_equivalence[engine]",
+    "tests/test_dedup_small_oracles.py::test_small_lexical_equivalence[shard-boundaries]",
+    "tests/test_dedup_small_oracles.py::test_small_lexical_equivalence[sharded-output]",
+    "tests/test_dedup_small_oracles.py::test_small_lexical_equivalence[thresholds]",
+    "tests/test_dedup_small_oracles.py::test_small_lexical_equivalence[workers-layouts]",
+    "tests/test_frozen_execution.py::test_frozen_seed_copies_are_private"
+  ],
+  "tier_counts": {
+    "A": 1519,
+    "B": 68,
+    "D": 70,
+    "C": 16
+  },
+  "old_markers": {
+    "parametrize": 384,
+    "network": 2,
+    "serial": 9,
+    "slow": 16,
+    "cuda": 10
+  },
+  "new_markers": {
+    "parametrize": 389,
+    "serial": 81,
+    "network": 2,
+    "performance": 8,
+    "slow": 16,
+    "scale": 8,
+    "cuda": 10,
+    "optional_dependency": 57,
+    "usefixtures": 53,
+    "environment_setup": 1
+  },
+  "unchanged_assert_expressions_in_edited_original_tests": 1132,
+  "changed_assertion_tests": [],
+  "production_files_changed": [],
+  "collection_before": {
+    "argv": [
+      "--collect-only",
+      "-q",
+      "-n",
+      "0",
+      "-p",
+      "pytest_evidence",
+      "--evidence-json",
+      "artifacts/test-suite-perf/before-inventory.json"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 12.36814299999969,
+    "collection_seconds": 12.36321979999775,
+    "peak_tree_rss_bytes": 350851072,
+    "rss_sample_seconds": 0.5
+  },
+  "collection_after": {
+    "argv": [
+      "--collect-only",
+      "-q",
+      "-n",
+      "0",
+      "--strict-markers",
+      "-p",
+      "pytest_evidence",
+      "--evidence-json",
+      "artifacts/test-suite-perf/final-inventory.json"
+    ],
+    "python": "3.12.13",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "loaded_heavy_modules": [
+      "torch",
+      "pyarrow"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 7.372509700013325,
+    "collection_seconds": 7.335789799981285,
+    "peak_tree_rss_bytes": 267513856,
+    "rss_sample_seconds": 0.5
+  }
+}

@@ -43,6 +43,27 @@
 > opt-in and off by default. See [reports/PINTEGRATION.md](reports/PINTEGRATION.md).
 > Overall production acceptance remains BLOCKED; main is unchanged.
 
+> **P30 test-suite iteration (2026-09-23): IMPLEMENTED / VERIFIED (scoped);
+> final acceptance BLOCKED.** On `perf/test-suite-throughput`, starting
+> `6bdca915005e2863e1c80b962dff6a053ab5b680`: all 1,667 original tests retained,
+> six additions, 1,673-node tier ledger. Fast A (1,519 nodes) takes 81.71 s with
+> 12 workers: 1,518 pass, one existing CPU compiler skip. Measured 4/8/12/16:
+> 113.75 / 102.88 / 81.71 / 95.38 s. Immutable private-copy fixtures and lazy
+> optional imports reduce repeated work; real worker verification remains intact.
+> Original scale: eight passes / 111.62 s; installed optional: 57 / 535.97 s.
+> Serial: 65 passes, three failures / 2,253.40 s; its Windows crash-termination
+> race was repaired and the exact case passed in 89.83 s. Two unchanged token
+> preparation/reuse publication failures remain. Latest required-node evidence:
+> 1,649 pass, two fail, one skip; no missing required nodes. The four measured
+> correctness legs total 49m42.70s: **no full-acceptance speedup is established**.
+> Four bounded performance matrices passed / 139.93 s; full performance,
+> CUDA/live/environment installation and hosted CI NOT RUN. No production code or
+> dependency graph changed; no research campaign, network, installs, push or merge.
+> See [P30 report](reports/P30.md), [node ledger](evidence/P30/test-ledger.tsv),
+> [raw evidence](evidence/P30/README.md), and [direct commands](../TESTING.md).
+> Next: repair the two `tests/test_prepare.py` regressions listed in the report,
+> run those exact nodes with `-n 0`, then the four-leg final gate on the merged tree.
+
 > **P29C exact cleaning (2026-09-23): IMPLEMENTED / VERIFIED (bounded offline)**
 > on `perf/astra-cleaning-v2`, parent `5a43a81`. Authored one-worker cleaner:
 > 10k 7.965 -> 5.918 s; 100k 70.399 -> 53.241 s (24.4% less time).

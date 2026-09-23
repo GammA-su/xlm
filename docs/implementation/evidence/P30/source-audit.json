@@ -1,0 +1,1469 @@
+[
+  {
+    "file": "tests/test_acquisition_bounds.py",
+    "function": "offline_fetch",
+    "line": 79,
+    "tags": [],
+    "large_constants": [
+      16384
+    ]
+  },
+  {
+    "file": "tests/test_acquisition_bounds.py",
+    "function": "test_fresh_process_reservations_and_killed_owner_remain_spent",
+    "line": 148,
+    "tags": [
+      "subprocess.Popen"
+    ],
+    "large_constants": [
+      16384
+    ]
+  },
+  {
+    "file": "tests/test_acquisition_bounds.py",
+    "function": "test_killed_download_resumes_in_a_fresh_process_without_new_allowance",
+    "line": 178,
+    "tags": [
+      "subprocess.run",
+      "subprocess.Popen",
+      "time.sleep"
+    ],
+    "large_constants": [
+      40000,
+      65536
+    ]
+  },
+  {
+    "file": "tests/test_acquisition_bounds.py",
+    "function": "server",
+    "line": 297,
+    "tags": [],
+    "large_constants": [
+      100000
+    ]
+  },
+  {
+    "file": "tests/test_acquisition_bounds.py",
+    "function": "test_public_plan_fetch_status_verify_prepare",
+    "line": 451,
+    "tags": [
+      "subprocess.run"
+    ],
+    "large_constants": [
+      65536
+    ]
+  },
+  {
+    "file": "tests/test_acquisition_bounds.py",
+    "function": "test_nested_acquisition_consumes_parent_preparation_budget",
+    "line": 586,
+    "tags": [],
+    "large_constants": [
+      16384,
+      32768,
+      65536,
+      262144
+    ]
+  },
+  {
+    "file": "tests/test_acquisition_bounds.py",
+    "function": "test_selected_private_attempt_resumes_in_new_process",
+    "line": 640,
+    "tags": [
+      "subprocess.run"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_acquisition_bounds.py",
+    "function": "test_blank_gzip_expansion_is_bounded",
+    "line": 697,
+    "tags": [],
+    "large_constants": [
+      100000
+    ]
+  },
+  {
+    "file": "tests/test_acquisition_bounds.py",
+    "function": "test_public_probe_attempt_has_durable_body_request_and_deadline_account",
+    "line": 718,
+    "tags": [
+      "subprocess.run"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_acquisition_bounds.py",
+    "function": "test_shared_storage_reservations_and_verified_reconciliation",
+    "line": 782,
+    "tags": [],
+    "large_constants": [
+      10000,
+      16384
+    ]
+  },
+  {
+    "file": "tests/test_acquisition_bounds.py",
+    "function": "_production_cli",
+    "line": 846,
+    "tags": [
+      "subprocess.run"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_acquisition_bounds.py",
+    "function": "cli",
+    "line": 458,
+    "tags": [
+      "subprocess.run"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_acquisition_bounds.py",
+    "function": "do_GET",
+    "line": 187,
+    "tags": [],
+    "large_constants": [
+      65536
+    ]
+  },
+  {
+    "file": "tests/test_acquisition_fetcher.py",
+    "function": "do_GET",
+    "line": 45,
+    "tags": [],
+    "large_constants": [
+      65536
+    ]
+  },
+  {
+    "file": "tests/test_acquisition_plan.py",
+    "function": "_attempt_cli",
+    "line": 570,
+    "tags": [
+      "subprocess.run"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_acquisition_verifier.py",
+    "function": "test_base_environment_zero_torch_isolation",
+    "line": 188,
+    "tags": [
+      "subprocess.run"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_artifact_identity.py",
+    "function": "test_existing_junction_cannot_redirect_publication",
+    "line": 284,
+    "tags": [
+      "subprocess.run"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_artifact_identity.py",
+    "function": "test_actual_public_cli_current_and_legacy_artifacts",
+    "line": 333,
+    "tags": [
+      "subprocess.run"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_artifact_identity.py",
+    "function": "test_fresh_process_publishers_have_one_permitted_outcome",
+    "line": 409,
+    "tags": [
+      "subprocess.Popen",
+      "time.sleep"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_artifact_identity.py",
+    "function": "cli",
+    "line": 345,
+    "tags": [
+      "subprocess.run"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_cleaning_pipeline.py",
+    "function": "test_base_environment_zero_torch_isolation",
+    "line": 166,
+    "tags": [
+      "subprocess.run"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_cleaning_repetition.py",
+    "function": "test_duplicate_line_ratio_still_rejects_content_duplication",
+    "line": 298,
+    "tags": [],
+    "large_constants": [
+      10000
+    ]
+  },
+  {
+    "file": "tests/test_cleaning_scale.py",
+    "function": "test_streaming_parquet_round_trip_is_lossless",
+    "line": 268,
+    "tags": [
+      "importorskip"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_cleaning_scheduler_v2.py",
+    "function": "run",
+    "line": 16,
+    "tags": [
+      "run_sharded_clean"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_cleaning_scheduler_v2.py",
+    "function": "test_dynamic_pending_futures_are_bounded",
+    "line": 45,
+    "tags": [
+      "ProcessPoolExecutor"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_cleaning_throughput.py",
+    "function": "_engine_run",
+    "line": 234,
+    "tags": [
+      "run_sharded_clean"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_cleaning_throughput.py",
+    "function": "test_malformed_json_error_matches_reference",
+    "line": 711,
+    "tags": [
+      "run_sharded_clean"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_cleaning_throughput.py",
+    "function": "test_quarantine_caps_match_reference",
+    "line": 735,
+    "tags": [
+      "run_sharded_clean"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_cleaning_throughput.py",
+    "function": "test_quarantine_ceiling_aborts_without_publication",
+    "line": 773,
+    "tags": [
+      "run_sharded_clean"
+    ],
+    "large_constants": [
+      10000
+    ]
+  },
+  {
+    "file": "tests/test_cleaning_throughput.py",
+    "function": "test_worker_failure_aborts_without_publication",
+    "line": 806,
+    "tags": [
+      "run_sharded_clean"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_cleaning_throughput.py",
+    "function": "test_benchmark_10k_mixed_workers",
+    "line": 934,
+    "tags": [],
+    "large_constants": [
+      10000
+    ]
+  },
+  {
+    "file": "tests/test_cleaning_throughput.py",
+    "function": "test_benchmark_100k_mixed_endpoints",
+    "line": 953,
+    "tags": [],
+    "large_constants": [
+      100000
+    ]
+  },
+  {
+    "file": "tests/test_cleaning_v2_exact.py",
+    "function": "test_ngram_prefix_multiset_is_exact",
+    "line": 86,
+    "tags": [],
+    "large_constants": [
+      50000
+    ]
+  },
+  {
+    "file": "tests/test_cli.py",
+    "function": "test_installed_entrypoint_subprocess",
+    "line": 60,
+    "tags": [
+      "subprocess.run"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_cli_eval_gen.py",
+    "function": "test_cli_demo_complete_vertical_slice_subprocess",
+    "line": 12,
+    "tags": [
+      "subprocess.run"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_cli_eval_gen.py",
+    "function": "test_cli_evaluate_and_generate_subprocess",
+    "line": 31,
+    "tags": [
+      "subprocess.run"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_cli_pool_freeze.py",
+    "function": "test_freeze_plan_only_does_not_fit_a_tokenizer",
+    "line": 217,
+    "tags": [],
+    "large_constants": [
+      32768
+    ]
+  },
+  {
+    "file": "tests/test_cli_pool_freeze.py",
+    "function": "test_freeze_fits_tokenizer_and_writes_a_mixture_free_regime",
+    "line": 252,
+    "tags": [
+      "importorskip"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_cli_train_demo.py",
+    "function": "test_cli_demo_subprocess",
+    "line": 12,
+    "tags": [
+      "subprocess.run"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_cli_train_demo.py",
+    "function": "test_cli_run_inspect_subprocess",
+    "line": 26,
+    "tags": [
+      "subprocess.run"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_cli_train_demo.py",
+    "function": "test_cli_train_and_resume_subprocess",
+    "line": 64,
+    "tags": [
+      "subprocess.run"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_comparison.py",
+    "function": "_fields",
+    "line": 50,
+    "tags": [],
+    "large_constants": [
+      32768
+    ]
+  },
+  {
+    "file": "tests/test_comparison.py",
+    "function": "test_changed_tokenizer_fails_the_architecture_track",
+    "line": 101,
+    "tags": [],
+    "large_constants": [
+      30000
+    ]
+  },
+  {
+    "file": "tests/test_comparison.py",
+    "function": "test_byte_matched_tokenizer_track_can_pass",
+    "line": 110,
+    "tags": [],
+    "large_constants": [
+      30000
+    ]
+  },
+  {
+    "file": "tests/test_config.py",
+    "function": "test_unknown_key_rejection",
+    "line": 38,
+    "tags": [],
+    "large_constants": [
+      100000
+    ]
+  },
+  {
+    "file": "tests/test_config.py",
+    "function": "test_cli_overrides",
+    "line": 173,
+    "tags": [],
+    "large_constants": [
+      200000
+    ]
+  },
+  {
+    "file": "tests/test_configurable_training.py",
+    "function": "test_public_cli_executes_registered_objective",
+    "line": 90,
+    "tags": [
+      "subprocess.run"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_configurable_workflow.py",
+    "function": "cli",
+    "line": 52,
+    "tags": [
+      "subprocess.run"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_continuation_p05.py",
+    "function": "test_cpu_fresh_process_continuation_parity",
+    "line": 226,
+    "tags": [
+      "subprocess.run"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_cuda_execution.py",
+    "function": "test_resource_plan_reports_measured_ranges_not_peak_flops",
+    "line": 275,
+    "tags": [],
+    "large_constants": [
+      1000000
+    ]
+  },
+  {
+    "file": "tests/test_cuda_execution.py",
+    "function": "test_resource_plan_refuses_unfamiliar_architectures",
+    "line": 290,
+    "tags": [],
+    "large_constants": [
+      1000000
+    ]
+  },
+  {
+    "file": "tests/test_dedup_throughput.py",
+    "function": "_engine_run",
+    "line": 116,
+    "tags": [
+      "run_sharded_dedup"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_dedup_throughput.py",
+    "function": "test_kernel_matches_reference_when_numpy_present",
+    "line": 174,
+    "tags": [
+      "importorskip"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_dedup_throughput.py",
+    "function": "test_worker_failure_aborts_without_publication",
+    "line": 343,
+    "tags": [
+      "run_sharded_dedup"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_dedup_throughput.py",
+    "function": "test_benchmark_10k_workers",
+    "line": 452,
+    "tags": [],
+    "large_constants": [
+      10000
+    ]
+  },
+  {
+    "file": "tests/test_dedup_throughput.py",
+    "function": "test_benchmark_100k_endpoints",
+    "line": 470,
+    "tags": [],
+    "large_constants": [
+      100000
+    ]
+  },
+  {
+    "file": "tests/test_dedup_throughput.py",
+    "function": "test_memory_bound",
+    "line": 510,
+    "tags": [],
+    "large_constants": [
+      20000
+    ]
+  },
+  {
+    "file": "tests/test_doctor.py",
+    "function": "test_doctor_nvidia_smi_timeout",
+    "line": 53,
+    "tags": [
+      "subprocess.run"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_eval_declared_inputs.py",
+    "function": "_cli",
+    "line": 612,
+    "tags": [
+      "subprocess.run"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_eval_declared_inputs.py",
+    "function": "_acquire_whole_file",
+    "line": 761,
+    "tags": [],
+    "large_constants": [
+      65536
+    ]
+  },
+  {
+    "file": "tests/test_eval_suites.py",
+    "function": "test_reference_registration_measures_parameters_locally",
+    "line": 481,
+    "tags": [
+      "importorskip"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_experiment_plans.py",
+    "function": "test_smoke_ticket_covers_only_smoke_scale",
+    "line": 109,
+    "tags": [],
+    "large_constants": [
+      200000,
+      200001
+    ]
+  },
+  {
+    "file": "tests/test_experiment_plans.py",
+    "function": "test_ticket_round_trip_and_malformed_refusal",
+    "line": 125,
+    "tags": [],
+    "large_constants": [
+      1000000
+    ]
+  },
+  {
+    "file": "tests/test_experiment_profile.py",
+    "function": "test_cli_plan_with_matching_profile_reports_measured",
+    "line": 228,
+    "tags": [
+      "subprocess.run"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_experiment_profile.py",
+    "function": "test_cli_plan_with_mismatched_profile_is_refused",
+    "line": 262,
+    "tags": [
+      "subprocess.run"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_export.py",
+    "function": "test_clean_process_load_reproduces_logits_likelihood_and_completion",
+    "line": 125,
+    "tags": [
+      "subprocess.run"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_export.py",
+    "function": "test_generate_command_reads_export_bundles",
+    "line": 455,
+    "tags": [
+      "subprocess.run"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_export_aliases.py",
+    "function": "test_a_tied_tensor_is_serialized_exactly_once",
+    "line": 156,
+    "tags": [],
+    "large_constants": [
+      98880,
+      115520
+    ]
+  },
+  {
+    "file": "tests/test_export_aliases.py",
+    "function": "test_fresh_process_reload_restores_parameter_identity_and_parity",
+    "line": 234,
+    "tags": [
+      "subprocess.run"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_export_aliases.py",
+    "function": "test_public_cli_export_and_load_round_trip",
+    "line": 598,
+    "tags": [
+      "subprocess.run"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_finepdfs_live_schema.py",
+    "function": "test_non_string_text_refused_not_coerced",
+    "line": 169,
+    "tags": [],
+    "large_constants": [
+      12345
+    ]
+  },
+  {
+    "file": "tests/test_finepdfs_live_schema.py",
+    "function": "_run_adapt",
+    "line": 338,
+    "tags": [
+      "subprocess.run"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_frozen_execution.py",
+    "function": "test_relocated_locked_environment_ignores_editable_hooks_and_bytecode",
+    "line": 386,
+    "tags": [
+      "subprocess.run"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_frozen_recovery.py",
+    "function": "test_real_crash_preserves_committed_boundary_on_retry",
+    "line": 19,
+    "tags": [
+      "subprocess.Popen",
+      "time.sleep"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_generation.py",
+    "function": "test_sampling_seed_reproducibility_and_local_generator",
+    "line": 47,
+    "tags": [],
+    "large_constants": [
+      12345
+    ]
+  },
+  {
+    "file": "tests/test_imports.py",
+    "function": "test_import_xlm_without_heavy_deps",
+    "line": 8,
+    "tags": [
+      "subprocess.run"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_mix01_views.py",
+    "function": "test_pilot_refused_without_an_authorization_envelope",
+    "line": 792,
+    "tags": [],
+    "large_constants": [
+      10000
+    ]
+  },
+  {
+    "file": "tests/test_mix01_views.py",
+    "function": "test_pilot_refused_for_unallowlisted_sources_and_over_cap",
+    "line": 797,
+    "tags": [],
+    "large_constants": [
+      10000,
+      1000000
+    ]
+  },
+  {
+    "file": "tests/test_mix01_views.py",
+    "function": "_run_adapt",
+    "line": 894,
+    "tags": [
+      "subprocess.run"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_mixture_planning.py",
+    "function": "test_plan_reports_repetition_risk_before_the_run",
+    "line": 184,
+    "tags": [],
+    "large_constants": [
+      49000,
+      50000,
+      100000,
+      1000000
+    ]
+  },
+  {
+    "file": "tests/test_mixture_planning.py",
+    "function": "test_plan_without_repetition_reports_none",
+    "line": 201,
+    "tags": [],
+    "large_constants": [
+      100000,
+      1000000
+    ]
+  },
+  {
+    "file": "tests/test_mixture_planning.py",
+    "function": "test_bounded_repeat_policy_is_reported_as_declared",
+    "line": 211,
+    "tags": [],
+    "large_constants": [
+      100000,
+      1000000
+    ]
+  },
+  {
+    "file": "tests/test_mixture_planning.py",
+    "function": "test_repeat_ceiling_breach_is_reported",
+    "line": 225,
+    "tags": [],
+    "large_constants": [
+      100000,
+      1000000
+    ]
+  },
+  {
+    "file": "tests/test_mixture_planning.py",
+    "function": "test_plan_is_deterministic_and_identity_bound",
+    "line": 239,
+    "tags": [],
+    "large_constants": [
+      10000,
+      20000,
+      1000000
+    ]
+  },
+  {
+    "file": "tests/test_mixture_planning.py",
+    "function": "test_block_ranges_are_contiguous_per_source",
+    "line": 308,
+    "tags": [],
+    "large_constants": [
+      10000
+    ]
+  },
+  {
+    "file": "tests/test_mixture_planning.py",
+    "function": "test_preview_shares_match_configured_weights",
+    "line": 321,
+    "tags": [],
+    "large_constants": [
+      10000,
+      100000,
+      1000000
+    ]
+  },
+  {
+    "file": "tests/test_mixture_planning.py",
+    "function": "test_unequal_source_sizes_still_meet_configured_shares",
+    "line": 351,
+    "tags": [],
+    "large_constants": [
+      50000,
+      100000,
+      500000
+    ]
+  },
+  {
+    "file": "tests/test_mixture_planning.py",
+    "function": "test_matched_byte_plan_fixes_raw_bytes_across_tokenizers",
+    "line": 407,
+    "tags": [],
+    "large_constants": [
+      25000,
+      50000,
+      100000,
+      200000,
+      400000
+    ]
+  },
+  {
+    "file": "tests/test_mixture_planning.py",
+    "function": "test_matched_document_plan_fixes_document_counts",
+    "line": 442,
+    "tags": [],
+    "large_constants": [
+      10000,
+      15000,
+      40000,
+      60000
+    ]
+  },
+  {
+    "file": "tests/test_mixture_planning.py",
+    "function": "test_matched_plan_labels_byte_availability_as_exact",
+    "line": 466,
+    "tags": [],
+    "large_constants": [
+      10000,
+      40000
+    ]
+  },
+  {
+    "file": "tests/test_mixture_planning.py",
+    "function": "test_matched_plan_reports_repetition_when_bytes_exceed_availability",
+    "line": 480,
+    "tags": [],
+    "large_constants": [
+      40000
+    ]
+  },
+  {
+    "file": "tests/test_mixture_stream.py",
+    "function": "test_token_dtype_overflow_is_caught",
+    "line": 188,
+    "tags": [],
+    "large_constants": [
+      70000
+    ]
+  },
+  {
+    "file": "tests/test_mixture_stream.py",
+    "function": "test_a_second_tokenizer_invalidates_the_shards",
+    "line": 241,
+    "tags": [
+      "importorskip"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_mixture_stream.py",
+    "function": "test_matched_byte_plan_holds_raw_exposure_across_real_tokenizers",
+    "line": 264,
+    "tags": [
+      "importorskip"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_mixture_stream.py",
+    "function": "test_exhaustion_raises_when_repeat_is_disabled",
+    "line": 543,
+    "tags": [],
+    "large_constants": [
+      100000
+    ]
+  },
+  {
+    "file": "tests/test_mixture_stream.py",
+    "function": "encode_with_offsets",
+    "line": 192,
+    "tags": [],
+    "large_constants": [
+      70000
+    ]
+  },
+  {
+    "file": "tests/test_models.py",
+    "function": "test_cpu_tiny_parameter_enumeration",
+    "line": 83,
+    "tags": [],
+    "large_constants": [
+      82240
+    ]
+  },
+  {
+    "file": "tests/test_models.py",
+    "function": "test_tokenizer_model_compatibility_check",
+    "line": 190,
+    "tags": [],
+    "large_constants": [
+      32768
+    ]
+  },
+  {
+    "file": "tests/test_models.py",
+    "function": "test_deterministic_initialization_and_residual_scaling",
+    "line": 230,
+    "tags": [],
+    "large_constants": [
+      12345
+    ]
+  },
+  {
+    "file": "tests/test_models.py",
+    "function": "test_cli_model_inspect_subprocess",
+    "line": 413,
+    "tags": [
+      "subprocess.run"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_offline_workflow.py",
+    "function": "_run",
+    "line": 20,
+    "tags": [
+      "subprocess.run"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_offline_workflow.py",
+    "function": "test_large_campaigns_prepare_without_launching",
+    "line": 405,
+    "tags": [
+      "subprocess.run"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_p26_streaming.py",
+    "function": "test_commit_batch_deadline_and_empty",
+    "line": 60,
+    "tags": [
+      "time.sleep"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_p26_streaming.py",
+    "function": "test_large_scale_jsonl_vs_ipc",
+    "line": 418,
+    "tags": [],
+    "large_constants": [
+      100000
+    ]
+  },
+  {
+    "file": "tests/test_packing_lookup.py",
+    "function": "test_structural_lookup_matches_reference",
+    "line": 14,
+    "tags": [],
+    "large_constants": [
+      65536
+    ]
+  },
+  {
+    "file": "tests/test_packing_scheduling.py",
+    "function": "test_deficit_scheduling_tracks_configured_weights",
+    "line": 219,
+    "tags": [],
+    "large_constants": [
+      1000000
+    ]
+  },
+  {
+    "file": "tests/test_packing_scheduling.py",
+    "function": "test_scheduler_state_round_trips_exactly",
+    "line": 338,
+    "tags": [],
+    "large_constants": [
+      10000
+    ]
+  },
+  {
+    "file": "tests/test_parallel_tokens.py",
+    "function": "test_worker_failure_does_not_publish_index",
+    "line": 67,
+    "tags": [],
+    "large_constants": [
+      70000
+    ]
+  },
+  {
+    "file": "tests/test_performance_tokenization.py",
+    "function": "test_token_binary_exact_scalar_reference",
+    "line": 133,
+    "tags": [],
+    "large_constants": [
+      65535
+    ]
+  },
+  {
+    "file": "tests/test_performance_tokenization.py",
+    "function": "test_invalid_token_never_publishes_manifest",
+    "line": 157,
+    "tags": [],
+    "large_constants": [
+      65536
+    ]
+  },
+  {
+    "file": "tests/test_performance_tokenization.py",
+    "function": "actual_vocab_size",
+    "line": 122,
+    "tags": [],
+    "large_constants": [
+      65536,
+      65537
+    ]
+  },
+  {
+    "file": "tests/test_pool_freeze_regime.py",
+    "function": "test_insufficient_distinct_text_is_visible",
+    "line": 308,
+    "tags": [],
+    "large_constants": [
+      1000000
+    ]
+  },
+  {
+    "file": "tests/test_pool_freeze_regime.py",
+    "function": "test_sufficient_pool_reports_no_repetition",
+    "line": 320,
+    "tags": [],
+    "large_constants": [
+      1000000
+    ]
+  },
+  {
+    "file": "tests/test_pool_freeze_regime.py",
+    "function": "test_demo_pool_is_tiered_and_labelled",
+    "line": 338,
+    "tags": [],
+    "large_constants": [
+      100000
+    ]
+  },
+  {
+    "file": "tests/test_pool_freeze_regime.py",
+    "function": "test_tokenizer_fit_resource_plan_is_labelled_an_estimate",
+    "line": 474,
+    "tags": [],
+    "large_constants": [
+      32768
+    ]
+  },
+  {
+    "file": "tests/test_pool_freeze_regime.py",
+    "function": "test_large_tokenizer_fit_requires_authorization",
+    "line": 494,
+    "tags": [],
+    "large_constants": [
+      32768
+    ]
+  },
+  {
+    "file": "tests/test_pool_splits.py",
+    "function": "test_tokenizer_fitting_rejects_non_training_documents",
+    "line": 228,
+    "tags": [
+      "importorskip"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_prepare_bounds.py",
+    "function": "test_timed_out_child_and_descendant_are_stopped",
+    "line": 319,
+    "tags": [
+      "subprocess.Popen",
+      "time.sleep"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_production_ingest.py",
+    "function": "selection_plan",
+    "line": 135,
+    "tags": [],
+    "large_constants": [
+      10000
+    ]
+  },
+  {
+    "file": "tests/test_production_ingest.py",
+    "function": "test_projection_identity_binding",
+    "line": 231,
+    "tags": [],
+    "large_constants": [
+      65536
+    ]
+  },
+  {
+    "file": "tests/test_production_ingest.py",
+    "function": "test_projection_all_columns_matches_legacy",
+    "line": 267,
+    "tags": [],
+    "large_constants": [
+      65536
+    ]
+  },
+  {
+    "file": "tests/test_production_ingest.py",
+    "function": "test_narrow_projection_skips_giant_column",
+    "line": 301,
+    "tags": [],
+    "large_constants": [
+      20000,
+      65536
+    ]
+  },
+  {
+    "file": "tests/test_production_ingest.py",
+    "function": "test_coalescing_thresholds_identical_bytes",
+    "line": 351,
+    "tags": [],
+    "large_constants": [
+      65536
+    ]
+  },
+  {
+    "file": "tests/test_production_ingest.py",
+    "function": "test_projected_workers_1v2_identical",
+    "line": 397,
+    "tags": [],
+    "large_constants": [
+      65536
+    ]
+  },
+  {
+    "file": "tests/test_production_ingest.py",
+    "function": "test_compare_refuses_projection_mismatch",
+    "line": 423,
+    "tags": [],
+    "large_constants": [
+      65536
+    ]
+  },
+  {
+    "file": "tests/test_production_ingest.py",
+    "function": "test_gz_selected_matches_plain_and_stops_early",
+    "line": 497,
+    "tags": [],
+    "large_constants": [
+      65536
+    ]
+  },
+  {
+    "file": "tests/test_production_ingest.py",
+    "function": "test_gz_chunk_sizes_identical_bytes",
+    "line": 532,
+    "tags": [],
+    "large_constants": [
+      65536
+    ]
+  },
+  {
+    "file": "tests/test_production_ingest.py",
+    "function": "test_streaming_writer_equivalence",
+    "line": 587,
+    "tags": [],
+    "large_constants": [
+      65536
+    ]
+  },
+  {
+    "file": "tests/test_production_ingest.py",
+    "function": "test_plan_cli_projection_flags",
+    "line": 599,
+    "tags": [],
+    "large_constants": [
+      65536
+    ]
+  },
+  {
+    "file": "tests/test_production_ingest.py",
+    "function": "test_ipc_vs_jsonl_benchmark",
+    "line": 723,
+    "tags": [],
+    "large_constants": [
+      20000
+    ]
+  },
+  {
+    "file": "tests/test_production_ingest.py",
+    "function": "test_offline_benchmark_summary",
+    "line": 765,
+    "tags": [],
+    "large_constants": [
+      65536
+    ]
+  },
+  {
+    "file": "tests/test_queue.py",
+    "function": "test_cancel_stops_a_queued_job_and_a_running_job",
+    "line": 425,
+    "tags": [
+      "time.sleep"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_queue.py",
+    "function": "test_prep_pool_is_bounded_and_ordered",
+    "line": 451,
+    "tags": [
+      "time.sleep"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_queue.py",
+    "function": "work",
+    "line": 457,
+    "tags": [
+      "time.sleep"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_recipes.py",
+    "function": "test_readme_example_commands_are_implemented",
+    "line": 121,
+    "tags": [
+      "subprocess.run"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_research.py",
+    "function": "test_architecture_noop_matches_baseline_exactly",
+    "line": 140,
+    "tags": [
+      "importorskip"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_research.py",
+    "function": "test_objective_noop_matches_baseline_loss",
+    "line": 172,
+    "tags": [
+      "importorskip"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_research.py",
+    "function": "test_optimizer_noop_matches_baseline_updates",
+    "line": 209,
+    "tags": [
+      "importorskip"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_research.py",
+    "function": "_tiny_eval_model",
+    "line": 251,
+    "tags": [
+      "importorskip"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_research.py",
+    "function": "test_objective_owned_state_survives_resume",
+    "line": 314,
+    "tags": [
+      "importorskip"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_rowgroup_sampling.py",
+    "function": "test_max_blocks_per_file_caps_depth",
+    "line": 180,
+    "tags": [],
+    "large_constants": [
+      10000
+    ]
+  },
+  {
+    "file": "tests/test_rowgroup_sampling.py",
+    "function": "_selected_plan",
+    "line": 644,
+    "tags": [],
+    "large_constants": [
+      10000
+    ]
+  },
+  {
+    "file": "tests/test_sampling_trace.py",
+    "function": "test_target_chain_keeps_malformed_input_rejection",
+    "line": 37,
+    "tags": [],
+    "large_constants": [
+      100001
+    ]
+  },
+  {
+    "file": "tests/test_schedules.py",
+    "function": "test_constant_schedule_fixture",
+    "line": 155,
+    "tags": [],
+    "large_constants": [
+      50000
+    ]
+  },
+  {
+    "file": "tests/test_selected_record_concurrency.py",
+    "function": "test_parquet_parser_bound_failure_preserves_diagnostic",
+    "line": 491,
+    "tags": [],
+    "large_constants": [
+      70000
+    ]
+  },
+  {
+    "file": "tests/test_selected_record_concurrency.py",
+    "function": "open",
+    "line": 99,
+    "tags": [
+      "time.sleep"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_semantic_neighbors.py",
+    "function": "test_numpy_backend_matches_python_backend",
+    "line": 290,
+    "tags": [
+      "importorskip"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_semantic_neighbors.py",
+    "function": "test_semantic_off_by_default_for_dedup",
+    "line": 422,
+    "tags": [
+      "run_sharded_dedup"
+    ],
+    "large_constants": [
+      65536
+    ]
+  },
+  {
+    "file": "tests/test_sharded_datasets.py",
+    "function": "test_no_manifest_before_finish_and_crash_states",
+    "line": 98,
+    "tags": [],
+    "large_constants": [
+      100000
+    ]
+  },
+  {
+    "file": "tests/test_sharded_datasets.py",
+    "function": "_adapt_plan",
+    "line": 370,
+    "tags": [],
+    "large_constants": [
+      100000
+    ]
+  },
+  {
+    "file": "tests/test_sharded_datasets.py",
+    "function": "test_large_benchmark_128mib",
+    "line": 671,
+    "tags": [],
+    "large_constants": [
+      32000
+    ]
+  },
+  {
+    "file": "tests/test_source_admission.py",
+    "function": "test_base_environment_zero_torch_isolation",
+    "line": 260,
+    "tags": [
+      "subprocess.run"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_source_discovery.py",
+    "function": "test_transport_budget_limits_and_deadlines",
+    "line": 234,
+    "tags": [
+      "time.sleep"
+    ],
+    "large_constants": []
+  },
+  {
+    "file": "tests/test_token_batches.py",
+    "function": "test_writer_batch_byte_cap_and_scalar_fallback",
+    "line": 42,
+    "tags": [],
+    "large_constants": [
+      400000
+    ]
+  },
+  {
+    "file": "tests/test_tokenizer_fit_stream.py",
+    "function": "test_fit_manifest_projects_metadata_without_changing_membership",
+    "line": 62,
+    "tags": [],
+    "large_constants": [
+      10000
+    ]
+  },
+  {
+    "file": "tests/test_tokenizer_regime.py",
+    "function": "pool_fitted_tokenizer",
+    "line": 98,
+    "tags": [],
+    "large_constants": [
+      10000
+    ]
+  },
+  {
+    "file": "tests/test_tokenizer_regime.py",
+    "function": "test_demo_fit_is_not_marked_a_production_baseline",
+    "line": 245,
+    "tags": [],
+    "large_constants": [
+      32768
+    ]
+  },
+  {
+    "file": "tests/test_tokenizers.py",
+    "function": "test_out_of_bounds_and_negative_id_validation",
+    "line": 238,
+    "tags": [],
+    "large_constants": [
+      999999
+    ]
+  }
+]

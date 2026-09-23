@@ -1,0 +1,491 @@
+{
+  "before-focused": {
+    "argv": [
+      "tests/test_token_batches.py",
+      "tests/test_parallel_tokens.py",
+      "tests/test_dedup_throughput.py::test_engine_matches_reference",
+      "tests/test_cleaning_throughput.py::test_workers_1_2_4_agree",
+      "--durations=20",
+      "--durations-min=0.01",
+      "-n",
+      "0",
+      "-q",
+      "-p",
+      "pytest_evidence",
+      "--evidence-json",
+      "artifacts/test-suite-perf/before-focused.json"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 24.557108699984383,
+    "collection_seconds": 1.308432299993001,
+    "peak_tree_rss_bytes": 231690240,
+    "rss_sample_seconds": 0.5,
+    "outcomes": {
+      "passed": 17
+    },
+    "reported_nodes": 17,
+    "selected_nodes": 17,
+    "raw_sha256": "766bfae9a4e52cadc2c4a8e6eca04e26bbee04d94bbc2722dfadc1403abfaa1a",
+    "raw_artifact": "artifacts/test-suite-perf/before-focused.json",
+    "pytest_elapsed_seconds": 25.25,
+    "log_sha256": "d6938baca42277d558484557c0ab40298cc502f0ceb6408f4a11387f370f84b1"
+  },
+  "fast-w4": {
+    "argv": [
+      "-q",
+      "--strict-markers",
+      "-m",
+      "not serial and not performance and not scale and not cuda and not network and not operator and not optional_dependency",
+      "-n",
+      "4",
+      "--dist=worksteal",
+      "--max-worker-restart=0",
+      "--durations=30",
+      "--durations-min=0.1",
+      "-p",
+      "pytest_evidence",
+      "--evidence-json",
+      "artifacts/test-suite-perf/fast-w4.json"
+    ],
+    "exit_code": 1,
+    "wall_seconds": 361.6959175999509,
+    "collection_seconds": null,
+    "peak_tree_rss_bytes": 2788413440,
+    "rss_sample_seconds": 0.5,
+    "outcomes": {
+      "passed": 1532,
+      "failed": 4,
+      "skipped": 1
+    },
+    "reported_nodes": 1537,
+    "raw_sha256": "8227eec758ee11926c05bdaee49867f0557421e7a543022bb2b1b909c98c08eb",
+    "raw_artifact": "artifacts/test-suite-perf/fast-w4.json",
+    "pytest_elapsed_seconds": 361.9,
+    "log_sha256": "db8ecb0127ab45fadcb38669cc383f9fc8fdba9958229be1c1b2f158ce2a29cf"
+  },
+  "focused-oracles": {
+    "argv": [
+      "tests/test_source_discovery.py::test_nested_field_schema_inspection",
+      "tests/test_source_discovery.py::test_missing_text_field_explicit_handling",
+      "tests/test_dedup_small_oracles.py",
+      "-q",
+      "-n",
+      "0",
+      "--durations=10",
+      "-p",
+      "pytest_evidence",
+      "--evidence-json",
+      "artifacts/test-suite-perf/focused-oracles.json"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 28.515788400021847,
+    "collection_seconds": 5.3075224999920465,
+    "peak_tree_rss_bytes": 382832640,
+    "rss_sample_seconds": 0.5,
+    "outcomes": {
+      "passed": 7
+    },
+    "reported_nodes": 7,
+    "selected_nodes": 7,
+    "raw_sha256": "cd193de5336c043f36b6ce7b1281935ca262e05362552a0497df7367569fd17f",
+    "raw_artifact": "artifacts/test-suite-perf/focused-oracles.json",
+    "pytest_elapsed_seconds": 40.14,
+    "log_sha256": "e75b6a18738183c486bf7f0d9c537a09f4fdbba784c3943403147b316e5a0bd3"
+  },
+  "frozen-cache": {
+    "argv": [
+      "tests/test_frozen_execution.py",
+      "-k",
+      "frozen_seed_copies or independent_persisted or authority_and or snapshot_damage",
+      "-n",
+      "0",
+      "-q",
+      "--durations=15",
+      "-p",
+      "pytest_evidence",
+      "--evidence-json",
+      "artifacts/test-suite-perf/frozen-cache.json"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 57.904596799984574,
+    "collection_seconds": 0.42346550000365824,
+    "peak_tree_rss_bytes": 269664256,
+    "rss_sample_seconds": 0.5,
+    "outcomes": {
+      "passed": 6
+    },
+    "reported_nodes": 6,
+    "selected_nodes": 6,
+    "raw_sha256": "73a627e782411f1aee686470ce71eccf67f96061fbc2054e05c824371f0f6635",
+    "raw_artifact": "artifacts/test-suite-perf/frozen-cache.json",
+    "pytest_elapsed_seconds": 82.4,
+    "log_sha256": "3a06f88159ef965607d32013ba3b2416d493474099348c8f0367f07858af47da"
+  },
+  "final-fast-w4": {
+    "argv": [
+      "-q",
+      "--strict-markers",
+      "-m",
+      "not serial and not performance and not scale and not cuda and not network and not operator and not optional_dependency and not environment_setup",
+      "-n",
+      "4",
+      "--dist=worksteal",
+      "--max-worker-restart=0",
+      "--durations=30",
+      "--durations-min=.1",
+      "-p",
+      "pytest_evidence",
+      "--evidence-json",
+      "artifacts/test-suite-perf/final-fast-w4.json"
+    ],
+    "python": "3.12.13",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "loaded_heavy_modules": [],
+    "exit_code": 0,
+    "wall_seconds": 113.57829669996863,
+    "collection_seconds": null,
+    "peak_tree_rss_bytes": 2062086144,
+    "rss_sample_seconds": 0.5,
+    "outcomes": {
+      "passed": 1518,
+      "skipped": 1
+    },
+    "reported_nodes": 1519,
+    "raw_sha256": "9de48b9e0f6db487045ce20dbe54feab625126dfb5951b266bdb9b8bea4bcaf3",
+    "raw_artifact": "artifacts/test-suite-perf/final-fast-w4.json",
+    "pytest_elapsed_seconds": 113.75,
+    "log_sha256": "e7cea9d025709d9c4f3e828ff7f59f6f888a80c99d3b6da73801384830764a0a",
+    "workers_agreed_on_selection": true,
+    "selected_nodes": 1519
+  },
+  "final-fast-w8": {
+    "argv": [
+      "-q",
+      "--strict-markers",
+      "-m",
+      "not serial and not performance and not scale and not cuda and not network and not operator and not optional_dependency and not environment_setup",
+      "-n",
+      "8",
+      "--dist=worksteal",
+      "--max-worker-restart=0",
+      "--durations=30",
+      "--durations-min=.1",
+      "-p",
+      "pytest_evidence",
+      "--evidence-json",
+      "artifacts/test-suite-perf/final-fast-w8.json"
+    ],
+    "python": "3.12.13",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "loaded_heavy_modules": [],
+    "exit_code": 0,
+    "wall_seconds": 85.04770049999934,
+    "collection_seconds": null,
+    "peak_tree_rss_bytes": 3595821056,
+    "rss_sample_seconds": 0.5,
+    "outcomes": {
+      "passed": 1518,
+      "skipped": 1
+    },
+    "reported_nodes": 1519,
+    "raw_sha256": "1872065bdd9ad59ab244a2b4a2e30df0c5e70432d96d4d33395b4eac5350d6eb",
+    "raw_artifact": "artifacts/test-suite-perf/final-fast-w8.json",
+    "pytest_elapsed_seconds": 102.88,
+    "log_sha256": "30e5af49987ecfba8b9deefaff2037675d1a2474c850e81611271acb6fa1a237",
+    "workers_agreed_on_selection": true,
+    "selected_nodes": 1519
+  },
+  "final-fast-w12": {
+    "argv": [
+      "-q",
+      "--strict-markers",
+      "-m",
+      "not serial and not performance and not scale and not cuda and not network and not operator and not optional_dependency and not environment_setup",
+      "-n",
+      "12",
+      "--dist=worksteal",
+      "--max-worker-restart=0",
+      "--durations=30",
+      "--durations-min=.1",
+      "-p",
+      "pytest_evidence",
+      "--evidence-json",
+      "artifacts/test-suite-perf/final-fast-w12.json"
+    ],
+    "python": "3.12.13",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "loaded_heavy_modules": [],
+    "exit_code": 0,
+    "wall_seconds": 80.3136212999816,
+    "collection_seconds": null,
+    "peak_tree_rss_bytes": 5124083712,
+    "rss_sample_seconds": 0.5,
+    "outcomes": {
+      "passed": 1518,
+      "skipped": 1
+    },
+    "reported_nodes": 1519,
+    "raw_sha256": "ddce94979f7cb773f2a551088d8f2c65af6f502f72331786845ee1d560fc6116",
+    "raw_artifact": "artifacts/test-suite-perf/final-fast-w12.json",
+    "pytest_elapsed_seconds": 81.71,
+    "log_sha256": "daa1f461d62417f599059841c78ce42764020a52a45137574dfcc4f8b71ed334",
+    "workers_agreed_on_selection": true,
+    "selected_nodes": 1519
+  },
+  "final-fast-w16": {
+    "argv": [
+      "-q",
+      "--strict-markers",
+      "-m",
+      "not serial and not performance and not scale and not cuda and not network and not operator and not optional_dependency and not environment_setup",
+      "-n",
+      "16",
+      "--dist=worksteal",
+      "--max-worker-restart=0",
+      "--durations=30",
+      "--durations-min=.1",
+      "-p",
+      "pytest_evidence",
+      "--evidence-json",
+      "artifacts/test-suite-perf/final-fast-w16.json"
+    ],
+    "python": "3.12.13",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "loaded_heavy_modules": [],
+    "exit_code": 0,
+    "wall_seconds": 90.40725789999124,
+    "collection_seconds": null,
+    "peak_tree_rss_bytes": 6757298176,
+    "rss_sample_seconds": 0.5,
+    "outcomes": {
+      "passed": 1518,
+      "skipped": 1
+    },
+    "reported_nodes": 1519,
+    "raw_sha256": "dc0c0267d7d163d6c6694bef2e25c6555d41985bafe3d950a1353ef1eff5422c",
+    "raw_artifact": "artifacts/test-suite-perf/final-fast-w16.json",
+    "pytest_elapsed_seconds": 95.38,
+    "log_sha256": "cf78229c46eb1d66908c04633fcecd3139ff3465804a19c7270c169ff680ce60",
+    "workers_agreed_on_selection": true,
+    "selected_nodes": 1519
+  },
+  "final-serial": {
+    "argv": [
+      "-vv",
+      "--strict-markers",
+      "-m",
+      "serial and not performance and not scale and not cuda and not network and not operator and not optional_dependency and not environment_setup",
+      "-n",
+      "0",
+      "--durations=30",
+      "-ra",
+      "-o",
+      "faulthandler_timeout=120",
+      "-p",
+      "pytest_evidence",
+      "--evidence-json",
+      "artifacts/test-suite-perf/final-serial.json"
+    ],
+    "python": "3.12.13",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "loaded_heavy_modules": [
+      "torch",
+      "pyarrow"
+    ],
+    "exit_code": 1,
+    "wall_seconds": 2253.2676002000226,
+    "collection_seconds": 7.705920900043566,
+    "peak_tree_rss_bytes": 1107091456,
+    "rss_sample_seconds": 0.5,
+    "outcomes": {
+      "passed": 65,
+      "failed": 3
+    },
+    "reported_nodes": 68,
+    "selected_nodes": 68,
+    "raw_sha256": "f4463a904142bf45262c412feac9a4ad7a5b1746f751b5f89118fb7e8b7ece63",
+    "raw_artifact": "artifacts/test-suite-perf/final-serial.json",
+    "pytest_elapsed_seconds": 2253.4,
+    "log_sha256": "ecb4018bb95a533f0c29e7a063fea3caf5a75e63d7b4ae498f4e67de26069a8e"
+  },
+  "final-scale": {
+    "argv": [
+      "-vv",
+      "--strict-markers",
+      "-m",
+      "scale and not network and not cuda and not operator and not environment_setup",
+      "-n",
+      "0",
+      "--durations=30",
+      "-ra",
+      "-p",
+      "pytest_evidence",
+      "--evidence-json",
+      "artifacts/test-suite-perf/final-scale.json"
+    ],
+    "python": "3.12.13",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "loaded_heavy_modules": [
+      "torch",
+      "pyarrow"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 111.61934180004755,
+    "collection_seconds": 7.705666000023484,
+    "peak_tree_rss_bytes": 805437440,
+    "rss_sample_seconds": 0.5,
+    "outcomes": {
+      "passed": 8
+    },
+    "reported_nodes": 8,
+    "selected_nodes": 8,
+    "raw_sha256": "2887dd02685cbd4d568fefd1a9af94be23dd756b80a9b3bedb956cbe1bb88236",
+    "raw_artifact": "artifacts/test-suite-perf/final-scale.json",
+    "pytest_elapsed_seconds": 111.62,
+    "log_sha256": "59526225bde5842fc1da65a605a6d46e89f935f7e0b4a59499b9464a1c6d3c2f"
+  },
+  "final-optional": {
+    "argv": [
+      "-vv",
+      "--strict-markers",
+      "-m",
+      "optional_dependency and not network and not cuda and not operator and not environment_setup",
+      "-n",
+      "0",
+      "--durations=30",
+      "-ra",
+      "-p",
+      "pytest_evidence",
+      "--evidence-json",
+      "artifacts/test-suite-perf/final-optional.json"
+    ],
+    "python": "3.12.13",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "loaded_heavy_modules": [
+      "torch",
+      "pyarrow",
+      "lm_eval",
+      "datasets"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 535.8947872999706,
+    "collection_seconds": 7.228252800006885,
+    "peak_tree_rss_bytes": 1147469824,
+    "rss_sample_seconds": 0.5,
+    "outcomes": {
+      "passed": 57
+    },
+    "reported_nodes": 57,
+    "selected_nodes": 57,
+    "raw_sha256": "eb6b5cb62fd80baf878f3a5164d2d14cb3f0f4fd7aff2722cc9f90bd6a5384a2",
+    "raw_artifact": "artifacts/test-suite-perf/final-optional.json",
+    "pytest_elapsed_seconds": 535.97,
+    "log_sha256": "28506055e70e73fa56e0450c92da51a32a4798880c6c2e1c06d798f15ddfa041"
+  },
+  "performance-bounded": {
+    "argv": [
+      "tests/test_cleaning_throughput.py::test_benchmark_10k_mixed_workers",
+      "tests/test_dedup_throughput.py::test_benchmark_10k_workers",
+      "tests/test_sharded_datasets.py::test_shard_size_comparison_table",
+      "tests/test_p26_streaming.py::test_large_scale_jsonl_vs_ipc",
+      "-n",
+      "0",
+      "-s",
+      "-vv",
+      "--durations=10",
+      "-p",
+      "pytest_evidence",
+      "--evidence-json",
+      "artifacts/test-suite-perf/performance-bounded.json"
+    ],
+    "python": "3.12.13",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "loaded_heavy_modules": [
+      "pyarrow"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 139.80228619999252,
+    "collection_seconds": 1.345184900041204,
+    "peak_tree_rss_bytes": 844644352,
+    "rss_sample_seconds": 0.5,
+    "outcomes": {
+      "passed": 4
+    },
+    "reported_nodes": 4,
+    "selected_nodes": 4,
+    "raw_sha256": "c4779fae4758f576bf509ed5307e55bcb4a21cfdea8e37185e69fcaf355a0663",
+    "raw_artifact": "artifacts/test-suite-perf/performance-bounded.json",
+    "pytest_elapsed_seconds": 139.93,
+    "log_sha256": "2fc5477b96986b287235127a767e47780ff5f06722ab9c39d8e14d221d6ad941"
+  },
+  "final-crash-cleanup": {
+    "argv": [
+      "tests/test_frozen_recovery.py::test_real_crash_preserves_committed_boundary_on_retry",
+      "-n",
+      "0",
+      "-vv",
+      "--durations=10",
+      "-ra",
+      "-p",
+      "pytest_evidence",
+      "--evidence-json",
+      "artifacts/test-suite-perf/final-crash-cleanup.json"
+    ],
+    "python": "3.12.13",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "loaded_heavy_modules": [
+      "torch",
+      "pyarrow"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 89.569692100049,
+    "collection_seconds": 2.7035460000042804,
+    "peak_tree_rss_bytes": 679677952,
+    "rss_sample_seconds": 0.5,
+    "outcomes": {
+      "passed": 1
+    },
+    "reported_nodes": 1,
+    "selected_nodes": 1,
+    "raw_sha256": "300d4f36e29bac2bee7d1a07dc9d60cbac55d274e6708f61ed9300997fdc6130",
+    "raw_artifact": "artifacts/test-suite-perf/final-crash-cleanup.json",
+    "pytest_elapsed_seconds": 89.83,
+    "log_sha256": "2878d6753ae466a6a21a7e4eedfa7e0fbfce357eb810751278e9ae084e94b79f"
+  },
+  "final-lint-regression": {
+    "argv": [
+      "tests/test_cleaning_throughput.py::test_pii_mandated_cases",
+      "tests/test_cuda_execution.py::test_cpu_compile_eager_parity",
+      "-n",
+      "0",
+      "-q",
+      "-ra",
+      "--durations=10",
+      "-p",
+      "pytest_evidence",
+      "--evidence-json",
+      "artifacts/test-suite-perf/final-lint-regression.json"
+    ],
+    "python": "3.12.13",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "loaded_heavy_modules": [
+      "torch",
+      "pyarrow"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 8.189936899987515,
+    "collection_seconds": 3.3069948999909684,
+    "peak_tree_rss_bytes": 381550592,
+    "rss_sample_seconds": 0.5,
+    "outcomes": {
+      "passed": 1,
+      "skipped": 1
+    },
+    "reported_nodes": 2,
+    "selected_nodes": 2,
+    "raw_sha256": "63146baf783821221f08dd54b26563a8636b9b276c886e1a8a964cc1e09db559",
+    "raw_artifact": "artifacts/test-suite-perf/final-lint-regression.json",
+    "pytest_elapsed_seconds": 8.16,
+    "log_sha256": "16c7d556c3b01f179c9137164fcb9a514300e6674e585ab38700ed6a574d8962"
+  }
+}

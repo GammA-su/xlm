@@ -1,0 +1,25 @@
+{
+  "required_nodes": 1652,
+  "missing_nodes": [],
+  "required_leg_exit_codes": {
+    "final-fast-w12": 0,
+    "final-serial": 1,
+    "final-scale": 0,
+    "final-optional": 0
+  },
+  "latest_applicable_outcomes": {
+    "passed": 1649,
+    "failed": 2,
+    "skipped": 1
+  },
+  "unresolved_failures": [
+    "tests/test_prepare.py::test_full_toy_run_reuses_on_repeat",
+    "tests/test_prepare.py::test_partial_outputs_resume_without_redo"
+  ],
+  "skips": [
+    "tests/test_cuda_execution.py::test_cpu_compile_eager_parity"
+  ],
+  "status": "BLOCKED",
+  "gate_elapsed_sum_seconds": 2982.7000000000003,
+  "note": "Leg elapsed sum is separate sequential invocations, not a single all-suite run. Original serial failures remain in evidence; focused corrected-node results do not turn that original run green."
+}
