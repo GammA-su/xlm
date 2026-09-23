@@ -25,6 +25,7 @@ from xlm.data.sampling.scheduler import (
     ScheduleState,
     SourceExhaustedError,
 )
+from xlm.data.token_cache import TokenMapCache
 from xlm.data.tokens import TokenShardReader
 
 STREAM_STATE_VERSION = "2"
@@ -49,6 +50,7 @@ class MixtureBatcher:
         eos_token_id: int = 2,
         emit_tensors: bool = False,
         exposure_plan: dict[str, Any] | None = None,
+        max_open_shards: int = 0,
     ) -> None:
         if context_length <= 0:
             raise ValueError(f"context_length must be positive, got {context_length}")
@@ -110,6 +112,20 @@ class MixtureBatcher:
         # is discarded on rollback, so a prefetch can never skip committed examples.
         self._committed = self._initial_state()
         self._uncommitted = copy.deepcopy(self._committed)
+        if max_open_shards < 0:
+            raise ValueError("max_open_shards cannot be negative")
+        self._token_maps = TokenMapCache(max_open_shards) if max_open_shards else None
+
+    def close(self) -> None:
+        """Release mapped shard handles; call when this stream is no longer needed."""
+        if self._token_maps is not None:
+            self._token_maps.close()
+
+    def __enter__(self) -> MixtureBatcher:
+        return self
+
+    def __exit__(self, *args: object) -> None:
+        self.close()
 
     def _initial_state(self) -> dict[str, Any]:
         from xlm.artifacts.manifest import identity_digest
@@ -173,7 +189,10 @@ class MixtureBatcher:
 
     def _read(self, source_id: str, start: int, count: int) -> list[int]:
         """Read a bounded token window from one source shard."""
-        return self.readers[source_id].read_tokens_mmap(start=start, count=count)
+        reader = self.readers[source_id]
+        if self._token_maps is not None:
+            return self._token_maps.read(reader, start, count)
+        return reader.read_tokens_mmap(start=start, count=count)
 
     def _document_at(self, source_id: str, position: int) -> dict[str, Any]:
         """Locate a real document with a bounded streaming index, never an eager corpus list."""
