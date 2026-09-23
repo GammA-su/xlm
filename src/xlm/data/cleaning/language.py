@@ -135,7 +135,14 @@ class LanguageFilter(BaseTransform):
 
         # Check for code or math kinds
         is_technical = doc.document_kind in ("code", "math")
-        words = [w.lower() for w in _WORD_RE.findall(text)]
+        # ASCII lowercasing preserves every regex boundary and costs one C pass,
+        # instead of a Python call and new string for each matched word. Unicode
+        # keeps the reference order: lower() may expand or introduce ASCII letters.
+        words = (
+            _WORD_RE.findall(text.lower())
+            if text.isascii()
+            else [w.lower() for w in _WORD_RE.findall(text)]
+        )
         word_count = len(words)
 
         # P27B-G/H: Latin and alphabetic tallies come from the shared one-pass
