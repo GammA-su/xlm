@@ -90,13 +90,16 @@ class TokenShardWriter:
                 )
                 doc_token_count = len(token_ids)
 
-                # Validate all IDs fit within selected dtype
-                for tid in token_ids:
-                    if tid < 0 or tid > self.dtype_max:
-                        raise ValueError(
-                            f"Token ID {tid} cannot fit in declared dtype {self.token_dtype}"
-                        )
-                    packed = struct.pack(self.pack_char, tid)
+                # Preserve little-endian bytes and validation, but cross the
+                # Python/file/hash boundary once per bounded block, not per ID.
+                for start in range(0, doc_token_count, 4096):
+                    block = token_ids[start : start + 4096]
+                    for tid in block:
+                        if tid < 0 or tid > self.dtype_max:
+                            raise ValueError(
+                                f"Token ID {tid} cannot fit in declared dtype {self.token_dtype}"
+                            )
+                    packed = struct.pack(f"<{len(block)}{self.pack_char[-1]}", *block)
                     bin_f.write(packed)
                     bin_hasher.update(packed)
 

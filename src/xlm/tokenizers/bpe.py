@@ -76,6 +76,10 @@ class ByteLevelBPETokenizer(BaseTokenizer):
         unk_val = self.token_to_id("<unk>")
         self._unk_id: int = unk_val if unk_val is not None else 3
 
+        # Key by token spelling, not ID: lengths remain valid if an externally
+        # supplied backend changes its vocabulary. Keep memory bounded per instance.
+        self._byte_lengths: dict[str, int] = {}
+
     @property
     def pad_token_id(self) -> int:
         return self._pad_id
@@ -132,7 +136,16 @@ class ByteLevelBPETokenizer(BaseTokenizer):
         return bytes(raw_bytes)
 
     def encode(self, text: str, add_special_tokens: bool = False) -> list[int]:
-        ids, _ = self.encode_with_offsets(text, add_special_tokens=add_special_tokens)
+        ids: list[int] = self._tok.encode(canonical_normalize(text), add_special_tokens=False).ids
+        return self._frame_ids(ids, add_special_tokens)
+
+    def _frame_ids(self, ids: list[int], add_special_tokens: bool) -> list[int]:
+        """Apply the same structural framing as encode_with_offsets without spans."""
+        if add_special_tokens:
+            if not ids or ids[0] != self._bos_id:
+                ids.insert(0, self._bos_id)
+            if ids[-1] != self._eos_id:
+                ids.append(self._eos_id)
         return ids
 
     def encode_with_offsets(
@@ -148,10 +161,20 @@ class ByteLevelBPETokenizer(BaseTokenizer):
         # Derive exact UTF-8 byte spans from token byte payloads
         content_offsets: list[tuple[int, int]] = []
         curr_offset = 0
-        for tid in content_ids:
-            t_str = self.id_to_token(tid)
-            t_bytes = self.token_to_bytes(t_str)
-            byte_len = len(t_bytes)
+        # AddedToken lstrip/rstrip can make Encoding.tokens include whitespace
+        # absent from the vocabulary spelling. Protected fitted tokenizers have
+        # no added tokens; other supplied backends keep the original ID lookup.
+        token_strings = (
+            [self.id_to_token(tid) for tid in content_ids]
+            if self._tok.get_added_tokens_decoder()
+            else encoding.tokens
+        )
+        for t_str in token_strings:
+            byte_len = self._byte_lengths.get(t_str)
+            if byte_len is None:
+                byte_len = len(self.token_to_bytes(t_str))
+                if len(self._byte_lengths) < 8192:
+                    self._byte_lengths[t_str] = byte_len
             content_offsets.append((curr_offset, curr_offset + byte_len))
             curr_offset += byte_len
 
