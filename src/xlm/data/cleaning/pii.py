@@ -42,6 +42,18 @@ RESERVED_EXAMPLE_DOMAINS: frozenset[str] = frozenset(
     {"example.com", "example.net", "example.org", "example"}
 )
 
+# Necessary literal substrings only: a gate never replaces the frozen regex.
+# Detection still follows the original order; Unicode SSNs use the original
+# Unicode digit pattern. Bearer has no Unicode-only IGNORECASE letter variants.
+_REQUIRED_LITERAL = {
+    "huggingface_token": "hf_",
+    "aws_access_key": "AKIA",
+    "github_token": "ghp_",
+    "private_key": "-----BEGIN ",
+    "canary_credential": "CANARY_SECRET_",
+    "ssn": "-",
+}
+
 #: P27B-K: single-pass presence hint over the seven non-email secret patterns.
 #: Each alternative is byte-for-byte the corresponding SECRET_PATTERNS member
 #: with inline flags rewritten to scoped form (``(?i:...)``), so the hint
@@ -145,24 +157,28 @@ class PiiSecretFilter(BaseTransform):
 
         detected_types: list[str] = []
         reserved_placeholders_ignored = 0
-        # P27B-K: the combined hint gates the seven non-email scans. On a miss
-        # none of them can match, so they are skipped; on a hit the detailed
-        # per-pattern path below is unchanged, preserving detected-type order,
-        # reason strings, and overlap behavior exactly. The email scan always
-        # runs because reserved-placeholder counts feed metrics unconditionally.
-        non_email_may_match = _NON_EMAIL_HINT_RE.search(text) is not None
+        # C-backed literal gates avoid the combined regex traversal on ordinary
+        # prose. Detailed matching and detector order remain unchanged.
+        lower = text.lower()
         for sec_type, pattern in SECRET_PATTERNS:
             if sec_type == "email_address":
                 genuine_found = False
-                for match in pattern.finditer(text):
-                    if is_reserved_example_email(match.group(0)):
-                        reserved_placeholders_ignored += 1
-                    else:
-                        genuine_found = True
+                if "@" in text:
+                    for match in pattern.finditer(text):
+                        if is_reserved_example_email(match.group(0)):
+                            reserved_placeholders_ignored += 1
+                        else:
+                            genuine_found = True
                 if genuine_found:
                     detected_types.append(sec_type)
-            elif non_email_may_match and pattern.search(text):
-                detected_types.append(sec_type)
+            else:
+                may_match = (
+                    "bearer" in lower
+                    if sec_type == "bearer_token"
+                    else _REQUIRED_LITERAL[sec_type] in text
+                )
+                if may_match and pattern.search(text):
+                    detected_types.append(sec_type)
 
         duration = (time.monotonic() - start_t) * 1000.0
         metrics = QualityMetrics(
