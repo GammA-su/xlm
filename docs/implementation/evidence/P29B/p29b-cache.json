@@ -1,0 +1,45 @@
+{
+  "rows": [
+    {
+      "mode": "file",
+      "windows": 10000,
+      "wall_seconds": 1.3295912999892607,
+      "cpu_seconds": 1.28125,
+      "windows_per_second": 7521.108178190374,
+      "init_seconds": 7.00005330145359e-07,
+      "opens": 10000,
+      "maps": 0,
+      "rss_bytes": 37261312,
+      "page_faults": 497,
+      "digest": "559a1d6234f9727c4925a88a7a3258845c3a7a0df558f8ae787e948b84e6f15c"
+    },
+    {
+      "mode": "mmap_per_read",
+      "windows": 10000,
+      "wall_seconds": 1.9271370000205934,
+      "cpu_seconds": 1.890625,
+      "windows_per_second": 5189.0446812515875,
+      "init_seconds": 4.00003045797348e-07,
+      "opens": 10000,
+      "maps": 10000,
+      "rss_bytes": 37277696,
+      "page_faults": 22443,
+      "digest": "559a1d6234f9727c4925a88a7a3258845c3a7a0df558f8ae787e948b84e6f15c"
+    },
+    {
+      "mode": "persistent",
+      "windows": 10000,
+      "wall_seconds": 1.4269833999569528,
+      "cpu_seconds": 1.40625,
+      "windows_per_second": 7007.789999730667,
+      "init_seconds": 0.4786144999670796,
+      "opens": 0,
+      "maps": 0,
+      "rss_bytes": 47616000,
+      "page_faults": 2526,
+      "digest": "559a1d6234f9727c4925a88a7a3258845c3a7a0df558f8ae787e948b84e6f15c"
+    }
+  ],
+  "instrumented": true,
+  "note": "one Python counter increment per open/map; SHA digest included in timings"
+}

@@ -1,0 +1,101 @@
+Wed Sep 23 17:00:43 2026    artifacts\perf\p29b-probe-before\writer.pstats
+
+         11563716 function calls (11563705 primitive calls) in 9.058 seconds
+
+   Ordered by: internal time
+   List reduced from 109 to 65 due to restriction <65>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+    10000    3.171    0.000    3.171    0.000 {method 'encode' of 'tokenizers.Tokenizer' objects}
+    10000    1.773    0.000    6.155    0.001 bpe.py:151(encode_with_offsets)
+    10002    0.925    0.000    0.925    0.000 encoder.py:205(iterencode)
+       82    0.846    0.010    8.882    0.108 threading.py:323(wait)
+  3746824    0.661    0.000    0.661    0.000 {method 'get' of 'dict' objects}
+  3766829    0.493    0.000    0.493    0.000 {method 'append' of 'list' objects}
+  3736824    0.445    0.000    0.445    0.000 tokens.py:107(<genexpr>)
+    10083    0.352    0.000    0.800    0.000 {built-in method builtins.sum}
+    10002    0.106    0.000    0.106    0.000 {method 'write' of '_io.TextIOWrapper' objects}
+    10000    0.053    0.000    0.053    0.000 {built-in method _struct.pack}
+    20000    0.048    0.000    0.048    0.000 {method 'update' of '_hashlib.HASH' objects}
+    10000    0.026    0.000    0.026    0.000 {method 'write' of '_io.BufferedWriter' objects}
+    10002    0.025    0.000    0.984    0.000 __init__.py:183(dumps)
+    10002    0.021    0.000    0.956    0.000 encoder.py:183(encode)
+    20005    0.020    0.000    0.020    0.000 {method 'extend' of 'list' objects}
+    20001    0.014    0.000    0.014    0.000 {method 'encode' of 'str' objects}
+    20029    0.012    0.000    0.012    0.000 {method 'replace' of 'str' objects}
+    60010    0.012    0.000    0.012    0.000 {built-in method builtins.len}
+    10000    0.011    0.000    0.028    0.000 normalization.py:27(canonical_normalize)
+    20116    0.007    0.000    0.007    0.000 {built-in method builtins.isinstance}
+        1    0.007    0.007    0.078    0.078 tokens.py:62(write_documents)
+    10000    0.006    0.000    0.006    0.000 {method 'get_added_tokens_decoder' of 'tokenizers.Tokenizer' objects}
+    10084    0.006    0.000    0.006    0.000 {built-in method builtins.max}
+    10000    0.005    0.000    0.005    0.000 {built-in method unicodedata.normalize}
+    10002    0.003    0.000    0.003    0.000 encoder.py:105(__init__)
+    10007    0.003    0.000    0.003    0.000 {method 'join' of 'str' objects}
+      331    0.002    0.000    0.002    0.000 {method 'acquire' of '_thread.lock' objects}
+       83    0.001    0.000    0.001    0.000 {built-in method psutil_windows.proc_memory_info}
+        4    0.001    0.000    0.001    0.000 {built-in method _io.open}
+       83    0.001    0.000    8.961    0.108 threading.py:637(wait)
+       83    0.001    0.000    0.003    0.000 _common.py:367(wrapper)
+       83    0.000    0.000    0.002    0.000 _pswindows.py:812(memory_info)
+       83    0.000    0.000    0.000    0.000 {built-in method _thread.allocate_lock}
+        4    0.000    0.000    0.000    0.000 {method '__exit__' of '_io._IOBase' objects}
+      166    0.000    0.000    0.003    0.000 benchmark_pipeline.py:112(<genexpr>)
+       83    0.000    0.000    0.000    0.000 threading.py:299(__enter__)
+       83    0.000    0.000    0.000    0.000 <string>:1(<lambda>)
+        1    0.000    0.000    0.000    0.000 {built-in method nt.mkdir}
+       83    0.000    0.000    0.002    0.000 _pswindows.py:663(wrapper)
+       83    0.000    0.000    0.002    0.000 __init__.py:1129(memory_info)
+       83    0.000    0.000    0.001    0.000 _pswindows.py:789(_get_raw_meminfo)
+       83    0.000    0.000    0.000    0.000 threading.py:302(__exit__)
+       88    0.000    0.000    0.000    0.000 {built-in method __new__ of type object at 0x00007FFAF37C28F0}
+       83    0.000    0.000    0.000    0.000 threading.py:311(_acquire_restore)
+       83    0.000    0.000    0.000    0.000 {method 'remove' of 'collections.deque' objects}
+       92    0.000    0.000    0.000    0.000 encoder.py:334(_iterencode_dict)
+       83    0.000    0.000    0.000    0.000 threading.py:314(_is_owned)
+       83    0.000    0.000    0.000    0.000 {built-in method time.monotonic}
+       83    0.000    0.000    0.000    0.000 threading.py:308(_release_save)
+       83    0.000    0.000    0.000    0.000 {method '__enter__' of '_thread.lock' objects}
+       83    0.000    0.000    0.000    0.000 {method '__exit__' of '_thread.lock' objects}
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+       92    0.000    0.000    0.000    0.000 encoder.py:414(_iterencode)
+       24    0.000    0.000    0.000    0.000 <frozen ntpath>:180(splitroot)
+       83    0.000    0.000    0.000    0.000 {method 'append' of 'collections.deque' objects}
+        5    0.000    0.000    0.000    0.000 pathlib.py:437(__str__)
+        5    0.000    0.000    0.000    0.000 pathlib.py:387(_parse_path)
+        5    0.000    0.000    0.000    0.000 <frozen ntpath>:108(join)
+        5    0.000    0.000    0.000    0.000 pathlib.py:358(__init__)
+        5    0.000    0.000    0.000    0.000 pathlib.py:407(_load_parts)
+       83    0.000    0.000    0.000    0.000 {method 'release' of '_thread.lock' objects}
+       83    0.000    0.000    0.000    0.000 threading.py:601(is_set)
+       24    0.000    0.000    0.000    0.000 {built-in method sys.intern}
+     12/1    0.000    0.000    0.000    0.000 dataclasses.py:1332(_asdict_inner)
+        2    0.000    0.000    0.001    0.000 pathlib.py:1039(write_text)
+
+
+Wed Sep 23 17:00:43 2026    artifacts\perf\p29b-probe-before\writer.pstats
+
+         11563716 function calls (11563705 primitive calls) in 9.058 seconds
+
+   Ordered by: internal time
+   List reduced from 109 to 18 due to restriction <'fsync|manifest|write|hash|encode|language|repet|pii'>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+    10000    3.171    0.000    3.171    0.000 {method 'encode' of 'tokenizers.Tokenizer' objects}
+    10000    1.773    0.000    6.155    0.001 bpe.py:151(encode_with_offsets)
+    10002    0.925    0.000    0.925    0.000 encoder.py:205(iterencode)
+    10002    0.106    0.000    0.106    0.000 {method 'write' of '_io.TextIOWrapper' objects}
+    20000    0.048    0.000    0.048    0.000 {method 'update' of '_hashlib.HASH' objects}
+    10000    0.026    0.000    0.026    0.000 {method 'write' of '_io.BufferedWriter' objects}
+    10002    0.021    0.000    0.956    0.000 encoder.py:183(encode)
+    20001    0.014    0.000    0.014    0.000 {method 'encode' of 'str' objects}
+        1    0.007    0.007    0.078    0.078 tokens.py:62(write_documents)
+    10002    0.003    0.000    0.003    0.000 encoder.py:105(__init__)
+       92    0.000    0.000    0.000    0.000 encoder.py:334(_iterencode_dict)
+       92    0.000    0.000    0.000    0.000 encoder.py:414(_iterencode)
+        2    0.000    0.000    0.001    0.000 pathlib.py:1039(write_text)
+        3    0.000    0.000    0.000    0.000 {built-in method _hashlib.openssl_sha256}
+       32    0.000    0.000    0.000    0.000 {built-in method _json.encode_basestring_ascii}
+        3    0.000    0.000    0.000    0.000 {method 'hexdigest' of '_hashlib.HASH' objects}
+        2    0.000    0.000    0.000    0.000 encoder.py:260(_make_iterencode)
+        1    0.000    0.000    0.000    0.000 encoder.py:224(floatstr)

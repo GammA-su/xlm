@@ -1,0 +1,139 @@
+Wed Sep 23 16:25:24 2026    artifacts\perf\after-profile\profile.pstats
+
+         3705318 function calls (3510720 primitive calls) in 4.175 seconds
+
+   Ordered by: internal time
+   List reduced from 692 to 65 due to restriction <65>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+  256/157    0.539    0.002    4.578    0.029 {method 'acquire' of '_thread.lock' objects}
+       10    0.358    0.036    0.358    0.036 {built-in method nt.fsync}
+      978    0.315    0.000    0.315    0.000 {method 'encode' of 'tokenizers.Tokenizer' objects}
+     8189    0.187    0.000    0.187    0.000 {method 'search' of 're.Pattern' objects}
+     5963    0.166    0.000    0.166    0.000 encoder.py:205(iterencode)
+166442/3989    0.164    0.000    0.281    0.000 dataclasses.py:1332(_asdict_inner)
+      978    0.160    0.000    0.576    0.001 bpe.py:151(encode_with_offsets)
+      315    0.102    0.000    0.113    0.000 {built-in method _io.open}
+    53/42    0.088    0.002    1.692    0.040 threading.py:323(wait)
+       35    0.084    0.002    0.084    0.002 {method 'compress' of 'zlib.Compress' objects}
+   130736    0.080    0.000    0.127    0.000 random.py:242(_randbelow_with_getrandbits)
+   130736    0.079    0.000    0.233    0.000 random.py:341(choice)
+     7196    0.064    0.000    0.066    0.000 decoder.py:344(raw_decode)
+        1    0.062    0.062    0.062    0.062 {method 'train_from_iterator' of 'tokenizers.Tokenizer' objects}
+   320969    0.058    0.000    0.058    0.000 {method 'get' of 'dict' objects}
+   164353    0.056    0.000    0.056    0.000 repetition.py:208(<genexpr>)
+     3000    0.050    0.000    0.050    0.000 {method 'findall' of 're.Pattern' objects}
+     1001    0.047    0.000    0.284    0.000 benchmark_pipeline.py:55(fixture_rows)
+   300092    0.045    0.000    0.045    0.000 {method 'append' of 'list' objects}
+       32    0.045    0.001    0.075    0.002 ast.py:34(parse)
+     4198    0.042    0.000    0.163    0.000 canonical_io.py:143(read_jsonl)
+353500/353470    0.041    0.000    0.041    0.000 {built-in method builtins.len}
+     6206    0.041    0.000    0.131    0.000 {built-in method builtins.sum}
+     1000    0.040    0.000    0.077    0.000 features.py:67(compute_char_stats)
+     1167    0.039    0.000    0.095    0.000 {built-in method _collections._count_elements}
+   288813    0.039    0.000    0.039    0.000 tokens.py:107(<genexpr>)
+        2    0.036    0.018    0.036    0.018 {built-in method _wmi.exec_query}
+     1000    0.034    0.000    0.199    0.000 language.py:127(_heuristic_classify)
+     1000    0.033    0.000    0.101    0.000 pii.py:133(apply)
+      566    0.032    0.000    0.035    0.000 packing.py:116(pack)
+       48    0.031    0.001    0.031    0.001 {built-in method torch.tensor}
+58188/46320    0.031    0.000    0.067    0.000 dataclasses.py:1382(<genexpr>)
+       32    0.030    0.001    0.030    0.001 {built-in method builtins.compile}
+      979    0.029    0.000    0.815    0.001 pipeline.py:165(_iterate)
+   248758    0.027    0.000    0.027    0.000 {method 'getrandbits' of '_random.Random' objects}
+   145019    0.026    0.000    0.028    0.000 {built-in method builtins.isinstance}
+   166684    0.025    0.000    0.025    0.000 {method 'lower' of 'str' objects}
+     3698    0.023    0.000    0.037    0.000 repetition.py:50(is_structural_separator_line)
+   130736    0.019    0.000    0.019    0.000 {method 'bit_length' of 'int' objects}
+     2959    0.019    0.000    0.019    0.000 {method 'write' of '_io.TextIOWrapper' objects}
+     1000    0.018    0.000    0.209    0.000 repetition.py:108(apply)
+     3997    0.018    0.000    0.032    0.000 dataclasses.py:1278(fields)
+   107314    0.018    0.000    0.018    0.000 {built-in method builtins.getattr}
+       11    0.018    0.002    2.842    0.258 threading.py:1018(_bootstrap)
+      322    0.018    0.000    0.018    0.000 {built-in method nt.stat}
+    22976    0.017    0.000    0.032    0.000 tokenize.py:577(_generate_tokens_from_c_tokenizer)
+    15875    0.017    0.000    0.017    0.000 {method 'replace' of 'str' objects}
+     2366    0.017    0.000    0.017    0.000 {method 'split' of 'str' objects}
+     4976    0.016    0.000    0.016    0.000 {method 'update' of '_hashlib.HASH' objects}
+    53/42    0.016    0.000    2.090    0.050 threading.py:637(wait)
+       16    0.015    0.001    0.094    0.006 data.py:197(next_step_microbatches)
+       32    0.015    0.000    0.052    0.002 inspect.py:1239(getblock)
+     5963    0.015    0.000    0.200    0.000 __init__.py:183(dumps)
+    37680    0.014    0.000    0.020    0.000 dataclasses.py:1296(_is_dataclass_instance)
+     7196    0.014    0.000    0.093    0.000 decoder.py:333(decode)
+     1000    0.014    0.000    0.057    0.000 jsonl.py:49(process_line)
+    33888    0.013    0.000    0.013    0.000 language.py:184(<genexpr>)
+  9540/32    0.013    0.000    0.036    0.001 ast.py:409(generic_visit)
+     5963    0.012    0.000    0.184    0.000 encoder.py:183(encode)
+    79694    0.012    0.000    0.012    0.000 dataclasses.py:1293(<genexpr>)
+     7196    0.011    0.000    0.113    0.000 __init__.py:299(loads)
+     1000    0.011    0.000    0.011    0.000 {method 'split' of 're.Pattern' objects}
+    18147    0.010    0.000    0.010    0.000 {method 'encode' of 'str' objects}
+    14580    0.009    0.000    0.009    0.000 {method 'match' of 're.Pattern' objects}
+3087/3053    0.009    0.000    0.093    0.000 {method 'write' of '_io.BufferedWriter' objects}
+
+
+Wed Sep 23 16:25:24 2026    artifacts\perf\after-profile\profile.pstats
+
+         3705318 function calls (3510720 primitive calls) in 4.175 seconds
+
+   Ordered by: internal time
+   List reduced from 692 to 56 due to restriction <'fsync|manifest|write|hash|encode|language|repet|pii'>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+       10    0.358    0.036    0.358    0.036 {built-in method nt.fsync}
+      978    0.315    0.000    0.315    0.000 {method 'encode' of 'tokenizers.Tokenizer' objects}
+     5963    0.166    0.000    0.166    0.000 encoder.py:205(iterencode)
+      978    0.160    0.000    0.576    0.001 bpe.py:151(encode_with_offsets)
+   164353    0.056    0.000    0.056    0.000 repetition.py:208(<genexpr>)
+     1000    0.034    0.000    0.199    0.000 language.py:127(_heuristic_classify)
+     1000    0.033    0.000    0.101    0.000 pii.py:133(apply)
+     3698    0.023    0.000    0.037    0.000 repetition.py:50(is_structural_separator_line)
+     2959    0.019    0.000    0.019    0.000 {method 'write' of '_io.TextIOWrapper' objects}
+     1000    0.018    0.000    0.209    0.000 repetition.py:108(apply)
+     4976    0.016    0.000    0.016    0.000 {method 'update' of '_hashlib.HASH' objects}
+    33888    0.013    0.000    0.013    0.000 language.py:184(<genexpr>)
+     5963    0.012    0.000    0.184    0.000 encoder.py:183(encode)
+    18147    0.010    0.000    0.010    0.000 {method 'encode' of 'str' objects}
+3087/3053    0.009    0.000    0.093    0.000 {method 'write' of '_io.BufferedWriter' objects}
+     1000    0.008    0.000    0.210    0.000 language.py:201(apply)
+     1000    0.006    0.000    0.006    0.000 repetition.py:211(<genexpr>)
+     3064    0.005    0.000    0.005    0.000 {built-in method _hashlib.openssl_sha256}
+        2    0.004    0.002    0.139    0.069 canonical_io.py:78(write_jsonl)
+     3065    0.004    0.000    0.004    0.000 {method 'hexdigest' of '_hashlib.HASH' objects}
+      978    0.003    0.000    0.008    0.000 records.py:239(write_raw)
+     1000    0.003    0.000    0.010    0.000 shards.py:430(write_line)
+        1    0.002    0.002    0.022    0.022 tokens.py:62(write_documents)
+     1000    0.002    0.000    0.004    0.000 repetition.py:133(base_metrics)
+     1000    0.002    0.000    0.006    0.000 records.py:230(write_line)
+     5962    0.002    0.000    0.002    0.000 encoder.py:105(__init__)
+     1000    0.001    0.000    0.087    0.000 gzip.py:305(write)
+     1000    0.001    0.000    0.079    0.000 language.py:151(latin_alpha)
+ 1164/740    0.000    0.000    0.001    0.000 encoder.py:334(_iterencode_dict)
+        2    0.000    0.000    0.017    0.008 shards.py:216(verify_manifest)
+      683    0.000    0.000    0.000    0.000 repetition.py:173(<genexpr>)
+       35    0.000    0.000    0.086    0.002 gzip.py:316(_write_raw)
+       32    0.000    0.000    0.173    0.005 base.py:48(compute_transform_hash)
+      740    0.000    0.000    0.001    0.000 encoder.py:414(_iterencode)
+       32    0.000    0.000    0.173    0.005 base.py:40(compute_code_hash)
+       55    0.000    0.000    0.000    0.000 pii.py:67(is_reserved_example_email)
+      362    0.000    0.000    0.000    0.000 encoder.py:278(_iterencode_list)
+      167    0.000    0.000    0.000    0.000 repetition.py:172(<genexpr>)
+       35    0.000    0.000    0.086    0.002 gzip.py:133(write)
+      110    0.000    0.000    0.000    0.000 pii.py:75(<genexpr>)
+        2    0.000    0.000    0.003    0.002 hashlib.py:195(file_digest)
+        4    0.000    0.000    0.173    0.043 pipeline.py:110(compute_pipeline_hash)
+      217    0.000    0.000    0.000    0.000 {built-in method _json.encode_basestring_ascii}
+        3    0.000    0.000    0.000    0.000 shards.py:192(_check_manifest_structure)
+       29    0.000    0.000    0.000    0.000 encoder.py:224(floatstr)
+        3    0.000    0.000    0.001    0.000 pathlib.py:1039(write_text)
+        1    0.000    0.000    0.001    0.001 shards.py:175(load_manifest)
+        1    0.000    0.000    0.000    0.000 gzip.py:273(_write_gzip_header)
+        6    0.000    0.000    0.000    0.000 encoder.py:260(_make_iterencode)
+        2    0.000    0.000    0.000    0.000 repetition.py:100(__init__)
+        2    0.000    0.000    0.000    0.000 language.py:109(__init__)
+        2    0.000    0.000    0.000    0.000 {built-in method _hashlib.new}
+        1    0.000    0.000    0.000    0.000 gzip.py:260(_init_write)
+        2    0.000    0.000    0.000    0.000 pii.py:128(__init__)
+        3    0.000    0.000    0.000    0.000 gzip.py:77(write32u)
+        2    0.000    0.000    0.000    0.000 hashlib.py:152(__hash_new)

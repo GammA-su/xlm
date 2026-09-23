@@ -1,0 +1,34 @@
+{
+  "rows": [
+    {
+      "mode": "reference",
+      "iteration": 0,
+      "seconds": 0.7870585982454941,
+      "windows": 10000,
+      "digest": "ad289b66c2f8f63576c3725c3dcdcf1a4a10df0aca1c1f994df3eb058f22eda0"
+    },
+    {
+      "mode": "candidate",
+      "iteration": 0,
+      "seconds": 0.33265439700335264,
+      "windows": 10000,
+      "digest": "ad289b66c2f8f63576c3725c3dcdcf1a4a10df0aca1c1f994df3eb058f22eda0"
+    },
+    {
+      "mode": "candidate",
+      "iteration": 1,
+      "seconds": 0.33533640048699453,
+      "windows": 10000,
+      "digest": "ad289b66c2f8f63576c3725c3dcdcf1a4a10df0aca1c1f994df3eb058f22eda0"
+    },
+    {
+      "mode": "reference",
+      "iteration": 1,
+      "seconds": 0.7308438984910026,
+      "windows": 10000,
+      "digest": "ad289b66c2f8f63576c3725c3dcdcf1a4a10df0aca1c1f994df3eb058f22eda0"
+    }
+  ],
+  "fixture_only": true,
+  "digest_outside_timing": true
+}

@@ -1,0 +1,23 @@
+{
+  "mixture": [
+    {
+      "max_open_shards": 0,
+      "steps": 50,
+      "wall_seconds": 7.05953710002359,
+      "steps_per_second": 7.082617357423183,
+      "init_seconds": 0.0002804000396281481,
+      "digest": "945c99b50ead4ffc415c4f3881ab56164baa2ff64d173e9884d6c9b0c853e5aa",
+      "rss_bytes": 49246208
+    },
+    {
+      "max_open_shards": 8,
+      "steps": 50,
+      "wall_seconds": 6.899328399973456,
+      "steps_per_second": 7.247082194288993,
+      "init_seconds": 0.5566217000014149,
+      "digest": "945c99b50ead4ffc415c4f3881ab56164baa2ff64d173e9884d6c9b0c853e5aa",
+      "rss_bytes": 50266112
+    }
+  ],
+  "note": "batch and final cursor digests exact; digest work excluded from timing"
+}

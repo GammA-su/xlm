@@ -1,0 +1,49 @@
+{
+  "head": "060f3d94920e170b66c291a0d0e338941182f63f",
+  "python": "3.12.13 (main, Apr  7 2026, 20:53:22) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "packages": {
+    "torch": "2.14.0+cpu",
+    "tokenizers": "0.23.2",
+    "pyarrow": "25.0.1",
+    "psutil": "7.2.2",
+    "pytest": "9.1.1",
+    "pytest-xdist": "3.8.0",
+    "ruff": "0.16.8",
+    "mypy": "2.3.1"
+  },
+  "source_sha256": {
+    "scripts/benchmark_h2d.py": "cf7a8921a20aa9603aebdee16637847e17d8700d6cb899a68e1d3d4530f682f9",
+    "scripts/benchmark_loader_cache.py": "ec4e9b76797069f9b1a13917857d614815d9717de53d48fa31d2d011d77ba1a7",
+    "scripts/benchmark_packing_path.py": "ad1e5a46bde9d07a9b71e98ae13c6ad4d9693f06315da8f2d0c68fd81a635038",
+    "scripts/benchmark_pipeline.py": "a95a026dc70cc5c6939e2542c6bd4619ac499e289132d83ac277f9de6acce37f",
+    "scripts/benchmark_token_oracles.py": "eda809a1ce08494f9bfa6f47489d9040d6fba3f83ce72c122135e0be00cf2a26",
+    "scripts/benchmark_token_path.py": "e7b1619f7179fa69355f08571fe9004ce0d1be83cdbcb291663921f5391453cb",
+    "src/xlm/cli/tokenizer_cmd.py": "c34aebc446b1f74199317cf5ccff21fad313be059f2aca2bd9daeea488e74b95",
+    "src/xlm/data/parallel_tokens.py": "fb1de6a5c80b18a48638455ba98bc73391a21cc0338a285717b6d1bfa1b16dc4",
+    "src/xlm/data/pools/tokenizer_fit.py": "03f27137d8749b0a19d52bc3b284fef49c19e7d86fb778e106dfcc3bf5c7a425",
+    "src/xlm/data/sampling/packing.py": "01bff95c2eb0d21d3bcf6970386798b983d73b05006ae25594c0a4a8b0748cbd",
+    "src/xlm/data/sampling/stream.py": "83a3c0731196212c56e5b4f45bdecff079d6c759a1fdd0d38f72fe8614490238",
+    "src/xlm/data/sampling/trace.py": "5db1b3f3fefc21e0f1e59d2143507d5b06337c16f47cf7f9957d335b3e1e07b7",
+    "src/xlm/data/token_cache.py": "1a0ab039114a008a2d514f195cec78a5f3b4712c9cc93b57ec06e2e0e32266c4",
+    "src/xlm/data/tokens.py": "881b8179802447309869b1986c8101182cac6e999463b70bdd0071d6620520d2",
+    "src/xlm/tokenizers/base.py": "41eec5a29c20f973aa9143a57e4c97d07ff8a4249ca1f23243daf0ce08e1b553",
+    "src/xlm/tokenizers/bpe.py": "36bd6c48198d6468e920315fee84330088b23f9f9d894a3405690d836a1b5b7d",
+    "tests/test_packing_lookup.py": "9afbae4a33e7b545b48aed3e64e09b4599a5651dfa17a787ebc2f57b2af2fb37",
+    "tests/test_parallel_tokens.py": "e8431b810241d936909af77dfa0fbfacd064b0d75fde506149abc15407e9f59b",
+    "tests/test_performance_tokenization.py": "c5a1bc9c7e37b067e4afec1fe8837919e3c0efc0b0c678f6342ea42710110d69",
+    "tests/test_sampling_trace.py": "08acc7d6fbb4f3b91bee9814531707581eb51d110f12f8388b1e553d6d102ad0",
+    "tests/test_token_batches.py": "399b7b0da82f99bad369041bfa30aabe118405048911182b7478195f5b205b1a",
+    "tests/test_token_map_cache.py": "1e762309b329b59b1dc4acfa37f36cea59d74c8ed225cb01b75af87967ea2e26",
+    "tests/test_token_publication.py": "5e6730baf5dc38929a4234ebb05d489019a701d10f2a86e34788328c8eff41de",
+    "tests/test_tokenizer_fit_stream.py": "d83e715219f9eb2cdc038fcddcb9b88f1139a55605b8fb73ac4ac78da55a86af"
+  },
+  "pin_sha256": {
+    "pyproject.toml": "d02489d1176577c7ee07b191b3cd3abd54850875df6d0d6872c1b4c790c0c7ae",
+    "uv.lock": "f8d1117caf64229fd7c368ba75448d1d31b469f2b4aa37c8f7b2ab27d61d4544",
+    ".python-version": "50b10393ce287fb4af7616d016dd16ac1a56412af4d2c74cde7ddc5ad5c78761"
+  },
+  "retained_p29b_bytes": 13565677933,
+  "retained_all_artifact_bytes": 19636465098,
+  "free_disk_bytes": 136785317888
+}

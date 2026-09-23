@@ -1,0 +1,463 @@
+{
+  "schema_version": 1,
+  "artifact_type": "canonical_documents_sharded",
+  "dataset_id": "p29b-fixture",
+  "source_artifact": {},
+  "producer": {},
+  "shard_target_bytes": 4194304,
+  "shards": [
+    {
+      "ordinal": 0,
+      "path": "shard-00000.jsonl",
+      "doc_count": 2204,
+      "byte_count": 4194945,
+      "sha256": "a847cb95e8f385f6954aeb449f57aca93e29bbea3002226808dd681514d737b5",
+      "oversize": false,
+      "first_doc_id": "1",
+      "last_doc_id": "2251"
+    },
+    {
+      "ordinal": 1,
+      "path": "shard-00001.jsonl",
+      "doc_count": 2201,
+      "byte_count": 4195794,
+      "sha256": "8301b6dd6951eca2839847a187b227e409ed277e9bde55d0e3277d5c71908bb7",
+      "oversize": false,
+      "first_doc_id": "2252",
+      "last_doc_id": "4500"
+    },
+    {
+      "ordinal": 2,
+      "path": "shard-00002.jsonl",
+      "doc_count": 2201,
+      "byte_count": 4194956,
+      "sha256": "667734861ef51c25b28be2d3affb973c66dda35a763f13892fda4bda8cfd5b51",
+      "oversize": false,
+      "first_doc_id": "4501",
+      "last_doc_id": "6749"
+    },
+    {
+      "ordinal": 3,
+      "path": "shard-00003.jsonl",
+      "doc_count": 2201,
+      "byte_count": 4194930,
+      "sha256": "2c89f8978f6cdad6c5834179628adc5edb30510be02c711653c60a186efd5e8d",
+      "oversize": false,
+      "first_doc_id": "6750",
+      "last_doc_id": "8998"
+    },
+    {
+      "ordinal": 4,
+      "path": "shard-00004.jsonl",
+      "doc_count": 2199,
+      "byte_count": 4195086,
+      "sha256": "a271baedada7f10082eab002a48483773bee9349dae1852ce6263c82b0a05e24",
+      "oversize": false,
+      "first_doc_id": "8999",
+      "last_doc_id": "11245"
+    },
+    {
+      "ordinal": 5,
+      "path": "shard-00005.jsonl",
+      "doc_count": 2196,
+      "byte_count": 4194330,
+      "sha256": "a60da4f46e8c8d48caa5f95dd21456a23354d8400efe1e66739f0488c58d663e",
+      "oversize": false,
+      "first_doc_id": "11246",
+      "last_doc_id": "13488"
+    },
+    {
+      "ordinal": 6,
+      "path": "shard-00006.jsonl",
+      "doc_count": 2196,
+      "byte_count": 4195094,
+      "sha256": "f683da9d487789effbc578c82bbcbdebdb8ac44826c9b295c457b26e59132477",
+      "oversize": false,
+      "first_doc_id": "13490",
+      "last_doc_id": "15732"
+    },
+    {
+      "ordinal": 7,
+      "path": "shard-00007.jsonl",
+      "doc_count": 2197,
+      "byte_count": 4195278,
+      "sha256": "b562c3ac1d3cbc68531ba21b4df1ba7ecd54078742c084b8339044e5cb9e0c54",
+      "oversize": false,
+      "first_doc_id": "15733",
+      "last_doc_id": "17977"
+    },
+    {
+      "ordinal": 8,
+      "path": "shard-00008.jsonl",
+      "doc_count": 2197,
+      "byte_count": 4195596,
+      "sha256": "585957145bc78430b949057b20204d5ccfacd3c687710a087e0aaf77f6e51dbf",
+      "oversize": false,
+      "first_doc_id": "17978",
+      "last_doc_id": "20222"
+    },
+    {
+      "ordinal": 9,
+      "path": "shard-00009.jsonl",
+      "doc_count": 2197,
+      "byte_count": 4196916,
+      "sha256": "a9b2a6b39f8e8a590c5da62f796e1c285fa15f426a476fa8025aaf2543a1c677",
+      "oversize": false,
+      "first_doc_id": "20223",
+      "last_doc_id": "22467"
+    },
+    {
+      "ordinal": 10,
+      "path": "shard-00010.jsonl",
+      "doc_count": 2197,
+      "byte_count": 4196884,
+      "sha256": "776b17f4d9c553df02562d514fce966f7da71ab68cc8c9b03834621573a9c85c",
+      "oversize": false,
+      "first_doc_id": "22468",
+      "last_doc_id": "24711"
+    },
+    {
+      "ordinal": 11,
+      "path": "shard-00011.jsonl",
+      "doc_count": 2197,
+      "byte_count": 4194556,
+      "sha256": "e1d57868c11ecf1316a650b4b789b407ebee20cbfe4d44d450d2d7abb55808b9",
+      "oversize": false,
+      "first_doc_id": "24712",
+      "last_doc_id": "26956"
+    },
+    {
+      "ordinal": 12,
+      "path": "shard-00012.jsonl",
+      "doc_count": 2197,
+      "byte_count": 4196131,
+      "sha256": "c5af8344287a3f5a6e9f91ff0d376274ec32e5793d063dde35bbbe6182bc6f51",
+      "oversize": false,
+      "first_doc_id": "26957",
+      "last_doc_id": "29201"
+    },
+    {
+      "ordinal": 13,
+      "path": "shard-00013.jsonl",
+      "doc_count": 2197,
+      "byte_count": 4195850,
+      "sha256": "e2738a47bff57ff9c774d2cc669205cbd21cb7431f968949959631396b1e5776",
+      "oversize": false,
+      "first_doc_id": "29202",
+      "last_doc_id": "31446"
+    },
+    {
+      "ordinal": 14,
+      "path": "shard-00014.jsonl",
+      "doc_count": 2196,
+      "byte_count": 4195637,
+      "sha256": "a4add8c8c83178e7544c9757f7d6e19cc44b42279d3ced21e59ddc8e755baedf",
+      "oversize": false,
+      "first_doc_id": "31447",
+      "last_doc_id": "33689"
+    },
+    {
+      "ordinal": 15,
+      "path": "shard-00015.jsonl",
+      "doc_count": 2196,
+      "byte_count": 4194446,
+      "sha256": "4fd96c2a37a2740a3e1c6143325fe42f62424e1ec79afdd358d6291c12218a2e",
+      "oversize": false,
+      "first_doc_id": "33690",
+      "last_doc_id": "35933"
+    },
+    {
+      "ordinal": 16,
+      "path": "shard-00016.jsonl",
+      "doc_count": 2197,
+      "byte_count": 4195077,
+      "sha256": "5378c2c298d58b0abcc2368e1e32902bc833aef4b9f0e4e96fe5b5f6d065a15e",
+      "oversize": false,
+      "first_doc_id": "35934",
+      "last_doc_id": "38178"
+    },
+    {
+      "ordinal": 17,
+      "path": "shard-00017.jsonl",
+      "doc_count": 2197,
+      "byte_count": 4194492,
+      "sha256": "130801aed99c6c2a27367a5be4aa9b300b804a0bdd31ea251bb77a05ffca78b4",
+      "oversize": false,
+      "first_doc_id": "38179",
+      "last_doc_id": "40423"
+    },
+    {
+      "ordinal": 18,
+      "path": "shard-00018.jsonl",
+      "doc_count": 2196,
+      "byte_count": 4195499,
+      "sha256": "cdcec4b40c916355656e7d4b0af92a1d260f6aa66444d42ae54f5db434e7db7f",
+      "oversize": false,
+      "first_doc_id": "40424",
+      "last_doc_id": "42666"
+    },
+    {
+      "ordinal": 19,
+      "path": "shard-00019.jsonl",
+      "doc_count": 2197,
+      "byte_count": 4195484,
+      "sha256": "09dae9a042cd0c2df4affc1a6e5813e8f7776f4ef50f6802c36a89e0ee610340",
+      "oversize": false,
+      "first_doc_id": "42667",
+      "last_doc_id": "44911"
+    },
+    {
+      "ordinal": 20,
+      "path": "shard-00020.jsonl",
+      "doc_count": 2197,
+      "byte_count": 4195618,
+      "sha256": "1af3655f216e1837e773bfc15d29600aecce83e93a03a301a68cc404e351c091",
+      "oversize": false,
+      "first_doc_id": "44912",
+      "last_doc_id": "47156"
+    },
+    {
+      "ordinal": 21,
+      "path": "shard-00021.jsonl",
+      "doc_count": 2197,
+      "byte_count": 4197262,
+      "sha256": "1268f458528ea2c24c54f71a60e891889320cdeefcf159c6204fae3510b3047c",
+      "oversize": false,
+      "first_doc_id": "47157",
+      "last_doc_id": "49401"
+    },
+    {
+      "ordinal": 22,
+      "path": "shard-00022.jsonl",
+      "doc_count": 2197,
+      "byte_count": 4196113,
+      "sha256": "69f9688a835fb45fd2ed42c8c886b0e1677a8cede88f0d2c4505de71c7e93402",
+      "oversize": false,
+      "first_doc_id": "49402",
+      "last_doc_id": "51645"
+    },
+    {
+      "ordinal": 23,
+      "path": "shard-00023.jsonl",
+      "doc_count": 2197,
+      "byte_count": 4195721,
+      "sha256": "0ee279e5db7e977dd70497e72acf51a695ccccb44e25268b718fbfd588d192e0",
+      "oversize": false,
+      "first_doc_id": "51646",
+      "last_doc_id": "53890"
+    },
+    {
+      "ordinal": 24,
+      "path": "shard-00024.jsonl",
+      "doc_count": 2197,
+      "byte_count": 4195804,
+      "sha256": "970842ca890adad3798ef504ba71dad55153570c469c12cbffca1cb3566470a4",
+      "oversize": false,
+      "first_doc_id": "53891",
+      "last_doc_id": "56135"
+    },
+    {
+      "ordinal": 25,
+      "path": "shard-00025.jsonl",
+      "doc_count": 2197,
+      "byte_count": 4195930,
+      "sha256": "34f5813ee3189da43702eeb98fc61af9c4a031cbeab47e78c313c4b13a80dcc7",
+      "oversize": false,
+      "first_doc_id": "56136",
+      "last_doc_id": "58380"
+    },
+    {
+      "ordinal": 26,
+      "path": "shard-00026.jsonl",
+      "doc_count": 2197,
+      "byte_count": 4195623,
+      "sha256": "38c8951853ed5f616dea758f485d3cecf00fdf96f1e1e3b16bb7aa06f2d32b3b",
+      "oversize": false,
+      "first_doc_id": "58381",
+      "last_doc_id": "60624"
+    },
+    {
+      "ordinal": 27,
+      "path": "shard-00027.jsonl",
+      "doc_count": 2197,
+      "byte_count": 4194554,
+      "sha256": "504e85c14896315f3314ccd91b49c920e1f035fba000834dc027030e1ad85d91",
+      "oversize": false,
+      "first_doc_id": "60625",
+      "last_doc_id": "62869"
+    },
+    {
+      "ordinal": 28,
+      "path": "shard-00028.jsonl",
+      "doc_count": 2197,
+      "byte_count": 4196246,
+      "sha256": "3da9b1b8f74f902289415c12a9fcca9c9355ad03b264ba8c89d5f186293bf25a",
+      "oversize": false,
+      "first_doc_id": "62870",
+      "last_doc_id": "65114"
+    },
+    {
+      "ordinal": 29,
+      "path": "shard-00029.jsonl",
+      "doc_count": 2196,
+      "byte_count": 4194650,
+      "sha256": "38979de94a51d64e3483a40d6f353bdbdf80f3f1c4ccd1d2d62ed2fce1fd28c6",
+      "oversize": false,
+      "first_doc_id": "65115",
+      "last_doc_id": "67358"
+    },
+    {
+      "ordinal": 30,
+      "path": "shard-00030.jsonl",
+      "doc_count": 2197,
+      "byte_count": 4195060,
+      "sha256": "8751f463a8742675990bfdd1e7eba7f6fb941f26386d449aeafc8c71eebe3637",
+      "oversize": false,
+      "first_doc_id": "67359",
+      "last_doc_id": "69602"
+    },
+    {
+      "ordinal": 31,
+      "path": "shard-00031.jsonl",
+      "doc_count": 2197,
+      "byte_count": 4196512,
+      "sha256": "fe764cf6ff24efb4164f7e2287bcebc79dfed97d350b7c0ce4e3a6f699983d43",
+      "oversize": false,
+      "first_doc_id": "69603",
+      "last_doc_id": "71847"
+    },
+    {
+      "ordinal": 32,
+      "path": "shard-00032.jsonl",
+      "doc_count": 2197,
+      "byte_count": 4195422,
+      "sha256": "f580dc5c597661d0fdd73962bc507f29feb46180dd70cdd2d5e707655836ba15",
+      "oversize": false,
+      "first_doc_id": "71848",
+      "last_doc_id": "74092"
+    },
+    {
+      "ordinal": 33,
+      "path": "shard-00033.jsonl",
+      "doc_count": 2196,
+      "byte_count": 4194952,
+      "sha256": "58f5e9b3da6cbd700449d7e1b35e61d11eb2604eaa40bce5bff5d9b60b271621",
+      "oversize": false,
+      "first_doc_id": "74093",
+      "last_doc_id": "76336"
+    },
+    {
+      "ordinal": 34,
+      "path": "shard-00034.jsonl",
+      "doc_count": 2196,
+      "byte_count": 4195150,
+      "sha256": "0b7f1e17731d364cae31959a4ad8e677e3b83109813ae2bee92c307c51c93b85",
+      "oversize": false,
+      "first_doc_id": "76337",
+      "last_doc_id": "78579"
+    },
+    {
+      "ordinal": 35,
+      "path": "shard-00035.jsonl",
+      "doc_count": 2196,
+      "byte_count": 4194440,
+      "sha256": "b363392f619e179901b3ae66f60c65a54dc11346f9a470942415c61f6c4c000f",
+      "oversize": false,
+      "first_doc_id": "78580",
+      "last_doc_id": "80823"
+    },
+    {
+      "ordinal": 36,
+      "path": "shard-00036.jsonl",
+      "doc_count": 2197,
+      "byte_count": 4194860,
+      "sha256": "f76225df56288e40c403060ccdb23bd3534fe24b5d24e1bcfc44b05d80c12cd9",
+      "oversize": false,
+      "first_doc_id": "80824",
+      "last_doc_id": "83068"
+    },
+    {
+      "ordinal": 37,
+      "path": "shard-00037.jsonl",
+      "doc_count": 2196,
+      "byte_count": 4194384,
+      "sha256": "162f1f7c66ac587f92316a1e5946797ca5bdd2e69b6c329d775ffd944f8cf550",
+      "oversize": false,
+      "first_doc_id": "83069",
+      "last_doc_id": "85312"
+    },
+    {
+      "ordinal": 38,
+      "path": "shard-00038.jsonl",
+      "doc_count": 2196,
+      "byte_count": 4195880,
+      "sha256": "0077cc444b79e1c62b0405072aef5de2b5bdf51d9a8a64cf3a50d732eedf218d",
+      "oversize": false,
+      "first_doc_id": "85313",
+      "last_doc_id": "87555"
+    },
+    {
+      "ordinal": 39,
+      "path": "shard-00039.jsonl",
+      "doc_count": 2197,
+      "byte_count": 4194846,
+      "sha256": "a2d46a6824f34f25b94d21321dda297a979526e714314888a0cc481d01b2cf5d",
+      "oversize": false,
+      "first_doc_id": "87556",
+      "last_doc_id": "89800"
+    },
+    {
+      "ordinal": 40,
+      "path": "shard-00040.jsonl",
+      "doc_count": 2196,
+      "byte_count": 4194855,
+      "sha256": "ede16f7a182e798774517b5460b485b1e6efd41433d06847049cfc23cfd6d07a",
+      "oversize": false,
+      "first_doc_id": "89801",
+      "last_doc_id": "92044"
+    },
+    {
+      "ordinal": 41,
+      "path": "shard-00041.jsonl",
+      "doc_count": 2197,
+      "byte_count": 4195613,
+      "sha256": "c8f8d2fbef17f23a55db4a2c6adb0e54a2414c718c46ab3697608b44d874e9fe",
+      "oversize": false,
+      "first_doc_id": "92045",
+      "last_doc_id": "94289"
+    },
+    {
+      "ordinal": 42,
+      "path": "shard-00042.jsonl",
+      "doc_count": 2197,
+      "byte_count": 4195936,
+      "sha256": "6ace103e3ba0c09c43fbd7798a2072588d351f7e50cb0590a58ce306da956015",
+      "oversize": false,
+      "first_doc_id": "94290",
+      "last_doc_id": "96533"
+    },
+    {
+      "ordinal": 43,
+      "path": "shard-00043.jsonl",
+      "doc_count": 2197,
+      "byte_count": 4195690,
+      "sha256": "9b28d39c5b1fcbb9b80e78c9c942e93ccfcbbcbbde34b1e871992e00aa5b3bd8",
+      "oversize": false,
+      "first_doc_id": "96534",
+      "last_doc_id": "98778"
+    },
+    {
+      "ordinal": 44,
+      "path": "shard-00044.jsonl",
+      "doc_count": 1195,
+      "byte_count": 2282442,
+      "sha256": "a31abfa4811172a5010e88da22019d7a68aa74aa1d5440797b3090ba4b4904ba",
+      "oversize": false,
+      "first_doc_id": "98779",
+      "last_doc_id": "99999"
+    }
+  ],
+  "total_documents": 97872,
+  "total_bytes": 186880544,
+  "aggregate_sha256": "c2f71acd4da6a5056ceb0f6a2793b56dff1d54f6dba9d75ca5662f58dfdb98d0"
+}

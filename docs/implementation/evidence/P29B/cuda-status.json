@@ -1,0 +1,7 @@
+{
+  "status": "NOT RUN",
+  "exit_status": 77,
+  "reason": "CUDA unavailable",
+  "torch": "2.14.0+cpu",
+  "command": "uv run --offline --locked --no-sync python scripts/benchmark_h2d.py --mib 8 --iterations 100"
+}

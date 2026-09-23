@@ -1,0 +1,171 @@
+{
+  "schema_version": 1,
+  "fixture_only": true,
+  "dedup": "SKIPPED: P28 ownership",
+  "documents": 10000,
+  "workers": 1,
+  "token_workers": 0,
+  "artifact_byte_cap": 2147483648,
+  "python": "3.12.13 (main, Apr  7 2026, 20:53:22) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "cpu_count": 16,
+  "stages": [
+    {
+      "stage": "fixture_generation",
+      "parent_fsync_calls": 0,
+      "wall_seconds": 1.7372896000160836,
+      "parent_cpu_seconds": 1.5625,
+      "peak_tree_rss_bytes": 226566144,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 2746726,
+      "artifact_bytes_after_stage": 2746726,
+      "sampled_peak_artifact_bytes": 2746726
+    },
+    {
+      "stage": "gzip_decode_publication",
+      "sha256": "f6868996fff374f280e8bd41e4cc37b6f97c0f24d4dd3a61d0dda9a20722236b",
+      "parent_fsync_calls": 1,
+      "wall_seconds": 0.42859849997330457,
+      "parent_cpu_seconds": 0.1875,
+      "peak_tree_rss_bytes": 226787328,
+      "parent_read_bytes": 2746726,
+      "parent_write_bytes": 11166232,
+      "artifact_bytes_after_stage": 13912958,
+      "sampled_peak_artifact_bytes": 13912958
+    },
+    {
+      "stage": "adaptation_jsonl",
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.9541158999782056,
+      "parent_cpu_seconds": 0.859375,
+      "peak_tree_rss_bytes": 228081664,
+      "parent_read_bytes": 11166232,
+      "parent_write_bytes": 16878462,
+      "artifact_bytes_after_stage": 30791420,
+      "sampled_peak_artifact_bytes": 30791420
+    },
+    {
+      "stage": "canonical_sharding",
+      "parent_fsync_calls": 6,
+      "wall_seconds": 1.3100534999975935,
+      "parent_cpu_seconds": 0.78125,
+      "peak_tree_rss_bytes": 228638720,
+      "parent_read_bytes": 33756924,
+      "parent_write_bytes": 16880246,
+      "artifact_bytes_after_stage": 47671666,
+      "sampled_peak_artifact_bytes": 47671666
+    },
+    {
+      "stage": "cleaning",
+      "accepted": 9787,
+      "timing": {
+        "parse_seconds": 0.32700000010663643,
+        "serialize_seconds": 0.5210000000661239,
+        "write_seconds": 0.10900000005494803,
+        "quarantine_seconds": 0.0,
+        "fsync_seconds": 0.5320000000065193,
+        "wall_seconds": 7.8439999999827705
+      },
+      "parent_fsync_calls": 15,
+      "wall_seconds": 8.452930599974934,
+      "parent_cpu_seconds": 6.828125,
+      "peak_tree_rss_bytes": 232681472,
+      "parent_read_bytes": 52428797,
+      "parent_write_bytes": 37044317,
+      "artifact_bytes_after_stage": 66105197,
+      "sampled_peak_artifact_bytes": 66105197
+    },
+    {
+      "stage": "split_and_publish",
+      "membership_digest": "7b9b64a1b19feaa839400d1f97ce2d016d7336176263a271045fb5e0fd7a1ec5",
+      "parent_fsync_calls": 0,
+      "wall_seconds": 1.355109199997969,
+      "parent_cpu_seconds": 1.203125,
+      "peak_tree_rss_bytes": 236687360,
+      "parent_read_bytes": 36496436,
+      "parent_write_bytes": 18649512,
+      "artifact_bytes_after_stage": 84754709,
+      "sampled_peak_artifact_bytes": 84754709
+    },
+    {
+      "stage": "fixture_tokenizer_fit",
+      "fingerprint": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.0959588999976404,
+      "parent_cpu_seconds": 0.109375,
+      "peak_tree_rss_bytes": 236687360,
+      "parent_read_bytes": 2118386,
+      "parent_write_bytes": 2118386,
+      "artifact_bytes_after_stage": 86873095,
+      "sampled_peak_artifact_bytes": 86873095
+    },
+    {
+      "stage": "tokenization_shards",
+      "manifest": {
+        "shard_id": "fixture",
+        "source_id": "authored_mix",
+        "num_tokens": 3667412,
+        "num_documents": 9787,
+        "token_dtype": "uint16",
+        "endianness": "little",
+        "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+        "pool_hash": "p02_local_pool",
+        "checksum_sha256": "0b341b8fe7a14a7fa941d01a58af46ad551cdf40acec3e5fc79380b216febea6",
+        "offsets_checksum_sha256": "fc108fda468267c3ce4d021d32bb332a5ca15f0155aab94712bd98231d929c7b",
+        "byte_coverage_ratio": 1.0
+      },
+      "parent_fsync_calls": 4,
+      "wall_seconds": 9.37642440001946,
+      "parent_cpu_seconds": 8.625,
+      "peak_tree_rss_bytes": 247136256,
+      "parent_read_bytes": 18649512,
+      "parent_write_bytes": 55602691,
+      "artifact_bytes_after_stage": 142475786,
+      "sampled_peak_artifact_bytes": 142475786
+    },
+    {
+      "stage": "token_verification",
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.06666010001208633,
+      "parent_cpu_seconds": 0.03125,
+      "peak_tree_rss_bytes": 247136256,
+      "parent_read_bytes": 55601898,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 142475786,
+      "sampled_peak_artifact_bytes": 142475786
+    },
+    {
+      "stage": "mmap_packing",
+      "valid_targets": 3657625,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.4138991999789141,
+      "parent_cpu_seconds": 0.359375,
+      "peak_tree_rss_bytes": 253784064,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 142475786,
+      "sampled_peak_artifact_bytes": 142475786
+    },
+    {
+      "stage": "loader_dummy_consume",
+      "steps": 16,
+      "batch_digest": "6c0c7a8b099dd0a438f9b824f629c6de716b678781a0f87203b7f889ec62ff46",
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.11756990000139922,
+      "parent_cpu_seconds": 0.125,
+      "peak_tree_rss_bytes": 248651776,
+      "parent_read_bytes": 2228224,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 142475786,
+      "sampled_peak_artifact_bytes": 142475786
+    }
+  ],
+  "pipeline_wall_seconds": 22.571320199931506,
+  "limitations": [
+    "parent CPU/I/O and fsync exclude workers",
+    "RSS sampled at 100 ms; child discovery 1 s",
+    "source-like shapes use generic JSONL adapter, not live schema certification",
+    "packing and loader are separately measured consumers of identical tokens",
+    "no network, dedup, production tokenizer, GPU training or official evaluation"
+  ]
+}

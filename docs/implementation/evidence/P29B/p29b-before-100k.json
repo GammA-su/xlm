@@ -1,0 +1,158 @@
+{
+  "schema_version": 1,
+  "fixture_only": true,
+  "dedup": "SKIPPED: P28 ownership",
+  "documents": 100000,
+  "workers": 1,
+  "python": "3.12.13 (main, Apr  7 2026, 20:53:22) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "cpu_count": 16,
+  "stages": [
+    {
+      "stage": "fixture_generation",
+      "parent_fsync_calls": 0,
+      "wall_seconds": 14.935191100055818,
+      "parent_cpu_seconds": 14.59375,
+      "peak_tree_rss_bytes": 226279424,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 27487817,
+      "artifact_bytes_after_stage": 27487817
+    },
+    {
+      "stage": "gzip_decode_publication",
+      "sha256": "e3c1940ed8c890c18ee02c8e76b4246be5a28f97d849ff5f5acf13e60faa5285",
+      "parent_fsync_calls": 1,
+      "wall_seconds": 2.3461637999862432,
+      "parent_cpu_seconds": 1.53125,
+      "peak_tree_rss_bytes": 226484224,
+      "parent_read_bytes": 27487817,
+      "parent_write_bytes": 111959612,
+      "artifact_bytes_after_stage": 139447429
+    },
+    {
+      "stage": "adaptation_jsonl",
+      "parent_fsync_calls": 0,
+      "wall_seconds": 6.856105800019577,
+      "parent_cpu_seconds": 6.734375,
+      "peak_tree_rss_bytes": 236097536,
+      "parent_read_bytes": 111959612,
+      "parent_write_bytes": 169181854,
+      "artifact_bytes_after_stage": 308629283
+    },
+    {
+      "stage": "canonical_sharding",
+      "parent_fsync_calls": 42,
+      "wall_seconds": 10.618665500020143,
+      "parent_cpu_seconds": 6.265625,
+      "peak_tree_rss_bytes": 238305280,
+      "parent_read_bytes": 338363708,
+      "parent_write_bytes": 169194151,
+      "artifact_bytes_after_stage": 477823434
+    },
+    {
+      "stage": "cleaning",
+      "accepted": 97872,
+      "timing": {
+        "parse_seconds": 2.6410000003525056,
+        "serialize_seconds": 4.729000000108499,
+        "write_seconds": 0.6429999999236315,
+        "quarantine_seconds": 0.10899999999674037,
+        "fsync_seconds": 6.233000000007451,
+        "wall_seconds": 67.38999999995576
+      },
+      "parent_fsync_calls": 87,
+      "wall_seconds": 69.89509550004732,
+      "parent_cpu_seconds": 59.703125,
+      "peak_tree_rss_bytes": 246607872,
+      "parent_read_bytes": 524933919,
+      "parent_write_bytes": 371185896,
+      "artifact_bytes_after_stage": 662510719
+    },
+    {
+      "stage": "split_and_publish",
+      "membership_digest": "715c1030896d857f7b16644ffa1c48ff8dd0c54b3c8f9ffb80708ad2218a7722",
+      "parent_fsync_calls": 0,
+      "wall_seconds": 11.252798000001349,
+      "parent_cpu_seconds": 10.9375,
+      "peak_tree_rss_bytes": 308371456,
+      "parent_read_bytes": 365735458,
+      "parent_write_bytes": 186880544,
+      "artifact_bytes_after_stage": 849391263
+    },
+    {
+      "stage": "fixture_tokenizer_fit",
+      "fingerprint": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.07507439999608323,
+      "parent_cpu_seconds": 0.078125,
+      "peak_tree_rss_bytes": 308371456,
+      "parent_read_bytes": 2118386,
+      "parent_write_bytes": 2118386,
+      "artifact_bytes_after_stage": 851509649
+    },
+    {
+      "stage": "tokenization_shards",
+      "manifest": {
+        "shard_id": "fixture",
+        "source_id": "authored_mix",
+        "num_tokens": 36678213,
+        "num_documents": 97872,
+        "token_dtype": "uint16",
+        "endianness": "little",
+        "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+        "pool_hash": "p02_local_pool",
+        "checksum_sha256": "5ca3e133ca24dab4158b31484e1e700065fe73c482bb4c31a3781c62764fe610",
+        "offsets_checksum_sha256": "b6b838bb82cf468ab240ff7a3cf09b544113d12a5f81409c4dae5bb28e5c328d",
+        "byte_coverage_ratio": 1.0
+      },
+      "parent_fsync_calls": 0,
+      "wall_seconds": 78.16799970000284,
+      "parent_cpu_seconds": 76.796875,
+      "peak_tree_rss_bytes": 318210048,
+      "parent_read_bytes": 186880544,
+      "parent_write_bytes": 556460288,
+      "artifact_bytes_after_stage": 1407969937
+    },
+    {
+      "stage": "token_verification",
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.4501548000262119,
+      "parent_cpu_seconds": 0.4375,
+      "peak_tree_rss_bytes": 317911040,
+      "parent_read_bytes": 556459486,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 1407969937
+    },
+    {
+      "stage": "mmap_packing",
+      "valid_targets": 36580341,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 5.777759500022512,
+      "parent_cpu_seconds": 5.65625,
+      "peak_tree_rss_bytes": 390373376,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 1407969937
+    },
+    {
+      "stage": "loader_dummy_consume",
+      "steps": 16,
+      "batch_digest": "6c0c7a8b099dd0a438f9b824f629c6de716b678781a0f87203b7f889ec62ff46",
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.10649899998679757,
+      "parent_cpu_seconds": 0.109375,
+      "peak_tree_rss_bytes": 318410752,
+      "parent_read_bytes": 2228224,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 1407969937
+    }
+  ],
+  "pipeline_wall_seconds": 185.54631600010907,
+  "limitations": [
+    "parent CPU/I/O and fsync exclude workers",
+    "RSS sampled at 100 ms; child discovery 1 s",
+    "source-like shapes use generic JSONL adapter, not live schema certification",
+    "packing and loader are separately measured consumers of identical tokens",
+    "no network, dedup, production tokenizer, GPU training or official evaluation"
+  ]
+}

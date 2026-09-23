@@ -1,0 +1,771 @@
+{
+  "workers": 4,
+  "batch": 128,
+  "stages": [
+    {
+      "stage": "shard_tokenization",
+      "parent_fsync_calls": 0,
+      "wall_seconds": 36.70290760003263,
+      "parent_cpu_seconds": 1.109375,
+      "peak_tree_rss_bytes": 1196703744,
+      "parent_read_bytes": 40728,
+      "parent_write_bytes": 10725,
+      "artifact_bytes_after_stage": 556038482,
+      "sampled_peak_artifact_bytes": 556038482,
+      "tokens_per_second": 999327.1759201821,
+      "docs_per_second": 2666.600724568017,
+      "output_mib_per_second": 14.44789129503319
+    }
+  ],
+  "workers_detail": [
+    {
+      "init_seconds": 0.07851870002923533,
+      "wall_seconds": 31.043260400008876,
+      "cpu_seconds": 23.78125,
+      "manifests": [
+        [
+          0,
+          {
+            "shard_id": "shard-00000",
+            "source_id": "authored_mix",
+            "num_tokens": 825445,
+            "num_documents": 2204,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "8b5db4e7bdc2a0d9a1aba5fcdb75911473204676257def21a9c90f069afeecaf",
+            "offsets_checksum_sha256": "ed08392c24e2b61f6892bc13e822614fef729c860ef1ee0ce659683d1ea929ac",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          4,
+          {
+            "shard_id": "shard-00004",
+            "source_id": "authored_mix",
+            "num_tokens": 823467,
+            "num_documents": 2199,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "aa031b0717fbfcba1ba08931d2e220179c79d8c57d0a756a4fe9c78c066bd1eb",
+            "offsets_checksum_sha256": "fa344210df3cd3f171c333d1d4b43db77e82bef112c346a519079d25fe5f8c22",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          8,
+          {
+            "shard_id": "shard-00008",
+            "source_id": "authored_mix",
+            "num_tokens": 822684,
+            "num_documents": 2197,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "5bd4ba44a53bee48419d8d98c52fd73384d0bc4c6f5fd749d52202325ec8f6e4",
+            "offsets_checksum_sha256": "6b106f9f13e7fd113aeaa6920b54d2b59fdad04f7bae0a48617bce2bcfdfe8b6",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          12,
+          {
+            "shard_id": "shard-00012",
+            "source_id": "authored_mix",
+            "num_tokens": 823393,
+            "num_documents": 2197,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "018aa81cf2b220e79791f375b2930b72b909bc343984313520863175833c09cb",
+            "offsets_checksum_sha256": "578cddf6430579b08a7c94450c127608169b395deee475b1b42760973e22c2a3",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          16,
+          {
+            "shard_id": "shard-00016",
+            "source_id": "authored_mix",
+            "num_tokens": 823048,
+            "num_documents": 2197,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "5a211076d85267594735e61fd0716067bd2ac85cd2652b2612febbc3dfd66924",
+            "offsets_checksum_sha256": "4cd7c2efbd1edb800d49adfa3408f5f8a7bc23c0cb0268d599b95c13d9f2ae55",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          20,
+          {
+            "shard_id": "shard-00020",
+            "source_id": "authored_mix",
+            "num_tokens": 822791,
+            "num_documents": 2197,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "9268dc3162fa79441903a9dbee2d0e071065732e84fa183967ed770612bd1cfa",
+            "offsets_checksum_sha256": "07c533b8965aeae01b6ca348e82acd330fceacd1f28e930e567ceded510065c1",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          24,
+          {
+            "shard_id": "shard-00024",
+            "source_id": "authored_mix",
+            "num_tokens": 823334,
+            "num_documents": 2197,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "2515cdcca3101032d4df36d87d127f008333fa5bfe32d7d113a98ca711d40af8",
+            "offsets_checksum_sha256": "80455706a391d61da09077997aa3b4ccf88ed12ab07c0f8bec5366df568315fd",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          28,
+          {
+            "shard_id": "shard-00028",
+            "source_id": "authored_mix",
+            "num_tokens": 823708,
+            "num_documents": 2197,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "b80681d04c981a5daa4989913c9011d4bf246900a28d17b64d0afdafd6cc57ec",
+            "offsets_checksum_sha256": "0409ac2868ea146ccb34f362a0825fa711652a85fec785ac8a4844403987b24e",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          32,
+          {
+            "shard_id": "shard-00032",
+            "source_id": "authored_mix",
+            "num_tokens": 823427,
+            "num_documents": 2197,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "4c300e72725b1399904cc5932eea7dbd884e957e91dacffca32d2ece2aae6d61",
+            "offsets_checksum_sha256": "bf57c4f1d0cf2facd071506f6b3603ab84d152f954d856ce7e0d920862d157ac",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          36,
+          {
+            "shard_id": "shard-00036",
+            "source_id": "authored_mix",
+            "num_tokens": 822603,
+            "num_documents": 2197,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "6c5fbafbc78fd43563e0101f48863a0b0de003caea6965e40c134d0599d0d0f2",
+            "offsets_checksum_sha256": "5000031c089f82883c334b83830f2d17be546a125c4107184753ad9f0b51ea04",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          40,
+          {
+            "shard_id": "shard-00040",
+            "source_id": "authored_mix",
+            "num_tokens": 823745,
+            "num_documents": 2196,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "2b83df26222cd4c2996faae7cafb8cf8cc4965a729e95df40bdb0d3f5fd64f54",
+            "offsets_checksum_sha256": "25b9498cae1fe9bd24cd2585911bf6c6027303f14eefeb5c3efdbe1b60ed015f",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          44,
+          {
+            "shard_id": "shard-00044",
+            "source_id": "authored_mix",
+            "num_tokens": 447907,
+            "num_documents": 1195,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "dd29f1f4f77ef61b3e00d04e01483d3d6da78f46c5516cf98faf938ebebfea71",
+            "offsets_checksum_sha256": "38538de86827ec7aaa66cc93eaa2ab9ca95febe70995f15244947bbf84bee52e",
+            "byte_coverage_ratio": 1.0
+          }
+        ]
+      ]
+    },
+    {
+      "init_seconds": 0.07713109999895096,
+      "wall_seconds": 29.26907179999398,
+      "cpu_seconds": 22.578125,
+      "manifests": [
+        [
+          1,
+          {
+            "shard_id": "shard-00001",
+            "source_id": "authored_mix",
+            "num_tokens": 824888,
+            "num_documents": 2201,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "3e11d5962f3dc322d4c65c42f5d285eb90102975481d4b3963dc741b3ef58c61",
+            "offsets_checksum_sha256": "85fa9e56f2e1d437acaaa1c0247c2923ce61546e9ba11ec252a1d981157c17d9",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          5,
+          {
+            "shard_id": "shard-00005",
+            "source_id": "authored_mix",
+            "num_tokens": 823109,
+            "num_documents": 2196,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "a08014cbd564a3ae8406b6c30ed4c08885d4bb49eeaf694bd5c84165f22813e0",
+            "offsets_checksum_sha256": "ddcb599305c791c2498606279d3a1985e661dcd5e01ed652cdd657ba53f84d92",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          9,
+          {
+            "shard_id": "shard-00009",
+            "source_id": "authored_mix",
+            "num_tokens": 823868,
+            "num_documents": 2197,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "0374c69b75796d0c96b96438e534fb41c3acd64f41aaf5f5fb503d2fef115e85",
+            "offsets_checksum_sha256": "76fc631f350d6cbe1dd2c955263d1549cb0ec68d1e7c15adb63cb62236c121eb",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          13,
+          {
+            "shard_id": "shard-00013",
+            "source_id": "authored_mix",
+            "num_tokens": 822951,
+            "num_documents": 2197,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "8c4a0bc53566c2a980cc12898de53350ad13733dd0dc9ef7878d7bfe3b4ccee7",
+            "offsets_checksum_sha256": "ab3cfc9a1e3d08b246c94d4dd2ae13f4d8cfbe7d4967ebe2bb858abc6776f7e3",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          17,
+          {
+            "shard_id": "shard-00017",
+            "source_id": "authored_mix",
+            "num_tokens": 822728,
+            "num_documents": 2197,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "52bc1276eb49c0f8bfdc9d5cdd7c1ef8e4bec0733006e5c6bb03097bf3dc7990",
+            "offsets_checksum_sha256": "c490bbfb1ec6a4492e81a0127cac44c74bc670365fbb2aa6db4968e572a39ee3",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          21,
+          {
+            "shard_id": "shard-00021",
+            "source_id": "authored_mix",
+            "num_tokens": 823961,
+            "num_documents": 2197,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "28844db5ae680f45cf141815bd36cbe72509c8969516bdb6cd6a5698955a91de",
+            "offsets_checksum_sha256": "721310a2b1b45e9bfad75ff5bdb094a4fbde112503b2dcf88be6c460561da031",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          25,
+          {
+            "shard_id": "shard-00025",
+            "source_id": "authored_mix",
+            "num_tokens": 823063,
+            "num_documents": 2197,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "aefbb1fb743242bf3b1ba42a1f794c89cd36647ec9a0202eae3b3f846df51b46",
+            "offsets_checksum_sha256": "9256c6121eae0105e56364b341c8088ab28e198098e7780d50128aa6540ea728",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          29,
+          {
+            "shard_id": "shard-00029",
+            "source_id": "authored_mix",
+            "num_tokens": 822838,
+            "num_documents": 2196,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "77ef9f1c3f27a7935a32af1b5ea1208b7261513a38f78432562b7000d07e1f19",
+            "offsets_checksum_sha256": "d9ea9ca404e9be93d4252c3c42d0e0b8d9873ad25360439fd8a00105bfeae70e",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          33,
+          {
+            "shard_id": "shard-00033",
+            "source_id": "authored_mix",
+            "num_tokens": 823465,
+            "num_documents": 2196,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "3d388c70b9022bab87c2ed06141ae908f426e87947fcdb25ba8a4574179f1542",
+            "offsets_checksum_sha256": "35c4610636fa7c947157df3c8bbed6d0cdd407694d520c4d4be8fb01c4523c4e",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          37,
+          {
+            "shard_id": "shard-00037",
+            "source_id": "authored_mix",
+            "num_tokens": 823402,
+            "num_documents": 2196,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "4fc9ebf661b5dc5b451debe331a56e072a3e20c036249e352ec16c2ff6ac0768",
+            "offsets_checksum_sha256": "a895fe66e41f75a6b14e29465fb7bae9fbfb15d67d55df392f0055bcf4c3259a",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          41,
+          {
+            "shard_id": "shard-00041",
+            "source_id": "authored_mix",
+            "num_tokens": 822710,
+            "num_documents": 2197,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "ef13a318cd8bd35409e65095824c4374b0fd065e5afcd64582395423e98ae67a",
+            "offsets_checksum_sha256": "11e7cd5a8bdeb81eae1997d755c117b58842b43b76b316bdeff630ef0e6d286e",
+            "byte_coverage_ratio": 1.0
+          }
+        ]
+      ]
+    },
+    {
+      "init_seconds": 0.08158479997655377,
+      "wall_seconds": 30.028636200004257,
+      "cpu_seconds": 22.859375,
+      "manifests": [
+        [
+          2,
+          {
+            "shard_id": "shard-00002",
+            "source_id": "authored_mix",
+            "num_tokens": 824369,
+            "num_documents": 2201,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "bfae38353f527be052a15d68fd30052803d04e3994f342b69b70896d9ce83cc6",
+            "offsets_checksum_sha256": "2ca3cc11f2bbd1e237d8787e8f0e9447de00e70931c03239ddc9d786eff41eff",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          6,
+          {
+            "shard_id": "shard-00006",
+            "source_id": "authored_mix",
+            "num_tokens": 823759,
+            "num_documents": 2196,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "b1fbef3fd9c51ce748a4eeda58d36fd558380856cf9139980c243167e16d5c9f",
+            "offsets_checksum_sha256": "b9cefc11ec1d719c020a26f9c87ac1f0bbf6be817b339820104c7cd287fc4dfe",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          10,
+          {
+            "shard_id": "shard-00010",
+            "source_id": "authored_mix",
+            "num_tokens": 823781,
+            "num_documents": 2197,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "3498d75c616972302b6df103a6c610bac3710c30cfa77b059e288d6e103d33ab",
+            "offsets_checksum_sha256": "355601323478f57a79f57c501450c7fa85f181733df1ad18c4335fa0c17e3fdb",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          14,
+          {
+            "shard_id": "shard-00014",
+            "source_id": "authored_mix",
+            "num_tokens": 823314,
+            "num_documents": 2196,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "fd31a7c2f92ae3439b1d2ec605fdc8811d17e4a5d5446cbcb4d2bd27dfaef551",
+            "offsets_checksum_sha256": "17fd93f2f3b77ec04ef393618fdb9fff802a9425a40d67ea9a3241cde06f7785",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          18,
+          {
+            "shard_id": "shard-00018",
+            "source_id": "authored_mix",
+            "num_tokens": 823496,
+            "num_documents": 2196,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "2f2099f5f5b047ce653b7da72c0ba6a5e0ce96c714dbb29ecfd00f9d7cde81f1",
+            "offsets_checksum_sha256": "beac7ba574b135dc6de43196a435eef69f0983bcd3a9dcb7ae809693819bc6a4",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          22,
+          {
+            "shard_id": "shard-00022",
+            "source_id": "authored_mix",
+            "num_tokens": 823358,
+            "num_documents": 2197,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "59ec65469f3ed2796857a3a0db6938be07cf73e2f23d43b543a3168048b40799",
+            "offsets_checksum_sha256": "588ba5706eba2baaf1da550dae6e53d70713e42d035569c3a74b62191bfa6bbd",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          26,
+          {
+            "shard_id": "shard-00026",
+            "source_id": "authored_mix",
+            "num_tokens": 823248,
+            "num_documents": 2197,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "987ca401ad9412a163a921f359b55e2231ae9b17ffad56084c3f0e11d72f0314",
+            "offsets_checksum_sha256": "823fa95c5e8a6b99f3be15ee4540d21cfd7c32ec1a89dd2505173d57774f94a3",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          30,
+          {
+            "shard_id": "shard-00030",
+            "source_id": "authored_mix",
+            "num_tokens": 822448,
+            "num_documents": 2197,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "52c84b033af4ed66b3ac4657c50f15ce83025e5720691ee6cc57f9ec32942e3e",
+            "offsets_checksum_sha256": "5b3e4f15b4a97b41276c35687b7b0d6e8b017fc34fb84bcb3b8dd65b74ac9159",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          34,
+          {
+            "shard_id": "shard-00034",
+            "source_id": "authored_mix",
+            "num_tokens": 823495,
+            "num_documents": 2196,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "88d8d1b7935df57b24be636fc4dd7327dea35bb00e24e06cdb8fd5ed10db6e9c",
+            "offsets_checksum_sha256": "72e161826fd58ea25a575b26e0f8570ee453be71dedd3fdba2f73f2aabf2d070",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          38,
+          {
+            "shard_id": "shard-00038",
+            "source_id": "authored_mix",
+            "num_tokens": 823428,
+            "num_documents": 2196,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "52fbc03e2e53c6dac643bc4d73707ff827e626030d8007a1a5343930d31b94a4",
+            "offsets_checksum_sha256": "700d854c7b0f89ad363cc96b3c6051c55fccff2ffc7be10133d6b5476f6047f9",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          42,
+          {
+            "shard_id": "shard-00042",
+            "source_id": "authored_mix",
+            "num_tokens": 823552,
+            "num_documents": 2197,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "8ac037227cd27111a70d9a104e7344a3fecb5b8ab427e6da3b97501fafa147fe",
+            "offsets_checksum_sha256": "af98307bf59e0fa500735c7bb5835f85a44017ac6d6fd9fcb97554127b7d9f75",
+            "byte_coverage_ratio": 1.0
+          }
+        ]
+      ]
+    },
+    {
+      "init_seconds": 0.0828771999804303,
+      "wall_seconds": 30.503387000004295,
+      "cpu_seconds": 23.046875,
+      "manifests": [
+        [
+          3,
+          {
+            "shard_id": "shard-00003",
+            "source_id": "authored_mix",
+            "num_tokens": 825159,
+            "num_documents": 2201,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "08a13041c9a9c3213d1850a0e16b8a3ef81e95422607b281b24f49072d65e465",
+            "offsets_checksum_sha256": "43bcc3f77565ec57cbbc2826f7bdc60e3645bd7757c373731af0c59b27ef021c",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          7,
+          {
+            "shard_id": "shard-00007",
+            "source_id": "authored_mix",
+            "num_tokens": 823376,
+            "num_documents": 2197,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "c8a9b76beed7e4c36c2a81df2e39a078c13a54134c2d09622731389180830d55",
+            "offsets_checksum_sha256": "2191242ca6c476dde35011739d6d32d40a0647820efd292b3e0662ec070cfc34",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          11,
+          {
+            "shard_id": "shard-00011",
+            "source_id": "authored_mix",
+            "num_tokens": 822766,
+            "num_documents": 2197,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "219f8a9dc539fbf1421693c3c107481e27e52dcd997e50a5514ac53cff02bc52",
+            "offsets_checksum_sha256": "075680a36d781a3d7bd2754ccd379b75b23db82a7a1ae699b199565d7dd47b91",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          15,
+          {
+            "shard_id": "shard-00015",
+            "source_id": "authored_mix",
+            "num_tokens": 823017,
+            "num_documents": 2196,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "543da288991397adf0a951d058df292837e8f75c3fe2adb37888a890507addec",
+            "offsets_checksum_sha256": "51f793eeee363b3210af35561e75c439182d8b1f2218214d6930e345dd7c6c06",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          19,
+          {
+            "shard_id": "shard-00019",
+            "source_id": "authored_mix",
+            "num_tokens": 823578,
+            "num_documents": 2197,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "782523956fca8867e503c391a925c9659cdcb4c452e6ca2e4d84a0425e1d2998",
+            "offsets_checksum_sha256": "004594354fc438ba6421a8b7dd58c7b0d727def089532cf8dade7f0aa54352e2",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          23,
+          {
+            "shard_id": "shard-00023",
+            "source_id": "authored_mix",
+            "num_tokens": 823470,
+            "num_documents": 2197,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "817014121e9ac3b153991ff72957c355a5244f73693644243d31e74466ba4a1f",
+            "offsets_checksum_sha256": "9971447df0db6e41a41892bbf31fe9541a763f6710767ce39e35919985a38d5a",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          27,
+          {
+            "shard_id": "shard-00027",
+            "source_id": "authored_mix",
+            "num_tokens": 822824,
+            "num_documents": 2197,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "5b020e45f77ee2ee3741a13c90a9429739cc84969b4879497315a013a1fe7d8a",
+            "offsets_checksum_sha256": "7f3192c6276e990f7f9a72b8489d4acbfe651a8a73900adbf0729fdb9ae0aa15",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          31,
+          {
+            "shard_id": "shard-00031",
+            "source_id": "authored_mix",
+            "num_tokens": 823679,
+            "num_documents": 2197,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "6c23498bd10c1d18dc9325e4f2b74ed6b5e91ad759df553bbe147c02a88465a9",
+            "offsets_checksum_sha256": "14f6a3b84ef503e6f0b5006c63dc88da6c7769650fc69ced513cce5e3ed6b6f4",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          35,
+          {
+            "shard_id": "shard-00035",
+            "source_id": "authored_mix",
+            "num_tokens": 823200,
+            "num_documents": 2196,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "e1050079afd03f35468fdd10660cc9ac6efa80dd93cc89882c8c635b55317528",
+            "offsets_checksum_sha256": "784e055c13486ec67b574e2f18880f9f3a5e57cd5bc0f6cb38f0ea429db574a6",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          39,
+          {
+            "shard_id": "shard-00039",
+            "source_id": "authored_mix",
+            "num_tokens": 823354,
+            "num_documents": 2197,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "34c517bf101dd87a79bd9edf85fdf5b7917d27f967ad5a569c2f4af971c6c0b6",
+            "offsets_checksum_sha256": "7f2baf6150ff214ecfbf390ab0dad78a6d4dc9cc104ef3af48e3d505de15dc93",
+            "byte_coverage_ratio": 1.0
+          }
+        ],
+        [
+          43,
+          {
+            "shard_id": "shard-00043",
+            "source_id": "authored_mix",
+            "num_tokens": 823007,
+            "num_documents": 2197,
+            "token_dtype": "uint16",
+            "endianness": "little",
+            "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+            "pool_hash": "p02_local_pool",
+            "checksum_sha256": "244cabb64442b363623495eec0134eda5416d2cca045a1940fc111d8b61ba6bd",
+            "offsets_checksum_sha256": "98b323712970e5419b1ee5d3e7abc1e374be27da97537fa56bde9458950ca6d3",
+            "byte_coverage_ratio": 1.0
+          }
+        ]
+      ]
+    }
+  ],
+  "manifest_digest": "84cc7a241aba7bb387901cc2197d47ffbd4262f926964637b200255219931811"
+}

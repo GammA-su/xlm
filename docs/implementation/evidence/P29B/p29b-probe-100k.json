@@ -1,0 +1,161 @@
+{
+  "documents": 97872,
+  "tokens": 36482469,
+  "stages": [
+    {
+      "stage": "load_tokenizer",
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.06534589995862916,
+      "parent_cpu_seconds": 0.0625,
+      "peak_tree_rss_bytes": 226295808,
+      "parent_read_bytes": 2118386,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 0,
+      "sampled_peak_artifact_bytes": 0
+    },
+    {
+      "stage": "native_encode",
+      "parent_fsync_calls": 0,
+      "wall_seconds": 40.86347340000793,
+      "parent_cpu_seconds": 40.28125,
+      "peak_tree_rss_bytes": 712994816,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 0,
+      "sampled_peak_artifact_bytes": 0
+    },
+    {
+      "stage": "ids_only",
+      "parent_fsync_calls": 0,
+      "wall_seconds": 36.396396600001026,
+      "parent_cpu_seconds": 34.078125,
+      "peak_tree_rss_bytes": 713015296,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 0,
+      "sampled_peak_artifact_bytes": 0,
+      "tokens_per_second": 1002364.8604817921
+    },
+    {
+      "stage": "with_offsets",
+      "parent_fsync_calls": 0,
+      "wall_seconds": 48.359990899974946,
+      "parent_cpu_seconds": 47.625,
+      "peak_tree_rss_bytes": 713183232,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 0,
+      "sampled_peak_artifact_bytes": 0,
+      "tokens_per_second": 754393.6283085385
+    },
+    {
+      "stage": "native_batch_16",
+      "parent_fsync_calls": 0,
+      "wall_seconds": 35.97994920000201,
+      "parent_cpu_seconds": 35.34375,
+      "peak_tree_rss_bytes": 714801152,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 0,
+      "sampled_peak_artifact_bytes": 0,
+      "tokens_per_second": 1013966.6622986216
+    },
+    {
+      "stage": "native_batch_64",
+      "parent_fsync_calls": 0,
+      "wall_seconds": 36.65056810004171,
+      "parent_cpu_seconds": 36.0,
+      "peak_tree_rss_bytes": 719187968,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 0,
+      "sampled_peak_artifact_bytes": 0,
+      "tokens_per_second": 995413.4653634054
+    },
+    {
+      "stage": "native_batch_128",
+      "parent_fsync_calls": 0,
+      "wall_seconds": 36.0410591000109,
+      "parent_cpu_seconds": 33.78125,
+      "peak_tree_rss_bytes": 726732800,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 0,
+      "sampled_peak_artifact_bytes": 0,
+      "tokens_per_second": 1012247.4175568544
+    },
+    {
+      "stage": "native_batch_512",
+      "parent_fsync_calls": 0,
+      "wall_seconds": 44.30503669998143,
+      "parent_cpu_seconds": 42.734375,
+      "peak_tree_rss_bytes": 760135680,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 0,
+      "sampled_peak_artifact_bytes": 0,
+      "tokens_per_second": 823438.410559206
+    },
+    {
+      "stage": "binary_block_4096",
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.12886080000316724,
+      "parent_cpu_seconds": 0.140625,
+      "peak_tree_rss_bytes": 744468480,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 0,
+      "sampled_peak_artifact_bytes": 0,
+      "sha256": "79f0808785faa2be16ba7c485fe171f9753adf0b2cd237431149313693ffd8e9"
+    },
+    {
+      "stage": "binary_block_16384",
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.124695900012739,
+      "parent_cpu_seconds": 0.125,
+      "peak_tree_rss_bytes": 744497152,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 0,
+      "sampled_peak_artifact_bytes": 0,
+      "sha256": "79f0808785faa2be16ba7c485fe171f9753adf0b2cd237431149313693ffd8e9"
+    },
+    {
+      "stage": "binary_block_65536",
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.12401019997196272,
+      "parent_cpu_seconds": 0.09375,
+      "peak_tree_rss_bytes": 745037824,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 0,
+      "sampled_peak_artifact_bytes": 0,
+      "sha256": "79f0808785faa2be16ba7c485fe171f9753adf0b2cd237431149313693ffd8e9"
+    },
+    {
+      "stage": "binary_block_262144",
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.14319229999091476,
+      "parent_cpu_seconds": 0.140625,
+      "peak_tree_rss_bytes": 746954752,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 0,
+      "sampled_peak_artifact_bytes": 0,
+      "sha256": "79f0808785faa2be16ba7c485fe171f9753adf0b2cd237431149313693ffd8e9"
+    },
+    {
+      "stage": "writer_profile",
+      "parent_fsync_calls": 4,
+      "wall_seconds": 115.0342251000111,
+      "parent_cpu_seconds": 109.328125,
+      "peak_tree_rss_bytes": 747503616,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 556460278,
+      "artifact_bytes_after_stage": 556460278,
+      "sampled_peak_artifact_bytes": 556460278
+    }
+  ],
+  "tokenizers_parallelism": "false",
+  "rayon_num_threads": null
+}

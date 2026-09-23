@@ -1,0 +1,43 @@
+9e09094 fix(tokens): fsync staged shards and publish immutable manifests last
+
+src/xlm/data/tokens.py
+tests/test_token_publication.py
+00bc9b4 perf(pool): stream tokenizer fit text and retain selection metadata
+
+src/xlm/cli/tokenizer_cmd.py
+src/xlm/data/pools/tokenizer_fit.py
+src/xlm/tokenizers/bpe.py
+tests/test_tokenizer_fit_stream.py
+66e8ce3 perf(tokenize): add byte-bounded native batches with exact offsets
+
+src/xlm/data/tokens.py
+src/xlm/tokenizers/base.py
+src/xlm/tokenizers/bpe.py
+tests/test_performance_tokenization.py
+tests/test_token_batches.py
+24d610d perf(tokenize): process whole shards with bounded deterministic assembly
+
+src/xlm/data/parallel_tokens.py
+tests/test_parallel_tokens.py
+363b654 perf(loader): add bounded verified mmap cache with explicit lifetime
+
+src/xlm/data/sampling/stream.py
+src/xlm/data/token_cache.py
+tests/test_token_map_cache.py
+0ca4e05 perf(loader): preserve trace hashes while reducing per-target indexing
+
+src/xlm/data/sampling/stream.py
+src/xlm/data/sampling/trace.py
+tests/test_sampling_trace.py
+26e381a perf(pack): use sparse native structural-token lookup
+
+src/xlm/data/sampling/packing.py
+tests/test_packing_lookup.py
+060f3d9 perf(bench): measure production-vocabulary token and loader paths offline
+
+scripts/benchmark_h2d.py
+scripts/benchmark_loader_cache.py
+scripts/benchmark_packing_path.py
+scripts/benchmark_pipeline.py
+scripts/benchmark_token_oracles.py
+scripts/benchmark_token_path.py

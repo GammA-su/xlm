@@ -1,0 +1,59 @@
+{
+  "baseline": "44c19b85ba2c1f0b8bd4502af875d98aed460347",
+  "span_timings": [
+    [
+      {
+        "mode": "before",
+        "seconds": 5.273443699115887,
+        "digest": "800fb2b6279565df357c6886cb8445a0a0a94ffa6320aa590ebbe1653636b98c"
+      },
+      {
+        "mode": "after",
+        "seconds": 5.419833598367404,
+        "digest": "800fb2b6279565df357c6886cb8445a0a0a94ffa6320aa590ebbe1653636b98c"
+      }
+    ],
+    [
+      {
+        "mode": "after",
+        "seconds": 5.369300202175509,
+        "digest": "800fb2b6279565df357c6886cb8445a0a0a94ffa6320aa590ebbe1653636b98c"
+      },
+      {
+        "mode": "before",
+        "seconds": 5.4867769991979,
+        "digest": "800fb2b6279565df357c6886cb8445a0a0a94ffa6320aa590ebbe1653636b98c"
+      }
+    ]
+  ],
+  "fit_json_and_fingerprint_exact": true,
+  "fit_manifest_exact": true,
+  "fit_selection_memory": [
+    {
+      "mode": "before",
+      "wall_seconds": 0.4033340000314638,
+      "python_peak_bytes": 33644906
+    },
+    {
+      "mode": "after",
+      "wall_seconds": 0.32524320000084117,
+      "python_peak_bytes": 3161986
+    }
+  ],
+  "fit_preparation_memory": [
+    {
+      "mode": "list",
+      "wall_seconds": 0.38026710000121966,
+      "python_peak_bytes": 24411089,
+      "text_digest": "9d68a7c7b100e742e437e9cf8031ae26853b1d8aededf679cb3bd1ac04456715"
+    },
+    {
+      "mode": "spool",
+      "wall_seconds": 0.6383203000295907,
+      "python_peak_bytes": 27256,
+      "text_digest": "9d68a7c7b100e742e437e9cf8031ae26853b1d8aededf679cb3bd1ac04456715"
+    }
+  ],
+  "fixture_documents": 10000,
+  "memory_kind": "tracemalloc Python heap; native trainer excluded"
+}

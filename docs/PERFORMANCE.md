@@ -1,5 +1,54 @@
 # Offline performance measurements
 
+P29B extends this workflow to the frozen 32,768-entry vocabulary regime. See
+[P29B results](implementation/reports/P29B.md) for exactness, worker scaling,
+memory costs and the limits of these authored fixtures. No production tokenizer
+or research model is fitted by these examples.
+
+With the environment variables below set, the next bounded command sequence is:
+
+```powershell
+uv run --offline --locked --no-sync python scripts/benchmark_token_path.py prepare --output artifacts/perf/my-32k-fixture
+uv run --offline --locked --no-sync python scripts/benchmark_pipeline.py --output artifacts/perf/my-32k-10k --documents 10000 --tokenizer artifacts/perf/my-32k-fixture/tokenizer
+```
+
+Use `--reference-p29` with a separate fresh pipeline output directory for a
+comparison against pinned commit `44c19b8`. For a bounded 100k experiment, add
+`--token-workers 8`; worker preparation and final canonical assembly are included
+in stage time. This raises the pipeline's disk allowance to 3 GiB including
+scratch (RSS remains 3 GiB), with transient disk sampling during parallel stages.
+The ordinary pipeline remains capped at 2 GiB. Keep enough free storage for each
+retained run; caps are per run, not an aggregate retention quota.
+
+The explicit product path consumes a verified P27A shard directory containing
+one source and the already selected split. It does not perform split selection:
+
+```powershell
+uv run --offline --locked --no-sync python -m xlm.data.parallel_tokens --input artifacts/perf/p29b-sharded --tokenizer artifacts/perf/p29b-fixture/tokenizer --output artifacts/perf/my-token-shard --source-id authored_mix --shard-id fixture --pool-hash p02_local_pool --workers 8 --max-documents 100000 --max-input-bytes 268435456 --max-output-bytes 2147483648 --max-record-bytes 8388608 --max-seconds 900 --max-rss-bytes 3221225472
+```
+
+These names refer to authored diagnostics, not an approved training corpus.
+Outputs are immutable; use a fresh destination after an interrupted publication.
+`--batch-size 128` enables bounded native batches. To measure the lower-memory
+one-process alternative, explicitly set `TOKENIZERS_PARALLELISM=true` and
+`RAYON_NUM_THREADS=8`, then use `--workers 1 --batch-size 128`. Avoid multiplying
+large process and native thread counts; the product changes no global settings.
+Restore `TOKENIZERS_PARALLELISM=false` for the normal fixture comparisons.
+
+For the loader, `MixtureBatcher(..., max_open_shards=8)` opts into verified persistent
+maps. Use it as a context manager or call `close()`; maps also close on eviction.
+The default is zero (ordinary reads), which was competitive in this environment.
+
+```powershell
+uv run --offline --locked --no-sync python scripts/benchmark_loader_cache.py --shard artifacts/perf/my-token-shard --output artifacts/perf/my-loader.json --mixture-steps 50
+uv run --offline --locked --no-sync python scripts/benchmark_h2d.py --mib 8 --iterations 100
+```
+
+The H2D command requires an already installed functional CUDA build and reports
+exit 77 / NOT RUN otherwise. It measures synthetic copies only, never training or
+compute overlap. It installs nothing. Existing CPU/CUDA installation policy still
+applies; these results do not authorize a persistent GPU job.
+
 P29's [report](implementation/reports/P29.md) maps the pipeline, records measured
 limits, and separates authored fixtures from production evidence. No production
 admission, network access, or training authorization follows from these results.

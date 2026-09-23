@@ -1,5 +1,19 @@
 # Implementation status
 
+> **P29B token-path performance (2026-09-23): IMPLEMENTED / VERIFIED (bounded offline)**
+> on `perf/astra-global-throughput`, parent `44c19b8`. Frozen 32,768-entry authored
+> tokenizer; matched 100k pipeline 192.142 -> 158.430 s (17.5% less time), token
+> stage 83.222 -> 51.950 s including assembly. Peak process-tree RSS rises from
+> 369 MiB to 2.09 GiB with eight workers. Matched 10k is flat (20.250 -> 20.328 s).
+> Adds bounded shard workers/native batches, exact packing/loader improvements,
+> optional verified mmap cache, streaming fit preparation and fsynced manifest-last
+> token publication. Focused offline tests and scoped Ruff/mypy passed. Cleaning
+> is now the largest measured stage. No P28 edits, network, installs or training.
+> Full acceptance, live compatibility and CUDA measurements NOT RUN; Windows
+> directory/checkpoint power-loss durability remains unproven. Production
+> acceptance remains BLOCKED. See [reports/P29B.md](reports/P29B.md), its exactness
+> evidence and [operator commands](../PERFORMANCE.md).
+
 > **P29 global throughput (2026-09-23): IMPLEMENTED / VERIFIED (bounded offline)**
 > on `perf/astra-global-throughput`, parent `2a82dfd`. Exact ASCII counting,
 > BPE byte-length reuse / IDs-only encoding, bounded token writes, and streaming

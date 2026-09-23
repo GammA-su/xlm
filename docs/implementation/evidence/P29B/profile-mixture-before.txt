@@ -1,0 +1,122 @@
+Wed Sep 23 17:36:46 2026    artifacts\perf\p29b-mixture-before-profile.pstats
+
+         35061397 function calls (28294491 primitive calls) in 18.134 seconds
+
+   Ordered by: internal time
+   List reduced from 1445 to 65 due to restriction <65>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+6881282/327682    6.700    0.000    8.890    0.000 manifest.py:132(check)
+   327726    1.885    0.000    1.885    0.000 encoder.py:205(iterencode)
+15133742/15133718    1.766    0.000    1.771    0.000 {built-in method builtins.isinstance}
+       40    0.684    0.017   16.614    0.415 stream.py:315(next_step_microbatches)
+     4692    0.587    0.000    0.587    0.000 decoder.py:344(raw_decode)
+4942870/4942760    0.537    0.000    0.537    0.000 {built-in method builtins.len}
+   327726    0.525    0.000    3.113    0.000 __init__.py:183(dumps)
+   327682    0.499    0.000   12.279    0.000 manifest.py:127(canonical_json)
+      680    0.443    0.001    0.656    0.001 stream.py:284(_pack_window)
+   327726    0.404    0.000    2.470    0.000 encoder.py:183(encode)
+   348840    0.395    0.000    1.320    0.000 stream.py:197(_document_at)
+     2445    0.358    0.000    0.358    0.000 {method 'update' of '_hashlib.HASH' objects}
+   327682    0.341    0.000   13.293    0.000 manifest.py:160(identity_digest)
+   327689    0.337    0.000    0.337    0.000 {method 'hexdigest' of '_hashlib.HASH' objects}
+   327686    0.336    0.000    0.336    0.000 {built-in method _hashlib.openssl_sha256}
+  1776025    0.264    0.000    0.264    0.000 {method 'get' of 'dict' objects}
+185906/46    0.189    0.000    0.377    0.008 copy.py:118(deepcopy)
+     2406    0.130    0.000    0.130    0.000 {method 'readinto' of '_io.BufferedReader' objects}
+      680    0.126    0.000    1.612    0.002 stream.py:235(_next_window)
+   669320    0.122    0.000    0.122    0.000 {method 'items' of 'dict' objects}
+   327724    0.117    0.000    0.117    0.000 encoder.py:105(__init__)
+     1333    0.105    0.000    0.153    0.000 {built-in method _io.open}
+   328360    0.087    0.000    0.145    0.000 stream.py:425(<genexpr>)
+   327730    0.082    0.000    0.082    0.000 {method 'encode' of 'str' objects}
+       40    0.069    0.002    0.072    0.002 stream.py:449(_to_microbatches)
+   330838    0.067    0.000    0.067    0.000 {method 'join' of 'str' objects}
+     1343    0.067    0.000    0.069    0.000 {built-in method nt.stat}
+   418684    0.063    0.000    0.063    0.000 {method 'append' of 'list' objects}
+   329188    0.059    0.000    0.061    0.000 {built-in method builtins.max}
+ 11104/44    0.052    0.000    0.377    0.009 copy.py:217(_deepcopy_dict)
+     4688    0.048    0.000    0.048    0.000 {method 'readline' of '_io.BufferedReader' objects}
+      680    0.046    0.000    0.051    0.000 packing.py:116(pack)
+4339/3659    0.046    0.000    0.234    0.000 {built-in method builtins.sum}
+        1    0.044    0.044   18.137   18.137 benchmark_loader_cache.py:93(mixture_run)
+     1361    0.030    0.000    0.030    0.000 {method '__exit__' of '_io._IOBase' objects}
+      847    0.028    0.000    0.028    0.000 {built-in method builtins.compile}
+   230073    0.026    0.000    0.026    0.000 {built-in method builtins.id}
+    352/2    0.025    0.000    0.248    0.124 {built-in method builtins.exec}
+     1556    0.021    0.000    0.021    0.000 stream.py:382(<genexpr>)
+ 10796/44    0.020    0.000    0.371    0.008 copy.py:191(_deepcopy_list)
+       73    0.014    0.000    0.014    0.000 {built-in method _io.open_code}
+     1608    0.014    0.000    0.014    0.000 stream.py:387(<genexpr>)
+   164006    0.014    0.000    0.014    0.000 copy.py:172(_deepcopy_atomic)
+      682    0.013    0.000    0.013    0.000 {built-in method _struct.unpack_from}
+      682    0.011    0.000    0.078    0.000 tokens.py:349(mmap_tokens)
+    21900    0.010    0.000    0.016    0.000 copy.py:231(_keep_alive)
+     4692    0.010    0.000    0.607    0.000 decoder.py:333(decode)
+     4692    0.010    0.000    0.637    0.000 __init__.py:299(loads)
+      341    0.010    0.000    0.010    0.000 {method '__exit__' of 'mmap.mmap' objects}
+    21160    0.009    0.000    0.009    0.000 stream.py:392(<genexpr>)
+    10008    0.008    0.000    0.008    0.000 {method 'match' of 're.Pattern' objects}
+     4688    0.007    0.000    0.013    0.000 __init__.py:244(detect_encoding)
+     5353    0.007    0.000    0.011    0.000 <frozen ntpath>:180(splitroot)
+     1334    0.007    0.000    0.015    0.000 pathlib.py:387(_parse_path)
+     2365    0.006    0.000    0.047    0.000 pathlib.py:437(__str__)
+       55    0.006    0.000    0.006    0.000 {built-in method marshal.loads}
+      341    0.006    0.000    0.550    0.002 token_cache.py:74(read)
+     4690    0.005    0.000    0.005    0.000 {method 'decode' of 'bytes' objects}
+     1339    0.005    0.000    0.012    0.000 <frozen ntpath>:108(join)
+    14066    0.005    0.000    0.005    0.000 {method 'startswith' of 'bytes' objects}
+    16992    0.004    0.000    0.005    0.000 {built-in method builtins.getattr}
+     1333    0.004    0.000    0.006    0.000 pathlib.py:358(__init__)
+      341    0.004    0.000    0.093    0.000 tokens.py:369(read_tokens_mmap)
+     1334    0.004    0.000    0.031    0.000 pathlib.py:407(_load_parts)
+       64    0.004    0.000    0.004    0.000 {method 'read' of '_io.BufferedReader' objects}
+
+
+Wed Sep 23 17:36:46 2026    artifacts\perf\p29b-mixture-before-profile.pstats
+
+         35061397 function calls (28294491 primitive calls) in 18.134 seconds
+
+   Ordered by: internal time
+   List reduced from 1445 to 39 due to restriction <'fsync|manifest|write|hash|encode|language|repet|pii'>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+6881282/327682    6.700    0.000    8.890    0.000 manifest.py:132(check)
+   327726    1.885    0.000    1.885    0.000 encoder.py:205(iterencode)
+   327682    0.499    0.000   12.279    0.000 manifest.py:127(canonical_json)
+   327726    0.404    0.000    2.470    0.000 encoder.py:183(encode)
+     2445    0.358    0.000    0.358    0.000 {method 'update' of '_hashlib.HASH' objects}
+   327682    0.341    0.000   13.293    0.000 manifest.py:160(identity_digest)
+   327689    0.337    0.000    0.337    0.000 {method 'hexdigest' of '_hashlib.HASH' objects}
+   327686    0.336    0.000    0.336    0.000 {built-in method _hashlib.openssl_sha256}
+   327724    0.117    0.000    0.117    0.000 encoder.py:105(__init__)
+   327730    0.082    0.000    0.082    0.000 {method 'encode' of 'str' objects}
+        3    0.003    0.001    0.477    0.159 hashlib.py:195(file_digest)
+      342    0.000    0.000    0.000    0.000 pathlib.py:524(__hash__)
+  190/148    0.000    0.000    0.000    0.000 {built-in method builtins.hash}
+      262    0.000    0.000    0.000    0.000 _generate_schema.py:303(_add_custom_serialization_from_json_encoders)
+       23    0.000    0.000    0.002    0.000 dataclasses.py:675(_hash_fn)
+       23    0.000    0.000    0.002    0.000 dataclasses.py:882(_hash_add)
+       32    0.000    0.000    0.000    0.000 <frozen os>:783(encodekey)
+        1    0.000    0.000    0.000    0.000 manifest.py:171(ArtifactManifest)
+       16    0.000    0.000    0.000    0.000 typing.py:1600(__hash__)
+    57/46    0.000    0.000    0.000    0.000 typing.py:1285(__hash__)
+       51    0.000    0.000    0.000    0.000 typing_extensions.py:853(__hash__)
+       36    0.000    0.000    0.000    0.000 _typing_extra.py:69(is_hashable)
+        2    0.000    0.000    0.000    0.000 typing.py:1640(__hash__)
+        1    0.000    0.000    0.007    0.007 manifest.py:1(<module>)
+        3    0.000    0.000    0.000    0.000 {built-in method _hashlib.new}
+       28    0.000    0.000    0.000    0.000 <string>:2(__hash__)
+        1    0.000    0.000    0.000    0.000 manifest.py:164(ArtifactFile)
+       23    0.000    0.000    0.000    0.000 typing.py:2055(__hash__)
+        3    0.000    0.000    0.000    0.000 hashlib.py:152(__hash_new)
+       12    0.000    0.000    0.000    0.000 typing.py:971(__hash__)
+       28    0.000    0.000    0.000    0.000 dataclasses.py:879(_hash_set_none)
+        2    0.000    0.000    0.000    0.000 inspect.py:2290(RewriteSymbolics)
+        5    0.000    0.000    0.000    0.000 types.py:138(__hash__)
+        7    0.000    0.000    0.000    0.000 types.py:1179(__hash__)
+        4    0.000    0.000    0.000    0.000 types.py:1340(__hash__)
+        2    0.000    0.000    0.000    0.000 enum.py:1266(__hash__)
+        2    0.000    0.000    0.000    0.000 types.py:2572(__hash__)
+        2    0.000    0.000    0.000    0.000 types.py:2671(__hash__)
+        1    0.000    0.000    0.000    0.000 types.py:406(__hash__)

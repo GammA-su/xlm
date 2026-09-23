@@ -1,0 +1,45 @@
+{
+  "stages": [
+    {
+      "stage": "tokenizer_load",
+      "measurement_workers": 1,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.07099979999475181,
+      "parent_cpu_seconds": 0.0625,
+      "peak_tree_rss_bytes": 225873920,
+      "parent_read_bytes": 2118386,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 0,
+      "sampled_peak_artifact_bytes": 0
+    },
+    {
+      "stage": "tokenization_shards",
+      "measurement_workers": 1,
+      "manifest": {
+        "shard_id": "fixture",
+        "source_id": "authored_mix",
+        "num_tokens": 36678213,
+        "num_documents": 97872,
+        "token_dtype": "uint16",
+        "endianness": "little",
+        "tokenizer_hash": "766a6b19a6c48e662ab78ba883e3fd939cefd6c969584f563fa5a4054f86453d",
+        "pool_hash": "p02_local_pool",
+        "checksum_sha256": "5ca3e133ca24dab4158b31484e1e700065fe73c482bb4c31a3781c62764fe610",
+        "offsets_checksum_sha256": "b6b838bb82cf468ab240ff7a3cf09b544113d12a5f81409c4dae5bb28e5c328d",
+        "byte_coverage_ratio": 1.0
+      },
+      "parent_fsync_calls": 4,
+      "wall_seconds": 50.714571900025476,
+      "parent_cpu_seconds": 91.515625,
+      "peak_tree_rss_bytes": 261054464,
+      "parent_read_bytes": 186880544,
+      "parent_write_bytes": 556460288,
+      "artifact_bytes_after_stage": 556460288,
+      "sampled_peak_artifact_bytes": 556460288,
+      "tokens_per_second": 723228.2877651892
+    }
+  ],
+  "batch_size": 128,
+  "tokenizers_parallelism": "true",
+  "rayon_num_threads": "8"
+}

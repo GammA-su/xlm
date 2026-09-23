@@ -1,0 +1,8 @@
+{
+    "ruff_format_exit":  0,
+    "python_files":  24,
+    "ruff_check_exit":  0,
+    "diff_check_exit":  0,
+    "scoped_mypy_exit":  0,
+    "typed_files":  16
+}
