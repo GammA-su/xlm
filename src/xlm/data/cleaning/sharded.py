@@ -32,6 +32,7 @@ from __future__ import annotations
 
 import concurrent.futures
 import hashlib
+import itertools
 import json
 import os
 import shutil
@@ -321,9 +322,9 @@ def clean_unit_worker(spec: dict[str, Any]) -> dict[str, Any]:
     return {"pipeline_hash": hashes, "units": unit_results}
 
 
-_WORKER_STATE: tuple[
-    tuple[str, tuple[tuple[str, Any], ...]], CleaningPipeline, QuarantinePolicy
-] | None = None
+_WORKER_STATE: (
+    tuple[tuple[str, tuple[tuple[str, Any], ...]], CleaningPipeline, QuarantinePolicy] | None
+) = None
 
 
 def _init_worker(preset: str, quarantine_policy: dict[str, Any]) -> None:
@@ -868,12 +869,15 @@ def run_sharded_clean(
     max_docs: int | None,
     max_input_bytes: int,
     progress_echo: Any = None,
+    scheduling: str = "static",
 ) -> tuple[
     PipelineExecutionSummary, UnitTiming, AssembledClean, dict[str, Any], ShardManifest | None
 ]:
     """Execute deterministic sharded cleaning; publish nothing on failure."""
     if workers < 1:
         raise ValueError(f"workers must be positive, got {workers}")
+    if scheduling not in ("static", "dynamic"):
+        raise ValueError("scheduling must be static or dynamic")
     wall_start = time.monotonic()
     output_dir.mkdir(parents=True, exist_ok=True)
     quarantine_dir.mkdir(parents=True, exist_ok=True)
@@ -926,34 +930,48 @@ def run_sharded_clean(
             pipeline_hash = result["pipeline_hash"]
             unit_results = result["units"]
         else:
-            # Static round-robin chunks: one future per worker keeps task
-            # overhead minimal, and 1 MiB-scale units already balance mixed
-            # workloads evenly (measured: finer tasks cost more in
-            # pickling/scheduling than dynamic balance repays).
-            chunks = [units[i::workers] for i in range(workers)]
-            chunks = [chunk for chunk in chunks if chunk]
+            # Static remains the default. Dynamic whole-unit dispatch is explicit,
+            # with at most two tasks per worker pending and ordered assembly below.
+            chunks = iter(
+                [units[i::workers] for i in range(min(workers, len(units)))]
+                if scheduling == "static"
+                else ([unit] for unit in units)
+            )
             with concurrent.futures.ProcessPoolExecutor(
                 max_workers=workers,
                 initializer=_init_worker,
                 initargs=(preset, policy_payload),
             ) as pool:
-                future_map = {
-                    pool.submit(clean_unit_worker, worker_spec(chunk)): chunk for chunk in chunks
+                pending_futures = {
+                    pool.submit(clean_unit_worker, worker_spec(chunk))
+                    for chunk in itertools.islice(chunks, 2 * workers)
                 }
                 try:
-                    for future in future_map:
-                        result = future.result()
-                        if pipeline_hash and result["pipeline_hash"] != pipeline_hash:
-                            raise ValueError(
-                                "worker pipeline hash mismatch; refusing to assemble"
-                            )
-                        pipeline_hash = result["pipeline_hash"]
-                        unit_results.extend(result["units"])
+                    while pending_futures:
+                        done, _ = concurrent.futures.wait(
+                            pending_futures, return_when=concurrent.futures.FIRST_COMPLETED
+                        )
+                        for future in done:
+                            pending_futures.remove(future)
+                            result = future.result()
+                            if pipeline_hash and result["pipeline_hash"] != pipeline_hash:
+                                raise ValueError(
+                                    "worker pipeline hash mismatch; refusing to assemble"
+                                )
+                            pipeline_hash = result["pipeline_hash"]
+                            unit_results.extend(result["units"])
+                            chunk = next(chunks, None)
+                            if chunk is not None:
+                                pending_futures.add(
+                                    pool.submit(clean_unit_worker, worker_spec(chunk))
+                                )
                 except BaseException:
-                    for future in future_map:
+                    for future in pending_futures:
                         future.cancel()
                     raise
         unit_results.sort(key=lambda item: item["index"])
+        if [r["index"] for r in unit_results] != sorted(u.index for u in units):
+            raise ValueError("missing or duplicate cleaning units; refusing to assemble")
 
         reference_pipeline = create_pipeline_preset(preset)
         if reference_pipeline.compute_pipeline_hash() != pipeline_hash:
