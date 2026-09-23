@@ -220,7 +220,7 @@ def test_partitioned_index_is_disk_backed_and_stable(tmp_path: Path) -> None:
         for i in range(200):
             index.add(f"key_{i % 20}", f"doc_{i}")
 
-    files = sorted((tmp_path / "idx").glob("part_*.jsonl"))
+    files = sorted((tmp_path / "idx").glob("part_*.bin"))
     assert files, "index wrote nothing to disk"
     assert sum(index.partition_sizes()) > 0
     assert index.entries_written == 200

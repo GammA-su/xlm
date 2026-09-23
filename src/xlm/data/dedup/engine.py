@@ -163,10 +163,14 @@ class DeduplicationEngine:
 
                 # Exact duplicates are matched on the normalized match view, so that
                 # two documents differing only in punctuation or case still collide.
-                exact_index.add(compute_sha256(match_normalize(doc.text)), doc.doc_id)
+                # The view is computed once and shared: exact hashing and the
+                # MinHash shingles below consume the same normalized string
+                # (P28-C; clean_hash is a different identity and is NOT reused).
+                match_view = match_normalize(doc.text)
+                exact_index.add(compute_sha256(match_view), doc.doc_id)
 
                 if self.config.enable_near_duplicates:
-                    signature = self.hasher.signature(doc.text)
+                    signature = self.hasher.signature_from_view(match_view)
                     sig_handle.write(json.dumps({"doc_id": doc.doc_id, "sig": signature}) + "\n")
                     for band_key in self.hasher.band_keys(signature):
                         band_index.add(band_key, doc.doc_id)

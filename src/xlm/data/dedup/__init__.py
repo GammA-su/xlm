@@ -30,7 +30,14 @@ from xlm.data.dedup.minhash import (
     MinHasher,
     estimated_jaccard,
     shingles,
+    shingles_from_tokens,
     stable_hash64,
+)
+from xlm.data.dedup.sharded import (
+    AssembledDedup,
+    ShardedDedupTelemetry,
+    dedup_unit_worker,
+    run_sharded_dedup,
 )
 
 __all__ = [
@@ -40,6 +47,7 @@ __all__ = [
     "MATCH_VIEW_VERSION",
     "MINHASH_ALGORITHM_VERSION",
     "SURVIVOR_RULE_VERSION",
+    "AssembledDedup",
     "DedupConfig",
     "DedupResult",
     "DedupStats",
@@ -49,10 +57,12 @@ __all__ = [
     "MinHashConfig",
     "MinHasher",
     "PartitionedKeyIndex",
+    "ShardedDedupTelemetry",
     "UnionFind",
     "build_clusters",
     "canonical_url",
     "compute_cluster_id",
+    "dedup_unit_worker",
     "detect_hash_collision_risk",
     "estimated_jaccard",
     "iter_surviving_documents",
@@ -60,7 +70,9 @@ __all__ = [
     "match_normalize",
     "match_tokens",
     "partition_for",
+    "run_sharded_dedup",
     "select_survivor",
     "shingles",
+    "shingles_from_tokens",
     "stable_hash64",
 ]

@@ -1,5 +1,20 @@
 # Implementation status
 
+> **P28 exact/lexical dedup + FAISS semantic lane (2026-09-23): IMPLEMENTED /
+> VERIFIED (bounded offline)** on `perf/p28-dedup-faiss` (parent `2a82dfd`).
+> Exact uint64 vectorized MinHash (5×, fuzz-proven, NumPy-gated), shared
+> match view, binary index framing, sharded spawn-worker engine with ordered
+> assembly (5× at 8 workers: 10k 66→326/s locked, 313→962/s with kernel;
+> 100k 65→338/s locked, 462→1185/s kernel), deterministic sharded survivor
+> output, full telemetry. Semantic lane OFF by default: embedding artifact
+> contract, test providers, python/numpy/faiss-cpu/faiss-gpu backends with
+> capability detection (FAISS absent here — RTX 4090 present but
+> undrivable), candidate sidecar + threshold analysis; 10k/100k×384 and
+> 1M×384 vector benchmarks measured. 31 new tests + 223 focused
+> regressions passed; ruff/mypy clean. Full suite NOT RUN (final gate
+> only). See [reports/P28.md](reports/P28.md). Overall production
+> acceptance remains BLOCKED; main is unchanged.
+
 > **P27B cleaning throughput (2026-09-23): IMPLEMENTED / VERIFIED (bounded
 > offline)** on `perf/p27b-cleaning-throughput` (parent `34122ad`).
 > Exact micro-optimizations (shared lazy text features, fused char scans,

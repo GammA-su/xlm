@@ -59,12 +59,11 @@ from xlm.data.cleaning import (
 )
 from xlm.data.dedup import (
     DedupConfig,
-    DeduplicationEngine,
     DedupResult,
     DedupStats,
     DuplicateCluster,
     MinHashConfig,
-    iter_surviving_documents,
+    run_sharded_dedup,
 )
 from xlm.data.normalization import compute_sha256
 from xlm.data.pools import (
@@ -2721,10 +2720,58 @@ def dedup_cmd(
         bool,
         typer.Option("--near/--exact-only", help="Enable the near-duplicate pass."),
     ] = True,
+    workers: Annotated[
+        int,
+        typer.Option(
+            "--workers",
+            help="Dedup worker processes for signature generation "
+            "(results are identical for any count).",
+        ),
+    ] = 4,
+    input_shard_bytes: Annotated[
+        int,
+        typer.Option(
+            "--input-shard-bytes",
+            help="Target byte size for splitting single-file input into deterministic work units.",
+        ),
+    ] = 16 * 1024 * 1024,
+    output_shard_bytes: Annotated[
+        int | None,
+        typer.Option(
+            "--output-shard-bytes",
+            help="Shard survivor output by target serialized bytes "
+            "(deterministic manifest); omit for legacy single file.",
+        ),
+    ] = None,
+    max_input_bytes: Annotated[
+        int,
+        typer.Option(
+            "--max-input-bytes",
+            help="Refuse dedup inputs larger than this budget (default 2 GiB).",
+        ),
+    ] = 2 * 1024 * 1024 * 1024,
 ) -> None:
-    """Deduplicate canonical documents across source families (C05)."""
+    """Deduplicate canonical documents across source families (C05).
+
+    Consumes a ``documents.jsonl`` file, a verified clean shard manifest, a
+    plain directory of JSONL shards, or Parquet — streaming, never
+    materialized. The lexical exact/MinHash policy is unchanged; survivors
+    stream to legacy single-file or sharded output with identical decisions.
+    """
     if not input_path.exists():
         typer.echo(f"Error: input path '{input_path}' does not exist.", err=True)
+        raise typer.Exit(code=1)
+    if workers < 1:
+        typer.echo("Error: --workers must be positive.", err=True)
+        raise typer.Exit(code=1)
+    if input_shard_bytes < 1:
+        typer.echo("Error: --input-shard-bytes must be positive.", err=True)
+        raise typer.Exit(code=1)
+    if output_shard_bytes is not None and output_shard_bytes < 1:
+        typer.echo("Error: --output-shard-bytes must be positive.", err=True)
+        raise typer.Exit(code=1)
+    if max_input_bytes < 1:
+        typer.echo("Error: --max-input-bytes must be positive.", err=True)
         raise typer.Exit(code=1)
 
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -2740,21 +2787,39 @@ def dedup_cmd(
         typer.echo(f"Error: invalid dedup configuration: {e}", err=True)
         raise typer.Exit(code=1) from e
 
+    typer.echo(f"Deduplicating input (identity {config.identity()})...")
     try:
-        documents = list(_read_canonical_input(input_path))
+        result, telemetry, assembled, throughput, _manifest = run_sharded_dedup(
+            input_path=input_path,
+            output_dir=output_dir,
+            config=config,
+            workers=workers,
+            input_shard_bytes=input_shard_bytes,
+            output_shard_bytes=output_shard_bytes,
+            work_dir=scratch,
+            max_input_bytes=max_input_bytes,
+        )
     except (FileNotFoundError, NotADirectoryError, ValueError, TypeError) as e:
-        typer.echo(f"Error loading input documents: {e}", err=True)
+        typer.echo(f"Error deduplicating documents: {e}", err=True)
+        raise typer.Exit(code=1) from e
+    except RuntimeError as e:
+        typer.echo(f"Error deduplicating documents: {e}", err=True)
         raise typer.Exit(code=1) from e
 
-    typer.echo(f"Deduplicating {len(documents):,} documents (identity {config.identity()})...")
-    result = DeduplicationEngine(config).run(documents, scratch)
-
-    writer = CanonicalDatasetWriter(output_dir)
-    survivors = list(iter_surviving_documents(documents, result))
-    writer.write_jsonl(survivors, filename="documents.jsonl")
-    (output_dir / "dedup_report.json").write_text(
-        json.dumps(result.to_dict(), indent=2), encoding="utf-8"
-    )
+    if output_shard_bytes is None and HAS_PYARROW:
+        writer = CanonicalDatasetWriter(output_dir)
+        try:
+            writer.write_parquet_stream(
+                CanonicalDatasetReader.read_jsonl(output_dir / "documents.jsonl"),
+                filename="documents.parquet",
+            )
+        except Exception as e:
+            typer.echo(f"Error writing Parquet view: {e}", err=True)
+            raise typer.Exit(code=1) from e
+    elif output_shard_bytes is not None:
+        typer.echo("Note: sharded dedup output carries no Parquet view (manifest + shards).")
+    else:
+        typer.echo("Note: pyarrow unavailable; wrote JSONL only (no Parquet view).")
 
     typer.echo("============================================================")
     typer.echo(f"Dedup identity:  {result.config_identity}")
@@ -2767,8 +2832,404 @@ def dedup_cmd(
     typer.echo(f"Oversized buckets skipped: {result.stats.oversized_buckets:,}")
     typer.echo("Near-duplicate detection has false positives and negatives; it does not")
     typer.echo("prove the corpus is free of paraphrased or restructured duplicates.")
+    typer.echo(
+        f"Dedup throughput: {result.stats.documents_seen:,} docs in "
+        f"{throughput['wall_seconds']:.2f}s "
+        f"({result.stats.documents_seen / max(1e-9, throughput['wall_seconds']):,.0f}/s, "
+        f"workers {throughput['workers']}, input_shards {throughput['input_shards']}, "
+        f"output_shards {throughput['output_shards']}, "
+        f"signatures {throughput['signatures_per_second']:,.0f}/s)"
+    )
     typer.echo(f"Output:          {output_dir}")
     typer.echo("============================================================")
+
+    typer.echo(f"Output:          {output_dir}")
+    typer.echo("============================================================")
+
+
+@app.command("embeddings-build")
+def embeddings_build_cmd(
+    input_path: Annotated[
+        Path,
+        typer.Option("--input", "-i", help="Clean documents.jsonl or shard manifest directory."),
+    ],
+    output_dir: Annotated[
+        Path,
+        typer.Option("--output-dir", "-o", help="Directory for the embedding artifact."),
+    ],
+    provider: Annotated[
+        str,
+        typer.Option(
+            "--provider",
+            help="Test/synthetic provider only: 'synthetic' or 'texthash'. "
+            "Real encoders are operator-supplied; nothing is downloaded.",
+        ),
+    ] = "synthetic",
+    dim: Annotated[int, typer.Option("--dim", help="Embedding dimension.")] = 384,
+    seed: Annotated[int, typer.Option("--seed", help="Synthetic provider seed.")] = 20260919,
+    dtype: Annotated[str, typer.Option("--dtype", help="float32 or float16.")] = "float32",
+    vectors_per_shard: Annotated[
+        int, typer.Option("--vectors-per-shard", help="Rows per .npy shard.")
+    ] = 65536,
+    batch_size: Annotated[int, typer.Option("--batch-size", help="Encode batch size.")] = 1024,
+) -> None:
+    """Build a versioned precomputed-embedding artifact (test providers only).
+
+    Vectors are written as contiguous ``.npy`` shards plus an
+    ``embedding-manifest.json``. Requires NumPy in the operator environment;
+    fails clearly otherwise. No model is downloaded, ever.
+    """
+    from xlm.data.semantic.embeddings import (
+        EMBEDDING_MANIFEST_FILENAME,
+        EmbeddingManifest,
+        EmbeddingShardRef,
+        write_vector_shard,
+    )
+    from xlm.data.semantic.providers import SyntheticEmbeddingProvider, TextHashEmbeddingProvider
+
+    if not input_path.exists():
+        typer.echo(f"Error: input path '{input_path}' does not exist.", err=True)
+        raise typer.Exit(code=1)
+    if dtype not in ("float32", "float16"):
+        typer.echo("Error: --dtype must be 'float32' or 'float16'.", err=True)
+        raise typer.Exit(code=1)
+    if vectors_per_shard < 1 or batch_size < 1 or dim < 1:
+        typer.echo(
+            "Error: --vectors-per-shard, --batch-size, and --dim must be positive.", err=True
+        )
+        raise typer.Exit(code=1)
+    try:
+        import numpy as np  # type: ignore[import-not-found]  # noqa: F401
+    except ImportError:
+        typer.echo(
+            "Error: embeddings-build needs NumPy, which is absent here; run in an "
+            "operator environment with numpy installed.",
+            err=True,
+        )
+        raise typer.Exit(code=1) from None
+
+    if provider == "synthetic":
+        encoder: Any = SyntheticEmbeddingProvider(dim=dim, dtype=dtype, seed=seed)
+    elif provider == "texthash":
+        encoder = TextHashEmbeddingProvider(dim=dim, dtype=dtype)
+    else:
+        typer.echo(
+            f"Error: unknown provider '{provider}'; want 'synthetic' or 'texthash'.", err=True
+        )
+        raise typer.Exit(code=1)
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        units, input_info = _plan_dedup_units(input_path)
+    except (FileNotFoundError, NotADirectoryError, ValueError, TypeError) as e:
+        typer.echo(f"Error loading input documents: {e}", err=True)
+        raise typer.Exit(code=1) from e
+
+    source_artifact = {
+        "input_kind": input_info["kind"],
+        "total_documents": input_info["total_documents"],
+        "total_bytes": input_info["total_bytes"],
+    }
+    if input_info["kind"] == "manifest":
+        source_artifact["clean_aggregate_sha256"] = input_info.get("aggregate_sha256")
+
+    manifest = EmbeddingManifest(
+        source_artifact=source_artifact,
+        model_identity=encoder.model_identity,
+        dim=dim,
+        dtype=dtype,
+        normalized=encoder.normalized,
+        truncation_policy=encoder.truncation_policy,
+    )
+    shard_index = 0
+    pending_texts: list[str] = []
+    pending_ids: list[str] = []
+
+    def flush_shard() -> None:
+        nonlocal shard_index
+        if not pending_ids:
+            return
+        import numpy as _np
+
+        # Batches bound provider memory; concatenation order is document
+        # order, so batch boundaries never affect vectors or layout.
+        encoded = [
+            _np.ascontiguousarray(encoder.encode(pending_texts[i : i + batch_size]))
+            for i in range(0, len(pending_texts), batch_size)
+        ]
+        array = _np.ascontiguousarray(
+            _np.concatenate(encoded) if len(encoded) > 1 else encoded[0], dtype=dtype
+        )
+        path = output_dir / f"vectors-{shard_index:05d}.npy"
+        digest = write_vector_shard(array, path)
+        manifest.shards.append(
+            EmbeddingShardRef(
+                path=path.name,
+                rows=int(array.shape[0]),
+                dim=dim,
+                dtype=dtype,
+                sha256=digest,
+            )
+        )
+        manifest.doc_ids.extend(pending_ids)
+        manifest.total_vectors += int(array.shape[0])
+        shard_index += 1
+        pending_texts.clear()
+        pending_ids.clear()
+
+    try:
+        for doc in _stream_dedup_unit_documents(input_path, units):
+            pending_texts.append(doc.text)
+            pending_ids.append(doc.doc_id)
+            if len(pending_texts) >= vectors_per_shard:
+                flush_shard()
+        flush_shard()
+    except (ValueError, TypeError, RuntimeError) as e:
+        typer.echo(f"Error building embeddings: {e}", err=True)
+        raise typer.Exit(code=1) from e
+
+    manifest.vector_bytes = sum(
+        (output_dir / shard.path).stat().st_size for shard in manifest.shards
+    )
+    manifest_path = output_dir / EMBEDDING_MANIFEST_FILENAME
+    manifest_path.write_text(json.dumps(manifest.to_dict(), indent=2), encoding="utf-8")
+    typer.echo("============================================================")
+    typer.echo(f"Embeddings:      {manifest.total_vectors:,} vectors x {dim} ({dtype})")
+    typer.echo(f"Model identity:  {manifest.model_identity}")
+    typer.echo(f"Artifact identity: {manifest.identity()[:16]}...")
+    typer.echo(f"Output:          {output_dir}")
+    typer.echo("============================================================")
+
+
+@app.command("embeddings-validate")
+def embeddings_validate_cmd(
+    artifact_dir: Annotated[
+        Path, typer.Option("--dir", "-d", help="Embedding artifact directory.")
+    ],
+) -> None:
+    """Validate an embedding artifact directory, failing closed on any mismatch."""
+    from xlm.data.semantic.embeddings import validate_embedding_artifact
+
+    try:
+        manifest = validate_embedding_artifact(artifact_dir)
+    except (FileNotFoundError, ValueError) as e:
+        typer.echo(f"Error: invalid embedding artifact: {e}", err=True)
+        raise typer.Exit(code=1) from e
+    typer.echo(
+        f"Valid embedding artifact: {manifest.total_vectors:,} x {manifest.dim} "
+        f"({manifest.dtype}), identity {manifest.identity()[:16]}..."
+    )
+
+
+@app.command("semantic-neighbors")
+def semantic_neighbors_cmd(
+    embeddings_dir: Annotated[
+        Path, typer.Option("--embeddings", "-e", help="Validated embedding artifact directory.")
+    ],
+    output_dir: Annotated[
+        Path,
+        typer.Option("--output-dir", "-o", help="Directory for the candidate sidecar."),
+    ],
+    backend: Annotated[
+        str,
+        typer.Option("--backend", help="auto, python, numpy, faiss-cpu, or faiss-gpu."),
+    ] = "auto",
+    top_k: Annotated[int, typer.Option("--top-k", help="Neighbors per query.")] = 10,
+    threshold: Annotated[
+        float, typer.Option("--threshold", help="Minimum cosine similarity.")
+    ] = 0.9,
+    query_batch_size: Annotated[
+        int, typer.Option("--query-batch-size", help="Queries per search batch.")
+    ] = 2048,
+    cluster_policy: Annotated[
+        str,
+        typer.Option(
+            "--semantic-cluster-policy",
+            help="Candidate sidecar only ('none-v1', default) or versioned "
+            "experimental threshold-union analysis ('v0-experimental-threshold-union'). "
+            "Never affects dedup survivors.",
+        ),
+    ] = "none-v1",
+) -> None:
+    """Generate semantic-neighbor candidates (EXPERIMENTAL sidecar, OFF by default).
+
+    FAISS/NumPy is candidate generation only: this command writes
+    ``candidates.jsonl`` plus a threshold-sweep analysis. It never deletes
+    documents and never feeds survivor decisions. Use the operator GPU
+    benchmark as: ``xlm data semantic-neighbors --embeddings <dir>
+    --backend faiss-gpu ...`` in an environment with faiss-gpu installed.
+    """
+    from xlm.data.semantic.backends import backend_metadata, resolve_backend
+    from xlm.data.semantic.embeddings import validate_embedding_artifact
+    from xlm.data.semantic.neighbors import (
+        SEMANTIC_POLICY_NONE,
+        SEMANTIC_POLICY_V0_EXPERIMENTAL,
+        generate_candidates,
+        summarize_thresholds,
+    )
+
+    if cluster_policy not in (SEMANTIC_POLICY_NONE, SEMANTIC_POLICY_V0_EXPERIMENTAL):
+        typer.echo(f"Error: unknown --semantic-cluster-policy '{cluster_policy}'.", err=True)
+        raise typer.Exit(code=1)
+    if top_k < 1 or query_batch_size < 1:
+        typer.echo("Error: --top-k and --query-batch-size must be positive.", err=True)
+        raise typer.Exit(code=1)
+    if not 0.0 <= threshold <= 1.0:
+        typer.echo("Error: --threshold must lie in [0, 1].", err=True)
+        raise typer.Exit(code=1)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    try:
+        manifest = validate_embedding_artifact(embeddings_dir)
+    except (FileNotFoundError, ValueError, RuntimeError) as e:
+        typer.echo(f"Error: invalid embedding artifact: {e}", err=True)
+        raise typer.Exit(code=1) from e
+    try:
+        backend_instance = resolve_backend(backend)
+    except (ValueError, RuntimeError) as e:
+        typer.echo(f"Error: {e}", err=True)
+        raise typer.Exit(code=1) from e
+
+    try:
+        vectors, ordinals = _load_embedding_vectors(embeddings_dir, manifest, backend_instance.name)
+        artifact, telemetry = generate_candidates(
+            backend=backend_instance,
+            vectors=vectors,
+            ordinals=ordinals,
+            top_k=top_k,
+            threshold=threshold,
+            output_path=output_dir / "candidates.jsonl",
+            query_batch_size=query_batch_size,
+        )
+    except (ValueError, RuntimeError) as e:
+        typer.echo(f"Error generating candidates: {e}", err=True)
+        raise typer.Exit(code=1) from e
+
+    artifact.clean_artifact_identity = manifest.source_artifact
+    artifact.embedding_identity = manifest.identity()
+    artifact.policy = cluster_policy
+    analysis = summarize_thresholds(output_dir / "candidates.jsonl")
+    report = {
+        "candidate_artifact": artifact.to_dict(),
+        "candidate_identity": artifact.identity(),
+        "telemetry": telemetry,
+        "backend": backend_metadata(backend_instance),
+        "threshold_analysis": analysis,
+        "experimental_clusters": (
+            _experimental_threshold_clusters(output_dir / "candidates.jsonl", threshold)
+            if cluster_policy == SEMANTIC_POLICY_V0_EXPERIMENTAL
+            else None
+        ),
+    }
+    (output_dir / "candidates-report.json").write_text(
+        json.dumps(report, indent=2, sort_keys=True), encoding="utf-8"
+    )
+    typer.echo("============================================================")
+    typer.echo(f"Backend:         {telemetry['backend']} (requested '{backend}')")
+    typer.echo(f"Candidates:      {telemetry['candidate_count']:,}")
+    typer.echo(f"Candidate identity: {artifact.identity()[:16]}...")
+    typer.echo("NOTE: sidecar only — no survivor decision was made or changed.")
+    typer.echo(f"Output:          {output_dir}")
+    typer.echo("============================================================")
+
+
+def _plan_dedup_units(
+    input_path: Path,
+) -> tuple[list[Any], dict[str, Any]]:
+    """Plan dedup work units for any supported input shape."""
+    from xlm.data.cleaning.sharded import plan_clean_units
+
+    # Embeddings build streams single-process; coarse units minimize overhead.
+    return plan_clean_units(input_path, input_shard_bytes=64 * 1024 * 1024, max_docs=None)
+
+
+def _stream_dedup_unit_documents(input_path: Path, units: list[Any]) -> Any:
+    """Yield documents in global input order across planned units."""
+    from xlm.data.dedup.sharded import _iter_unit_documents
+
+    for unit in units:
+        for _position, doc in _iter_unit_documents(unit):
+            yield doc
+
+
+def _load_embedding_vectors(
+    embeddings_dir: Path, manifest: Any, backend_name: str
+) -> tuple[Any, list[int]]:
+    """Load all vector shards in manifest order for the resolved backend.
+
+    NumPy concatenation (one documented copy) when available; otherwise the
+    stdlib row reader, which only the pure-Python backend accepts.
+    """
+    from xlm.data.semantic.embeddings import read_vector_rows_stdlib, read_vector_shard
+
+    try:
+        import numpy as _np
+
+        have_numpy = True
+    except ImportError:
+        have_numpy = False
+    if not have_numpy:
+        if backend_name != "python":
+            typer.echo(
+                "Error: semantic-neighbors needs NumPy for this backend, which is "
+                "absent here; use --backend python or run in an operator "
+                "environment with numpy installed.",
+                err=True,
+            )
+            raise typer.Exit(code=1)
+        rows: list[list[float]] = []
+        for shard in manifest.shards:
+            rows.extend(read_vector_rows_stdlib(embeddings_dir / shard.path))
+        if len(rows) != manifest.total_vectors:
+            raise ValueError("concatenated vectors disagree with manifest totals")
+        return rows, list(range(manifest.total_vectors))
+
+    chunks = []
+    for shard in manifest.shards:
+        chunks.append(read_vector_shard(embeddings_dir / shard.path, memmap=True))
+    matrix = _np.concatenate(chunks) if len(chunks) > 1 else chunks[0]
+    ordinals = list(range(manifest.total_vectors))
+    if matrix.shape[0] != manifest.total_vectors:
+        raise ValueError("concatenated vectors disagree with manifest totals")
+    return matrix, ordinals
+
+
+def _experimental_threshold_clusters(candidate_path: Path, threshold: float) -> dict[str, Any]:
+    """Versioned experimental threshold-union clustering (analysis only)."""
+    parent: dict[int, int] = {}
+
+    def find(node: int) -> int:
+        while parent.get(node, node) != node:
+            parent[node] = parent.get(parent[node], parent[node])
+            node = parent[node]
+        return parent.get(node, node)
+
+    members = 0
+    with candidate_path.open("r", encoding="utf-8") as stream:
+        for line in stream:
+            stripped = line.strip()
+            if not stripped:
+                continue
+            record = json.loads(stripped)
+            if float(record["score"]) < threshold:
+                continue
+            members += 1
+            left, right = int(record["doc_a"]), int(record["doc_b"])
+            rleft, rright = find(left), find(right)
+            if rleft != rright:
+                parent[rright] = rleft
+    roots: dict[int, int] = {}
+    for node in list(parent):
+        root = find(node)
+        roots[root] = roots.get(root, 0) + 1
+    sizes = sorted(roots.values(), reverse=True)
+    return {
+        "policy": "v0-experimental-threshold-union",
+        "threshold": threshold,
+        "edges": members,
+        "components": len(sizes),
+        "largest_component_nodes": sizes[0] if sizes else 0,
+    }
 
 
 @app.command("split")
