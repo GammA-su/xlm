@@ -214,9 +214,7 @@ def test_binary_index_matches_json_groupings_and_fails_closed(tmp_path: Path) ->
         for i in range(50):
             index2.add(f"tk_{i % 5}", f"td_{i:04d}")
     assert len(dict(index2.groups(min_size=2))) == 5
-    victim = next(
-        p for p in sorted((tmp_path / "idx2").glob("part_*.bin")) if p.stat().st_size > 8
-    )
+    victim = next(p for p in sorted((tmp_path / "idx2").glob("part_*.bin")) if p.stat().st_size > 8)
     victim.write_bytes(victim.read_bytes()[:7])
     with pytest.raises(ValueError, match="truncat|magic"):
         dict(index2.groups(min_size=2))

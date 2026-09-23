@@ -71,8 +71,24 @@ _CONTENT_WORDS = (
 )
 
 _STOP_WORDS = [
-    "the", "and", "of", "to", "in", "is", "that", "for", "with", "from",
-    "this", "have", "were", "they", "their", "which", "have", "has",
+    "the",
+    "and",
+    "of",
+    "to",
+    "in",
+    "is",
+    "that",
+    "for",
+    "with",
+    "from",
+    "this",
+    "have",
+    "were",
+    "they",
+    "their",
+    "which",
+    "have",
+    "has",
 ]
 
 
@@ -404,7 +420,7 @@ def test_pii_mandated_cases(tmp_path: Path) -> None:
 
     filt = PiiSecretFilter()
     rng = random.Random(3)
-    filler = _distinct_prose(rng, 120)
+    _ = _distinct_prose(rng, 120)
 
     exempt = [
         f"{_distinct_prose(rng, 60)} write to user@example.com please {_distinct_prose(rng, 60)}",
@@ -418,7 +434,8 @@ def test_pii_mandated_cases(tmp_path: Path) -> None:
         assert not any(r.startswith("detected_secret:email") for r in result.reasons)
 
     detected = [
-        f"{_distinct_prose(rng, 60)} write to user@real-domain.com please {_distinct_prose(rng, 60)}",
+        f"{_distinct_prose(rng, 60)} write to user@real-domain.com please "
+        f"{_distinct_prose(rng, 60)}",
         f"{_distinct_prose(rng, 60)} somebody@notreallyexample.com {_distinct_prose(rng, 60)}",
         f"{_distinct_prose(rng, 60)} somebody@my-example.com here {_distinct_prose(rng, 60)}",
         f"{_distinct_prose(rng, 60)} somebody@example.org.attacker.com here "
@@ -444,13 +461,23 @@ def test_secret_quarantine_omits_sensitive_content(tmp_path: Path) -> None:
     token = "hf_abcdefghijklmnopqrstuvwxyz01234567"
     key = "AKIAIOSFODNN7EXAMPLE"
     lines = [
-        json.dumps(_doc_dict(
-            "q-sec-1", f"{_distinct_prose(rng, 80)} token {token} {_distinct_prose(rng, 80)}", 0)),
-        json.dumps(_doc_dict(
-            "q-sec-2", f"{_distinct_prose(rng, 80)} key {key} {_distinct_prose(rng, 80)}", 1)),
-        json.dumps(_doc_dict(
-            "q-sec-3",
-            f"{_distinct_prose(rng, 80)} ssn 123-45-6789 {_distinct_prose(rng, 80)}", 2)),
+        json.dumps(
+            _doc_dict(
+                "q-sec-1", f"{_distinct_prose(rng, 80)} token {token} {_distinct_prose(rng, 80)}", 0
+            )
+        ),
+        json.dumps(
+            _doc_dict(
+                "q-sec-2", f"{_distinct_prose(rng, 80)} key {key} {_distinct_prose(rng, 80)}", 1
+            )
+        ),
+        json.dumps(
+            _doc_dict(
+                "q-sec-3",
+                f"{_distinct_prose(rng, 80)} ssn 123-45-6789 {_distinct_prose(rng, 80)}",
+                2,
+            )
+        ),
         json.dumps(_doc_dict("q-ok-1", "tiny", 3)),
     ]
     _, quarantine, _ = _reference_run(tmp_path, lines, "secrets")
@@ -662,7 +689,9 @@ def test_output_shard_sizes_preserve_stream(tmp_path: Path) -> None:
     selected.write_text("\n".join(lines) + "\n", encoding="utf-8")
     streams = []
     for target_kb, tag in ((8, "a"), (64, "b"), (512, "c")):
-        out, _, _, _ = _engine_run(tmp_path, selected, f"z{tag}", output_shard_bytes=target_kb * 1024)
+        out, _, _, _ = _engine_run(
+            tmp_path, selected, f"z{tag}", output_shard_bytes=target_kb * 1024
+        )
         streams.append(_read_accepted(out))
     assert streams[0] == streams[1] == streams[2]
 
@@ -676,7 +705,8 @@ def test_assembly_spanning_copy_blocks(tmp_path: Path) -> None:
     assert selected.stat().st_size > 2 * 1024 * 1024
     ref_docs, _, _ = _reference_run(tmp_path, lines, "blocksref")
     out, _, _, _ = _engine_run(
-        tmp_path, selected, "blocks", workers=2, output_shard_bytes=256 * 1024)
+        tmp_path, selected, "blocks", workers=2, output_shard_bytes=256 * 1024
+    )
     assert _read_accepted(out) == ref_docs
 
 
@@ -959,11 +989,14 @@ def test_benchmark_100k_mixed_endpoints(tmp_path: Path) -> None:
     for workers in (1, 8):
         started = time.monotonic()
         out, _, summary, throughput = _engine_run(
-            tmp_path, selected, f"b100k_{workers}", workers=workers)
+            tmp_path, selected, f"b100k_{workers}", workers=workers
+        )
         wall = time.monotonic() - started
         assert summary.total_input_docs == 100_000
-        print(f"100k-mixed w{workers}: in={input_mib:.0f}MiB wall={wall:.1f}s "
-              f"docs/s={100_000 / wall:.0f} out_shards={throughput['output_shards']}")
+        print(
+            f"100k-mixed w{workers}: in={input_mib:.0f}MiB wall={wall:.1f}s "
+            f"docs/s={100_000 / wall:.0f} out_shards={throughput['output_shards']}"
+        )
         rows.append((workers, 100_000, wall))
     _benchmark_table("100k-mixed", rows)
 

@@ -31,6 +31,7 @@ from xlm.data.canonical_io import CanonicalDatasetReader, CanonicalDatasetWriter
 from xlm.data.cleaning.quarantine import QuarantinePolicy
 from xlm.data.cleaning.sharded import run_sharded_clean
 from xlm.data.datasets.shards import ShardedJsonlWriter
+from xlm.data.dedup import DedupConfig, run_sharded_dedup
 from xlm.data.pools.splits import SplitConfig, apply_splits, assign_splits
 from xlm.data.sampling.packing import CausalStreamPacker
 from xlm.data.tokens import TokenShardReader, TokenShardWriter
@@ -173,8 +174,9 @@ def run(
     tokenizer_path: Path | None = None,
     token_workers: int = 0,
     reference_p29: bool = False,
+    dedup_workers: int = 0,
 ) -> dict[str, Any]:
-    """Run actual local stages, with dedup explicitly omitted and no model updates."""
+    """Run actual local stages, with optional P28 exact/lexical dedup, no model updates."""
     root.mkdir(parents=True, exist_ok=False)
     tokenizer_class = ByteLevelBPETokenizer
     writer_class = TokenShardWriter
@@ -247,9 +249,39 @@ def run(
         row["accepted"] = summary.total_output_docs
         row["timing"] = timing.to_dict()
     cleaned = root / "cleaned" / "documents.jsonl"
+    dedup_summary: dict[str, Any] = {"enabled": False}
+    deduped = cleaned
+    if dedup_workers:
+        with measurements.stage("dedup_exact_lexical", workers=dedup_workers) as row:
+            result, telemetry, _, throughput, _ = run_sharded_dedup(
+                input_path=cleaned,
+                output_dir=root / "deduped",
+                config=DedupConfig(),
+                workers=dedup_workers,
+                input_shard_bytes=4 * MIB,
+                output_shard_bytes=None,
+                work_dir=root / "dedup_work",
+                max_input_bytes=1024 * MIB,
+            )
+            deduped = root / "deduped" / "documents.jsonl"
+            row["survivors"] = len(result.survivor_doc_ids)
+            row["clusters"] = len(result.clusters)
+            row["exact_pairs"] = result.stats.exact_duplicate_pairs
+            row["confirmed_pairs"] = result.stats.near_duplicate_pairs_confirmed
+            row["config_identity"] = result.config_identity
+            row["phases"] = telemetry.to_dict()
+            dedup_summary = {
+                "enabled": True,
+                "workers": dedup_workers,
+                "survivors": len(result.survivor_doc_ids),
+                "dropped": len(result.dropped_doc_ids),
+                "clusters": len(result.clusters),
+                "config_identity": result.config_identity,
+                "phases": telemetry.to_dict(),
+            }
     with measurements.stage("split_and_publish") as row:
         assignment = assign_splits(
-            CanonicalDatasetReader.read_jsonl(cleaned),
+            CanonicalDatasetReader.read_jsonl(deduped),
             config=SplitConfig(
                 diagnostic_val_target_bytes=4096,
                 quick_val_target_bytes=1024,
@@ -259,7 +291,7 @@ def run(
         row["membership_digest"] = assignment.membership_digest()
         CanonicalDatasetWriter(root / "split").write_jsonl(
             apply_splits(
-                CanonicalDatasetReader.read_jsonl(cleaned),
+                CanonicalDatasetReader.read_jsonl(deduped),
                 assignment,
             )
         )
@@ -342,10 +374,11 @@ def run(
     return {
         "schema_version": 1,
         "fixture_only": True,
-        "dedup": "SKIPPED: P28 ownership",
+        "dedup": dedup_summary if dedup_summary.get("enabled") else "SKIPPED: P28 ownership",
         "documents": count,
         "workers": workers,
         "token_workers": token_workers,
+        "dedup_workers": dedup_workers,
         "reference_p29": reference_p29,
         "head": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
         "artifact_byte_cap": measurements.max_artifact_bytes,
@@ -359,7 +392,8 @@ def run(
             "RSS sampled at 100 ms; child discovery 1 s",
             "source-like shapes use generic JSONL adapter, not live schema certification",
             "packing and loader are separately measured consumers of identical tokens",
-            "no network, dedup, production tokenizer, GPU training or official evaluation",
+            "no network, production tokenizer, GPU training or official evaluation",
+            "dedup runs only with --dedup-workers > 0 (P28 exact/lexical, sidecar-free)",
         ],
     }
 
@@ -368,12 +402,19 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--documents", type=int, default=10_000)
-    parser.add_argument("--workers", type=int, choices=(1, 2, 4, 8), default=1)
+    parser.add_argument("--workers", type=int, choices=(1, 2, 4, 6, 8), default=1)
     parser.add_argument("--max-seconds", type=float, default=600)
     parser.add_argument("--profile", action="store_true")
     parser.add_argument("--tokenizer", type=Path, help="Existing local fixture; never downloaded")
     parser.add_argument("--token-workers", type=int, choices=(0, 1, 2, 4, 8), default=0)
     parser.add_argument("--reference-p29", action="store_true")
+    parser.add_argument(
+        "--dedup-workers",
+        type=int,
+        choices=(0, 1, 2, 4, 8),
+        default=0,
+        help="P28 exact/lexical dedup workers between cleaning and split (0 skips dedup).",
+    )
     args = parser.parse_args()
     if not 100 <= args.documents <= 100_000 or not 1 <= args.max_seconds <= 1800:
         parser.error("documents must be 100..100000 and max-seconds 1..1800")
@@ -388,6 +429,7 @@ def main() -> None:
         args.tokenizer,
         args.token_workers,
         args.reference_p29,
+        args.dedup_workers,
     )
     if args.profile:
         profiler.disable()

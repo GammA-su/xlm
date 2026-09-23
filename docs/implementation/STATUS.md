@@ -1,5 +1,21 @@
 # Implementation status
 
+> **Performance integration 2026-09-23 (P28 + Astra P29/P29B/P29C):
+> INTEGRATED / GATE-TESTED (bounded offline)** on
+> `integrate/performance-20260923`. One P28 + 13 Astra + 7 P29C commits
+> cherry-picked in order with zero conflicts; reconciliation adds only
+> lint normalization, `--workers 6` + opt-in `--dedup-workers` harness
+> support, and docs. Combined pipeline (adapt → shard → clean → P28
+> dedup → split → tokenize → pack → loader): 10k in 28.7–53.6 s,
+> 100k in 147.6–258.7 s depending on workers, every stage digest
+> worker-invariant at both scales. Full gate: 1626 passed / 19 failed /
+> 1 skipped (fast) + 9 passed (serial); 16 failures are xdist isolation
+> flakes, 3 are pre-existing Astra-branch failures (proven identical
+> without this integration). NumPy absent from the locked runtime (exact
+> Python fallback; §12 operator action documented). Semantic lane stays
+> opt-in and off by default. See [reports/PINTEGRATION.md](reports/PINTEGRATION.md).
+> Overall production acceptance remains BLOCKED; main is unchanged.
+
 > **P29C exact cleaning (2026-09-23): IMPLEMENTED / VERIFIED (bounded offline)**
 > on `perf/astra-cleaning-v2`, parent `5a43a81`. Authored one-worker cleaner:
 > 10k 7.965 -> 5.918 s; 100k 70.399 -> 53.241 s (24.4% less time).

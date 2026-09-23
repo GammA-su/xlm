@@ -111,12 +111,14 @@ uv run --offline --locked --no-sync python scripts/compare_pipeline.py artifacts
 ```
 
 Output directories must be fresh. The pipeline accepts 100–100,000 documents,
-1/2/4/8 cleaning workers and a 1–1,800 second deadline (default 600 seconds).
+1/2/4/6/8 cleaning workers and a 1–1,800 second deadline (default 600 seconds).
 It generates six deterministic source-like shapes at runtime. They exercise a
-generic JSONL adapter, not the six publishers' adapters. It deliberately omits
-dedup, uses a 256-document/1 MiB fixture BPE fit, and consumes at most 16 loader
-steps without any model update. Packing is measured as a separate consumer of
-the same mmap token shard; the harness does not claim a new packed-file format.
+generic JSONL adapter, not the six publishers' adapters. It omits dedup unless
+`--dedup-workers` is passed (0 by default = skip; 1/2/4/8 run P28 exact/lexical
+dedup between cleaning and split with per-phase telemetry), uses a 256-document/
+1 MiB fixture BPE fit, and consumes at most 16 loader steps without any model
+update. Packing is measured as a separate consumer of the same mmap token shard;
+the harness does not claim a new packed-file format.
 `--profile` adds a cProfile file; do not compare profiled and unprofiled timings.
 
 The harness watches process-tree RSS (3 GiB cap, sampled every 100 ms), checks

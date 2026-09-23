@@ -560,9 +560,7 @@ def _load_signatures_by_ordinal(
                         f"signature shard {path} misaligned at ordinal {ordinal}; refusing to read"
                     )
                 values = list(
-                    struct.unpack_from(
-                        f"<{num_permutations}Q", record, _SIG_RECORD_HEADER.size
-                    )
+                    struct.unpack_from(f"<{num_permutations}Q", record, _SIG_RECORD_HEADER.size)
                 )
                 signatures[ordinal] = values
     return signatures
