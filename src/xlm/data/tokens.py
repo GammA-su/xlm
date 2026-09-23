@@ -5,12 +5,16 @@ from __future__ import annotations
 import hashlib
 import json
 import mmap
+import os
 import struct
+import tempfile
 from collections.abc import Iterable, Iterator
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
+
+from filelock import FileLock
 
 from xlm.core.contracts import CanonicalDocument, TokenShardManifest
 from xlm.tokenizers.base import BaseTokenizer
@@ -41,12 +45,16 @@ class TokenShardWriter:
         source_id: str,
         tokenizer: BaseTokenizer,
         pool_hash: str = "p02_local_pool",
+        max_output_bytes: int | None = None,
     ) -> None:
         self.output_dir = output_dir
         self.shard_id = shard_id
         self.source_id = source_id
         self.tokenizer = tokenizer
         self.pool_hash = pool_hash
+        if max_output_bytes is not None and max_output_bytes < 1:
+            raise ValueError("max_output_bytes must be positive")
+        self.max_output_bytes = max_output_bytes
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
         # Select token dtype from actual vocabulary size
@@ -64,9 +72,25 @@ class TokenShardWriter:
         documents: Iterable[CanonicalDocument],
         add_special_tokens: bool = False,
     ) -> TokenShardManifest:
-        """Write tokenized documents to shard in bounded streaming fashion."""
-        bin_path = self.output_dir / "tokens.bin"
-        idx_path = self.output_dir / "offsets.jsonl"
+        """Publish immutable files, with flushed payloads and the manifest last.
+
+        An interrupted publication can leave orphan payloads, but never a manifest
+        pointing at a partially written file. Existing payloads are never replaced.
+        POSIX directory entries are fsynced; Windows file contents are fsynced, but
+        directory power-loss persistence is not claimed by this portable API.
+        """
+        with _token_stage(self.output_dir) as stage:
+            manifest = self._write_documents(documents, add_special_tokens, stage)
+        return manifest
+
+    def _write_documents(
+        self,
+        documents: Iterable[CanonicalDocument],
+        add_special_tokens: bool,
+        directory: Path,
+    ) -> TokenShardManifest:
+        bin_path = directory / "tokens.bin"
+        idx_path = directory / "offsets.jsonl"
 
         bin_hasher = hashlib.sha256()
         idx_hasher = hashlib.sha256()
@@ -79,10 +103,17 @@ class TokenShardWriter:
         total_eos_tokens = 0
         bos_id = self.tokenizer.bos_token_id
         eos_id = self.tokenizer.eos_token_id
+        written_bytes = 0
+
+        def charge(size: int) -> None:
+            nonlocal written_bytes
+            written_bytes += size
+            if self.max_output_bytes is not None and written_bytes > self.max_output_bytes:
+                raise ValueError("token shard output byte limit exceeded")
 
         with (
             bin_path.open("wb") as bin_f,
-            idx_path.open("w", encoding="utf-8", newline="\n") as idx_f,
+            idx_path.open("wb") as idx_f,
         ):
             for doc in documents:
                 token_ids, offsets = self.tokenizer.encode_with_offsets(
@@ -100,6 +131,7 @@ class TokenShardWriter:
                                 f"Token ID {tid} cannot fit in declared dtype {self.token_dtype}"
                             )
                     packed = struct.pack(f"<{len(block)}{self.pack_char[-1]}", *block)
+                    charge(len(packed))
                     bin_f.write(packed)
                     bin_hasher.update(packed)
 
@@ -135,14 +167,19 @@ class TokenShardWriter:
                     "eos_positions": eos_positions,
                     "split": doc.split,
                 }
-                idx_line = json.dumps(idx_record, ensure_ascii=False) + "\n"
+                idx_line = (json.dumps(idx_record, ensure_ascii=False) + "\n").encode("utf-8")
+                charge(len(idx_line))
                 idx_f.write(idx_line)
-                idx_hasher.update(idx_line.encode("utf-8"))
+                idx_hasher.update(idx_line)
 
                 num_tokens += doc_token_count
                 num_docs += 1
                 total_valid_targets += doc_valid_targets
                 total_eos_tokens += len(eos_positions)
+
+            for output in (bin_f, idx_f):
+                output.flush()
+                os.fsync(output.fileno())
 
         coverage_ratio = (
             float(total_covered_bytes) / float(total_canonical_bytes)
@@ -165,8 +202,11 @@ class TokenShardWriter:
             byte_coverage_ratio=coverage_ratio,
         )
 
-        manifest_path = self.output_dir / "shard_manifest.json"
-        manifest_path.write_text(json.dumps(manifest.to_dict(), indent=2), encoding="utf-8")
+        manifest_path = directory / "shard_manifest.json"
+        charge(
+            len(json.dumps(manifest.to_dict(), indent=2).replace("\n", os.linesep).encode("utf-8"))
+        )
+        _write_synced(manifest_path, json.dumps(manifest.to_dict(), indent=2))
 
         # Exposure counters live beside the contract manifest rather than inside it,
         # so extending them never changes the frozen TokenShardManifest schema (C07).
@@ -182,10 +222,45 @@ class TokenShardWriter:
             "covered_bytes": total_covered_bytes,
             "token_dtype": self.token_dtype,
         }
-        (self.output_dir / "shard_counters.json").write_text(
-            json.dumps(counters, indent=2, sort_keys=True), encoding="utf-8"
-        )
+        counter_text = json.dumps(counters, indent=2, sort_keys=True)
+        charge(len(counter_text.replace("\n", os.linesep).encode("utf-8")))
+        _write_synced(directory / "shard_counters.json", counter_text)
         return manifest
+
+
+@contextmanager
+def _token_stage(directory: Path) -> Iterator[Path]:
+    directory.mkdir(parents=True, exist_ok=True)
+    names = ("tokens.bin", "offsets.jsonl", "shard_counters.json", "shard_manifest.json")
+    lock = directory.parent / f".{directory.name}.writer.lock"
+    with FileLock(str(lock), timeout=10):
+        if any((directory / name).exists() for name in names):
+            raise FileExistsError(f"Token shard already contains payloads: {directory}")
+        with tempfile.TemporaryDirectory(prefix=".token-stage-", dir=directory) as temp:
+            stage = Path(temp)
+            yield stage
+            for name in names:
+                os.replace(stage / name, directory / name)
+                if name == "shard_counters.json":
+                    _sync_directory(directory)
+            _sync_directory(directory)
+            _sync_directory(directory.parent)
+
+
+def _write_synced(path: Path, text: str) -> None:
+    with path.open("w", encoding="utf-8") as output:
+        output.write(text)
+        output.flush()
+        os.fsync(output.fileno())
+
+
+def _sync_directory(path: Path) -> None:
+    if os.name != "nt":
+        descriptor = os.open(path, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+        try:
+            os.fsync(descriptor)
+        finally:
+            os.close(descriptor)
 
 
 class TokenShardReader:
