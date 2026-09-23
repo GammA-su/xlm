@@ -92,6 +92,10 @@ def test_bpe_ids_offsets_batch_and_reload_exact(tmp_path: Path, special: bool) -
             reference_encode(tok, t, special)[0] for t in texts
         ]
         assert tok.batch_encode([], special) == []
+        assert tok.batch_encode_with_offsets(texts, special) == [
+            reference_encode(tok, t, special) for t in texts
+        ]
+        assert tok.batch_encode_with_offsets([], special) == []
 
 
 def test_added_token_whitespace_and_backend_mutation_preserve_spans() -> None:

@@ -46,6 +46,7 @@ class TokenShardWriter:
         tokenizer: BaseTokenizer,
         pool_hash: str = "p02_local_pool",
         max_output_bytes: int | None = None,
+        batch_size: int = 1,
     ) -> None:
         self.output_dir = output_dir
         self.shard_id = shard_id
@@ -55,6 +56,9 @@ class TokenShardWriter:
         if max_output_bytes is not None and max_output_bytes < 1:
             raise ValueError("max_output_bytes must be positive")
         self.max_output_bytes = max_output_bytes
+        if not 1 <= batch_size <= 512:
+            raise ValueError("batch_size must be 1..512")
+        self.batch_size = batch_size
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
         # Select token dtype from actual vocabulary size
@@ -115,10 +119,7 @@ class TokenShardWriter:
             bin_path.open("wb") as bin_f,
             idx_path.open("wb") as idx_f,
         ):
-            for doc in documents:
-                token_ids, offsets = self.tokenizer.encode_with_offsets(
-                    doc.text, add_special_tokens=add_special_tokens
-                )
+            for doc, (token_ids, offsets) in self._encoded_documents(documents, add_special_tokens):
                 doc_token_count = len(token_ids)
 
                 # Preserve little-endian bytes and validation, but cross the
@@ -226,6 +227,37 @@ class TokenShardWriter:
         charge(len(counter_text.replace("\n", os.linesep).encode("utf-8")))
         _write_synced(directory / "shard_counters.json", counter_text)
         return manifest
+
+    def _encoded_documents(
+        self,
+        documents: Iterable[CanonicalDocument],
+        special: bool,
+    ) -> Iterator[tuple[CanonicalDocument, tuple[list[int], list[tuple[int, int]]]]]:
+        if self.batch_size == 1:
+            for doc in documents:
+                yield doc, self.tokenizer.encode_with_offsets(doc.text, special)
+            return
+        pending: list[CanonicalDocument] = []
+        byte_count = 0
+        for doc in documents:
+            if pending and (
+                len(pending) >= self.batch_size or byte_count + doc.utf8_byte_count > 1024**2
+            ):
+                yield from zip(
+                    pending,
+                    self.tokenizer.batch_encode_with_offsets([d.text for d in pending], special),
+                    strict=True,
+                )
+                pending.clear()
+                byte_count = 0
+            pending.append(doc)
+            byte_count += doc.utf8_byte_count
+        if pending:
+            yield from zip(
+                pending,
+                self.tokenizer.batch_encode_with_offsets([d.text for d in pending], special),
+                strict=True,
+            )
 
 
 @contextmanager

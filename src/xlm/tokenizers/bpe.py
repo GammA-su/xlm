@@ -10,7 +10,7 @@ from collections.abc import Iterable, Iterator, Sequence
 from contextlib import contextmanager
 from pathlib import Path
 
-from tokenizers import Tokenizer
+from tokenizers import Encoding, Tokenizer
 from tokenizers.decoders import ByteLevel as ByteLevelDecoder
 from tokenizers.models import BPE
 from tokenizers.pre_tokenizers import ByteLevel
@@ -203,6 +203,26 @@ class ByteLevelBPETokenizer(BaseTokenizer):
         num_bytes = len(canonical_bytes)
 
         encoding = self._tok.encode(clean_text, add_special_tokens=False)
+        return self._offsets_from_encoding(encoding, num_bytes, add_special_tokens)
+
+    def batch_encode_with_offsets(
+        self,
+        texts: Sequence[str],
+        add_special_tokens: bool = False,
+    ) -> list[tuple[list[int], list[tuple[int, int]]]]:
+        clean = [canonical_normalize(text) for text in texts]
+        encodings = self._tok.encode_batch(clean, add_special_tokens=False)
+        return [
+            self._offsets_from_encoding(encoding, len(text.encode("utf-8")), add_special_tokens)
+            for text, encoding in zip(clean, encodings, strict=True)
+        ]
+
+    def _offsets_from_encoding(
+        self,
+        encoding: Encoding,
+        num_bytes: int,
+        add_special_tokens: bool,
+    ) -> tuple[list[int], list[tuple[int, int]]]:
         content_ids = encoding.ids
 
         # Derive exact UTF-8 byte spans from token byte payloads

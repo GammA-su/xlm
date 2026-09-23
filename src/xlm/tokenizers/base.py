@@ -87,6 +87,14 @@ class BaseTokenizer(ABC):
         """Encode multiple texts to token IDs."""
         return [self.encode(t, add_special_tokens=add_special_tokens) for t in texts]
 
+    def batch_encode_with_offsets(
+        self,
+        texts: Sequence[str],
+        add_special_tokens: bool = False,
+    ) -> list[tuple[list[int], list[tuple[int, int]]]]:
+        """Ordered scalar fallback; callers own their batch byte/document limits."""
+        return [self.encode_with_offsets(text, add_special_tokens) for text in texts]
+
     @abstractmethod
     def decode(self, token_ids: Sequence[int], skip_special_tokens: bool = False) -> str:
         """Decode token IDs back to a canonical UTF-8 string."""
