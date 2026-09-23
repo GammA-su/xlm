@@ -1,0 +1,37 @@
+{
+  "python": "3.12.13 (main, Apr  7 2026, 20:53:22) [MSC v.1944 64 bit (AMD64)]",
+  "product_head": "9c3aab782c09e5d7f89c3c2b2487b38f622e65c6",
+  "packages": {
+    "torch": "2.14.0+cpu",
+    "tokenizers": "0.23.2",
+    "pyarrow": "25.0.1",
+    "psutil": "7.2.2",
+    "pytest": "9.1.1",
+    "pytest-xdist": "3.8.0",
+    "ruff": "0.16.8",
+    "mypy": "2.3.1"
+  },
+  "sources": {
+    "src/xlm/data/cleaning/features.py": {
+      "before_sha256": "aa693e9353d25b44aa07c5c31203b4e1ec380c39a4e0791eed689c01000d6e96",
+      "after_sha256": "e287a0a9611cd45783238ae080250728e87f70b571d6e2988857a19cf0f51e4e"
+    },
+    "src/xlm/data/tokens.py": {
+      "before_sha256": "e988f5fb96838c97aaff83d90c3c46e3d0a63658e8fd904699e14a88c20baad9",
+      "after_sha256": "a80cfa3089ee22824328e4e793a126fc2ea9b86538585a86c3b6b3f32eb5ee26"
+    },
+    "src/xlm/data/pools/splits.py": {
+      "before_sha256": "f2855a0505fb27caa52760cc76af2a34902d27823da0e14256d8577fc595def6",
+      "after_sha256": "6f4c6104aad6ff1b42f1adaa851e2f61a7c7705c35cc868af72c5911f9cf5b4f"
+    },
+    "src/xlm/tokenizers/bpe.py": {
+      "before_sha256": "fba7aaa39c02f00c0deca985163b341a017975bd29f0de7817058b7d32fdba4e",
+      "after_sha256": "643f42c65620e2e76c3f8cd90473088b028f891520436d87180c80d6bb2cc998"
+    }
+  },
+  "pins": {
+    "pyproject.toml": "d02489d1176577c7ee07b191b3cd3abd54850875df6d0d6872c1b4c790c0c7ae",
+    "uv.lock": "f8d1117caf64229fd7c368ba75448d1d31b469f2b4aa37c8f7b2ab27d61d4544",
+    ".python-version": "50b10393ce287fb4af7616d016dd16ac1a56412af4d2c74cde7ddc5ad5c78761"
+  }
+}

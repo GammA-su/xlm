@@ -1,5 +1,17 @@
 # Implementation status
 
+> **P29 global throughput (2026-09-23): IMPLEMENTED / VERIFIED (bounded offline)**
+> on `perf/astra-global-throughput`, parent `2a82dfd`. Exact ASCII counting,
+> BPE byte-length reuse / IDs-only encoding, bounded token writes, and streaming
+> split metadata. Authored 100k local pipeline: 228.795 → 173.354 s (24.2% less
+> time); split RSS 718 → 294 MiB. Canonical/token artifacts and scientific metrics
+> compare exactly. 229 focused regressions + 2 serial checks passed; scoped
+> Ruff/mypy passed. No P28 implementation edits, network, installs or training.
+> Production speedup, GPU and official evaluation NOT RUN; full suite NOT RUN.
+> Audit also records the pre-existing checkpoint power-loss durability gap.
+> See [reports/P29.md](reports/P29.md) and [performance commands](../PERFORMANCE.md).
+> Production acceptance remains BLOCKED.
+
 > **P28 exact/lexical dedup + FAISS semantic lane (2026-09-23): IMPLEMENTED /
 > VERIFIED (bounded offline)** on `perf/p28-dedup-faiss` (parent `2a82dfd`).
 > Exact uint64 vectorized MinHash (5×, fuzz-proven, NumPy-gated), shared

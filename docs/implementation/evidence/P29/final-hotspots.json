@@ -1,0 +1,338 @@
+{
+  "reference": "2a82dfd8c2bc3e0d183d9c339ae0cfe8d073784f",
+  "fixture_only": true,
+  "comparisons": {
+    "ascii_chars": {
+      "before_seconds": 0.41622559999814257,
+      "after_seconds": 0.01679550000699237,
+      "speedup": 24.781971350948638,
+      "exact_equal": true
+    },
+    "unicode_chars": {
+      "before_seconds": 0.39632940001320094,
+      "after_seconds": 0.38345069997012615,
+      "speedup": 1.033586325553919,
+      "exact_equal": true
+    },
+    "bpe_offsets": {
+      "before_seconds": 1.5649055000394583,
+      "after_seconds": 0.9694766000029631,
+      "speedup": 1.614175628410913,
+      "exact_equal": true
+    },
+    "bpe_ids": {
+      "before_seconds": 1.6124884999589995,
+      "after_seconds": 0.6968606999726035,
+      "speedup": 2.313932325387833,
+      "exact_equal": true
+    },
+    "token_writer": {
+      "before_seconds": 1.449552699981723,
+      "after_seconds": 1.3961044999887235,
+      "speedup": 1.0382838104120653,
+      "exact_equal": true
+    },
+    "split": {
+      "before_seconds": 0.01594369998201728,
+      "after_seconds": 0.015023999963887036,
+      "speedup": 1.0612153900652896,
+      "exact_equal": true
+    },
+    "serialize_fixture": {
+      "before_seconds": 0.059881300025153905,
+      "after_seconds": 0.02588939998531714,
+      "speedup": 2.3129659265612514,
+      "exact_equal": true
+    }
+  },
+  "batch_scaling": [
+    {
+      "batch_size": 1,
+      "effective_batch_size": 1,
+      "seconds": 0.7179547999985516
+    },
+    {
+      "batch_size": 16,
+      "effective_batch_size": 16,
+      "seconds": 0.6870672000222839
+    },
+    {
+      "batch_size": 64,
+      "effective_batch_size": 64,
+      "seconds": 0.6869482999900356
+    },
+    {
+      "batch_size": 128,
+      "effective_batch_size": 128,
+      "seconds": 0.7002539000241086
+    },
+    {
+      "batch_size": 512,
+      "effective_batch_size": 128,
+      "seconds": 0.6901124999858439
+    }
+  ],
+  "serialization": [
+    {
+      "documents": 10000,
+      "seconds": 0.25419120001606643
+    },
+    {
+      "documents": 100000,
+      "seconds": 2.777242499985732
+    },
+    {
+      "documents": 1000000,
+      "seconds": 27.11154280003393
+    }
+  ],
+  "stages": [
+    {
+      "stage": "ascii_chars_before",
+      "call_seconds": 0.41622559999814257,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.4173299999674782,
+      "parent_cpu_seconds": 0.421875,
+      "peak_tree_rss_bytes": 237092864,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 0
+    },
+    {
+      "stage": "ascii_chars_after",
+      "call_seconds": 0.01679550000699237,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.01747239998076111,
+      "parent_cpu_seconds": 0.015625,
+      "peak_tree_rss_bytes": 237142016,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 0
+    },
+    {
+      "stage": "unicode_chars_before",
+      "call_seconds": 0.39632940001320094,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.3969533999916166,
+      "parent_cpu_seconds": 0.390625,
+      "peak_tree_rss_bytes": 237633536,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 0
+    },
+    {
+      "stage": "unicode_chars_after",
+      "call_seconds": 0.38345069997012615,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.38422239996725693,
+      "parent_cpu_seconds": 0.390625,
+      "peak_tree_rss_bytes": 237654016,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 0
+    },
+    {
+      "stage": "bpe_offsets_before",
+      "call_seconds": 1.5649055000394583,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 1.5655754000181332,
+      "parent_cpu_seconds": 1.546875,
+      "peak_tree_rss_bytes": 323481600,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 0
+    },
+    {
+      "stage": "bpe_offsets_after",
+      "call_seconds": 0.9694766000029631,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.9702042000135407,
+      "parent_cpu_seconds": 0.890625,
+      "peak_tree_rss_bytes": 410603520,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 0
+    },
+    {
+      "stage": "bpe_ids_before",
+      "call_seconds": 1.6124884999589995,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 1.6132993000210263,
+      "parent_cpu_seconds": 1.609375,
+      "peak_tree_rss_bytes": 258502656,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 0
+    },
+    {
+      "stage": "bpe_ids_after",
+      "call_seconds": 0.6968606999726035,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.7000653999857605,
+      "parent_cpu_seconds": 0.640625,
+      "peak_tree_rss_bytes": 277336064,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 0
+    },
+    {
+      "stage": "token_writer_before",
+      "call_seconds": 1.449552699981723,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 1.4502032999880612,
+      "parent_cpu_seconds": 1.375,
+      "peak_tree_rss_bytes": 252284928,
+      "parent_read_bytes": 9099160,
+      "parent_write_bytes": 9099160,
+      "artifact_bytes_after_stage": 9099160
+    },
+    {
+      "stage": "token_writer_after",
+      "call_seconds": 1.3961044999887235,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 1.396767300029751,
+      "parent_cpu_seconds": 1.390625,
+      "peak_tree_rss_bytes": 252448768,
+      "parent_read_bytes": 9099160,
+      "parent_write_bytes": 9099160,
+      "artifact_bytes_after_stage": 18198320
+    },
+    {
+      "stage": "split_before",
+      "call_seconds": 0.01594369998201728,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.016548599989619106,
+      "parent_cpu_seconds": 0.015625,
+      "peak_tree_rss_bytes": 252542976,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 18198320
+    },
+    {
+      "stage": "split_after",
+      "call_seconds": 0.015023999963887036,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.015661399986129254,
+      "parent_cpu_seconds": 0.015625,
+      "peak_tree_rss_bytes": 252575744,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 18198320
+    },
+    {
+      "stage": "bpe_batch_1",
+      "call_seconds": 0.7179547999985516,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.7236239000339992,
+      "parent_cpu_seconds": 0.703125,
+      "peak_tree_rss_bytes": 276033536,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 18198320
+    },
+    {
+      "stage": "bpe_batch_16",
+      "call_seconds": 0.6870672000222839,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.6943393999827094,
+      "parent_cpu_seconds": 0.6875,
+      "peak_tree_rss_bytes": 296534016,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 18198320
+    },
+    {
+      "stage": "bpe_batch_64",
+      "call_seconds": 0.6869482999900356,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.6922982999822125,
+      "parent_cpu_seconds": 0.6875,
+      "peak_tree_rss_bytes": 296873984,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 18198320
+    },
+    {
+      "stage": "bpe_batch_128",
+      "call_seconds": 0.7002539000241086,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.7056374999810942,
+      "parent_cpu_seconds": 0.703125,
+      "peak_tree_rss_bytes": 298549248,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 18198320
+    },
+    {
+      "stage": "bpe_batch_512",
+      "call_seconds": 0.6901124999858439,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.6968495000037365,
+      "parent_cpu_seconds": 0.6875,
+      "peak_tree_rss_bytes": 298844160,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 18198320
+    },
+    {
+      "stage": "serialization_10000",
+      "characters_encoded": 16913869,
+      "call_seconds": 0.25419120001606643,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.255007800005842,
+      "parent_cpu_seconds": 0.265625,
+      "peak_tree_rss_bytes": 266199040,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 18198320
+    },
+    {
+      "stage": "serialization_100000",
+      "characters_encoded": 169133869,
+      "call_seconds": 2.777242499985732,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 2.7779331000056118,
+      "parent_cpu_seconds": 2.671875,
+      "peak_tree_rss_bytes": 266199040,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 18198320
+    },
+    {
+      "stage": "serialization_1000000",
+      "characters_encoded": 1691333869,
+      "call_seconds": 27.11154280003393,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 27.11219479999272,
+      "parent_cpu_seconds": 26.484375,
+      "peak_tree_rss_bytes": 266199040,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 18198320
+    },
+    {
+      "stage": "serialize_fixture_before",
+      "call_seconds": 0.059881300025153905,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.06063269998412579,
+      "parent_cpu_seconds": 0.0625,
+      "peak_tree_rss_bytes": 266199040,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 18198320
+    },
+    {
+      "stage": "serialize_fixture_after",
+      "call_seconds": 0.02588939998531714,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.02653279999503866,
+      "parent_cpu_seconds": 0.03125,
+      "peak_tree_rss_bytes": 267075584,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 18198320
+    }
+  ],
+  "python": "3.12.13 (main, Apr  7 2026, 20:53:22) [MSC v.1944 64 bit (AMD64)]",
+  "note": "serialization fixture experiment is not an implemented optimization"
+}

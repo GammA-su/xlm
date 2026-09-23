@@ -1,0 +1,333 @@
+{
+  "reference": "2a82dfd8c2bc3e0d183d9c339ae0cfe8d073784f",
+  "fixture_only": true,
+  "comparisons": {
+    "ascii_chars": {
+      "before_seconds": 0.35684810002567247,
+      "after_seconds": 0.016678800049703568,
+      "speedup": 21.395310151944336,
+      "exact_equal": true
+    },
+    "unicode_chars": {
+      "before_seconds": 0.3972760000033304,
+      "after_seconds": 0.33877859998028725,
+      "speedup": 1.1726714734237846,
+      "exact_equal": true
+    },
+    "bpe_offsets": {
+      "before_seconds": 1.6058556999778375,
+      "after_seconds": 0.9324555000057444,
+      "speedup": 1.7221794498160445,
+      "exact_equal": true
+    },
+    "bpe_ids": {
+      "before_seconds": 1.5143565000034869,
+      "after_seconds": 0.7116275000153109,
+      "speedup": 2.1280185208847393,
+      "exact_equal": true
+    },
+    "token_writer": {
+      "before_seconds": 1.5125434000510722,
+      "after_seconds": 1.29342479998013,
+      "speedup": 1.1694096170680417,
+      "exact_equal": true
+    },
+    "split": {
+      "before_seconds": 0.01537009997991845,
+      "after_seconds": 0.014364399947226048,
+      "speedup": 1.0700133689111473,
+      "exact_equal": true
+    },
+    "serialize_fixture": {
+      "before_seconds": 0.04929280001670122,
+      "after_seconds": 0.026225499983411282,
+      "speedup": 1.8795752244144426,
+      "exact_equal": true
+    }
+  },
+  "batch_scaling": [
+    {
+      "batch_size": 1,
+      "seconds": 0.6407981000375003
+    },
+    {
+      "batch_size": 16,
+      "seconds": 0.675584800017532
+    },
+    {
+      "batch_size": 64,
+      "seconds": 0.6493737999699079
+    },
+    {
+      "batch_size": 128,
+      "seconds": 0.7093340999563225
+    },
+    {
+      "batch_size": 512,
+      "seconds": 0.6838986999937333
+    }
+  ],
+  "serialization": [
+    {
+      "documents": 10000,
+      "seconds": 0.24897949997102842
+    },
+    {
+      "documents": 100000,
+      "seconds": 2.7434844000381418
+    },
+    {
+      "documents": 1000000,
+      "seconds": 27.298187699983828
+    }
+  ],
+  "stages": [
+    {
+      "stage": "ascii_chars_before",
+      "call_seconds": 0.35684810002567247,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.3579096999601461,
+      "parent_cpu_seconds": 0.359375,
+      "peak_tree_rss_bytes": 234496000,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 0
+    },
+    {
+      "stage": "ascii_chars_after",
+      "call_seconds": 0.016678800049703568,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.017458599992096424,
+      "parent_cpu_seconds": 0.015625,
+      "peak_tree_rss_bytes": 234663936,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 0
+    },
+    {
+      "stage": "unicode_chars_before",
+      "call_seconds": 0.3972760000033304,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.3980627999990247,
+      "parent_cpu_seconds": 0.375,
+      "peak_tree_rss_bytes": 235245568,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 0
+    },
+    {
+      "stage": "unicode_chars_after",
+      "call_seconds": 0.33877859998028725,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.339426500024274,
+      "parent_cpu_seconds": 0.328125,
+      "peak_tree_rss_bytes": 235245568,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 0
+    },
+    {
+      "stage": "bpe_offsets_before",
+      "call_seconds": 1.6058556999778375,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 1.6065321000060067,
+      "parent_cpu_seconds": 1.59375,
+      "peak_tree_rss_bytes": 319000576,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 0
+    },
+    {
+      "stage": "bpe_offsets_after",
+      "call_seconds": 0.9324555000057444,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.9335010999930091,
+      "parent_cpu_seconds": 0.921875,
+      "peak_tree_rss_bytes": 413949952,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 0
+    },
+    {
+      "stage": "bpe_ids_before",
+      "call_seconds": 1.5143565000034869,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 1.5151742000016384,
+      "parent_cpu_seconds": 1.453125,
+      "peak_tree_rss_bytes": 258629632,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 0
+    },
+    {
+      "stage": "bpe_ids_after",
+      "call_seconds": 0.7116275000153109,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.7135157999582589,
+      "parent_cpu_seconds": 0.703125,
+      "peak_tree_rss_bytes": 276029440,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 0
+    },
+    {
+      "stage": "token_writer_before",
+      "call_seconds": 1.5125434000510722,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 1.5132614000467584,
+      "parent_cpu_seconds": 1.421875,
+      "peak_tree_rss_bytes": 254070784,
+      "parent_read_bytes": 9099160,
+      "parent_write_bytes": 9099160,
+      "artifact_bytes_after_stage": 9099160
+    },
+    {
+      "stage": "token_writer_after",
+      "call_seconds": 1.29342479998013,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 1.294008800003212,
+      "parent_cpu_seconds": 1.25,
+      "peak_tree_rss_bytes": 253050880,
+      "parent_read_bytes": 9099160,
+      "parent_write_bytes": 9099160,
+      "artifact_bytes_after_stage": 18198320
+    },
+    {
+      "stage": "split_before",
+      "call_seconds": 0.01537009997991845,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.01594930002465844,
+      "parent_cpu_seconds": 0.0,
+      "peak_tree_rss_bytes": 253145088,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 18198320
+    },
+    {
+      "stage": "split_after",
+      "call_seconds": 0.014364399947226048,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.014896799984853715,
+      "parent_cpu_seconds": 0.015625,
+      "peak_tree_rss_bytes": 253177856,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 18198320
+    },
+    {
+      "stage": "bpe_batch_1",
+      "call_seconds": 0.6407981000375003,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.6464402999845333,
+      "parent_cpu_seconds": 0.640625,
+      "peak_tree_rss_bytes": 275070976,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 18198320
+    },
+    {
+      "stage": "bpe_batch_16",
+      "call_seconds": 0.675584800017532,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.6811611999874003,
+      "parent_cpu_seconds": 0.671875,
+      "peak_tree_rss_bytes": 296280064,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 18198320
+    },
+    {
+      "stage": "bpe_batch_64",
+      "call_seconds": 0.6493737999699079,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.655410600011237,
+      "parent_cpu_seconds": 0.65625,
+      "peak_tree_rss_bytes": 295432192,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 18198320
+    },
+    {
+      "stage": "bpe_batch_128",
+      "call_seconds": 0.7093340999563225,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.7165646000066772,
+      "parent_cpu_seconds": 0.6875,
+      "peak_tree_rss_bytes": 298143744,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 18198320
+    },
+    {
+      "stage": "bpe_batch_512",
+      "call_seconds": 0.6838986999937333,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.6896310999873094,
+      "parent_cpu_seconds": 0.671875,
+      "peak_tree_rss_bytes": 298438656,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 18198320
+    },
+    {
+      "stage": "serialization_10000",
+      "characters_encoded": 16913869,
+      "call_seconds": 0.24897949997102842,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.24960800004191697,
+      "parent_cpu_seconds": 0.234375,
+      "peak_tree_rss_bytes": 262430720,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 18198320
+    },
+    {
+      "stage": "serialization_100000",
+      "characters_encoded": 169133869,
+      "call_seconds": 2.7434844000381418,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 2.7441490000346676,
+      "parent_cpu_seconds": 2.671875,
+      "peak_tree_rss_bytes": 262430720,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 18198320
+    },
+    {
+      "stage": "serialization_1000000",
+      "characters_encoded": 1691333869,
+      "call_seconds": 27.298187699983828,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 27.298803200013936,
+      "parent_cpu_seconds": 26.796875,
+      "peak_tree_rss_bytes": 262430720,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 18198320
+    },
+    {
+      "stage": "serialize_fixture_before",
+      "call_seconds": 0.04929280001670122,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.049862499989103526,
+      "parent_cpu_seconds": 0.046875,
+      "peak_tree_rss_bytes": 262430720,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 18198320
+    },
+    {
+      "stage": "serialize_fixture_after",
+      "call_seconds": 0.026225499983411282,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 0.026777499995660037,
+      "parent_cpu_seconds": 0.03125,
+      "peak_tree_rss_bytes": 263069696,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 18198320
+    }
+  ],
+  "python": "3.12.13 (main, Apr  7 2026, 20:53:22) [MSC v.1944 64 bit (AMD64)]",
+  "note": "serialization fixture experiment is not an implemented optimization"
+}

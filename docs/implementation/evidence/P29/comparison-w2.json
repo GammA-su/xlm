@@ -1,0 +1,116 @@
+{
+  "fixture_only": true,
+  "documents": 10000,
+  "stages": [
+    {
+      "stage": "fixture_generation",
+      "before_seconds": 1.4610753000015393,
+      "after_seconds": 1.5266653000144288,
+      "speedup": 0.9570370794356369,
+      "before_rss_bytes": 226119680,
+      "after_rss_bytes": 226283520
+    },
+    {
+      "stage": "gzip_decode_publication",
+      "before_seconds": 0.36427760001970455,
+      "after_seconds": 0.3437596000148915,
+      "speedup": 1.0596870603873296,
+      "before_rss_bytes": 226217984,
+      "after_rss_bytes": 226508800
+    },
+    {
+      "stage": "adaptation_jsonl",
+      "before_seconds": 0.7051779000321403,
+      "after_seconds": 0.7268925000098534,
+      "speedup": 0.970126806952309,
+      "before_rss_bytes": 226979840,
+      "after_rss_bytes": 227737600
+    },
+    {
+      "stage": "canonical_sharding",
+      "before_seconds": 1.2830075999954715,
+      "after_seconds": 1.1724414000054821,
+      "speedup": 1.0943042441093196,
+      "before_rss_bytes": 229072896,
+      "after_rss_bytes": 230301696
+    },
+    {
+      "stage": "cleaning",
+      "before_seconds": 7.1765929000102915,
+      "after_seconds": 10.099969600036275,
+      "speedup": 0.7105558911765949,
+      "before_rss_bytes": 232345600,
+      "after_rss_bytes": 689717248
+    },
+    {
+      "stage": "split_and_publish",
+      "before_seconds": 1.029437199991662,
+      "after_seconds": 1.1468521000351757,
+      "speedup": 0.8976198412681876,
+      "before_rss_bytes": 236101632,
+      "after_rss_bytes": 234889216
+    },
+    {
+      "stage": "fixture_tokenizer_fit",
+      "before_seconds": 0.16421439999248832,
+      "after_seconds": 0.09395030001178384,
+      "speedup": 1.7478858499854872,
+      "before_rss_bytes": 237469696,
+      "after_rss_bytes": 234889216
+    },
+    {
+      "stage": "tokenization_shards",
+      "before_seconds": 6.668672900006641,
+      "after_seconds": 6.889226500003133,
+      "speedup": 0.967985723796947,
+      "before_rss_bytes": 237613056,
+      "after_rss_bytes": 236404736
+    },
+    {
+      "stage": "token_verification",
+      "before_seconds": 0.07025019999127835,
+      "after_seconds": 0.0723852000082843,
+      "speedup": 0.9705050201317175,
+      "before_rss_bytes": 237613056,
+      "after_rss_bytes": 236404736
+    },
+    {
+      "stage": "mmap_packing",
+      "before_seconds": 0.4971159999840893,
+      "after_seconds": 0.5306354999775067,
+      "speedup": 0.9368314031103492,
+      "before_rss_bytes": 243449856,
+      "after_rss_bytes": 242032640
+    },
+    {
+      "stage": "loader_dummy_consume",
+      "before_seconds": 0.10691019997466356,
+      "after_seconds": 0.1070289999479428,
+      "speedup": 0.9988900207108632,
+      "before_rss_bytes": 237621248,
+      "after_rss_bytes": 236408832
+    }
+  ],
+  "exact_artifact_sha256": {
+    "selected.jsonl": "f6868996fff374f280e8bd41e4cc37b6f97c0f24d4dd3a61d0dda9a20722236b",
+    "adapted/documents.jsonl": "ab66ccb90195dbe30840d840ab597a146fbc590b39c7e309931db897667a2f80",
+    "cleaned/documents.jsonl": "8ac92e35ee0971f28e705f18c92be8fd580bd3d0b4d190ebac502331cd1b4119",
+    "split/documents.jsonl": "3b9b36cfabb511018f91f42d2013c1bbe89f408e2875258fab096c6975349dc8",
+    "tokens/tokens.bin": "6680d95c55b81da0d79a8163093e131b0e9b7d08b034ef52ab9dd11f74d3fdda",
+    "tokens/offsets.jsonl": "4e43fcd05466a2a5ac447fe3dc6fd64349c4fd5b513c8c7f0ccf741363f96acc",
+    "tokens/shard_manifest.json": "4f9c05268edc5a6fca027ee8e0f45abc2d3c9618601cd47ba7794b1dbaddbf53",
+    "tokens/shard_counters.json": "120c31b47963b8651e36ef3ef196bc16a063caa774f88781ceb376e8d6659b17",
+    "tokenizer/tokenizer.json": "fd24a8ad21a0c2cd2009bd930f7436d88dbdd096de2945e18c5533ff4102fed5",
+    "tokenizer/tokenizer_manifest.json": "da87839ea0449111fcddee99dc8c746c915738de99aca6ecef1174cca4a6504a",
+    "sharded/dataset-manifest.json": "ea363dd0d18509805dcecd5c2add2e6a7ca104b22a2cd9c9142b38dc459b79d1"
+  },
+  "decisions_metrics_and_targets_equal": true,
+  "excluded_nondeterministic_fields": [
+    "recorded_at",
+    "elapsed_seconds",
+    "duration_ms"
+  ],
+  "before_seconds": 18.06565689999843,
+  "after_seconds": 21.183141700050328,
+  "speedup": 0.8528318016187141
+}

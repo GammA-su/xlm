@@ -1,0 +1,50 @@
+[
+  {
+    "status": "fulfilled",
+    "value": {
+      "label": "ruff format",
+      "command": "$env:UV_PROJECT_ENVIRONMENT='D:\\Project\\xlm-integration-20260922\\.venv'; $env:PYTHONPATH=(Join-Path $PWD 'src'); $env:PYTHONDONTWRITEBYTECODE='1'; uv run --offline --locked --no-sync python -m ruff format --check src/xlm/data/cleaning/features.py src/xlm/data/tokens.py src/xlm/data/pools/splits.py src/xlm/tokenizers/bpe.py scripts/benchmark_pipeline.py scripts/benchmark_hotspots.py scripts/benchmark_auxiliary.py scripts/compare_pipeline.py tests/test_performance_cleaning.py tests/test_performance_tokenization.py tests/test_performance_splits.py",
+      "chunk_id": "96f08e",
+      "wall_time_seconds": 0.3443326,
+      "exit_code": 0,
+      "original_token_count": 7,
+      "output": "11 files already formatted\n"
+    }
+  },
+  {
+    "status": "fulfilled",
+    "value": {
+      "label": "ruff check",
+      "command": "$env:UV_PROJECT_ENVIRONMENT='D:\\Project\\xlm-integration-20260922\\.venv'; $env:PYTHONPATH=(Join-Path $PWD 'src'); $env:PYTHONDONTWRITEBYTECODE='1'; uv run --offline --locked --no-sync python -m ruff check src/xlm/data/cleaning/features.py src/xlm/data/tokens.py src/xlm/data/pools/splits.py src/xlm/tokenizers/bpe.py scripts/benchmark_pipeline.py scripts/benchmark_hotspots.py scripts/benchmark_auxiliary.py scripts/compare_pipeline.py tests/test_performance_cleaning.py tests/test_performance_tokenization.py tests/test_performance_splits.py",
+      "chunk_id": "559d7b",
+      "wall_time_seconds": 0.3020494,
+      "exit_code": 0,
+      "original_token_count": 5,
+      "output": "All checks passed!\n"
+    }
+  },
+  {
+    "status": "fulfilled",
+    "value": {
+      "label": "mypy",
+      "command": "$env:UV_PROJECT_ENVIRONMENT='D:\\Project\\xlm-integration-20260922\\.venv'; $env:PYTHONPATH=(Join-Path $PWD 'src'); $env:PYTHONDONTWRITEBYTECODE='1'; uv run --offline --locked --no-sync python -m mypy src/xlm/data/cleaning/features.py src/xlm/data/tokens.py src/xlm/data/pools/splits.py src/xlm/tokenizers/bpe.py scripts/benchmark_pipeline.py scripts/benchmark_hotspots.py scripts/benchmark_auxiliary.py scripts/compare_pipeline.py tests/test_performance_cleaning.py tests/test_performance_tokenization.py tests/test_performance_splits.py",
+      "chunk_id": "5fad37",
+      "wall_time_seconds": 1.8356029999999999,
+      "exit_code": 0,
+      "original_token_count": 31,
+      "output": "pyproject.toml: note: unused section(s): module = ['lm_eval', 'lm_eval.*']\r\nSuccess: no issues found in 11 source files\r\n"
+    }
+  },
+  {
+    "status": "fulfilled",
+    "value": {
+      "label": "git whitespace",
+      "command": "git -c core.whitespace=cr-at-eol diff --check",
+      "chunk_id": "a289b8",
+      "wall_time_seconds": 0.1458467,
+      "exit_code": 0,
+      "original_token_count": 0,
+      "output": ""
+    }
+  }
+]
