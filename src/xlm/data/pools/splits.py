@@ -162,8 +162,16 @@ def assign_splits(
     then audit, and everything else becomes training data.
     """
     cfg = config or SplitConfig()
-    doc_list = list(documents)
-    groups = build_split_groups(doc_list, dedup_result)
+    # Retain only metadata needed after grouping, not every document's text,
+    # nested metadata and transform log. Consume one-shot inputs exactly once.
+    byte_counts: dict[str, int] = {}
+
+    def counted_documents() -> Iterable[CanonicalDocument]:
+        for doc in documents:
+            byte_counts[doc.doc_id] = doc.utf8_byte_count
+            yield doc
+
+    groups = build_split_groups(counted_documents(), dedup_result)
 
     ordered = sorted(groups, key=lambda g: (_group_order_key(g, cfg.seed), g.group_id))
 
@@ -173,8 +181,6 @@ def assign_splits(
     achieved_documents = dict.fromkeys(VALID_SPLITS, 0)
     quick_val_doc_ids: list[str] = []
     quick_val_bytes = 0
-
-    byte_counts = {doc.doc_id: doc.utf8_byte_count for doc in doc_list}
 
     for group in ordered:
         # Whole groups only: a group is never partially held out, because a partial
