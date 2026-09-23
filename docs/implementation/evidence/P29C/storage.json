@@ -1,0 +1,10 @@
+{
+  "aggregate_retained_bytes": 7496474890,
+  "scope": "all artifacts/perf/p29c-* files, including inputs and temporary evidence",
+  "pipeline_sampled_peaks": {
+    "p29c-before-100k": 2150931250,
+    "p29c-final-code-100k": 2150931255,
+    "p29c-final-parallel-100k": 2150931247
+  },
+  "limits": "per-job sampled guardrails, not OS reservations; single-worker scratch is not sampled"
+}

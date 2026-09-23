@@ -1,0 +1,126 @@
+Wed Sep 23 18:42:56 2026    D:\Project\xlm-perf-astra-cleaning-v2\artifacts\perf\p29c-profile-before-100k\workers\worker-00000.pstats
+
+         96378553 function calls (91248701 primitive calls) in 97.960 seconds
+
+   Ordered by: internal time
+   List reduced from 317 to 45 due to restriction <45>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+   818024   18.908    0.000   18.908    0.000 {method 'search' of 're.Pattern' objects}
+ 16426096    5.539    0.000    5.539    0.000 repetition.py:208(<genexpr>)
+   300000    5.038    0.000    5.038    0.000 {method 'findall' of 're.Pattern' objects}
+4736160/100000    4.676    0.000    8.060    0.000 dataclasses.py:1332(_asdict_inner)
+   100000    4.047    0.000    7.768    0.000 features.py:67(compute_char_stats)
+   116667    3.963    0.000    9.502    0.000 {built-in method _collections._count_elements}
+   100000    3.401    0.000   19.951    0.000 language.py:127(_heuristic_classify)
+   100000    3.275    0.000   10.175    0.000 pii.py:133(apply)
+       82    3.078    0.038    3.078    0.038 {built-in method nt.fsync}
+    97913    2.899    0.000   81.221    0.001 pipeline.py:165(_iterate)
+ 16659133    2.499    0.000    2.499    0.000 {method 'lower' of 'str' objects}
+   369522    2.235    0.000    3.659    0.000 repetition.py:50(is_structural_separator_line)
+   100000    1.985    0.000    1.985    0.000 encoder.py:205(iterencode)
+   100000    1.794    0.000   20.740    0.000 repetition.py:108(apply)
+     3067    1.655    0.001    1.957    0.001 {method 'acquire' of '_thread.lock' objects}
+   200123    1.589    0.000    1.589    0.000 {method 'split' of 'str' objects}
+   939577    1.376    0.000    1.376    0.000 {method 'replace' of 'str' objects}
+  3387534    1.334    0.000    1.334    0.000 language.py:184(<genexpr>)
+   100000    1.124    0.000    1.124    0.000 decoder.py:344(raw_decode)
+   100000    1.118    0.000    1.118    0.000 {method 'split' of 're.Pattern' objects}
+1761696/1468080    1.004    0.000    2.061    0.000 dataclasses.py:1382(<genexpr>)
+  6080530    0.906    0.000    0.906    0.000 {method 'isalnum' of 'str' objects}
+   289653    0.833    0.000    0.833    0.000 {method 'translate' of 'bytes' objects}
+   100041    0.824    0.000    4.072    0.000 sharded.py:224(documents)
+      767    0.788    0.001  190.194    0.248 threading.py:637(wait)
+   100000    0.746    0.000   21.008    0.000 language.py:201(apply)
+   100000    0.745    0.000    3.503    0.000 boilerplate.py:102(apply)
+   334101    0.717    0.000    2.669    0.000 {built-in method builtins.sum}
+   100000    0.716    0.000    2.300    0.000 length_noise.py:222(apply)
+   100000    0.656    0.000    3.665    0.000 normalization.py:42(apply)
+   100000    0.656    0.000    1.333    0.000 html.py:131(apply)
+  2937822    0.645    0.000    0.788    0.000 {built-in method builtins.isinstance}
+3866808/3866803    0.614    0.000    0.614    0.000 {built-in method builtins.len}
+   100000    0.583    0.000   10.637    0.000 length_noise.py:100(apply)
+   100000    0.573    0.000    1.270    0.000 base.py:71(create_transformed_copy)
+   393739    0.555    0.000    0.555    0.000 {built-in method builtins.round}
+   100001    0.544    0.000    0.544    0.000 repetition.py:211(<genexpr>)
+   100000    0.506    0.000    0.870    0.000 dataclasses.py:1278(fields)
+  3333291    0.501    0.000    0.501    0.000 {method 'isalpha' of 'str' objects}
+  3333291    0.498    0.000    0.498    0.000 {method 'isspace' of 'str' objects}
+  2296245    0.448    0.000    0.448    0.000 {built-in method time.monotonic}
+  2830583    0.419    0.000    0.419    0.000 {method 'isascii' of 'str' objects}
+  2747239    0.418    0.000    0.418    0.000 {method 'isdigit' of 'str' objects}
+  2281100    0.409    0.000    0.409    0.000 {built-in method builtins.getattr}
+   987232    0.407    0.000    0.574    0.000 dataclasses.py:1296(_is_dataclass_instance)
+
+
+Wed Sep 23 18:42:56 2026    D:\Project\xlm-perf-astra-cleaning-v2\artifacts\perf\p29c-profile-before-100k\workers\worker-00000.pstats
+
+         96378553 function calls (91248701 primitive calls) in 97.960 seconds
+
+   Ordered by: cumulative time
+   List reduced from 317 to 35 due to restriction <35>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+      767    0.788    0.001  190.194    0.248 threading.py:637(wait)
+      766    0.012    0.000   95.267    0.124 threading.py:323(wait)
+    97913    2.899    0.000   81.221    0.001 pipeline.py:165(_iterate)
+   100000    0.746    0.000   21.008    0.000 language.py:201(apply)
+   100000    1.794    0.000   20.740    0.000 repetition.py:108(apply)
+   100000    3.401    0.000   19.951    0.000 language.py:127(_heuristic_classify)
+   818024   18.908    0.000   18.908    0.000 {method 'search' of 're.Pattern' objects}
+       41    0.069    0.002   11.778    0.287 sharded.py:209(_process_unit)
+   100000    0.583    0.000   10.637    0.000 length_noise.py:100(apply)
+   100000    3.275    0.000   10.175    0.000 pii.py:133(apply)
+   116667    0.285    0.000   10.129    0.000 __init__.py:595(__init__)
+   116667    0.108    0.000    9.844    0.000 __init__.py:669(update)
+   100000    0.214    0.000    9.764    0.000 length_noise.py:75(_is_high_density_educational)
+   116667    3.963    0.000    9.502    0.000 {built-in method _collections._count_elements}
+   100000    0.103    0.000    8.264    0.000 dataclasses.py:1308(asdict)
+    97872    0.075    0.000    8.257    0.000 contracts.py:91(to_dict)
+4736160/100000    4.676    0.000    8.060    0.000 dataclasses.py:1332(_asdict_inner)
+   100000    0.066    0.000    7.979    0.000 language.py:151(latin_alpha)
+   200033    0.168    0.000    7.973    0.000 features.py:150(chars)
+   100000    4.047    0.000    7.768    0.000 features.py:67(compute_char_stats)
+        1    0.000    0.000    6.768    6.768 sharded.py:297(clean_unit_worker)
+ 16426096    5.539    0.000    5.539    0.000 repetition.py:208(<genexpr>)
+   300000    5.038    0.000    5.038    0.000 {method 'findall' of 're.Pattern' objects}
+       82    0.002    0.000    4.441    0.054 mock.py:1134(__call__)
+   100041    0.824    0.000    4.072    0.000 sharded.py:224(documents)
+   100000    0.656    0.000    3.665    0.000 normalization.py:42(apply)
+   369522    2.235    0.000    3.659    0.000 repetition.py:50(is_structural_separator_line)
+   100000    0.745    0.000    3.503    0.000 boilerplate.py:102(apply)
+       82    0.000    0.000    3.080    0.038 mock.py:1142(_mock_call)
+       82    0.001    0.000    3.079    0.038 mock.py:1191(_execute_mock_call)
+       82    3.078    0.038    3.078    0.038 {built-in method nt.fsync}
+   334101    0.717    0.000    2.669    0.000 {built-in method builtins.sum}
+   100000    0.294    0.000    2.618    0.000 __init__.py:183(dumps)
+ 16659133    2.499    0.000    2.499    0.000 {method 'lower' of 'str' objects}
+       41    0.001    0.000    2.300    0.056 sharded.py:167(close)
+
+
+Wed Sep 23 18:42:56 2026    D:\Project\xlm-perf-astra-cleaning-v2\artifacts\perf\p29c-profile-before-100k\workers\worker-00000.pstats
+
+         96378553 function calls (91248701 primitive calls) in 97.960 seconds
+
+   Ordered by: cumulative time
+   List reduced from 317 to 6 due to restriction <'length_noise'>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+   100000    0.583    0.000   10.637    0.000 length_noise.py:100(apply)
+   100000    0.214    0.000    9.764    0.000 length_noise.py:75(_is_high_density_educational)
+   100000    0.716    0.000    2.300    0.000 length_noise.py:222(apply)
+   800000    0.396    0.000    0.396    0.000 length_noise.py:84(<genexpr>)
+        1    0.000    0.000    0.000    0.000 length_noise.py:71(__init__)
+        1    0.000    0.000    0.000    0.000 length_noise.py:218(__init__)
+
+
+   Ordered by: cumulative time
+   List reduced from 317 to 1 due to restriction <"method 'search'">
+
+Function                                   was called by...
+                                               ncalls  tottime  cumtime
+{method 'search' of 're.Pattern' objects}  <-  349930    0.641    0.641  boilerplate.py:83(_is_boilerplate_paragraph)
+                                               100000    0.097    0.097  html.py:131(apply)
+                                               100000    8.995    8.995  length_noise.py:75(_is_high_density_educational)
+                                               100000    6.436    6.436  pii.py:133(apply)
+                                               168094    2.739    2.739  repetition.py:108(apply)

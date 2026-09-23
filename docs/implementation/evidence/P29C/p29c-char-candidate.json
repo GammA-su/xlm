@@ -1,0 +1,55 @@
+{
+  "rows": [
+    {
+      "function": "chars",
+      "mode": "reference",
+      "repeat": 0,
+      "seconds": 0.14222500001778826
+    },
+    {
+      "function": "chars",
+      "mode": "mixed",
+      "repeat": 0,
+      "seconds": 0.10801210004137829
+    },
+    {
+      "function": "chars",
+      "mode": "mixed",
+      "repeat": 1,
+      "seconds": 0.09441510000033304
+    },
+    {
+      "function": "chars",
+      "mode": "reference",
+      "repeat": 1,
+      "seconds": 0.15183889999752864
+    }
+  ],
+  "allocations": [
+    {
+      "function": "language",
+      "mode": "reference",
+      "python_peak_bytes": 45614
+    },
+    {
+      "function": "language",
+      "mode": "lower",
+      "python_peak_bytes": 44870
+    },
+    {
+      "function": "repetition",
+      "mode": "reference",
+      "python_peak_bytes": 88680
+    },
+    {
+      "function": "repetition",
+      "mode": "zip",
+      "python_peak_bytes": 61526
+    },
+    {
+      "function": "repetition",
+      "mode": "ordinal",
+      "python_peak_bytes": 65796
+    }
+  ]
+}

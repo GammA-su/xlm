@@ -1,0 +1,1648 @@
+{
+  "fixture_only": true,
+  "scheduling": "static",
+  "workers": 4,
+  "profiled": false,
+  "shard_mib": 1,
+  "output_shard_mib": 0,
+  "measurement": {
+    "stage": "cleaning",
+    "measurement_workers": 4,
+    "parent_fsync_calls": 5,
+    "wall_seconds": 33.50807719997829,
+    "parent_cpu_seconds": 1.90625,
+    "peak_tree_rss_bytes": 1207435264,
+    "parent_read_bytes": 235319152,
+    "parent_write_bytes": 100806675,
+    "artifact_bytes_after_stage": 100802148,
+    "sampled_peak_artifact_bytes": 201583860
+  },
+  "throughput": {
+    "input_documents": 128,
+    "accepted_documents": 96,
+    "rejected_documents": 32,
+    "quarantine_records": 32,
+    "input_bytes": 134217696,
+    "output_bytes": 100663296,
+    "parse_seconds": 0.549000000115484,
+    "stage_seconds": {
+      "canonical_normalization": 0.21799999993527308,
+      "html_extraction": 0.06299999996554106,
+      "boilerplate_removal": 2.117000000027474,
+      "repetition_filter": 5.66599999985192,
+      "language_filter": 13.124000000301749,
+      "noise_filter": 1.6549999998533167,
+      "length_filter": 0.0,
+      "pii_secret_filter": 0.4690000000409782
+    },
+    "serialization_seconds": 0.7540000000735745,
+    "accepted_write_seconds": 0.2170000000623986,
+    "quarantine_seconds": 0.014999999955762178,
+    "fsync_seconds": 29.436000000336207,
+    "wall_seconds": 33.328,
+    "docs_per_second": 3.8406144983153845,
+    "input_mib_per_second": 3.840613582641533,
+    "output_mib_per_second": 2.8804608737365385,
+    "workers": 4,
+    "input_shards": 129,
+    "input_kind": "single_file",
+    "output_shards": 1,
+    "peak_rss_bytes": 230133760
+  },
+  "worker_telemetry": [
+    {
+      "pid": 81124,
+      "start": 285068.3319572,
+      "end": 285080.4974992,
+      "dispatch_to_start_seconds": 8.122213900031056,
+      "wall_seconds": 12.165541999973357,
+      "cpu_seconds": 5.8125,
+      "units": [
+        {
+          "index": 0,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.0470000000204891,
+            "wall_seconds": 0.23500000004423782
+          }
+        },
+        {
+          "index": 4,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.0779999999795109,
+            "wall_seconds": 0.29699999996228144
+          }
+        },
+        {
+          "index": 8,
+          "timing": {
+            "parse_seconds": 0.015000000013969839,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.046999999962281436,
+            "wall_seconds": 0.23399999999674037
+          }
+        },
+        {
+          "index": 12,
+          "timing": {
+            "parse_seconds": 0.015000000013969839,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.045999999972991645,
+            "wall_seconds": 0.35899999999674037
+          }
+        },
+        {
+          "index": 16,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.17199999996228144,
+            "wall_seconds": 0.5160000000032596
+          }
+        },
+        {
+          "index": 20,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.031000000017229468,
+            "wall_seconds": 0.20300000003771856
+          }
+        },
+        {
+          "index": 24,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.09399999998277053,
+            "wall_seconds": 0.35999999998603016
+          }
+        },
+        {
+          "index": 28,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.03200000000651926,
+            "wall_seconds": 0.2029999999795109
+          }
+        },
+        {
+          "index": 32,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.26500000001396984,
+            "wall_seconds": 0.5620000000344589
+          }
+        },
+        {
+          "index": 36,
+          "timing": {
+            "parse_seconds": 0.01600000000325963,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 1.047000000020489,
+            "wall_seconds": 1.3439999999827705
+          }
+        },
+        {
+          "index": 40,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.031000000017229468,
+            "wall_seconds": 0.28100000001722947
+          }
+        },
+        {
+          "index": 44,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.14100000000325963,
+            "wall_seconds": 0.35999999998603016
+          }
+        },
+        {
+          "index": 48,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.0470000000204891,
+            "wall_seconds": 0.21799999999348074
+          }
+        },
+        {
+          "index": 52,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.03200000000651926,
+            "wall_seconds": 0.23499999998603016
+          }
+        },
+        {
+          "index": 56,
+          "timing": {
+            "parse_seconds": 0.01600000000325963,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.4220000000204891,
+            "wall_seconds": 0.8280000000377186
+          }
+        },
+        {
+          "index": 60,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.0470000000204891,
+            "wall_seconds": 0.2029999999795109
+          }
+        },
+        {
+          "index": 64,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.062000000034458935,
+            "wall_seconds": 0.28100000001722947
+          }
+        },
+        {
+          "index": 68,
+          "timing": {
+            "parse_seconds": 0.01600000000325963,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.35999999998603016,
+            "wall_seconds": 0.5629999999655411
+          }
+        },
+        {
+          "index": 72,
+          "timing": {
+            "parse_seconds": 0.01600000000325963,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.031000000017229468,
+            "wall_seconds": 0.18700000003445894
+          }
+        },
+        {
+          "index": 76,
+          "timing": {
+            "parse_seconds": 0.01600000000325963,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.20300000003771856,
+            "wall_seconds": 0.375
+          }
+        },
+        {
+          "index": 80,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.0470000000204891,
+            "wall_seconds": 0.2029999999795109
+          }
+        },
+        {
+          "index": 84,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.3130000000237487,
+            "wall_seconds": 0.6410000000032596
+          }
+        },
+        {
+          "index": 88,
+          "timing": {
+            "parse_seconds": 0.01600000000325963,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.031000000017229468,
+            "wall_seconds": 0.23399999999674037
+          }
+        },
+        {
+          "index": 92,
+          "timing": {
+            "parse_seconds": 0.015000000013969839,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.0940000000409782,
+            "wall_seconds": 0.2970000000204891
+          }
+        },
+        {
+          "index": 96,
+          "timing": {
+            "parse_seconds": 0.03200000000651926,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.031000000017229468,
+            "wall_seconds": 0.25
+          }
+        },
+        {
+          "index": 100,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.4690000000409782,
+            "wall_seconds": 0.6410000000032596
+          }
+        },
+        {
+          "index": 104,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.030999999959021807,
+            "wall_seconds": 0.2809999999590218
+          }
+        },
+        {
+          "index": 108,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.15600000001722947,
+            "wall_seconds": 0.32800000003771856
+          }
+        },
+        {
+          "index": 112,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.031000000017229468,
+            "wall_seconds": 0.21899999998277053
+          }
+        },
+        {
+          "index": 116,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.031000000017229468,
+            "wall_seconds": 0.5
+          }
+        },
+        {
+          "index": 120,
+          "timing": {
+            "parse_seconds": 0.01600000000325963,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.014999999955762178,
+            "fsync_seconds": 0.25,
+            "wall_seconds": 0.4369999999762513
+          }
+        },
+        {
+          "index": 124,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.0470000000204891,
+            "wall_seconds": 0.2190000000409782
+          }
+        },
+        {
+          "index": 128,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.01600000000325963,
+            "wall_seconds": 0.046999999962281436
+          }
+        }
+      ]
+    },
+    {
+      "pid": 71232,
+      "start": 285068.5138911,
+      "end": 285089.1856212,
+      "dispatch_to_start_seconds": 8.304147800023202,
+      "wall_seconds": 20.671730100002605,
+      "cpu_seconds": 10.484375,
+      "units": [
+        {
+          "index": 1,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.015000000013969839,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.0470000000204891,
+            "wall_seconds": 0.5310000000172295
+          }
+        },
+        {
+          "index": 5,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.061999999976251274,
+            "wall_seconds": 0.5309999999590218
+          }
+        },
+        {
+          "index": 9,
+          "timing": {
+            "parse_seconds": 0.01600000000325963,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.061999999976251274,
+            "wall_seconds": 0.5
+          }
+        },
+        {
+          "index": 13,
+          "timing": {
+            "parse_seconds": 0.014999999955762178,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.0470000000204891,
+            "wall_seconds": 0.5630000000237487
+          }
+        },
+        {
+          "index": 17,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 1.562999999965541,
+            "wall_seconds": 2.0939999999827705
+          }
+        },
+        {
+          "index": 21,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.0779999999795109,
+            "wall_seconds": 0.40600000001722947
+          }
+        },
+        {
+          "index": 25,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.125,
+            "wall_seconds": 0.5470000000204891
+          }
+        },
+        {
+          "index": 29,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.39000000001396984,
+            "wall_seconds": 0.9839999999967404
+          }
+        },
+        {
+          "index": 33,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.014999999955762178,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.11000000004423782,
+            "wall_seconds": 0.5160000000032596
+          }
+        },
+        {
+          "index": 37,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.14100000000325963,
+            "wall_seconds": 0.46899999998277053
+          }
+        },
+        {
+          "index": 41,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.14100000000325963,
+            "wall_seconds": 0.4529999999795109
+          }
+        },
+        {
+          "index": 45,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.07800000003771856,
+            "wall_seconds": 0.45300000003771856
+          }
+        },
+        {
+          "index": 49,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.21899999998277053,
+            "wall_seconds": 0.5939999999827705
+          }
+        },
+        {
+          "index": 53,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.09399999998277053,
+            "wall_seconds": 0.4529999999795109
+          }
+        },
+        {
+          "index": 57,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.014999999955762178,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.5630000000237487,
+            "wall_seconds": 0.9060000000172295
+          }
+        },
+        {
+          "index": 61,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.18700000003445894,
+            "wall_seconds": 0.5310000000172295
+          }
+        },
+        {
+          "index": 65,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.2029999999795109,
+            "wall_seconds": 0.5629999999655411
+          }
+        },
+        {
+          "index": 69,
+          "timing": {
+            "parse_seconds": 0.01600000000325963,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.28100000001722947,
+            "wall_seconds": 0.6400000000139698
+          }
+        },
+        {
+          "index": 73,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.015000000013969839,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.4220000000204891,
+            "wall_seconds": 0.7970000000204891
+          }
+        },
+        {
+          "index": 77,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.0779999999795109,
+            "wall_seconds": 0.46899999998277053
+          }
+        },
+        {
+          "index": 81,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.061999999976251274,
+            "wall_seconds": 0.48399999999674037
+          }
+        },
+        {
+          "index": 85,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.3130000000237487,
+            "wall_seconds": 0.6570000000065193
+          }
+        },
+        {
+          "index": 89,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.061999999976251274,
+            "wall_seconds": 0.4369999999762513
+          }
+        },
+        {
+          "index": 93,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.46899999998277053,
+            "wall_seconds": 0.9220000000204891
+          }
+        },
+        {
+          "index": 97,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.1720000000204891,
+            "wall_seconds": 0.6560000000172295
+          }
+        },
+        {
+          "index": 101,
+          "timing": {
+            "parse_seconds": 0.015000000013969839,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.2970000000204891,
+            "wall_seconds": 0.7189999999827705
+          }
+        },
+        {
+          "index": 105,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.18700000003445894,
+            "wall_seconds": 0.5310000000172295
+          }
+        },
+        {
+          "index": 109,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.5470000000204891,
+            "wall_seconds": 0.8599999999860302
+          }
+        },
+        {
+          "index": 113,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.2029999999795109,
+            "wall_seconds": 0.5779999999795109
+          }
+        },
+        {
+          "index": 117,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.031000000017229468,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.15600000001722947,
+            "wall_seconds": 0.5620000000344589
+          }
+        },
+        {
+          "index": 121,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0470000000204891,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.10899999999674037,
+            "wall_seconds": 0.46899999998277053
+          }
+        },
+        {
+          "index": 125,
+          "timing": {
+            "parse_seconds": 0.01600000000325963,
+            "serialize_seconds": 0.031000000017229468,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.35999999998603016,
+            "wall_seconds": 0.7660000000032596
+          }
+        }
+      ]
+    },
+    {
+      "pid": 60140,
+      "start": 285068.8200289,
+      "end": 285090.128294,
+      "dispatch_to_start_seconds": 8.610285600007046,
+      "wall_seconds": 21.308265100000426,
+      "cpu_seconds": 10.375,
+      "units": [
+        {
+          "index": 2,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.10899999999674037,
+            "wall_seconds": 0.4690000000409782
+          }
+        },
+        {
+          "index": 6,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.2809999999590218,
+            "wall_seconds": 0.6719999999622814
+          }
+        },
+        {
+          "index": 10,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.10899999999674037,
+            "wall_seconds": 0.5
+          }
+        },
+        {
+          "index": 14,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.5779999999795109,
+            "wall_seconds": 1.125
+          }
+        },
+        {
+          "index": 18,
+          "timing": {
+            "parse_seconds": 0.015000000013969839,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.7660000000032596,
+            "wall_seconds": 1.172000000020489
+          }
+        },
+        {
+          "index": 22,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.125,
+            "wall_seconds": 0.4529999999795109
+          }
+        },
+        {
+          "index": 26,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.10899999999674037,
+            "wall_seconds": 0.48399999999674037
+          }
+        },
+        {
+          "index": 30,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.40600000001722947,
+            "wall_seconds": 0.9850000000442378
+          }
+        },
+        {
+          "index": 34,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.015000000013969839,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.34399999998277053,
+            "wall_seconds": 0.9059999999590218
+          }
+        },
+        {
+          "index": 38,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.015000000013969839,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.046999999962281436,
+            "wall_seconds": 0.375
+          }
+        },
+        {
+          "index": 42,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.015000000013969839,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.046999999962281436,
+            "wall_seconds": 0.5
+          }
+        },
+        {
+          "index": 46,
+          "timing": {
+            "parse_seconds": 0.01600000000325963,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.2029999999795109,
+            "wall_seconds": 0.6410000000032596
+          }
+        },
+        {
+          "index": 50,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.18699999997625127,
+            "wall_seconds": 0.5150000000139698
+          }
+        },
+        {
+          "index": 54,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.014999999955762178,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.5790000000270084,
+            "wall_seconds": 0.8910000000032596
+          }
+        },
+        {
+          "index": 58,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.20300000003771856,
+            "wall_seconds": 0.5150000000139698
+          }
+        },
+        {
+          "index": 62,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.031000000017229468,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.23399999999674037,
+            "wall_seconds": 0.5779999999795109
+          }
+        },
+        {
+          "index": 66,
+          "timing": {
+            "parse_seconds": 0.01600000000325963,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.26500000001396984,
+            "wall_seconds": 0.625
+          }
+        },
+        {
+          "index": 70,
+          "timing": {
+            "parse_seconds": 0.015000000013969839,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.35899999999674037,
+            "wall_seconds": 0.875
+          }
+        },
+        {
+          "index": 74,
+          "timing": {
+            "parse_seconds": 0.01600000000325963,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.18800000002374873,
+            "wall_seconds": 0.5630000000237487
+          }
+        },
+        {
+          "index": 78,
+          "timing": {
+            "parse_seconds": 0.01600000000325963,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.5630000000237487,
+            "wall_seconds": 0.9529999999795109
+          }
+        },
+        {
+          "index": 82,
+          "timing": {
+            "parse_seconds": 0.01600000000325963,
+            "serialize_seconds": 0.014999999955762178,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.11000000004423782,
+            "wall_seconds": 0.5470000000204891
+          }
+        },
+        {
+          "index": 86,
+          "timing": {
+            "parse_seconds": 0.031000000017229468,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.4220000000204891,
+            "wall_seconds": 0.875
+          }
+        },
+        {
+          "index": 90,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.18699999997625127,
+            "wall_seconds": 0.6399999999557622
+          }
+        },
+        {
+          "index": 94,
+          "timing": {
+            "parse_seconds": 0.015000000013969839,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.39000000001396984,
+            "wall_seconds": 0.8440000000409782
+          }
+        },
+        {
+          "index": 98,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.125,
+            "wall_seconds": 0.5160000000032596
+          }
+        },
+        {
+          "index": 102,
+          "timing": {
+            "parse_seconds": 0.01600000000325963,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.39100000000325963,
+            "wall_seconds": 0.7969999999622814
+          }
+        },
+        {
+          "index": 106,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.2029999999795109,
+            "wall_seconds": 0.5
+          }
+        },
+        {
+          "index": 110,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.015000000013969839,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.10999999998603016,
+            "wall_seconds": 0.4220000000204891
+          }
+        },
+        {
+          "index": 114,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.06300000002374873,
+            "wall_seconds": 0.375
+          }
+        },
+        {
+          "index": 118,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.046999999962281436,
+            "wall_seconds": 0.4529999999795109
+          }
+        },
+        {
+          "index": 122,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.2970000000204891,
+            "wall_seconds": 0.7030000000377186
+          }
+        },
+        {
+          "index": 126,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.375,
+            "wall_seconds": 0.75
+          }
+        }
+      ]
+    },
+    {
+      "pid": 81892,
+      "start": 285068.8210601,
+      "end": 285090.2039923,
+      "dispatch_to_start_seconds": 8.611316800001077,
+      "wall_seconds": 21.38293220003834,
+      "cpu_seconds": 10.453125,
+      "units": [
+        {
+          "index": 3,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.045999999972991645,
+            "wall_seconds": 0.375
+          }
+        },
+        {
+          "index": 7,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.2809999999590218,
+            "wall_seconds": 0.7660000000032596
+          }
+        },
+        {
+          "index": 11,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0470000000204891,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.125,
+            "wall_seconds": 0.5940000000409782
+          }
+        },
+        {
+          "index": 15,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 1.25,
+            "wall_seconds": 1.75
+          }
+        },
+        {
+          "index": 19,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.0470000000204891,
+            "wall_seconds": 0.75
+          }
+        },
+        {
+          "index": 23,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.061999999976251274,
+            "wall_seconds": 0.5160000000032596
+          }
+        },
+        {
+          "index": 27,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.4220000000204891,
+            "wall_seconds": 1.0310000000172295
+          }
+        },
+        {
+          "index": 31,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.09399999998277053,
+            "wall_seconds": 0.48499999998603016
+          }
+        },
+        {
+          "index": 35,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.015000000013969839,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.25,
+            "wall_seconds": 0.5620000000344589
+          }
+        },
+        {
+          "index": 39,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.18700000003445894,
+            "wall_seconds": 0.5
+          }
+        },
+        {
+          "index": 43,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.015000000013969839,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.4529999999795109,
+            "wall_seconds": 0.8439999999827705
+          }
+        },
+        {
+          "index": 47,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.01600000000325963,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.061999999976251274,
+            "wall_seconds": 0.4369999999762513
+          }
+        },
+        {
+          "index": 51,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.062000000034458935,
+            "wall_seconds": 0.4690000000409782
+          }
+        },
+        {
+          "index": 55,
+          "timing": {
+            "parse_seconds": 0.01600000000325963,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.21899999998277053,
+            "wall_seconds": 0.5939999999827705
+          }
+        },
+        {
+          "index": 59,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.18700000003445894,
+            "wall_seconds": 0.5310000000172295
+          }
+        },
+        {
+          "index": 63,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.015000000013969839,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.1720000000204891,
+            "wall_seconds": 0.5
+          }
+        },
+        {
+          "index": 67,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.2649999999557622,
+            "wall_seconds": 0.6559999999590218
+          }
+        },
+        {
+          "index": 71,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.375,
+            "wall_seconds": 0.7820000000065193
+          }
+        },
+        {
+          "index": 75,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.2190000000409782,
+            "wall_seconds": 0.6870000000344589
+          }
+        },
+        {
+          "index": 79,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.014999999955762178,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.4850000000442378,
+            "wall_seconds": 0.8910000000032596
+          }
+        },
+        {
+          "index": 83,
+          "timing": {
+            "parse_seconds": 0.030999999959021807,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.125,
+            "wall_seconds": 0.6089999999967404
+          }
+        },
+        {
+          "index": 87,
+          "timing": {
+            "parse_seconds": 0.015000000013969839,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.4369999999762513,
+            "wall_seconds": 0.9059999999590218
+          }
+        },
+        {
+          "index": 91,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.18699999997625127,
+            "wall_seconds": 0.6410000000032596
+          }
+        },
+        {
+          "index": 95,
+          "timing": {
+            "parse_seconds": 0.01600000000325963,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.34399999998277053,
+            "wall_seconds": 0.75
+          }
+        },
+        {
+          "index": 99,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.18699999997625127,
+            "wall_seconds": 0.5
+          }
+        },
+        {
+          "index": 103,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.015000000013969839,
+            "write_seconds": 0.01600000000325963,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.5469999999622814,
+            "wall_seconds": 0.8910000000032596
+          }
+        },
+        {
+          "index": 107,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.23499999998603016,
+            "wall_seconds": 0.5470000000204891
+          }
+        },
+        {
+          "index": 111,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.015000000013969839,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.14100000000325963,
+            "wall_seconds": 0.48399999999674037
+          }
+        },
+        {
+          "index": 115,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.07900000002700835,
+            "wall_seconds": 0.39100000000325963
+          }
+        },
+        {
+          "index": 119,
+          "timing": {
+            "parse_seconds": 0.01600000000325963,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.15600000001722947,
+            "wall_seconds": 0.5150000000139698
+          }
+        },
+        {
+          "index": 123,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.28100000001722947,
+            "wall_seconds": 0.5779999999795109
+          }
+        },
+        {
+          "index": 127,
+          "timing": {
+            "parse_seconds": 0.01600000000325963,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.4220000000204891,
+            "wall_seconds": 0.8130000000237487
+          }
+        }
+      ]
+    }
+  ],
+  "parent_phases": [
+    {
+      "function": "plan_clean_units",
+      "wall_seconds": 0.08417210000334308,
+      "cpu_seconds": 0.09375
+    },
+    {
+      "function": "merge_unit_results",
+      "wall_seconds": 0.025788000028114766,
+      "cpu_seconds": 0.015625
+    },
+    {
+      "function": "_stream_concat",
+      "wall_seconds": 0.049290700000710785,
+      "cpu_seconds": 0.015625
+    },
+    {
+      "function": "_stream_concat",
+      "wall_seconds": 2.066104700032156,
+      "cpu_seconds": 0.3125
+    }
+  ],
+  "scientific_summary": {
+    "pipeline_hash": "8a3000e5658918832d081a5094082ebff1a1928946b9ebf5406c4b5eaf9a21c7",
+    "domain_preset": "educational_prose",
+    "total_input_docs": 128,
+    "total_output_docs": 96,
+    "total_input_bytes": 134217696,
+    "total_output_bytes": 100663296,
+    "total_rejected_docs": 32,
+    "document_yield_ratio": 0.75,
+    "byte_yield_ratio": 0.75,
+    "stage_metrics": [
+      {
+        "stage_name": "canonical_normalization",
+        "transform_id": "canonical_normalization",
+        "transform_version": "1",
+        "input_docs": 128,
+        "output_docs": 128,
+        "input_bytes": 134217696,
+        "output_bytes": 134217696,
+        "rejected_docs": 0
+      },
+      {
+        "stage_name": "html_extraction",
+        "transform_id": "html_extraction",
+        "transform_version": "1",
+        "input_docs": 128,
+        "output_docs": 128,
+        "input_bytes": 134217696,
+        "output_bytes": 134217696,
+        "rejected_docs": 0
+      },
+      {
+        "stage_name": "boilerplate_removal",
+        "transform_id": "boilerplate_removal",
+        "transform_version": "1",
+        "input_docs": 128,
+        "output_docs": 128,
+        "input_bytes": 134217696,
+        "output_bytes": 134217696,
+        "rejected_docs": 0
+      },
+      {
+        "stage_name": "repetition_filter",
+        "transform_id": "repetition_filter",
+        "transform_version": "2",
+        "input_docs": 128,
+        "output_docs": 128,
+        "input_bytes": 134217696,
+        "output_bytes": 134217696,
+        "rejected_docs": 0
+      },
+      {
+        "stage_name": "language_filter",
+        "transform_id": "language_filter",
+        "transform_version": "1",
+        "input_docs": 128,
+        "output_docs": 96,
+        "input_bytes": 134217696,
+        "output_bytes": 100663296,
+        "rejected_docs": 32
+      },
+      {
+        "stage_name": "noise_filter",
+        "transform_id": "noise_filter",
+        "transform_version": "1",
+        "input_docs": 96,
+        "output_docs": 96,
+        "input_bytes": 100663296,
+        "output_bytes": 100663296,
+        "rejected_docs": 0
+      },
+      {
+        "stage_name": "length_filter",
+        "transform_id": "length_filter",
+        "transform_version": "1",
+        "input_docs": 96,
+        "output_docs": 96,
+        "input_bytes": 100663296,
+        "output_bytes": 100663296,
+        "rejected_docs": 0
+      },
+      {
+        "stage_name": "pii_secret_filter",
+        "transform_id": "pii_secret_filter",
+        "transform_version": "1",
+        "input_docs": 96,
+        "output_docs": 96,
+        "input_bytes": 100663296,
+        "output_bytes": 100663296,
+        "rejected_docs": 0
+      }
+    ],
+    "reason_counts": {
+      "unsupported_language:non_en": 32
+    },
+    "is_partial_sample": false,
+    "declared_max_docs": 100000,
+    "completed": true
+  },
+  "accepted_sha256": "6a088619249cf71246182b414f0953074c308505d349bde30e35c801210b9621",
+  "quarantine_logical_sha256": "db8a2c968d7a6652f435ce5546a8a35833ec7c23f10e89be7fed86cd2f556d16",
+  "manifest": null,
+  "limits": {
+    "seconds": 900,
+    "rss_bytes": 3221225472,
+    "disk_bytes": 2147483648
+  },
+  "notes": [
+    "parent phase timers can nest; do not add nested phase times",
+    "worker CPU excludes interpreter bootstrap; wall minus CPU is not measured OS wait",
+    "dispatch-to-start includes planning, spawn, imports and queueing",
+    "RSS sampled at 100 ms, disk and process discovery at 1 s"
+  ]
+}

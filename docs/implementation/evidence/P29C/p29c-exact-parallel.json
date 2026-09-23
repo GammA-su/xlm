@@ -1,0 +1,22 @@
+{
+  "hashes": {
+    "selected.jsonl": "e3c1940ed8c890c18ee02c8e76b4246be5a28f97d849ff5f5acf13e60faa5285",
+    "adapted/documents.jsonl": "06ccd10453c6390aff14451f52dc1f20d178a443f53a2dbc4870821bc59cb496",
+    "cleaned/documents.jsonl": "68bbfeeff0038a4d4251b254bb6fb5076ba50ea2523253b13bae64bfa071cb7c",
+    "split/documents.jsonl": "49aaf1e6db7956aeb4663f2de8981713c4ec5bff1c24a528884a9ef2d165acc3",
+    "tokens/tokens.bin": "5ca3e133ca24dab4158b31484e1e700065fe73c482bb4c31a3781c62764fe610",
+    "tokens/offsets.jsonl": "b6b838bb82cf468ab240ff7a3cf09b544113d12a5f81409c4dae5bb28e5c328d",
+    "tokens/shard_manifest.json": "4d90c81d5affef2ccfdca061c5655898a1f356dad587a684f1e754edbeb60f7f",
+    "tokens/shard_counters.json": "1f9a432bea575450a80f8d08c4fae44083c34623f9f911f49f674542e02006b4",
+    "tokenizer/tokenizer.json": "64634c16ee5d57248ee15983c327cc4ea27c64683b15f6a704c8e04b04fbe852",
+    "tokenizer/tokenizer_manifest.json": "40d2fa01c8243771d5a71769cd0dfbc7be536ad29581c6d00d7885b32e2b91fc",
+    "sharded/dataset-manifest.json": "a87e445549335ded90d2e1a5770210a41ece1dda0a70c3b6bd095ceb8905f4e0"
+  },
+  "quarantine_logical_sha256": "5e10c1d40a00da2a7c810633294d603e725db854be5083333abf8330908347b1",
+  "code_fingerprints": [
+    "ab72fc5abfd07bcb2a2f7cbc69c3ee6ad04ea7830970ced34aaa7f929f173c8b",
+    "8a3000e5658918832d081a5094082ebff1a1928946b9ebf5406c4b5eaf9a21c7"
+  ],
+  "before_seconds": 160.55833619995974,
+  "after_seconds": 111.68797420000192
+}

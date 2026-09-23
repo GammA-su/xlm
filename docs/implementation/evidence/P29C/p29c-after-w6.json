@@ -1,0 +1,699 @@
+{
+  "fixture_only": true,
+  "workers": 6,
+  "profiled": false,
+  "shard_mib": 4,
+  "output_shard_mib": 0,
+  "measurement": {
+    "stage": "cleaning",
+    "measurement_workers": 6,
+    "parent_fsync_calls": 5,
+    "wall_seconds": 21.271204399992712,
+    "parent_cpu_seconds": 1.109375,
+    "peak_tree_rss_bytes": 1617408000,
+    "parent_read_bytes": 356634320,
+    "parent_write_bytes": 186521723,
+    "artifact_bytes_after_stage": 184702090,
+    "sampled_peak_artifact_bytes": 371197638
+  },
+  "throughput": {
+    "input_documents": 100000,
+    "accepted_documents": 97872,
+    "rejected_documents": 2128,
+    "quarantine_records": 2128,
+    "input_bytes": 95592938,
+    "output_bytes": 93456187,
+    "parse_seconds": 2.8269999997573905,
+    "stage_seconds": {
+      "canonical_normalization": 0.8440000000991859,
+      "html_extraction": 0.5339999999850988,
+      "boilerplate_removal": 2.9240000001736917,
+      "repetition_filter": 9.300000000221189,
+      "language_filter": 10.120999999518972,
+      "noise_filter": 1.740000000107102,
+      "length_filter": 0.06299999996554106,
+      "pii_secret_filter": 1.4360000000451691
+    },
+    "serialization_seconds": 5.78400000045076,
+    "accepted_write_seconds": 0.8409999998402782,
+    "quarantine_seconds": 0.09399999992456287,
+    "fsync_seconds": 9.403999999631196,
+    "wall_seconds": 21.11,
+    "docs_per_second": 4737.091425867654,
+    "input_mib_per_second": 4.318547124608023,
+    "output_mib_per_second": 4.222016354865876,
+    "workers": 6,
+    "input_shards": 41,
+    "input_kind": "single_file",
+    "output_shards": 1,
+    "peak_rss_bytes": 232906752
+  },
+  "worker_telemetry": [
+    {
+      "pid": 27160,
+      "start": 284806.3188381,
+      "end": 284817.3053369,
+      "dispatch_to_start_seconds": 6.297182800015435,
+      "wall_seconds": 10.986498799989931,
+      "cpu_seconds": 9.375,
+      "units": [
+        {
+          "index": 0,
+          "timing": {
+            "parse_seconds": 0.08000000001629815,
+            "serialize_seconds": 0.09200000000419095,
+            "write_seconds": 0.031000000017229468,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.10899999999674037,
+            "wall_seconds": 1.5630000000237487
+          }
+        },
+        {
+          "index": 6,
+          "timing": {
+            "parse_seconds": 0.06299999996554106,
+            "serialize_seconds": 0.14200000005075708,
+            "write_seconds": 0.044999999983701855,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.26600000000325963,
+            "wall_seconds": 1.5939999999827705
+          }
+        },
+        {
+          "index": 12,
+          "timing": {
+            "parse_seconds": 0.062000000034458935,
+            "serialize_seconds": 0.14099999994505197,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.2029999999795109,
+            "wall_seconds": 1.625
+          }
+        },
+        {
+          "index": 18,
+          "timing": {
+            "parse_seconds": 0.04800000000977889,
+            "serialize_seconds": 0.14200000005075708,
+            "write_seconds": 0.014999999955762178,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.11000000004423782,
+            "wall_seconds": 1.5780000000377186
+          }
+        },
+        {
+          "index": 24,
+          "timing": {
+            "parse_seconds": 0.07799999992130324,
+            "serialize_seconds": 0.12700000003678724,
+            "write_seconds": 0.046000000031199306,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.09399999998277053,
+            "wall_seconds": 1.5469999999622814
+          }
+        },
+        {
+          "index": 30,
+          "timing": {
+            "parse_seconds": 0.07799999992130324,
+            "serialize_seconds": 0.12500000005820766,
+            "write_seconds": 0.015000000013969839,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.10899999999674037,
+            "wall_seconds": 1.5310000000172295
+          }
+        },
+        {
+          "index": 36,
+          "timing": {
+            "parse_seconds": 0.0940000000409782,
+            "serialize_seconds": 0.12599999993108213,
+            "write_seconds": 0.01600000000325963,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.125,
+            "wall_seconds": 1.5160000000032596
+          }
+        }
+      ]
+    },
+    {
+      "pid": 79572,
+      "start": 284806.3198548,
+      "end": 284818.5645453,
+      "dispatch_to_start_seconds": 6.298199500015471,
+      "wall_seconds": 12.244690499966964,
+      "cpu_seconds": 9.40625,
+      "units": [
+        {
+          "index": 1,
+          "timing": {
+            "parse_seconds": 0.029999999911524355,
+            "serialize_seconds": 0.18699999997625127,
+            "write_seconds": 0.01600000000325963,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.4529999999795109,
+            "wall_seconds": 2.047000000020489
+          }
+        },
+        {
+          "index": 7,
+          "timing": {
+            "parse_seconds": 0.1099999999278225,
+            "serialize_seconds": 0.21899999998277053,
+            "write_seconds": 0.03200000000651926,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.3119999999762513,
+            "wall_seconds": 1.75
+          }
+        },
+        {
+          "index": 13,
+          "timing": {
+            "parse_seconds": 0.09500000003026798,
+            "serialize_seconds": 0.15500000002793968,
+            "write_seconds": 0.01600000000325963,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.3119999999762513,
+            "wall_seconds": 1.75
+          }
+        },
+        {
+          "index": 19,
+          "timing": {
+            "parse_seconds": 0.046000000031199306,
+            "serialize_seconds": 0.13999999995576218,
+            "write_seconds": 0.01600000000325963,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.35899999999674037,
+            "wall_seconds": 1.8439999999827705
+          }
+        },
+        {
+          "index": 25,
+          "timing": {
+            "parse_seconds": 0.09600000001955777,
+            "serialize_seconds": 0.17000000004190952,
+            "write_seconds": 0.01600000000325963,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.29699999996228144,
+            "wall_seconds": 1.7660000000032596
+          }
+        },
+        {
+          "index": 31,
+          "timing": {
+            "parse_seconds": 0.06400000001303852,
+            "serialize_seconds": 0.21700000000419095,
+            "write_seconds": 0.030999999959021807,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.25,
+            "wall_seconds": 1.6560000000172295
+          }
+        },
+        {
+          "index": 37,
+          "timing": {
+            "parse_seconds": 0.045999999914783984,
+            "serialize_seconds": 0.20100000005913898,
+            "write_seconds": 0.01600000000325963,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.10899999999674037,
+            "wall_seconds": 1.4060000000172295
+          }
+        }
+      ]
+    },
+    {
+      "pid": 76456,
+      "start": 284806.379876,
+      "end": 284818.6644138,
+      "dispatch_to_start_seconds": 6.358220699999947,
+      "wall_seconds": 12.284537800005637,
+      "cpu_seconds": 9.546875,
+      "units": [
+        {
+          "index": 2,
+          "timing": {
+            "parse_seconds": 0.045000000041909516,
+            "serialize_seconds": 0.1590000000433065,
+            "write_seconds": 0.01600000000325963,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.39000000001396984,
+            "wall_seconds": 1.9060000000172295
+          }
+        },
+        {
+          "index": 8,
+          "timing": {
+            "parse_seconds": 0.06300000002374873,
+            "serialize_seconds": 0.17300000006798655,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.030999999959021807,
+            "fsync_seconds": 0.29699999996228144,
+            "wall_seconds": 1.812999999965541
+          }
+        },
+        {
+          "index": 14,
+          "timing": {
+            "parse_seconds": 0.045999999972991645,
+            "serialize_seconds": 0.11099999997531995,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.26500000001396984,
+            "wall_seconds": 1.687000000034459
+          }
+        },
+        {
+          "index": 20,
+          "timing": {
+            "parse_seconds": 0.07600000005913898,
+            "serialize_seconds": 0.1579999999376014,
+            "write_seconds": 0.01600000000325963,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.375,
+            "wall_seconds": 1.8599999999860302
+          }
+        },
+        {
+          "index": 26,
+          "timing": {
+            "parse_seconds": 0.12299999996321276,
+            "serialize_seconds": 0.14200000005075708,
+            "write_seconds": 0.030999999959021807,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.3279999999795109,
+            "wall_seconds": 1.8119999999762513
+          }
+        },
+        {
+          "index": 32,
+          "timing": {
+            "parse_seconds": 0.06300000002374873,
+            "serialize_seconds": 0.12400000006891787,
+            "write_seconds": 0.014999999955762178,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.28100000001722947,
+            "wall_seconds": 1.7030000000377186
+          }
+        },
+        {
+          "index": 38,
+          "timing": {
+            "parse_seconds": 0.15500000002793968,
+            "serialize_seconds": 0.10999999998603016,
+            "write_seconds": 0.045999999972991645,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.14100000000325963,
+            "wall_seconds": 1.4689999999827705
+          }
+        }
+      ]
+    },
+    {
+      "pid": 81568,
+      "start": 284806.3923176,
+      "end": 284817.4715429,
+      "dispatch_to_start_seconds": 6.3706623000325635,
+      "wall_seconds": 11.079225299996324,
+      "cpu_seconds": 9.53125,
+      "units": [
+        {
+          "index": 3,
+          "timing": {
+            "parse_seconds": 0.0940000000409782,
+            "serialize_seconds": 0.12399999995250255,
+            "write_seconds": 0.01600000000325963,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.28100000001722947,
+            "wall_seconds": 1.7810000000172295
+          }
+        },
+        {
+          "index": 9,
+          "timing": {
+            "parse_seconds": 0.030999999959021807,
+            "serialize_seconds": 0.15700000000651926,
+            "write_seconds": 0.046000000031199306,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.09399999998277053,
+            "wall_seconds": 1.562999999965541
+          }
+        },
+        {
+          "index": 15,
+          "timing": {
+            "parse_seconds": 0.01600000000325963,
+            "serialize_seconds": 0.09500000003026798,
+            "write_seconds": 0.01600000000325963,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.09399999998277053,
+            "wall_seconds": 1.4839999999967404
+          }
+        },
+        {
+          "index": 21,
+          "timing": {
+            "parse_seconds": 0.06400000001303852,
+            "serialize_seconds": 0.15299999999115244,
+            "write_seconds": 0.014999999955762178,
+            "quarantine_seconds": 0.01600000000325963,
+            "fsync_seconds": 0.09399999998277053,
+            "wall_seconds": 1.5630000000237487
+          }
+        },
+        {
+          "index": 27,
+          "timing": {
+            "parse_seconds": 0.09500000003026798,
+            "serialize_seconds": 0.2339999999385327,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.15700000000651926,
+            "wall_seconds": 1.577999999979511
+          }
+        },
+        {
+          "index": 33,
+          "timing": {
+            "parse_seconds": 0.06299999996554106,
+            "serialize_seconds": 0.1390000000828877,
+            "write_seconds": 0.030999999959021807,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.10999999998603016,
+            "wall_seconds": 1.547000000020489
+          }
+        },
+        {
+          "index": 39,
+          "timing": {
+            "parse_seconds": 0.075999999884516,
+            "serialize_seconds": 0.10800000000745058,
+            "write_seconds": 0.01600000000325963,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.13999999995576218,
+            "wall_seconds": 1.5459999999729916
+          }
+        }
+      ]
+    },
+    {
+      "pid": 78904,
+      "start": 284806.4469719,
+      "end": 284816.9158065,
+      "dispatch_to_start_seconds": 6.425316600012593,
+      "wall_seconds": 10.468834600003902,
+      "cpu_seconds": 8.625,
+      "units": [
+        {
+          "index": 4,
+          "timing": {
+            "parse_seconds": 0.06300000002374873,
+            "serialize_seconds": 0.15700000000651926,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.4369999999762513,
+            "wall_seconds": 1.8910000000032596
+          }
+        },
+        {
+          "index": 10,
+          "timing": {
+            "parse_seconds": 0.07800000003771856,
+            "serialize_seconds": 0.1730000000097789,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.23499999998603016,
+            "wall_seconds": 1.6880000000237487
+          }
+        },
+        {
+          "index": 16,
+          "timing": {
+            "parse_seconds": 0.07700000004842877,
+            "serialize_seconds": 0.14200000005075708,
+            "write_seconds": 0.01600000000325963,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.07800000003771856,
+            "wall_seconds": 1.5150000000139698
+          }
+        },
+        {
+          "index": 22,
+          "timing": {
+            "parse_seconds": 0.045999999972991645,
+            "serialize_seconds": 0.10799999994924292,
+            "write_seconds": 0.03200000000651926,
+            "quarantine_seconds": 0.01600000000325963,
+            "fsync_seconds": 0.09299999999348074,
+            "wall_seconds": 1.577999999979511
+          }
+        },
+        {
+          "index": 28,
+          "timing": {
+            "parse_seconds": 0.04800000000977889,
+            "serialize_seconds": 0.11000000004423782,
+            "write_seconds": 0.014999999955762178,
+            "quarantine_seconds": 0.01600000000325963,
+            "fsync_seconds": 0.1559999999590218,
+            "wall_seconds": 1.577999999979511
+          }
+        },
+        {
+          "index": 34,
+          "timing": {
+            "parse_seconds": 0.0789999999688007,
+            "serialize_seconds": 0.1410000000614673,
+            "write_seconds": 0.01600000000325963,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.17099999997299165,
+            "wall_seconds": 1.625
+          }
+        },
+        {
+          "index": 40,
+          "timing": {
+            "parse_seconds": 0.01600000000325963,
+            "serialize_seconds": 0.046000000031199306,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.0779999999795109,
+            "wall_seconds": 0.5630000000237487
+          }
+        }
+      ]
+    },
+    {
+      "pid": 81368,
+      "start": 284806.4476013,
+      "end": 284817.1643344,
+      "dispatch_to_start_seconds": 6.425946000032127,
+      "wall_seconds": 10.716733099950943,
+      "cpu_seconds": 8.15625,
+      "units": [
+        {
+          "index": 5,
+          "timing": {
+            "parse_seconds": 0.0779999999795109,
+            "serialize_seconds": 0.15499999996973202,
+            "write_seconds": 0.04800000000977889,
+            "quarantine_seconds": 0.014999999955762178,
+            "fsync_seconds": 0.42199999996228144,
+            "wall_seconds": 1.8910000000032596
+          }
+        },
+        {
+          "index": 11,
+          "timing": {
+            "parse_seconds": 0.06299999996554106,
+            "serialize_seconds": 0.09399999998277053,
+            "write_seconds": 0.03200000000651926,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.31299999996554106,
+            "wall_seconds": 1.7660000000032596
+          }
+        },
+        {
+          "index": 17,
+          "timing": {
+            "parse_seconds": 0.062000000034458935,
+            "serialize_seconds": 0.14100000000325963,
+            "write_seconds": 0.015000000013969839,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.31299999996554106,
+            "wall_seconds": 1.75
+          }
+        },
+        {
+          "index": 23,
+          "timing": {
+            "parse_seconds": 0.061000000045169145,
+            "serialize_seconds": 0.09500000003026798,
+            "write_seconds": 0.07699999999022111,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.375,
+            "wall_seconds": 1.8589999999967404
+          }
+        },
+        {
+          "index": 29,
+          "timing": {
+            "parse_seconds": 0.061999999976251274,
+            "serialize_seconds": 0.14200000005075708,
+            "write_seconds": 0.015000000013969839,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.2970000000204891,
+            "wall_seconds": 1.7190000000409782
+          }
+        },
+        {
+          "index": 35,
+          "timing": {
+            "parse_seconds": 0.09399999992456287,
+            "serialize_seconds": 0.10899999999674037,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.28100000001722947,
+            "wall_seconds": 1.702999999979511
+          }
+        }
+      ]
+    }
+  ],
+  "parent_phases": [
+    {
+      "function": "plan_clean_units",
+      "wall_seconds": 0.15814479999244213,
+      "cpu_seconds": 0.15625
+    },
+    {
+      "function": "merge_unit_results",
+      "wall_seconds": 0.026718299952335656,
+      "cpu_seconds": 0.03125
+    },
+    {
+      "function": "_stream_concat",
+      "wall_seconds": 0.05798799998592585,
+      "cpu_seconds": 0.0
+    },
+    {
+      "function": "_stream_concat",
+      "wall_seconds": 1.4650865999865346,
+      "cpu_seconds": 0.1875
+    }
+  ],
+  "scientific_summary": {
+    "pipeline_hash": "8a3000e5658918832d081a5094082ebff1a1928946b9ebf5406c4b5eaf9a21c7",
+    "domain_preset": "educational_prose",
+    "total_input_docs": 100000,
+    "total_output_docs": 97872,
+    "total_input_bytes": 95592938,
+    "total_output_bytes": 93456187,
+    "total_rejected_docs": 2128,
+    "document_yield_ratio": 0.9787,
+    "byte_yield_ratio": 0.9776,
+    "stage_metrics": [
+      {
+        "stage_name": "canonical_normalization",
+        "transform_id": "canonical_normalization",
+        "transform_version": "1",
+        "input_docs": 100000,
+        "output_docs": 100000,
+        "input_bytes": 95592938,
+        "output_bytes": 95592938,
+        "rejected_docs": 0
+      },
+      {
+        "stage_name": "html_extraction",
+        "transform_id": "html_extraction",
+        "transform_version": "1",
+        "input_docs": 100000,
+        "output_docs": 100000,
+        "input_bytes": 95592938,
+        "output_bytes": 95592938,
+        "rejected_docs": 0
+      },
+      {
+        "stage_name": "boilerplate_removal",
+        "transform_id": "boilerplate_removal",
+        "transform_version": "1",
+        "input_docs": 100000,
+        "output_docs": 100000,
+        "input_bytes": 95592938,
+        "output_bytes": 95592938,
+        "rejected_docs": 0
+      },
+      {
+        "stage_name": "repetition_filter",
+        "transform_id": "repetition_filter",
+        "transform_version": "2",
+        "input_docs": 100000,
+        "output_docs": 100000,
+        "input_bytes": 95592938,
+        "output_bytes": 95592938,
+        "rejected_docs": 0
+      },
+      {
+        "stage_name": "language_filter",
+        "transform_id": "language_filter",
+        "transform_version": "1",
+        "input_docs": 100000,
+        "output_docs": 100000,
+        "input_bytes": 95592938,
+        "output_bytes": 95592938,
+        "rejected_docs": 0
+      },
+      {
+        "stage_name": "noise_filter",
+        "transform_id": "noise_filter",
+        "transform_version": "1",
+        "input_docs": 100000,
+        "output_docs": 100000,
+        "input_bytes": 95592938,
+        "output_bytes": 95592938,
+        "rejected_docs": 0
+      },
+      {
+        "stage_name": "length_filter",
+        "transform_id": "length_filter",
+        "transform_version": "1",
+        "input_docs": 100000,
+        "output_docs": 100000,
+        "input_bytes": 95592938,
+        "output_bytes": 95592938,
+        "rejected_docs": 0
+      },
+      {
+        "stage_name": "pii_secret_filter",
+        "transform_id": "pii_secret_filter",
+        "transform_version": "1",
+        "input_docs": 100000,
+        "output_docs": 97872,
+        "input_bytes": 95592938,
+        "output_bytes": 93456187,
+        "rejected_docs": 2128
+      }
+    ],
+    "reason_counts": {
+      "detected_secret:email_address": 2128
+    },
+    "is_partial_sample": false,
+    "declared_max_docs": 100000,
+    "completed": true
+  },
+  "accepted_sha256": "68bbfeeff0038a4d4251b254bb6fb5076ba50ea2523253b13bae64bfa071cb7c",
+  "quarantine_logical_sha256": "5e10c1d40a00da2a7c810633294d603e725db854be5083333abf8330908347b1",
+  "manifest": null,
+  "limits": {
+    "seconds": 900,
+    "rss_bytes": 3221225472,
+    "disk_bytes": 2147483648
+  },
+  "notes": [
+    "parent phase timers can nest; do not add nested phase times",
+    "worker CPU excludes interpreter bootstrap; wall minus CPU is not measured OS wait",
+    "dispatch-to-start includes planning, spawn, imports and queueing",
+    "RSS sampled at 100 ms, disk and process discovery at 1 s"
+  ]
+}

@@ -1,0 +1,2898 @@
+{
+  "fixture_only": true,
+  "scheduling": "dynamic",
+  "workers": 4,
+  "profiled": false,
+  "shard_mib": 1,
+  "output_shard_mib": 0,
+  "measurement": {
+    "stage": "cleaning",
+    "measurement_workers": 4,
+    "parent_fsync_calls": 5,
+    "wall_seconds": 21.54033770004753,
+    "parent_cpu_seconds": 1.359375,
+    "peak_tree_rss_bytes": 1212452864,
+    "parent_read_bytes": 235420714,
+    "parent_write_bytes": 100892007,
+    "artifact_bytes_after_stage": 100827975,
+    "sampled_peak_artifact_bytes": 147045388
+  },
+  "throughput": {
+    "input_documents": 128,
+    "accepted_documents": 96,
+    "rejected_documents": 32,
+    "quarantine_records": 32,
+    "input_bytes": 134217696,
+    "output_bytes": 100663296,
+    "parse_seconds": 0.2670000000507571,
+    "stage_seconds": {
+      "canonical_normalization": 0.26800000009825453,
+      "html_extraction": 0.07699999999022111,
+      "boilerplate_removal": 1.3389999999199063,
+      "repetition_filter": 4.484000000229571,
+      "language_filter": 10.774999999674037,
+      "noise_filter": 1.3680000000749715,
+      "length_filter": 0.0,
+      "pii_secret_filter": 0.3420000000623986
+    },
+    "serialization_seconds": 0.42400000005727634,
+    "accepted_write_seconds": 0.1699999999254942,
+    "quarantine_seconds": 0.0,
+    "fsync_seconds": 14.390999999886844,
+    "wall_seconds": 21.329,
+    "docs_per_second": 6.00121899760129,
+    "input_mib_per_second": 6.001217566799184,
+    "output_mib_per_second": 4.500914248200967,
+    "workers": 4,
+    "input_shards": 129,
+    "input_kind": "single_file",
+    "output_shards": 1,
+    "peak_rss_bytes": 231006208
+  },
+  "worker_telemetry": [
+    {
+      "pid": 66428,
+      "start": 285552.0025467,
+      "end": 285552.2373016,
+      "dispatch_to_start_seconds": 5.325752699980512,
+      "wall_seconds": 0.23475489998236299,
+      "cpu_seconds": 0.203125,
+      "units": [
+        {
+          "index": 0,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.030999999959021807,
+            "wall_seconds": 0.21899999998277053
+          }
+        }
+      ]
+    },
+    {
+      "pid": 74956,
+      "start": 285552.0231336,
+      "end": 285552.4129005,
+      "dispatch_to_start_seconds": 5.346339599986095,
+      "wall_seconds": 0.38976689998526126,
+      "cpu_seconds": 0.34375,
+      "units": [
+        {
+          "index": 1,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.0470000000204891,
+            "wall_seconds": 0.35899999999674037
+          }
+        }
+      ]
+    },
+    {
+      "pid": 7280,
+      "start": 285552.0245483,
+      "end": 285552.4750162,
+      "dispatch_to_start_seconds": 5.3477542999899015,
+      "wall_seconds": 0.450467899965588,
+      "cpu_seconds": 0.359375,
+      "units": [
+        {
+          "index": 2,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.015000000013969839,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.0779999999795109,
+            "wall_seconds": 0.42099999997299165
+          }
+        }
+      ]
+    },
+    {
+      "pid": 67092,
+      "start": 285552.0793535,
+      "end": 285552.5810481,
+      "dispatch_to_start_seconds": 5.402559499954805,
+      "wall_seconds": 0.5016946000396274,
+      "cpu_seconds": 0.359375,
+      "units": [
+        {
+          "index": 3,
+          "timing": {
+            "parse_seconds": 0.015000000013969839,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.15600000001722947,
+            "wall_seconds": 0.4850000000442378
+          }
+        }
+      ]
+    },
+    {
+      "pid": 66428,
+      "start": 285552.2379845,
+      "end": 285552.5384553,
+      "dispatch_to_start_seconds": 5.561190499982331,
+      "wall_seconds": 0.30047079996438697,
+      "cpu_seconds": 0.1875,
+      "units": [
+        {
+          "index": 4,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.10899999999674037,
+            "wall_seconds": 0.28100000001722947
+          }
+        }
+      ]
+    },
+    {
+      "pid": 74956,
+      "start": 285552.4136623,
+      "end": 285552.9299591,
+      "dispatch_to_start_seconds": 5.736868299951311,
+      "wall_seconds": 0.5162967999931425,
+      "cpu_seconds": 0.296875,
+      "units": [
+        {
+          "index": 5,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.14100000000325963,
+            "wall_seconds": 0.48499999998603016
+          }
+        }
+      ]
+    },
+    {
+      "pid": 7280,
+      "start": 285552.5145358,
+      "end": 285553.0107661,
+      "dispatch_to_start_seconds": 5.837741799943615,
+      "wall_seconds": 0.49623030005022883,
+      "cpu_seconds": 0.359375,
+      "units": [
+        {
+          "index": 6,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.14100000000325963,
+            "wall_seconds": 0.46899999998277053
+          }
+        }
+      ]
+    },
+    {
+      "pid": 66428,
+      "start": 285552.5392715,
+      "end": 285553.0471748,
+      "dispatch_to_start_seconds": 5.862477499991655,
+      "wall_seconds": 0.5079032999929041,
+      "cpu_seconds": 0.328125,
+      "units": [
+        {
+          "index": 7,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.10899999999674037,
+            "wall_seconds": 0.46899999998277053
+          }
+        }
+      ]
+    },
+    {
+      "pid": 67092,
+      "start": 285552.5819425,
+      "end": 285552.882919,
+      "dispatch_to_start_seconds": 5.905148499994539,
+      "wall_seconds": 0.30097649997333065,
+      "cpu_seconds": 0.1875,
+      "units": [
+        {
+          "index": 8,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.09399999998277053,
+            "wall_seconds": 0.28200000000651926
+          }
+        }
+      ]
+    },
+    {
+      "pid": 67092,
+      "start": 285552.8835819,
+      "end": 285553.3564165,
+      "dispatch_to_start_seconds": 6.2067878999514505,
+      "wall_seconds": 0.4728346000192687,
+      "cpu_seconds": 0.375,
+      "units": [
+        {
+          "index": 9,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.045999999972991645,
+            "wall_seconds": 0.4369999999762513
+          }
+        }
+      ]
+    },
+    {
+      "pid": 74956,
+      "start": 285552.9307489,
+      "end": 285553.4018711,
+      "dispatch_to_start_seconds": 6.2539548999629915,
+      "wall_seconds": 0.4711222000187263,
+      "cpu_seconds": 0.359375,
+      "units": [
+        {
+          "index": 10,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.061999999976251274,
+            "wall_seconds": 0.4369999999762513
+          }
+        }
+      ]
+    },
+    {
+      "pid": 7280,
+      "start": 285553.0114868,
+      "end": 285553.4584961,
+      "dispatch_to_start_seconds": 6.334692799951881,
+      "wall_seconds": 0.4470092999981716,
+      "cpu_seconds": 0.359375,
+      "units": [
+        {
+          "index": 11,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.0470000000204891,
+            "wall_seconds": 0.4220000000204891
+          }
+        }
+      ]
+    },
+    {
+      "pid": 66428,
+      "start": 285553.0479317,
+      "end": 285553.2840295,
+      "dispatch_to_start_seconds": 6.371137699985411,
+      "wall_seconds": 0.2360977999633178,
+      "cpu_seconds": 0.203125,
+      "units": [
+        {
+          "index": 12,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.0470000000204891,
+            "wall_seconds": 0.21899999998277053
+          }
+        }
+      ]
+    },
+    {
+      "pid": 66428,
+      "start": 285553.2848799,
+      "end": 285553.70204,
+      "dispatch_to_start_seconds": 6.608085899963044,
+      "wall_seconds": 0.417160100012552,
+      "cpu_seconds": 0.296875,
+      "units": [
+        {
+          "index": 13,
+          "timing": {
+            "parse_seconds": 0.014999999955762178,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.07800000003771856,
+            "wall_seconds": 0.40600000001722947
+          }
+        }
+      ]
+    },
+    {
+      "pid": 67092,
+      "start": 285553.3571931,
+      "end": 285553.8873162,
+      "dispatch_to_start_seconds": 6.680399099946953,
+      "wall_seconds": 0.5301231000339612,
+      "cpu_seconds": 0.3125,
+      "units": [
+        {
+          "index": 14,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.17199999996228144,
+            "wall_seconds": 0.5
+          }
+        }
+      ]
+    },
+    {
+      "pid": 74956,
+      "start": 285553.402584,
+      "end": 285553.9041089,
+      "dispatch_to_start_seconds": 6.725789999996778,
+      "wall_seconds": 0.5015248999698088,
+      "cpu_seconds": 0.296875,
+      "units": [
+        {
+          "index": 15,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.15600000001722947,
+            "wall_seconds": 0.46799999999348074
+          }
+        }
+      ]
+    },
+    {
+      "pid": 7280,
+      "start": 285553.4592437,
+      "end": 285553.8440178,
+      "dispatch_to_start_seconds": 6.782449699996505,
+      "wall_seconds": 0.38477409997722134,
+      "cpu_seconds": 0.203125,
+      "units": [
+        {
+          "index": 16,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.1720000000204891,
+            "wall_seconds": 0.3440000000409782
+          }
+        }
+      ]
+    },
+    {
+      "pid": 66428,
+      "start": 285553.70278,
+      "end": 285554.1168492,
+      "dispatch_to_start_seconds": 7.025985999964178,
+      "wall_seconds": 0.41406919999280944,
+      "cpu_seconds": 0.328125,
+      "units": [
+        {
+          "index": 17,
+          "timing": {
+            "parse_seconds": 0.01600000000325963,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.046999999962281436,
+            "wall_seconds": 0.39100000000325963
+          }
+        }
+      ]
+    },
+    {
+      "pid": 7280,
+      "start": 285553.8447634,
+      "end": 285554.2689619,
+      "dispatch_to_start_seconds": 7.167969399946742,
+      "wall_seconds": 0.4241984999971464,
+      "cpu_seconds": 0.328125,
+      "units": [
+        {
+          "index": 18,
+          "timing": {
+            "parse_seconds": 0.01600000000325963,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.0779999999795109,
+            "wall_seconds": 0.40600000001722947
+          }
+        }
+      ]
+    },
+    {
+      "pid": 67092,
+      "start": 285553.8879346,
+      "end": 285554.3247679,
+      "dispatch_to_start_seconds": 7.211140599974897,
+      "wall_seconds": 0.43683329998748377,
+      "cpu_seconds": 0.328125,
+      "units": [
+        {
+          "index": 19,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.014999999955762178,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.0940000000409782,
+            "wall_seconds": 0.40600000001722947
+          }
+        }
+      ]
+    },
+    {
+      "pid": 74956,
+      "start": 285553.9047605,
+      "end": 285554.1767842,
+      "dispatch_to_start_seconds": 7.227966499980539,
+      "wall_seconds": 0.27202370000304654,
+      "cpu_seconds": 0.203125,
+      "units": [
+        {
+          "index": 20,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.07900000002700835,
+            "wall_seconds": 0.25
+          }
+        }
+      ]
+    },
+    {
+      "pid": 66428,
+      "start": 285554.1189467,
+      "end": 285554.5641668,
+      "dispatch_to_start_seconds": 7.442152699979488,
+      "wall_seconds": 0.44522009999491274,
+      "cpu_seconds": 0.328125,
+      "units": [
+        {
+          "index": 21,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.014999999955762178,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.07900000002700835,
+            "wall_seconds": 0.40700000000651926
+          }
+        }
+      ]
+    },
+    {
+      "pid": 74956,
+      "start": 285554.177445,
+      "end": 285554.6604648,
+      "dispatch_to_start_seconds": 7.500650999951176,
+      "wall_seconds": 0.4830198000418022,
+      "cpu_seconds": 0.328125,
+      "units": [
+        {
+          "index": 22,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.14100000000325963,
+            "wall_seconds": 0.4529999999795109
+          }
+        }
+      ]
+    },
+    {
+      "pid": 7280,
+      "start": 285554.2697111,
+      "end": 285554.7225903,
+      "dispatch_to_start_seconds": 7.592917099944316,
+      "wall_seconds": 0.45287920004921034,
+      "cpu_seconds": 0.3125,
+      "units": [
+        {
+          "index": 23,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.10899999999674037,
+            "wall_seconds": 0.4369999999762513
+          }
+        }
+      ]
+    },
+    {
+      "pid": 67092,
+      "start": 285554.3253947,
+      "end": 285554.6480615,
+      "dispatch_to_start_seconds": 7.648600699962117,
+      "wall_seconds": 0.3226667999988422,
+      "cpu_seconds": 0.1875,
+      "units": [
+        {
+          "index": 24,
+          "timing": {
+            "parse_seconds": 0.015000000013969839,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.10899999999674037,
+            "wall_seconds": 0.2970000000204891
+          }
+        }
+      ]
+    },
+    {
+      "pid": 66428,
+      "start": 285554.5650562,
+      "end": 285554.9931774,
+      "dispatch_to_start_seconds": 7.888262199994642,
+      "wall_seconds": 0.4281212000059895,
+      "cpu_seconds": 0.296875,
+      "units": [
+        {
+          "index": 25,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.0779999999795109,
+            "wall_seconds": 0.4059999999590218
+          }
+        }
+      ]
+    },
+    {
+      "pid": 67092,
+      "start": 285554.6488796,
+      "end": 285555.1107777,
+      "dispatch_to_start_seconds": 7.972085599962156,
+      "wall_seconds": 0.4618981000385247,
+      "cpu_seconds": 0.296875,
+      "units": [
+        {
+          "index": 26,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.10899999999674037,
+            "wall_seconds": 0.42099999997299165
+          }
+        }
+      ]
+    },
+    {
+      "pid": 74956,
+      "start": 285554.6611011,
+      "end": 285555.1271907,
+      "dispatch_to_start_seconds": 7.984307099948637,
+      "wall_seconds": 0.46608959999866784,
+      "cpu_seconds": 0.328125,
+      "units": [
+        {
+          "index": 27,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.125,
+            "wall_seconds": 0.43799999996554106
+          }
+        }
+      ]
+    },
+    {
+      "pid": 7280,
+      "start": 285554.723318,
+      "end": 285554.9843483,
+      "dispatch_to_start_seconds": 8.046523999946658,
+      "wall_seconds": 0.2610302999964915,
+      "cpu_seconds": 0.15625,
+      "units": [
+        {
+          "index": 28,
+          "timing": {
+            "parse_seconds": 0.01600000000325963,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.045999999972991645,
+            "wall_seconds": 0.23399999999674037
+          }
+        }
+      ]
+    },
+    {
+      "pid": 7280,
+      "start": 285554.9852453,
+      "end": 285555.5499647,
+      "dispatch_to_start_seconds": 8.308451299963053,
+      "wall_seconds": 0.5647194000193849,
+      "cpu_seconds": 0.296875,
+      "units": [
+        {
+          "index": 29,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.23499999998603016,
+            "wall_seconds": 0.5470000000204891
+          }
+        }
+      ]
+    },
+    {
+      "pid": 66428,
+      "start": 285554.9940439,
+      "end": 285555.5716107,
+      "dispatch_to_start_seconds": 8.317249899962917,
+      "wall_seconds": 0.577566799998749,
+      "cpu_seconds": 0.296875,
+      "units": [
+        {
+          "index": 30,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.014999999955762178,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.2190000000409782,
+            "wall_seconds": 0.5470000000204891
+          }
+        }
+      ]
+    },
+    {
+      "pid": 67092,
+      "start": 285555.1116166,
+      "end": 285555.6203288,
+      "dispatch_to_start_seconds": 8.434822599985637,
+      "wall_seconds": 0.5087121999822557,
+      "cpu_seconds": 0.296875,
+      "units": [
+        {
+          "index": 31,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.18699999997625127,
+            "wall_seconds": 0.48399999999674037
+          }
+        }
+      ]
+    },
+    {
+      "pid": 74956,
+      "start": 285555.1278247,
+      "end": 285555.4982098,
+      "dispatch_to_start_seconds": 8.451030699943658,
+      "wall_seconds": 0.37038510001730174,
+      "cpu_seconds": 0.1875,
+      "units": [
+        {
+          "index": 32,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.18799999996554106,
+            "wall_seconds": 0.35999999998603016
+          }
+        }
+      ]
+    },
+    {
+      "pid": 74956,
+      "start": 285555.4992073,
+      "end": 285555.9306267,
+      "dispatch_to_start_seconds": 8.822413299989421,
+      "wall_seconds": 0.43141939997440204,
+      "cpu_seconds": 0.328125,
+      "units": [
+        {
+          "index": 33,
+          "timing": {
+            "parse_seconds": 0.01600000000325963,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.06300000002374873,
+            "wall_seconds": 0.40700000000651926
+          }
+        }
+      ]
+    },
+    {
+      "pid": 7280,
+      "start": 285555.5506322,
+      "end": 285556.0471331,
+      "dispatch_to_start_seconds": 8.873838199942838,
+      "wall_seconds": 0.49650090001523495,
+      "cpu_seconds": 0.296875,
+      "units": [
+        {
+          "index": 34,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.015000000013969839,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.15700000000651926,
+            "wall_seconds": 0.48499999998603016
+          }
+        }
+      ]
+    },
+    {
+      "pid": 66428,
+      "start": 285555.5725036,
+      "end": 285556.0654833,
+      "dispatch_to_start_seconds": 8.89570959995035,
+      "wall_seconds": 0.4929797000368126,
+      "cpu_seconds": 0.34375,
+      "units": [
+        {
+          "index": 35,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.14000000001396984,
+            "wall_seconds": 0.4690000000409782
+          }
+        }
+      ]
+    },
+    {
+      "pid": 67092,
+      "start": 285555.6210924,
+      "end": 285555.8649711,
+      "dispatch_to_start_seconds": 8.944298399961554,
+      "wall_seconds": 0.24387870001373813,
+      "cpu_seconds": 0.203125,
+      "units": [
+        {
+          "index": 36,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.046999999962281436,
+            "wall_seconds": 0.21899999998277053
+          }
+        }
+      ]
+    },
+    {
+      "pid": 67092,
+      "start": 285555.8658778,
+      "end": 285556.351839,
+      "dispatch_to_start_seconds": 9.189083799952641,
+      "wall_seconds": 0.4859612000291236,
+      "cpu_seconds": 0.359375,
+      "units": [
+        {
+          "index": 37,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.09299999999348074,
+            "wall_seconds": 0.4529999999795109
+          }
+        }
+      ]
+    },
+    {
+      "pid": 74956,
+      "start": 285555.9418465,
+      "end": 285556.4114089,
+      "dispatch_to_start_seconds": 9.26505249994807,
+      "wall_seconds": 0.46956240001600236,
+      "cpu_seconds": 0.34375,
+      "units": [
+        {
+          "index": 38,
+          "timing": {
+            "parse_seconds": 0.01600000000325963,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.125,
+            "wall_seconds": 0.4529999999795109
+          }
+        }
+      ]
+    },
+    {
+      "pid": 7280,
+      "start": 285556.0483254,
+      "end": 285556.4949314,
+      "dispatch_to_start_seconds": 9.371531399956439,
+      "wall_seconds": 0.4466060000122525,
+      "cpu_seconds": 0.28125,
+      "units": [
+        {
+          "index": 39,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.125,
+            "wall_seconds": 0.42199999996228144
+          }
+        }
+      ]
+    },
+    {
+      "pid": 66428,
+      "start": 285556.0662528,
+      "end": 285556.3536626,
+      "dispatch_to_start_seconds": 9.389458799967542,
+      "wall_seconds": 0.28740979998838156,
+      "cpu_seconds": 0.203125,
+      "units": [
+        {
+          "index": 40,
+          "timing": {
+            "parse_seconds": 0.01600000000325963,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.09299999999348074,
+            "wall_seconds": 0.2649999999557622
+          }
+        }
+      ]
+    },
+    {
+      "pid": 67092,
+      "start": 285556.3526084,
+      "end": 285556.8609419,
+      "dispatch_to_start_seconds": 9.675814399961382,
+      "wall_seconds": 0.5083335000090301,
+      "cpu_seconds": 0.3125,
+      "units": [
+        {
+          "index": 41,
+          "timing": {
+            "parse_seconds": 0.01600000000325963,
+            "serialize_seconds": 0.015000000013969839,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.17199999996228144,
+            "wall_seconds": 0.48399999999674037
+          }
+        }
+      ]
+    },
+    {
+      "pid": 66428,
+      "start": 285556.3546811,
+      "end": 285556.8844472,
+      "dispatch_to_start_seconds": 9.677887099969666,
+      "wall_seconds": 0.5297660999931395,
+      "cpu_seconds": 0.359375,
+      "units": [
+        {
+          "index": 42,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.18799999996554106,
+            "wall_seconds": 0.5
+          }
+        }
+      ]
+    },
+    {
+      "pid": 74956,
+      "start": 285556.473483,
+      "end": 285556.9331634,
+      "dispatch_to_start_seconds": 9.796688999980688,
+      "wall_seconds": 0.4596803999738768,
+      "cpu_seconds": 0.296875,
+      "units": [
+        {
+          "index": 43,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.125,
+            "wall_seconds": 0.4220000000204891
+          }
+        }
+      ]
+    },
+    {
+      "pid": 7280,
+      "start": 285556.4954731,
+      "end": 285556.8120391,
+      "dispatch_to_start_seconds": 9.818679099960718,
+      "wall_seconds": 0.31656599999405444,
+      "cpu_seconds": 0.140625,
+      "units": [
+        {
+          "index": 44,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.125,
+            "wall_seconds": 0.2970000000204891
+          }
+        }
+      ]
+    },
+    {
+      "pid": 7280,
+      "start": 285556.8126417,
+      "end": 285557.2319568,
+      "dispatch_to_start_seconds": 10.135847699944861,
+      "wall_seconds": 0.41931510000722483,
+      "cpu_seconds": 0.34375,
+      "units": [
+        {
+          "index": 45,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.045999999972991645,
+            "wall_seconds": 0.3899999999557622
+          }
+        }
+      ]
+    },
+    {
+      "pid": 67092,
+      "start": 285556.8617068,
+      "end": 285557.3423004,
+      "dispatch_to_start_seconds": 10.184912799973972,
+      "wall_seconds": 0.4805936000193469,
+      "cpu_seconds": 0.3125,
+      "units": [
+        {
+          "index": 46,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.1559999999590218,
+            "wall_seconds": 0.46799999999348074
+          }
+        }
+      ]
+    },
+    {
+      "pid": 66428,
+      "start": 285556.8851674,
+      "end": 285557.3577775,
+      "dispatch_to_start_seconds": 10.208373399975244,
+      "wall_seconds": 0.4726100999978371,
+      "cpu_seconds": 0.3125,
+      "units": [
+        {
+          "index": 47,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.14100000000325963,
+            "wall_seconds": 0.4529999999795109
+          }
+        }
+      ]
+    },
+    {
+      "pid": 74956,
+      "start": 285556.9338991,
+      "end": 285557.1692756,
+      "dispatch_to_start_seconds": 10.257105099968612,
+      "wall_seconds": 0.23537650000071153,
+      "cpu_seconds": 0.203125,
+      "units": [
+        {
+          "index": 48,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.031000000017229468,
+            "wall_seconds": 0.2029999999795109
+          }
+        }
+      ]
+    },
+    {
+      "pid": 74956,
+      "start": 285557.1699458,
+      "end": 285557.5533737,
+      "dispatch_to_start_seconds": 10.493151799950283,
+      "wall_seconds": 0.38342790002934635,
+      "cpu_seconds": 0.34375,
+      "units": [
+        {
+          "index": 49,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.06300000002374873,
+            "wall_seconds": 0.35999999998603016
+          }
+        }
+      ]
+    },
+    {
+      "pid": 7280,
+      "start": 285557.2326167,
+      "end": 285557.6662423,
+      "dispatch_to_start_seconds": 10.555822699971031,
+      "wall_seconds": 0.43362560000969097,
+      "cpu_seconds": 0.3125,
+      "units": [
+        {
+          "index": 50,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.015000000013969839,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.09399999998277053,
+            "wall_seconds": 0.40600000001722947
+          }
+        }
+      ]
+    },
+    {
+      "pid": 67092,
+      "start": 285557.3429921,
+      "end": 285557.7502271,
+      "dispatch_to_start_seconds": 10.666198099963367,
+      "wall_seconds": 0.4072349999914877,
+      "cpu_seconds": 0.34375,
+      "units": [
+        {
+          "index": 51,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.015000000013969839,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.046999999962281436,
+            "wall_seconds": 0.375
+          }
+        }
+      ]
+    },
+    {
+      "pid": 66428,
+      "start": 285557.3585517,
+      "end": 285557.6356998,
+      "dispatch_to_start_seconds": 10.681757699989248,
+      "wall_seconds": 0.2771480999654159,
+      "cpu_seconds": 0.15625,
+      "units": [
+        {
+          "index": 52,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.0779999999795109,
+            "wall_seconds": 0.25
+          }
+        }
+      ]
+    },
+    {
+      "pid": 74956,
+      "start": 285557.5539967,
+      "end": 285557.9675321,
+      "dispatch_to_start_seconds": 10.87720269995043,
+      "wall_seconds": 0.41353540000272915,
+      "cpu_seconds": 0.328125,
+      "units": [
+        {
+          "index": 53,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.015000000013969839,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.0779999999795109,
+            "wall_seconds": 0.3899999999557622
+          }
+        }
+      ]
+    },
+    {
+      "pid": 66428,
+      "start": 285557.6364373,
+      "end": 285558.1544705,
+      "dispatch_to_start_seconds": 10.959643299982417,
+      "wall_seconds": 0.5180332000018097,
+      "cpu_seconds": 0.328125,
+      "units": [
+        {
+          "index": 54,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.2029999999795109,
+            "wall_seconds": 0.5
+          }
+        }
+      ]
+    },
+    {
+      "pid": 7280,
+      "start": 285557.6762728,
+      "end": 285558.1813974,
+      "dispatch_to_start_seconds": 10.999478799989447,
+      "wall_seconds": 0.5051245999638923,
+      "cpu_seconds": 0.3125,
+      "units": [
+        {
+          "index": 55,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.1720000000204891,
+            "wall_seconds": 0.48499999998603016
+          }
+        }
+      ]
+    },
+    {
+      "pid": 67092,
+      "start": 285557.7508679,
+      "end": 285558.1112976,
+      "dispatch_to_start_seconds": 11.074073899944779,
+      "wall_seconds": 0.36042969999834895,
+      "cpu_seconds": 0.1875,
+      "units": [
+        {
+          "index": 56,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.17199999996228144,
+            "wall_seconds": 0.34399999998277053
+          }
+        }
+      ]
+    },
+    {
+      "pid": 74956,
+      "start": 285557.9681873,
+      "end": 285558.3744544,
+      "dispatch_to_start_seconds": 11.291393299994525,
+      "wall_seconds": 0.40626709995558485,
+      "cpu_seconds": 0.296875,
+      "units": [
+        {
+          "index": 57,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.0779999999795109,
+            "wall_seconds": 0.375
+          }
+        }
+      ]
+    },
+    {
+      "pid": 67092,
+      "start": 285558.1120463,
+      "end": 285558.5766309,
+      "dispatch_to_start_seconds": 11.435252299997956,
+      "wall_seconds": 0.46458459994755685,
+      "cpu_seconds": 0.328125,
+      "units": [
+        {
+          "index": 58,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.014999999955762178,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.0940000000409782,
+            "wall_seconds": 0.43700000003445894
+          }
+        }
+      ]
+    },
+    {
+      "pid": 66428,
+      "start": 285558.1550213,
+      "end": 285558.616473,
+      "dispatch_to_start_seconds": 11.478227299987338,
+      "wall_seconds": 0.46145169995725155,
+      "cpu_seconds": 0.34375,
+      "units": [
+        {
+          "index": 59,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.125,
+            "wall_seconds": 0.4369999999762513
+          }
+        }
+      ]
+    },
+    {
+      "pid": 7280,
+      "start": 285558.182093,
+      "end": 285558.3997372,
+      "dispatch_to_start_seconds": 11.505298999953084,
+      "wall_seconds": 0.21764420002000406,
+      "cpu_seconds": 0.171875,
+      "units": [
+        {
+          "index": 60,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.031000000017229468,
+            "wall_seconds": 0.18699999997625127
+          }
+        }
+      ]
+    },
+    {
+      "pid": 74956,
+      "start": 285558.3751236,
+      "end": 285558.8413256,
+      "dispatch_to_start_seconds": 11.698329599981662,
+      "wall_seconds": 0.466201999981422,
+      "cpu_seconds": 0.34375,
+      "units": [
+        {
+          "index": 61,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.0940000000409782,
+            "wall_seconds": 0.4380000000237487
+          }
+        }
+      ]
+    },
+    {
+      "pid": 7280,
+      "start": 285558.400381,
+      "end": 285558.8787392,
+      "dispatch_to_start_seconds": 11.723586999985855,
+      "wall_seconds": 0.47835819999454543,
+      "cpu_seconds": 0.359375,
+      "units": [
+        {
+          "index": 62,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.14100000000325963,
+            "wall_seconds": 0.4529999999795109
+          }
+        }
+      ]
+    },
+    {
+      "pid": 67092,
+      "start": 285558.5774039,
+      "end": 285559.019653,
+      "dispatch_to_start_seconds": 11.900609899952542,
+      "wall_seconds": 0.44224910001503304,
+      "cpu_seconds": 0.359375,
+      "units": [
+        {
+          "index": 63,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.10899999999674037,
+            "wall_seconds": 0.4220000000204891
+          }
+        }
+      ]
+    },
+    {
+      "pid": 66428,
+      "start": 285558.6173255,
+      "end": 285558.9417753,
+      "dispatch_to_start_seconds": 11.940531499974895,
+      "wall_seconds": 0.32444980001309887,
+      "cpu_seconds": 0.21875,
+      "units": [
+        {
+          "index": 64,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.125,
+            "wall_seconds": 0.2970000000204891
+          }
+        }
+      ]
+    },
+    {
+      "pid": 7280,
+      "start": 285558.8915094,
+      "end": 285559.4383262,
+      "dispatch_to_start_seconds": 12.214715399954002,
+      "wall_seconds": 0.5468168000224978,
+      "cpu_seconds": 0.328125,
+      "units": [
+        {
+          "index": 65,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.2190000000409782,
+            "wall_seconds": 0.5310000000172295
+          }
+        }
+      ]
+    },
+    {
+      "pid": 74956,
+      "start": 285558.8918922,
+      "end": 285559.4566276,
+      "dispatch_to_start_seconds": 12.215098199958447,
+      "wall_seconds": 0.5647354000248015,
+      "cpu_seconds": 0.34375,
+      "units": [
+        {
+          "index": 66,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.01600000000325963,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.2190000000409782,
+            "wall_seconds": 0.5470000000204891
+          }
+        }
+      ]
+    },
+    {
+      "pid": 66428,
+      "start": 285558.9424443,
+      "end": 285559.4836162,
+      "dispatch_to_start_seconds": 12.265650299959816,
+      "wall_seconds": 0.5411718999966979,
+      "cpu_seconds": 0.3125,
+      "units": [
+        {
+          "index": 67,
+          "timing": {
+            "parse_seconds": 0.01600000000325963,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.2029999999795109,
+            "wall_seconds": 0.5
+          }
+        }
+      ]
+    },
+    {
+      "pid": 67092,
+      "start": 285559.0204712,
+      "end": 285559.387344,
+      "dispatch_to_start_seconds": 12.343677199969534,
+      "wall_seconds": 0.36687279999023303,
+      "cpu_seconds": 0.1875,
+      "units": [
+        {
+          "index": 68,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.1720000000204891,
+            "wall_seconds": 0.35899999999674037
+          }
+        }
+      ]
+    },
+    {
+      "pid": 67092,
+      "start": 285559.3880604,
+      "end": 285559.9679892,
+      "dispatch_to_start_seconds": 12.71126639994327,
+      "wall_seconds": 0.5799288000562228,
+      "cpu_seconds": 0.34375,
+      "units": [
+        {
+          "index": 69,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.2029999999795109,
+            "wall_seconds": 0.5619999999762513
+          }
+        }
+      ]
+    },
+    {
+      "pid": 7280,
+      "start": 285559.439057,
+      "end": 285560.0292785,
+      "dispatch_to_start_seconds": 12.762262999953236,
+      "wall_seconds": 0.5902215000241995,
+      "cpu_seconds": 0.328125,
+      "units": [
+        {
+          "index": 70,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.26600000000325963,
+            "wall_seconds": 0.5779999999795109
+          }
+        }
+      ]
+    },
+    {
+      "pid": 74956,
+      "start": 285559.4573361,
+      "end": 285560.0765114,
+      "dispatch_to_start_seconds": 12.780542099964805,
+      "wall_seconds": 0.6191753000020981,
+      "cpu_seconds": 0.328125,
+      "units": [
+        {
+          "index": 71,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.26500000001396984,
+            "wall_seconds": 0.5940000000409782
+          }
+        }
+      ]
+    },
+    {
+      "pid": 66428,
+      "start": 285559.4849888,
+      "end": 285559.7339182,
+      "dispatch_to_start_seconds": 12.808194799988996,
+      "wall_seconds": 0.24892939999699593,
+      "cpu_seconds": 0.1875,
+      "units": [
+        {
+          "index": 72,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.046999999962281436,
+            "wall_seconds": 0.23399999999674037
+          }
+        }
+      ]
+    },
+    {
+      "pid": 66428,
+      "start": 285559.7348518,
+      "end": 285560.1548833,
+      "dispatch_to_start_seconds": 13.058057799993549,
+      "wall_seconds": 0.42003149999072775,
+      "cpu_seconds": 0.296875,
+      "units": [
+        {
+          "index": 73,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.09299999999348074,
+            "wall_seconds": 0.39000000001396984
+          }
+        }
+      ]
+    },
+    {
+      "pid": 67092,
+      "start": 285559.9687565,
+      "end": 285560.3803737,
+      "dispatch_to_start_seconds": 13.29196249996312,
+      "wall_seconds": 0.41161720000673085,
+      "cpu_seconds": 0.359375,
+      "units": [
+        {
+          "index": 74,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.0779999999795109,
+            "wall_seconds": 0.39100000000325963
+          }
+        }
+      ]
+    },
+    {
+      "pid": 7280,
+      "start": 285560.030165,
+      "end": 285560.4632063,
+      "dispatch_to_start_seconds": 13.353370999975596,
+      "wall_seconds": 0.4330412999843247,
+      "cpu_seconds": 0.328125,
+      "units": [
+        {
+          "index": 75,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.11000000004423782,
+            "wall_seconds": 0.40600000001722947
+          }
+        }
+      ]
+    },
+    {
+      "pid": 74956,
+      "start": 285560.0771922,
+      "end": 285560.3246486,
+      "dispatch_to_start_seconds": 13.400398199970368,
+      "wall_seconds": 0.24745640001492575,
+      "cpu_seconds": 0.1875,
+      "units": [
+        {
+          "index": 76,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.0470000000204891,
+            "wall_seconds": 0.2190000000409782
+          }
+        }
+      ]
+    },
+    {
+      "pid": 66428,
+      "start": 285560.1556225,
+      "end": 285560.5424991,
+      "dispatch_to_start_seconds": 13.478828499966767,
+      "wall_seconds": 0.3868765999795869,
+      "cpu_seconds": 0.34375,
+      "units": [
+        {
+          "index": 77,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.0470000000204891,
+            "wall_seconds": 0.35899999999674037
+          }
+        }
+      ]
+    },
+    {
+      "pid": 74956,
+      "start": 285560.3254256,
+      "end": 285560.7625189,
+      "dispatch_to_start_seconds": 13.648631599964574,
+      "wall_seconds": 0.4370932999881916,
+      "cpu_seconds": 0.328125,
+      "units": [
+        {
+          "index": 78,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.10999999998603016,
+            "wall_seconds": 0.40700000000651926
+          }
+        }
+      ]
+    },
+    {
+      "pid": 67092,
+      "start": 285560.3810302,
+      "end": 285560.8451847,
+      "dispatch_to_start_seconds": 13.704236199962907,
+      "wall_seconds": 0.4641544999903999,
+      "cpu_seconds": 0.359375,
+      "units": [
+        {
+          "index": 79,
+          "timing": {
+            "parse_seconds": 0.015000000013969839,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.014999999955762178,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.125,
+            "wall_seconds": 0.4369999999762513
+          }
+        }
+      ]
+    },
+    {
+      "pid": 7280,
+      "start": 285560.4639028,
+      "end": 285560.7761744,
+      "dispatch_to_start_seconds": 13.787108799966518,
+      "wall_seconds": 0.31227160000707954,
+      "cpu_seconds": 0.1875,
+      "units": [
+        {
+          "index": 80,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.09299999999348074,
+            "wall_seconds": 0.28100000001722947
+          }
+        }
+      ]
+    },
+    {
+      "pid": 66428,
+      "start": 285560.5432224,
+      "end": 285560.9477705,
+      "dispatch_to_start_seconds": 13.866428399982397,
+      "wall_seconds": 0.40454809996299446,
+      "cpu_seconds": 0.34375,
+      "units": [
+        {
+          "index": 81,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.07800000003771856,
+            "wall_seconds": 0.375
+          }
+        }
+      ]
+    },
+    {
+      "pid": 74956,
+      "start": 285560.7632166,
+      "end": 285561.241918,
+      "dispatch_to_start_seconds": 14.0864225999685,
+      "wall_seconds": 0.4787013999884948,
+      "cpu_seconds": 0.328125,
+      "units": [
+        {
+          "index": 82,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.14100000000325963,
+            "wall_seconds": 0.4529999999795109
+          }
+        }
+      ]
+    },
+    {
+      "pid": 7280,
+      "start": 285560.7768245,
+      "end": 285561.2999793,
+      "dispatch_to_start_seconds": 14.100030499976128,
+      "wall_seconds": 0.5231548000010662,
+      "cpu_seconds": 0.34375,
+      "units": [
+        {
+          "index": 83,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.18800000002374873,
+            "wall_seconds": 0.5
+          }
+        }
+      ]
+    },
+    {
+      "pid": 67092,
+      "start": 285560.8459188,
+      "end": 285561.0757444,
+      "dispatch_to_start_seconds": 14.16912479995517,
+      "wall_seconds": 0.2298255999921821,
+      "cpu_seconds": 0.1875,
+      "units": [
+        {
+          "index": 84,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.031000000017229468,
+            "wall_seconds": 0.20300000003771856
+          }
+        }
+      ]
+    },
+    {
+      "pid": 66428,
+      "start": 285560.9486323,
+      "end": 285561.4103852,
+      "dispatch_to_start_seconds": 14.271838299988303,
+      "wall_seconds": 0.4617528999806382,
+      "cpu_seconds": 0.34375,
+      "units": [
+        {
+          "index": 85,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.125,
+            "wall_seconds": 0.4380000000237487
+          }
+        }
+      ]
+    },
+    {
+      "pid": 67092,
+      "start": 285561.0763814,
+      "end": 285561.4975498,
+      "dispatch_to_start_seconds": 14.39958739996655,
+      "wall_seconds": 0.42116840003291145,
+      "cpu_seconds": 0.34375,
+      "units": [
+        {
+          "index": 86,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.0779999999795109,
+            "wall_seconds": 0.39100000000325963
+          }
+        }
+      ]
+    },
+    {
+      "pid": 74956,
+      "start": 285561.2756998,
+      "end": 285561.6814834,
+      "dispatch_to_start_seconds": 14.598905799968634,
+      "wall_seconds": 0.4057835999992676,
+      "cpu_seconds": 0.34375,
+      "units": [
+        {
+          "index": 87,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.06300000002374873,
+            "wall_seconds": 0.375
+          }
+        }
+      ]
+    },
+    {
+      "pid": 7280,
+      "start": 285561.3007384,
+      "end": 285561.5502996,
+      "dispatch_to_start_seconds": 14.623944399994798,
+      "wall_seconds": 0.24956119997659698,
+      "cpu_seconds": 0.1875,
+      "units": [
+        {
+          "index": 88,
+          "timing": {
+            "parse_seconds": 0.01600000000325963,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.06300000002374873,
+            "wall_seconds": 0.23499999998603016
+          }
+        }
+      ]
+    },
+    {
+      "pid": 66428,
+      "start": 285561.4111828,
+      "end": 285561.8448417,
+      "dispatch_to_start_seconds": 14.734388799988665,
+      "wall_seconds": 0.4336588999722153,
+      "cpu_seconds": 0.359375,
+      "units": [
+        {
+          "index": 89,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.09299999999348074,
+            "wall_seconds": 0.4059999999590218
+          }
+        }
+      ]
+    },
+    {
+      "pid": 67092,
+      "start": 285561.4982611,
+      "end": 285561.9139552,
+      "dispatch_to_start_seconds": 14.82146709994413,
+      "wall_seconds": 0.4156941000255756,
+      "cpu_seconds": 0.359375,
+      "units": [
+        {
+          "index": 90,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.0779999999795109,
+            "wall_seconds": 0.39100000000325963
+          }
+        }
+      ]
+    },
+    {
+      "pid": 7280,
+      "start": 285561.5511115,
+      "end": 285562.05462,
+      "dispatch_to_start_seconds": 14.87431749998359,
+      "wall_seconds": 0.5035084999981336,
+      "cpu_seconds": 0.34375,
+      "units": [
+        {
+          "index": 91,
+          "timing": {
+            "parse_seconds": 0.01600000000325963,
+            "serialize_seconds": 0.015000000013969839,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.15700000000651926,
+            "wall_seconds": 0.48499999998603016
+          }
+        }
+      ]
+    },
+    {
+      "pid": 74956,
+      "start": 285561.6822648,
+      "end": 285562.0105008,
+      "dispatch_to_start_seconds": 15.005470799980685,
+      "wall_seconds": 0.32823599997209385,
+      "cpu_seconds": 0.1875,
+      "units": [
+        {
+          "index": 92,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.14100000000325963,
+            "wall_seconds": 0.29699999996228144
+          }
+        }
+      ]
+    },
+    {
+      "pid": 66428,
+      "start": 285561.8454536,
+      "end": 285562.2323321,
+      "dispatch_to_start_seconds": 15.168659599963576,
+      "wall_seconds": 0.38687849999405444,
+      "cpu_seconds": 0.3125,
+      "units": [
+        {
+          "index": 93,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.01600000000325963,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.045999999972991645,
+            "wall_seconds": 0.35899999999674037
+          }
+        }
+      ]
+    },
+    {
+      "pid": 67092,
+      "start": 285561.9146874,
+      "end": 285562.3872082,
+      "dispatch_to_start_seconds": 15.237893399957102,
+      "wall_seconds": 0.47252080001635477,
+      "cpu_seconds": 0.359375,
+      "units": [
+        {
+          "index": 94,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.015000000013969839,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.10999999998603016,
+            "wall_seconds": 0.43799999996554106
+          }
+        }
+      ]
+    },
+    {
+      "pid": 74956,
+      "start": 285562.011318,
+      "end": 285562.4514558,
+      "dispatch_to_start_seconds": 15.334523999947123,
+      "wall_seconds": 0.4401378000038676,
+      "cpu_seconds": 0.34375,
+      "units": [
+        {
+          "index": 95,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.0940000000409782,
+            "wall_seconds": 0.40600000001722947
+          }
+        }
+      ]
+    },
+    {
+      "pid": 7280,
+      "start": 285562.0553323,
+      "end": 285562.3137488,
+      "dispatch_to_start_seconds": 15.378538299992215,
+      "wall_seconds": 0.2584165000007488,
+      "cpu_seconds": 0.203125,
+      "units": [
+        {
+          "index": 96,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.062000000034458935,
+            "wall_seconds": 0.23399999999674037
+          }
+        }
+      ]
+    },
+    {
+      "pid": 66428,
+      "start": 285562.2332167,
+      "end": 285562.6521458,
+      "dispatch_to_start_seconds": 15.55642269999953,
+      "wall_seconds": 0.41892909997841343,
+      "cpu_seconds": 0.34375,
+      "units": [
+        {
+          "index": 97,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.061999999976251274,
+            "wall_seconds": 0.39000000001396984
+          }
+        }
+      ]
+    },
+    {
+      "pid": 7280,
+      "start": 285562.3144903,
+      "end": 285562.8310427,
+      "dispatch_to_start_seconds": 15.637696299992967,
+      "wall_seconds": 0.5165523999603465,
+      "cpu_seconds": 0.359375,
+      "units": [
+        {
+          "index": 98,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.01600000000325963,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.15600000001722947,
+            "wall_seconds": 0.5
+          }
+        }
+      ]
+    },
+    {
+      "pid": 67092,
+      "start": 285562.3878226,
+      "end": 285562.8728322,
+      "dispatch_to_start_seconds": 15.711028599995188,
+      "wall_seconds": 0.48500960000092164,
+      "cpu_seconds": 0.3125,
+      "units": [
+        {
+          "index": 99,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.14100000000325963,
+            "wall_seconds": 0.4529999999795109
+          }
+        }
+      ]
+    },
+    {
+      "pid": 74956,
+      "start": 285562.4521424,
+      "end": 285562.7438502,
+      "dispatch_to_start_seconds": 15.77534839999862,
+      "wall_seconds": 0.291707799944561,
+      "cpu_seconds": 0.171875,
+      "units": [
+        {
+          "index": 100,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.09399999998277053,
+            "wall_seconds": 0.26600000000325963
+          }
+        }
+      ]
+    },
+    {
+      "pid": 66428,
+      "start": 285562.6530252,
+      "end": 285563.0617028,
+      "dispatch_to_start_seconds": 15.976231199980248,
+      "wall_seconds": 0.40867759997490793,
+      "cpu_seconds": 0.359375,
+      "units": [
+        {
+          "index": 101,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.07800000003771856,
+            "wall_seconds": 0.39000000001396984
+          }
+        }
+      ]
+    },
+    {
+      "pid": 74956,
+      "start": 285562.7445224,
+      "end": 285563.181006,
+      "dispatch_to_start_seconds": 16.067728399997577,
+      "wall_seconds": 0.43648360000224784,
+      "cpu_seconds": 0.328125,
+      "units": [
+        {
+          "index": 102,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.0470000000204891,
+            "wall_seconds": 0.40700000000651926
+          }
+        }
+      ]
+    },
+    {
+      "pid": 7280,
+      "start": 285562.8317918,
+      "end": 285563.2630385,
+      "dispatch_to_start_seconds": 16.15499779995298,
+      "wall_seconds": 0.43124669999815524,
+      "cpu_seconds": 0.3125,
+      "units": [
+        {
+          "index": 103,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.01600000000325963,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.0779999999795109,
+            "wall_seconds": 0.40700000000651926
+          }
+        }
+      ]
+    },
+    {
+      "pid": 67092,
+      "start": 285562.8736367,
+      "end": 285563.1312029,
+      "dispatch_to_start_seconds": 16.196842699951958,
+      "wall_seconds": 0.2575662000454031,
+      "cpu_seconds": 0.1875,
+      "units": [
+        {
+          "index": 104,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.06299999996554106,
+            "wall_seconds": 0.23499999998603016
+          }
+        }
+      ]
+    },
+    {
+      "pid": 66428,
+      "start": 285563.0624016,
+      "end": 285563.4653512,
+      "dispatch_to_start_seconds": 16.385607599979267,
+      "wall_seconds": 0.4029496000148356,
+      "cpu_seconds": 0.328125,
+      "units": [
+        {
+          "index": 105,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.07800000003771856,
+            "wall_seconds": 0.375
+          }
+        }
+      ]
+    },
+    {
+      "pid": 67092,
+      "start": 285563.1573072,
+      "end": 285563.6767304,
+      "dispatch_to_start_seconds": 16.48051319998922,
+      "wall_seconds": 0.5194231999921612,
+      "cpu_seconds": 0.328125,
+      "units": [
+        {
+          "index": 106,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.01600000000325963,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.18800000002374873,
+            "wall_seconds": 0.5
+          }
+        }
+      ]
+    },
+    {
+      "pid": 74956,
+      "start": 285563.1817372,
+      "end": 285563.7349851,
+      "dispatch_to_start_seconds": 16.504943199979607,
+      "wall_seconds": 0.5532478999812156,
+      "cpu_seconds": 0.328125,
+      "units": [
+        {
+          "index": 107,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.015000000013969839,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.21899999998277053,
+            "wall_seconds": 0.5309999999590218
+          }
+        }
+      ]
+    },
+    {
+      "pid": 7280,
+      "start": 285563.2637579,
+      "end": 285563.5657524,
+      "dispatch_to_start_seconds": 16.58696389995748,
+      "wall_seconds": 0.30199450004147366,
+      "cpu_seconds": 0.203125,
+      "units": [
+        {
+          "index": 108,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.10899999999674037,
+            "wall_seconds": 0.28100000001722947
+          }
+        }
+      ]
+    },
+    {
+      "pid": 66428,
+      "start": 285563.4660859,
+      "end": 285563.9716726,
+      "dispatch_to_start_seconds": 16.789291900000535,
+      "wall_seconds": 0.50558669999009,
+      "cpu_seconds": 0.40625,
+      "units": [
+        {
+          "index": 109,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.10899999999674037,
+            "wall_seconds": 0.4220000000204891
+          }
+        }
+      ]
+    },
+    {
+      "pid": 7280,
+      "start": 285563.5666027,
+      "end": 285563.9877765,
+      "dispatch_to_start_seconds": 16.8898086999543,
+      "wall_seconds": 0.42117380001582205,
+      "cpu_seconds": 0.34375,
+      "units": [
+        {
+          "index": 110,
+          "timing": {
+            "parse_seconds": 0.01600000000325963,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.09399999998277053,
+            "wall_seconds": 0.4059999999590218
+          }
+        }
+      ]
+    },
+    {
+      "pid": 67092,
+      "start": 285563.6773679,
+      "end": 285564.0877097,
+      "dispatch_to_start_seconds": 17.000573899946176,
+      "wall_seconds": 0.4103418000158854,
+      "cpu_seconds": 0.3125,
+      "units": [
+        {
+          "index": 111,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.07800000003771856,
+            "wall_seconds": 0.375
+          }
+        }
+      ]
+    },
+    {
+      "pid": 74956,
+      "start": 285563.73562,
+      "end": 285563.9920161,
+      "dispatch_to_start_seconds": 17.05882599996403,
+      "wall_seconds": 0.25639609998324886,
+      "cpu_seconds": 0.1875,
+      "units": [
+        {
+          "index": 112,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.061999999976251274,
+            "wall_seconds": 0.23399999999674037
+          }
+        }
+      ]
+    },
+    {
+      "pid": 66428,
+      "start": 285563.9727786,
+      "end": 285564.3875327,
+      "dispatch_to_start_seconds": 17.295984599972144,
+      "wall_seconds": 0.41475410002749413,
+      "cpu_seconds": 0.296875,
+      "units": [
+        {
+          "index": 113,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.09299999999348074,
+            "wall_seconds": 0.40600000001722947
+          }
+        }
+      ]
+    },
+    {
+      "pid": 7280,
+      "start": 285563.9884826,
+      "end": 285564.5082632,
+      "dispatch_to_start_seconds": 17.311688599991612,
+      "wall_seconds": 0.5197805999778211,
+      "cpu_seconds": 0.3125,
+      "units": [
+        {
+          "index": 114,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.17199999996228144,
+            "wall_seconds": 0.5
+          }
+        }
+      ]
+    },
+    {
+      "pid": 74956,
+      "start": 285563.9925693,
+      "end": 285564.6067672,
+      "dispatch_to_start_seconds": 17.315775299968664,
+      "wall_seconds": 0.614197899994906,
+      "cpu_seconds": 0.375,
+      "units": [
+        {
+          "index": 115,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.21899999998277053,
+            "wall_seconds": 0.5320000000065193
+          }
+        }
+      ]
+    },
+    {
+      "pid": 67092,
+      "start": 285564.0884635,
+      "end": 285564.3212047,
+      "dispatch_to_start_seconds": 17.411669499997515,
+      "wall_seconds": 0.2327411999576725,
+      "cpu_seconds": 0.1875,
+      "units": [
+        {
+          "index": 116,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.0470000000204891,
+            "wall_seconds": 0.20300000003771856
+          }
+        }
+      ]
+    },
+    {
+      "pid": 67092,
+      "start": 285564.3219285,
+      "end": 285564.8634963,
+      "dispatch_to_start_seconds": 17.645134499995038,
+      "wall_seconds": 0.5415677999844775,
+      "cpu_seconds": 0.375,
+      "units": [
+        {
+          "index": 117,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.14100000000325963,
+            "wall_seconds": 0.5160000000032596
+          }
+        }
+      ]
+    },
+    {
+      "pid": 66428,
+      "start": 285564.3883301,
+      "end": 285564.7580506,
+      "dispatch_to_start_seconds": 17.71153609995963,
+      "wall_seconds": 0.36972050002077594,
+      "cpu_seconds": 0.3125,
+      "units": [
+        {
+          "index": 118,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.046999999962281436,
+            "wall_seconds": 0.34399999998277053
+          }
+        }
+      ]
+    },
+    {
+      "pid": 7280,
+      "start": 285564.5089838,
+      "end": 285565.0176627,
+      "dispatch_to_start_seconds": 17.832189799984917,
+      "wall_seconds": 0.5086788999615237,
+      "cpu_seconds": 0.390625,
+      "units": [
+        {
+          "index": 119,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.10899999999674037,
+            "wall_seconds": 0.48399999999674037
+          }
+        }
+      ]
+    },
+    {
+      "pid": 74956,
+      "start": 285564.6077417,
+      "end": 285564.8787106,
+      "dispatch_to_start_seconds": 17.93094769999152,
+      "wall_seconds": 0.27096890000393614,
+      "cpu_seconds": 0.203125,
+      "units": [
+        {
+          "index": 120,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.0779999999795109,
+            "wall_seconds": 0.25
+          }
+        }
+      ]
+    },
+    {
+      "pid": 66428,
+      "start": 285564.7587067,
+      "end": 285565.2003648,
+      "dispatch_to_start_seconds": 18.081912699970417,
+      "wall_seconds": 0.44165809999685735,
+      "cpu_seconds": 0.328125,
+      "units": [
+        {
+          "index": 121,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.0940000000409782,
+            "wall_seconds": 0.40600000001722947
+          }
+        }
+      ]
+    },
+    {
+      "pid": 67092,
+      "start": 285564.8644398,
+      "end": 285565.3819365,
+      "dispatch_to_start_seconds": 18.18764579994604,
+      "wall_seconds": 0.517496700049378,
+      "cpu_seconds": 0.34375,
+      "units": [
+        {
+          "index": 122,
+          "timing": {
+            "parse_seconds": 0.01600000000325963,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.17199999996228144,
+            "wall_seconds": 0.5
+          }
+        }
+      ]
+    },
+    {
+      "pid": 74956,
+      "start": 285564.881251,
+      "end": 285565.4145132,
+      "dispatch_to_start_seconds": 18.204456999956165,
+      "wall_seconds": 0.5332622000132687,
+      "cpu_seconds": 0.34375,
+      "units": [
+        {
+          "index": 123,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.2029999999795109,
+            "wall_seconds": 0.5
+          }
+        }
+      ]
+    },
+    {
+      "pid": 7280,
+      "start": 285565.0184387,
+      "end": 285565.3384296,
+      "dispatch_to_start_seconds": 18.341644699976314,
+      "wall_seconds": 0.3199908999959007,
+      "cpu_seconds": 0.171875,
+      "units": [
+        {
+          "index": 124,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.125,
+            "wall_seconds": 0.2970000000204891
+          }
+        }
+      ]
+    },
+    {
+      "pid": 66428,
+      "start": 285565.2011514,
+      "end": 285565.5814689,
+      "dispatch_to_start_seconds": 18.524357399961445,
+      "wall_seconds": 0.38031750003574416,
+      "cpu_seconds": 0.34375,
+      "units": [
+        {
+          "index": 125,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.01600000000325963,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.0470000000204891,
+            "wall_seconds": 0.3600000000442378
+          }
+        }
+      ]
+    },
+    {
+      "pid": 7280,
+      "start": 285565.3392017,
+      "end": 285565.7361507,
+      "dispatch_to_start_seconds": 18.66240769997239,
+      "wall_seconds": 0.3969490000163205,
+      "cpu_seconds": 0.34375,
+      "units": [
+        {
+          "index": 126,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.061999999976251274,
+            "wall_seconds": 0.375
+          }
+        }
+      ]
+    },
+    {
+      "pid": 67092,
+      "start": 285565.3827122,
+      "end": 285565.8226971,
+      "dispatch_to_start_seconds": 18.7059181999648,
+      "wall_seconds": 0.4399849000037648,
+      "cpu_seconds": 0.3125,
+      "units": [
+        {
+          "index": 127,
+          "timing": {
+            "parse_seconds": 0.015000000013969839,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.125,
+            "wall_seconds": 0.4220000000204891
+          }
+        }
+      ]
+    },
+    {
+      "pid": 74956,
+      "start": 285565.4154906,
+      "end": 285565.496854,
+      "dispatch_to_start_seconds": 18.73869659996126,
+      "wall_seconds": 0.08136340003693476,
+      "cpu_seconds": 0.046875,
+      "units": [
+        {
+          "index": 128,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.01600000000325963,
+            "wall_seconds": 0.046999999962281436
+          }
+        }
+      ]
+    }
+  ],
+  "parent_phases": [
+    {
+      "function": "plan_clean_units",
+      "wall_seconds": 0.06992520001949742,
+      "cpu_seconds": 0.078125
+    },
+    {
+      "function": "merge_unit_results",
+      "wall_seconds": 0.024706199998036027,
+      "cpu_seconds": 0.015625
+    },
+    {
+      "function": "_stream_concat",
+      "wall_seconds": 0.05667700001504272,
+      "cpu_seconds": 0.0
+    },
+    {
+      "function": "_stream_concat",
+      "wall_seconds": 1.3646416999981739,
+      "cpu_seconds": 0.203125
+    }
+  ],
+  "scientific_summary": {
+    "pipeline_hash": "8a3000e5658918832d081a5094082ebff1a1928946b9ebf5406c4b5eaf9a21c7",
+    "domain_preset": "educational_prose",
+    "total_input_docs": 128,
+    "total_output_docs": 96,
+    "total_input_bytes": 134217696,
+    "total_output_bytes": 100663296,
+    "total_rejected_docs": 32,
+    "document_yield_ratio": 0.75,
+    "byte_yield_ratio": 0.75,
+    "stage_metrics": [
+      {
+        "stage_name": "canonical_normalization",
+        "transform_id": "canonical_normalization",
+        "transform_version": "1",
+        "input_docs": 128,
+        "output_docs": 128,
+        "input_bytes": 134217696,
+        "output_bytes": 134217696,
+        "rejected_docs": 0
+      },
+      {
+        "stage_name": "html_extraction",
+        "transform_id": "html_extraction",
+        "transform_version": "1",
+        "input_docs": 128,
+        "output_docs": 128,
+        "input_bytes": 134217696,
+        "output_bytes": 134217696,
+        "rejected_docs": 0
+      },
+      {
+        "stage_name": "boilerplate_removal",
+        "transform_id": "boilerplate_removal",
+        "transform_version": "1",
+        "input_docs": 128,
+        "output_docs": 128,
+        "input_bytes": 134217696,
+        "output_bytes": 134217696,
+        "rejected_docs": 0
+      },
+      {
+        "stage_name": "repetition_filter",
+        "transform_id": "repetition_filter",
+        "transform_version": "2",
+        "input_docs": 128,
+        "output_docs": 128,
+        "input_bytes": 134217696,
+        "output_bytes": 134217696,
+        "rejected_docs": 0
+      },
+      {
+        "stage_name": "language_filter",
+        "transform_id": "language_filter",
+        "transform_version": "1",
+        "input_docs": 128,
+        "output_docs": 96,
+        "input_bytes": 134217696,
+        "output_bytes": 100663296,
+        "rejected_docs": 32
+      },
+      {
+        "stage_name": "noise_filter",
+        "transform_id": "noise_filter",
+        "transform_version": "1",
+        "input_docs": 96,
+        "output_docs": 96,
+        "input_bytes": 100663296,
+        "output_bytes": 100663296,
+        "rejected_docs": 0
+      },
+      {
+        "stage_name": "length_filter",
+        "transform_id": "length_filter",
+        "transform_version": "1",
+        "input_docs": 96,
+        "output_docs": 96,
+        "input_bytes": 100663296,
+        "output_bytes": 100663296,
+        "rejected_docs": 0
+      },
+      {
+        "stage_name": "pii_secret_filter",
+        "transform_id": "pii_secret_filter",
+        "transform_version": "1",
+        "input_docs": 96,
+        "output_docs": 96,
+        "input_bytes": 100663296,
+        "output_bytes": 100663296,
+        "rejected_docs": 0
+      }
+    ],
+    "reason_counts": {
+      "unsupported_language:non_en": 32
+    },
+    "is_partial_sample": false,
+    "declared_max_docs": 100000,
+    "completed": true
+  },
+  "accepted_sha256": "6a088619249cf71246182b414f0953074c308505d349bde30e35c801210b9621",
+  "quarantine_logical_sha256": "db8a2c968d7a6652f435ce5546a8a35833ec7c23f10e89be7fed86cd2f556d16",
+  "manifest": null,
+  "limits": {
+    "seconds": 900,
+    "rss_bytes": 3221225472,
+    "disk_bytes": 2147483648
+  },
+  "notes": [
+    "parent phase timers can nest; do not add nested phase times",
+    "worker CPU excludes interpreter bootstrap; wall minus CPU is not measured OS wait",
+    "dispatch-to-start includes planning, spawn, imports and queueing",
+    "RSS sampled at 100 ms, disk and process discovery at 1 s"
+  ]
+}

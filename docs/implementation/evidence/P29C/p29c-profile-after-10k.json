@@ -1,0 +1,254 @@
+{
+  "fixture_only": true,
+  "scheduling": "static",
+  "workers": 1,
+  "profiled": true,
+  "shard_mib": 4,
+  "output_shard_mib": 0,
+  "measurement": {
+    "stage": "cleaning",
+    "measurement_workers": 1,
+    "parent_fsync_calls": 15,
+    "wall_seconds": 11.032980100018904,
+    "parent_cpu_seconds": 8.578125,
+    "peak_tree_rss_bytes": 231571456,
+    "parent_read_bytes": 52456689,
+    "parent_write_bytes": 37098242,
+    "artifact_bytes_after_stage": 18487456,
+    "sampled_peak_artifact_bytes": 18487456
+  },
+  "throughput": {
+    "input_documents": 10000,
+    "accepted_documents": 9787,
+    "rejected_documents": 213,
+    "quarantine_records": 213,
+    "input_bytes": 9559558,
+    "output_bytes": 9346367,
+    "parse_seconds": 0.5609999999287538,
+    "stage_seconds": {
+      "canonical_normalization": 0.2960000000311993,
+      "html_extraction": 0.09399999992456287,
+      "boilerplate_removal": 0.2980000001261942,
+      "repetition_filter": 1.454000000085216,
+      "language_filter": 2.289999999688007,
+      "noise_filter": 0.18900000001303852,
+      "length_filter": 0.0,
+      "pii_secret_filter": 0.20400000002700835
+    },
+    "serialization_seconds": 1.6630000002332963,
+    "accepted_write_seconds": 0.10699999995995313,
+    "quarantine_seconds": 0.061999999976251274,
+    "fsync_seconds": 0.5160000000032596,
+    "wall_seconds": 10.969,
+    "docs_per_second": 911.6601331038114,
+    "input_mib_per_second": 0.8311336439794164,
+    "output_mib_per_second": 0.812598245931346,
+    "workers": 1,
+    "input_shards": 5,
+    "input_kind": "single_file",
+    "output_shards": 1,
+    "peak_rss_bytes": 230289408
+  },
+  "worker_telemetry": [
+    {
+      "pid": 59972,
+      "start": 285319.9070912,
+      "end": 285330.3121127,
+      "dispatch_to_start_seconds": 0.016082099988125265,
+      "wall_seconds": 10.405021500017028,
+      "cpu_seconds": 8.46875,
+      "units": [
+        {
+          "index": 0,
+          "timing": {
+            "parse_seconds": 0.10999999998603016,
+            "serialize_seconds": 0.3480000001145527,
+            "write_seconds": 0.01600000000325963,
+            "quarantine_seconds": 0.031000000017229468,
+            "fsync_seconds": 0.09399999998277053,
+            "wall_seconds": 2.452999999979511
+          }
+        },
+        {
+          "index": 1,
+          "timing": {
+            "parse_seconds": 0.12400000001071021,
+            "serialize_seconds": 0.34299999999348074,
+            "write_seconds": 0.014999999955762178,
+            "quarantine_seconds": 0.014999999955762178,
+            "fsync_seconds": 0.10899999999674037,
+            "wall_seconds": 2.5929999999934807
+          }
+        },
+        {
+          "index": 2,
+          "timing": {
+            "parse_seconds": 0.1720000000204891,
+            "serialize_seconds": 0.48599999997531995,
+            "write_seconds": 0.029999999969732016,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.11000000004423782,
+            "wall_seconds": 2.610000000044238
+          }
+        },
+        {
+          "index": 3,
+          "timing": {
+            "parse_seconds": 0.15499999991152436,
+            "serialize_seconds": 0.48600000014994293,
+            "write_seconds": 0.046000000031199306,
+            "quarantine_seconds": 0.0,
+            "fsync_seconds": 0.09399999998277053,
+            "wall_seconds": 2.4689999999827705
+          }
+        },
+        {
+          "index": 4,
+          "timing": {
+            "parse_seconds": 0.0,
+            "serialize_seconds": 0.0,
+            "write_seconds": 0.0,
+            "quarantine_seconds": 0.01600000000325963,
+            "fsync_seconds": 0.10899999999674037,
+            "wall_seconds": 0.21799999999348074
+          }
+        }
+      ]
+    }
+  ],
+  "parent_phases": [
+    {
+      "function": "plan_clean_units",
+      "wall_seconds": 0.014640500012319535,
+      "cpu_seconds": 0.0
+    },
+    {
+      "function": "merge_unit_results",
+      "wall_seconds": 0.022172000026330352,
+      "cpu_seconds": 0.03125
+    },
+    {
+      "function": "_stream_concat",
+      "wall_seconds": 0.04827919998206198,
+      "cpu_seconds": 0.0
+    },
+    {
+      "function": "_stream_concat",
+      "wall_seconds": 0.37285859999246895,
+      "cpu_seconds": 0.015625
+    }
+  ],
+  "scientific_summary": {
+    "pipeline_hash": "8a3000e5658918832d081a5094082ebff1a1928946b9ebf5406c4b5eaf9a21c7",
+    "domain_preset": "educational_prose",
+    "total_input_docs": 10000,
+    "total_output_docs": 9787,
+    "total_input_bytes": 9559558,
+    "total_output_bytes": 9346367,
+    "total_rejected_docs": 213,
+    "document_yield_ratio": 0.9787,
+    "byte_yield_ratio": 0.9777,
+    "stage_metrics": [
+      {
+        "stage_name": "canonical_normalization",
+        "transform_id": "canonical_normalization",
+        "transform_version": "1",
+        "input_docs": 10000,
+        "output_docs": 10000,
+        "input_bytes": 9559558,
+        "output_bytes": 9559558,
+        "rejected_docs": 0
+      },
+      {
+        "stage_name": "html_extraction",
+        "transform_id": "html_extraction",
+        "transform_version": "1",
+        "input_docs": 10000,
+        "output_docs": 10000,
+        "input_bytes": 9559558,
+        "output_bytes": 9559558,
+        "rejected_docs": 0
+      },
+      {
+        "stage_name": "boilerplate_removal",
+        "transform_id": "boilerplate_removal",
+        "transform_version": "1",
+        "input_docs": 10000,
+        "output_docs": 10000,
+        "input_bytes": 9559558,
+        "output_bytes": 9559558,
+        "rejected_docs": 0
+      },
+      {
+        "stage_name": "repetition_filter",
+        "transform_id": "repetition_filter",
+        "transform_version": "2",
+        "input_docs": 10000,
+        "output_docs": 10000,
+        "input_bytes": 9559558,
+        "output_bytes": 9559558,
+        "rejected_docs": 0
+      },
+      {
+        "stage_name": "language_filter",
+        "transform_id": "language_filter",
+        "transform_version": "1",
+        "input_docs": 10000,
+        "output_docs": 10000,
+        "input_bytes": 9559558,
+        "output_bytes": 9559558,
+        "rejected_docs": 0
+      },
+      {
+        "stage_name": "noise_filter",
+        "transform_id": "noise_filter",
+        "transform_version": "1",
+        "input_docs": 10000,
+        "output_docs": 10000,
+        "input_bytes": 9559558,
+        "output_bytes": 9559558,
+        "rejected_docs": 0
+      },
+      {
+        "stage_name": "length_filter",
+        "transform_id": "length_filter",
+        "transform_version": "1",
+        "input_docs": 10000,
+        "output_docs": 10000,
+        "input_bytes": 9559558,
+        "output_bytes": 9559558,
+        "rejected_docs": 0
+      },
+      {
+        "stage_name": "pii_secret_filter",
+        "transform_id": "pii_secret_filter",
+        "transform_version": "1",
+        "input_docs": 10000,
+        "output_docs": 9787,
+        "input_bytes": 9559558,
+        "output_bytes": 9346367,
+        "rejected_docs": 213
+      }
+    ],
+    "reason_counts": {
+      "detected_secret:email_address": 213
+    },
+    "is_partial_sample": false,
+    "declared_max_docs": 10000,
+    "completed": true
+  },
+  "accepted_sha256": "8ac92e35ee0971f28e705f18c92be8fd580bd3d0b4d190ebac502331cd1b4119",
+  "quarantine_logical_sha256": "d08dfc6c47ea4347ccf59d4709fe8bf11b90860f1e82f20645f8f38365cb3cf0",
+  "manifest": null,
+  "limits": {
+    "seconds": 900,
+    "rss_bytes": 3221225472,
+    "disk_bytes": 2147483648
+  },
+  "notes": [
+    "parent phase timers can nest; do not add nested phase times",
+    "worker CPU excludes interpreter bootstrap; wall minus CPU is not measured OS wait",
+    "dispatch-to-start includes planning, spawn, imports and queueing",
+    "RSS sampled at 100 ms, disk and process discovery at 1 s"
+  ]
+}

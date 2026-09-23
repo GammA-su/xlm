@@ -1,5 +1,22 @@
 # Implementation status
 
+> **P29C exact cleaning (2026-09-23): IMPLEMENTED / VERIFIED (bounded offline)**
+> on `perf/astra-cleaning-v2`, parent `5a43a81`. Authored one-worker cleaner:
+> 10k 7.965 -> 5.918 s; 100k 70.399 -> 53.241 s (24.4% less time).
+> Full frozen pipeline, unchanged worker settings: 160.558 -> 144.719 s.
+> Explicit eight-worker cleaning: 111.688 s versus historical P29B 158.430 s;
+> combines exact loop improvements with existing parallelism. Cleaner w6/w8:
+> 21.271/20.256 s at 1,542.5/1,982.1 MiB tree RSS. Static default retained;
+> bounded dynamic dispatch is opt-in for uneven work. Decisions, metrics,
+> ordered payloads and token artifacts match; real code fingerprints change.
+> Focused tests, scoped Ruff/mypy and full artifact comparisons passed.
+> Token preparation is now dominant; educational-keyword scanning remains a
+> cleaner hotspot hidden by the existing incomplete length timer. No P28 edits,
+> network, installs, research training, push or merge. Full acceptance, 250k,
+> live compatibility and CUDA NOT RUN; production acceptance remains BLOCKED.
+> See [reports/P29C.md](reports/P29C.md), [measured tables](evidence/P29C/RESULTS.md)
+> and [operator commands](../PERFORMANCE.md).
+
 > **P29B token-path performance (2026-09-23): IMPLEMENTED / VERIFIED (bounded offline)**
 > on `perf/astra-global-throughput`, parent `44c19b8`. Frozen 32,768-entry authored
 > tokenizer; matched 100k pipeline 192.142 -> 158.430 s (17.5% less time), token

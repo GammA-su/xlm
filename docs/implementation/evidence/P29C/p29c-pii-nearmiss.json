@@ -1,0 +1,186 @@
+{
+  "rows": [
+    {
+      "bytes": 1024,
+      "before": true,
+      "status": "MEASURED",
+      "seconds": 0.0023778000031597912,
+      "action": "ACCEPT",
+      "reasons": [],
+      "metrics": {
+        "utf8_byte_count": 1024,
+        "word_count": 1,
+        "line_count": 0,
+        "symbol_ratio": 0.0,
+        "digit_ratio": 0.0,
+        "duplicate_line_ratio": 0.0,
+        "max_ngram_repetition_ratio": 0.0,
+        "language": "unknown",
+        "language_confidence": null,
+        "language_method": "none",
+        "is_educational_density": false,
+        "has_html_markup": false,
+        "boilerplate_paragraphs_removed": 0,
+        "detected_secrets": [],
+        "reserved_email_placeholders_ignored": 0,
+        "spans": []
+      }
+    },
+    {
+      "bytes": 1024,
+      "before": false,
+      "status": "MEASURED",
+      "seconds": 4.1899969801306725e-05,
+      "action": "ACCEPT",
+      "reasons": [],
+      "metrics": {
+        "utf8_byte_count": 1024,
+        "word_count": 1,
+        "line_count": 0,
+        "symbol_ratio": 0.0,
+        "digit_ratio": 0.0,
+        "duplicate_line_ratio": 0.0,
+        "max_ngram_repetition_ratio": 0.0,
+        "language": "unknown",
+        "language_confidence": null,
+        "language_method": "none",
+        "is_educational_density": false,
+        "has_html_markup": false,
+        "boilerplate_paragraphs_removed": 0,
+        "detected_secrets": [],
+        "reserved_email_placeholders_ignored": 0,
+        "spans": []
+      }
+    },
+    {
+      "bytes": 10240,
+      "before": true,
+      "status": "MEASURED",
+      "seconds": 0.14187509997282177,
+      "action": "ACCEPT",
+      "reasons": [],
+      "metrics": {
+        "utf8_byte_count": 10240,
+        "word_count": 1,
+        "line_count": 0,
+        "symbol_ratio": 0.0,
+        "digit_ratio": 0.0,
+        "duplicate_line_ratio": 0.0,
+        "max_ngram_repetition_ratio": 0.0,
+        "language": "unknown",
+        "language_confidence": null,
+        "language_method": "none",
+        "is_educational_density": false,
+        "has_html_markup": false,
+        "boilerplate_paragraphs_removed": 0,
+        "detected_secrets": [],
+        "reserved_email_placeholders_ignored": 0,
+        "spans": []
+      }
+    },
+    {
+      "bytes": 10240,
+      "before": false,
+      "status": "MEASURED",
+      "seconds": 5.259999306872487e-05,
+      "action": "ACCEPT",
+      "reasons": [],
+      "metrics": {
+        "utf8_byte_count": 10240,
+        "word_count": 1,
+        "line_count": 0,
+        "symbol_ratio": 0.0,
+        "digit_ratio": 0.0,
+        "duplicate_line_ratio": 0.0,
+        "max_ngram_repetition_ratio": 0.0,
+        "language": "unknown",
+        "language_confidence": null,
+        "language_method": "none",
+        "is_educational_density": false,
+        "has_html_markup": false,
+        "boilerplate_paragraphs_removed": 0,
+        "detected_secrets": [],
+        "reserved_email_placeholders_ignored": 0,
+        "spans": []
+      }
+    },
+    {
+      "bytes": 102400,
+      "before": true,
+      "status": "TIMEOUT",
+      "limit_seconds": 3
+    },
+    {
+      "bytes": 102400,
+      "before": false,
+      "status": "MEASURED",
+      "seconds": 0.00046119996113702655,
+      "action": "ACCEPT",
+      "reasons": [],
+      "metrics": {
+        "utf8_byte_count": 102400,
+        "word_count": 1,
+        "line_count": 0,
+        "symbol_ratio": 0.0,
+        "digit_ratio": 0.0,
+        "duplicate_line_ratio": 0.0,
+        "max_ngram_repetition_ratio": 0.0,
+        "language": "unknown",
+        "language_confidence": null,
+        "language_method": "none",
+        "is_educational_density": false,
+        "has_html_markup": false,
+        "boilerplate_paragraphs_removed": 0,
+        "detected_secrets": [],
+        "reserved_email_placeholders_ignored": 0,
+        "spans": []
+      }
+    },
+    {
+      "bytes": 1048576,
+      "before": true,
+      "status": "TIMEOUT",
+      "limit_seconds": 3
+    },
+    {
+      "bytes": 1048576,
+      "before": false,
+      "status": "MEASURED",
+      "seconds": 0.0036333000170998275,
+      "action": "ACCEPT",
+      "reasons": [],
+      "metrics": {
+        "utf8_byte_count": 1048576,
+        "word_count": 1,
+        "line_count": 0,
+        "symbol_ratio": 0.0,
+        "digit_ratio": 0.0,
+        "duplicate_line_ratio": 0.0,
+        "max_ngram_repetition_ratio": 0.0,
+        "language": "unknown",
+        "language_confidence": null,
+        "language_method": "none",
+        "is_educational_density": false,
+        "has_html_markup": false,
+        "boilerplate_paragraphs_removed": 0,
+        "detected_secrets": [],
+        "reserved_email_placeholders_ignored": 0,
+        "spans": []
+      }
+    }
+  ],
+  "measurement": [
+    {
+      "stage": "pii_nearmiss",
+      "measurement_workers": 2,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 48.19154609995894,
+      "parent_cpu_seconds": 1.375,
+      "peak_tree_rss_bytes": 456908800,
+      "parent_read_bytes": 9515,
+      "parent_write_bytes": 12272,
+      "artifact_bytes_after_stage": 0,
+      "sampled_peak_artifact_bytes": 0
+    }
+  ]
+}

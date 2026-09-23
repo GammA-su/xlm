@@ -1,0 +1,151 @@
+{
+  "rows": [
+    {
+      "function": "language",
+      "mode": "reference",
+      "repeat": 0,
+      "seconds": 0.5491594999912195
+    },
+    {
+      "function": "language",
+      "mode": "lower",
+      "repeat": 0,
+      "seconds": 0.48274549999041483
+    },
+    {
+      "function": "language",
+      "mode": "counter",
+      "repeat": 0,
+      "seconds": 0.5936631999793462
+    },
+    {
+      "function": "language",
+      "mode": "counter",
+      "repeat": 1,
+      "seconds": 0.6505467999959365
+    },
+    {
+      "function": "language",
+      "mode": "lower",
+      "repeat": 1,
+      "seconds": 0.5419119999860413
+    },
+    {
+      "function": "language",
+      "mode": "reference",
+      "repeat": 1,
+      "seconds": 0.594974200008437
+    },
+    {
+      "function": "repetition",
+      "mode": "reference",
+      "repeat": 0,
+      "seconds": 0.7940462999977171
+    },
+    {
+      "function": "repetition",
+      "mode": "zip",
+      "repeat": 0,
+      "seconds": 0.42528959998162463
+    },
+    {
+      "function": "repetition",
+      "mode": "ordinal",
+      "repeat": 0,
+      "seconds": 0.6250868000206538
+    },
+    {
+      "function": "repetition",
+      "mode": "ordinal",
+      "repeat": 1,
+      "seconds": 0.6033514000009745
+    },
+    {
+      "function": "repetition",
+      "mode": "zip",
+      "repeat": 1,
+      "seconds": 0.4840171000105329
+    },
+    {
+      "function": "repetition",
+      "mode": "reference",
+      "repeat": 1,
+      "seconds": 0.6592742999782786
+    },
+    {
+      "function": "pii",
+      "mode": "reference",
+      "repeat": 0,
+      "seconds": 0.8556296000024304
+    },
+    {
+      "function": "pii",
+      "mode": "sentinels",
+      "repeat": 0,
+      "seconds": 0.11270330002298579
+    },
+    {
+      "function": "pii",
+      "mode": "sentinels",
+      "repeat": 1,
+      "seconds": 0.1348732000333257
+    },
+    {
+      "function": "pii",
+      "mode": "reference",
+      "repeat": 1,
+      "seconds": 0.845484200050123
+    },
+    {
+      "function": "structure",
+      "mode": "reference",
+      "repeat": 0,
+      "seconds": 0.13064950000261888
+    },
+    {
+      "function": "structure",
+      "mode": "prefix",
+      "repeat": 0,
+      "seconds": 0.0027470000204630196
+    },
+    {
+      "function": "structure",
+      "mode": "prefix",
+      "repeat": 1,
+      "seconds": 0.002321200037840754
+    },
+    {
+      "function": "structure",
+      "mode": "reference",
+      "repeat": 1,
+      "seconds": 0.13066490000346676
+    }
+  ],
+  "allocations": [
+    {
+      "function": "language",
+      "mode": "reference",
+      "python_peak_bytes": 45390
+    },
+    {
+      "function": "language",
+      "mode": "lower",
+      "python_peak_bytes": 44870
+    },
+    {
+      "function": "repetition",
+      "mode": "reference",
+      "python_peak_bytes": 83156
+    },
+    {
+      "function": "repetition",
+      "mode": "zip",
+      "python_peak_bytes": 58978
+    },
+    {
+      "function": "repetition",
+      "mode": "ordinal",
+      "python_peak_bytes": 65796
+    }
+  ]
+}

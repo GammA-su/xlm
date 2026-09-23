@@ -1,0 +1,395 @@
+{
+  "cleaner_comparisons": [
+    {
+      "before": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-before-w1",
+      "after": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-after-w1",
+      "accepted_sha256": "68bbfeeff0038a4d4251b254bb6fb5076ba50ea2523253b13bae64bfa071cb7c",
+      "quarantine_logical_sha256": "5e10c1d40a00da2a7c810633294d603e725db854be5083333abf8330908347b1",
+      "before_code_fingerprint": "ab72fc5abfd07bcb2a2f7cbc69c3ee6ad04ea7830970ced34aaa7f929f173c8b",
+      "after_code_fingerprint": "8a3000e5658918832d081a5094082ebff1a1928946b9ebf5406c4b5eaf9a21c7"
+    },
+    {
+      "before": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-before-w1",
+      "after": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-after-w2",
+      "accepted_sha256": "68bbfeeff0038a4d4251b254bb6fb5076ba50ea2523253b13bae64bfa071cb7c",
+      "quarantine_logical_sha256": "5e10c1d40a00da2a7c810633294d603e725db854be5083333abf8330908347b1",
+      "before_code_fingerprint": "ab72fc5abfd07bcb2a2f7cbc69c3ee6ad04ea7830970ced34aaa7f929f173c8b",
+      "after_code_fingerprint": "8a3000e5658918832d081a5094082ebff1a1928946b9ebf5406c4b5eaf9a21c7"
+    },
+    {
+      "before": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-before-w1",
+      "after": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-after-w4",
+      "accepted_sha256": "68bbfeeff0038a4d4251b254bb6fb5076ba50ea2523253b13bae64bfa071cb7c",
+      "quarantine_logical_sha256": "5e10c1d40a00da2a7c810633294d603e725db854be5083333abf8330908347b1",
+      "before_code_fingerprint": "ab72fc5abfd07bcb2a2f7cbc69c3ee6ad04ea7830970ced34aaa7f929f173c8b",
+      "after_code_fingerprint": "8a3000e5658918832d081a5094082ebff1a1928946b9ebf5406c4b5eaf9a21c7"
+    },
+    {
+      "before": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-before-w1",
+      "after": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-after-w6",
+      "accepted_sha256": "68bbfeeff0038a4d4251b254bb6fb5076ba50ea2523253b13bae64bfa071cb7c",
+      "quarantine_logical_sha256": "5e10c1d40a00da2a7c810633294d603e725db854be5083333abf8330908347b1",
+      "before_code_fingerprint": "ab72fc5abfd07bcb2a2f7cbc69c3ee6ad04ea7830970ced34aaa7f929f173c8b",
+      "after_code_fingerprint": "8a3000e5658918832d081a5094082ebff1a1928946b9ebf5406c4b5eaf9a21c7"
+    },
+    {
+      "before": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-before-w1",
+      "after": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-after-w8",
+      "accepted_sha256": "68bbfeeff0038a4d4251b254bb6fb5076ba50ea2523253b13bae64bfa071cb7c",
+      "quarantine_logical_sha256": "5e10c1d40a00da2a7c810633294d603e725db854be5083333abf8330908347b1",
+      "before_code_fingerprint": "ab72fc5abfd07bcb2a2f7cbc69c3ee6ad04ea7830970ced34aaa7f929f173c8b",
+      "after_code_fingerprint": "8a3000e5658918832d081a5094082ebff1a1928946b9ebf5406c4b5eaf9a21c7"
+    },
+    {
+      "before": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-before-w1",
+      "after": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-before-w1",
+      "accepted_sha256": "68bbfeeff0038a4d4251b254bb6fb5076ba50ea2523253b13bae64bfa071cb7c",
+      "quarantine_logical_sha256": "5e10c1d40a00da2a7c810633294d603e725db854be5083333abf8330908347b1",
+      "before_code_fingerprint": "ab72fc5abfd07bcb2a2f7cbc69c3ee6ad04ea7830970ced34aaa7f929f173c8b",
+      "after_code_fingerprint": "ab72fc5abfd07bcb2a2f7cbc69c3ee6ad04ea7830970ced34aaa7f929f173c8b"
+    },
+    {
+      "before": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-before-w1",
+      "after": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-before-w2",
+      "accepted_sha256": "68bbfeeff0038a4d4251b254bb6fb5076ba50ea2523253b13bae64bfa071cb7c",
+      "quarantine_logical_sha256": "5e10c1d40a00da2a7c810633294d603e725db854be5083333abf8330908347b1",
+      "before_code_fingerprint": "ab72fc5abfd07bcb2a2f7cbc69c3ee6ad04ea7830970ced34aaa7f929f173c8b",
+      "after_code_fingerprint": "ab72fc5abfd07bcb2a2f7cbc69c3ee6ad04ea7830970ced34aaa7f929f173c8b"
+    },
+    {
+      "before": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-before-w1",
+      "after": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-before-w4",
+      "accepted_sha256": "68bbfeeff0038a4d4251b254bb6fb5076ba50ea2523253b13bae64bfa071cb7c",
+      "quarantine_logical_sha256": "5e10c1d40a00da2a7c810633294d603e725db854be5083333abf8330908347b1",
+      "before_code_fingerprint": "ab72fc5abfd07bcb2a2f7cbc69c3ee6ad04ea7830970ced34aaa7f929f173c8b",
+      "after_code_fingerprint": "ab72fc5abfd07bcb2a2f7cbc69c3ee6ad04ea7830970ced34aaa7f929f173c8b"
+    },
+    {
+      "before": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-before-w1",
+      "after": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-before-w6",
+      "accepted_sha256": "68bbfeeff0038a4d4251b254bb6fb5076ba50ea2523253b13bae64bfa071cb7c",
+      "quarantine_logical_sha256": "5e10c1d40a00da2a7c810633294d603e725db854be5083333abf8330908347b1",
+      "before_code_fingerprint": "ab72fc5abfd07bcb2a2f7cbc69c3ee6ad04ea7830970ced34aaa7f929f173c8b",
+      "after_code_fingerprint": "ab72fc5abfd07bcb2a2f7cbc69c3ee6ad04ea7830970ced34aaa7f929f173c8b"
+    },
+    {
+      "before": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-before-w1",
+      "after": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-before-w8",
+      "accepted_sha256": "68bbfeeff0038a4d4251b254bb6fb5076ba50ea2523253b13bae64bfa071cb7c",
+      "quarantine_logical_sha256": "5e10c1d40a00da2a7c810633294d603e725db854be5083333abf8330908347b1",
+      "before_code_fingerprint": "ab72fc5abfd07bcb2a2f7cbc69c3ee6ad04ea7830970ced34aaa7f929f173c8b",
+      "after_code_fingerprint": "ab72fc5abfd07bcb2a2f7cbc69c3ee6ad04ea7830970ced34aaa7f929f173c8b"
+    },
+    {
+      "before": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-clean-before-10k",
+      "after": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-clean-after-10k",
+      "accepted_sha256": "8ac92e35ee0971f28e705f18c92be8fd580bd3d0b4d190ebac502331cd1b4119",
+      "quarantine_logical_sha256": "d08dfc6c47ea4347ccf59d4709fe8bf11b90860f1e82f20645f8f38365cb3cf0",
+      "before_code_fingerprint": "ab72fc5abfd07bcb2a2f7cbc69c3ee6ad04ea7830970ced34aaa7f929f173c8b",
+      "after_code_fingerprint": "8a3000e5658918832d081a5094082ebff1a1928946b9ebf5406c4b5eaf9a21c7"
+    },
+    {
+      "before": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-clean-before-10k",
+      "after": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-clean-before-10k",
+      "accepted_sha256": "8ac92e35ee0971f28e705f18c92be8fd580bd3d0b4d190ebac502331cd1b4119",
+      "quarantine_logical_sha256": "d08dfc6c47ea4347ccf59d4709fe8bf11b90860f1e82f20645f8f38365cb3cf0",
+      "before_code_fingerprint": "ab72fc5abfd07bcb2a2f7cbc69c3ee6ad04ea7830970ced34aaa7f929f173c8b",
+      "after_code_fingerprint": "ab72fc5abfd07bcb2a2f7cbc69c3ee6ad04ea7830970ced34aaa7f929f173c8b"
+    },
+    {
+      "before": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-before-w1",
+      "after": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-dynamic-w8",
+      "accepted_sha256": "68bbfeeff0038a4d4251b254bb6fb5076ba50ea2523253b13bae64bfa071cb7c",
+      "quarantine_logical_sha256": "5e10c1d40a00da2a7c810633294d603e725db854be5083333abf8330908347b1",
+      "before_code_fingerprint": "ab72fc5abfd07bcb2a2f7cbc69c3ee6ad04ea7830970ced34aaa7f929f173c8b",
+      "after_code_fingerprint": "8a3000e5658918832d081a5094082ebff1a1928946b9ebf5406c4b5eaf9a21c7"
+    },
+    {
+      "before": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-heavy-static",
+      "after": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-heavy-dynamic",
+      "accepted_sha256": "6a088619249cf71246182b414f0953074c308505d349bde30e35c801210b9621",
+      "quarantine_logical_sha256": "db8a2c968d7a6652f435ce5546a8a35833ec7c23f10e89be7fed86cd2f556d16",
+      "before_code_fingerprint": "8a3000e5658918832d081a5094082ebff1a1928946b9ebf5406c4b5eaf9a21c7",
+      "after_code_fingerprint": "8a3000e5658918832d081a5094082ebff1a1928946b9ebf5406c4b5eaf9a21c7"
+    },
+    {
+      "before": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-heavy-static",
+      "after": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-heavy-repeat-dynamic",
+      "accepted_sha256": "6a088619249cf71246182b414f0953074c308505d349bde30e35c801210b9621",
+      "quarantine_logical_sha256": "db8a2c968d7a6652f435ce5546a8a35833ec7c23f10e89be7fed86cd2f556d16",
+      "before_code_fingerprint": "8a3000e5658918832d081a5094082ebff1a1928946b9ebf5406c4b5eaf9a21c7",
+      "after_code_fingerprint": "8a3000e5658918832d081a5094082ebff1a1928946b9ebf5406c4b5eaf9a21c7"
+    },
+    {
+      "before": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-heavy-static",
+      "after": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-heavy-repeat-static",
+      "accepted_sha256": "6a088619249cf71246182b414f0953074c308505d349bde30e35c801210b9621",
+      "quarantine_logical_sha256": "db8a2c968d7a6652f435ce5546a8a35833ec7c23f10e89be7fed86cd2f556d16",
+      "before_code_fingerprint": "8a3000e5658918832d081a5094082ebff1a1928946b9ebf5406c4b5eaf9a21c7",
+      "after_code_fingerprint": "8a3000e5658918832d081a5094082ebff1a1928946b9ebf5406c4b5eaf9a21c7"
+    },
+    {
+      "before": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-heavy-static",
+      "after": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-heavy-static",
+      "accepted_sha256": "6a088619249cf71246182b414f0953074c308505d349bde30e35c801210b9621",
+      "quarantine_logical_sha256": "db8a2c968d7a6652f435ce5546a8a35833ec7c23f10e89be7fed86cd2f556d16",
+      "before_code_fingerprint": "8a3000e5658918832d081a5094082ebff1a1928946b9ebf5406c4b5eaf9a21c7",
+      "after_code_fingerprint": "8a3000e5658918832d081a5094082ebff1a1928946b9ebf5406c4b5eaf9a21c7"
+    },
+    {
+      "before": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-clean-before-10k",
+      "after": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-profile-10k",
+      "accepted_sha256": "8ac92e35ee0971f28e705f18c92be8fd580bd3d0b4d190ebac502331cd1b4119",
+      "quarantine_logical_sha256": "d08dfc6c47ea4347ccf59d4709fe8bf11b90860f1e82f20645f8f38365cb3cf0",
+      "before_code_fingerprint": "ab72fc5abfd07bcb2a2f7cbc69c3ee6ad04ea7830970ced34aaa7f929f173c8b",
+      "after_code_fingerprint": "ab72fc5abfd07bcb2a2f7cbc69c3ee6ad04ea7830970ced34aaa7f929f173c8b"
+    },
+    {
+      "before": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-clean-before-10k",
+      "after": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-profile-after-10k",
+      "accepted_sha256": "8ac92e35ee0971f28e705f18c92be8fd580bd3d0b4d190ebac502331cd1b4119",
+      "quarantine_logical_sha256": "d08dfc6c47ea4347ccf59d4709fe8bf11b90860f1e82f20645f8f38365cb3cf0",
+      "before_code_fingerprint": "ab72fc5abfd07bcb2a2f7cbc69c3ee6ad04ea7830970ced34aaa7f929f173c8b",
+      "after_code_fingerprint": "8a3000e5658918832d081a5094082ebff1a1928946b9ebf5406c4b5eaf9a21c7"
+    },
+    {
+      "before": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-before-w1",
+      "after": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-profile-before-100k",
+      "accepted_sha256": "68bbfeeff0038a4d4251b254bb6fb5076ba50ea2523253b13bae64bfa071cb7c",
+      "quarantine_logical_sha256": "5e10c1d40a00da2a7c810633294d603e725db854be5083333abf8330908347b1",
+      "before_code_fingerprint": "ab72fc5abfd07bcb2a2f7cbc69c3ee6ad04ea7830970ced34aaa7f929f173c8b",
+      "after_code_fingerprint": "ab72fc5abfd07bcb2a2f7cbc69c3ee6ad04ea7830970ced34aaa7f929f173c8b"
+    },
+    {
+      "before": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-before-w1",
+      "after": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-shard-1",
+      "accepted_sha256": "68bbfeeff0038a4d4251b254bb6fb5076ba50ea2523253b13bae64bfa071cb7c",
+      "quarantine_logical_sha256": "5e10c1d40a00da2a7c810633294d603e725db854be5083333abf8330908347b1",
+      "before_code_fingerprint": "ab72fc5abfd07bcb2a2f7cbc69c3ee6ad04ea7830970ced34aaa7f929f173c8b",
+      "after_code_fingerprint": "8a3000e5658918832d081a5094082ebff1a1928946b9ebf5406c4b5eaf9a21c7"
+    },
+    {
+      "before": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-before-w1",
+      "after": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-shard-16",
+      "accepted_sha256": "68bbfeeff0038a4d4251b254bb6fb5076ba50ea2523253b13bae64bfa071cb7c",
+      "quarantine_logical_sha256": "5e10c1d40a00da2a7c810633294d603e725db854be5083333abf8330908347b1",
+      "before_code_fingerprint": "ab72fc5abfd07bcb2a2f7cbc69c3ee6ad04ea7830970ced34aaa7f929f173c8b",
+      "after_code_fingerprint": "8a3000e5658918832d081a5094082ebff1a1928946b9ebf5406c4b5eaf9a21c7"
+    },
+    {
+      "before": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-clean-before-10k",
+      "after": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-sharded-w1",
+      "accepted_sha256": "8ac92e35ee0971f28e705f18c92be8fd580bd3d0b4d190ebac502331cd1b4119",
+      "quarantine_logical_sha256": "d08dfc6c47ea4347ccf59d4709fe8bf11b90860f1e82f20645f8f38365cb3cf0",
+      "before_code_fingerprint": "ab72fc5abfd07bcb2a2f7cbc69c3ee6ad04ea7830970ced34aaa7f929f173c8b",
+      "after_code_fingerprint": "8a3000e5658918832d081a5094082ebff1a1928946b9ebf5406c4b5eaf9a21c7"
+    },
+    {
+      "before": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-clean-before-10k",
+      "after": "D:\\Project\\xlm-perf-astra-cleaning-v2\\artifacts\\perf\\p29c-sharded-w4",
+      "accepted_sha256": "8ac92e35ee0971f28e705f18c92be8fd580bd3d0b4d190ebac502331cd1b4119",
+      "quarantine_logical_sha256": "d08dfc6c47ea4347ccf59d4709fe8bf11b90860f1e82f20645f8f38365cb3cf0",
+      "before_code_fingerprint": "ab72fc5abfd07bcb2a2f7cbc69c3ee6ad04ea7830970ced34aaa7f929f173c8b",
+      "after_code_fingerprint": "8a3000e5658918832d081a5094082ebff1a1928946b9ebf5406c4b5eaf9a21c7"
+    }
+  ],
+  "verified_shard_manifest": {
+    "schema_version": 1,
+    "artifact_type": "clean_documents_sharded",
+    "dataset_id": "clean_prose_8a3000e56589",
+    "source_artifact": {
+      "input_kind": "single_file",
+      "preset": "prose"
+    },
+    "producer": {
+      "output_shard_bytes": 1048576,
+      "tool": "xlm-data-clean"
+    },
+    "shard_target_bytes": 1048576,
+    "shards": [
+      {
+        "ordinal": 0,
+        "path": "shard-00000.jsonl",
+        "doc_count": 564,
+        "byte_count": 1049002,
+        "sha256": "df39f20d6476cdcf66d89abf6791afe683d521a7c074c59e1cd62e014e9457a5",
+        "oversize": false,
+        "first_doc_id": "1",
+        "last_doc_id": "576"
+      },
+      {
+        "ordinal": 1,
+        "path": "shard-00001.jsonl",
+        "doc_count": 564,
+        "byte_count": 1050144,
+        "sha256": "83c65c0c5c24ab0dbef1948234f5426cfe3080fd2d81a351a65fac64d25b1559",
+        "oversize": false,
+        "first_doc_id": "577",
+        "last_doc_id": "1152"
+      },
+      {
+        "ordinal": 2,
+        "path": "shard-00002.jsonl",
+        "doc_count": 563,
+        "byte_count": 1049828,
+        "sha256": "a59e6a79487dbb11c05a963b8663e1086b4ce29de94bb9579f1db27e0f1c6525",
+        "oversize": false,
+        "first_doc_id": "1153",
+        "last_doc_id": "1727"
+      },
+      {
+        "ordinal": 3,
+        "path": "shard-00003.jsonl",
+        "doc_count": 562,
+        "byte_count": 1048792,
+        "sha256": "b927ce476d8919328af04bcaf715e5877f07d936c190bedb450415b827bf964e",
+        "oversize": false,
+        "first_doc_id": "1728",
+        "last_doc_id": "2301"
+      },
+      {
+        "ordinal": 4,
+        "path": "shard-00004.jsonl",
+        "doc_count": 563,
+        "byte_count": 1049954,
+        "sha256": "8f4ab2f23afd7d85e1ecd3ea274fa1cb7a8b9c2553149ae7bb5d01bf40f17424",
+        "oversize": false,
+        "first_doc_id": "2302",
+        "last_doc_id": "2877"
+      },
+      {
+        "ordinal": 5,
+        "path": "shard-00005.jsonl",
+        "doc_count": 564,
+        "byte_count": 1051674,
+        "sha256": "d12ada9c883532743aabb882d9d45ec250eaa5888a66192849b48c12d7b136d2",
+        "oversize": false,
+        "first_doc_id": "2878",
+        "last_doc_id": "3453"
+      },
+      {
+        "ordinal": 6,
+        "path": "shard-00006.jsonl",
+        "doc_count": 563,
+        "byte_count": 1048628,
+        "sha256": "15390474dd9a317a824652df8de9c8d5bd6b7401de45434053b6ac25d3e44e1f",
+        "oversize": false,
+        "first_doc_id": "3454",
+        "last_doc_id": "4028"
+      },
+      {
+        "ordinal": 7,
+        "path": "shard-00007.jsonl",
+        "doc_count": 562,
+        "byte_count": 1048675,
+        "sha256": "9acb74104ce36f754e78ea38132d31844d8812d3b0ac34a4dd1bcf40d7886a2f",
+        "oversize": false,
+        "first_doc_id": "4029",
+        "last_doc_id": "4602"
+      },
+      {
+        "ordinal": 8,
+        "path": "shard-00008.jsonl",
+        "doc_count": 562,
+        "byte_count": 1048937,
+        "sha256": "cf9a263049740b4475aa15add5b969034ba5391a593f2b103cc0525787517261",
+        "oversize": false,
+        "first_doc_id": "4603",
+        "last_doc_id": "5177"
+      },
+      {
+        "ordinal": 9,
+        "path": "shard-00009.jsonl",
+        "doc_count": 563,
+        "byte_count": 1049921,
+        "sha256": "1d12da4a71ee47dd12d92e88ce21d9b05b6ed8deff4ced01aaa08c6a39a5e9b5",
+        "oversize": false,
+        "first_doc_id": "5178",
+        "last_doc_id": "5752"
+      },
+      {
+        "ordinal": 10,
+        "path": "shard-00010.jsonl",
+        "doc_count": 563,
+        "byte_count": 1050570,
+        "sha256": "c5836002c017662ea3d91189e3418610f7160126a77260deaee3a297953f3a35",
+        "oversize": false,
+        "first_doc_id": "5753",
+        "last_doc_id": "6327"
+      },
+      {
+        "ordinal": 11,
+        "path": "shard-00011.jsonl",
+        "doc_count": 564,
+        "byte_count": 1051415,
+        "sha256": "ec26000c10f49673864f6cfb10a932de14dc675e854329cdb8c00382e7aa140f",
+        "oversize": false,
+        "first_doc_id": "6328",
+        "last_doc_id": "6903"
+      },
+      {
+        "ordinal": 12,
+        "path": "shard-00012.jsonl",
+        "doc_count": 564,
+        "byte_count": 1049853,
+        "sha256": "e88e18cadeaecb03861303007f3457cc02b1262d8e0c4919d79fa6f03f408919",
+        "oversize": false,
+        "first_doc_id": "6904",
+        "last_doc_id": "7480"
+      },
+      {
+        "ordinal": 13,
+        "path": "shard-00013.jsonl",
+        "doc_count": 563,
+        "byte_count": 1050562,
+        "sha256": "fdcb57bce4c22e0f00c8ee53e0eef353835840bbb00ee7e73d1d2f7d8a75c015",
+        "oversize": false,
+        "first_doc_id": "7481",
+        "last_doc_id": "8055"
+      },
+      {
+        "ordinal": 14,
+        "path": "shard-00014.jsonl",
+        "doc_count": 563,
+        "byte_count": 1048600,
+        "sha256": "e1f53e59a670b5dcb103afebae229bbd51fff0aea1e8945a2e9f415f7c465bc4",
+        "oversize": false,
+        "first_doc_id": "8056",
+        "last_doc_id": "8630"
+      },
+      {
+        "ordinal": 15,
+        "path": "shard-00015.jsonl",
+        "doc_count": 562,
+        "byte_count": 1048911,
+        "sha256": "e10f0113dc518f612ca7f8e286cf4636b64c34b3eb2d71963480e454b71334f5",
+        "oversize": false,
+        "first_doc_id": "8631",
+        "last_doc_id": "9204"
+      },
+      {
+        "ordinal": 16,
+        "path": "shard-00016.jsonl",
+        "doc_count": 563,
+        "byte_count": 1049464,
+        "sha256": "cfe5bd8bbfcfab9edab3fa52971b479e577975c68509894d4d29e792a715a63b",
+        "oversize": false,
+        "first_doc_id": "9205",
+        "last_doc_id": "9780"
+      },
+      {
+        "ordinal": 17,
+        "path": "shard-00017.jsonl",
+        "doc_count": 215,
+        "byte_count": 403288,
+        "sha256": "90343944b941228afc16ce35d2c58c44369d93f0d9069a3f8a1d6f8acf1242f5",
+        "oversize": false,
+        "first_doc_id": "9781",
+        "last_doc_id": "9999"
+      }
+    ],
+    "total_documents": 9787,
+    "total_bytes": 18248218,
+    "aggregate_sha256": "33c8792a20e4a4374280df909d284adf71eeb2ceb06df1f428fe52de9d01a8df"
+  }
+}

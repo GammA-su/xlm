@@ -1,5 +1,42 @@
 # Offline performance measurements
 
+P29C adds exact cleaner improvements and an explicit bounded dynamic scheduling
+option. [P29C results](implementation/reports/P29C.md) record 24.4% less 100k
+single-worker cleaning time on the frozen authored fixture. The same-setting
+pipeline is 144.719 s; explicitly enabling eight cleaning workers gives 111.688 s.
+These are local diagnostics, not live-source throughput claims.
+
+After setting the environment below, a bounded cleaner review uses the existing
+canonical prefix from P29C and a fresh destination:
+
+```powershell
+uv run --offline --locked --no-sync python scripts/benchmark_cleaning_v2.py --input artifacts/perf/p29c-input-10k.jsonl --output artifacts/perf/my-clean-10k --documents 10000 --workers 1
+```
+
+If the ignored prefix is absent, first generate a local frozen 10k pipeline using
+the P29B fixture commands below, then pass its `adapted/documents.jsonl` as input.
+Never substitute a live corpus silently. For 100k, explicitly set
+`--documents 100000 --workers 6 --shard-mib 4`. Six workers measured 21.271 s
+at 1,542.5 MiB tree RSS; eight measured 20.256 s at 1,982.1 MiB. The benchmark's
+Torch imports contribute to these RSS/startup costs. Default worker counts and
+static scheduling are unchanged.
+
+`--scheduling dynamic` opts into at most two queued whole-unit tasks per worker;
+it helped an uneven 128-document fixture but was slower on the mixed 100k case.
+The product Python API is `run_sharded_clean(..., scheduling="dynamic")`; there
+is no hidden tuning or new cleaning CLI default. Source order and publication
+verification remain fixed. One and sixteen MiB shards were slower than four MiB
+on this fixture. Cleaner benchmark caps: 900 seconds, 3 GiB process-tree RSS,
+512 MiB input, 2 GiB output/scratch per run. Sampled caps are guardrails, not OS
+reservations; retain space for all runs, including failed outputs.
+
+For a full P29C frozen comparison, use the existing pipeline command with
+`--token-workers 8 --workers 8`. P29C's `scripts/verify_cleaning_v2.py` compares
+full payloads while reporting the expected implementation-fingerprint difference.
+The general comparator still treats those hashes as identity; do not silently
+erase provenance to make it pass. [Exact commands and validation exits](
+implementation/evidence/P29C/COMMANDS.md) include same-worker controls and limits.
+
 P29B extends this workflow to the frozen 32,768-entry vocabulary regime. See
 [P29B results](implementation/reports/P29B.md) for exactness, worker scaling,
 memory costs and the limits of these authored fixtures. No production tokenizer

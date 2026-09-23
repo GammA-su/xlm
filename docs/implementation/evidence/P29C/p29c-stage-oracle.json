@@ -1,0 +1,5 @@
+{
+  "documents": 10000,
+  "all_stage_results_sha256": "5fe38fd49086baaa70be8a4464986791c83d1d9704118521377c93355651b107",
+  "fields": "actions, cleaned text, metadata, quality metrics, ordered reasons, byte counts, identities; only durations excluded"
+}

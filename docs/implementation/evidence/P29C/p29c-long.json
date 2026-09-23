@@ -1,0 +1,1603 @@
+{
+  "rows": [
+    {
+      "bytes": 1024,
+      "kind": "clean",
+      "filter": "language",
+      "mode": "before",
+      "trials": [
+        {
+          "wall": 0.00011490000179037452,
+          "cpu": 0.0
+        },
+        {
+          "wall": 7.619999814778566e-05,
+          "cpu": 0.0
+        },
+        {
+          "wall": 6.410002242773771e-05,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 19398,
+      "result_digest": "b15d0c99fa7ec6afd2af8591fdf4a5bb3c4131e2a5de2f3e54866ba0f441a80d"
+    },
+    {
+      "bytes": 1024,
+      "kind": "clean",
+      "filter": "language",
+      "mode": "after",
+      "trials": [
+        {
+          "wall": 7.51999905332923e-05,
+          "cpu": 0.0
+        },
+        {
+          "wall": 6.160000339150429e-05,
+          "cpu": 0.0
+        },
+        {
+          "wall": 5.4699950851500034e-05,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 12101,
+      "result_digest": "b15d0c99fa7ec6afd2af8591fdf4a5bb3c4131e2a5de2f3e54866ba0f441a80d"
+    },
+    {
+      "bytes": 1024,
+      "kind": "clean",
+      "filter": "repetition",
+      "mode": "before",
+      "trials": [
+        {
+          "wall": 0.0002845999551936984,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.0001170000177808106,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.00010230002226307988,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 33750,
+      "result_digest": "c71d15a4e4c9c3c97e5376a0d18a652f980cd54f1a2da586d1f6af41e2cdc715"
+    },
+    {
+      "bytes": 1024,
+      "kind": "clean",
+      "filter": "repetition",
+      "mode": "after",
+      "trials": [
+        {
+          "wall": 0.00010699999984353781,
+          "cpu": 0.0
+        },
+        {
+          "wall": 6.910000229254365e-05,
+          "cpu": 0.0
+        },
+        {
+          "wall": 6.290001329034567e-05,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 24935,
+      "result_digest": "c71d15a4e4c9c3c97e5376a0d18a652f980cd54f1a2da586d1f6af41e2cdc715"
+    },
+    {
+      "bytes": 1024,
+      "kind": "clean",
+      "filter": "pii",
+      "mode": "before",
+      "trials": [
+        {
+          "wall": 9.070005035027862e-05,
+          "cpu": 0.0
+        },
+        {
+          "wall": 8.259998867288232e-05,
+          "cpu": 0.0
+        },
+        {
+          "wall": 7.930002175271511e-05,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 9990,
+      "result_digest": "3beba474e92310af5c7103ffcecf75135d79f5c7983ad7d0b639f107c2e5ab49"
+    },
+    {
+      "bytes": 1024,
+      "kind": "clean",
+      "filter": "pii",
+      "mode": "after",
+      "trials": [
+        {
+          "wall": 2.5200017262250185e-05,
+          "cpu": 0.0
+        },
+        {
+          "wall": 1.2999982573091984e-05,
+          "cpu": 0.0
+        },
+        {
+          "wall": 9.999959729611874e-06,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 11176,
+      "result_digest": "3beba474e92310af5c7103ffcecf75135d79f5c7983ad7d0b639f107c2e5ab49"
+    },
+    {
+      "bytes": 1024,
+      "kind": "repetitive",
+      "filter": "language",
+      "mode": "before",
+      "trials": [
+        {
+          "wall": 0.00015760003589093685,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.00015209999401122332,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.0001241000136360526,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 17674,
+      "result_digest": "ffd36f0260ccda19e0f8ac9ae29dbe5e439a379af92a0a7b030b5b5a95316c9c"
+    },
+    {
+      "bytes": 1024,
+      "kind": "repetitive",
+      "filter": "language",
+      "mode": "after",
+      "trials": [
+        {
+          "wall": 5.949998740106821e-05,
+          "cpu": 0.0
+        },
+        {
+          "wall": 5.1600043661892414e-05,
+          "cpu": 0.0
+        },
+        {
+          "wall": 4.930002614855766e-05,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 11239,
+      "result_digest": "ffd36f0260ccda19e0f8ac9ae29dbe5e439a379af92a0a7b030b5b5a95316c9c"
+    },
+    {
+      "bytes": 1024,
+      "kind": "repetitive",
+      "filter": "repetition",
+      "mode": "before",
+      "trials": [
+        {
+          "wall": 0.00014029996236786246,
+          "cpu": 0.0
+        },
+        {
+          "wall": 7.499998901039362e-05,
+          "cpu": 0.0
+        },
+        {
+          "wall": 8.9599983766675e-05,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 13116,
+      "result_digest": "3d2ae766073269b8a6cda7034cd863dbd09fc1ac7a0f1c667a74ecc5f8e4746f"
+    },
+    {
+      "bytes": 1024,
+      "kind": "repetitive",
+      "filter": "repetition",
+      "mode": "after",
+      "trials": [
+        {
+          "wall": 4.840001929551363e-05,
+          "cpu": 0.0
+        },
+        {
+          "wall": 4.309997893869877e-05,
+          "cpu": 0.0
+        },
+        {
+          "wall": 4.090002039447427e-05,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 13193,
+      "result_digest": "3d2ae766073269b8a6cda7034cd863dbd09fc1ac7a0f1c667a74ecc5f8e4746f"
+    },
+    {
+      "bytes": 1024,
+      "kind": "repetitive",
+      "filter": "pii",
+      "mode": "before",
+      "trials": [
+        {
+          "wall": 8.129997877404094e-05,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.00012310000602155924,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.00013000000035390258,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 9312,
+      "result_digest": "5474bf259f74c349c141e5ff48223113309c4680a44cdcf6e46ca0ba4d39171d"
+    },
+    {
+      "bytes": 1024,
+      "kind": "repetitive",
+      "filter": "pii",
+      "mode": "after",
+      "trials": [
+        {
+          "wall": 3.779999678954482e-05,
+          "cpu": 0.0
+        },
+        {
+          "wall": 1.1499971151351929e-05,
+          "cpu": 0.0
+        },
+        {
+          "wall": 9.100011084228754e-06,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 10538,
+      "result_digest": "5474bf259f74c349c141e5ff48223113309c4680a44cdcf6e46ca0ba4d39171d"
+    },
+    {
+      "bytes": 1024,
+      "kind": "noisy",
+      "filter": "language",
+      "mode": "before",
+      "trials": [
+        {
+          "wall": 0.0001677999971434474,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.00016910000704228878,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.0001409000251442194,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 11328,
+      "result_digest": "12f63e22e0e7945a304995be85ef879eb3d76f57f1ce38e661d6f6939c7e9783"
+    },
+    {
+      "bytes": 1024,
+      "kind": "noisy",
+      "filter": "language",
+      "mode": "after",
+      "trials": [
+        {
+          "wall": 0.000146100006531924,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.0001414999715052545,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.00013890000991523266,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 11448,
+      "result_digest": "12f63e22e0e7945a304995be85ef879eb3d76f57f1ce38e661d6f6939c7e9783"
+    },
+    {
+      "bytes": 1024,
+      "kind": "noisy",
+      "filter": "repetition",
+      "mode": "before",
+      "trials": [
+        {
+          "wall": 0.00015959999291226268,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.0003238999634049833,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.00024180003674700856,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 21539,
+      "result_digest": "4c52f0554d2870eac3ecac2ad84c747c092b31760a558c932521dfa5d6198125"
+    },
+    {
+      "bytes": 1024,
+      "kind": "noisy",
+      "filter": "repetition",
+      "mode": "after",
+      "trials": [
+        {
+          "wall": 9.01000457815826e-05,
+          "cpu": 0.0
+        },
+        {
+          "wall": 8.03999719209969e-05,
+          "cpu": 0.0
+        },
+        {
+          "wall": 7.830001413822174e-05,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 21392,
+      "result_digest": "4c52f0554d2870eac3ecac2ad84c747c092b31760a558c932521dfa5d6198125"
+    },
+    {
+      "bytes": 1024,
+      "kind": "noisy",
+      "filter": "pii",
+      "mode": "before",
+      "trials": [
+        {
+          "wall": 0.0001653999788686633,
+          "cpu": 0.0
+        },
+        {
+          "wall": 9.399995906278491e-05,
+          "cpu": 0.0
+        },
+        {
+          "wall": 9.109999518841505e-05,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 11043,
+      "result_digest": "bdc2ef8f0905419664409e2cf7c8d0911c0d63c47d4729fddce3680d06450721"
+    },
+    {
+      "bytes": 1024,
+      "kind": "noisy",
+      "filter": "pii",
+      "mode": "after",
+      "trials": [
+        {
+          "wall": 4.830001853406429e-05,
+          "cpu": 0.0
+        },
+        {
+          "wall": 4.2300031054764986e-05,
+          "cpu": 0.0
+        },
+        {
+          "wall": 4.090002039447427e-05,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 13021,
+      "result_digest": "bdc2ef8f0905419664409e2cf7c8d0911c0d63c47d4729fddce3680d06450721"
+    },
+    {
+      "bytes": 10240,
+      "kind": "clean",
+      "filter": "language",
+      "mode": "before",
+      "trials": [
+        {
+          "wall": 0.0006175999878905714,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.0010116000194102526,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.000949900015257299,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 191002,
+      "result_digest": "7c6fa769d0f302927fc0f6d826bb33699598a34655c5c84f9bd1206bcfa95638"
+    },
+    {
+      "bytes": 10240,
+      "kind": "clean",
+      "filter": "language",
+      "mode": "after",
+      "trials": [
+        {
+          "wall": 0.0004974000039510429,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.00048149999929592013,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.0007396000437438488,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 116363,
+      "result_digest": "7c6fa769d0f302927fc0f6d826bb33699598a34655c5c84f9bd1206bcfa95638"
+    },
+    {
+      "bytes": 10240,
+      "kind": "clean",
+      "filter": "repetition",
+      "mode": "before",
+      "trials": [
+        {
+          "wall": 0.0011001999955624342,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.0009906000341288745,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.0009714000043459237,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 302630,
+      "result_digest": "ce6765fa7ed33e70436aa9edc2f55b505a4285d28db32aa32f4cac48cc2c85e6"
+    },
+    {
+      "bytes": 10240,
+      "kind": "clean",
+      "filter": "repetition",
+      "mode": "after",
+      "trials": [
+        {
+          "wall": 0.000598000013269484,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.0006989000248722732,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.0005758999614045024,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 207757,
+      "result_digest": "ce6765fa7ed33e70436aa9edc2f55b505a4285d28db32aa32f4cac48cc2c85e6"
+    },
+    {
+      "bytes": 10240,
+      "kind": "clean",
+      "filter": "pii",
+      "mode": "before",
+      "trials": [
+        {
+          "wall": 0.0007486999966204166,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.0007377999718300998,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.0011476000072434545,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 96004,
+      "result_digest": "aa2fb5628078b45c1b13b24da9100983980850017d6f7caf91c318666dbc26c6"
+    },
+    {
+      "bytes": 10240,
+      "kind": "clean",
+      "filter": "pii",
+      "mode": "after",
+      "trials": [
+        {
+          "wall": 9.200000204145908e-05,
+          "cpu": 0.0
+        },
+        {
+          "wall": 7.780001033097506e-05,
+          "cpu": 0.0
+        },
+        {
+          "wall": 7.020001066848636e-05,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 106446,
+      "result_digest": "aa2fb5628078b45c1b13b24da9100983980850017d6f7caf91c318666dbc26c6"
+    },
+    {
+      "bytes": 10240,
+      "kind": "repetitive",
+      "filter": "language",
+      "mode": "before",
+      "trials": [
+        {
+          "wall": 0.000576100021135062,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.0004957999917678535,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.00047969998558983207,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 172058,
+      "result_digest": "1b10563f0acc8d9fa16955f11bed8e1501c8447c54d6f9ec0155e49f73c1324c"
+    },
+    {
+      "bytes": 10240,
+      "kind": "repetitive",
+      "filter": "language",
+      "mode": "after",
+      "trials": [
+        {
+          "wall": 0.0004389999667182565,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.0004159999662078917,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.0005309000262059271,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 106891,
+      "result_digest": "1b10563f0acc8d9fa16955f11bed8e1501c8447c54d6f9ec0155e49f73c1324c"
+    },
+    {
+      "bytes": 10240,
+      "kind": "repetitive",
+      "filter": "repetition",
+      "mode": "before",
+      "trials": [
+        {
+          "wall": 0.0007035000016912818,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.0005370000144466758,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.0005357000045478344,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 114684,
+      "result_digest": "e02fa83983c1d66d9cf914819cbcd354cca29c6bd87f28799cd7cc2d5f4872ae"
+    },
+    {
+      "bytes": 10240,
+      "kind": "repetitive",
+      "filter": "repetition",
+      "mode": "after",
+      "trials": [
+        {
+          "wall": 0.00032869999995455146,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.0003139000036753714,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.00030319998040795326,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 114794,
+      "result_digest": "e02fa83983c1d66d9cf914819cbcd354cca29c6bd87f28799cd7cc2d5f4872ae"
+    },
+    {
+      "bytes": 10240,
+      "kind": "repetitive",
+      "filter": "pii",
+      "mode": "before",
+      "trials": [
+        {
+          "wall": 0.001031799998600036,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.0012883999734185636,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.0012928000069223344,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 86532,
+      "result_digest": "bdefa4b3e5e3edc69bcaad8d7a68f6642ff89bb755162d7306cd53aa3ddbc4c8"
+    },
+    {
+      "bytes": 10240,
+      "kind": "repetitive",
+      "filter": "pii",
+      "mode": "after",
+      "trials": [
+        {
+          "wall": 9.620003402233124e-05,
+          "cpu": 0.0
+        },
+        {
+          "wall": 7.859995821490884e-05,
+          "cpu": 0.0
+        },
+        {
+          "wall": 7.539999205619097e-05,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 96974,
+      "result_digest": "bdefa4b3e5e3edc69bcaad8d7a68f6642ff89bb755162d7306cd53aa3ddbc4c8"
+    },
+    {
+      "bytes": 10240,
+      "kind": "noisy",
+      "filter": "language",
+      "mode": "before",
+      "trials": [
+        {
+          "wall": 0.0026089000166393816,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.0017942999838851392,
+          "cpu": 0.015625
+        },
+        {
+          "wall": 0.002237599983345717,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 104224,
+      "result_digest": "87756b662491ebdf4a12a972dfce3cd2a1734aea8191d1baf12de56bc9ca2dd2"
+    },
+    {
+      "bytes": 10240,
+      "kind": "noisy",
+      "filter": "language",
+      "mode": "after",
+      "trials": [
+        {
+          "wall": 0.001419799984432757,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.0015131999971345067,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.0018247999832965434,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 104344,
+      "result_digest": "87756b662491ebdf4a12a972dfce3cd2a1734aea8191d1baf12de56bc9ca2dd2"
+    },
+    {
+      "bytes": 10240,
+      "kind": "noisy",
+      "filter": "repetition",
+      "mode": "before",
+      "trials": [
+        {
+          "wall": 0.002003300003707409,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.0020699999877251685,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.001707300019916147,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 197055,
+      "result_digest": "2ab316d54150b1167eb7e1aa8f382e63d4499ed7b0c10c196380d7d4852df366"
+    },
+    {
+      "bytes": 10240,
+      "kind": "noisy",
+      "filter": "repetition",
+      "mode": "after",
+      "trials": [
+        {
+          "wall": 0.0008039000094868243,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.0006520000169984996,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.00041849998524412513,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 196941,
+      "result_digest": "2ab316d54150b1167eb7e1aa8f382e63d4499ed7b0c10c196380d7d4852df366"
+    },
+    {
+      "bytes": 10240,
+      "kind": "noisy",
+      "filter": "pii",
+      "mode": "before",
+      "trials": [
+        {
+          "wall": 0.000902900006622076,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.0010670000337995589,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.0015140000032261014,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 103875,
+      "result_digest": "6f590acabfdc906ad06c21cf94f5bb1531ae7786a8237bee6082237a5a204575"
+    },
+    {
+      "bytes": 10240,
+      "kind": "noisy",
+      "filter": "pii",
+      "mode": "after",
+      "trials": [
+        {
+          "wall": 0.0003912000101990998,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.00036210002144798636,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.0003616000176407397,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 121213,
+      "result_digest": "6f590acabfdc906ad06c21cf94f5bb1531ae7786a8237bee6082237a5a204575"
+    },
+    {
+      "bytes": 102400,
+      "kind": "clean",
+      "filter": "language",
+      "mode": "before",
+      "trials": [
+        {
+          "wall": 0.007403699972201139,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.005717199994251132,
+          "cpu": 0.015625
+        },
+        {
+          "wall": 0.006197399983648211,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 1930906,
+      "result_digest": "bb890a0325450e6a9b23a7edacc18f06ac3dde89f2ed437a059bba2afc07466c"
+    },
+    {
+      "bytes": 102400,
+      "kind": "clean",
+      "filter": "language",
+      "mode": "after",
+      "trials": [
+        {
+          "wall": 0.00770580000244081,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.006839799985755235,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.00592349999351427,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 1170635,
+      "result_digest": "bb890a0325450e6a9b23a7edacc18f06ac3dde89f2ed437a059bba2afc07466c"
+    },
+    {
+      "bytes": 102400,
+      "kind": "clean",
+      "filter": "repetition",
+      "mode": "before",
+      "trials": [
+        {
+          "wall": 0.01058449997799471,
+          "cpu": 0.015625
+        },
+        {
+          "wall": 0.011924799997359514,
+          "cpu": 0.015625
+        },
+        {
+          "wall": 0.08240229997318238,
+          "cpu": 0.078125
+        }
+      ],
+      "python_peak_bytes": 2317130,
+      "result_digest": "89184ca9006bb672dff4a3cc5fbdd3572cdb79470da146959378bd054249d26e"
+    },
+    {
+      "bytes": 102400,
+      "kind": "clean",
+      "filter": "repetition",
+      "mode": "after",
+      "trials": [
+        {
+          "wall": 0.00713089999044314,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.007381999981589615,
+          "cpu": 0.015625
+        },
+        {
+          "wall": 0.006801399984396994,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 2267165,
+      "result_digest": "89184ca9006bb672dff4a3cc5fbdd3572cdb79470da146959378bd054249d26e"
+    },
+    {
+      "bytes": 102400,
+      "kind": "clean",
+      "filter": "pii",
+      "mode": "before",
+      "trials": [
+        {
+          "wall": 0.011499700020067394,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.009091199957765639,
+          "cpu": 0.015625
+        },
+        {
+          "wall": 0.008084499975666404,
+          "cpu": 0.015625
+        }
+      ],
+      "python_peak_bytes": 966212,
+      "result_digest": "fcb26f5cb7593c398467c23a865c1fd1cd45fbd63d0aa05b90a809409f85fecd"
+    },
+    {
+      "bytes": 102400,
+      "kind": "clean",
+      "filter": "pii",
+      "mode": "after",
+      "trials": [
+        {
+          "wall": 0.0008650000090710819,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.0009206999675370753,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.0006832999642938375,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 1068814,
+      "result_digest": "fcb26f5cb7593c398467c23a865c1fd1cd45fbd63d0aa05b90a809409f85fecd"
+    },
+    {
+      "bytes": 102400,
+      "kind": "repetitive",
+      "filter": "language",
+      "mode": "before",
+      "trials": [
+        {
+          "wall": 0.005795200006105006,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.005344599951058626,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.005912200023885816,
+          "cpu": 0.015625
+        }
+      ],
+      "python_peak_bytes": 1738506,
+      "result_digest": "e5b780493ec36599f65a83d11f9741a71ea917d96571d9dade7b89999c51f5d3"
+    },
+    {
+      "bytes": 102400,
+      "kind": "repetitive",
+      "filter": "language",
+      "mode": "after",
+      "trials": [
+        {
+          "wall": 0.0047200999688357115,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.004385900043416768,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.00477369996951893,
+          "cpu": 0.015625
+        }
+      ],
+      "python_peak_bytes": 1074435,
+      "result_digest": "e5b780493ec36599f65a83d11f9741a71ea917d96571d9dade7b89999c51f5d3"
+    },
+    {
+      "bytes": 102400,
+      "kind": "repetitive",
+      "filter": "repetition",
+      "mode": "before",
+      "trials": [
+        {
+          "wall": 0.009054699970874935,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.008052300021518022,
+          "cpu": 0.015625
+        },
+        {
+          "wall": 0.006713000009767711,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 1147596,
+      "result_digest": "68a6b3a458f2b9cb6c7cbd22746f66587cc1c63f823f37a6650dea88975f6b6b"
+    },
+    {
+      "bytes": 102400,
+      "kind": "repetitive",
+      "filter": "repetition",
+      "mode": "after",
+      "trials": [
+        {
+          "wall": 0.002655500022228807,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.002712199988309294,
+          "cpu": 0.015625
+        },
+        {
+          "wall": 0.0025898999883793294,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 1147707,
+      "result_digest": "68a6b3a458f2b9cb6c7cbd22746f66587cc1c63f823f37a6650dea88975f6b6b"
+    },
+    {
+      "bytes": 102400,
+      "kind": "repetitive",
+      "filter": "pii",
+      "mode": "before",
+      "trials": [
+        {
+          "wall": 0.011730899976100773,
+          "cpu": 0.015625
+        },
+        {
+          "wall": 0.010930399992503226,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.010127399989869446,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 869980,
+      "result_digest": "a4c18aca4bc228196c0fff881f51879fe2cc8b605a853b5b6f9310d9dd7f7017"
+    },
+    {
+      "bytes": 102400,
+      "kind": "repetitive",
+      "filter": "pii",
+      "mode": "after",
+      "trials": [
+        {
+          "wall": 0.0008207999635487795,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.00077629997394979,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.000830999983008951,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 972582,
+      "result_digest": "a4c18aca4bc228196c0fff881f51879fe2cc8b605a853b5b6f9310d9dd7f7017"
+    },
+    {
+      "bytes": 102400,
+      "kind": "noisy",
+      "filter": "language",
+      "mode": "before",
+      "trials": [
+        {
+          "wall": 0.0185720999725163,
+          "cpu": 0.015625
+        },
+        {
+          "wall": 0.019881199987139553,
+          "cpu": 0.015625
+        },
+        {
+          "wall": 0.020694300008472055,
+          "cpu": 0.03125
+        }
+      ],
+      "python_peak_bytes": 1048396,
+      "result_digest": "f55afb9c985698f03bcc5c6e0965392a11917ed48a10a76224d263d5f6a7a6f5"
+    },
+    {
+      "bytes": 102400,
+      "kind": "noisy",
+      "filter": "language",
+      "mode": "after",
+      "trials": [
+        {
+          "wall": 0.014745399996172637,
+          "cpu": 0.015625
+        },
+        {
+          "wall": 0.016208999964874238,
+          "cpu": 0.015625
+        },
+        {
+          "wall": 0.017271399963647127,
+          "cpu": 0.015625
+        }
+      ],
+      "python_peak_bytes": 1048608,
+      "result_digest": "f55afb9c985698f03bcc5c6e0965392a11917ed48a10a76224d263d5f6a7a6f5"
+    },
+    {
+      "bytes": 102400,
+      "kind": "noisy",
+      "filter": "repetition",
+      "mode": "before",
+      "trials": [
+        {
+          "wall": 0.014508199994452298,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.013350899971555918,
+          "cpu": 0.015625
+        },
+        {
+          "wall": 0.016846899990923703,
+          "cpu": 0.015625
+        }
+      ],
+      "python_peak_bytes": 1971363,
+      "result_digest": "73f25fec3e5aa25031ebf513f46cab1572d11f97fc2c99bacf5defa34c5df1d4"
+    },
+    {
+      "bytes": 102400,
+      "kind": "noisy",
+      "filter": "repetition",
+      "mode": "after",
+      "trials": [
+        {
+          "wall": 0.005400800029747188,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.004849200020544231,
+          "cpu": 0.015625
+        },
+        {
+          "wall": 0.005476799968164414,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 1971226,
+      "result_digest": "73f25fec3e5aa25031ebf513f46cab1572d11f97fc2c99bacf5defa34c5df1d4"
+    },
+    {
+      "bytes": 102400,
+      "kind": "noisy",
+      "filter": "pii",
+      "mode": "before",
+      "trials": [
+        {
+          "wall": 0.01341449999017641,
+          "cpu": 0.015625
+        },
+        {
+          "wall": 0.011075299989897758,
+          "cpu": 0.015625
+        },
+        {
+          "wall": 0.01075060002040118,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 1047715,
+      "result_digest": "053741501c5bbee8bd22d16466944f7f63e88935ff465c33b64f625ef310a9a3"
+    },
+    {
+      "bytes": 102400,
+      "kind": "noisy",
+      "filter": "pii",
+      "mode": "after",
+      "trials": [
+        {
+          "wall": 0.004756400012411177,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.0047070999862626195,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.00417649996234104,
+          "cpu": 0.0
+        }
+      ],
+      "python_peak_bytes": 1218653,
+      "result_digest": "053741501c5bbee8bd22d16466944f7f63e88935ff465c33b64f625ef310a9a3"
+    },
+    {
+      "bytes": 1048576,
+      "kind": "clean",
+      "filter": "language",
+      "mode": "before",
+      "trials": [
+        {
+          "wall": 0.08088440005667508,
+          "cpu": 0.078125
+        },
+        {
+          "wall": 0.07722680002916604,
+          "cpu": 0.078125
+        },
+        {
+          "wall": 0.07516299997223541,
+          "cpu": 0.078125
+        }
+      ],
+      "python_peak_bytes": 19856998,
+      "result_digest": "f2038a2f5b7677e01c0ffb05f95c489579abb43d267c3ff2496eae1f2d4e4a1e"
+    },
+    {
+      "bytes": 1048576,
+      "kind": "clean",
+      "filter": "language",
+      "mode": "after",
+      "trials": [
+        {
+          "wall": 0.07725239999126643,
+          "cpu": 0.0625
+        },
+        {
+          "wall": 0.06702790001872927,
+          "cpu": 0.0625
+        },
+        {
+          "wall": 0.06192200002260506,
+          "cpu": 0.0625
+        }
+      ],
+      "python_peak_bytes": 12026327,
+      "result_digest": "f2038a2f5b7677e01c0ffb05f95c489579abb43d267c3ff2496eae1f2d4e4a1e"
+    },
+    {
+      "bytes": 1048576,
+      "kind": "clean",
+      "filter": "repetition",
+      "mode": "before",
+      "trials": [
+        {
+          "wall": 0.06439580000005662,
+          "cpu": 0.0625
+        },
+        {
+          "wall": 0.06510800000978634,
+          "cpu": 0.0625
+        },
+        {
+          "wall": 0.06275450001703575,
+          "cpu": 0.046875
+        }
+      ],
+      "python_peak_bytes": 11282490,
+      "result_digest": "637112f5237b54ad5cd21c23c883c7a9d20ae9d88e9a96251fe21993fda827c0"
+    },
+    {
+      "bytes": 1048576,
+      "kind": "clean",
+      "filter": "repetition",
+      "mode": "after",
+      "trials": [
+        {
+          "wall": 0.04981160000897944,
+          "cpu": 0.046875
+        },
+        {
+          "wall": 0.045628200052306056,
+          "cpu": 0.03125
+        },
+        {
+          "wall": 0.04896990000270307,
+          "cpu": 0.046875
+        }
+      ],
+      "python_peak_bytes": 11233073,
+      "result_digest": "637112f5237b54ad5cd21c23c883c7a9d20ae9d88e9a96251fe21993fda827c0"
+    },
+    {
+      "bytes": 1048576,
+      "kind": "clean",
+      "filter": "pii",
+      "mode": "before",
+      "trials": [
+        {
+          "wall": 0.09347510000225157,
+          "cpu": 0.09375
+        },
+        {
+          "wall": 0.09082420001504943,
+          "cpu": 0.09375
+        },
+        {
+          "wall": 0.09641699999338016,
+          "cpu": 0.078125
+        }
+      ],
+      "python_peak_bytes": 9932971,
+      "result_digest": "09ed85d8539bc6274f7134c48bca7b58c52919c208d6def063167c397730689e"
+    },
+    {
+      "bytes": 1048576,
+      "kind": "clean",
+      "filter": "pii",
+      "mode": "after",
+      "trials": [
+        {
+          "wall": 0.010086200025398284,
+          "cpu": 0.015625
+        },
+        {
+          "wall": 0.010037100000772625,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.009492899989709258,
+          "cpu": 0.015625
+        }
+      ],
+      "python_peak_bytes": 10981693,
+      "result_digest": "09ed85d8539bc6274f7134c48bca7b58c52919c208d6def063167c397730689e"
+    },
+    {
+      "bytes": 1048576,
+      "kind": "repetitive",
+      "filter": "language",
+      "mode": "before",
+      "trials": [
+        {
+          "wall": 0.08139619999565184,
+          "cpu": 0.0625
+        },
+        {
+          "wall": 0.08217390003846958,
+          "cpu": 0.046875
+        },
+        {
+          "wall": 0.08489140000892803,
+          "cpu": 0.078125
+        }
+      ],
+      "python_peak_bytes": 17890278,
+      "result_digest": "e7d92ec88c8908b1799108232422c8ff010a6bacd3b4ac833f8a7f38d8707351"
+    },
+    {
+      "bytes": 1048576,
+      "kind": "repetitive",
+      "filter": "language",
+      "mode": "after",
+      "trials": [
+        {
+          "wall": 0.04961009998805821,
+          "cpu": 0.046875
+        },
+        {
+          "wall": 0.0532973000081256,
+          "cpu": 0.046875
+        },
+        {
+          "wall": 0.0518203999963589,
+          "cpu": 0.03125
+        }
+      ],
+      "python_peak_bytes": 11042967,
+      "result_digest": "e7d92ec88c8908b1799108232422c8ff010a6bacd3b4ac833f8a7f38d8707351"
+    },
+    {
+      "bytes": 1048576,
+      "kind": "repetitive",
+      "filter": "repetition",
+      "mode": "before",
+      "trials": [
+        {
+          "wall": 0.08679740002844483,
+          "cpu": 0.09375
+        },
+        {
+          "wall": 0.06554799998411909,
+          "cpu": 0.0625
+        },
+        {
+          "wall": 0.06399929994950071,
+          "cpu": 0.046875
+        }
+      ],
+      "python_peak_bytes": 11730985,
+      "result_digest": "677dc05a82442d86d89777e6839efa4d926e975b36443a1d93768a72d47ac50f"
+    },
+    {
+      "bytes": 1048576,
+      "kind": "repetitive",
+      "filter": "repetition",
+      "mode": "after",
+      "trials": [
+        {
+          "wall": 0.01990850002039224,
+          "cpu": 0.015625
+        },
+        {
+          "wall": 0.019227500015404075,
+          "cpu": 0.015625
+        },
+        {
+          "wall": 0.018575399997644126,
+          "cpu": 0.015625
+        }
+      ],
+      "python_peak_bytes": 11730680,
+      "result_digest": "677dc05a82442d86d89777e6839efa4d926e975b36443a1d93768a72d47ac50f"
+    },
+    {
+      "bytes": 1048576,
+      "kind": "repetitive",
+      "filter": "pii",
+      "mode": "before",
+      "trials": [
+        {
+          "wall": 0.1055163000128232,
+          "cpu": 0.109375
+        },
+        {
+          "wall": 0.11459289997583255,
+          "cpu": 0.09375
+        },
+        {
+          "wall": 0.09858089999761432,
+          "cpu": 0.109375
+        }
+      ],
+      "python_peak_bytes": 8948528,
+      "result_digest": "7af2608a83357d778eea5ceff77eb1155457d1e4e3ea190819a7abd205e10fff"
+    },
+    {
+      "bytes": 1048576,
+      "kind": "repetitive",
+      "filter": "pii",
+      "mode": "after",
+      "trials": [
+        {
+          "wall": 0.007701699971221387,
+          "cpu": 0.015625
+        },
+        {
+          "wall": 0.006265999982133508,
+          "cpu": 0.0
+        },
+        {
+          "wall": 0.007974599953740835,
+          "cpu": 0.015625
+        }
+      ],
+      "python_peak_bytes": 9996974,
+      "result_digest": "7af2608a83357d778eea5ceff77eb1155457d1e4e3ea190819a7abd205e10fff"
+    },
+    {
+      "bytes": 1048576,
+      "kind": "noisy",
+      "filter": "language",
+      "mode": "before",
+      "trials": [
+        {
+          "wall": 0.1721180999884382,
+          "cpu": 0.15625
+        },
+        {
+          "wall": 0.16471320000709966,
+          "cpu": 0.15625
+        },
+        {
+          "wall": 0.17586780001875013,
+          "cpu": 0.171875
+        }
+      ],
+      "python_peak_bytes": 10794124,
+      "result_digest": "f1409a90225d29f98e1e32dbc5666204b641841dc9b82649383b9c640ffe5440"
+    },
+    {
+      "bytes": 1048576,
+      "kind": "noisy",
+      "filter": "language",
+      "mode": "after",
+      "trials": [
+        {
+          "wall": 0.16310319997137412,
+          "cpu": 0.140625
+        },
+        {
+          "wall": 0.17995100002735853,
+          "cpu": 0.1875
+        },
+        {
+          "wall": 0.20146569999633357,
+          "cpu": 0.203125
+        }
+      ],
+      "python_peak_bytes": 10794815,
+      "result_digest": "f1409a90225d29f98e1e32dbc5666204b641841dc9b82649383b9c640ffe5440"
+    },
+    {
+      "bytes": 1048576,
+      "kind": "noisy",
+      "filter": "repetition",
+      "mode": "before",
+      "trials": [
+        {
+          "wall": 0.17195950000314042,
+          "cpu": 0.171875
+        },
+        {
+          "wall": 0.14263259997824207,
+          "cpu": 0.125
+        },
+        {
+          "wall": 0.15902389999246225,
+          "cpu": 0.171875
+        }
+      ],
+      "python_peak_bytes": 20150214,
+      "result_digest": "19f3c3d635bac879a8df55b5e64e368b841ccfd8d2410c10123a71a2ed052840"
+    },
+    {
+      "bytes": 1048576,
+      "kind": "noisy",
+      "filter": "repetition",
+      "mode": "after",
+      "trials": [
+        {
+          "wall": 0.040854600025340915,
+          "cpu": 0.046875
+        },
+        {
+          "wall": 0.041638199996668845,
+          "cpu": 0.03125
+        },
+        {
+          "wall": 0.042019199987407774,
+          "cpu": 0.046875
+        }
+      ],
+      "python_peak_bytes": 20149276,
+      "result_digest": "19f3c3d635bac879a8df55b5e64e368b841ccfd8d2410c10123a71a2ed052840"
+    },
+    {
+      "bytes": 1048576,
+      "kind": "noisy",
+      "filter": "pii",
+      "mode": "before",
+      "trials": [
+        {
+          "wall": 0.12597230001119897,
+          "cpu": 0.109375
+        },
+        {
+          "wall": 0.14269529999000952,
+          "cpu": 0.140625
+        },
+        {
+          "wall": 0.11251329997321591,
+          "cpu": 0.109375
+        }
+      ],
+      "python_peak_bytes": 10793775,
+      "result_digest": "eab9d46f45e1049b8da9a60318710b91c496b9a956f41c3063771a6966a5627b"
+    },
+    {
+      "bytes": 1048576,
+      "kind": "noisy",
+      "filter": "pii",
+      "mode": "after",
+      "trials": [
+        {
+          "wall": 0.04655520000960678,
+          "cpu": 0.03125
+        },
+        {
+          "wall": 0.04441130004124716,
+          "cpu": 0.03125
+        },
+        {
+          "wall": 0.04577549995156005,
+          "cpu": 0.046875
+        }
+      ],
+      "python_peak_bytes": 12542348,
+      "result_digest": "eab9d46f45e1049b8da9a60318710b91c496b9a956f41c3063771a6966a5627b"
+    }
+  ],
+  "measurement": [
+    {
+      "stage": "long_documents",
+      "measurement_workers": 1,
+      "parent_fsync_calls": 0,
+      "wall_seconds": 13.993375900026876,
+      "parent_cpu_seconds": 13.140625,
+      "peak_tree_rss_bytes": 298139648,
+      "parent_read_bytes": 0,
+      "parent_write_bytes": 0,
+      "artifact_bytes_after_stage": 0,
+      "sampled_peak_artifact_bytes": 0
+    }
+  ],
+  "baseline": "5a43a816505fa374371bc10fdea4eacc64186e6f"
+}
