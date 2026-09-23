@@ -96,6 +96,11 @@ class ProgressJournal:
         ensure_plain_path(journal_path)
         self.journal_path, self.plan_id, self.plan_hash = journal_path, plan_id, plan_hash
         self._lock = threading.RLock()
+        # Observational IO counters (measurement only; never alter accounting).
+        self.tx_total = 0
+        self.tx_persisted = 0
+        self.journal_fsyncs = 0
+        self.journal_bytes_written = 0
         if journal_path.exists():
             lock = journal_path.with_suffix(".lock")
             ensure_plain_path(lock)
@@ -156,12 +161,26 @@ class ProgressJournal:
                 stream.flush()
                 os.fsync(stream.fileno())
             os.replace(temporary, self.journal_path)
+            self.tx_persisted += 1
+            self.journal_fsyncs += 1
+            self.journal_bytes_written += len(payload)
         finally:
             temporary.unlink(missing_ok=True)
+
+    def io_stats(self) -> dict[str, int]:
+        """Observational journal IO counters (measurement only)."""
+        with self._lock:
+            return {
+                "journal_transactions": self.tx_total,
+                "journal_persisted_writes": self.tx_persisted,
+                "journal_fsyncs": self.journal_fsyncs,
+                "journal_bytes_written": self.journal_bytes_written,
+            }
 
     @contextmanager
     def transaction(self, *, persist: bool = True) -> Iterator[AcquisitionState]:
         with self._lock:
+            self.tx_total += 1
             self.journal_path.parent.mkdir(parents=True, exist_ok=True)
             lock = self.journal_path.with_suffix(".lock")
             ensure_plain_path(lock)

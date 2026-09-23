@@ -15,7 +15,7 @@ import pyarrow.parquet as pq
 
 from xlm.artifacts.manifest import ensure_plain_path
 from xlm.artifacts.store import compute_file_sha256
-from xlm.data.acquisition.disk import AtomicFileWriter
+from xlm.data.acquisition.disk import AtomicFileWriter, StorageCapacityManager
 from xlm.data.acquisition.progress import ProgressCorruptionError
 from xlm.data.acquisition.records import (
     RecordLimitError,
@@ -37,6 +37,13 @@ PROJECTED_BATCH_SIZE = 512
 #: Compressed read chunk for streaming gzip selected-record decode. Tuned by
 #: offline benchmark (see tests); correctness never depends on the value.
 GZ_SELECT_CHUNK_BYTES = 65536
+
+#: Decoded-row accounting batch: scanned counts and temp staging occupancy
+#: commit once per this many decoded rows instead of once per row, collapsing
+#: O(records) persisted journal transactions toward O(batches) with identical
+#: exact limits (see StorageCapacityManager.commit_batch). Execution-only
+#: tuning; never plan identity, never output bytes.
+ACCOUNTING_BATCH_RECORDS = 256
 
 
 class RangeReader(io.RawIOBase):
@@ -81,7 +88,13 @@ class RangeReader(io.RawIOBase):
         return value
 
 
-def _jsonl_selection(fetcher: BoundedFetcher, name: str, start: int, stop: int) -> Any:
+def _jsonl_selection(
+    fetcher: BoundedFetcher,
+    name: str,
+    start: int,
+    stop: int,
+    scanned_counter: list[int] | None = None,
+) -> Any:
     with fetcher._open(name, {}) as response:
         if (
             response.status != 200
@@ -129,9 +142,12 @@ def _jsonl_selection(fetcher: BoundedFetcher, name: str, start: int, stop: int) 
             raw = bytes(pending[:size])
             del pending[:size]
             if raw.strip():
-                fetcher.capacity_mgr.record_units(
-                    "records_scanned", 1, fetcher.plan.limits.max_scanned_records
-                )
+                if scanned_counter is not None:
+                    scanned_counter[0] += 1
+                else:
+                    fetcher.capacity_mgr.record_units(
+                        "records_scanned", 1, fetcher.plan.limits.max_scanned_records
+                    )
                 fetcher.perf.record_scanned(1, file=name)
                 with fetcher.perf.timed("decode", file=name):
                     record = json.loads(raw, object_pairs_hook=_pairs_hook_reject_duplicates)
@@ -154,7 +170,13 @@ def _jsonl_selection(fetcher: BoundedFetcher, name: str, start: int, stop: int) 
             offset += len(raw)
 
 
-def _gz_jsonl_selection(fetcher: BoundedFetcher, name: str, start: int, stop: int) -> Any:
+def _gz_jsonl_selection(
+    fetcher: BoundedFetcher,
+    name: str,
+    start: int,
+    stop: int,
+    scanned_counter: list[int] | None = None,
+) -> Any:
     """Bounded selected rows from ``.jsonl.gz`` via incremental streaming decode.
 
     Reads compressed bytes from the start, incrementally gunzips, frames
@@ -237,7 +259,12 @@ def _gz_jsonl_selection(fetcher: BoundedFetcher, name: str, start: int, stop: in
             raw = bytes(pending[:size])
             del pending[:size]
             if raw.strip():
-                fetcher.capacity_mgr.record_units("records_scanned", 1, limits.max_scanned_records)
+                if scanned_counter is not None:
+                    scanned_counter[0] += 1
+                else:
+                    fetcher.capacity_mgr.record_units(
+                        "records_scanned", 1, limits.max_scanned_records
+                    )
                 fetcher.perf.record_scanned(1, file=name)
                 with fetcher.perf.timed("decode", file=name):
                     record = json.loads(raw, object_pairs_hook=_pairs_hook_reject_duplicates)
@@ -269,14 +296,21 @@ def _selection_iterator(
     *,
     columns: list[str] | None = None,
     coalesce_bytes: int | None = None,
+    scanned_counter: list[int] | None = None,
 ) -> Any:
     """Dispatch selected-record iteration by file kind (JSONL, GZ, Parquet)."""
     if source.endswith(".jsonl"):
-        return _jsonl_selection(fetcher, source, start, stop)
+        return _jsonl_selection(fetcher, source, start, stop, scanned_counter)
     if source.endswith(".jsonl.gz"):
-        return _gz_jsonl_selection(fetcher, source, start, stop)
+        return _gz_jsonl_selection(fetcher, source, start, stop, scanned_counter)
     return _parquet_selection(
-        fetcher, source, start, stop, columns=columns, coalesce_bytes=coalesce_bytes
+        fetcher,
+        source,
+        start,
+        stop,
+        columns=columns,
+        coalesce_bytes=coalesce_bytes,
+        scanned_counter=scanned_counter,
     )
 
 
@@ -288,14 +322,23 @@ def _parquet_selection(
     *,
     columns: list[str] | None = None,
     coalesce_bytes: int | None = None,
+    scanned_counter: list[int] | None = None,
 ) -> Any:
     """Selected Parquet rows; legacy exact ranges unless projection/coalescing set."""
     if columns is None and coalesce_bytes is None:
-        return _parquet_selection_exact(fetcher, name, start, stop)
-    return _parquet_selection_projected(fetcher, name, start, stop, columns, coalesce_bytes)
+        return _parquet_selection_exact(fetcher, name, start, stop, scanned_counter)
+    return _parquet_selection_projected(
+        fetcher, name, start, stop, columns, coalesce_bytes, scanned_counter
+    )
 
 
-def _parquet_selection_exact(fetcher: BoundedFetcher, name: str, start: int, stop: int) -> Any:
+def _parquet_selection_exact(
+    fetcher: BoundedFetcher,
+    name: str,
+    start: int,
+    stop: int,
+    scanned_counter: list[int] | None = None,
+) -> Any:
     limits = fetcher.plan.limits
     with RangeReader(fetcher, name) as stream:
         with fetcher.perf.timed("metadata", file=name):
@@ -329,9 +372,12 @@ def _parquet_selection_exact(fetcher: BoundedFetcher, name: str, start: int, sto
                     with fetcher.perf.timed("decode", file=name):
                         rows = batch.to_pylist()
                     for record in rows:
-                        fetcher.capacity_mgr.record_units(
-                            "records_scanned", 1, limits.max_scanned_records
-                        )
+                        if scanned_counter is not None:
+                            scanned_counter[0] += 1
+                        else:
+                            fetcher.capacity_mgr.record_units(
+                                "records_scanned", 1, limits.max_scanned_records
+                            )
                         fetcher.perf.record_scanned(1, file=name)
                         with fetcher.perf.timed("decode", file=name):
                             raw = encode_record(record)
@@ -525,6 +571,7 @@ def _parquet_selection_projected(
     stop: int,
     columns: list[str] | None,
     coalesce_bytes: int | None,
+    scanned_counter: list[int] | None = None,
 ) -> Any:
     """Projected narrow decode: required column chunks only, merged spans."""
     limits = fetcher.plan.limits
@@ -579,9 +626,12 @@ def _parquet_selection_projected(
                         with fetcher.perf.timed("decode", file=name):
                             rows = batch.to_pylist()
                         for record in rows:
-                            fetcher.capacity_mgr.record_units(
-                                "records_scanned", 1, limits.max_scanned_records
-                            )
+                            if scanned_counter is not None:
+                                scanned_counter[0] += 1
+                            else:
+                                fetcher.capacity_mgr.record_units(
+                                    "records_scanned", 1, limits.max_scanned_records
+                                )
                             fetcher.perf.record_scanned(1, file=name)
                             with fetcher.perf.timed("decode", file=name):
                                 raw = encode_record(record)
@@ -609,6 +659,47 @@ def _parquet_selection_projected(
             base = end
 
 
+class _BatchCommitter:
+    """Accumulate temp staging bytes plus scanned counts; commit exact batches.
+
+    Collapses O(records) persisted journal transactions toward O(batches):
+    the single :meth:`commit_batch` transaction enforces the identical exact
+    limits. A boundary trigger forces a commit exactly when the running total
+    reaches the scanned ceiling, so limit refusals surface at the same
+    logical record as the per-record path. Uncommitted deltas live only in
+    RAM (bounded by one batch); a crash orphans staging bytes that the next
+    run reconciles, and publication still requires a later persisted
+    completion marker.
+    """
+
+    def __init__(self, capacity_mgr: StorageCapacityManager, scanned_maximum: int) -> None:
+        self._capacity_mgr = capacity_mgr
+        self._scanned_maximum = scanned_maximum
+        self._base_scanned = capacity_mgr.consumed("records_scanned")
+        self.scanned: list[int] = [0]
+        self._committed_scanned = 0
+        self._pending_temp = 0
+
+    def add_retained(self, payload_len: int) -> None:
+        self._pending_temp += payload_len
+
+    def maybe_commit(self, *, force: bool = False) -> None:
+        new_scanned = self.scanned[0] - self._committed_scanned
+        if new_scanned == 0 and self._pending_temp == 0:
+            self._capacity_mgr.check_deadline()
+            return
+        if not force and new_scanned < ACCOUNTING_BATCH_RECORDS:
+            if self._base_scanned + self.scanned[0] < self._scanned_maximum:
+                return
+        self._capacity_mgr.commit_batch(
+            temp_bytes=self._pending_temp,
+            scanned_records=new_scanned,
+            scanned_maximum=self._scanned_maximum,
+        )
+        self._committed_scanned = self.scanned[0]
+        self._pending_temp = 0
+
+
 def _select_one_source_to_chunk(
     fetcher: BoundedFetcher,
     source: str,
@@ -630,17 +721,25 @@ def _select_one_source_to_chunk(
     start, stop = plan.row_ranges[source] if plan.row_ranges else (0, 0)
     columns = plan.projected_fields
     coalesce_bytes = plan.range_coalesce_bytes
+    batcher = _BatchCommitter(fetcher.capacity_mgr, plan.limits.max_scanned_records)
+
     with fetcher.perf.file_worker(source):
         ensure_plain_path(chunk_path)
         count = 0
+        fetcher.capacity_mgr.check_deadline()
         with StreamingJsonlWriter(chunk_path) as writer:
             iterator = _selection_iterator(
-                fetcher, source, start, stop, columns=columns, coalesce_bytes=coalesce_bytes
+                fetcher,
+                source,
+                start,
+                stop,
+                columns=columns,
+                coalesce_bytes=coalesce_bytes,
+                scanned_counter=batcher.scanned,
             )
             for record, raw, locator in iterator:
                 if stop_event.is_set():
                     raise RuntimeError("concurrent file worker cancelled after sibling failure")
-                fetcher._check_deadline()
                 with fetcher.perf.timed("serialize", file=source):
                     payload = selected_record(
                         record,
@@ -662,11 +761,12 @@ def _select_one_source_to_chunk(
                     retained_total[0] += 1
                     if retained_total[0] > plan.limits.max_records:
                         raise RecordLimitError("selected record limit exceeded")
-                token = fetcher.capacity_mgr.reserve_disk_space(fetcher.scratch_dir, len(payload))
+                batcher.add_retained(len(payload))
                 writer.write_line(payload)
-                fetcher.capacity_mgr.settle("temp", token, len(payload))
                 fetcher.perf.record_file_bytes(destination_name, len(payload))
                 count += 1
+                batcher.maybe_commit()
+            batcher.maybe_commit(force=True)
         fetcher.perf.record_write_seconds(writer.flush_seconds, file=source)
         fetcher.perf.record_peak_rss(writer.peak_rss_bytes)
         return {"source": source, "count": count, "size": writer.size, "path": str(chunk_path)}
@@ -686,9 +786,18 @@ def _acquire_selection_serial(
         for source in plan.selected_files:
             start, stop = plan.row_ranges[source] if plan.row_ranges else (0, 0)
             write_mark = writer.flush_seconds
+            batcher = _BatchCommitter(fetcher.capacity_mgr, plan.limits.max_scanned_records)
+
             with fetcher.perf.file_worker(source):
+                fetcher.capacity_mgr.check_deadline()
                 iterator = _selection_iterator(
-                    fetcher, source, start, stop, columns=columns, coalesce_bytes=coalesce_bytes
+                    fetcher,
+                    source,
+                    start,
+                    stop,
+                    columns=columns,
+                    coalesce_bytes=coalesce_bytes,
+                    scanned_counter=batcher.scanned,
                 )
                 for record, raw, locator in iterator:
                     with fetcher.perf.timed("serialize", file=source):
@@ -708,15 +817,14 @@ def _acquire_selection_serial(
                         raise RecordLimitError(
                             "selected record plus locator exceeds bounded serialization"
                         )
-                    token = fetcher.capacity_mgr.reserve_disk_space(
-                        fetcher.scratch_dir, len(payload)
-                    )
+                    batcher.add_retained(len(payload))
                     writer.write_line(payload)
-                    fetcher.capacity_mgr.settle("temp", token, len(payload))
                     fetcher.perf.record_file_bytes(name, len(payload))
                     count += 1
                     if count > plan.limits.max_records:
                         raise RecordLimitError("selected record limit exceeded")
+                    batcher.maybe_commit()
+                batcher.maybe_commit(force=True)
             fetcher.perf.record_write_seconds(writer.flush_seconds - write_mark, file=source)
     fetcher.perf.record_peak_rss(writer.peak_rss_bytes)
     digest, size = writer.digest.hexdigest(), writer.size

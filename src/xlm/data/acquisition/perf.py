@@ -401,6 +401,7 @@ class PerfTelemetry:
         journal_requests: int,
         journal_cache_hits: int,
         journal_records: int,
+        journal_stats: dict[str, int] | None = None,
     ) -> dict[str, Any]:
         """Build the versioned sidecar document (pure data, no IO)."""
         cpu_seconds: float | None = None
@@ -537,6 +538,7 @@ class PerfTelemetry:
             "time_shares_of_wall": shares,
             "slowest_stage": slowest_stage_of(shares),
             "average_concurrency": _safe_div(counters["worker_seconds"], wall_seconds),
+            "journal": dict(journal_stats) if journal_stats else {},
             "request_accounting": {
                 "logical_requests": counters["logical_requests"],
                 "redirect_requests": counters["redirect_requests"],

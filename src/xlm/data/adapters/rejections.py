@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any
 
 from xlm.core.contracts import CanonicalDocument
+from xlm.data.acquisition.records import StreamingJsonlWriter
 from xlm.data.adapters.mix01_adapters import RecordRejectedError
 
 #: Ledger/summary contract version. Bump explicitly if either schema changes.
@@ -30,6 +31,15 @@ SUMMARY_FILENAME = "adaptation_summary.json"
 #: Bound on a recorded rejection reason (adapter reasons are short policy
 #: templates plus small field values; the full rejected text is never stored).
 REJECTION_REASON_MAX_CHARS = 500
+
+#: Staged write buffer for adaptation outputs (bounded; flushes in blocks).
+ADAPT_WRITE_BUFFER_BYTES = 262144
+
+#: Selected-records input size ceiling shared with the CLI gate.
+ADAPT_INPUT_MAX_BYTES = 64 * 1024 * 1024
+
+#: Binary input read chunk for streaming adaptation (framing only).
+ADAPT_READ_CHUNK_BYTES = 65536
 
 
 def is_recordable_rejection(error: BaseException) -> bool:
@@ -72,22 +82,14 @@ def build_rejection_record(
     }
 
 
-def _sha256_lines(lines: list[str]) -> str:
-    digest = hashlib.sha256()
-    for line in lines:
-        digest.update(line.encode("utf-8"))
-        digest.update(b"\n")
-    return digest.hexdigest()
+def serialize_document(document: CanonicalDocument) -> str:
+    """Canonical accepted-document line, byte-identical to the dataset writer."""
+    return json.dumps(document.to_dict(), ensure_ascii=False)
 
 
-def serialize_documents(documents: list[CanonicalDocument]) -> list[str]:
-    """Canonical accepted-document lines, byte-identical to the dataset writer."""
-    return [json.dumps(doc.to_dict(), ensure_ascii=False) for doc in documents]
-
-
-def serialize_rejections(records: list[dict[str, Any]]) -> list[str]:
-    """Deterministic rejection ledger lines (sorted keys, input order kept)."""
-    return [json.dumps(record, ensure_ascii=False, sort_keys=True) for record in records]
+def serialize_rejection(record: dict[str, Any]) -> str:
+    """Deterministic rejection ledger line (sorted keys)."""
+    return json.dumps(record, ensure_ascii=False, sort_keys=True)
 
 
 def build_summary(
@@ -99,15 +101,13 @@ def build_summary(
     plan_hash: str,
     on_reject: str,
     total_input_records: int,
-    document_lines: list[str],
-    rejection_lines: list[str],
-    rejection_records: list[dict[str, Any]],
+    accepted_records: int,
+    rejected_records: int,
+    rejection_counts_by_code: dict[str, int],
+    document_sha256: str,
+    rejection_sha256: str,
 ) -> dict[str, Any]:
     """Deterministic adaptation summary (no timestamps, paths, or timing)."""
-    counts: dict[str, int] = {}
-    for record in rejection_records:
-        code = str(record.get("rejection_code", "unknown"))
-        counts[code] = counts.get(code, 0) + 1
     return {
         "adaptation_summary_version": ADAPTATION_REJECTION_VERSION,
         "adapter_id": adapter_id,
@@ -117,59 +117,143 @@ def build_summary(
         "plan_hash": plan_hash,
         "on_reject": on_reject,
         "total_input_records": total_input_records,
-        "accepted_records": len(document_lines),
-        "rejected_records": len(rejection_lines),
-        "rejection_counts_by_code": dict(sorted(counts.items())),
+        "accepted_records": accepted_records,
+        "rejected_records": rejected_records,
+        "rejection_counts_by_code": dict(sorted(rejection_counts_by_code.items())),
         "documents": {
             "file": DOCUMENTS_FILENAME,
-            "count": len(document_lines),
-            "sha256": _sha256_lines(document_lines),
+            "count": accepted_records,
+            "sha256": document_sha256,
         },
         "rejections": {
             "file": REJECTIONS_FILENAME,
-            "count": len(rejection_lines),
-            "sha256": _sha256_lines(rejection_lines),
+            "count": rejected_records,
+            "sha256": rejection_sha256,
         },
     }
 
 
-def publish_atomically(
-    output_dir: Path,
-    document_lines: list[str],
-    rejection_lines: list[str],
-    summary: dict[str, Any],
-) -> dict[str, Path]:
-    """Stage all three outputs, then atomically publish (never partial).
+class StagedAdaptation:
+    """Buffered staged adapt outputs with incremental hashes; atomic replace.
 
-    Refuses when any final file already exists, preserving current overwrite
-    refusal semantics. Staging temporaries are removed on any failure.
+    Fail mode stages ``documents.jsonl`` only; record mode stages the full
+    triple. Overwrite refusal matches current per-mode semantics. No final
+    file exists until :meth:`finish` replaces staging temps; :meth:`abort`
+    removes temps, never finals. Hashes/counts accumulate in the single
+    streaming pass (written, counted, and hashed together).
     """
-    targets = {
-        DOCUMENTS_FILENAME: document_lines,
-        REJECTIONS_FILENAME: rejection_lines,
-        SUMMARY_FILENAME: [json.dumps(summary, indent=2, sort_keys=True)],
-    }
-    for filename in targets:
-        if (output_dir / filename).exists():
-            raise FileExistsError(
-                f"refusing to overwrite existing '{output_dir / filename}'; use a fresh output dir"
-            )
-    output_dir.mkdir(parents=True, exist_ok=True)
-    staged: list[tuple[Path, Path]] = []
-    try:
-        for filename, lines in targets.items():
-            temporary = output_dir / f"{filename}.{uuid.uuid4().hex}.tmp"
-            with temporary.open("x", encoding="utf-8", newline="\n") as stream:
-                for line in lines:
-                    stream.write(line + "\n")
-                stream.flush()
-                os.fsync(stream.fileno())
-            staged.append((temporary, output_dir / filename))
+
+    def __init__(self, output_dir: Path, *, with_ledger: bool) -> None:
+        self._directory = output_dir
+        self._with_ledger = with_ledger
+        expected = [DOCUMENTS_FILENAME]
+        if with_ledger:
+            expected.extend((REJECTIONS_FILENAME, SUMMARY_FILENAME))
+        for filename in expected:
+            if (output_dir / filename).exists():
+                raise FileExistsError(
+                    f"refusing to overwrite existing '{output_dir / filename}'; "
+                    "use a fresh output dir"
+                )
+        self._made_directory = False
+        self._writers: dict[str, StreamingJsonlWriter] = {}
+        self._temps: dict[str, Path] = {}
+        self.accepted_records = 0
+        self.rejected_records = 0
+        self.rejection_counts: dict[str, int] = {}
+
+    def _ensure_directory(self) -> None:
+        if not self._made_directory:
+            self._directory.mkdir(parents=True, exist_ok=True)
+            self._made_directory = True
+
+    def _writer(self, filename: str) -> StreamingJsonlWriter:
+        writer = self._writers.get(filename)
+        if writer is None:
+            self._ensure_directory()
+            temporary = self._directory / f"{filename}.{uuid.uuid4().hex}.tmp"
+            writer = StreamingJsonlWriter(temporary, buffer_bytes=ADAPT_WRITE_BUFFER_BYTES)
+            self._writers[filename] = writer
+            self._temps[filename] = temporary
+        return writer
+
+    def write_document_line(self, line: str) -> None:
+        self._writer(DOCUMENTS_FILENAME).write_line(line.encode("utf-8") + b"\n")
+        self.accepted_records += 1
+
+    def write_rejection_line(self, line: str, code: str) -> None:
+        if not self._with_ledger:
+            raise ValueError("rejection ledger is not staged in fail mode")
+        self._writer(REJECTIONS_FILENAME).write_line(line.encode("utf-8") + b"\n")
+        self.rejected_records += 1
+        self.rejection_counts[code] = self.rejection_counts.get(code, 0) + 1
+
+    @property
+    def document_digest(self) -> str:
+        if DOCUMENTS_FILENAME not in self._writers:
+            return hashlib.sha256().hexdigest()
+        return self._writers[DOCUMENTS_FILENAME].digest.hexdigest()
+
+    @property
+    def rejection_digest(self) -> str:
+        if not self._with_ledger or REJECTIONS_FILENAME not in self._writers:
+            return hashlib.sha256().hexdigest()
+        return self._writers[REJECTIONS_FILENAME].digest.hexdigest()
+
+    @property
+    def flush_seconds(self) -> float:
+        return sum(writer.flush_seconds for writer in self._writers.values())
+
+    @property
+    def peak_rss_bytes(self) -> int:
+        return max((writer.peak_rss_bytes for writer in self._writers.values()), default=0)
+
+    def finish(self, summary: dict[str, Any] | None) -> dict[str, Path]:
+        """Write the summary temp, then atomically replace every staged file.
+
+        Empty outputs are still published as empty files (matching current
+        behavior); only a fatal error prevents publication.
+        """
+        ordered = [DOCUMENTS_FILENAME] + (
+            [REJECTIONS_FILENAME, SUMMARY_FILENAME] if self._with_ledger else []
+        )
+        for filename in ordered:
+            self._writer(filename)
+        if self._with_ledger:
+            if summary is None:
+                raise ValueError("record mode requires a summary to publish")
+            temporary = self._directory / f"{SUMMARY_FILENAME}.{uuid.uuid4().hex}.tmp"
+            payload = (json.dumps(summary, indent=2, sort_keys=True) + "\n").encode("utf-8")
+            try:
+                with temporary.open("xb") as stream:
+                    stream.write(payload)
+                    stream.flush()
+                    os.fsync(stream.fileno())
+                self._temps[SUMMARY_FILENAME] = temporary
+            except BaseException:
+                temporary.unlink(missing_ok=True)
+                raise
         published: dict[str, Path] = {}
-        for temporary, final in staged:
-            os.replace(temporary, final)
-            published[final.name] = final
-        return published
-    finally:
-        for temporary, _ in staged:
+        try:
+            for filename in ordered:
+                writer = self._writers.get(filename)
+                if writer is not None:
+                    writer.close()
+            for filename in ordered:
+                temporary = self._temps[filename]
+                final = self._directory / filename
+                os.replace(temporary, final)
+                published[filename] = final
+            return published
+        finally:
+            for temporary in self._temps.values():
+                temporary.unlink(missing_ok=True)
+
+    def abort(self) -> None:
+        for writer in self._writers.values():
+            try:
+                writer.close()
+            except Exception:
+                pass
+        for temporary in self._temps.values():
             temporary.unlink(missing_ok=True)

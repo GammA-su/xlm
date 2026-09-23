@@ -610,6 +610,7 @@ class BoundedFetcher:
                     journal_requests=state.requests_made,
                     journal_cache_hits=state.cache_hits,
                     journal_records=state.records_acquired,
+                    journal_stats=self.journal.io_stats(),
                 )
                 if cpu_start is not None:
                     try:

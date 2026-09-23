@@ -1530,6 +1530,14 @@ def _print_perf_summary(doc: dict[str, Any]) -> None:
         )
     if telemetry.get("peak_rss_bytes"):
         typer.echo(f"Peak worker RSS: {int(telemetry['peak_rss_bytes']):,} bytes")
+    journal = doc.get("journal") or {}
+    if journal:
+        typer.echo(
+            f"Journal: {journal.get('journal_transactions', 0)} transactions, "
+            f"{journal.get('journal_persisted_writes', 0)} persisted writes, "
+            f"{journal.get('journal_fsyncs', 0)} fsyncs, "
+            f"{journal.get('journal_bytes_written', 0):,} bytes written"
+        )
     typer.echo("Where did the time go (share of wall)?")
     for key in (
         "request_open",
@@ -1766,6 +1774,21 @@ def adapt_cmd(
             "'record' records recognized RecordRejectedError policy rejects and continues.",
         ),
     ] = "fail",
+    adapter_config: Annotated[
+        str | None,
+        typer.Option(
+            "--adapter-config",
+            help="Explicit constructor config for parameterized adapters "
+            "(e.g. a Nemotron category); ambiguous adapters stay refused.",
+        ),
+    ] = None,
+    batch_records: Annotated[
+        int,
+        typer.Option(
+            "--batch-records",
+            help="Streaming batch size; performance only, never output semantics.",
+        ),
+    ] = 512,
 ) -> None:
     """Adapt verified selected records into CanonicalDocument JSONL via one adapter.
 
@@ -1773,20 +1796,27 @@ def adapt_cmd(
     selected under this exact plan (revision, file, and selection hash are
     re-checked); rows from any other selection are refused, never coerced.
     """
+    import time
+
     from xlm.data.adapters.mix01_adapters import ADAPTERS_BY_ID, RecordRejectedError
     from xlm.data.adapters.rejections import (
+        ADAPT_INPUT_MAX_BYTES,
+        ADAPT_READ_CHUNK_BYTES,
         DOCUMENTS_FILENAME,
         REJECTIONS_FILENAME,
         SUMMARY_FILENAME,
+        StagedAdaptation,
         build_rejection_record,
         build_summary,
-        publish_atomically,
-        serialize_documents,
-        serialize_rejections,
+        serialize_document,
+        serialize_rejection,
     )
 
     if on_reject not in ("fail", "record"):
         typer.echo("Error: --on-reject must be 'fail' or 'record'.", err=True)
+        raise typer.Exit(code=1)
+    if batch_records < 1:
+        typer.echo("Error: --batch-records must be positive.", err=True)
         raise typer.Exit(code=1)
 
     try:
@@ -1804,7 +1834,18 @@ def adapt_cmd(
         )
         raise typer.Exit(code=1)
     try:
-        adapter = adapter_cls()
+        if adapter_config is None:
+            adapter = adapter_cls()
+        else:
+            try:
+                adapter = adapter_cls(adapter_config)
+            except Exception as e:
+                typer.echo(
+                    f"Error: adapter '{adapter_id}' cannot apply --adapter-config "
+                    f"'{adapter_config}' ({e}).",
+                    err=True,
+                )
+                raise typer.Exit(code=1) from e
     except TypeError as e:
         typer.echo(
             f"Error: adapter '{adapter_id}' needs constructor parameters "
@@ -1814,148 +1855,225 @@ def adapt_cmd(
         raise typer.Exit(code=1) from e
 
     try:
-        raw = input_path.read_bytes()
+        input_size = input_path.stat().st_size
     except Exception as e:
         typer.echo(f"Error reading selected records: {e}", err=True)
         raise typer.Exit(code=1) from e
-    if len(raw) > 64 * 1024 * 1024:
+    if input_size > ADAPT_INPUT_MAX_BYTES:
         typer.echo("Error: selected records input exceeds 64 MiB.", err=True)
         raise typer.Exit(code=1)
 
     expected_selection = plan.accepted_selection_hashes()
-    docs: list[CanonicalDocument] = []
-    rejections: list[dict[str, Any]] = []
-    total_input_records = 0
-    for line_number, line in enumerate(raw.decode("utf-8").splitlines(), start=1):
-        if not line.strip():
-            continue
-        try:
-            record = json.loads(line)
-        except Exception as e:
-            typer.echo(f"Error: line {line_number} is not a JSON object: {e}", err=True)
-            raise typer.Exit(code=1) from e
-        if not isinstance(record, dict):
-            typer.echo(f"Error: line {line_number} is not a JSON object.", err=True)
-            raise typer.Exit(code=1)
-        locator = record.get("_xlm_acquisition")
-        if not isinstance(locator, dict):
-            typer.echo(
-                f"Error: line {line_number} carries no _xlm_acquisition locator; "
-                "only verified selected records can be adapted.",
-                err=True,
-            )
-            raise typer.Exit(code=1)
-        for key, expected in (
-            ("source_id", plan.source_id),
-            ("revision", plan.revision),
-            ("source_file", None),
-        ):
-            actual = locator.get(key)
-            if key == "source_file":
-                if actual not in plan.selected_files:
-                    typer.echo(
-                        f"Error: line {line_number} selects file {actual!r}, "
-                        "outside this plan's selected files.",
-                        err=True,
-                    )
-                    raise typer.Exit(code=1)
-            elif actual != expected:
-                typer.echo(
-                    f"Error: line {line_number} locator {key} {actual!r} does not "
-                    f"match this plan ({expected!r}).",
-                    err=True,
-                )
-                raise typer.Exit(code=1)
-        if locator.get("selection_hash") not in expected_selection:
-            typer.echo(
-                f"Error: line {line_number} locator selection_hash "
-                f"{locator.get('selection_hash')!r} does not match this plan.",
-                err=True,
-            )
-            raise typer.Exit(code=1)
-        row_index = locator.get("row_index")
-        if not isinstance(row_index, int) or row_index < 0:
-            typer.echo(f"Error: line {line_number} locator has no valid row_index.", err=True)
-            raise typer.Exit(code=1)
-        try:
-            doc = adapter.adapt(
-                record,
-                source_file=str(locator["source_file"]),
-                source_row=row_index,
-                source_revision=plan.revision,
-            )
-        except RecordRejectedError as e:
-            if on_reject != "record":
-                typer.echo(
-                    f"Error: adapter '{adapter_id}' refused line {line_number}: {e}", err=True
-                )
-                raise typer.Exit(code=1) from e
-            rejections.append(
-                build_rejection_record(
-                    input_line=line_number,
-                    source_id=plan.source_id,
-                    source_revision=plan.revision,
-                    source_file=str(locator["source_file"]),
-                    source_row=row_index,
-                    adapter_id=adapter_id,
-                    error=e,
-                    original_record_sha256=locator.get("original_record_sha256")
-                    if isinstance(locator.get("original_record_sha256"), str)
-                    else None,
-                )
-            )
-            total_input_records += 1
-            continue
-        except Exception as e:
-            typer.echo(f"Error: adapter '{adapter_id}' refused line {line_number}: {e}", err=True)
-            raise typer.Exit(code=1) from e
-        if doc.source_id != plan.source_id:
-            typer.echo(
-                f"Error: adapter '{adapter_id}' produced source '{doc.source_id}', "
-                f"not this plan's '{plan.source_id}'.",
-                err=True,
-            )
-            raise typer.Exit(code=1)
-        docs.append(doc)
-        total_input_records += 1
-
-    if on_reject == "fail":
-        output_dir.mkdir(parents=True, exist_ok=True)
-        target = output_dir / "documents.jsonl"
-        if target.exists():
-            typer.echo(
-                f"Error: refusing to overwrite existing '{target}'; use a fresh output dir.",
-                err=True,
-            )
-            raise typer.Exit(code=1)
-        CanonicalDatasetWriter(output_dir).write_jsonl(docs)
-        typer.echo(f"Adapted {len(docs)} record(s) via '{adapter_id}' to: {target}")
-        return
-
-    document_lines = serialize_documents(docs)
-    rejection_lines = serialize_rejections(rejections)
-    summary = build_summary(
-        adapter_id=adapter_id,
-        source_id=plan.source_id,
-        source_revision=plan.revision,
-        plan_id=plan.plan_id,
-        plan_hash=plan.compute_behavioral_hash(),
-        on_reject=on_reject,
-        total_input_records=total_input_records,
-        document_lines=document_lines,
-        rejection_lines=rejection_lines,
-        rejection_records=rejections,
-    )
     try:
-        published = publish_atomically(output_dir, document_lines, rejection_lines, summary)
+        staged = StagedAdaptation(output_dir, with_ledger=(on_reject == "record"))
     except FileExistsError as e:
         typer.echo(f"Error: {e}", err=True)
         raise typer.Exit(code=1) from e
+
+    total_input_records = 0
+    line_number = 0
+    input_bytes = 0
+    parse_seconds = adapter_seconds = serialize_seconds = rejection_seconds = 0.0
+    rejection_counts: dict[str, int] = {}
+    pending: list[tuple[int, bytes]] = []
+    buffer = bytearray()
+    wall_start = time.monotonic()
+
+    def run_batch(batch: list[tuple[int, bytes]]) -> None:
+        """Adapt one bounded batch; fatal errors abort via typer.Exit."""
+        nonlocal total_input_records
+        nonlocal parse_seconds
+        nonlocal adapter_seconds
+        nonlocal serialize_seconds
+        nonlocal rejection_seconds
+        for current_line, raw in batch:
+            if not raw.strip():
+                continue
+            started = time.monotonic()
+            try:
+                record = json.loads(raw.decode("utf-8"))
+            except Exception as e:
+                typer.echo(f"Error: line {current_line} is not a JSON object: {e}", err=True)
+                raise typer.Exit(code=1) from e
+            parse_seconds += time.monotonic() - started
+            if not isinstance(record, dict):
+                typer.echo(f"Error: line {current_line} is not a JSON object.", err=True)
+                raise typer.Exit(code=1)
+            locator = record.get("_xlm_acquisition")
+            if not isinstance(locator, dict):
+                typer.echo(
+                    f"Error: line {current_line} carries no _xlm_acquisition locator; "
+                    "only verified selected records can be adapted.",
+                    err=True,
+                )
+                raise typer.Exit(code=1)
+            for key, expected in (
+                ("source_id", plan.source_id),
+                ("revision", plan.revision),
+                ("source_file", None),
+            ):
+                actual = locator.get(key)
+                if key == "source_file":
+                    if actual not in plan.selected_files:
+                        typer.echo(
+                            f"Error: line {current_line} selects file {actual!r}, "
+                            "outside this plan's selected files.",
+                            err=True,
+                        )
+                        raise typer.Exit(code=1)
+                elif actual != expected:
+                    typer.echo(
+                        f"Error: line {current_line} locator {key} {actual!r} does not "
+                        f"match this plan ({expected!r}).",
+                        err=True,
+                    )
+                    raise typer.Exit(code=1)
+            if locator.get("selection_hash") not in expected_selection:
+                typer.echo(
+                    f"Error: line {current_line} locator selection_hash "
+                    f"{locator.get('selection_hash')!r} does not match this plan.",
+                    err=True,
+                )
+                raise typer.Exit(code=1)
+            row_index = locator.get("row_index")
+            if not isinstance(row_index, int) or row_index < 0:
+                typer.echo(f"Error: line {current_line} locator has no valid row_index.", err=True)
+                raise typer.Exit(code=1)
+            started = time.monotonic()
+            try:
+                doc = adapter.adapt(
+                    record,
+                    source_file=str(locator["source_file"]),
+                    source_row=row_index,
+                    source_revision=plan.revision,
+                )
+            except RecordRejectedError as e:
+                adapter_seconds += time.monotonic() - started
+                if on_reject != "record":
+                    typer.echo(
+                        f"Error: adapter '{adapter_id}' refused line {current_line}: {e}",
+                        err=True,
+                    )
+                    raise typer.Exit(code=1) from e
+                started = time.monotonic()
+                staged.write_rejection_line(
+                    serialize_rejection(
+                        build_rejection_record(
+                            input_line=current_line,
+                            source_id=plan.source_id,
+                            source_revision=plan.revision,
+                            source_file=str(locator["source_file"]),
+                            source_row=row_index,
+                            adapter_id=adapter_id,
+                            error=e,
+                            original_record_sha256=locator.get("original_record_sha256")
+                            if isinstance(locator.get("original_record_sha256"), str)
+                            else None,
+                        )
+                    ),
+                    type(e).__name__,
+                )
+                rejection_seconds += time.monotonic() - started
+                code = type(e).__name__
+                rejection_counts[code] = rejection_counts.get(code, 0) + 1
+                total_input_records += 1
+                continue
+            except Exception as e:
+                typer.echo(
+                    f"Error: adapter '{adapter_id}' refused line {current_line}: {e}",
+                    err=True,
+                )
+                raise typer.Exit(code=1) from e
+            adapter_seconds += time.monotonic() - started
+            if doc.source_id != plan.source_id:
+                typer.echo(
+                    f"Error: adapter '{adapter_id}' produced source '{doc.source_id}', "
+                    f"not this plan's '{plan.source_id}'.",
+                    err=True,
+                )
+                raise typer.Exit(code=1)
+            started = time.monotonic()
+            staged.write_document_line(serialize_document(doc))
+            serialize_seconds += time.monotonic() - started
+            total_input_records += 1
+
+    try:
+        with input_path.open("rb") as stream:
+            while True:
+                chunk = stream.read(ADAPT_READ_CHUNK_BYTES)
+                input_bytes += len(chunk)
+                if input_bytes > ADAPT_INPUT_MAX_BYTES:
+                    typer.echo("Error: selected records input exceeds 64 MiB.", err=True)
+                    raise typer.Exit(code=1)
+                buffer += chunk
+                *lines, remainder = bytes(buffer).split(b"\n")
+                buffer = bytearray(remainder)
+                if not chunk and buffer:
+                    lines.append(bytes(buffer))
+                    buffer = bytearray()
+                for raw in lines:
+                    line_number += 1
+                    if not raw.strip():
+                        continue
+                    pending.append((line_number, raw))
+                    if len(pending) >= batch_records:
+                        run_batch(pending)
+                        pending = []
+                if not chunk:
+                    break
+        if pending:
+            run_batch(pending)
+            pending = []
+    except typer.Exit:
+        staged.abort()
+        raise
+    except Exception as e:
+        staged.abort()
+        typer.echo(f"Error: adaptation failed: {e}", err=True)
+        raise typer.Exit(code=1) from e
+    wall_seconds = max(0.0, time.monotonic() - wall_start)
+    accepted_records = staged.accepted_records
+    rejected_records = staged.rejected_records
+    summary: dict[str, Any] | None = None
+    if on_reject == "record":
+        summary = build_summary(
+            adapter_id=adapter_id,
+            source_id=plan.source_id,
+            source_revision=plan.revision,
+            plan_id=plan.plan_id,
+            plan_hash=plan.compute_behavioral_hash(),
+            on_reject=on_reject,
+            total_input_records=total_input_records,
+            accepted_records=accepted_records,
+            rejected_records=rejected_records,
+            rejection_counts_by_code=dict(rejection_counts),
+            document_sha256=staged.document_digest,
+            rejection_sha256=staged.rejection_digest,
+        )
+    try:
+        published = staged.finish(summary)
+    except FileExistsError as e:
+        typer.echo(f"Error: {e}", err=True)
+        raise typer.Exit(code=1) from e
+    throughput = total_input_records / wall_seconds if wall_seconds > 0 else 0.0
+    throughput_mib = (input_bytes / (1024**2)) / wall_seconds if wall_seconds > 0 else 0.0
+    if on_reject == "fail":
+        typer.echo(
+            f"Adapted {accepted_records} record(s) via '{adapter_id}' to: "
+            f"{published[DOCUMENTS_FILENAME]}"
+        )
+    else:
+        typer.echo(
+            f"Adapted {accepted_records} record(s) via '{adapter_id}' to: "
+            f"{published[DOCUMENTS_FILENAME]} "
+            f"({rejected_records} rejection(s) in {published[REJECTIONS_FILENAME]}, "
+            f"summary in {published[SUMMARY_FILENAME]})"
+        )
     typer.echo(
-        f"Adapted {len(document_lines)} record(s) via '{adapter_id}' to: "
-        f"{published[DOCUMENTS_FILENAME]} "
-        f"({len(rejection_lines)} rejection(s) in {published[REJECTIONS_FILENAME]}, "
-        f"summary in {published[SUMMARY_FILENAME]})"
+        f"Adapt throughput: {total_input_records} records in {wall_seconds:.2f}s "
+        f"({throughput:.1f}/s, {throughput_mib:.3f} MiB/s input, batch {batch_records}, "
+        f"parse {parse_seconds:.2f}s adapt {adapter_seconds:.2f}s "
+        f"serialize {serialize_seconds:.2f}s write {staged.flush_seconds:.2f}s)"
     )
 
 

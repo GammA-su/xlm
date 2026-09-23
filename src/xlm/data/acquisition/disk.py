@@ -164,6 +164,74 @@ class StorageCapacityManager:
                 raise BudgetExhaustedError(f"cumulative {name} limit exceeded")
             account.consumed[name] = used + amount
 
+    def consumed(self, name: str) -> int:
+        """Read-only consumed counter (no persistence, no mutation)."""
+        with self._transaction(persist=False) as account:
+            return account.consumed.get(name, 0)
+
+    def commit_batch(
+        self,
+        *,
+        temp_bytes: int = 0,
+        scanned_records: int = 0,
+        scanned_maximum: int | None = None,
+    ) -> None:
+        """Atomically commit batched exact consumption in one journal transaction.
+
+        Collapses ``O(records)`` persisted transactions toward ``O(batches)``
+        for temp staging occupancy and scanned-record counts. Every bound is
+        enforced inside the single transaction with the same error types as
+        the per-record path (``BudgetExhaustedError`` for scanned overuse,
+        ``DiskCeilingExceededError`` for temp overuse), so limits stay exact.
+
+        Crash model (unchanged staging/orphan semantics): uncommitted batch
+        deltas live only in RAM. A crash orphans staging bytes that the next
+        run's ``reconcile_disk`` measures and charges, while publication
+        still requires a later persisted ``mark_file_completed`` — so a crash
+        can never publish unaccounted usage, duplicate records (fresh staging
+        per attempt), or exceed limits through commits. The conservative
+        window is one batch, versus one record on the per-record path.
+        Physical disk headroom is NOT rechecked here (fail-closed ``OSError``
+        on write, same as any disk-full event); logical temp limits are.
+        """
+        if temp_bytes < 0 or scanned_records < 0:
+            raise ValueError("negative batch delta")
+        if temp_bytes == 0 and scanned_records == 0:
+            with self._transaction(persist=False) as account:
+                if account.deadline_at is not None and time.time() >= account.deadline_at:
+                    raise TimeoutError(
+                        "cumulative acquisition deadline reached; restart grants no new time"
+                    )
+            return
+        scanned_overflow = False
+        with self._transaction() as account:
+            if account.deadline_at is not None and time.time() >= account.deadline_at:
+                raise TimeoutError(
+                    "cumulative acquisition deadline reached; restart grants no new time"
+                )
+            if scanned_records:
+                if scanned_maximum is None:
+                    raise ValueError("scanned batch requires its maximum")
+                used = account.consumed.get("records_scanned", 0)
+                if used + scanned_records > scanned_maximum:
+                    # Fill exactly to the ceiling (mirroring the per-record
+                    # refusal point) and refuse after persisting; temp staging
+                    # from this batch is left for orphan reconciliation.
+                    account.consumed["records_scanned"] = max(used, scanned_maximum)
+                    scanned_overflow = True
+                else:
+                    account.consumed["records_scanned"] = used + scanned_records
+            if temp_bytes and not scanned_overflow:
+                used = account.occupancy.get("temp", 0) + account.occupancy.get("nested_temp", 0)
+                pending = sum(account.reservations.get("temp", {}).values())
+                if used + pending + temp_bytes > account.limits["temp"]:
+                    raise DiskCeilingExceededError(
+                        "temp limit reached including outstanding reservations"
+                    )
+                account.occupancy["temp"] = account.occupancy.get("temp", 0) + temp_bytes
+        if scanned_overflow:
+            raise BudgetExhaustedError("cumulative records_scanned limit exceeded")
+
     def reserve_disk_space(
         self, target_dir: Path, estimated_bytes: int, is_temp: bool = True
     ) -> str:
