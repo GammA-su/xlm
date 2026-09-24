@@ -8,6 +8,7 @@ import threading
 import uuid
 import zlib
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import closing
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -38,12 +39,11 @@ PROJECTED_BATCH_SIZE = 512
 #: offline benchmark (see tests); correctness never depends on the value.
 GZ_SELECT_CHUNK_BYTES = 65536
 
-#: Decoded-row accounting batch: scanned counts and temp staging occupancy
-#: commit once per this many decoded rows instead of once per row, collapsing
-#: O(records) persisted journal transactions toward O(batches) with identical
-#: exact limits (see StorageCapacityManager.commit_batch). Execution-only
-#: tuning; never plan identity, never output bytes.
+#: Initial scanned-record lease window (records); windows then grow with use
+#: up to ``SCAN_LEASE_MAX_RECORDS``. Execution-only tuning; never plan
+#: identity, never output bytes.
 ACCOUNTING_BATCH_RECORDS = 256
+SCAN_LEASE_MAX_RECORDS = 65536
 
 
 class RangeReader(io.RawIOBase):
@@ -354,7 +354,10 @@ def _parquet_selection_exact(
     scanned_counter: list[int] | None = None,
 ) -> Any:
     limits = fetcher.plan.limits
-    with RangeReader(fetcher, name) as stream:
+    with (
+        RangeReader(fetcher, name) as stream,
+        closing(CapacityLease(fetcher.capacity_mgr, "decompressed")) as decompressed,
+    ):
         with fetcher.perf.timed("metadata", file=name):
             parquet = pq.ParquetFile(
                 stream,
@@ -373,7 +376,7 @@ def _parquet_selection_exact(
                     check_row_group(parquet, group, limits)
                 # Charge whole decoded row group; skipped rows are still decoded work.
                 group_bytes = parquet.metadata.row_group(group).total_byte_size
-                fetcher.capacity_mgr.record_decompressed(group_bytes)
+                decompressed.consume(group_bytes)
                 fetcher.perf.record_decompressed(group_bytes)
                 fetcher.perf.record_parquet_group()
                 local = 0
@@ -590,7 +593,10 @@ def _parquet_selection_projected(
     """Projected narrow decode: required column chunks only, merged spans."""
     limits = fetcher.plan.limits
     gap_threshold = coalesce_bytes if coalesce_bytes is not None else 0
-    with BufferedGroupInput(fetcher, name) as stream:
+    with (
+        BufferedGroupInput(fetcher, name) as stream,
+        closing(CapacityLease(fetcher.capacity_mgr, "decompressed")) as decompressed,
+    ):
         with fetcher.perf.timed("metadata", file=name):
             parquet = pq.ParquetFile(
                 stream,
@@ -611,7 +617,7 @@ def _parquet_selection_projected(
                 spans, selected_sum, group_total = _column_chunk_spans(parquet, group, col_indices)
                 # Fail-closed before any column bytes move: only selected work
                 # is charged, never the skipped columns.
-                fetcher.capacity_mgr.record_decompressed(selected_sum)
+                decompressed.consume(selected_sum)
                 fetcher.perf.record_decompressed(selected_sum)
                 fetcher.perf.record_projection(
                     selected_bytes=selected_sum, skipped_bytes=group_total - selected_sum
@@ -674,44 +680,49 @@ def _parquet_selection_projected(
 
 
 class _BatchCommitter:
-    """Accumulate temp staging bytes plus scanned counts; commit exact batches.
+    """Scanned counts and staging bytes on durable pre-reserved leases.
 
-    Collapses O(records) persisted journal transactions toward O(batches):
-    the single :meth:`commit_batch` transaction enforces the identical exact
-    limits. A boundary trigger forces a commit exactly when the running total
-    reaches the scanned ceiling, so limit refusals surface at the same
-    logical record as the per-record path. Uncommitted deltas live only in
-    RAM (bounded by one batch); a crash orphans staging bytes that the next
-    run reconciles, and publication still requires a later persisted
-    completion marker.
+    Scanned records and temp staging bytes are charged against leases that
+    were durably reserved before the work, so a crash leaves them counted
+    (conservative) instead of losing an uncommitted batch. Limits refuse at
+    the same logical record as per-record charges: scanned overuse fills
+    exactly to the ceiling before refusing, and staging overuse refuses
+    before the line is written. Windows grow geometrically (from
+    ``ACCOUNTING_BATCH_RECORDS`` records / 64 KiB) so journal writes are
+    O(log n + n / cap) per source. :meth:`close` settles the exact usage.
     """
 
     def __init__(self, capacity_mgr: StorageCapacityManager, scanned_maximum: int) -> None:
         self._capacity_mgr = capacity_mgr
-        self._scanned_maximum = scanned_maximum
-        self._base_scanned = capacity_mgr.consumed("records_scanned")
         self.scanned: list[int] = [0]
-        self._committed_scanned = 0
-        self._pending_temp = 0
+        self._charged_scanned = 0
+        self._scan = CapacityLease(
+            capacity_mgr,
+            "records_scanned",
+            initial=ACCOUNTING_BATCH_RECORDS,
+            window=SCAN_LEASE_MAX_RECORDS,
+            limit=scanned_maximum,
+            message="cumulative records_scanned limit exceeded",
+        )
+        self._temp = CapacityLease(capacity_mgr, "temp")
 
     def add_retained(self, payload_len: int) -> None:
-        self._pending_temp += payload_len
+        self._temp.consume(payload_len)
 
     def maybe_commit(self, *, force: bool = False) -> None:
-        new_scanned = self.scanned[0] - self._committed_scanned
-        if new_scanned == 0 and self._pending_temp == 0:
-            self._capacity_mgr.check_deadline()
-            return
-        if not force and new_scanned < ACCOUNTING_BATCH_RECORDS:
-            if self._base_scanned + self.scanned[0] < self._scanned_maximum:
-                return
-        self._capacity_mgr.commit_batch(
-            temp_bytes=self._pending_temp,
-            scanned_records=new_scanned,
-            scanned_maximum=self._scanned_maximum,
-        )
-        self._committed_scanned = self.scanned[0]
-        self._pending_temp = 0
+        delta = self.scanned[0] - self._charged_scanned
+        if delta:
+            self._charged_scanned = self.scanned[0]
+            self._scan.consume_to_ceiling(delta)
+        self._capacity_mgr.check_deadline()
+        if force:
+            self.close()
+
+    def close(self) -> None:
+        try:
+            self._scan.close()
+        finally:
+            self._temp.close()
 
 
 def _select_one_source_to_chunk(
@@ -737,53 +748,56 @@ def _select_one_source_to_chunk(
     coalesce_bytes = plan.range_coalesce_bytes
     batcher = _BatchCommitter(fetcher.capacity_mgr, plan.limits.max_scanned_records)
 
-    with fetcher.perf.file_worker(source):
-        ensure_plain_path(chunk_path)
-        count = 0
-        fetcher.capacity_mgr.check_deadline()
-        with StreamingJsonlWriter(chunk_path) as writer:
-            iterator = _selection_iterator(
-                fetcher,
-                source,
-                start,
-                stop,
-                columns=columns,
-                coalesce_bytes=coalesce_bytes,
-                scanned_counter=batcher.scanned,
-            )
-            for record, raw, locator in iterator:
-                if stop_event.is_set():
-                    raise RuntimeError("concurrent file worker cancelled after sibling failure")
-                with fetcher.perf.timed("serialize", file=source):
-                    payload = selected_record(
-                        record,
-                        {
-                            **locator,
-                            "source_id": plan.source_id,
-                            "repository": plan.repository,
-                            "revision": plan.revision,
-                            "source_file": source,
-                            "selection_hash": selection_hash,
-                        },
-                        raw,
-                    )
-                if len(payload) > plan.limits.max_record_bytes + 8192:
-                    raise RecordLimitError(
-                        "selected record plus locator exceeds bounded serialization"
-                    )
-                with retained_lock:
-                    retained_total[0] += 1
-                    if retained_total[0] > plan.limits.max_records:
-                        raise RecordLimitError("selected record limit exceeded")
-                batcher.add_retained(len(payload))
-                writer.write_line(payload)
-                fetcher.perf.record_file_bytes(destination_name, len(payload))
-                count += 1
-                batcher.maybe_commit()
-            batcher.maybe_commit(force=True)
-        fetcher.perf.record_write_seconds(writer.flush_seconds, file=source)
-        fetcher.perf.record_peak_rss(writer.peak_rss_bytes)
-        return {"source": source, "count": count, "size": writer.size, "path": str(chunk_path)}
+    try:
+        with fetcher.perf.file_worker(source):
+            ensure_plain_path(chunk_path)
+            count = 0
+            fetcher.capacity_mgr.check_deadline()
+            with StreamingJsonlWriter(chunk_path) as writer:
+                iterator = _selection_iterator(
+                    fetcher,
+                    source,
+                    start,
+                    stop,
+                    columns=columns,
+                    coalesce_bytes=coalesce_bytes,
+                    scanned_counter=batcher.scanned,
+                )
+                for record, raw, locator in iterator:
+                    if stop_event.is_set():
+                        raise RuntimeError("concurrent file worker cancelled after sibling failure")
+                    with fetcher.perf.timed("serialize", file=source):
+                        payload = selected_record(
+                            record,
+                            {
+                                **locator,
+                                "source_id": plan.source_id,
+                                "repository": plan.repository,
+                                "revision": plan.revision,
+                                "source_file": source,
+                                "selection_hash": selection_hash,
+                            },
+                            raw,
+                        )
+                    if len(payload) > plan.limits.max_record_bytes + 8192:
+                        raise RecordLimitError(
+                            "selected record plus locator exceeds bounded serialization"
+                        )
+                    with retained_lock:
+                        retained_total[0] += 1
+                        if retained_total[0] > plan.limits.max_records:
+                            raise RecordLimitError("selected record limit exceeded")
+                    batcher.add_retained(len(payload))
+                    writer.write_line(payload)
+                    fetcher.perf.record_file_bytes(destination_name, len(payload))
+                    count += 1
+                    batcher.maybe_commit()
+                batcher.maybe_commit(force=True)
+            fetcher.perf.record_write_seconds(writer.flush_seconds, file=source)
+            fetcher.perf.record_peak_rss(writer.peak_rss_bytes)
+            return {"source": source, "count": count, "size": writer.size, "path": str(chunk_path)}
+    finally:
+        batcher.close()
 
 
 def _acquire_selection_serial(
@@ -802,43 +816,46 @@ def _acquire_selection_serial(
             write_mark = writer.flush_seconds
             batcher = _BatchCommitter(fetcher.capacity_mgr, plan.limits.max_scanned_records)
 
-            with fetcher.perf.file_worker(source):
-                fetcher.capacity_mgr.check_deadline()
-                iterator = _selection_iterator(
-                    fetcher,
-                    source,
-                    start,
-                    stop,
-                    columns=columns,
-                    coalesce_bytes=coalesce_bytes,
-                    scanned_counter=batcher.scanned,
-                )
-                for record, raw, locator in iterator:
-                    with fetcher.perf.timed("serialize", file=source):
-                        payload = selected_record(
-                            record,
-                            {
-                                **locator,
-                                "source_id": plan.source_id,
-                                "repository": plan.repository,
-                                "revision": plan.revision,
-                                "source_file": source,
-                                "selection_hash": selection_hash,
-                            },
-                            raw,
-                        )
-                    if len(payload) > plan.limits.max_record_bytes + 8192:
-                        raise RecordLimitError(
-                            "selected record plus locator exceeds bounded serialization"
-                        )
-                    batcher.add_retained(len(payload))
-                    writer.write_line(payload)
-                    fetcher.perf.record_file_bytes(name, len(payload))
-                    count += 1
-                    if count > plan.limits.max_records:
-                        raise RecordLimitError("selected record limit exceeded")
-                    batcher.maybe_commit()
-                batcher.maybe_commit(force=True)
+            try:
+                with fetcher.perf.file_worker(source):
+                    fetcher.capacity_mgr.check_deadline()
+                    iterator = _selection_iterator(
+                        fetcher,
+                        source,
+                        start,
+                        stop,
+                        columns=columns,
+                        coalesce_bytes=coalesce_bytes,
+                        scanned_counter=batcher.scanned,
+                    )
+                    for record, raw, locator in iterator:
+                        with fetcher.perf.timed("serialize", file=source):
+                            payload = selected_record(
+                                record,
+                                {
+                                    **locator,
+                                    "source_id": plan.source_id,
+                                    "repository": plan.repository,
+                                    "revision": plan.revision,
+                                    "source_file": source,
+                                    "selection_hash": selection_hash,
+                                },
+                                raw,
+                            )
+                        if len(payload) > plan.limits.max_record_bytes + 8192:
+                            raise RecordLimitError(
+                                "selected record plus locator exceeds bounded serialization"
+                            )
+                        batcher.add_retained(len(payload))
+                        writer.write_line(payload)
+                        fetcher.perf.record_file_bytes(name, len(payload))
+                        count += 1
+                        if count > plan.limits.max_records:
+                            raise RecordLimitError("selected record limit exceeded")
+                        batcher.maybe_commit()
+                    batcher.maybe_commit(force=True)
+            finally:
+                batcher.close()
             fetcher.perf.record_write_seconds(writer.flush_seconds - write_mark, file=source)
     fetcher.perf.record_peak_rss(writer.peak_rss_bytes)
     digest, size = writer.digest.hexdigest(), writer.size

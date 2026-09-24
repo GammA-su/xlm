@@ -28,9 +28,13 @@ ACCOUNTING_INITIAL_WINDOW_BYTES = 64 * 1024
 ACCOUNTING_WINDOW_BYTES = 16 * 1024 * 1024
 
 
-def grown_window(used: int, cap: int = ACCOUNTING_WINDOW_BYTES) -> int:
-    """Next geometric lease window after ``used`` bytes of one stream."""
-    return min(cap, max(ACCOUNTING_INITIAL_WINDOW_BYTES, used))
+def grown_window(
+    used: int,
+    cap: int = ACCOUNTING_WINDOW_BYTES,
+    initial: int = ACCOUNTING_INITIAL_WINDOW_BYTES,
+) -> int:
+    """Next geometric lease window after ``used`` units of one stream."""
+    return min(cap, max(initial, used))
 
 
 class DiskCeilingExceededError(RuntimeError):
@@ -199,7 +203,7 @@ class StorageCapacityManager:
         self,
         *,
         settle: tuple[tuple[str, str, int, int], ...] = (),
-        reserve: tuple[tuple[str, int, int], ...] = (),
+        reserve: tuple[tuple[str, int, int] | tuple[str, int, int, int], ...] = (),
         progress: Callable[[AcquisitionState], None] | None = None,
     ) -> tuple[list[tuple[str, int]], dict[str, int]]:
         """Settle leases, apply one progress mutation, then reserve: one durable write.
@@ -207,9 +211,11 @@ class StorageCapacityManager:
         ``settle`` entries are ``(resource, token, actual, hold)``: ``actual`` is
         charged and ``hold`` stays reserved under the same token (an in-flight
         amount whose outcome is unknown); ``hold == 0`` retires the token.
-        ``reserve`` entries are ``(resource, wanted, minimum)`` and grant
-        ``min(wanted, available)`` when that is at least ``minimum``, else an
-        empty token. Settlement and progress always persist; callers raise
+        ``reserve`` entries are ``(resource, wanted, minimum[, limit])`` and
+        grant ``min(wanted, available)`` when that is at least ``minimum``, else
+        an empty token; ``limit`` supplies a caller-bound ceiling for counters
+        outside the persisted limit map (e.g. scanned records). Settlement and
+        progress always persist; callers raise
         after a refused grant, so refusals never discard durable settlement.
         Returns ``(token, amount)`` grants in request order plus the
         post-transaction consumed counters.
@@ -230,11 +236,13 @@ class StorageCapacityManager:
                 if self.journal is None:
                     raise ValueError("progress mutation requires a journal")
                 progress(self.journal.state)
-            for resource, wanted, minimum in reserve:
+            for entry in reserve:
+                resource, wanted, minimum = entry[0], entry[1], entry[2]
+                limit = entry[3] if len(entry) == 4 else None
                 if wanted < 0 or minimum < 0:
                     raise ValueError("negative reservation")
                 pending = account.reservations.setdefault(resource, {})
-                amount = min(wanted, self._available(account, resource))
+                amount = min(wanted, self._available(account, resource, limit))
                 if amount < max(1, minimum):
                     grants.append(("", 0))
                     continue
@@ -245,7 +253,7 @@ class StorageCapacityManager:
         return grants, consumed
 
     @staticmethod
-    def _available(account: ResourceAccount, resource: str) -> int:
+    def _available(account: ResourceAccount, resource: str, limit: int | None = None) -> int:
         used = (
             account.occupancy.get(resource, 0)
             if resource in ("temp", "output")
@@ -255,9 +263,8 @@ class StorageCapacityManager:
             used += account.occupancy.get("published", 0)
         if resource == "temp":
             used += account.occupancy.get("nested_temp", 0)
-        return (
-            account.limits[resource] - used - sum(account.reservations.get(resource, {}).values())
-        )
+        ceiling = account.limits[resource] if limit is None else limit
+        return ceiling - used - sum(account.reservations.get(resource, {}).values())
 
     def record_units(self, name: str, amount: int, maximum: int) -> None:
         with self._transaction() as account:
@@ -426,13 +433,16 @@ class CapacityLease:
         resource: str,
         *,
         window: int = ACCOUNTING_WINDOW_BYTES,
+        initial: int = ACCOUNTING_INITIAL_WINDOW_BYTES,
         cap: int | None = None,
+        limit: int | None = None,
         message: str | None = None,
         on_consumed: Callable[[dict[str, int]], None] | None = None,
     ) -> None:
-        if window < 1 or (cap is not None and cap < 0):
-            raise ValueError("lease window must be positive and cap non-negative")
+        if window < 1 or initial < 1 or (cap is not None and cap < 0):
+            raise ValueError("lease windows must be positive and cap non-negative")
         self.manager, self.resource, self.window, self.cap = manager, resource, window, cap
+        self.initial, self.limit = min(initial, window), limit
         self.message = message or f"{resource} limit reached including outstanding reservations"
         self.on_consumed = on_consumed
         self.token, self.granted, self.used, self.total = "", 0, 0, 0
@@ -445,12 +455,14 @@ class CapacityLease:
         """Pending ``exchange`` settle entry for this lease (``None`` when idle)."""
         return (self.resource, self.token, self.used, hold) if self.token else None
 
-    def next_request(self, minimum: int = 1) -> tuple[str, int, int]:
+    def next_request(self, minimum: int = 1) -> tuple[str, int, int] | tuple[str, int, int, int]:
         """``exchange`` reserve entry for the next window of this lease."""
-        want = grown_window(self.total, self.window)
+        want = grown_window(self.total, self.window, self.initial)
         if self.cap is not None:
             want = min(want, max(0, self.cap - self.total))
-        return (self.resource, max(want, minimum), minimum)
+        if self.limit is None:
+            return (self.resource, max(want, minimum), minimum)
+        return (self.resource, max(want, minimum), minimum, self.limit)
 
     def adopt(self, grant: tuple[str, int], consumed: dict[str, int] | None = None) -> None:
         """Install a grant produced by an ``exchange`` that settled this lease."""
@@ -491,6 +503,21 @@ class CapacityLease:
         if amount:
             self.take(amount, minimum=amount)
             self.commit(amount)
+
+    def consume_to_ceiling(self, amount: int) -> None:
+        """Charge ``amount``; if it does not fit, fill exactly to the ceiling and refuse."""
+        try:
+            self.consume(amount)
+        except (BudgetExhaustedError, DiskCeilingExceededError):
+            granted = 0
+            try:
+                granted = self.take(amount, minimum=1)
+            except (BudgetExhaustedError, DiskCeilingExceededError):
+                pass
+            if granted:
+                self.commit(granted)
+            self.close()
+            raise
 
     def close(self) -> None:
         """Settle the exact actual and release the unused allowance."""

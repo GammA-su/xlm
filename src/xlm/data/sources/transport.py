@@ -40,6 +40,10 @@ ALLOWLISTED_HOSTS: frozenset[str] = frozenset(
 TRUSTED_HUGGINGFACE_SUFFIXES: tuple[str, ...] = (".hf.co", ".huggingface.co")
 
 
+#: First durable lease window for bounded in-memory bodies (range/metadata).
+IN_MEMORY_BODY_INITIAL_WINDOW = 4 * 1024 * 1024
+
+
 class BudgetExhaustedError(RuntimeError):
     """Raised when the discovery byte ceiling, request count, or stream limit is exceeded."""
 
@@ -126,14 +130,15 @@ class TransportBudget:
                 self.bytes_transferred += len(chunk)
         return chunk
 
-    def transfer_lease(self, cap: int | None) -> Any:
+    def transfer_lease(self, cap: int | None, *, initial: int | None = None) -> Any:
         """Durable transfer lease for one response stream (capacity-backed budgets only)."""
-        from xlm.data.acquisition.disk import CapacityLease
+        from xlm.data.acquisition.disk import ACCOUNTING_INITIAL_WINDOW_BYTES, CapacityLease
 
         assert self.capacity is not None
         return CapacityLease(
             self.capacity,
             "transfer",
+            initial=initial or ACCOUNTING_INITIAL_WINDOW_BYTES,
             cap=cap,
             message="response-body byte allowance exhausted",
             on_consumed=self._sync_transferred,
@@ -164,8 +169,11 @@ class TransportBudget:
         expected = int(length) if length is not None else None
         if expected is not None and (expected < 0 or expected > limit):
             raise BudgetExhaustedError("response exceeds its allocated body limit")
+        # In-memory bodies are never resumed (a crash refetches them whole), so
+        # their first lease window covers up to 4 MiB of the declared body.
+        cap = expected if expected is not None else limit
         lease = (
-            self.transfer_lease(expected if expected is not None else limit)
+            self.transfer_lease(cap, initial=max(1, min(cap, IN_MEMORY_BODY_INITIAL_WINDOW)))
             if self.capacity is not None
             else None
         )

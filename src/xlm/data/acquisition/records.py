@@ -26,45 +26,40 @@ class RecordStream(Protocol):
     def readline(self, size: int = -1, /) -> bytes: ...
 
 
-#: Scanned-record counts commit once per this many records (and exactly at the
-#: ceiling), with the same limit and refusal as per-record commits.
-SCAN_ACCOUNTING_BATCH = 256
+#: Initial and maximum scanned-record lease windows (records).
+SCAN_LEASE_INITIAL_RECORDS = 256
+SCAN_LEASE_MAX_RECORDS = 65536
 
 
 class ScanAccounting:
-    """Per-record decompressed charges on a durable lease plus batched scan counts.
+    """Per-record decompressed charges and scan counts on durable leases.
 
-    Totals equal per-record accounting: every decompressed amount is charged
-    exactly (a lease renewal refuses exactly when the per-record reservation
-    would) and scanned counts commit through ``commit_batch``, which fills to
-    the ceiling and refuses at the same record when this scanner reaches it.
+    Totals equal per-record accounting. Each lease reserves its window before
+    the work, so a crash leaves it counted (conservative); a decompressed
+    charge refuses exactly when the per-record reservation would, and scanned
+    overuse fills exactly to the ceiling before refusing at the same record.
     """
 
     def __init__(self, capacity: StorageCapacityManager, limits: AcquisitionLimits) -> None:
-        self.capacity = capacity
-        self.maximum = limits.max_scanned_records
         self.decompressed = CapacityLease(capacity, "decompressed")
-        self.base = capacity.consumed("records_scanned")
-        self.pending = 0
-        self.total = 0
+        self.scans = CapacityLease(
+            capacity,
+            "records_scanned",
+            initial=SCAN_LEASE_INITIAL_RECORDS,
+            window=SCAN_LEASE_MAX_RECORDS,
+            limit=limits.max_scanned_records,
+            message="cumulative records_scanned limit exceeded",
+        )
 
     def charge_decompressed(self, amount: int) -> None:
         self.decompressed.consume(amount)
 
     def scanned(self) -> None:
-        self.pending += 1
-        self.total += 1
-        if self.pending >= SCAN_ACCOUNTING_BATCH or self.base + self.total >= self.maximum:
-            self.flush()
-
-    def flush(self) -> None:
-        if self.pending:
-            pending, self.pending = self.pending, 0
-            self.capacity.commit_batch(scanned_records=pending, scanned_maximum=self.maximum)
+        self.scans.consume_to_ceiling(1)
 
     def close(self) -> None:
         try:
-            self.flush()
+            self.scans.close()
         finally:
             self.decompressed.close()
 
