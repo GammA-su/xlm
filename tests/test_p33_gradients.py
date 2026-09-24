@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 from collections.abc import Iterable
 from pathlib import Path
+from typing import Any
 
 import pytest
 import torch
@@ -131,6 +133,19 @@ def test_actual_50m_three_updates_are_exact(
         )
         trainer.schedule.apply_lr_to_optimizer(optimizer, 0)
         metrics = []
+        gradient_digests: list[str] = []
+
+        def record_gradients(
+            opt: Any, args: Any, kwargs: Any, digests: list[str] = gradient_digests
+        ) -> None:
+            digest = hashlib.sha256()
+            for group in opt.param_groups:
+                for parameter in group["params"]:
+                    if parameter.grad is not None:
+                        digest.update(parameter.grad.detach().cpu().numpy().tobytes())
+            digests.append(digest.hexdigest())
+
+        optimizer.register_step_pre_hook(record_gradients)
         with monkeypatch.context() as patch:
             if reference:
                 patch.setattr("xlm.training.trainer.clip_global_gradient_norm", reference_clip)
@@ -159,11 +174,13 @@ def test_actual_50m_three_updates_are_exact(
                 metrics,
                 {k: v.cpu().clone() for k, v in model.state_dict().items()},
                 batcher.get_state(),
+                gradient_digests,
             )
         )
         del trainer, optimizer, model, objective
         torch.cuda.empty_cache()
     assert trajectories[0][0] == trajectories[1][0]
     assert trajectories[0][2] == trajectories[1][2]
+    assert trajectories[0][3] == trajectories[1][3]
     for name, expected in trajectories[0][1].items():
         torch.testing.assert_close(trajectories[1][1][name], expected, rtol=0, atol=0)

@@ -176,6 +176,31 @@ def test_trainer_non_finite_gradient_failure_guard(tmp_path: Path) -> None:
     assert run_rec["status"] == RunStatus.FAILED.value
 
 
+@pytest.mark.parametrize("invalid", [float("nan"), float("inf")])
+def test_nonfinite_backward_preserves_optimizer_and_committed_cursor(
+    tmp_path: Path, invalid: float
+) -> None:
+    """A finite forward with a corrupt late gradient must not commit an update."""
+    trainer, model, batcher, _ = _setup_test_components(tmp_path)
+    before = {name: value.clone() for name, value in model.state_dict().items()}
+    cursor = batcher.get_state()
+    learning_rates = [group["lr"] for group in trainer.optimizer.param_groups]
+    handle = list(model.parameters())[-1].register_hook(  # type: ignore[no-untyped-call]
+        lambda grad: grad * invalid
+    )
+    try:
+        with pytest.raises(NonFiniteGradientError, match="Non-finite gradient encountered"):
+            trainer.train_step()
+    finally:
+        handle.remove()
+    assert batcher.get_state() == cursor
+    assert trainer.step == trainer.committed_valid_targets == trainer.processed_valid_targets == 0
+    assert not trainer.optimizer.state
+    assert [group["lr"] for group in trainer.optimizer.param_groups] == learning_rates
+    for name, value in model.state_dict().items():
+        torch.testing.assert_close(value, before[name], atol=0, rtol=0)
+
+
 def test_trainer_cooperative_interruption(tmp_path: Path) -> None:
     """Verify cooperative interruption saves checkpoint at optimizer boundary and updates ledger."""
     trainer, _, _, manager = _setup_test_components(
