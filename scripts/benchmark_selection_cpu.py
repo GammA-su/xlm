@@ -24,7 +24,9 @@ from xlm.data.acquisition.records import encode_record, selected_record
 
 def build(rows: int, text_bytes: int) -> bytes:
     rng = random.Random(11)
-    words = ["".join(rng.choice("abcdefghij") for _ in range(rng.randint(2, 9))) for _ in range(512)]
+    words = [
+        "".join(rng.choice("abcdefghij") for _ in range(rng.randint(2, 9))) for _ in range(512)
+    ]
     texts = []
     for _ in range(rows):
         target = text_bytes // 2 + rng.randint(0, text_bytes)
