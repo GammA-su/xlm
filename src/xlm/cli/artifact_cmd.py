@@ -130,19 +130,84 @@ def verify_command(
 
 
 @artifact_app.command(name="rebuild-ledger")
-def rebuild_ledger_command() -> None:
-    """Reconstruct SQLite catalog from disk manifests and durable run records."""
+def rebuild_ledger_command(
+    max_artifacts: Annotated[
+        int | None,
+        typer.Option("--max-artifacts", help="Stop after examining this many artifacts."),
+    ] = None,
+    max_verify_mib: Annotated[
+        float | None,
+        typer.Option("--max-verify-mib", help="Stop before verifying past this many MiB."),
+    ] = None,
+    deadline_seconds: Annotated[
+        float | None,
+        typer.Option("--deadline-seconds", help="Stop the scan after this many seconds."),
+    ] = None,
+    audit_references: Annotated[
+        bool,
+        typer.Option(
+            "--audit-references/--no-audit-references",
+            help="Also re-verify every ledger reference against the store, "
+            "marking missing/corrupt ones unusable (never deleting).",
+        ),
+    ] = False,
+) -> None:
+    """Reconstruct SQLite catalog from disk manifests and durable run records.
+
+    Only fully verified artifacts are recorded; corrupt, incomplete, and
+    marker-less states are reported, never inserted. Repeating the command
+    is a no-op for already-recorded identical artifacts.
+    """
     paths = ArtifactPaths.from_env()
     paths.ensure_directories()
     store = ArtifactStore(paths)
     ledger = RunLedger(paths.ledger / "ledger.sqlite")
 
-    results = ledger.rebuild_from_filesystem(paths, store)
+    try:
+        results = ledger.rebuild_from_filesystem(
+            paths,
+            store,
+            max_artifacts=max_artifacts,
+            max_verify_bytes=None if max_verify_mib is None else int(max_verify_mib * 1024**2),
+            deadline_seconds=deadline_seconds,
+        )
+    except ValueError as exc:
+        typer.echo(f"Error: invalid rebuild bounds: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
     typer.echo("Ledger rebuild complete:")
     typer.echo(f"  - Rebuilt artifacts: {results['rebuilt_artifacts']}")
+    typer.echo(f"  - Already recorded: {results['already_recorded']}")
     typer.echo(f"  - Rebuilt runs:      {results['rebuilt_runs']}")
     typer.echo(f"  - Legacy checksum-only artifacts: {len(results['legacy_artifacts'])}")
+    if results["incomplete_artifacts"]:
+        typer.echo(f"  - Incomplete artifacts ({len(results['incomplete_artifacts'])}):")
+        for c in results["incomplete_artifacts"]:
+            typer.echo(f"      * {c}")
+    if results["conflicts"]:
+        typer.echo(f"  - Identity conflicts ({len(results['conflicts'])}):", err=True)
+        for c in results["conflicts"]:
+            typer.echo(f"      * {c}", err=True)
     if results["corrupt_artifacts"]:
         typer.echo(f"  - Corrupt artifacts ({len(results['corrupt_artifacts'])}):", err=True)
         for c in results["corrupt_artifacts"]:
             typer.echo(f"      * {c}", err=True)
+    if results["truncated"]:
+        typer.echo(f"  - Truncated: {results['truncated_reason']}", err=True)
+    if audit_references:
+        audit = ledger.audit_ledger_references(
+            paths,
+            store,
+            max_artifacts=max_artifacts,
+            max_verify_bytes=None if max_verify_mib is None else int(max_verify_mib * 1024**2),
+            deadline_seconds=deadline_seconds,
+        )
+        typer.echo(
+            f"  - Reference audit: {audit['ok']} ok, {audit['healed']} healed, "
+            f"{audit['unusable']} unusable"
+        )
+        for verdict in audit["verdicts"]:
+            if verdict["verdict"] != "ok":
+                typer.echo(
+                    f"      * {verdict['artifact_id']}: {verdict['verdict']} ({verdict['detail']})",
+                    err=True,
+                )

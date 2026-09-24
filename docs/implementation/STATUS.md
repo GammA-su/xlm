@@ -1,5 +1,21 @@
 # Implementation status
 
+> **Artifact↔ledger crash reconciliation: IMPLEMENTED / VERIFIED (bounded
+> offline)** on `fix/artifact-ledger-reconciliation`. Strengthened
+> `rebuild_from_filesystem` (full-verifier authority, idempotent no-op
+> duplicates, incomplete/conflict reporting, count/byte/deadline bounds
+> with honest truncation, phase timing) plus new `audit_ledger_references`
+> (ok/healed/unusable verdicts, `unverifiable` marking, rows never
+> deleted) with atomic check-and-write concurrency. Recovery caller:
+> `artifact rebuild-ledger` with bounds + audit flags (no automatic
+> full-store scans). Crash matrix A–H, concurrent convergence, real
+> checkpoint crash-window recovery, and 1/100/1000 timings (0.03 s /
+> 3.31 s / 27.84 s) all green: 18 new + 115 related tests passed;
+> ruff/mypy clean. Sync substrate (durable publish + reconcile +
+> idempotent record + restart discovery) now satisfies async-checkpoint
+> prerequisites. See [reports/ARTIFACT-LEDGER-RECONCILE.md](reports/ARTIFACT-LEDGER-RECONCILE.md).
+> Overall production acceptance remains BLOCKED; main is unchanged.
+
 > **Checkpoint/artifact durability (synchronous baseline): IMPLEMENTED /
 > VERIFIED (bounded offline)** on `fix/checkpoint-durability`. `publish_artifact`
 > now orders flush+fsync per payload, staging/subdir syncs, durable manifest,
