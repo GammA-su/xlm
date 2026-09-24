@@ -244,27 +244,56 @@ def check_row_group(parquet: pq.ParquetFile, group: int, limits: AcquisitionLimi
             raise RecordLimitError("Parquet decompression ratio exceeded")
 
 
+LOCATOR_FIELD = "_xlm_acquisition"
+_LOCATOR_FIELD_JSON = json.dumps(LOCATOR_FIELD)
+
+
+class CanonicalRecordBytes(bytes):
+    """``encode_record`` output that remembers the record object it encodes.
+
+    Lets :func:`selected_record` splice the locator into the already
+    serialized record instead of serializing the whole record a second time.
+    """
+
+    source: dict[str, Any]
+
+
+def _canonical_json(value: Any) -> str:
+    return json.dumps(
+        value, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False
+    )
+
+
 def encode_record(record: dict[str, Any]) -> bytes:
-    return (
-        json.dumps(
-            record, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False
-        )
-        + "\n"
-    ).encode("utf-8")
+    data = CanonicalRecordBytes((_canonical_json(record) + "\n").encode("utf-8"))
+    data.source = record
+    return data
 
 
 def selected_record(record: dict[str, Any], locator: dict[str, Any], raw: bytes) -> bytes:
-    if "_xlm_acquisition" in record:
+    """Canonical record plus its locator field; byte-identical to one full encode.
+
+    When ``raw`` is :func:`encode_record` output for this very (unmodified)
+    record object and every key sorts on one side of the locator field, the
+    locator pair is spliced at that edge of ``raw``: sort-keyed compact JSON
+    places it exactly there. Anything else takes the full re-encode.
+    """
+    if LOCATOR_FIELD in record:
         raise ValueError("source record conflicts with reserved acquisition locator field")
-    return encode_record(
-        {
-            **record,
-            "_xlm_acquisition": {
-                **locator,
-                "original_record_sha256": hashlib.sha256(raw).hexdigest(),
-            },
-        }
-    )
+    value = {**locator, "original_record_sha256": hashlib.sha256(raw).hexdigest()}
+    if (
+        isinstance(raw, CanonicalRecordBytes)
+        and getattr(raw, "source", None) is record
+        and all(type(key) is str for key in record)
+    ):
+        pair = (_LOCATOR_FIELD_JSON + ":" + _canonical_json(value)).encode("utf-8")
+        if not record:
+            return b"{" + pair + b"}\n"
+        if all(key > LOCATOR_FIELD for key in record):
+            return b"{" + pair + b"," + raw[1:]
+        if all(key < LOCATOR_FIELD for key in record):
+            return raw[:-2] + b"," + pair + b"}\n"
+    return encode_record({**record, LOCATOR_FIELD: value})
 
 
 class StreamingJsonlWriter:

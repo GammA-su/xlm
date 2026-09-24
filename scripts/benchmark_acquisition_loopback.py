@@ -178,7 +178,9 @@ class LoopbackHandler(http.server.BaseHTTPRequestHandler):
             _Stats.bytes_sent += sent
 
 
-def serve(root: Path, port_file: Path, rtt_ms: float, stream_mbps: float, redirect: bool) -> None:
+def serve(
+    root: Path, port_file: Path, rtt_ms: float, stream_mbps: float, redirect: bool, port: int = 0
+) -> None:
     files: dict[str, bytes] = {}
     total = 0
     for path in sorted(root.rglob("*")):
@@ -195,7 +197,7 @@ def serve(root: Path, port_file: Path, rtt_ms: float, stream_mbps: float, redire
     LoopbackHandler.rtt = rtt_ms / 1000.0
     LoopbackHandler.rate = stream_mbps * 1e6
     LoopbackHandler.redirect = redirect
-    server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), LoopbackHandler)
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", port), LoopbackHandler)
     server.daemon_threads = True
     server.request_queue_size = 512
     port_file.write_text(str(server.server_address[1]), encoding="utf-8")
@@ -204,7 +206,14 @@ def serve(root: Path, port_file: Path, rtt_ms: float, stream_mbps: float, redire
 
 class ServerProcess:
     def __init__(
-        self, root: Path, work: Path, *, rtt_ms: float, stream_mbps: float, redirect: bool
+        self,
+        root: Path,
+        work: Path,
+        *,
+        rtt_ms: float,
+        stream_mbps: float,
+        redirect: bool,
+        port: int = 0,
     ) -> None:
         work.mkdir(parents=True, exist_ok=True)
         port_file = work / f"port-{os.getpid()}-{time.monotonic_ns()}.txt"
@@ -222,6 +231,8 @@ class ServerProcess:
                 "--stream-mbps",
                 str(stream_mbps),
                 *(["--redirect"] if redirect else []),
+                "--port",
+                str(port),
             ]
         )
         deadline = time.monotonic() + 120
@@ -397,6 +408,8 @@ def make_plan(
     )
 
     headroom = total_bytes * 2 + 64 * MIB
+    # Selected JSONL (decoded text plus locators) is several times the compressed input.
+    storage = headroom if mode == "whole_file" else total_bytes * 12 + 256 * MIB
     plan = AcquisitionPlan(
         plan_id="loopback_bench",
         source_id="authored_loopback",
@@ -413,8 +426,8 @@ def make_plan(
         limits=AcquisitionLimits(
             max_transferred_bytes=headroom,
             max_decompressed_bytes=max(headroom * 16, 512 * MIB),
-            max_temp_disk_bytes=headroom,
-            max_output_disk_bytes=headroom,
+            max_temp_disk_bytes=storage,
+            max_output_disk_bytes=storage,
             max_records=max_records,
             max_scanned_records=max(100_000, max_records * 4),
             max_requests=100_000,
@@ -495,6 +508,7 @@ def main() -> None:
     srv.add_argument("--rtt-ms", type=float, default=0.0)
     srv.add_argument("--stream-mbps", type=float, default=0.0)
     srv.add_argument("--redirect", action="store_true")
+    srv.add_argument("--port", type=int, default=0)
 
     bench = sub.add_parser("bench")
     bench.add_argument("--work", type=Path, required=True, help="scratch/output location")
@@ -516,6 +530,9 @@ def main() -> None:
     bench.add_argument("--max-seconds", type=float, default=900)
     bench.add_argument("--json-out", type=Path)
     bench.add_argument(
+        "--port", type=int, default=0, help="fixed loopback port (byte-comparable locators)"
+    )
+    bench.add_argument(
         "--diagnostic-no-fsync",
         action="store_true",
         help="DIAGNOSTIC ONLY: make os.fsync a no-op in this benchmark process to expose the "
@@ -527,7 +544,7 @@ def main() -> None:
         os.fsync = lambda fd: None  # noqa: E731 - diagnostic-only, process-local
 
     if args.command == "serve":
-        serve(args.root, args.port_file, args.rtt_ms, args.stream_mbps, args.redirect)
+        serve(args.root, args.port_file, args.rtt_ms, args.stream_mbps, args.redirect, args.port)
         return
 
     if args.client == "select":
@@ -544,6 +561,7 @@ def main() -> None:
         rtt_ms=args.rtt_ms,
         stream_mbps=args.stream_mbps,
         redirect=args.redirect,
+        port=args.port,
     )
     results = []
     started = time.monotonic()
