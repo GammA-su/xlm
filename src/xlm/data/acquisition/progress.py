@@ -88,6 +88,25 @@ class AcquisitionState(BaseModel):
     error_reason: str | None = None
 
 
+def apply_file_progress(
+    state: AcquisitionState,
+    rel_path: str,
+    bytes_added: int,
+    etag: str | None = None,
+    total_expected: int | None = None,
+    *,
+    prefix_sha256: str | None = None,
+) -> None:
+    """Advance one file's durable verified prefix inside an open journal transaction."""
+    fp = state.file_progress.setdefault(rel_path, FileProgress(file_path=rel_path))
+    fp.bytes_downloaded += bytes_added
+    fp.verified_prefix_bytes = fp.bytes_downloaded
+    fp.prefix_sha256 = prefix_sha256
+    fp.etag = etag or fp.etag
+    fp.total_expected = total_expected if total_expected is not None else fp.total_expected
+    fp.status = "downloading"
+
+
 class ProgressJournal:
     """Reload under a filesystem lock before every mutation; never replace newer counters."""
 
@@ -101,6 +120,12 @@ class ProgressJournal:
         self.tx_persisted = 0
         self.journal_fsyncs = 0
         self.journal_bytes_written = 0
+        self.journal_reads_elided = 0
+        # Bytes last read or written under the file lock plus the file identity
+        # (file id, size, mtime) observed for them. A reload whose stat shows
+        # the same identity validates these identical bytes instead of reopening
+        # a freshly replaced file (each reopen costs a real-time scan on Windows).
+        self._known: tuple[tuple[int, int, int], bytes] | None = None
         if journal_path.exists():
             lock = journal_path.with_suffix(".lock")
             ensure_plain_path(lock)
@@ -111,14 +136,32 @@ class ProgressJournal:
             # perform a second unlocked read; the first mutation reloads under lock.
             self.state = AcquisitionState(plan_id=plan_id, plan_hash=plan_hash)
 
-    def _load(self) -> AcquisitionState:
-        if not self.journal_path.exists():
+    @staticmethod
+    def _identity(stat: os.stat_result) -> tuple[int, int, int] | None:
+        if not stat.st_ino:
+            return None
+        return (stat.st_ino, stat.st_size, stat.st_mtime_ns)
+
+    def _load(self, *, checked: bool = False) -> AcquisitionState:
+        try:
+            before = self.journal_path.stat()
+        except FileNotFoundError:
             return AcquisitionState(plan_id=self.plan_id, plan_hash=self.plan_hash)
         try:
-            ensure_plain_path(self.journal_path)
-            if self.journal_path.stat().st_size > 8 * 1024**2:
+            if not checked:
+                ensure_plain_path(self.journal_path)
+            if before.st_size > 8 * 1024**2:
                 raise ValueError("journal exceeds 8 MiB")
-            state = AcquisitionState.model_validate_json(self.journal_path.read_bytes())
+            identity = self._identity(before)
+            known = self._known
+            if identity is not None and known is not None and known[0] == identity:
+                payload = known[1]
+                self.journal_reads_elided += 1
+            else:
+                payload = self.journal_path.read_bytes()
+                after = self._identity(self.journal_path.stat())
+                self._known = (identity, payload) if identity and identity == after else None
+            state = AcquisitionState.model_validate_json(payload)
             if state.plan_id != self.plan_id or state.plan_hash != self.plan_hash:
                 raise ValueError("journal plan identity mismatch")
             return state
@@ -161,6 +204,8 @@ class ProgressJournal:
                 stream.flush()
                 os.fsync(stream.fileno())
             os.replace(temporary, self.journal_path)
+            identity = self._identity(self.journal_path.stat())
+            self._known = (identity, payload) if identity is not None else None
             self.tx_persisted += 1
             self.journal_fsyncs += 1
             self.journal_bytes_written += len(payload)
@@ -175,17 +220,23 @@ class ProgressJournal:
                 "journal_persisted_writes": self.tx_persisted,
                 "journal_fsyncs": self.journal_fsyncs,
                 "journal_bytes_written": self.journal_bytes_written,
+                "journal_reads_elided": self.journal_reads_elided,
             }
 
     @contextmanager
     def transaction(self, *, persist: bool = True) -> Iterator[AcquisitionState]:
         with self._lock:
             self.tx_total += 1
-            self.journal_path.parent.mkdir(parents=True, exist_ok=True)
+            if not self.journal_path.parent.is_dir():
+                self.journal_path.parent.mkdir(parents=True, exist_ok=True)
             lock = self.journal_path.with_suffix(".lock")
-            ensure_plain_path(lock)
+            # One walk covers every shared ancestor plus the journal; the lock
+            # leaf is checked separately. Same checks as before, not repeated.
+            ensure_plain_path(self.journal_path)
+            if lock.is_symlink() or lock.is_junction():
+                raise ValueError(f"Artifact path contains a symlink/junction: {lock}")
             with FileLock(str(lock), timeout=10):
-                self.state = self._load()
+                self.state = self._load(checked=True)
                 if self.state.schema_version != 2:
                     raise ProgressCorruptionError(
                         "legacy journal accounting is unresolved; cannot resume"
@@ -281,13 +332,14 @@ class ProgressJournal:
         prefix_sha256: str | None = None,
     ) -> None:
         with self.transaction() as state:
-            fp = state.file_progress.setdefault(rel_path, FileProgress(file_path=rel_path))
-            fp.bytes_downloaded += bytes_added
-            fp.verified_prefix_bytes = fp.bytes_downloaded
-            fp.prefix_sha256 = prefix_sha256
-            fp.etag = etag or fp.etag
-            fp.total_expected = total_expected if total_expected is not None else fp.total_expected
-            fp.status = "downloading"
+            apply_file_progress(
+                state,
+                rel_path,
+                bytes_added,
+                etag,
+                total_expected,
+                prefix_sha256=prefix_sha256,
+            )
 
     def mark_file_completed(
         self,
