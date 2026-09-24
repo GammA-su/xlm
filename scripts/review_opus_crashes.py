@@ -260,6 +260,11 @@ def main() -> None:
                     assert final["accounting"]["deadline_at"] == account["deadline_at"]
                     assert final["requests_made"] >= state["requests_made"]
                     assert final["transferred_bytes"] >= len(payload)
+                    if phase == "publication":
+                        assert final["accounting"]["consumed"] == account["consumed"]
+                        assert final["accounting"]["occupancy"]["output"] == len(payload)
+                        assert not final["accounting"]["reservations"].get("output")
+                assert resumed.returncode == 0, (window, phase, "automatic recovery failed")
                 row = {
                     "window": window,
                     "phase": phase,

@@ -138,6 +138,8 @@ def exact(label: str) -> None:
                         "hashes": row["output_hashes"],
                         "receipt": receipt.model_dump(),
                         "consumed": journal.state.accounting.consumed,
+                        "occupancy": journal.state.accounting.occupancy,
+                        "reservations": journal.state.accounting.reservations,
                         "plan_hash": plan.compute_behavioral_hash(),
                         "selection_hash": plan.compute_selection_hash(),
                         "bytes": row["bytes"],

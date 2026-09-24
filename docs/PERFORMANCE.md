@@ -1,18 +1,37 @@
 # Offline performance measurements
 
-The [independent Opus review](implementation/reports/OPUS55-REVIEW.md) measures
+The [P32 recovery closeout](implementation/reports/P32-RECOVERY.md) adds durable
+publication intent and bounded, locked journal-orphan cleanup. All required
+crash matrices now recover automatically (44/44 early, 44/44 mature, 20/20
+selected), and all eight successful acquisitions remain exact against the
+corrected review candidate. Scratch admission now includes journal, diagnostic
+and replacement bytes from the first write. The report states the complete
+logical-byte contract. **Release integration remains blocked:** the final
+offline gate hit a native Windows worker crash during runtime-inventory
+fixture teardown; the recovery results do not override that failure.
+
+This correction has a substantial measured throughput cost. On the same G:
+16×64 MiB authored fixture, workers 1/8/16 changed from **143.581 / 227.321 /
+226.137 MB/s** to **91.263 / 125.916 / 29.326 MB/s**. The last point includes
+a large fsync stall and is retained. Full verification reads and control-file
+inspection occur under the journal lock; journal writes remain batched
+(315 versus 331), rather than returning to per-read persistence. These single
+observations are not a throughput ceiling or a performance win. Integrating
+the correctness fix entails this recorded cost; no further optimization was
+part of this task. See the [complete table](implementation/evidence/P32-RECOVERY/TABLES.md).
+
+The earlier [independent Opus review](implementation/reports/OPUS55-REVIEW.md) measured
 corrected durable leases on G: SATA SSD: up to 234.212 MB/s for 16×64 MiB
 whole files, 8.42–9.06 MB/s selected Parquet, and 109.834 s for the frozen 100k
 pipeline with exact comparator success. These are authored local measurements,
 with full worker tables and slow fsync observations retained. Larger reads add
 no established independent benefit after leases; retain ordinary 64 KiB reads.
-The original six commits require four correctness corrections. Publication
-crash reconciliation and complete scratch accounting remain open, so this
-review does not approve preprocessing freeze or replace the final acceptance
-gate. NumPy remains the first MinHash backend; Arrow is the exact fallback for
+The original six commits require the four review corrections plus the P32
+recovery corrections above; the historical review measurements alone do not
+approve preprocessing freeze or replace final acceptance. NumPy remains the first MinHash backend; Arrow is the exact fallback for
 eligible sets when NumPy is unavailable. No dependency install is needed for
 the declared Arrow fallback. See the report for exact cherry-pick conditions
-and the next focused recovery task.
+and historical recovery findings, now addressed in the closeout report.
 
 P29C adds exact cleaner improvements and an explicit bounded dynamic scheduling
 option. [P29C results](implementation/reports/P29C.md) record 24.4% less 100k

@@ -87,6 +87,10 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--child", type=Path)
     parser.add_argument("--phase", default="none")
+    parser.add_argument("--parallel-publication", action="store_true")
+    parser.add_argument(
+        "--output", type=Path, default=Path("artifacts/opus-review/selected-crashes")
+    )
     args = parser.parse_args()
     if args.child:
         child(args.child, args.phase)
@@ -94,7 +98,7 @@ def main() -> None:
     import pyarrow as pa
     import pyarrow.parquet as pq
 
-    root = Path("artifacts/opus-review/selected-crashes").resolve()
+    root = args.output.resolve()
     if root.drive != "G:":
         raise ValueError("G: only")
     root.mkdir(parents=True, exist_ok=False)
@@ -120,11 +124,16 @@ def main() -> None:
             ("rows.parquet", False),
             ("rows.parquet", True),
         ):
+            names = [name]
+            if args.parallel_publication:
+                duplicate = "second-" + name
+                AuthoredHandler.files[duplicate] = AuthoredHandler.files[name]
+                names.append(duplicate)
             plan = plan_for(
                 server.server_port,
-                [name],
+                names,
                 mode="selected_records",
-                row_ranges={name: (10, 30)},
+                row_ranges={source: (10, 30) for source in names},
                 projected_fields=["id", "text"] if projected else None,
                 limits=AcquisitionLimits(
                     max_transferred_bytes=16 * 1024**2,
@@ -133,7 +142,7 @@ def main() -> None:
                     max_output_disk_bytes=16 * 1024**2,
                     max_requests=100,
                     max_retries=0,
-                    max_workers=1,
+                    max_workers=len(names),
                     max_scanned_records=1000,
                     max_decompression_ratio=1000,
                     overall_deadline_seconds=120,
@@ -144,7 +153,12 @@ def main() -> None:
             (baseline / "plan.json").write_text(plan.model_dump_json())
             child(baseline, "none")
             expected = (baseline / "output/selected_records.jsonl").read_bytes()
-            for phase in ("scan", "staging_reserved", "staging_written", "settled", "publication"):
+            phases = (
+                ("publication",)
+                if args.parallel_publication
+                else ("scan", "staging_reserved", "staging_written", "settled", "publication")
+            )
+            for phase in phases:
                 case = root / f"{name}-{projected}-{phase}"
                 case.mkdir()
                 (case / "plan.json").write_text(plan.model_dump_json())
@@ -182,7 +196,12 @@ def main() -> None:
                 actual = output.read_bytes() if output.exists() else None
                 if restart.returncode == 0:
                     assert actual == expected
-                    assert len(actual.splitlines()) == 20
+                    assert len(actual.splitlines()) == 20 * len(names)
+                    if phase == "publication":
+                        assert final["accounting"]["consumed"] == account["consumed"]
+                        assert final["accounting"]["occupancy"]["output"] == len(expected)
+                        assert not final["accounting"]["reservations"].get("output")
+                assert restart.returncode == 0, (name, phase, "automatic recovery failed")
                 results.append(
                     {
                         "name": name,
@@ -194,6 +213,8 @@ def main() -> None:
                         "restart_exit": restart.returncode,
                         "valid_output_exists": actual == expected,
                         "expected_sha256": hashlib.sha256(expected).hexdigest(),
+                        "workers": len(names),
+                        "final_temp_bytes": final["accounting"]["occupancy"].get("temp", 0),
                     }
                 )
                 (root / "report.json").write_text(json.dumps(results, indent=2))

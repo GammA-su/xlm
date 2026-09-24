@@ -1,5 +1,28 @@
 # Implementation status
 
+> **P32 recovery closeout (2026-09-24): IMPLEMENTED / VERIFIED (scoped);
+> full acceptance FAILED, P32 completion and release integration BLOCKED.**
+> On `fix/p32-recovery-closeout`, based on corrected candidate `26c1238`:
+> durable publication intent reconciles whole and selected outputs exactly;
+> owned journal/diagnostic replacements are retired under FileLock and their
+> bytes are included in scratch admission, including the first journal write.
+> Final crash matrices: 44/44 early, 44/44 mature, 20/20 selected, plus 4/4
+> parallel selected publications; all eight successful acquisitions remain
+> byte/accounting exact. Focused: 190 passed / one skip; after initialization
+> correction, 85 passed / one skip. Final Tier A: 1,632 passed / two capability
+> skips; core 68 passes; exclusive 8 passes. Heavy worker died with a Windows
+> access violation during runtime-inventory fixture teardown after its test
+> body passed; that is a gate failure, not a pass. Scale: 8 passes; optional:
+> 57 passes. Six-leg total: **1,779 passed / 2 skipped / 1 failed**, covering
+> 1,782 distinct nodes. All raw evidence is in
+> [P32-RECOVERY](reports/P32-RECOVERY.md).
+> G: 1/8/16-worker throughput changed from 143.581/227.321/226.137 to
+> 91.263/125.916/29.326 MB/s; the final fsync outlier is retained. No further
+> optimization, installs, external network, push or merge. Next: diagnose the
+> preserved native worker crash using a focused reproducer before a new gate;
+> keep the recovery fixes and explicit throughput tradeoff. Earlier entries
+> below are historical.
+
 > **Independent Opus 5.5 review (2026-09-24): CORRECTED / PARTIALLY VERIFIED;
 > P32 completion BLOCKED.** Reviewed all six requested commits against green
 > `9765a00`. Four separate corrections remove stale journal caching, reserve
