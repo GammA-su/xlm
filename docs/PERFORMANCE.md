@@ -1,5 +1,22 @@
 # Offline performance measurements
 
+The [final P32 performance closeout](implementation/reports/P32-PERF-CLOSEOUT.md)
+uses the closed writer's incremental SHA, exact size and file identity to avoid
+two redundant payload reads during immediate publication. Recovery still fully
+rehashes; intent, atomic settlement, orphan/control accounting and every fsync
+remain. Eight exact acquisition comparisons, all 44/44/20/4 recovery matrices
+and the single final gate pass (1,800 tests passed, two capability skips).
+
+Across three G: repetitions per worker count, median whole-file throughput moves
+from **89.515 / 124.393 / 120.338** to **97.461 / 136.938 / 135.678 MB/s** at
+1/8/16 workers. One-worker median CPU falls 12.6%. Severe retained fsync stalls
+in the third after repetition make the aggregate three-run throughput worse;
+these medians are not a promise of uniformly faster wall time. All observations
+and profiles are retained. The frozen 100k comparator passes exactly at 126.885 s;
+its longer unchanged downstream stages are not attributed to acquisition.
+For the planned approximately 4 GB corpus, further acquisition tuning is not
+recommended before CUDA work. The pre-recovery rates below are not restored.
+
 The [P32 recovery closeout](implementation/reports/P32-RECOVERY.md) adds durable
 publication intent and bounded, locked journal-orphan cleanup. All required
 crash matrices now recover automatically (44/44 early, 44/44 mature, 20/20
@@ -13,15 +30,16 @@ the unsafe native timeout dumper and records the repaired acceptance results.
 That repair changes test infrastructure only; the acquisition cost below is
 unchanged.
 
-This correction has a substantial measured throughput cost. On the same G:
+Before that performance closeout, this correction had a substantial measured
+throughput cost. On the same G:
 16×64 MiB authored fixture, workers 1/8/16 changed from **143.581 / 227.321 /
 226.137 MB/s** to **91.263 / 125.916 / 29.326 MB/s**. The last point includes
 a large fsync stall and is retained. Full verification reads and control-file
 inspection occur under the journal lock; journal writes remain batched
 (315 versus 331), rather than returning to per-read persistence. These single
 observations are not a throughput ceiling or a performance win. Integrating
-the correctness fix entails this recorded cost; no further optimization was
-part of this task. See the [complete table](implementation/evidence/P32-RECOVERY/TABLES.md).
+the correctness fix retains the remaining durability/accounting costs described
+above. See the [historical table](implementation/evidence/P32-RECOVERY/TABLES.md).
 
 The earlier [independent Opus review](implementation/reports/OPUS55-REVIEW.md) measured
 corrected durable leases on G: SATA SSD: up to 234.212 MB/s for 16×64 MiB

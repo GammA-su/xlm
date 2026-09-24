@@ -1,5 +1,23 @@
 # Implementation status
 
+> **P32 final performance closeout (2026-09-24): CORRECTNESS-COMPLETE within
+> the declared offline scope; final six-leg gate PASSED.** Product `ce2bb32`
+> carries closed-writer SHA/size/file-ID evidence into immediate publication,
+> removing two redundant whole-payload reads while retaining full recovery
+> verification, durable intent, atomic settlement, all fsyncs and journal/control
+> authority checks. Exact acquisitions: 8/8; crash/restart matrices: 44/44 early,
+> 44/44 mature, 20/20 selected, 4/4 parallel. Final gate ran once: **1,800 passed /
+> two capability skips / zero failed**, preserving all 1,789 prior nodes and adding
+> 13 publication regressions. Repeated G: median throughput improves 8.9% / 10.1% /
+> 12.7% at 1/8/16 workers, but retained fsync stalls make the aggregate after-series
+> slower; this is a CPU/happy-path improvement, not uniform wall-time recovery.
+> The frozen 100k pipeline passes the exact comparator (126.885 s versus 109.834 s;
+> unchanged downstream timing is not attributed to this change). No external
+> network, installs, research training, push or merge. See
+> [P32-PERF-CLOSEOUT](reports/P32-PERF-CLOSEOUT.md) for all observations, safety
+> proof, limitations and final integration series. Next read-only command:
+> `git show --stat ce2bb32`.
+
 > **P32 heavy-worker crash closeout (2026-09-24): CORRECTNESS-COMPLETE
 > within the declared offline scope; final gate PASSED.** Based on recovery
 > candidate `fa4ff50`, repair `95ee6b3` replaces the unsafe native pytest timeout
