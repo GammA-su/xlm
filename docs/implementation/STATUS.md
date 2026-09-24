@@ -1,5 +1,23 @@
 # Implementation status
 
+> **Independent Opus 5.5 review (2026-09-24): CORRECTED / PARTIALLY VERIFIED;
+> P32 completion BLOCKED.** Reviewed all six requested commits against green
+> `9765a00`. Four separate corrections remove stale journal caching, reserve
+> skipped-row scans before parsing, guard locator splicing against mutation,
+> and establish durable empty-prefix ownership. Corrected product `f981464`:
+> 227 focused passes; Tier A 1,600 passes / one missing-compiler skip; 36 final
+> independent regressions pass. Whole-file crash matrices preserve accounting
+> and prefixes but recover only 40/44 cases; selected matrix recovers 16/20.
+> Publication deaths fail closed with valid files still present. Orphan atomic
+> journal files also leave a gap in the complete scratch-cap claim. G: maximum
+> observed durable acquisition 234.212 MB/s on larger files; selected Parquet
+> 8.42–9.06 MB/s; frozen 100k pipeline 109.834 s with exact comparator success.
+> Use corrected leases as the P32 implementation candidate, not as completed
+> recovery work. Full six-leg acceptance NOT RUN because review did not pass.
+> No network beyond authored localhost, installs, push or merge. See
+> [OPUS55-REVIEW](reports/OPUS55-REVIEW.md) for verdicts, commits, evidence and
+> the narrow next prompt. Earlier status entries below are historical.
+
 > **Artifact↔ledger crash reconciliation: IMPLEMENTED / VERIFIED (bounded
 > offline)** on `fix/artifact-ledger-reconciliation`. Strengthened
 > `rebuild_from_filesystem` (full-verifier authority, idempotent no-op

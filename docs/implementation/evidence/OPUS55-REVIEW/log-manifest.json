@@ -1,0 +1,41 @@
+{
+  "sha256": {
+    "focused.log": "fe1e41ab2284bf4981138b80e9189e23dbee4306446fd0ab6d0026ac1fdc46c2",
+    "tier-a.log": "38d7a3762080b3288cc043a83036ef6655314bcce640add58bc345284aab1023",
+    "review-final.log": "e416b747b32b754207fbcee0037cc1a278068451c4bc60fc0399a90294d9f293",
+    "skip-reason.log": "063315a09b401dd620723136dc86ff54fc00662c0feeaeb0b2b5556d1598767a",
+    "regressions-before.log": "c7d668aa5d4ce1ca162fb7dce93772b4999965a349b1d87e9df7b23adcafb863",
+    "equivalence-before.log": "58b69cf227e85e6e32080679e653a4cb7c59deb9e93d8885b4b7276f4c4da9a3",
+    "corrected.log": "413c3e164a660975802ee427d1490c939d8510ac250a1fcfcc4f107792fad8f6",
+    "crashes.log": "82b2ecfbe46ff931c54544fccb950f812c8c14e4fa5a35619c48cbfb6db1259f",
+    "crashes-corrected.log": "0bdb7d50a6d3648fbb226e06886d613d2f363a9464496620861614fb23c08f12",
+    "crashes-mature.log": "0bdb7d50a6d3648fbb226e06886d613d2f363a9464496620861614fb23c08f12",
+    "selected-crashes.log": "1b903407e05526c51efb7656d1844100b2b4b1037797e86c2f4b8aa179cc1a13",
+    "pipeline.log": "92d2e4afd946a1150740fa95a9df72d150eb5311c561847add09f814042ddf82",
+    "pipeline-exact.log": "156587b10a63269d3ca7be32c3fbe4e357dbc44417a2bed05b4bc6f3fec91d9d",
+    "tooling-mypy.log": "6217a75bf2822e3b5273c462ac7de88281e5276656c55895909d59be254f7c15",
+    "final-static.log": "90b7ce226a90c66a4f818abf58b43404d068d612d94ff29a995da907a571f22a"
+  },
+  "exit_files": {
+    "cpu-corrected": "0",
+    "cpu-green": "0",
+    "exact-green": "0",
+    "final-format": "0",
+    "final-mypy": "0",
+    "final-ruff": "0",
+    "focused": "0",
+    "pipeline-exact": "0",
+    "pipeline": "0",
+    "review-final": "0",
+    "selected-crashes": "0",
+    "selected-profile": "0",
+    "selected": "0",
+    "tier-a": "0",
+    "tooling-mypy": "0",
+    "whole-16-1048576": "0",
+    "whole-16-65536": "0",
+    "whole-16-8388608": "0",
+    "whole-64-65536": "0",
+    "whole-64-8388608": "0"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "source_commit": "1edacbd328d989aa44a5edd3d1af3ff4363ce8fe",
+  "sha256": {
+    "benchmark_systems.py": "207f6724ab546896bb6772617157e2ebaee3c5bde988d6b219950f6737218ce8",
+    "benchmark_pipeline.py": "927062d7c840646d70b9b4d4d42af5a3f1a998336bf02fe544579c8cc6b6a922",
+    "compare_pipeline.py": "3381ce335199e2964d749cf27c113d60da1e7988e97a35108d295c884aa3b830"
+  },
+  "adaptations": [
+    "lease read constant instead of absent P31 constructor option",
+    "whole-file ceiling raised only for separate 1 GiB control"
+  ]
+}

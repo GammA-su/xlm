@@ -1,5 +1,19 @@
 # Offline performance measurements
 
+The [independent Opus review](implementation/reports/OPUS55-REVIEW.md) measures
+corrected durable leases on G: SATA SSD: up to 234.212 MB/s for 16×64 MiB
+whole files, 8.42–9.06 MB/s selected Parquet, and 109.834 s for the frozen 100k
+pipeline with exact comparator success. These are authored local measurements,
+with full worker tables and slow fsync observations retained. Larger reads add
+no established independent benefit after leases; retain ordinary 64 KiB reads.
+The original six commits require four correctness corrections. Publication
+crash reconciliation and complete scratch accounting remain open, so this
+review does not approve preprocessing freeze or replace the final acceptance
+gate. NumPy remains the first MinHash backend; Arrow is the exact fallback for
+eligible sets when NumPy is unavailable. No dependency install is needed for
+the declared Arrow fallback. See the report for exact cherry-pick conditions
+and the next focused recovery task.
+
 P29C adds exact cleaner improvements and an explicit bounded dynamic scheduling
 option. [P29C results](implementation/reports/P29C.md) record 24.4% less 100k
 single-worker cleaning time on the frozen authored fixture. The same-setting
