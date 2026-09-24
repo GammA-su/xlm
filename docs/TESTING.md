@@ -77,6 +77,17 @@ worker verification always inventory actual installed bytes. Do not install or
 modify dependencies during a test session. Append `--fresh-runtime` to disable
 automatic queue fixture reuse; cache contract tests still exercise their subject.
 
+On the pinned Windows CPython 3.12.13 build, pytest timeout diagnostics use an
+owned Python thread instead of `faulthandler.dump_traceback_later`. The native
+timer reproducibly crashes while inspecting changing frames; see the
+[P32 crash diagnosis](implementation/reports/P32-HEAVY-CRASH.md). The configured
+`faulthandler_timeout` still emits bounded thread snapshots, including during
+fixture teardown. Fatal-crash handling remains enabled. Runtime verification
+still rehashes the full installed inventory; this change adds no identity cache.
+The diagnostic thread is cancelled and joined before its descriptor closes.
+Python snapshots require the GIL, so retain an external process watchdog for
+native hangs. Other interpreter versions use pytest's standard implementation.
+
 ## Final offline correctness acceptance
 
 All six commands are required: **A, core, exclusive core above, plus heavy,
@@ -88,11 +99,12 @@ these unchanged originals. Record each exit status; any failure,
 collection error, missing group, or worker crash fails aggregate acceptance.
 Report skips separately. Required unavailable capabilities block their certification.
 
-P30B's measured final run is **blocked**, including a Windows checkpoint rename
-failure in the grouped heavy queue campaign and a journal replacement failure in
-A. The grouped heavy command remains provisional until those failures are resolved
-and final acceptance is rerun; a passing focused rerun does not clear that record.
-See the P30B report before interpreting these commands as a certified release gate.
+The historical P30B gate recorded a Windows checkpoint rename failure in the
+grouped queue campaign and a journal replacement failure in A. Those records
+remain preserved. The latest P32 acceptance evidence is in the
+[heavy-crash closeout](implementation/reports/P32-HEAVY-CRASH.md), following the
+acquisition recovery corrections. A passing focused rerun alone never clears a
+failed full-gate record.
 
 ```powershell
 uv run --offline --locked --no-sync python -m pytest -q --strict-markers -m serial_heavy -n 4 --dist=loadgroup --max-worker-restart=0 --durations=30

@@ -6,9 +6,12 @@ crash matrices now recover automatically (44/44 early, 44/44 mature, 20/20
 selected), and all eight successful acquisitions remain exact against the
 corrected review candidate. Scratch admission now includes journal, diagnostic
 and replacement bytes from the first write. The report states the complete
-logical-byte contract. **Release integration remains blocked:** the final
-offline gate hit a native Windows worker crash during runtime-inventory
-fixture teardown; the recovery results do not override that failure.
+logical-byte contract. Its initial offline gate hit a native Windows worker
+crash during runtime-inventory fixture teardown. The
+[P32 diagnostic repair](implementation/reports/P32-HEAVY-CRASH.md) identifies
+the unsafe native timeout dumper and records the repaired acceptance results.
+That repair changes test infrastructure only; the acquisition cost below is
+unchanged.
 
 This correction has a substantial measured throughput cost. On the same G:
 16×64 MiB authored fixture, workers 1/8/16 changed from **143.581 / 227.321 /

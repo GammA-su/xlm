@@ -1,5 +1,25 @@
 # Implementation status
 
+> **P32 heavy-worker crash closeout (2026-09-24): CORRECTNESS-COMPLETE
+> within the declared offline scope; final gate PASSED.** Based on recovery
+> candidate `fa4ff50`, repair `95ee6b3` replaces the unsafe native pytest timeout
+> frame walker on pinned Windows CPython 3.12.13 with an owned, joined Python
+> diagnostic thread. Native dump/OS events identify an invalid code-pointer
+> read in `PyCode_Addr2Line`; a stdlib-only probe crashes 3/3 times without XLM,
+> whereas control and replacement probes each pass 3/3. No acquisition,
+> runtime-inventory, dependency or scientific behavior changes. Focused: 15
+> passes plus 7 final diagnostic passes; original group stress 5/5; standalone
+> heavy 7/7. One final six-leg gate: **1,787 passed / 2 capability skips /
+> 0 failed**, 1,789 distinct selected nodes; all legs exit 0. Ruff/format/mypy
+> pass. Missing compiler and symlink privilege remain uncertified. The corrected
+> P32 candidate is eligible for release integration within this scope; existing
+> acquisition throughput cost is unchanged. No external network, installs,
+> research training, push or merge. See
+> [P32-HEAVY-CRASH](reports/P32-HEAVY-CRASH.md) for native evidence and exact
+> commands. Next: `git show --stat 95ee6b3`, then review the certification
+> evidence before any separately authorized integration. Earlier entries are
+> historical; the original failed gate remains preserved.
+
 > **P32 recovery closeout (2026-09-24): IMPLEMENTED / VERIFIED (scoped);
 > full acceptance FAILED, P32 completion and release integration BLOCKED.**
 > On `fix/p32-recovery-closeout`, based on corrected candidate `26c1238`:
