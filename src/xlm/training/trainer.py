@@ -394,16 +394,16 @@ class Trainer:
             self.scaler.unscale_(self.optimizer)
 
         unique_params = self._get_unique_trainable_parameters()
-        for p in unique_params:
-            if p.grad is not None:
-                if torch.isnan(p.grad).any() or torch.isinf(p.grad).any():
-                    if self.scaler is not None:
-                        self._skip_scaler_step(f"Non-finite gradient at step {self.step}")
-                        return None
-                    self.batcher.rollback()
-                    raise NonFiniteGradientError(
-                        f"Non-finite gradient encountered in parameter at step {self.step}"
-                    )
+        from xlm.optimizers.clipping import gradients_are_finite
+
+        if not gradients_are_finite(unique_params):
+            if self.scaler is not None:
+                self._skip_scaler_step(f"Non-finite gradient at step {self.step}")
+                return None
+            self.batcher.rollback()
+            raise NonFiniteGradientError(
+                f"Non-finite gradient encountered in parameter at step {self.step}"
+            )
 
         # 5. Global gradient clipping over unique parameters
         grad_norm = clip_global_gradient_norm(unique_params, max_norm=self.gradient_clip_norm)
