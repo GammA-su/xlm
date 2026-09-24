@@ -315,9 +315,24 @@ def checkpoint_pause(trainer: Trainer, name: str) -> dict[str, Any]:
     save_tensor = manager._save_tensor
 
     def save(state: Any, path: Path) -> None:
+        before_copy = timings.get("d2h_storage_copy", 0.0)
         timed("serialize_" + path.stem, save_tensor)(state, path)
+        timings["d2h_" + path.stem] = timings.get("d2h_storage_copy", 0.0) - before_copy
+
+    class TimedHash:
+        def __init__(self, data: bytes = b"") -> None:
+            self.hasher = timed("sha256_cpu", hashlib.sha256)(data)
+
+        def update(self, data: bytes) -> None:
+            timed("sha256_cpu", self.hasher.update)(data)
+
+        def hexdigest(self) -> str:
+            return str(timed("sha256_cpu", self.hasher.hexdigest)())
 
     with ExitStack() as stack:
+        stack.enter_context(
+            patch.object(store_module, "hashlib", types.SimpleNamespace(sha256=TimedHash))
+        )
         for owner, attribute, label in (
             (torch.UntypedStorage, "cpu", "d2h_storage_copy"),
             (checkpoint_module, "serialize_optimizer_state", "optimizer_snapshot"),
@@ -331,15 +346,21 @@ def checkpoint_pause(trainer: Trainer, name: str) -> dict[str, Any]:
         stack.enter_context(patch.object(manager, "_save_tensor", save))
         torch.cuda.synchronize()
         begin = time.perf_counter()
-        trainer._save_checkpoint(f"{name}_final")
+        checkpoint = trainer._save_checkpoint(f"{name}_final")
         torch.cuda.synchronize()
         timings["total_pause"] = time.perf_counter() - begin
+    begin = time.perf_counter()
+    manager.store.verify_artifact(checkpoint)
+    timings["post_save_verification_outside_pause"] = time.perf_counter() - begin
     return timings
 
 
 def monitor(stop: threading.Event, rows: list[dict[str, Any]], start: float) -> None:
+    process = psutil.Process()
+    process.cpu_percent()
+    psutil.cpu_percent()
     while not stop.is_set():
-        rss = psutil.Process().memory_info().rss
+        rss = process.memory_info().rss
         if time.monotonic() - start > 900 or rss > 32 * 1024**3:
             os._exit(124)
         try:
@@ -349,7 +370,15 @@ def monitor(stop: threading.Event, rows: list[dict[str, Any]], start: float) -> 
         if owned_bytes > 8 * 1024**3:
             os._exit(125)
         try:
-            rows.append({"elapsed": time.monotonic() - start, "smi": smi(), "rss": rss})
+            rows.append(
+                {
+                    "elapsed": time.monotonic() - start,
+                    "smi": smi(),
+                    "rss": rss,
+                    "process_cpu_percent_one_core_100": process.cpu_percent(),
+                    "system_cpu_percent": psutil.cpu_percent(),
+                }
+            )
         except (OSError, subprocess.SubprocessError) as exc:
             rows.append({"telemetry_error": str(exc)})
         stop.wait(1.0)
@@ -398,7 +427,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         WarmupCosineScheduleConfig(**recipe["training"]["schedule"]),
         base_lr=recipe["optimizer"]["lr"],
     )
-    schedule.apply_lr_to_optimizer(optimizer, counter_value=0)
+    if args.initial_lr_policy == "counter_zero":
+        schedule.apply_lr_to_optimizer(optimizer, counter_value=0)
     source = batcher(args.microbatch, args.global_targets)
     if args.transfer != "pageable":
         fetch = source.next_step_microbatches
@@ -450,7 +480,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     ),
                     position_ids=first.position_ids.cuda(),
                 )
-                .logits.detach()
+                .logits[:1]
+                .detach()
                 .float()
                 .cpu()
             )
@@ -491,6 +522,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "torch": torch.__version__,
             "numpy": np.__version__,
             "initial_parameters_sha256": initial_digest.hexdigest(),
+            "initial_logits_rows": 1 if args.save_state else 0,
             "optimizer_recipe": recipe["optimizer"],
             "schedule_recipe": recipe["training"]["schedule"],
             "float32_matmul_precision": torch.get_float32_matmul_precision(),
@@ -605,6 +637,9 @@ def main() -> None:
     parser.add_argument("--save-state", action="store_true")
     parser.add_argument("--reference-gradients", action="store_true")
     parser.add_argument("--reference-rmsnorm", action="store_true")
+    parser.add_argument(
+        "--initial-lr-policy", choices=["optimizer", "counter_zero"], default="optimizer"
+    )
     parser.add_argument(
         "--transfer", choices=["pageable", "pinned", "nonblocking"], default="pageable"
     )

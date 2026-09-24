@@ -85,6 +85,23 @@ def test_finite_elements_with_overflowed_norm_still_fail_clipping() -> None:
 
 
 @pytest.mark.cuda
+def test_mixed_device_auxiliary_gradient_guard_and_clipping() -> None:
+    if not torch.cuda.is_available():
+        pytest.skip("CUDA unavailable")
+    cpu = nn.Parameter(torch.ones(2))
+    gpu = nn.Parameter(torch.ones(3, device="cuda"))
+    cpu.grad = torch.tensor([3.0, 4.0])
+    gpu.grad = torch.zeros_like(gpu)
+    assert gradients_are_finite([gpu, cpu])
+    assert clip_global_gradient_norm([gpu, cpu, gpu], 1.0) == 5.0
+    cpu.grad[0] = float("nan")
+    assert not gradients_are_finite([gpu, cpu])
+    cpu.grad.zero_()
+    gpu.grad[0] = float("inf")
+    assert not gradients_are_finite([cpu, gpu])
+
+
+@pytest.mark.cuda
 def test_actual_50m_three_updates_are_exact(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -131,13 +148,18 @@ def test_actual_50m_three_updates_are_exact(
             precision="bf16_fp32_master",
             max_valid_targets=3072,
         )
-        trainer.schedule.apply_lr_to_optimizer(optimizer, 0)
         metrics = []
         gradient_digests: list[str] = []
+        applied_rates: list[float] = []
 
         def record_gradients(
-            opt: Any, args: Any, kwargs: Any, digests: list[str] = gradient_digests
+            opt: Any,
+            args: Any,
+            kwargs: Any,
+            digests: list[str] = gradient_digests,
+            rates: list[float] = applied_rates,
         ) -> None:
+            rates.append(float(opt.param_groups[0]["lr"]))
             digest = hashlib.sha256()
             for group in opt.param_groups:
                 for parameter in group["params"]:
@@ -177,6 +199,7 @@ def test_actual_50m_three_updates_are_exact(
                 gradient_digests,
             )
         )
+        assert applied_rates[0] == 0.001
         del trainer, optimizer, model, objective
         torch.cuda.empty_cache()
     assert trajectories[0][0] == trajectories[1][0]

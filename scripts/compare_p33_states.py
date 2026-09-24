@@ -11,7 +11,7 @@ import torch
 from benchmark_p33 import EVIDENCE, LOCAL, write_json
 
 
-def compare(reference_name: str, names: list[str]) -> dict[str, Any]:
+def compare(reference_name: str, names: list[str], *, exact: bool = False) -> dict[str, Any]:
     reference = torch.load(LOCAL / f"{reference_name}.pt", map_location="cpu", weights_only=True)
     reference_report = json.loads((EVIDENCE / f"{reference_name}.json").read_text())
     rows = []
@@ -22,6 +22,10 @@ def compare(reference_name: str, names: list[str]) -> dict[str, Any]:
         assert report["fixture"] == reference_report["fixture"]
         for field in ("global_targets", "steps", "warmup", "model"):
             assert report["args"][field] == reference_report["args"][field]
+        # Older exploratory reports explicitly used the counter-zero policy.
+        assert report["args"].get("initial_lr_policy", "counter_zero") == reference_report[
+            "args"
+        ].get("initial_lr_policy", "counter_zero")
         row: dict[str, Any] = {"candidate": name, "status": "VERIFIED"}
         max_parameter_error = 0.0
         try:
@@ -30,7 +34,9 @@ def compare(reference_name: str, names: list[str]) -> dict[str, Any]:
                 max_parameter_error = max(
                     max_parameter_error, float((actual - expected).abs().max())
                 )
-                torch.testing.assert_close(actual, expected, atol=2e-5, rtol=2e-4)
+                torch.testing.assert_close(
+                    actual, expected, atol=0 if exact else 2e-5, rtol=0 if exact else 2e-4
+                )
             expected_logits, actual_logits = (
                 reference["initial_logits"],
                 candidate["initial_logits"],
@@ -40,16 +46,30 @@ def compare(reference_name: str, names: list[str]) -> dict[str, Any]:
                 expected_logits[:common_rows],
                 actual_logits[:common_rows],
             )
-            torch.testing.assert_close(actual_logits, expected_logits, atol=0.032, rtol=0.003)
+            torch.testing.assert_close(
+                actual_logits,
+                expected_logits,
+                atol=0 if exact else 0.032,
+                rtol=0 if exact else 0.003,
+            )
             row["max_initial_logit_error"] = float((actual_logits - expected_logits).abs().max())
             loss_errors = []
             for actual, expected in zip(
                 report["metrics"], reference_report["metrics"], strict=True
             ):
-                for key in ("valid_targets", "committed_valid_targets", "learning_rate", "step"):
+                for key in (
+                    "valid_targets",
+                    "committed_valid_targets",
+                    "processed_valid_targets",
+                    "learning_rate",
+                    "step",
+                ):
                     assert actual[key] == expected[key]
                 error = abs(actual["loss"] - expected["loss"])
-                assert error <= 0.032 + 0.003 * abs(expected["loss"])
+                assert error <= (0 if exact else 0.032 + 0.003 * abs(expected["loss"]))
+                if exact:
+                    assert actual["grad_norm"] == expected["grad_norm"]
+                    assert actual["model_ce_loss"] == expected["model_ce_loss"]
                 loss_errors.append(error)
             row["loss_absolute_errors"] = loss_errors
         except AssertionError as exc:
@@ -58,7 +78,7 @@ def compare(reference_name: str, names: list[str]) -> dict[str, Any]:
         rows.append(row)
     return {
         "reference": reference_name,
-        "criteria": "P33 predeclared short-trajectory bounds",
+        "criteria": "bit exact" if exact else "P33 predeclared short-trajectory bounds",
         "rows": rows,
         "status": "VERIFIED" if all(row["status"] == "VERIFIED" for row in rows) else "FAILED",
     }
@@ -68,12 +88,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("reference")
     parser.add_argument("candidates", nargs="+")
+    parser.add_argument("--exact", action="store_true")
     args = parser.parse_args()
     if not all(name.replace("_", "").isalnum() for name in [args.reference, *args.candidates]):
         parser.error("Only alphanumeric and underscore diagnostic names are accepted")
     torch.set_num_threads(1)
-    result = compare(args.reference, args.candidates)
-    case_id = hashlib.sha256(" ".join(args.candidates).encode()).hexdigest()[:12]
+    result = compare(args.reference, args.candidates, exact=args.exact)
+    identity = " ".join(args.candidates) + (" exact" if args.exact else "")
+    case_id = hashlib.sha256(identity.encode()).hexdigest()[:12]
     output = EVIDENCE / f"equivalence_{args.reference}_{case_id}.json"
     if output.exists():
         raise FileExistsError(output)
