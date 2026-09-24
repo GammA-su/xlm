@@ -138,6 +138,10 @@ class MinHasher:
         vectorized = _signature_vectorized(hashed, self._params)
         if vectorized is not None:
             return vectorized
+        if len(hashed) >= ARROW_KERNEL_MIN_SHINGLES:
+            arrow = _signature_arrow(hashed, self._params)
+            if arrow is not None:
+                return arrow
         return _signature_python(hashed, self._params)
 
     def band_keys(self, signature: list[int]) -> list[str]:
@@ -229,6 +233,109 @@ def _signature_vectorized(hashed: set[int], params: list[tuple[int, int]]) -> li
     total = _mersenne_fold(_mersenne_fold(folded_hi + reduced) + bvals)
     rows: list[int] = total.min(axis=1).tolist()
     return rows
+
+
+#: Below this many shingles the per-call overhead of Arrow kernels exceeds the
+#: pure-Python reduction (measured crossover between 16 and 36 shingles).
+ARROW_KERNEL_MIN_SHINGLES = 32
+#: Shingles per Arrow pass: bounds every temporary to k * chunk uint64 values
+#: and the cached constants to five such arrays per process.
+ARROW_KERNEL_CHUNK_SHINGLES = 2048
+
+_ARROW_STATE: dict[tuple[tuple[int, int], ...], Any] = {}
+
+
+def _arrow_state(params: list[tuple[int, int]]) -> Any:
+    """Cached per-parameter constants, tiled shingle-major for zero-copy slicing."""
+    key = tuple(params)
+    state = _ARROW_STATE.get(key)
+    if state is None:
+        import pyarrow as pa
+        import pyarrow.compute as pc
+
+        u64 = pa.uint64()
+        rows = ARROW_KERNEL_CHUNK_SHINGLES
+
+        def tiled(values: list[int]) -> Any:
+            return pa.concat_arrays([pa.array(values, u64)] * rows)
+
+        state = (
+            tiled([a & _MASK31 for a, _ in params]),
+            tiled([a >> 31 for a, _ in params]),
+            tiled([2 * (a >> 31) for a, _ in params]),
+            tiled([b for _, b in params]),
+            pc.divide(pa.array(range(len(params) * rows), u64), pa.scalar(len(params), u64)),
+        )
+        _ARROW_STATE.clear()
+        _ARROW_STATE[key] = state
+    return state
+
+
+def _signature_arrow(hashed: set[int], params: list[tuple[int, int]]) -> list[int] | None:
+    """Exact MinHash reduction with ``pyarrow.compute`` (a declared dependency).
+
+    Each hash is first reduced in Python to ``g = h mod P < 2**61`` (valid since
+    ``(a*h + b) % P == (a*g + b) % P``). Elements are laid out shingle-major
+    (``row * k + permutation``) with per-permutation constants as zero-copy
+    slices of cached tiles. With ``a = a1*2**31 + a0`` and ``g = g1*2**31 + g0``
+    (a1, g1 < 2**30; a0, g0 < 2**31), using ``2**62 = 2`` and ``2**61 = 1 mod P``:
+
+    - ``part_a = (2*a1) * g1 < 2**61``;
+    - ``mid = a1*g0 + a0*g1 < 2**62`` and ``mid * 2**31 = 2*s1 + s0*2**31 (mod P)``
+      with ``s1 = mid >> 31``, ``s0 = mid & (2**31 - 1)``, so
+      ``part_b < 2**32 + 2**62``;
+    - ``part_c = a0*g0 < 2**62``.
+
+    Every sum is below 2**64 before each Mersenne fold (whose output is in
+    ``[0, P)``), so no uint64 operation wraps and every value equals the
+    reference ``(a*h + b) % P``. The per-permutation minimum is a log2 tree of
+    element-wise minima over row halves; shingles are processed in bounded
+    chunks whose minima combine exactly. Used when NumPy is unavailable; returns
+    None when pyarrow cannot be imported.
+    """
+    try:
+        import pyarrow as pa
+        import pyarrow.compute as pc
+    except ImportError:
+        return None
+    u64 = pa.uint64()
+    prime, mask31 = pa.scalar(_MERSENNE_PRIME, u64), pa.scalar(_MASK31, u64)
+    shift61, shift31 = pa.scalar(61, u64), pa.scalar(31, u64)
+    two31 = pa.scalar(1 << 31, u64)
+
+    def fold(values: Any) -> Any:
+        folded = pc.add(pc.bit_wise_and(values, prime), pc.shift_right(values, shift61))
+        return pc.if_else(pc.greater_equal(folded, prime), pc.subtract(folded, prime), folded)
+
+    tile_a0, tile_a1, tile_a1x2, tile_b, expand = _arrow_state(params)
+    permutations = len(params)
+    reduced = [value % _MERSENNE_PRIME for value in hashed]
+    best: list[int] | None = None
+    for start in range(0, len(reduced), ARROW_KERNEL_CHUNK_SHINGLES):
+        chunk = pa.array(reduced[start : start + ARROW_KERNEL_CHUNK_SHINGLES], u64)
+        rows = len(chunk)
+        size = rows * permutations
+        index = expand.slice(0, size)
+        g1 = pc.take(pc.shift_right(chunk, shift31), index)
+        g0 = pc.take(pc.bit_wise_and(chunk, mask31), index)
+        a0, a1 = tile_a0.slice(0, size), tile_a1.slice(0, size)
+        part_a = pc.multiply(tile_a1x2.slice(0, size), g1)
+        mid = pc.add(pc.multiply(a1, g0), pc.multiply(a0, g1))
+        high = pc.shift_right(mid, shift31)
+        part_b = pc.add(pc.add(high, high), pc.multiply(pc.bit_wise_and(mid, mask31), two31))
+        total = fold(pc.add(part_a, part_b))
+        total = fold(pc.add(total, pc.multiply(a0, g0)))
+        total = fold(pc.add(total, tile_b.slice(0, size)))
+        while rows > 1:
+            half = rows // 2
+            width = half * permutations
+            merged = pc.min_element_wise(total.slice(0, width), total.slice(width, width))
+            if rows % 2:
+                merged = pa.concat_arrays([merged, total.slice(2 * width, permutations)])
+            total, rows = merged, half + rows % 2
+        minima = total.to_pylist()
+        best = minima if best is None else [min(x, y) for x, y in zip(best, minima, strict=True)]
+    return best
 
 
 def estimated_jaccard(left: list[int], right: list[int]) -> float:
