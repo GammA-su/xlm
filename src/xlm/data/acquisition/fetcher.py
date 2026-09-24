@@ -616,6 +616,19 @@ class BoundedFetcher:
                             with partial.open("rb") as prior:
                                 while chunk := prior.read(65536):
                                     digest.update(chunk)
+                        if fp is None:
+                            # Establish ownership before creating the partial. A
+                            # process death before the first window checkpoint
+                            # must resume from a verified empty prefix, while
+                            # pre-existing unowned partials still fail above.
+                            with self.journal.transaction() as state:
+                                apply_file_progress(
+                                    state,
+                                    rel_path,
+                                    0,
+                                    new_etag,
+                                    prefix_sha256=digest.hexdigest(),
+                                )
                         with partial.open("ab") as output:
                             offset = self._stream_body(
                                 rel_path, response, output, digest, offset, remaining, new_etag
