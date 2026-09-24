@@ -283,12 +283,15 @@ def test_cli_maintenance_dry_run_lists_scratch(
     assert (scratch / "big.json").is_file(), "refused removal must delete nothing"
 
 
-def test_clear_declared_outputs_removes_only_owned_paths(tmp_path: Path) -> None:
-    """Rerun clearing removes declared files/dirs, unlinks (never follows)
-    symlinks, skips missing paths, and refuses anything outside the output
-    root or the prepare state itself."""
+def test_retire_restore_sweep_replacement_lifecycle(tmp_path: Path) -> None:
+    """Retirement renames (never deletes); restore brings back exact bytes;
+    success sweeps every slot for the stage."""
     from xlm.prepare.config import PrepareStageSpec
-    from xlm.prepare.runner import _clear_declared_outputs
+    from xlm.prepare.runner import (
+        _restore_retired_outputs,
+        _retire_declared_outputs,
+        _sweep_retired_slots,
+    )
 
     out = tmp_path / "out"
     out.mkdir()
@@ -306,32 +309,60 @@ def test_clear_declared_outputs_removes_only_owned_paths(tmp_path: Path) -> None
     keep = out / "keep.json"
     keep.write_text("{}", encoding="utf-8")
 
-    _clear_declared_outputs(spec, variables, tmp_path, out)
-    assert not (shard_dir).exists()
+    retired = _retire_declared_outputs(spec, variables, tmp_path, out)
+    assert len(retired) == 2
+    assert not shard_dir.exists()
     assert not (out / "report.json").exists()
-    assert keep.is_file(), "unrelated outputs must survive clearing"
-    # Idempotent on missing paths.
-    _clear_declared_outputs(spec, variables, tmp_path, out)
+    assert keep.is_file(), "unrelated outputs must survive retirement"
+    slots = [slot for _, slot in retired]
+    assert all(slot.is_dir() or slot.is_file() for slot in slots)
+    assert (slots[0] / "tokens.bin").read_bytes() == b"payloads"
 
-    outside = PrepareStageSpec(
-        stage_id="evil", kind="run", command=["x"], outputs=[str(tmp_path / "other.json")]
-    )
-    (tmp_path / "other.json").write_text("{}", encoding="utf-8")
-    with pytest.raises(PrepareRunError, match="outside the output root"):
-        _clear_declared_outputs(outside, variables, tmp_path, out)
-    assert (tmp_path / "other.json").is_file(), "refused clearing must delete nothing"
+    # Failed attempt debris at the live location does not block restore.
+    shard_dir.mkdir(parents=True)
+    (shard_dir / "partial.bin").write_bytes(b"failed-attempt debris")
+    _restore_retired_outputs(retired)
+    assert (shard_dir / "tokens.bin").read_bytes() == b"payloads"
+    assert not (shard_dir / "partial.bin").exists()
+    assert (out / "report.json").read_text(encoding="utf-8") == "{}"
 
-    whole_root = PrepareStageSpec(
-        stage_id="greedy", kind="run", command=["x"], outputs=["{output_root}"]
-    )
-    with pytest.raises(PrepareRunError, match="whole output root"):
-        _clear_declared_outputs(whole_root, variables, tmp_path, out)
+    # Success sweeps every slot for the stage, including stale ones.
+    retired_again = _retire_declared_outputs(spec, variables, tmp_path, out)
+    assert len(retired_again) == 2
+    _sweep_retired_slots(out, "s")
+    assert list(out.glob(".retired-*")) == []
+    # Missing live outputs retire to nothing and restore is a no-op.
+    assert _retire_declared_outputs(spec, variables, tmp_path, out) == []
+    _restore_retired_outputs([])
 
-    state_like = PrepareStageSpec(
-        stage_id="greedy2",
+
+def test_retirement_ignores_unowned_paths(tmp_path: Path) -> None:
+    """External declared outputs are left entirely alone: not retired,
+    not rejected, never deleted. State, lock, and root are likewise safe."""
+    from xlm.prepare.config import PrepareStageSpec
+    from xlm.prepare.runner import _retire_declared_outputs
+
+    out = tmp_path / "out"
+    out.mkdir()
+    variables = {"output_root": str(out)}
+    external = tmp_path / "acquisition" / "plan" / "raw" / "rows.jsonl"
+    external.parent.mkdir(parents=True)
+    external.write_text("[]", encoding="utf-8")
+    spec = PrepareStageSpec(
+        stage_id="fetch",
         kind="run",
         command=["x"],
-        outputs=["{output_root}/prepare_state.json"],
+        outputs=[
+            str(external),
+            "{output_root}",
+            "{output_root}/prepare_state.json",
+            "{output_root}/.prepare.lock",
+            "{output_root}/owned.json",
+        ],
     )
-    with pytest.raises(PrepareRunError, match="prepare state"):
-        _clear_declared_outputs(state_like, variables, tmp_path, out)
+    (out / "owned.json").write_text("{}", encoding="utf-8")
+    (out / "prepare_state.json").write_text("{}", encoding="utf-8")
+    retired = _retire_declared_outputs(spec, variables, tmp_path, out)
+    assert external.is_file(), "external outputs must survive retirement"
+    assert [live for live, _ in retired] == [out / "owned.json"]
+    assert (out / "prepare_state.json").is_file()

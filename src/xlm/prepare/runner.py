@@ -119,64 +119,113 @@ def _write_state(
     return path
 
 
-def _clear_declared_outputs(
+def _retired_prefix(stage_id: str) -> str:
+    """Private, filesystem-safe backup namespace for one stage's retirements."""
+    safe = "".join(c if c.isalnum() or c in ("-", "_") else "_" for c in stage_id)[:32]
+    digest = hashlib.sha256(stage_id.encode("utf-8")).hexdigest()[:16]
+    return f".retired-{safe}-{digest}"
+
+
+def _owned_output_path(
+    spec: PrepareStageSpec,
+    raw: str,
+    variables: dict[str, str],
+    config_dir: Path,
+    output_root: Path,
+) -> Path | None:
+    """Resolve a declared output if prepare owns its replacement lifecycle.
+
+    Only paths strictly inside the output root (excluding the root itself
+    and the prepare state/lock files) are prepare-owned. Anything else —
+    nested acquisition outputs under home, repo files, absolute locations —
+    belongs to its producing subsystem, which remains responsible for its
+    own publication semantics; prepare leaves such paths entirely alone
+    (never cleared, retired, or rejected).
+    """
+    resolved = resolve_variables(raw, variables, where=f"stage '{spec.stage_id}' outputs")
+    path = Path(resolved)
+    if not path.is_absolute():
+        path = config_dir / path
+    normalized = comparable_resolved(path)
+    root = comparable_resolved(output_root)
+    if normalized == root or root not in normalized.parents:
+        return None
+    if normalized.parent == root and path.name in (STATE_FILENAME, ".prepare.lock"):
+        return None
+    return path
+
+
+def _retire_declared_outputs(
     spec: PrepareStageSpec,
     variables: dict[str, str],
     config_dir: Path,
     output_root: Path,
-) -> None:
-    """Remove a stage's declared outputs before it (re)runs.
+) -> list[tuple[Path, Path]]:
+    """Move prepare-owned declared outputs aside before a stage (re)runs.
 
     Immutable writers (token shards publish manifest-last and refuse to
     write into a directory that already holds payloads) cannot rebuild in
     place, so a legitimate rerun — a forced rebuild or a lineage-stale
     rerun after an upstream stage reran — must start from a clean slate.
-    Reuse is untouched: this runs only for stages about to execute, never
-    for reused, blocked, or check-only stages (which declare no outputs).
+    Reuse is untouched: this runs only for stages about to execute.
 
-    Clearing is fail-closed: every declared path is validated before
-    anything is removed. Paths must resolve inside the output root (a
-    stage can never delete repo, home, or absolute-elsewhere files), must
-    not be the prepare state or lock file, and symlinks are unlinked,
-    never followed. A corrupt artifact at a declared path is therefore
-    replaced only by that path owner's own rerun — writers still fail
-    closed on anything unexpected found mid-run, and post-run
-    verification still decides succeeded vs partial.
+    Retirement is a rename, never a byte copy and never a deletion: each
+    existing live path moves to a private per-attempt slot that the
+    success path sweeps and the failure path restores. Missing live paths
+    create no slot. Paths outside prepare ownership are skipped silently.
     """
-    targets: list[Path] = []
-    root = comparable_resolved(output_root)
+    retired: list[tuple[Path, Path]] = []
+    prefix = _retired_prefix(spec.stage_id)
     for raw in spec.outputs:
-        resolved = resolve_variables(raw, variables, where=f"stage '{spec.stage_id}' outputs")
-        path = Path(resolved)
-        if not path.is_absolute():
-            path = config_dir / path
-        if comparable_resolved(path).parent == root and path.name in (
-            STATE_FILENAME,
-            ".prepare.lock",
+        live = _owned_output_path(spec, raw, variables, config_dir, output_root)
+        if live is None:
+            continue
+        if live.is_symlink() or not live.exists():
+            # Links are left for the stage writer's own historical semantics;
+            # missing paths need no retirement.
+            continue
+        slot = output_root / f"{prefix}-{uuid.uuid4().hex}"
+        ensure_plain_path(output_root)
+        live.rename(slot)
+        retired.append((live, slot))
+    return retired
+
+
+def _restore_retired_outputs(retired: list[tuple[Path, Path]]) -> None:
+    """Put the most recent retirement back after a failed rerun attempt.
+
+    Removes attempt debris at the live location first (failed-attempt
+    partials must not block the rename-back), then moves each slot home in
+    reverse order. Raises PrepareRunError if the previous success cannot
+    be restored, so a lost backup is loud, never silent.
+    """
+    for live, slot in reversed(retired):
+        if not slot.exists() and not slot.is_symlink():
+            raise PrepareRunError(f"cannot restore retired output; backup missing: {slot}")
+        if live.is_symlink() or live.exists():
+            if live.is_dir() and not live.is_symlink():
+                ensure_plain_path(live)
+                shutil.rmtree(live)
+            else:
+                live.unlink(missing_ok=True)
+        slot.rename(live)
+
+
+def _sweep_retired_slots(output_root: Path, stage_id: str) -> None:
+    """Remove every retirement slot for a stage after its verified success."""
+    prefix = _retired_prefix(stage_id)
+    try:
+        entries = list(output_root.iterdir())
+    except OSError:
+        return
+    for entry in entries:
+        if entry.name.startswith(prefix + "-") and (
+            entry.is_dir() or entry.is_file() or entry.is_symlink()
         ):
-            raise PrepareRunError(
-                f"stage '{spec.stage_id}' must not declare prepare state as an output: {raw}"
-            )
-        if comparable_resolved(path) == root:
-            raise PrepareRunError(
-                f"stage '{spec.stage_id}' must not declare the whole output root "
-                f"as an output: {raw}"
-            )
-        if root not in comparable_resolved(path).parents:
-            raise PrepareRunError(
-                f"stage '{spec.stage_id}' declares an output outside the output root, "
-                f"refusing to clear: {raw}"
-            )
-        targets.append(path)
-    for path in targets:
-        if path.is_symlink():
-            path.unlink()
-        elif path.is_dir():
-            ensure_plain_path(path)
-            shutil.rmtree(path)
-        elif path.is_file():
-            ensure_plain_path(path)
-            path.unlink(missing_ok=True)
+            if entry.is_dir() and not entry.is_symlink():
+                shutil.rmtree(entry, ignore_errors=True)
+            else:
+                entry.unlink(missing_ok=True)
 
 
 def _copy_bounded(
@@ -358,9 +407,12 @@ def _run_prepare(
             continue
 
         action = "forced" if force else ("resumed" if previous else "ran")
-        # A stage about to (re)run owns its declared outputs: clear them so
-        # immutable writers can rebuild. Reused stages never reach here.
-        _clear_declared_outputs(spec, variables, config_file.parent, output_root)
+        # A stage about to (re)run retires its prepare-owned declared
+        # outputs aside (rename, never delete), so immutable writers get a
+        # clean destination. Reused stages never reach here. A failed attempt
+        # restores the previous success below; a verified success sweeps the
+        # retired copies after its record is complete.
+        retired = _retire_declared_outputs(spec, variables, config_file.parent, output_root)
         try:
             if spec.kind == "local_copy":
                 destinations = [
@@ -384,13 +436,18 @@ def _run_prepare(
                 [Path(resolve_variables(p, variables, where="stage outputs")) for p in spec.outputs]
             )
         except (PrepareRunError, ValueError, RuntimeError, OSError) as exc:
+            restore_note = ""
+            try:
+                _restore_retired_outputs(retired)
+            except PrepareRunError as restore_exc:
+                restore_note = f"; retired-output restore also failed: {restore_exc}"
             record = StageRecord(
                 stage_id=spec.stage_id,
                 action=action,
                 status="failed",
                 inputs_hash=inputs_hash,
                 attempts=attempts,
-                note=str(exc)[:500],
+                note=(str(exc) + restore_note)[:500],
                 updated_at=datetime.now(UTC).isoformat(),
             )
             records[spec.stage_id] = record
@@ -425,6 +482,8 @@ def _run_prepare(
         persist()
         if status != "succeeded":
             raise PrepareRunError(f"stage '{spec.stage_id}' outputs incomplete after run")
+        # Verified success supersedes every retired copy of this stage.
+        _sweep_retired_slots(output_root, spec.stage_id)
 
     return result
 
