@@ -38,6 +38,8 @@ class Evidence:
         self.reports: list[dict[str, Any]] = []
         self.worker_collections: dict[str, list[str]] = {}
         self.peak = 0
+        self.peak_processes = 0
+        self.cpu_samples: dict[tuple[int, float], float] = {}
         self.stop = threading.Event()
         self.monitor = threading.Thread(target=self.sample, daemon=True)
         self.monitor.start()
@@ -46,12 +48,20 @@ class Evidence:
         parent = psutil.Process()
         while not self.stop.is_set():
             total = 0
+            count = 0
             for process in [parent, *parent.children(recursive=True)]:
                 try:
                     total += process.memory_info().rss
+                    cpu = process.cpu_times()
+                    key = (process.pid, process.create_time())
+                    self.cpu_samples[key] = max(
+                        self.cpu_samples.get(key, 0.0), cpu.user + cpu.system
+                    )
+                    count += 1
                 except (psutil.NoSuchProcess, psutil.AccessDenied):
                     continue
             self.peak = max(self.peak, total)
+            self.peak_processes = max(self.peak_processes, count)
             self.stop.wait(0.5)
 
     @pytest.hookimpl(tryfirst=True)
@@ -82,6 +92,7 @@ class Evidence:
                 "outcome": report.outcome,
                 "seconds": report.duration,
                 "worker": getattr(report, "worker_id", None),
+                "properties": list(report.user_properties),
             }
         )
 
@@ -101,6 +112,9 @@ class Evidence:
             "collection_seconds": getattr(self, "collection_seconds", None),
             "peak_tree_rss_bytes": self.peak,
             "rss_sample_seconds": 0.5,
+            "sampled_cpu_seconds_lower_bound": sum(self.cpu_samples.values()),
+            "observed_unique_processes": len(self.cpu_samples),
+            "peak_observed_processes": self.peak_processes,
             "collected": self.collected,
             "selected": getattr(self, "selected", []),
             "reports": self.reports,
