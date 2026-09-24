@@ -1,0 +1,803 @@
+{
+  "schema_version": 1,
+  "nodes": {
+    "tests/test_acquisition_bounds.py::test_fresh_process_reservations_and_killed_owner_remain_spent": {
+      "tier": "serial_core",
+      "group": "p30b-owned-recovery",
+      "exclusive": false,
+      "reason": "Private journals/locks and owned children only; loopback ports allocated with port 0 where used. Timing assertion remains exclusive."
+    },
+    "tests/test_acquisition_bounds.py::test_killed_download_resumes_in_a_fresh_process_without_new_allowance": {
+      "tier": "serial_core",
+      "group": "p30b-owned-recovery",
+      "exclusive": false,
+      "reason": "Private journals/locks and owned children only; loopback ports allocated with port 0 where used. Timing assertion remains exclusive."
+    },
+    "tests/test_acquisition_bounds.py::test_selected_private_attempt_resumes_in_new_process": {
+      "tier": "serial_core",
+      "group": "p30b-owned-recovery",
+      "exclusive": false,
+      "reason": "Private journals/locks and owned children only; loopback ports allocated with port 0 where used. Timing assertion remains exclusive."
+    },
+    "tests/test_artifact_identity.py::test_fresh_process_publishers_have_one_permitted_outcome[False]": {
+      "tier": "serial_core",
+      "group": "p30b-owned-recovery",
+      "exclusive": false,
+      "reason": "Private journals/locks and owned children only; loopback ports allocated with port 0 where used. Timing assertion remains exclusive."
+    },
+    "tests/test_artifact_identity.py::test_fresh_process_publishers_have_one_permitted_outcome[True]": {
+      "tier": "serial_core",
+      "group": "p30b-owned-recovery",
+      "exclusive": false,
+      "reason": "Private journals/locks and owned children only; loopback ports allocated with port 0 where used. Timing assertion remains exclusive."
+    },
+    "tests/test_cleaning_scheduler_v2.py::test_dynamic_and_static_shard_manifests_exact": {
+      "tier": "serial_core",
+      "group": "p30b-process-pools",
+      "exclusive": false,
+      "reason": "Bounded real process pools; private input/output paths; no shared pool. Group caps pool fan-out."
+    },
+    "tests/test_cleaning_throughput.py::test_cli_clean_legacy_and_sharded": {
+      "tier": "serial_core",
+      "group": "p30b-process-pools",
+      "exclusive": false,
+      "reason": "Bounded real process pools; private input/output paths; no shared pool. Group caps pool fan-out."
+    },
+    "tests/test_cleaning_throughput.py::test_cli_clean_manifest_input_and_errors": {
+      "tier": "serial_core",
+      "group": "p30b-process-pools",
+      "exclusive": false,
+      "reason": "Bounded real process pools; private input/output paths; no shared pool. Group caps pool fan-out."
+    },
+    "tests/test_cleaning_throughput.py::test_max_docs_matches_reference": {
+      "tier": "serial_core",
+      "group": "p30b-process-pools",
+      "exclusive": false,
+      "reason": "Bounded real process pools; private input/output paths; no shared pool. Group caps pool fan-out."
+    },
+    "tests/test_cleaning_throughput.py::test_quarantine_ceiling_aborts_without_publication": {
+      "tier": "serial_core",
+      "group": "p30b-process-pools",
+      "exclusive": false,
+      "reason": "Bounded real process pools; private input/output paths; no shared pool. Group caps pool fan-out."
+    },
+    "tests/test_cleaning_throughput.py::test_worker_failure_aborts_without_publication": {
+      "tier": "serial_core",
+      "group": "p30b-process-pools",
+      "exclusive": false,
+      "reason": "Bounded real process pools; private input/output paths; no shared pool. Group caps pool fan-out."
+    },
+    "tests/test_cleaning_throughput.py::test_workers_1_2_4_agree": {
+      "tier": "serial_core",
+      "group": "p30b-process-pools",
+      "exclusive": false,
+      "reason": "Bounded real process pools; private input/output paths; no shared pool. Group caps pool fan-out."
+    },
+    "tests/test_cli_eval_gen.py::test_cli_demo_complete_vertical_slice_subprocess": {
+      "tier": "serial_core",
+      "group": "p30b-cli-eval-gen",
+      "exclusive": false,
+      "reason": "Private per-test output/home (demo uses TemporaryDirectory); subprocess boundaries retained; in-process monkeypatches are worker-local."
+    },
+    "tests/test_cli_eval_gen.py::test_cli_evaluate_and_generate_subprocess": {
+      "tier": "serial_core",
+      "group": "p30b-cli-eval-gen",
+      "exclusive": false,
+      "reason": "Private per-test output/home (demo uses TemporaryDirectory); subprocess boundaries retained; in-process monkeypatches are worker-local."
+    },
+    "tests/test_cli_train_demo.py::test_cli_demo_subprocess": {
+      "tier": "serial_core",
+      "group": "p30b-cli-train-demo",
+      "exclusive": false,
+      "reason": "Private per-test output/home (demo uses TemporaryDirectory); subprocess boundaries retained; in-process monkeypatches are worker-local."
+    },
+    "tests/test_cli_train_demo.py::test_cli_train_and_resume_subprocess": {
+      "tier": "serial_core",
+      "group": "p30b-cli-train-demo",
+      "exclusive": false,
+      "reason": "Private per-test output/home (demo uses TemporaryDirectory); subprocess boundaries retained; in-process monkeypatches are worker-local."
+    },
+    "tests/test_configurable_training.py::test_public_cli_executes_registered_objective": {
+      "tier": "serial_core",
+      "group": "p30b-configurable-training",
+      "exclusive": false,
+      "reason": "Private per-test output/home (demo uses TemporaryDirectory); subprocess boundaries retained; in-process monkeypatches are worker-local."
+    },
+    "tests/test_configurable_workflow.py::test_public_two_source_prepare_direct_queue_and_resume[False]": {
+      "tier": "serial_heavy",
+      "group": "p30b-two-source-baseline",
+      "exclusive": false,
+      "reason": "Private authored tree, plugins, source documents, preparation, direct/queue/resume homes; captured A and mutated B both private."
+    },
+    "tests/test_configurable_workflow.py::test_public_two_source_prepare_direct_queue_and_resume[True]": {
+      "tier": "serial_heavy",
+      "group": "p30b-two-source-auxiliary",
+      "exclusive": false,
+      "reason": "Private authored tree, plugins, source documents, preparation, direct/queue/resume homes; captured A and mutated B both private."
+    },
+    "tests/test_continuation_p05.py::test_cpu_fresh_process_continuation_parity": {
+      "tier": "serial_core",
+      "group": "p30b-continuation-p05",
+      "exclusive": false,
+      "reason": "Private per-test output/home (demo uses TemporaryDirectory); subprocess boundaries retained; in-process monkeypatches are worker-local."
+    },
+    "tests/test_dedup_small_oracles.py::test_small_lexical_equivalence[workers-layouts]": {
+      "tier": "serial_core",
+      "group": "p30b-process-pools",
+      "exclusive": false,
+      "reason": "Bounded real process pools; private input/output paths; no shared pool. Group caps pool fan-out."
+    },
+    "tests/test_dedup_throughput.py::test_cli_dedup_legacy_and_sharded": {
+      "tier": "serial_core",
+      "group": "p30b-process-pools",
+      "exclusive": false,
+      "reason": "Bounded real process pools; private input/output paths; no shared pool. Group caps pool fan-out."
+    },
+    "tests/test_dedup_throughput.py::test_cli_dedup_manifest_input_and_errors": {
+      "tier": "serial_core",
+      "group": "p30b-process-pools",
+      "exclusive": false,
+      "reason": "Bounded real process pools; private input/output paths; no shared pool. Group caps pool fan-out."
+    },
+    "tests/test_dedup_throughput.py::test_worker_failure_aborts_without_publication": {
+      "tier": "serial_core",
+      "group": "p30b-process-pools",
+      "exclusive": false,
+      "reason": "Bounded real process pools; private input/output paths; no shared pool. Group caps pool fan-out."
+    },
+    "tests/test_final_acceptance.py::test_cli_resume_reconstructs_real_settings_and_exact_nonmultiple_budget": {
+      "tier": "serial_heavy",
+      "group": "p30b-final-acceptance",
+      "exclusive": false,
+      "reason": "Private per-test output/home (demo uses TemporaryDirectory); subprocess boundaries retained; in-process monkeypatches are worker-local."
+    },
+    "tests/test_frozen_execution.py::test_actual_environment_mismatch_fails_in_real_worker": {
+      "tier": "serial_core",
+      "group": "p30b-frozen-admission",
+      "exclusive": false,
+      "reason": "Private snapshot copies/queues/ledgers; monkeypatches confined to worker process and undone; actual environment/package tests bypass identity reuse. Keep all immutable frozen_seed consumers together; mutable copies remain private."
+    },
+    "tests/test_frozen_execution.py::test_authority_and_recomputed_envelope_fields_are_checked": {
+      "tier": "serial_core",
+      "group": "p30b-frozen-admission",
+      "exclusive": false,
+      "reason": "Private snapshot copies/queues/ledgers; monkeypatches confined to worker process and undone; actual environment/package tests bypass identity reuse. Keep all immutable frozen_seed consumers together; mutable copies remain private."
+    },
+    "tests/test_frozen_execution.py::test_changed_tokenizer_and_real_shard_are_rejected": {
+      "tier": "serial_core",
+      "group": "p30b-frozen-admission",
+      "exclusive": false,
+      "reason": "Private snapshot copies/queues/ledgers; monkeypatches confined to worker process and undone; actual environment/package tests bypass identity reuse. Keep all immutable frozen_seed consumers together; mutable copies remain private."
+    },
+    "tests/test_frozen_execution.py::test_frozen_seed_copies_are_private": {
+      "tier": "serial_core",
+      "group": "p30b-frozen-admission",
+      "exclusive": false,
+      "reason": "Private snapshot copies/queues/ledgers; monkeypatches confined to worker process and undone; actual environment/package tests bypass identity reuse. Keep all immutable frozen_seed consumers together; mutable copies remain private."
+    },
+    "tests/test_frozen_execution.py::test_independent_persisted_bindings_refuse_before_worker": {
+      "tier": "serial_core",
+      "group": "p30b-frozen-admission",
+      "exclusive": false,
+      "reason": "Private snapshot copies/queues/ledgers; monkeypatches confined to worker process and undone; actual environment/package tests bypass identity reuse. Keep all immutable frozen_seed consumers together; mutable copies remain private."
+    },
+    "tests/test_frozen_execution.py::test_intact_a_executes_after_live_b_and_import_override": {
+      "tier": "serial_core",
+      "group": "p30b-frozen-workers",
+      "exclusive": false,
+      "reason": "Private snapshot copies/queues/ledgers; monkeypatches confined to worker process and undone; actual environment/package tests bypass identity reuse. Custom authored trainer captures are private and do not consume the shared seed."
+    },
+    "tests/test_frozen_execution.py::test_public_queue_and_diagnostic_receipt_keep_separate_provenance": {
+      "tier": "serial_core",
+      "group": "p30b-frozen-provenance",
+      "exclusive": false,
+      "reason": "Private snapshot copies/queues/ledgers; monkeypatches confined to worker process and undone; actual environment/package tests bypass identity reuse. Independent real queue/diagnostic homes; no shared-seed dependency."
+    },
+    "tests/test_frozen_execution.py::test_real_frozen_worker_trains_and_publishes": {
+      "tier": "serial_core",
+      "group": "p30b-frozen-workers",
+      "exclusive": false,
+      "reason": "Private snapshot copies/queues/ledgers; monkeypatches confined to worker process and undone; actual environment/package tests bypass identity reuse. Custom authored trainer captures are private and do not consume the shared seed."
+    },
+    "tests/test_frozen_execution.py::test_real_worker_output_bound_and_terminal_failure": {
+      "tier": "serial_core",
+      "group": "p30b-frozen-workers",
+      "exclusive": false,
+      "reason": "Private snapshot copies/queues/ledgers; monkeypatches confined to worker process and undone; actual environment/package tests bypass identity reuse. Custom authored trainer captures are private and do not consume the shared seed."
+    },
+    "tests/test_frozen_execution.py::test_snapshot_damage_rejects_before_worker[extra]": {
+      "tier": "serial_core",
+      "group": "p30b-frozen-admission",
+      "exclusive": false,
+      "reason": "Private snapshot copies/queues/ledgers; monkeypatches confined to worker process and undone; actual environment/package tests bypass identity reuse. Keep all immutable frozen_seed consumers together; mutable copies remain private."
+    },
+    "tests/test_frozen_execution.py::test_snapshot_damage_rejects_before_worker[missing]": {
+      "tier": "serial_core",
+      "group": "p30b-frozen-admission",
+      "exclusive": false,
+      "reason": "Private snapshot copies/queues/ledgers; monkeypatches confined to worker process and undone; actual environment/package tests bypass identity reuse. Keep all immutable frozen_seed consumers together; mutable copies remain private."
+    },
+    "tests/test_frozen_execution.py::test_snapshot_damage_rejects_before_worker[tamper]": {
+      "tier": "serial_core",
+      "group": "p30b-frozen-admission",
+      "exclusive": false,
+      "reason": "Private snapshot copies/queues/ledgers; monkeypatches confined to worker process and undone; actual environment/package tests bypass identity reuse. Keep all immutable frozen_seed consumers together; mutable copies remain private."
+    },
+    "tests/test_frozen_execution.py::test_worker_rejects_cli_override_outside_frozen_envelope": {
+      "tier": "serial_core",
+      "group": "p30b-frozen-admission",
+      "exclusive": false,
+      "reason": "Private snapshot copies/queues/ledgers; monkeypatches confined to worker process and undone; actual environment/package tests bypass identity reuse. Keep all immutable frozen_seed consumers together; mutable copies remain private."
+    },
+    "tests/test_frozen_recovery.py::test_real_crash_preserves_committed_boundary_on_retry": {
+      "tier": "serial_core",
+      "group": "p30b-owned-recovery",
+      "exclusive": false,
+      "reason": "Private journals/locks and owned children only; loopback ports allocated with port 0 where used. Timing assertion remains exclusive."
+    },
+    "tests/test_offline_workflow.py::test_offline_workflow_from_clean_environment": {
+      "tier": "serial_heavy",
+      "group": "p30b-offline-workflow",
+      "exclusive": false,
+      "reason": "Private explicit home and work/output tree; repository inputs read-only; fresh CLI processes retained."
+    },
+    "tests/test_offline_workflow.py::test_prepare_restart_reuses_verified_acquisition": {
+      "tier": "serial_core",
+      "group": "p30b-prepare-contracts",
+      "exclusive": false,
+      "reason": "Private explicit home and work/output tree; repository inputs read-only; fresh CLI processes retained."
+    },
+    "tests/test_parallel_tokens.py::test_worker_count_and_assembly_bytes_exact": {
+      "tier": "serial_core",
+      "group": "p30b-process-pools",
+      "exclusive": false,
+      "reason": "Bounded real process pools; private input/output paths; no shared pool. Group caps pool fan-out."
+    },
+    "tests/test_prepare.py::test_failed_stage_stops_with_reason_and_state": {
+      "tier": "serial_core",
+      "group": "p30b-prepare-contracts",
+      "exclusive": false,
+      "reason": "Private home, output root, stage state and subprocess accounting; read-only authored source fixtures."
+    },
+    "tests/test_prepare.py::test_full_toy_run_reuses_on_repeat": {
+      "tier": "serial_heavy",
+      "group": "p30b-prepare-contracts",
+      "exclusive": false,
+      "reason": "Private home, output root, stage state and subprocess accounting; read-only authored source fixtures."
+    },
+    "tests/test_prepare.py::test_partial_outputs_resume_without_redo": {
+      "tier": "serial_heavy",
+      "group": "p30b-prepare-contracts",
+      "exclusive": false,
+      "reason": "Private home, output root, stage state and subprocess accounting; read-only authored source fixtures."
+    },
+    "tests/test_prepare_bounds.py::test_child_output_accounting_covers_write_orders[import os; [(os.write(1,b'A'*512), os.write(2,b'B'*512)) for _ in range(16)]]": {
+      "tier": "serial_core",
+      "group": "p30b-owned-recovery",
+      "exclusive": false,
+      "reason": "Private journals/locks and owned children only; loopback ports allocated with port 0 where used. Timing assertion remains exclusive."
+    },
+    "tests/test_prepare_bounds.py::test_child_output_accounting_covers_write_orders[import os; os.write(1,b'A'*8192); os.write(2,b'B'*8192)]": {
+      "tier": "serial_core",
+      "group": "p30b-owned-recovery",
+      "exclusive": false,
+      "reason": "Private journals/locks and owned children only; loopback ports allocated with port 0 where used. Timing assertion remains exclusive."
+    },
+    "tests/test_prepare_bounds.py::test_child_output_accounting_covers_write_orders[import os; os.write(1,b'A'*8192)]": {
+      "tier": "serial_core",
+      "group": "p30b-owned-recovery",
+      "exclusive": false,
+      "reason": "Private journals/locks and owned children only; loopback ports allocated with port 0 where used. Timing assertion remains exclusive."
+    },
+    "tests/test_prepare_bounds.py::test_child_output_accounting_covers_write_orders[import os; os.write(2,b'B'*8192); os.write(1,b'A'*8192)]": {
+      "tier": "serial_core",
+      "group": "p30b-owned-recovery",
+      "exclusive": false,
+      "reason": "Private journals/locks and owned children only; loopback ports allocated with port 0 where used. Timing assertion remains exclusive."
+    },
+    "tests/test_prepare_bounds.py::test_child_output_categorizes_every_returned_byte_under_tiny_allowance": {
+      "tier": "serial_core",
+      "group": "p30b-owned-recovery",
+      "exclusive": false,
+      "reason": "Private journals/locks and owned children only; loopback ports allocated with port 0 where used. Timing assertion remains exclusive."
+    },
+    "tests/test_prepare_bounds.py::test_child_output_tiny_allowance_over_real_pipes": {
+      "tier": "serial_core",
+      "group": "p30b-owned-recovery",
+      "exclusive": false,
+      "reason": "Private journals/locks and owned children only; loopback ports allocated with port 0 where used. Timing assertion remains exclusive."
+    },
+    "tests/test_prepare_bounds.py::test_child_stdout_and_stderr_are_bounded_and_accounted": {
+      "tier": "serial_core",
+      "group": "p30b-owned-recovery",
+      "exclusive": false,
+      "reason": "Private journals/locks and owned children only; loopback ports allocated with port 0 where used. Timing assertion remains exclusive."
+    },
+    "tests/test_prepare_bounds.py::test_timed_out_child_and_descendant_are_stopped": {
+      "tier": "serial_core",
+      "group": "p30b-owned-recovery",
+      "exclusive": true,
+      "reason": "Private journals/locks and owned children only; loopback ports allocated with port 0 where used. Timing assertion remains exclusive."
+    },
+    "tests/test_queue.py::test_cancel_stops_a_queued_job_and_a_running_job": {
+      "tier": "serial_core",
+      "group": "p30b-queue-contracts",
+      "exclusive": false,
+      "reason": "Private tree/home/SQLite/lease files per test; real worker processes and cancellation thread are owned and joined."
+    },
+    "tests/test_queue.py::test_changed_live_tree_preserves_frozen_run": {
+      "tier": "serial_core",
+      "group": "p30b-queue-contracts",
+      "exclusive": false,
+      "reason": "Private tree/home/SQLite/lease files per test; real worker processes and cancellation thread are owned and joined."
+    },
+    "tests/test_queue.py::test_cpu_environment_refuses_cuda_job_without_execution": {
+      "tier": "serial_core",
+      "group": "p30b-queue-contracts",
+      "exclusive": false,
+      "reason": "Private tree/home/SQLite/lease files per test; real worker processes and cancellation thread are owned and joined."
+    },
+    "tests/test_queue.py::test_crash_recovery_requeues_once_when_retries_remain": {
+      "tier": "serial_core",
+      "group": "p30b-queue-contracts",
+      "exclusive": false,
+      "reason": "Private tree/home/SQLite/lease files per test; real worker processes and cancellation thread are owned and joined."
+    },
+    "tests/test_queue.py::test_crash_without_retries_fails_loudly": {
+      "tier": "serial_core",
+      "group": "p30b-queue-contracts",
+      "exclusive": false,
+      "reason": "Private tree/home/SQLite/lease files per test; real worker processes and cancellation thread are owned and joined."
+    },
+    "tests/test_queue.py::test_failed_jobs_keep_evidence_and_stay_terminal": {
+      "tier": "serial_core",
+      "group": "p30b-queue-contracts",
+      "exclusive": false,
+      "reason": "Private tree/home/SQLite/lease files per test; real worker processes and cancellation thread are owned and joined."
+    },
+    "tests/test_queue.py::test_status_lists_jobs_with_attempts": {
+      "tier": "serial_core",
+      "group": "p30b-queue-contracts",
+      "exclusive": false,
+      "reason": "Private tree/home/SQLite/lease files per test; real worker processes and cancellation thread are owned and joined."
+    },
+    "tests/test_queue.py::test_submit_allows_explicit_duplicates": {
+      "tier": "serial_core",
+      "group": "p30b-queue-contracts",
+      "exclusive": false,
+      "reason": "Private tree/home/SQLite/lease files per test; real worker processes and cancellation thread are owned and joined."
+    },
+    "tests/test_queue.py::test_submit_deduplicates_identical_plans": {
+      "tier": "serial_core",
+      "group": "p30b-queue-contracts",
+      "exclusive": false,
+      "reason": "Private tree/home/SQLite/lease files per test; real worker processes and cancellation thread are owned and joined."
+    },
+    "tests/test_queue.py::test_submit_refuses_blocked_plans_and_missing_snapshots": {
+      "tier": "serial_core",
+      "group": "p30b-queue-contracts",
+      "exclusive": false,
+      "reason": "Private tree/home/SQLite/lease files per test; real worker processes and cancellation thread are owned and joined."
+    },
+    "tests/test_queue.py::test_toy_campaign_runs_sequentially_to_success": {
+      "tier": "serial_heavy",
+      "group": "p30b-queue-campaign",
+      "exclusive": false,
+      "reason": "Private tree/home/SQLite/lease files per test; real worker processes and cancellation thread are owned and joined."
+    },
+    "tests/test_reports.py::test_cli_runs_list_empty_and_populated": {
+      "tier": "serial_core",
+      "group": "p30b-queue-contracts",
+      "exclusive": false,
+      "reason": "Private tree/home/SQLite/lease files per test; real worker processes and cancellation thread are owned and joined."
+    },
+    "tests/test_sharded_datasets.py::test_corrupt_shard_blocks_manifest": {
+      "tier": "serial_core",
+      "group": "p30b-owned-recovery",
+      "exclusive": false,
+      "reason": "Private journals/locks and owned children only; loopback ports allocated with port 0 where used. Timing assertion remains exclusive."
+    },
+    "tests/test_sharded_datasets.py::test_crash_after_rolls_before_manifest_rerun_identical": {
+      "tier": "serial_core",
+      "group": "p30b-owned-recovery",
+      "exclusive": false,
+      "reason": "Private journals/locks and owned children only; loopback ports allocated with port 0 where used. Timing assertion remains exclusive."
+    },
+    "tests/test_sharded_datasets.py::test_crash_mid_shard_leaves_no_manifest": {
+      "tier": "serial_core",
+      "group": "p30b-owned-recovery",
+      "exclusive": false,
+      "reason": "Private journals/locks and owned children only; loopback ports allocated with port 0 where used. Timing assertion remains exclusive."
+    },
+    "tests/test_runtime_fixture.py::test_cached_freeze_equals_fresh_inventory_and_plan": {
+      "tier": "serial_core",
+      "group": "p30b-queue-contracts",
+      "exclusive": false,
+      "reason": "Immutable runtime seed only; private plan/queue/files, original live inventory used for comparison and every explicit site."
+    },
+    "tests/test_runtime_fixture.py::test_runtime_seed_returns_private_nested_values": {
+      "tier": "serial_core",
+      "group": "p30b-queue-contracts",
+      "exclusive": false,
+      "reason": "Immutable runtime seed only; private plan/queue/files, original live inventory used for comparison and every explicit site."
+    },
+    "tests/test_runtime_fixture.py::test_changed_capture_input_bypasses_seed[uv.lock]": {
+      "tier": "serial_core",
+      "group": "p30b-queue-contracts",
+      "exclusive": false,
+      "reason": "Immutable runtime seed only; private plan/queue/files, original live inventory used for comparison and every explicit site."
+    },
+    "tests/test_runtime_fixture.py::test_changed_capture_input_bypasses_seed[pyproject.toml]": {
+      "tier": "serial_core",
+      "group": "p30b-queue-contracts",
+      "exclusive": false,
+      "reason": "Immutable runtime seed only; private plan/queue/files, original live inventory used for comparison and every explicit site."
+    },
+    "tests/test_runtime_fixture.py::test_changed_capture_input_bypasses_seed[.python-version]": {
+      "tier": "serial_core",
+      "group": "p30b-queue-contracts",
+      "exclusive": false,
+      "reason": "Immutable runtime seed only; private plan/queue/files, original live inventory used for comparison and every explicit site."
+    },
+    "tests/test_runtime_fixture.py::test_explicit_authored_site_is_always_inventoried": {
+      "tier": "serial_core",
+      "group": "p30b-queue-contracts",
+      "exclusive": false,
+      "reason": "Immutable runtime seed only; private plan/queue/files, original live inventory used for comparison and every explicit site."
+    },
+    "tests/test_runtime_fixture.py::test_queue_order_and_cancellation_survive_reopening": {
+      "tier": "serial_core",
+      "group": "p30b-queue-contracts",
+      "exclusive": false,
+      "reason": "Immutable runtime seed only; private plan/queue/files, original live inventory used for comparison and every explicit site."
+    },
+    "tests/test_dedup_throughput.py::test_kernel_matches_reference_when_numpy_present": {
+      "tier": "optional",
+      "group": "p30b-optional-declared-api",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_a_changed_checkpoint_changes_the_raw_identity": {
+      "tier": "optional",
+      "group": "p30b-optional-declared-api",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_a_changed_prompt_changes_the_raw_identity": {
+      "tier": "optional",
+      "group": "p30b-optional-declared-api",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_a_changed_runtime_limit_changes_both_identities": {
+      "tier": "optional",
+      "group": "p30b-optional-declared-api",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_a_lost_declared_id_is_an_error_not_a_fallback": {
+      "tier": "optional",
+      "group": "p30b-optional-declared-api",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_a_missing_item_in_the_artifact_is_refused_before_execution": {
+      "tier": "optional",
+      "group": "p30b-optional-declared-api",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_a_narrower_declared_scope_is_complete_only_within_itself": {
+      "tier": "optional",
+      "group": "p30b-optional-declared-api",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_a_relabelling_keeps_the_raw_identity_but_invalidates_the_aggregate": {
+      "tier": "optional",
+      "group": "p30b-optional-declared-api",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_all_four_tasks_under_a_limit_do_not_produce_an_index": {
+      "tier": "optional",
+      "group": "p30b-optional-declared-api",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_binding_refuses_a_few_shot_task": {
+      "tier": "optional",
+      "group": "p30b-optional-declared-api",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_binding_refuses_an_unsupported_task_shape": {
+      "tier": "optional",
+      "group": "p30b-optional-declared-api",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_binding_rewrites_only_loader_keys": {
+      "tier": "optional",
+      "group": "p30b-optional-declared-api",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_cli_declared_run_publishes_a_labelled_index": {
+      "tier": "optional",
+      "group": "p30b-optional-test_cli_declared_run_publishes_a_labelled_index",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_cli_declared_run_under_a_limit_withholds_the_index": {
+      "tier": "optional",
+      "group": "p30b-optional-test_cli_declared_run_under_a_limit_withholds_the_index",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_cli_refuses_to_mix_declared_inputs_with_task_overrides": {
+      "tier": "optional",
+      "group": "p30b-optional-test_cli_refuses_to_mix_declared_inputs_with_task_overrides",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_cli_requires_a_checkpoint_to_evaluate": {
+      "tier": "optional",
+      "group": "p30b-optional-test_cli_requires_a_checkpoint_to_evaluate",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_cli_verify_inputs_only_needs_no_checkpoint": {
+      "tier": "optional",
+      "group": "p30b-optional-test_cli_verify_inputs_only_needs_no_checkpoint",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_cli_verify_inputs_only_reports_a_bad_manifest": {
+      "tier": "optional",
+      "group": "p30b-optional-test_cli_verify_inputs_only_reports_a_bad_manifest",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_complete_declared_scope_publishes_a_labelled_index": {
+      "tier": "optional",
+      "group": "p30b-optional-declared-api",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_complete_fixture_scope_is_never_research_evidence": {
+      "tier": "optional",
+      "group": "p30b-optional-declared-api",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_declared_ids_survive_preprocessing": {
+      "tier": "optional",
+      "group": "p30b-optional-declared-api",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_every_declared_item_is_accounted_for_by_identity": {
+      "tier": "optional",
+      "group": "p30b-optional-declared-api",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_identical_request_reuses_the_cached_aggregate": {
+      "tier": "optional",
+      "group": "p30b-optional-declared-api",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_legacy_evidence_without_coverage_stays_unverified": {
+      "tier": "optional",
+      "group": "p30b-optional-declared-api",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_official_definitions_resolve_their_inherited_configuration": {
+      "tier": "optional",
+      "group": "p30b-optional-declared-api",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_official_formatting_is_applied_to_authored_records": {
+      "tier": "optional",
+      "group": "p30b-optional-declared-api",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_pinned_remote_revisions_remain_blocked_on_the_undeclared_route": {
+      "tier": "optional",
+      "group": "p30b-optional-declared-api",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_receipt_broken_locator_chain_is_refused": {
+      "tier": "optional",
+      "group": "p30b-optional-declared-api",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_receipt_changed_derived_input_is_refused": {
+      "tier": "optional",
+      "group": "p30b-optional-declared-api",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_receipt_corrupt_is_refused": {
+      "tier": "optional",
+      "group": "p30b-optional-declared-api",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_receipt_derived_locator_chain_verifies": {
+      "tier": "optional",
+      "group": "p30b-optional-declared-api",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_receipt_exact_lineage_verifies": {
+      "tier": "optional",
+      "group": "p30b-optional-declared-api",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_receipt_missing_is_refused": {
+      "tier": "optional",
+      "group": "p30b-optional-declared-api",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_receipt_tampered_digest_is_refused": {
+      "tier": "optional",
+      "group": "p30b-optional-declared-api",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_receipt_unrelated_substitution_is_refused": {
+      "tier": "optional",
+      "group": "p30b-optional-declared-api",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_receipt_unresolvable_without_store_root_is_refused": {
+      "tier": "optional",
+      "group": "p30b-optional-declared-api",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_receipt_verify_inputs_only_reports_verified_receipts": {
+      "tier": "optional",
+      "group": "p30b-optional-test_receipt_verify_inputs_only_reports_verified_receipts",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_resolve_metric_handles_the_installed_key_shape": {
+      "tier": "optional",
+      "group": "p30b-optional-declared-api",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_results_are_stable_under_input_ordering": {
+      "tier": "optional",
+      "group": "p30b-optional-declared-api",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_declared_inputs.py::test_the_undeclared_fixture_route_withholds_the_index": {
+      "tier": "optional",
+      "group": "p30b-optional-declared-api",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_eval_suites.py::test_installed_harness_version_matches_the_pin_when_present": {
+      "tier": "optional",
+      "group": "p30b-optional-declared-api",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_harness_adapter.py::test_batch_scoring_is_invariant_to_ordering": {
+      "tier": "optional",
+      "group": "p30b-optional-harness",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_harness_adapter.py::test_bounded_run_records_the_limit_and_withholds_the_index": {
+      "tier": "optional",
+      "group": "p30b-optional-harness",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_harness_adapter.py::test_branch_state_resets_between_requests": {
+      "tier": "optional",
+      "group": "p30b-optional-harness",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_harness_adapter.py::test_evidence_cache_reuses_and_recomputes_on_identity_change": {
+      "tier": "optional",
+      "group": "p30b-optional-harness",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_harness_adapter.py::test_generate_until_is_deterministic_and_stops_on_until": {
+      "tier": "optional",
+      "group": "p30b-optional-harness",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_harness_adapter.py::test_harness_backend_registration_uses_the_public_registry": {
+      "tier": "optional",
+      "group": "p30b-optional-harness",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_harness_adapter.py::test_harness_fixture_task_matches_native_acc_and_acc_norm": {
+      "tier": "optional",
+      "group": "p30b-optional-harness",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_harness_adapter.py::test_harness_loglikelihood_equals_native_scoring_for_every_pair": {
+      "tier": "optional",
+      "group": "p30b-optional-harness",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_harness_adapter.py::test_long_example_error_policy_raises_while_rolling_covers_every_target": {
+      "tier": "optional",
+      "group": "p30b-optional-harness",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_harness_adapter.py::test_missing_tasks_prevent_an_aggregate_from_partial_evidence": {
+      "tier": "optional",
+      "group": "p30b-optional-harness",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_harness_adapter.py::test_no_op_model_scores_match_native_exactly": {
+      "tier": "optional",
+      "group": "p30b-optional-harness",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_harness_adapter.py::test_rolling_loglikelihood_equals_native_document_scoring": {
+      "tier": "optional",
+      "group": "p30b-optional-harness",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_harness_adapter.py::test_supported_harness_version_is_the_installed_one": {
+      "tier": "optional",
+      "group": "p30b-optional-harness",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_harness_adapter.py::test_task_manager_discovers_the_authored_fixture": {
+      "tier": "optional",
+      "group": "p30b-optional-harness",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_semantic_neighbors.py::test_capabilities_and_backend_resolution": {
+      "tier": "optional",
+      "group": "p30b-optional-declared-api",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_semantic_neighbors.py::test_numpy_backend_matches_python_backend": {
+      "tier": "optional",
+      "group": "p30b-optional-declared-api",
+      "exclusive": false,
+      "reason": "Authored read-only task/source fixtures; private model/output/HF cache per worker; CLI homes private; module API group retains fixture locality."
+    },
+    "tests/test_runtime_fixture.py::test_small_prepare_reuse_and_resume_preserve_outputs": {
+      "tier": "serial_core",
+      "group": "p30b-prepare-contracts",
+      "exclusive": false,
+      "reason": "Private real local-copy preparation state; exact coordinator reuse/resume oracle complements retained full backend workflows."
+    }
+  }
+}

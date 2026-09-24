@@ -1,4 +1,4 @@
-"""Real inventory/cache equivalence and a small oracle for the retained queue campaign."""
+"""Real inventory/cache equivalence and small oracles for retained system workflows."""
 
 from __future__ import annotations
 
@@ -119,3 +119,50 @@ def test_queue_order_and_cancellation_survive_reopening(
         queue.cancel(expected)
     assert test_queue.make_queue(tmp_path, "oracle").next_job() is None
     assert [job.state for job in queue.list_jobs()] == ["CANCELLED"] * 3
+
+
+def test_small_prepare_reuse_and_resume_preserve_outputs(tmp_path: Path) -> None:
+    # Coordinator reuse/resume oracle. The unchanged full toy preparation tests
+    # additionally exercise every real backend, including token publication.
+    from xlm.prepare.config import PrepareConfig, PrepareStageSpec
+    from xlm.prepare.runner import run_prepare
+
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "record.txt").write_bytes(b"authored original\n")
+    config = PrepareConfig(
+        id="small_prepare_resume",
+        output_root=str(tmp_path / "out"),
+        stages=[
+            PrepareStageSpec(
+                stage_id="fetch",
+                kind="local_copy",
+                copy_from=[str(source)],
+                copy_to="{output_root}/fetch",
+                outputs=["{output_root}/fetch/record.txt"],
+                invalidates=["freeze"],
+            ),
+            PrepareStageSpec(
+                stage_id="freeze",
+                kind="local_copy",
+                copy_from=["{output_root}/fetch/record.txt"],
+                copy_to="{output_root}/freeze",
+                outputs=["{output_root}/freeze/record.txt"],
+                watched_inputs=["{output_root}/fetch/record.txt"],
+            ),
+        ],
+    )
+    config_path = tmp_path / "prepare.yaml"
+    home = tmp_path / "home"
+    first = run_prepare(config, config_path, home, ROOT, authorize=True)
+    assert [stage.action for stage in first.stages] == ["ran", "ran"]
+    retained = tmp_path / "out/fetch/record.txt"
+    completed = tmp_path / "out/freeze/record.txt"
+    original_bytes, original_mtime = retained.read_bytes(), retained.stat().st_mtime_ns
+    second = run_prepare(config, config_path, home, ROOT, authorize=True)
+    assert [stage.action for stage in second.stages] == ["reused", "reused"]
+    completed.unlink()  # Remove one owned payload; no recursive cleanup or reset.
+    third = run_prepare(config, config_path, home, ROOT, authorize=True)
+    assert [stage.action for stage in third.stages] == ["reused", "resumed"]
+    assert retained.stat().st_mtime_ns == original_mtime
+    assert retained.read_bytes() == completed.read_bytes() == original_bytes

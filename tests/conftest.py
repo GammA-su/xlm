@@ -60,10 +60,83 @@ def queue_runtime_prerequisite(
 
 
 @pytest.fixture(scope="session")
-def installed_eval_runtime() -> None:
+def installed_eval_runtime(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> Generator[None, None, None]:
     """Import optional harness packages only when their tests actually execute."""
-    pytest.importorskip("lm_eval")
-    pytest.importorskip("datasets")
+    cache = tmp_path_factory.mktemp("installed-eval-cache")
+    with pytest.MonkeyPatch.context() as patch:
+        for name, path in {
+            "HF_HOME": cache,
+            "HF_HUB_CACHE": cache / "hub",
+            "HF_DATASETS_CACHE": cache / "datasets",
+            "HF_MODULES_CACHE": cache / "modules",
+        }.items():
+            patch.setenv(name, str(path))
+        for name in ("HF_HUB_OFFLINE", "HF_DATASETS_OFFLINE", "TRANSFORMERS_OFFLINE"):
+            patch.setenv(name, "1")
+        pytest.importorskip("lm_eval")
+        pytest.importorskip("datasets")
+        yield
+
+
+def pytest_itemcollected(item: pytest.Item) -> None:
+    """Classify before marker selection; unaudited serial cases stay exclusive."""
+    from suite_domains import DOMAINS
+
+    excluded = {"performance", "scale", "cuda", "network", "operator", "environment_setup"}
+    markers = {mark.name for mark in item.iter_markers()}
+    if markers & excluded or not markers & {"serial", "optional_dependency"}:
+        return
+    domain = DOMAINS.get(item.nodeid)
+    if domain is None:
+        if "serial" in markers and "optional_dependency" not in markers:
+            item.add_marker(pytest.mark.serial_core)
+        item.add_marker(pytest.mark.serial_exclusive)
+        return
+    if domain.tier == "serial_core":
+        item.add_marker(pytest.mark.serial_core)
+    elif domain.tier == "serial_heavy":
+        item.add_marker(pytest.mark.serial_heavy)
+    if domain.exclusive:
+        item.add_marker(pytest.mark.serial_exclusive)
+    else:
+        item.add_marker(pytest.mark.xdist_group(name=domain.group))
+
+
+@pytest.hookimpl(trylast=True)
+def pytest_collection_modifyitems(session: pytest.Session, items: list[pytest.Item]) -> None:
+    """Fail closed for unsafe scheduling; never silently deselect a required node."""
+    worker = hasattr(session.config, "workerinput")
+    if not worker and not session.config.getoption("numprocesses", default=0):
+        return
+    grouped = (
+        session.config.getoption("loadgroup", default=False)
+        if worker
+        else session.config.getoption("dist") == "loadgroup"
+    )
+    for item in items:
+        if item.get_closest_marker("serial_exclusive"):
+            message = f"{item.nodeid} requires -n 0 (exclusive or unaudited)"
+            session.shouldfail = message
+            raise pytest.UsageError(message)
+        constrained = any(
+            item.get_closest_marker(name) for name in ("serial", "optional_dependency")
+        )
+        if constrained and (not item.get_closest_marker("xdist_group") or not grouped):
+            message = f"{item.nodeid} requires audited --dist=loadgroup or -n 0"
+            session.shouldfail = message
+            raise pytest.UsageError(message)
+
+
+@pytest.fixture(autouse=True)
+def private_domain_home(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch) -> None:
+    if any(
+        request.node.get_closest_marker(name)
+        for name in ("serial_core", "serial_heavy", "optional_dependency")
+    ):
+        path = cast(Path, request.getfixturevalue("tmp_path"))
+        monkeypatch.setenv("XLM_HOME", str(path / "fallback-home"))
 
 
 def pytest_configure(config: pytest.Config) -> None:

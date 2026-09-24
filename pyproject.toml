@@ -122,5 +122,8 @@ markers = [
     "optional_dependency: explicit installed-capability tests (never installs or downloads dependencies)",
     "environment_setup: explicitly authorized environment construction; may run offline uv sync",
     "operator: tests that require isolated operator privileges",
-    "serial: tests requiring exclusive execution (shared-checkout mutation, nonisolatable resources, measured timing/inventory checks); run with -n 0, never under xdist",
+    "serial: bounded lifecycle/pool/inventory tests; audited domains may use loadgroup, otherwise -n 0",
+    "serial_core: routine cross-cutting integration contracts (also required in final correctness)",
+    "serial_heavy: composed system workflows required in final correctness",
+    "serial_exclusive: timing-sensitive or unaudited tests; require -n 0",
 ]
