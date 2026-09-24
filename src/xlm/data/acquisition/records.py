@@ -15,6 +15,7 @@ import pyarrow.parquet as pq
 
 from xlm.data.acquisition.disk import CapacityLease, StorageCapacityManager
 from xlm.data.acquisition.plan import AcquisitionLimits
+from xlm.data.acquisition.written import WrittenPayload
 from xlm.data.adapters.jsonl import _pairs_hook_reject_duplicates
 
 
@@ -338,6 +339,7 @@ class StreamingJsonlWriter:
         self.size = 0
         self.peak_rss_bytes = 0
         self.flush_seconds = 0.0
+        self.written: WrittenPayload | None = None
 
     def write_line(self, payload: bytes) -> None:
         """Append one ``\\n``-terminated encoded record."""
@@ -381,6 +383,7 @@ class StreamingJsonlWriter:
             started = time.monotonic()
             self._stream.flush()
             os.fsync(self._stream.fileno())
+            self.written = WrittenPayload.capture(self._stream, self.size, self.digest)
             self.flush_seconds += max(0.0, time.monotonic() - started)
         finally:
             self._stream.close()

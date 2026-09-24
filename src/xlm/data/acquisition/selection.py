@@ -861,7 +861,7 @@ def _acquire_selection_serial(
     with fetcher.perf.timed("serialize", file=name):
         from xlm.data.acquisition.publication import publish_output
 
-        publish_output(fetcher, name, temporary, size, digest, count)
+        publish_output(fetcher, name, temporary, size, digest, count, written=writer.written)
 
 
 def _acquire_selection_parallel(
@@ -955,7 +955,7 @@ def _acquire_selection_parallel(
         with fetcher.perf.timed("serialize", file=name):
             from xlm.data.acquisition.publication import publish_output
 
-            publish_output(fetcher, name, temporary, size, digest, count)
+            publish_output(fetcher, name, temporary, size, digest, count, written=writer.written)
     finally:
         for path in chunk_paths:
             try:

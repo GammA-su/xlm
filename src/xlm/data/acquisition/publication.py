@@ -20,12 +20,13 @@ from xlm.data.acquisition.progress import (
     ProgressCorruptionError,
     PublicationIntent,
 )
+from xlm.data.acquisition.written import WrittenPayload
 
 if TYPE_CHECKING:
     from xlm.data.acquisition.fetcher import BoundedFetcher
 
 
-def _verify(path: Path, intent: PublicationIntent) -> None:
+def _verify_identity(path: Path, intent: PublicationIntent) -> None:
     ensure_plain_path(path)
     info = path.stat()
     if not stat.S_ISREG(info.st_mode) or (info.st_dev, info.st_ino, info.st_size) != (
@@ -34,12 +35,22 @@ def _verify(path: Path, intent: PublicationIntent) -> None:
         intent.size,
     ):
         raise ProgressCorruptionError("publication file identity/size mismatch")
+
+
+def _verify(path: Path, intent: PublicationIntent) -> None:
+    _verify_identity(path, intent)
     if AtomicFileWriter.hash_durable_prefix(path, intent.size) != intent.content_sha256:
         raise ProgressCorruptionError("publication content checksum mismatch")
 
 
-def complete_publication(fetcher: BoundedFetcher, name: str) -> None:
-    """Publish an admitted partial or reconcile its link; settle+complete atomically."""
+def complete_publication(
+    fetcher: BoundedFetcher, name: str, *, _fresh_intent: PublicationIntent | None = None
+) -> None:
+    """Publish an admitted partial or reconcile its link; settle+complete atomically.
+
+    Only ``publish_output`` supplies the private snapshot, after checking closed
+    writer evidence. Never reconstruct it from persisted state on recovery.
+    """
     canonical_payload_path(name)
     with fetcher.journal.transaction() as state:
         fp = state.file_progress[name]
@@ -61,8 +72,13 @@ def complete_publication(fetcher: BoundedFetcher, name: str) -> None:
         pending = state.accounting.reservations.get("output", {})
         if fp.status == "completed" or pending.get(intent.output_token) != intent.size:
             raise ProgressCorruptionError("ambiguous publication settlement")
+        if _fresh_intent is not None and intent != _fresh_intent:
+            raise ProgressCorruptionError("fresh publication intent changed")
+        # Only this uninterrupted writer-to-link path has ephemeral evidence.
+        # Existing links, missing partials and every restart use the full hash.
+        fresh = _fresh_intent is not None and partial.exists() and not destination.exists()
         if partial.exists():
-            _verify(partial, intent)
+            (_verify_identity if fresh else _verify)(partial, intent)
         if destination.exists():
             _verify(destination, intent)
             if partial.exists():
@@ -71,7 +87,7 @@ def complete_publication(fetcher: BoundedFetcher, name: str) -> None:
             if not partial.exists():
                 raise ProgressCorruptionError("publication payload is missing")
             AtomicFileWriter.atomic_complete(partial, destination)
-            _verify(destination, intent)
+            (_verify_identity if fresh else _verify)(destination, intent)
         # The replacement journal is the single commit point for both fields.
         # If it fails, the old durable intent and reservation still authorize
         # recovery. Never infer whether an absent reservation was settled.
@@ -94,6 +110,8 @@ def publish_output(
     digest: str,
     records: int | None,
     etag: str | None = None,
+    *,
+    written: WrittenPayload | None = None,
 ) -> None:
     canonical_payload_path(name)
     relative = partial.relative_to(fetcher.partial_dir).as_posix()
@@ -104,8 +122,17 @@ def publish_output(
     if destination.exists():
         raise ProgressCorruptionError("unowned publication destination exists")
     info = partial.stat()
+    if written is not None and (
+        not written.stream.closed
+        or (written.device, written.inode, written.size, written.modified_ns, written.sha256)
+        != (info.st_dev, info.st_ino, size, info.st_mtime_ns, digest)
+        or info.st_size != size
+    ):
+        raise ProgressCorruptionError("closed writer publication evidence mismatch")
+    fresh_intent: PublicationIntent | None = None
 
     def admitted(state: AcquisitionState, token: str) -> None:
+        nonlocal fresh_intent
         fp = state.file_progress.setdefault(name, FileProgress(file_path=name))
         if fp.publication is not None or fp.status == "completed":
             raise ProgressCorruptionError("publication already admitted")
@@ -121,6 +148,8 @@ def publish_output(
             records=records,
             etag=etag,
         )
+        if written is not None:
+            fresh_intent = fp.publication.model_copy(deep=True)
 
     # Reservation and intent share one durable transaction: neither can be
     # visible alone after death. The token is also this publication's attempt id.
@@ -132,7 +161,7 @@ def publish_output(
         on_reserved=admitted,
     )
     try:
-        complete_publication(fetcher, name)
+        complete_publication(fetcher, name, _fresh_intent=fresh_intent)
     except OSError as exc:
         # Retrying the network body here could duplicate transfer after the
         # link succeeded. A fresh invocation reconciles the durable intent.

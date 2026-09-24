@@ -47,6 +47,7 @@ from xlm.data.acquisition.progress import (
 )
 from xlm.data.acquisition.publication import publish_output, reconcile_publications
 from xlm.data.acquisition.records import RecordLimitError, inspect_records
+from xlm.data.acquisition.written import WrittenPayload
 from xlm.data.sources.transport import (
     BudgetExhaustedError,
     PooledRangeClient,
@@ -645,6 +646,7 @@ class BoundedFetcher:
                             offset = self._stream_body(
                                 rel_path, response, output, digest, offset, remaining, new_etag
                             )
+                            written = WrittenPayload.capture(output, offset, digest)
                         if offset == 0:
                             raise ValueError("empty original cannot establish a corpus acquisition")
                         expected_digest = self.plan.expected_file_digests.get(rel_path)
@@ -701,6 +703,7 @@ class BoundedFetcher:
                                 digest.hexdigest(),
                                 records,
                                 new_etag,
+                                written=written,
                             )
                         return final_path
                 except (urllib.error.URLError, OSError, http.client.IncompleteRead) as exc:
