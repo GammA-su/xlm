@@ -8,17 +8,37 @@ import shutil
 import threading
 import time
 import uuid
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from pathlib import Path
 
 from xlm.artifacts.manifest import bounded_children, ensure_plain_path
-from xlm.data.acquisition.progress import ProgressJournal, ResourceAccount
+from xlm.data.acquisition.progress import AcquisitionState, ProgressJournal, ResourceAccount
 from xlm.data.sources.transport import BudgetExhaustedError
+
+#: Execution-only durable lease windows (never plan identity, never output
+#: bytes). A lease reserves a window in one persisted transaction and settles
+#: the exact actual later, so hot paths pay one journal write per window instead
+#: of several per 64 KiB read. Windows grow geometrically per stream: the first
+#: is ``ACCOUNTING_INITIAL_WINDOW_BYTES`` and each next equals the amount already
+#: used, capped at ``ACCOUNTING_WINDOW_BYTES``. A crash therefore strands at most
+#: max(initial, already used) and never more than the cap per active stream;
+#: limits are never exceeded and usage is never under-counted.
+ACCOUNTING_INITIAL_WINDOW_BYTES = 64 * 1024
+ACCOUNTING_WINDOW_BYTES = 16 * 1024 * 1024
+
+
+def grown_window(used: int, cap: int = ACCOUNTING_WINDOW_BYTES) -> int:
+    """Next geometric lease window after ``used`` bytes of one stream."""
+    return min(cap, max(ACCOUNTING_INITIAL_WINDOW_BYTES, used))
 
 
 class DiskCeilingExceededError(RuntimeError):
     """A logical storage ceiling or physical headroom guard was reached."""
+
+
+def _limit_error(resource: str) -> type[RuntimeError]:
+    return DiskCeilingExceededError if resource in ("temp", "output") else BudgetExhaustedError
 
 
 class StorageCapacityManager:
@@ -50,6 +70,9 @@ class StorageCapacityManager:
         self._lock = threading.RLock()
         self._account = ResourceAccount()
         self._cache_hits = 0
+        # A bound deadline is write-once (bind_deadline never replaces it), so
+        # once observed it is checked in memory without reloading the journal.
+        self._deadline_at: float | None = None
         limits = {
             "transfer": max_transferred_bytes,
             "decompressed": max_decompressed_bytes,
@@ -79,11 +102,15 @@ class StorageCapacityManager:
                 account.deadline_at = time.time() + seconds
 
     def check_deadline(self) -> None:
-        with self._transaction(persist=False) as account:
-            if account.deadline_at is not None and time.time() >= account.deadline_at:
-                raise TimeoutError(
-                    "cumulative acquisition deadline reached; restart grants no new time"
-                )
+        deadline = self._deadline_at
+        if deadline is None:
+            with self._transaction(persist=False) as account:
+                deadline = account.deadline_at
+            self._deadline_at = deadline
+        if deadline is not None and time.time() >= deadline:
+            raise TimeoutError(
+                "cumulative acquisition deadline reached; restart grants no new time"
+            )
 
     def remaining(self, resource: str) -> int:
         with self._transaction(persist=False) as account:
@@ -149,13 +176,88 @@ class StorageCapacityManager:
     def reserve_transfer(self, estimated_bytes: int) -> str:
         return self.reserve("transfer", estimated_bytes)
 
+    def _record(self, resource: str, amount: int) -> None:
+        """Reserve-then-settle in one transaction: identical limit check and outcome."""
+        if amount < 0:
+            raise ValueError("negative reservation")
+        with self._transaction() as account:
+            used = account.consumed.get(resource, 0)
+            pending = sum(account.reservations.get(resource, {}).values())
+            if used + pending + amount > account.limits[resource]:
+                raise _limit_error(resource)(
+                    f"{resource} limit reached including outstanding reservations"
+                )
+            account.consumed[resource] = used + amount
+
     def record_transfer(self, actual_bytes: int) -> None:
-        token = self.reserve_transfer(actual_bytes)
-        self.settle("transfer", token, actual_bytes)
+        self._record("transfer", actual_bytes)
 
     def record_decompressed(self, bytes_count: int) -> None:
-        token = self.reserve("decompressed", bytes_count)
-        self.settle("decompressed", token, bytes_count)
+        self._record("decompressed", bytes_count)
+
+    def exchange(
+        self,
+        *,
+        settle: tuple[tuple[str, str, int, int], ...] = (),
+        reserve: tuple[tuple[str, int, int], ...] = (),
+        progress: Callable[[AcquisitionState], None] | None = None,
+    ) -> tuple[list[tuple[str, int]], dict[str, int]]:
+        """Settle leases, apply one progress mutation, then reserve: one durable write.
+
+        ``settle`` entries are ``(resource, token, actual, hold)``: ``actual`` is
+        charged and ``hold`` stays reserved under the same token (an in-flight
+        amount whose outcome is unknown); ``hold == 0`` retires the token.
+        ``reserve`` entries are ``(resource, wanted, minimum)`` and grant
+        ``min(wanted, available)`` when that is at least ``minimum``, else an
+        empty token. Settlement and progress always persist; callers raise
+        after a refused grant, so refusals never discard durable settlement.
+        Returns ``(token, amount)`` grants in request order plus the
+        post-transaction consumed counters.
+        """
+        grants: list[tuple[str, int]] = []
+        with self._transaction() as account:
+            for resource, token, actual, hold in settle:
+                reserved = account.reservations.get(resource, {}).get(token)
+                if reserved is None or actual < 0 or hold < 0 or actual + hold > reserved:
+                    raise ValueError("invalid reservation reconciliation")
+                target = account.occupancy if resource in ("temp", "output") else account.consumed
+                target[resource] = target.get(resource, 0) + actual
+                if hold:
+                    account.reservations[resource][token] = hold
+                else:
+                    del account.reservations[resource][token]
+            if progress is not None:
+                if self.journal is None:
+                    raise ValueError("progress mutation requires a journal")
+                progress(self.journal.state)
+            for resource, wanted, minimum in reserve:
+                if wanted < 0 or minimum < 0:
+                    raise ValueError("negative reservation")
+                pending = account.reservations.setdefault(resource, {})
+                amount = min(wanted, self._available(account, resource))
+                if amount < max(1, minimum):
+                    grants.append(("", 0))
+                    continue
+                token = uuid.uuid4().hex
+                pending[token] = amount
+                grants.append((token, amount))
+            consumed = dict(account.consumed)
+        return grants, consumed
+
+    @staticmethod
+    def _available(account: ResourceAccount, resource: str) -> int:
+        used = (
+            account.occupancy.get(resource, 0)
+            if resource in ("temp", "output")
+            else account.consumed.get(resource, 0)
+        )
+        if resource == "output":
+            used += account.occupancy.get("published", 0)
+        if resource == "temp":
+            used += account.occupancy.get("nested_temp", 0)
+        return (
+            account.limits[resource] - used - sum(account.reservations.get(resource, {}).values())
+        )
 
     def record_units(self, name: str, amount: int, maximum: int) -> None:
         with self._transaction() as account:
@@ -304,6 +406,105 @@ class StorageCapacityManager:
                     for key, value in account.reservations.items()
                 },
             }
+
+
+class CapacityLease:
+    """One stream's durable pre-reserved allowance for a single resource.
+
+    :meth:`take` grants bounded amounts from the reservation in memory and
+    renews through :meth:`StorageCapacityManager.exchange`, settling the exact
+    amount used so far in the same transaction. :meth:`close` settles the
+    exact actual; :meth:`fail` settles known usage and keeps the in-flight
+    amount reserved, exactly like an interrupted single read. Totals for a
+    completed stream equal per-read accounting. Not thread-safe: one lease per
+    response or stream, owned by one worker.
+    """
+
+    def __init__(
+        self,
+        manager: StorageCapacityManager,
+        resource: str,
+        *,
+        window: int = ACCOUNTING_WINDOW_BYTES,
+        cap: int | None = None,
+        message: str | None = None,
+        on_consumed: Callable[[dict[str, int]], None] | None = None,
+    ) -> None:
+        if window < 1 or (cap is not None and cap < 0):
+            raise ValueError("lease window must be positive and cap non-negative")
+        self.manager, self.resource, self.window, self.cap = manager, resource, window, cap
+        self.message = message or f"{resource} limit reached including outstanding reservations"
+        self.on_consumed = on_consumed
+        self.token, self.granted, self.used, self.total = "", 0, 0, 0
+
+    @property
+    def left(self) -> int:
+        return self.granted - self.used
+
+    def settlement(self, hold: int = 0) -> tuple[str, str, int, int] | None:
+        """Pending ``exchange`` settle entry for this lease (``None`` when idle)."""
+        return (self.resource, self.token, self.used, hold) if self.token else None
+
+    def next_request(self, minimum: int = 1) -> tuple[str, int, int]:
+        """``exchange`` reserve entry for the next window of this lease."""
+        want = grown_window(self.total, self.window)
+        if self.cap is not None:
+            want = min(want, max(0, self.cap - self.total))
+        return (self.resource, max(want, minimum), minimum)
+
+    def adopt(self, grant: tuple[str, int], consumed: dict[str, int] | None = None) -> None:
+        """Install a grant produced by an ``exchange`` that settled this lease."""
+        self.token, self.granted = grant
+        self.used = 0
+        if consumed is not None and self.on_consumed is not None:
+            self.on_consumed(consumed)
+        if not self.token:
+            raise _limit_error(self.resource)(self.message)
+
+    def retire(self, consumed: dict[str, int]) -> None:
+        self.token, self.granted, self.used = "", 0, 0
+        if self.on_consumed is not None:
+            self.on_consumed(consumed)
+
+    def take(self, wanted: int, *, minimum: int = 1) -> int:
+        """Grant up to ``wanted`` (at least ``minimum``) or raise the limit error."""
+        if wanted < minimum:
+            raise ValueError("lease request below its minimum")
+        if self.left < max(1, minimum):
+            settle = self.settlement()
+            grants, consumed = self.manager.exchange(
+                settle=(settle,) if settle else (), reserve=(self.next_request(minimum),)
+            )
+            self.retire(consumed)
+            self.adopt(grants[0])
+        return min(wanted, self.left)
+
+    def commit(self, amount: int) -> None:
+        """Charge ``amount`` of the current grant as used."""
+        if amount < 0 or amount > self.left:
+            raise ValueError("lease usage exceeds its grant")
+        self.used += amount
+        self.total += amount
+
+    def consume(self, amount: int) -> None:
+        """Exact record-style charge: all of ``amount`` or the limit error."""
+        if amount:
+            self.take(amount, minimum=amount)
+            self.commit(amount)
+
+    def close(self) -> None:
+        """Settle the exact actual and release the unused allowance."""
+        settle = self.settlement()
+        if settle is not None:
+            _, consumed = self.manager.exchange(settle=(settle,))
+            self.retire(consumed)
+
+    def fail(self, in_flight: int) -> None:
+        """Settle known usage; keep an unresolved in-flight amount reserved."""
+        settle = self.settlement(hold=max(0, min(in_flight, self.left)))
+        if settle is not None:
+            _, consumed = self.manager.exchange(settle=(settle,))
+            self.retire(consumed)
 
 
 class AtomicFileWriter:

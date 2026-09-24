@@ -126,29 +126,72 @@ class TransportBudget:
                 self.bytes_transferred += len(chunk)
         return chunk
 
+    def transfer_lease(self, cap: int | None) -> Any:
+        """Durable transfer lease for one response stream (capacity-backed budgets only)."""
+        from xlm.data.acquisition.disk import CapacityLease
+
+        assert self.capacity is not None
+        return CapacityLease(
+            self.capacity,
+            "transfer",
+            cap=cap,
+            message="response-body byte allowance exhausted",
+            on_consumed=self._sync_transferred,
+        )
+
+    def _sync_transferred(self, consumed: dict[str, int]) -> None:
+        self.bytes_transferred = consumed.get("transfer", 0)
+
+    def read_leased(self, response: Any, lease: Any, maximum: int = 65536) -> bytes:
+        """``read_chunk`` semantics against a pre-reserved lease: identical sizes and totals."""
+        self.check_deadline()
+        amount = lease.take(maximum)
+        try:
+            chunk = bytes(response.read(amount))
+        except BaseException:
+            # Outcome unresolved: the in-flight amount stays reserved, as before.
+            lease.fail(amount)
+            raise
+        if len(chunk) > amount:
+            lease.fail(amount)
+            raise BudgetExhaustedError("transport returned more bytes than requested")
+        lease.commit(len(chunk))
+        return chunk
+
     def read_body(self, response: Any, limit: int, *, retain: bool = True) -> bytes:
         """Bound metadata/error bodies; no unbounded read or silent truncation."""
         length = response.headers.get("Content-Length")
         expected = int(length) if length is not None else None
         if expected is not None and (expected < 0 or expected > limit):
             raise BudgetExhaustedError("response exceeds its allocated body limit")
+        lease = (
+            self.transfer_lease(expected if expected is not None else limit)
+            if self.capacity is not None
+            else None
+        )
         data, consumed = bytearray(), 0
-        while expected is None or consumed < expected:
-            if consumed == limit:
-                raise BudgetExhaustedError("unframed response reached body limit before EOF")
-            chunk = self.read_chunk(
-                response,
-                min(
+        try:
+            while expected is None or consumed < expected:
+                if consumed == limit:
+                    raise BudgetExhaustedError("unframed response reached body limit before EOF")
+                amount = min(
                     65536, limit - consumed, expected - consumed if expected is not None else limit
-                ),
-            )
-            if not chunk:
-                if expected is not None and consumed != expected:
-                    raise OSError("response ended before declared length")
-                break
-            consumed += len(chunk)
-            if retain:
-                data.extend(chunk)
+                )
+                chunk = (
+                    self.read_chunk(response, amount)
+                    if lease is None
+                    else self.read_leased(response, lease, amount)
+                )
+                if not chunk:
+                    if expected is not None and consumed != expected:
+                        raise OSError("response ended before declared length")
+                    break
+                consumed += len(chunk)
+                if retain:
+                    data.extend(chunk)
+        finally:
+            if lease is not None:
+                lease.close()
         return bytes(data)
 
     def record_bytes(self, n: int) -> None:

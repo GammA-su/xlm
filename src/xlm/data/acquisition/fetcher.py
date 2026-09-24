@@ -9,6 +9,8 @@ import io
 import math
 import os
 import re
+import shutil
+import threading
 import time
 import urllib.error
 import urllib.parse
@@ -23,7 +25,13 @@ from filelock import FileLock, Timeout
 
 from xlm.artifacts.manifest import ensure_plain_path
 from xlm.artifacts.store import compute_file_sha256
-from xlm.data.acquisition.disk import AtomicFileWriter, StorageCapacityManager
+from xlm.data.acquisition.disk import (
+    AtomicFileWriter,
+    CapacityLease,
+    DiskCeilingExceededError,
+    StorageCapacityManager,
+    grown_window,
+)
 from xlm.data.acquisition.perf import PerfTelemetry
 from xlm.data.acquisition.plan import (
     AcquisitionMode,
@@ -31,7 +39,12 @@ from xlm.data.acquisition.plan import (
     SourceDriftDetectedError,
     validate_plan_authorization,
 )
-from xlm.data.acquisition.progress import AcquisitionState, ProgressCorruptionError, ProgressJournal
+from xlm.data.acquisition.progress import (
+    AcquisitionState,
+    ProgressCorruptionError,
+    ProgressJournal,
+    apply_file_progress,
+)
 from xlm.data.acquisition.records import RecordLimitError, inspect_records
 from xlm.data.sources.transport import (
     BudgetExhaustedError,
@@ -44,6 +57,14 @@ from xlm.data.sources.transport import (
 )
 
 CONTENT_RANGE_RE = re.compile(r"^bytes (\d+)-(\d+)/(\d+)$")
+
+#: Whole-file body read size (unchanged historical value: identical reads and totals).
+WHOLE_FILE_READ_BYTES = 65536
+#: Execution-only cap for whole-file durable accounting/checkpoint windows.
+#: Windows grow geometrically from 64 KiB (see ``grown_window``): one data fsync
+#: plus one journal write per window; a crash re-downloads and leaves charged at
+#: most max(64 KiB, bytes already verified in this response), never above the cap.
+WHOLE_FILE_WINDOW_BYTES = 16 * 1024 * 1024
 
 #: Pooled direct statuses that invalidate a cached redirect target and
 #: re-resolve canonically inside existing retry budgets. Never logged with
@@ -176,6 +197,11 @@ class BoundedFetcher:
         self.enable_redirect_cache = enable_redirect_cache
         self.enable_connection_pool = enable_connection_pool
         self.redirect_cache = RedirectTargetCache(max_entries=256)
+        # Source validators are write-once in the journal (a mismatch raises),
+        # so an identical binding already made durable by this fetcher is not
+        # rewritten on every range request.
+        self._bound_sources: dict[str, tuple[str | None, int | None]] = {}
+        self._bound_lock = threading.Lock()
         self.pooled: PooledRangeClient | None = (
             PooledRangeClient(observer=self.perf) if enable_connection_pool else None
         )
@@ -188,6 +214,16 @@ class BoundedFetcher:
                 pooled.close()
             except Exception:
                 pass
+
+    def bind_source(self, rel_path: str, etag: str | None, length: int | None) -> None:
+        """Durably bind one source validator; identical re-binds are elided."""
+        value = (etag, length)
+        with self._bound_lock:
+            if self._bound_sources.get(rel_path) == value:
+                return
+        self.journal.bind_source(rel_path, etag, length)
+        with self._bound_lock:
+            self._bound_sources[rel_path] = value
 
     def _resolve_url(self, rel_path: str) -> str:
         path = urllib.parse.quote(rel_path, safe="/")
@@ -352,11 +388,141 @@ class BoundedFetcher:
                         raise ValueError("selected ranges require a stable strong ETag")
                     self.perf.record_file_bytes(rel_path, len(body))
                     with self.perf.timed("accounting"):
-                        self.journal.bind_source(rel_path, etag, int(match[3]))
+                        self.bind_source(rel_path, etag, int(match[3]))
                     return body, int(match[3]), etag
             except (urllib.error.URLError, OSError, http.client.IncompleteRead) as exc:
                 self._retry_error(exc, attempt)
         raise RuntimeError("range attempts exhausted")
+
+    def _stream_body(
+        self,
+        rel_path: str,
+        response: Any,
+        output: Any,
+        digest: Any,
+        offset: int,
+        remaining: int | None,
+        etag: str | None,
+    ) -> int:
+        """Stream one original body with window-granular durable accounting.
+
+        Reads keep the historical 64 KiB size, so bytes, digest and every
+        consumed total are identical to per-chunk accounting. Each window
+        reserves transfer and scratch allowance in one durable exchange that
+        also settles the previous window and checkpoints its fsynced verified
+        prefix (one data fsync plus one journal write per window instead of
+        several per chunk). A failure settles known usage, keeps the in-flight
+        amount reserved and checkpoints what was durably written; a crash
+        leaves at most one window per stream charged and unverified bytes are
+        truncated to the checkpoint on resume. Returns the final offset.
+        """
+        capacity = self.capacity_mgr
+        transfer = self.budget.transfer_lease(remaining)
+        temp = CapacityLease(capacity, "temp")
+        written = 0  # appended since the last durable checkpoint
+        streamed = 0  # read from this response so far (drives window growth)
+        in_flight = 0  # scratch amount of a read whose outcome is unresolved
+
+        def checkpoint(*, reserve_next: bool, hold_temp: int = 0, failing: bool = False) -> None:
+            nonlocal written
+            durable = True
+            if written:
+                try:
+                    output.flush()
+                    os.fsync(output.fileno())
+                except OSError:
+                    if not failing:
+                        raise
+                    durable = False
+            progress = None
+            if written and durable:
+                added, prefix = written, digest.hexdigest()
+
+                def progress(state: AcquisitionState) -> None:
+                    apply_file_progress(state, rel_path, added, etag, prefix_sha256=prefix)
+
+            settle = tuple(
+                entry
+                for entry in (transfer.settlement(), temp.settlement(hold_temp))
+                if entry is not None
+            )
+            refusal: BaseException | None = None
+            reserve: tuple[tuple[str, int, int], ...] = ()
+            if reserve_next:
+                want = grown_window(streamed, WHOLE_FILE_WINDOW_BYTES)
+                if remaining is not None:
+                    want = min(want, remaining)
+                room = min(want, capacity.remaining("temp") + temp.left)
+                if room <= 0:
+                    refusal = BudgetExhaustedError("scratch allowance exhausted")
+                else:
+                    existing = self.scratch_dir
+                    while not existing.exists():
+                        existing = existing.parent
+                    if shutil.disk_usage(existing).free - room < capacity.min_free_headroom_bytes:
+                        refusal = DiskCeilingExceededError("physical disk headroom guard reached")
+                    else:
+                        reserve = (("transfer", want, 1), ("temp", room, 1))
+            with self.perf.timed("accounting"):
+                grants, consumed = capacity.exchange(
+                    settle=settle, reserve=reserve, progress=progress
+                )
+            transfer.retire(consumed)
+            temp.retire(consumed)
+            if progress is not None:
+                written = 0
+            if refusal is not None:
+                raise refusal
+            if reserve:
+                (transfer_grant, temp_grant) = grants
+                if not transfer_grant[0] or not temp_grant[0]:
+                    release = tuple(
+                        (resource, token, 0, 0)
+                        for resource, (token, _) in zip(("transfer", "temp"), grants, strict=True)
+                        if token
+                    )
+                    if release:
+                        capacity.exchange(settle=release)
+                    if not transfer_grant[0]:
+                        raise BudgetExhaustedError("response-body byte allowance exhausted")
+                    raise DiskCeilingExceededError(
+                        "temp limit reached including outstanding reservations"
+                    )
+                transfer.adopt(transfer_grant)
+                temp.adopt(temp_grant)
+
+        try:
+            while remaining is None or remaining > 0:
+                self._check_deadline()
+                if not transfer.left or not temp.left:
+                    checkpoint(reserve_next=True)
+                amount = min(WHOLE_FILE_READ_BYTES, transfer.left, temp.left)
+                in_flight = amount
+                with self.perf.timed("body", file=rel_path):
+                    chunk = self.budget.read_leased(response, transfer, amount)
+                if not chunk:
+                    in_flight = 0
+                    if remaining:
+                        raise http.client.IncompleteRead(b"", remaining)
+                    break
+                output.write(chunk)
+                temp.commit(len(chunk))
+                in_flight = 0
+                self.perf.record_file_bytes(rel_path, len(chunk))
+                digest.update(chunk)
+                written += len(chunk)
+                streamed += len(chunk)
+                offset += len(chunk)
+                if remaining is not None:
+                    remaining -= len(chunk)
+            checkpoint(reserve_next=False)
+        except BaseException:
+            try:
+                checkpoint(reserve_next=False, hold_temp=in_flight, failing=True)
+            except BaseException:
+                pass  # never mask the original failure; resume truncates to the checkpoint
+            raise
+        return offset
 
     def _fetch_file(self, rel_path: str) -> Path:
         final_path, partial = self.output_dir / rel_path, self.partial_dir / f"{rel_path}.part"
@@ -389,8 +555,13 @@ class BoundedFetcher:
         with self.perf.file_worker(rel_path):
             for attempt in range(self.plan.limits.max_retries + 1):
                 self._check_deadline()
-                offset = partial.stat().st_size if partial.exists() else 0
                 fp = self.journal.state.file_progress.get(rel_path)
+                verified = fp.verified_prefix_bytes if fp else 0
+                if partial.exists() and partial.stat().st_size > verified:
+                    # Bytes past the durable checkpoint (a failed window whose
+                    # checkpoint could not be made durable) are never trusted.
+                    AtomicFileWriter.truncate_to_length(partial, verified)
+                offset = partial.stat().st_size if partial.exists() else 0
                 etag = fp.etag if fp else None
                 headers = {"Range": f"bytes={offset}-"} if offset else {}
                 if offset and etag and not etag.startswith("W/"):
@@ -446,38 +617,9 @@ class BoundedFetcher:
                                 while chunk := prior.read(65536):
                                     digest.update(chunk)
                         with partial.open("ab") as output:
-                            while remaining is None or remaining > 0:
-                                self._check_deadline()
-                                amount = min(65536, remaining if remaining is not None else 65536)
-                                amount = min(amount, self.capacity_mgr.remaining("temp"))
-                                if amount <= 0:
-                                    raise BudgetExhaustedError("scratch allowance exhausted")
-                                disk_token = self.capacity_mgr.reserve_disk_space(
-                                    self.scratch_dir, amount
-                                )
-                                with self.perf.timed("body", file=rel_path):
-                                    chunk = self.budget.read_chunk(response, amount)
-                                if not chunk:
-                                    self.capacity_mgr.settle("temp", disk_token, 0)
-                                    if remaining:
-                                        raise http.client.IncompleteRead(b"", remaining)
-                                    break
-                                output.write(chunk)
-                                output.flush()
-                                os.fsync(output.fileno())
-                                self.capacity_mgr.settle("temp", disk_token, len(chunk))
-                                self.perf.record_file_bytes(rel_path, len(chunk))
-                                digest.update(chunk)
-                                offset += len(chunk)
-                                if remaining is not None:
-                                    remaining -= len(chunk)
-                                with self.perf.timed("accounting"):
-                                    self.journal.update_file_progress(
-                                        rel_path,
-                                        len(chunk),
-                                        new_etag,
-                                        prefix_sha256=digest.hexdigest(),
-                                    )
+                            offset = self._stream_body(
+                                rel_path, response, output, digest, offset, remaining, new_etag
+                            )
                         if offset == 0:
                             raise ValueError("empty original cannot establish a corpus acquisition")
                         expected_digest = self.plan.expected_file_digests.get(rel_path)

@@ -15,7 +15,7 @@ import pyarrow.parquet as pq
 
 from xlm.artifacts.manifest import ensure_plain_path
 from xlm.artifacts.store import compute_file_sha256
-from xlm.data.acquisition.disk import AtomicFileWriter, StorageCapacityManager
+from xlm.data.acquisition.disk import AtomicFileWriter, CapacityLease, StorageCapacityManager
 from xlm.data.acquisition.progress import ProgressCorruptionError
 from xlm.data.acquisition.records import (
     RecordLimitError,
@@ -112,62 +112,69 @@ def _jsonl_selection(
         if not etag or etag.startswith("W/"):
             raise ValueError("selected JSONL requires a stable strong ETag")
         with fetcher.perf.timed("accounting"):
-            fetcher.journal.bind_source(name, etag, remaining)
-        while row < stop:
-            # Bounded lookahead is charged, but the whole shard is never fetched as fallback.
-            if b"\n" not in pending and remaining != 0:
-                amount = min(8192, fetcher.plan.limits.max_record_bytes + 1 - len(pending))
-                if remaining is not None:
-                    amount = min(amount, remaining)
-                if amount <= 0:
-                    raise RecordLimitError("selected JSONL record byte bound exceeded")
-                with fetcher.perf.timed("body", file=name):
-                    chunk = fetcher.budget.read_chunk(response, amount)
-                fetcher.capacity_mgr.record_decompressed(len(chunk))
-                fetcher.perf.record_decompressed(len(chunk))
-                fetcher.perf.record_file_bytes(name, len(chunk))
-                pending.extend(chunk)
-                if remaining is not None:
-                    remaining -= len(chunk)
-                if not chunk:
-                    remaining = 0
+            fetcher.bind_source(name, etag, remaining)
+        # Historical 8 KiB reads and per-read charges, against durable leases.
+        transfer = fetcher.budget.transfer_lease(remaining)
+        decompressed = CapacityLease(fetcher.capacity_mgr, "decompressed")
+        try:
+            while row < stop:
+                # Bounded lookahead is charged, but the whole shard is never fetched as fallback.
                 if b"\n" not in pending and remaining != 0:
-                    continue
-            if not pending:
-                raise ValueError("selected row range extends beyond original corpus")
-            boundary = pending.find(b"\n") + 1
-            size = boundary or len(pending)
-            if size > fetcher.plan.limits.max_record_bytes:
-                raise RecordLimitError("selected JSONL record byte bound exceeded")
-            raw = bytes(pending[:size])
-            del pending[:size]
-            if raw.strip():
-                if scanned_counter is not None:
-                    scanned_counter[0] += 1
-                else:
-                    fetcher.capacity_mgr.record_units(
-                        "records_scanned", 1, fetcher.plan.limits.max_scanned_records
-                    )
-                fetcher.perf.record_scanned(1, file=name)
-                with fetcher.perf.timed("decode", file=name):
-                    record = json.loads(raw, object_pairs_hook=_pairs_hook_reject_duplicates)
-                if not isinstance(record, dict):
-                    raise ValueError("selected record must be a JSON object")
-                if row >= start:
-                    fetcher.perf.record_retained(1, file=name)
-                    yield (
-                        record,
-                        raw,
-                        {
-                            "row_index": row,
-                            "byte_offset": offset,
-                            "byte_length": len(raw),
-                            "format": "jsonl",
-                            "etag": response.headers.get("ETag"),
-                        },
-                    )
-                row += 1
-            offset += len(raw)
+                    amount = min(8192, fetcher.plan.limits.max_record_bytes + 1 - len(pending))
+                    if remaining is not None:
+                        amount = min(amount, remaining)
+                    if amount <= 0:
+                        raise RecordLimitError("selected JSONL record byte bound exceeded")
+                    with fetcher.perf.timed("body", file=name):
+                        chunk = fetcher.budget.read_leased(response, transfer, amount)
+                    decompressed.consume(len(chunk))
+                    fetcher.perf.record_decompressed(len(chunk))
+                    fetcher.perf.record_file_bytes(name, len(chunk))
+                    pending.extend(chunk)
+                    if remaining is not None:
+                        remaining -= len(chunk)
+                    if not chunk:
+                        remaining = 0
+                    if b"\n" not in pending and remaining != 0:
+                        continue
+                if not pending:
+                    raise ValueError("selected row range extends beyond original corpus")
+                boundary = pending.find(b"\n") + 1
+                size = boundary or len(pending)
+                if size > fetcher.plan.limits.max_record_bytes:
+                    raise RecordLimitError("selected JSONL record byte bound exceeded")
+                raw = bytes(pending[:size])
+                del pending[:size]
+                if raw.strip():
+                    if scanned_counter is not None:
+                        scanned_counter[0] += 1
+                    else:
+                        fetcher.capacity_mgr.record_units(
+                            "records_scanned", 1, fetcher.plan.limits.max_scanned_records
+                        )
+                    fetcher.perf.record_scanned(1, file=name)
+                    with fetcher.perf.timed("decode", file=name):
+                        record = json.loads(raw, object_pairs_hook=_pairs_hook_reject_duplicates)
+                    if not isinstance(record, dict):
+                        raise ValueError("selected record must be a JSON object")
+                    if row >= start:
+                        fetcher.perf.record_retained(1, file=name)
+                        yield (
+                            record,
+                            raw,
+                            {
+                                "row_index": row,
+                                "byte_offset": offset,
+                                "byte_length": len(raw),
+                                "format": "jsonl",
+                                "etag": response.headers.get("ETag"),
+                            },
+                        )
+                    row += 1
+                offset += len(raw)
+        finally:
+            transfer.close()
+            decompressed.close()
 
 
 def _gz_jsonl_selection(
@@ -197,7 +204,7 @@ def _gz_jsonl_selection(
         if not etag or etag.startswith("W/"):
             raise ValueError("selected JSONL.GZ requires a stable strong ETag")
         with fetcher.perf.timed("accounting"):
-            fetcher.journal.bind_source(name, etag, remaining)
+            fetcher.bind_source(name, etag, remaining)
         decompressor = zlib.decompressobj(31)
         pending = bytearray()
         row, offset = 0, 0
@@ -205,87 +212,94 @@ def _gz_jsonl_selection(
         decompressed_out = 0
         input_exhausted = False
         stream_ended = False
-        while row < stop:
-            if b"\n" not in pending and not stream_ended:
-                if input_exhausted:
-                    tail = decompressor.flush()
-                    if tail:
-                        decompressed_out += len(tail)
-                        fetcher.capacity_mgr.record_decompressed(len(tail))
-                        fetcher.perf.record_decompressed(len(tail))
-                        pending.extend(tail)
-                    stream_ended = True
-                else:
-                    if remaining is not None and remaining <= 0:
-                        input_exhausted = True
-                        continue
-                    amount = min(GZ_SELECT_CHUNK_BYTES, limits.max_record_bytes + 1)
-                    if remaining is not None:
-                        amount = min(amount, remaining)
-                    with fetcher.perf.timed("body", file=name):
-                        chunk = fetcher.budget.read_chunk(response, amount)
-                    fetcher.perf.record_file_bytes(name, len(chunk))
-                    if remaining is not None:
-                        remaining -= len(chunk)
-                    compressed_read += len(chunk)
-                    if not chunk:
-                        input_exhausted = True
-                    else:
-                        try:
-                            piece = decompressor.decompress(chunk)
-                        except Exception as exc:
-                            raise RecordLimitError(
-                                f"bounded gzip decode failed: {type(exc).__name__}"
-                            ) from exc
-                        decompressed_out += len(piece)
-                        if decompressed_out > limits.max_decompressed_bytes or (
-                            decompressed_out
-                            > limits.max_decompression_ratio * max(1, compressed_read)
-                        ):
-                            raise RecordLimitError("decompression byte/ratio limit exceeded")
-                        fetcher.capacity_mgr.record_decompressed(len(piece))
-                        fetcher.perf.record_decompressed(len(piece))
-                        pending.extend(piece)
-                        if b"\n" not in pending and len(pending) > limits.max_record_bytes:
-                            raise RecordLimitError("selected JSONL record byte bound exceeded")
+        # Historical read sizes and per-piece charges, against durable leases.
+        transfer = fetcher.budget.transfer_lease(remaining)
+        decompressed = CapacityLease(fetcher.capacity_mgr, "decompressed")
+        try:
+            while row < stop:
                 if b"\n" not in pending and not stream_ended:
-                    continue
-            if not pending:
-                raise ValueError("selected row range extends beyond original corpus")
-            boundary = pending.find(b"\n") + 1
-            size = boundary or len(pending)
-            if size > limits.max_record_bytes:
-                raise RecordLimitError("selected JSONL record byte bound exceeded")
-            raw = bytes(pending[:size])
-            del pending[:size]
-            if raw.strip():
-                if scanned_counter is not None:
-                    scanned_counter[0] += 1
-                else:
-                    fetcher.capacity_mgr.record_units(
-                        "records_scanned", 1, limits.max_scanned_records
-                    )
-                fetcher.perf.record_scanned(1, file=name)
-                with fetcher.perf.timed("decode", file=name):
-                    record = json.loads(raw, object_pairs_hook=_pairs_hook_reject_duplicates)
-                if not isinstance(record, dict):
-                    raise ValueError("selected record must be a JSON object")
-                if row >= start:
-                    fetcher.perf.record_retained(1, file=name)
-                    yield (
-                        record,
-                        raw,
-                        {
-                            "row_index": row,
-                            "byte_offset": offset,
-                            "byte_length": len(raw),
-                            "format": "jsonl",
-                            "encoding": "gzip",
-                            "etag": response.headers.get("ETag"),
-                        },
-                    )
-                row += 1
-            offset += len(raw)
+                    if input_exhausted:
+                        tail = decompressor.flush()
+                        if tail:
+                            decompressed_out += len(tail)
+                            decompressed.consume(len(tail))
+                            fetcher.perf.record_decompressed(len(tail))
+                            pending.extend(tail)
+                        stream_ended = True
+                    else:
+                        if remaining is not None and remaining <= 0:
+                            input_exhausted = True
+                            continue
+                        amount = min(GZ_SELECT_CHUNK_BYTES, limits.max_record_bytes + 1)
+                        if remaining is not None:
+                            amount = min(amount, remaining)
+                        with fetcher.perf.timed("body", file=name):
+                            chunk = fetcher.budget.read_leased(response, transfer, amount)
+                        fetcher.perf.record_file_bytes(name, len(chunk))
+                        if remaining is not None:
+                            remaining -= len(chunk)
+                        compressed_read += len(chunk)
+                        if not chunk:
+                            input_exhausted = True
+                        else:
+                            try:
+                                piece = decompressor.decompress(chunk)
+                            except Exception as exc:
+                                raise RecordLimitError(
+                                    f"bounded gzip decode failed: {type(exc).__name__}"
+                                ) from exc
+                            decompressed_out += len(piece)
+                            if decompressed_out > limits.max_decompressed_bytes or (
+                                decompressed_out
+                                > limits.max_decompression_ratio * max(1, compressed_read)
+                            ):
+                                raise RecordLimitError("decompression byte/ratio limit exceeded")
+                            decompressed.consume(len(piece))
+                            fetcher.perf.record_decompressed(len(piece))
+                            pending.extend(piece)
+                            if b"\n" not in pending and len(pending) > limits.max_record_bytes:
+                                raise RecordLimitError("selected JSONL record byte bound exceeded")
+                    if b"\n" not in pending and not stream_ended:
+                        continue
+                if not pending:
+                    raise ValueError("selected row range extends beyond original corpus")
+                boundary = pending.find(b"\n") + 1
+                size = boundary or len(pending)
+                if size > limits.max_record_bytes:
+                    raise RecordLimitError("selected JSONL record byte bound exceeded")
+                raw = bytes(pending[:size])
+                del pending[:size]
+                if raw.strip():
+                    if scanned_counter is not None:
+                        scanned_counter[0] += 1
+                    else:
+                        fetcher.capacity_mgr.record_units(
+                            "records_scanned", 1, limits.max_scanned_records
+                        )
+                    fetcher.perf.record_scanned(1, file=name)
+                    with fetcher.perf.timed("decode", file=name):
+                        record = json.loads(raw, object_pairs_hook=_pairs_hook_reject_duplicates)
+                    if not isinstance(record, dict):
+                        raise ValueError("selected record must be a JSON object")
+                    if row >= start:
+                        fetcher.perf.record_retained(1, file=name)
+                        yield (
+                            record,
+                            raw,
+                            {
+                                "row_index": row,
+                                "byte_offset": offset,
+                                "byte_length": len(raw),
+                                "format": "jsonl",
+                                "encoding": "gzip",
+                                "etag": response.headers.get("ETag"),
+                            },
+                        )
+                    row += 1
+                offset += len(raw)
+        finally:
+            transfer.close()
+            decompressed.close()
 
 
 def _selection_iterator(

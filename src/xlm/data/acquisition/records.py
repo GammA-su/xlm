@@ -13,7 +13,7 @@ from typing import Any, Protocol
 
 import pyarrow.parquet as pq
 
-from xlm.data.acquisition.disk import StorageCapacityManager
+from xlm.data.acquisition.disk import CapacityLease, StorageCapacityManager
 from xlm.data.acquisition.plan import AcquisitionLimits
 from xlm.data.adapters.jsonl import _pairs_hook_reject_duplicates
 
@@ -26,30 +26,78 @@ class RecordStream(Protocol):
     def readline(self, size: int = -1, /) -> bytes: ...
 
 
+#: Scanned-record counts commit once per this many records (and exactly at the
+#: ceiling), with the same limit and refusal as per-record commits.
+SCAN_ACCOUNTING_BATCH = 256
+
+
+class ScanAccounting:
+    """Per-record decompressed charges on a durable lease plus batched scan counts.
+
+    Totals equal per-record accounting: every decompressed amount is charged
+    exactly (a lease renewal refuses exactly when the per-record reservation
+    would) and scanned counts commit through ``commit_batch``, which fills to
+    the ceiling and refuses at the same record when this scanner reaches it.
+    """
+
+    def __init__(self, capacity: StorageCapacityManager, limits: AcquisitionLimits) -> None:
+        self.capacity = capacity
+        self.maximum = limits.max_scanned_records
+        self.decompressed = CapacityLease(capacity, "decompressed")
+        self.base = capacity.consumed("records_scanned")
+        self.pending = 0
+        self.total = 0
+
+    def charge_decompressed(self, amount: int) -> None:
+        self.decompressed.consume(amount)
+
+    def scanned(self) -> None:
+        self.pending += 1
+        self.total += 1
+        if self.pending >= SCAN_ACCOUNTING_BATCH or self.base + self.total >= self.maximum:
+            self.flush()
+
+    def flush(self) -> None:
+        if self.pending:
+            pending, self.pending = self.pending, 0
+            self.capacity.commit_batch(scanned_records=pending, scanned_maximum=self.maximum)
+
+    def close(self) -> None:
+        try:
+            self.flush()
+        finally:
+            self.decompressed.close()
+
+
 def jsonl_records(
     stream: RecordStream, limits: AcquisitionLimits, capacity: StorageCapacityManager | None = None
 ) -> Iterator[tuple[int, int, bytes, dict[str, Any]]]:
     offset, row = 0, 0
-    while True:
-        raw = stream.readline(limits.max_record_bytes + 1)
-        if not raw:
-            return
-        if offset + len(raw) > limits.max_decompressed_bytes:
-            raise RecordLimitError("decompression limit: decompressed byte ceiling exceeded")
-        if capacity:
-            capacity.check_deadline()
-            capacity.record_decompressed(len(raw))
-        if len(raw) > limits.max_record_bytes:
-            raise RecordLimitError("record byte limit exceeded")
-        if raw.strip():
-            if capacity:
-                capacity.record_units("records_scanned", 1, limits.max_scanned_records)
-            value = json.loads(raw, object_pairs_hook=_pairs_hook_reject_duplicates)
-            if not isinstance(value, dict):
-                raise ValueError("corpus JSONL record must be an object")
-            yield row, offset, raw, value
-            row += 1
-        offset += len(raw)
+    accounting = ScanAccounting(capacity, limits) if capacity else None
+    try:
+        while True:
+            raw = stream.readline(limits.max_record_bytes + 1)
+            if not raw:
+                return
+            if offset + len(raw) > limits.max_decompressed_bytes:
+                raise RecordLimitError("decompression limit: decompressed byte ceiling exceeded")
+            if capacity and accounting:
+                capacity.check_deadline()
+                accounting.charge_decompressed(len(raw))
+            if len(raw) > limits.max_record_bytes:
+                raise RecordLimitError("record byte limit exceeded")
+            if raw.strip():
+                if accounting:
+                    accounting.scanned()
+                value = json.loads(raw, object_pairs_hook=_pairs_hook_reject_duplicates)
+                if not isinstance(value, dict):
+                    raise ValueError("corpus JSONL record must be an object")
+                yield row, offset, raw, value
+                row += 1
+            offset += len(raw)
+    finally:
+        if accounting:
+            accounting.close()
 
 
 def inspect_records(
@@ -116,45 +164,64 @@ def inspect_records(
         if parquet.metadata.num_rows > limits.max_records:
             raise RecordLimitError("whole-file record limit exceeded")
         count = 0
-        for group in range(parquet.num_row_groups):
-            if perf is not None:
-                with perf.timed("metadata", file=name):
-                    check_row_group(parquet, group, limits)
-            else:
-                check_row_group(parquet, group, limits)
-            if perf is not None:
-                perf.record_parquet_group()
-            if perf is not None:
-                with perf.timed("decode", file=name):
-                    batches = list(
-                        parquet.iter_batches(batch_size=1, row_groups=[group], use_threads=False)
-                    )
-            else:
-                batches = list(
-                    parquet.iter_batches(batch_size=1, row_groups=[group], use_threads=False)
-                )
-            for batch in batches:
-                if perf is not None:
-                    with perf.timed("decode", file=name):
-                        rows = batch.to_pylist()
-                else:
-                    rows = batch.to_pylist()
-                for record in rows:
-                    if perf is not None:
-                        with perf.timed("decode", file=name):
-                            raw = encode_record(record)
-                    else:
-                        raw = encode_record(record)
-                    if len(raw) > limits.max_record_bytes:
-                        raise RecordLimitError("Parquet record byte limit exceeded")
-                    if capacity:
-                        capacity.check_deadline()
-                        capacity.record_decompressed(batch.nbytes)
-                        capacity.record_units("records_scanned", 1, limits.max_scanned_records)
-                    count += 1
+        accounting = ScanAccounting(capacity, limits) if capacity else None
+        try:
+            count = _inspect_parquet_groups(parquet, name, limits, capacity, accounting, perf)
+        finally:
+            if accounting:
+                accounting.close()
         return count
     # Opaque transport objects are explicitly not proof of any corpus records.
     return None
+
+
+def _inspect_parquet_groups(
+    parquet: pq.ParquetFile,
+    name: str,
+    limits: AcquisitionLimits,
+    capacity: StorageCapacityManager | None,
+    accounting: ScanAccounting | None,
+    perf: Any | None,
+) -> int:
+    """Decode every row exactly as before (batch size 1) and charge it."""
+    count = 0
+    for group in range(parquet.num_row_groups):
+        if perf is not None:
+            with perf.timed("metadata", file=name):
+                check_row_group(parquet, group, limits)
+        else:
+            check_row_group(parquet, group, limits)
+        if perf is not None:
+            perf.record_parquet_group()
+        if perf is not None:
+            with perf.timed("decode", file=name):
+                batches = list(
+                    parquet.iter_batches(batch_size=1, row_groups=[group], use_threads=False)
+                )
+        else:
+            batches = list(
+                parquet.iter_batches(batch_size=1, row_groups=[group], use_threads=False)
+            )
+        for batch in batches:
+            if perf is not None:
+                with perf.timed("decode", file=name):
+                    rows = batch.to_pylist()
+            else:
+                rows = batch.to_pylist()
+            for record in rows:
+                if perf is not None:
+                    with perf.timed("decode", file=name):
+                        raw = encode_record(record)
+                else:
+                    raw = encode_record(record)
+                if len(raw) > limits.max_record_bytes:
+                    raise RecordLimitError("Parquet record byte limit exceeded")
+                if capacity and accounting:
+                    capacity.check_deadline()
+                    accounting.charge_decompressed(batch.nbytes)
+                    accounting.scanned()
+                count += 1
+    return count
 
 
 def check_row_group(parquet: pq.ParquetFile, group: int, limits: AcquisitionLimits) -> None:
