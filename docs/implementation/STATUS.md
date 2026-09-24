@@ -43,6 +43,32 @@
 > opt-in and off by default. See [reports/PINTEGRATION.md](reports/PINTEGRATION.md).
 > Overall production acceptance remains BLOCKED; main is unchanged.
 
+> **P30B serial/final throughput (2026-09-24): IMPLEMENTED / VERIFIED (scoped);
+> final acceptance BLOCKED.** On `perf/test-suite-throughput`, starting
+> `343537d8dfd6b30bc6f724436feb1f7b14993163`: all 1,673 prior nodes retained,
+> eight added core nodes, 1,681 collected. Original B: 66 pass / two fail,
+> 2,454.37 s. Core now passes 69 nodes in 419.93 s (grouped + exclusive);
+> installed optional passes all 57 in 190.44 s versus 523.03 s (63.6% less time).
+> Test-only immutable queue identity reuse preserves fresh worker/CLI inventories.
+> Audited four-worker domain grouping retains private mutable state; three risky
+> repetitions passed 11/11 at 298.66 / 296.51 / 297.39 s. All 68 original B bodies
+> and assertions are unchanged. Core + heavy still cover every original B node.
+> Final six legs: 1,655 pass / four fail / one compiler skip, no missing required
+> nodes, 1,172.83 s (19m32.83s). B totals 801.41 s, but the queue campaign stopped
+> early on a Windows checkpoint rename PermissionError: **no validated full-final
+> speedup or passing heavy gate is claimed**. A also encountered a Windows journal
+> replacement PermissionError; two original token-preparation failures remain.
+> B peak sampled RSS 1.035 -> 2.871 GiB; sampled CPU lower bound
+> 2,322.266 -> 3,099.984 s (includes eight new nodes; failed-work caveat applies).
+> A remains twelve workers; scale passes eight / 112.26 s. No product/durability
+> code, original durability tests, dependency graph or P28/P29 algorithms changed.
+> No network, installation, research campaign, push or merge. CUDA/live, hosted
+> grouping and performance matrices NOT RUN. See [P30B report](reports/P30B.md),
+> [evidence](evidence/P30B/README.md) and [direct commands](../TESTING.md).
+> Next: investigate the journal and checkpoint rename failures (coordinate the
+> checkpoint case with Muse), repair token preparation reuse/resume, run exact
+> failing nodes with `-n 0`, then the six final legs on the integrated tree.
+
 > **P30 test-suite iteration (2026-09-23): IMPLEMENTED / VERIFIED (scoped);
 > final acceptance BLOCKED.** On `perf/test-suite-throughput`, starting
 > `6bdca915005e2863e1c80b962dff6a053ab5b680`: all 1,667 original tests retained,

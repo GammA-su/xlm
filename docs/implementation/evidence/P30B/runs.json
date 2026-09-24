@@ -1,0 +1,660 @@
+[
+  {
+    "name": "before-optional",
+    "argv": [
+      "-vv",
+      "-ra",
+      "--strict-markers",
+      "-m",
+      "optional_dependency and not network and not cuda and not operator and not environment_setup",
+      "-n",
+      "0",
+      "--durations=0",
+      "-p",
+      "pytest_evidence",
+      "--evidence-json",
+      "artifacts/test-suite-perf-p30b/before-optional.json"
+    ],
+    "exit_code": 0,
+    "pytest_elapsed_seconds": 523.03,
+    "plugin_wall_seconds": 523.0294288000441,
+    "selected_nodes": 57,
+    "reported_nodes": 57,
+    "missing": [],
+    "outcomes": {
+      "PASSED": 57
+    },
+    "phase_seconds": {
+      "setup": 9.057443700206932,
+      "call": 505.7611423000344,
+      "teardown": 0.0250797001644969
+    },
+    "runtime_fixture_cache_hits": 0,
+    "peak_tree_rss_bytes": 1146007552,
+    "sampled_cpu_seconds_lower_bound": 552.109375,
+    "observed_unique_processes": 153,
+    "peak_observed_processes": 5
+  },
+  {
+    "name": "before-serial",
+    "argv": [
+      "-vv",
+      "-ra",
+      "--strict-markers",
+      "-m",
+      "serial and not performance and not scale and not cuda and not network and not operator and not optional_dependency and not environment_setup",
+      "-n",
+      "0",
+      "--durations=0",
+      "-p",
+      "pytest_evidence",
+      "--evidence-json",
+      "artifacts/test-suite-perf-p30b/before-serial.json"
+    ],
+    "exit_code": 1,
+    "pytest_elapsed_seconds": 2454.37,
+    "plugin_wall_seconds": 2454.2983344999957,
+    "selected_nodes": 68,
+    "reported_nodes": 68,
+    "missing": [],
+    "outcomes": {
+      "PASSED": 66,
+      "FAILED": 2
+    },
+    "phase_seconds": {
+      "setup": 21.46325519977836,
+      "call": 2419.3377493000007,
+      "teardown": 0.30080629960866645
+    },
+    "runtime_fixture_cache_hits": 0,
+    "peak_tree_rss_bytes": 1111183360,
+    "sampled_cpu_seconds_lower_bound": 2322.265625,
+    "observed_unique_processes": 316,
+    "peak_observed_processes": 9
+  },
+  {
+    "name": "cache-focused",
+    "argv": [
+      "tests/test_runtime_fixture.py",
+      "tests/test_queue.py::test_submit_deduplicates_identical_plans",
+      "tests/test_queue.py::test_submit_refuses_blocked_plans_and_missing_snapshots",
+      "tests/test_reports.py::test_cli_runs_list_empty_and_populated",
+      "-n",
+      "0",
+      "-vv",
+      "-ra",
+      "--strict-markers",
+      "--durations=0",
+      "-p",
+      "pytest_evidence",
+      "--evidence-json",
+      "artifacts/test-suite-perf-p30b/cache-focused.json"
+    ],
+    "exit_code": 1,
+    "pytest_elapsed_seconds": 2.8,
+    "plugin_wall_seconds": 0.9753459999919869,
+    "selected_nodes": 10,
+    "reported_nodes": 10,
+    "missing": [],
+    "outcomes": {
+      "ERROR": 10
+    },
+    "phase_seconds": {
+      "setup": 0.06055939994985238,
+      "call": 0,
+      "teardown": 0.002700400073081255
+    },
+    "runtime_fixture_cache_hits": 0,
+    "peak_tree_rss_bytes": 58884096,
+    "sampled_cpu_seconds_lower_bound": 0.90625,
+    "observed_unique_processes": 1,
+    "peak_observed_processes": 1
+  },
+  {
+    "name": "cache-focused-v2",
+    "argv": [
+      "tests/test_runtime_fixture.py",
+      "tests/test_queue.py::test_submit_deduplicates_identical_plans",
+      "tests/test_queue.py::test_submit_refuses_blocked_plans_and_missing_snapshots",
+      "tests/test_reports.py::test_cli_runs_list_empty_and_populated",
+      "-n",
+      "0",
+      "-vv",
+      "-ra",
+      "--strict-markers",
+      "--durations=0",
+      "-p",
+      "pytest_evidence",
+      "--evidence-json",
+      "artifacts/test-suite-perf-p30b/cache-focused-v2.json"
+    ],
+    "exit_code": 0,
+    "pytest_elapsed_seconds": 75.89,
+    "plugin_wall_seconds": 75.53410190000432,
+    "selected_nodes": 10,
+    "reported_nodes": 10,
+    "missing": [],
+    "outcomes": {
+      "PASSED": 10
+    },
+    "phase_seconds": {
+      "setup": 23.87140669982182,
+      "call": 36.65673549985513,
+      "teardown": 14.469976700027473
+    },
+    "runtime_fixture_cache_hits": 4,
+    "peak_tree_rss_bytes": 278192128,
+    "sampled_cpu_seconds_lower_bound": 83.734375,
+    "observed_unique_processes": 1,
+    "peak_observed_processes": 1
+  },
+  {
+    "name": "failure-diagnostic",
+    "argv": [
+      "tests/test_acquisition_bounds.py::test_nested_acquisition_consumes_parent_preparation_budget",
+      "tests/test_queue.py::test_toy_campaign_runs_sequentially_to_success",
+      "-n",
+      "0",
+      "--fresh-runtime",
+      "-vv",
+      "-ra",
+      "--strict-markers",
+      "--durations=0",
+      "-p",
+      "pytest_evidence",
+      "--evidence-json",
+      "artifacts/test-suite-perf-p30b/failure-diagnostic.json"
+    ],
+    "exit_code": 0,
+    "pytest_elapsed_seconds": 164.03,
+    "plugin_wall_seconds": 162.05957600002876,
+    "selected_nodes": 2,
+    "reported_nodes": 2,
+    "missing": [],
+    "outcomes": {
+      "PASSED": 2
+    },
+    "phase_seconds": {
+      "setup": 0.44959080003900453,
+      "call": 160.64447059994563,
+      "teardown": 0.20491289999336004
+    },
+    "runtime_fixture_cache_hits": 0,
+    "peak_tree_rss_bytes": 644661248,
+    "sampled_cpu_seconds_lower_bound": 213.796875,
+    "observed_unique_processes": 11,
+    "peak_observed_processes": 3
+  },
+  {
+    "name": "final-core",
+    "argv": [
+      "-q",
+      "--strict-markers",
+      "-m",
+      "serial_core and not serial_exclusive",
+      "-n",
+      "4",
+      "--dist=loadgroup",
+      "--max-worker-restart=0",
+      "--durations=0",
+      "-p",
+      "pytest_evidence",
+      "--evidence-json",
+      "artifacts/test-suite-perf-p30b/final-core.json"
+    ],
+    "exit_code": 0,
+    "pytest_elapsed_seconds": 410.05,
+    "plugin_wall_seconds": 409.9137604999705,
+    "selected_nodes": 68,
+    "reported_nodes": 68,
+    "missing": [],
+    "outcomes": {
+      "PASSED": 68
+    },
+    "phase_seconds": {
+      "setup": 51.47487730032299,
+      "call": 1275.2748890002258,
+      "teardown": 17.578794900036883
+    },
+    "runtime_fixture_cache_hits": 12,
+    "peak_tree_rss_bytes": 2595454976,
+    "sampled_cpu_seconds_lower_bound": 1685.171875,
+    "observed_unique_processes": 160,
+    "peak_observed_processes": 23
+  },
+  {
+    "name": "final-exclusive",
+    "argv": [
+      "-q",
+      "--strict-markers",
+      "-m",
+      "serial_core and serial_exclusive",
+      "-n",
+      "0",
+      "--durations=0",
+      "-p",
+      "pytest_evidence",
+      "--evidence-json",
+      "artifacts/test-suite-perf-p30b/final-exclusive.json"
+    ],
+    "exit_code": 0,
+    "pytest_elapsed_seconds": 9.88,
+    "plugin_wall_seconds": 8.264098100014962,
+    "selected_nodes": 1,
+    "reported_nodes": 1,
+    "missing": [],
+    "outcomes": {
+      "PASSED": 1
+    },
+    "phase_seconds": {
+      "setup": 0.00971340003889054,
+      "call": 1.333723999967333,
+      "teardown": 0.0003925999626517296
+    },
+    "runtime_fixture_cache_hits": 0,
+    "peak_tree_rss_bytes": 304177152,
+    "sampled_cpu_seconds_lower_bound": 7.484375,
+    "observed_unique_processes": 5,
+    "peak_observed_processes": 5
+  },
+  {
+    "name": "final-fast",
+    "argv": [
+      "-q",
+      "--strict-markers",
+      "-m",
+      "not serial and not performance and not scale and not cuda and not network and not operator and not optional_dependency and not environment_setup",
+      "-n",
+      "12",
+      "--dist=worksteal",
+      "--max-worker-restart=0",
+      "--durations=0",
+      "-p",
+      "pytest_evidence",
+      "--evidence-json",
+      "artifacts/test-suite-perf-p30b/final-fast.json"
+    ],
+    "exit_code": 1,
+    "pytest_elapsed_seconds": 68.72,
+    "plugin_wall_seconds": 68.63725839997642,
+    "selected_nodes": 1519,
+    "reported_nodes": 1519,
+    "missing": [],
+    "outcomes": {
+      "PASSED": 1517,
+      "SKIPPED": 1,
+      "FAILED": 1
+    },
+    "phase_seconds": {
+      "setup": 8.183984700997826,
+      "call": 541.5544318001484,
+      "teardown": 6.105090099095833
+    },
+    "runtime_fixture_cache_hits": 0,
+    "peak_tree_rss_bytes": 5197287424,
+    "sampled_cpu_seconds_lower_bound": 540.046875,
+    "observed_unique_processes": 188,
+    "peak_observed_processes": 41
+  },
+  {
+    "name": "final-heavy",
+    "argv": [
+      "-q",
+      "--strict-markers",
+      "-m",
+      "serial_heavy",
+      "-n",
+      "4",
+      "--dist=loadgroup",
+      "--max-worker-restart=0",
+      "--durations=0",
+      "-p",
+      "pytest_evidence",
+      "--evidence-json",
+      "artifacts/test-suite-perf-p30b/final-heavy.json"
+    ],
+    "exit_code": 1,
+    "pytest_elapsed_seconds": 381.48,
+    "plugin_wall_seconds": 378.2217284000362,
+    "selected_nodes": 7,
+    "reported_nodes": 7,
+    "missing": [],
+    "outcomes": {
+      "PASSED": 4,
+      "FAILED": 3
+    },
+    "phase_seconds": {
+      "setup": 16.45035119995009,
+      "call": 1045.6799678999814,
+      "teardown": 16.234854999929667
+    },
+    "runtime_fixture_cache_hits": 3,
+    "peak_tree_rss_bytes": 3083165696,
+    "sampled_cpu_seconds_lower_bound": 1407.328125,
+    "observed_unique_processes": 190,
+    "peak_observed_processes": 27
+  },
+  {
+    "name": "final-optional",
+    "argv": [
+      "-q",
+      "--strict-markers",
+      "-m",
+      "optional_dependency and not network and not cuda and not operator and not environment_setup",
+      "-n",
+      "4",
+      "--dist=loadgroup",
+      "--max-worker-restart=0",
+      "--durations=0",
+      "-p",
+      "pytest_evidence",
+      "--evidence-json",
+      "artifacts/test-suite-perf-p30b/final-optional.json"
+    ],
+    "exit_code": 0,
+    "pytest_elapsed_seconds": 190.44,
+    "plugin_wall_seconds": 190.47144690004643,
+    "selected_nodes": 57,
+    "reported_nodes": 57,
+    "missing": [],
+    "outcomes": {
+      "PASSED": 57
+    },
+    "phase_seconds": {
+      "setup": 14.261184900184162,
+      "call": 563.2690403001034,
+      "teardown": 0.03188010019948706
+    },
+    "runtime_fixture_cache_hits": 0,
+    "peak_tree_rss_bytes": 3097411584,
+    "sampled_cpu_seconds_lower_bound": 640.71875,
+    "observed_unique_processes": 178,
+    "peak_observed_processes": 25
+  },
+  {
+    "name": "final-scale",
+    "argv": [
+      "-q",
+      "--strict-markers",
+      "-m",
+      "scale and not network and not cuda and not operator and not environment_setup",
+      "-n",
+      "0",
+      "--durations=0",
+      "-p",
+      "pytest_evidence",
+      "--evidence-json",
+      "artifacts/test-suite-perf-p30b/final-scale.json"
+    ],
+    "exit_code": 0,
+    "pytest_elapsed_seconds": 112.26,
+    "plugin_wall_seconds": 105.8631929999683,
+    "selected_nodes": 8,
+    "reported_nodes": 8,
+    "missing": [],
+    "outcomes": {
+      "PASSED": 8
+    },
+    "phase_seconds": {
+      "setup": 0.025983900006394833,
+      "call": 98.77807689999463,
+      "teardown": 0.0032817000173963606
+    },
+    "runtime_fixture_cache_hits": 0,
+    "peak_tree_rss_bytes": 729542656,
+    "sampled_cpu_seconds_lower_bound": 196.515625,
+    "observed_unique_processes": 17,
+    "peak_observed_processes": 5
+  },
+  {
+    "name": "fresh-option",
+    "argv": [
+      "tests/test_queue.py::test_submit_deduplicates_identical_plans",
+      "--fresh-runtime",
+      "-n",
+      "0",
+      "-vv",
+      "--durations=0",
+      "-p",
+      "pytest_evidence",
+      "--evidence-json",
+      "artifacts/test-suite-perf-p30b/fresh-option.json"
+    ],
+    "exit_code": 0,
+    "pytest_elapsed_seconds": 24.53,
+    "plugin_wall_seconds": 23.052731500007212,
+    "selected_nodes": 1,
+    "reported_nodes": 1,
+    "missing": [],
+    "outcomes": {
+      "PASSED": 1
+    },
+    "phase_seconds": {
+      "setup": 0.027413300005719066,
+      "call": 22.576468600018416,
+      "teardown": 0.0005785999819636345
+    },
+    "runtime_fixture_cache_hits": 0,
+    "peak_tree_rss_bytes": 268066816,
+    "sampled_cpu_seconds_lower_bound": 27.265625,
+    "observed_unique_processes": 1,
+    "peak_observed_processes": 1
+  },
+  {
+    "name": "prepare-oracle",
+    "argv": [
+      "tests/test_runtime_fixture.py::test_small_prepare_reuse_and_resume_preserve_outputs",
+      "-n",
+      "0",
+      "-vv",
+      "--durations=0",
+      "-p",
+      "pytest_evidence",
+      "--evidence-json",
+      "artifacts/test-suite-perf-p30b/prepare-oracle.json"
+    ],
+    "exit_code": 0,
+    "pytest_elapsed_seconds": 5.79,
+    "plugin_wall_seconds": 4.182588099967688,
+    "selected_nodes": 1,
+    "reported_nodes": 1,
+    "missing": [],
+    "outcomes": {
+      "PASSED": 1
+    },
+    "phase_seconds": {
+      "setup": 0.006305399991106242,
+      "call": 3.642710399988573,
+      "teardown": 0.00031129998387768865
+    },
+    "runtime_fixture_cache_hits": 0,
+    "peak_tree_rss_bytes": 77086720,
+    "sampled_cpu_seconds_lower_bound": 3.765625,
+    "observed_unique_processes": 1,
+    "peak_observed_processes": 1
+  },
+  {
+    "name": "risky-1",
+    "argv": [
+      "tests/test_frozen_recovery.py::test_real_crash_preserves_committed_boundary_on_retry",
+      "tests/test_artifact_identity.py::test_fresh_process_publishers_have_one_permitted_outcome",
+      "tests/test_acquisition_bounds.py::test_killed_download_resumes_in_a_fresh_process_without_new_allowance",
+      "tests/test_queue.py::test_cancel_stops_a_queued_job_and_a_running_job",
+      "tests/test_frozen_execution.py::test_actual_environment_mismatch_fails_in_real_worker",
+      "tests/test_frozen_execution.py::test_real_frozen_worker_trains_and_publishes",
+      "tests/test_cleaning_throughput.py::test_workers_1_2_4_agree",
+      "tests/test_configurable_workflow.py::test_public_two_source_prepare_direct_queue_and_resume[True]",
+      "tests/test_eval_declared_inputs.py::test_cli_declared_run_under_a_limit_withholds_the_index",
+      "tests/test_harness_adapter.py::test_evidence_cache_reuses_and_recomputes_on_identity_change",
+      "-n",
+      "4",
+      "--dist=loadgroup",
+      "--max-worker-restart=0",
+      "-vv",
+      "-ra",
+      "--strict-markers",
+      "--durations=0",
+      "-p",
+      "pytest_evidence",
+      "--evidence-json",
+      "artifacts/test-suite-perf-p30b/risky-1.json"
+    ],
+    "exit_code": 0,
+    "pytest_elapsed_seconds": 289.38,
+    "plugin_wall_seconds": 289.4101253999979,
+    "selected_nodes": 11,
+    "reported_nodes": 11,
+    "missing": [],
+    "outcomes": {
+      "PASSED": 11
+    },
+    "phase_seconds": {
+      "setup": 44.008907100127544,
+      "call": 575.333903999941,
+      "teardown": 18.25874710007338
+    },
+    "runtime_fixture_cache_hits": 2,
+    "peak_tree_rss_bytes": 2318970880,
+    "sampled_cpu_seconds_lower_bound": 809.59375,
+    "observed_unique_processes": 79,
+    "peak_observed_processes": 20
+  },
+  {
+    "name": "risky-2",
+    "argv": [
+      "tests/test_frozen_recovery.py::test_real_crash_preserves_committed_boundary_on_retry",
+      "tests/test_artifact_identity.py::test_fresh_process_publishers_have_one_permitted_outcome",
+      "tests/test_acquisition_bounds.py::test_killed_download_resumes_in_a_fresh_process_without_new_allowance",
+      "tests/test_queue.py::test_cancel_stops_a_queued_job_and_a_running_job",
+      "tests/test_frozen_execution.py::test_actual_environment_mismatch_fails_in_real_worker",
+      "tests/test_frozen_execution.py::test_real_frozen_worker_trains_and_publishes",
+      "tests/test_cleaning_throughput.py::test_workers_1_2_4_agree",
+      "tests/test_configurable_workflow.py::test_public_two_source_prepare_direct_queue_and_resume[True]",
+      "tests/test_eval_declared_inputs.py::test_cli_declared_run_under_a_limit_withholds_the_index",
+      "tests/test_harness_adapter.py::test_evidence_cache_reuses_and_recomputes_on_identity_change",
+      "-n",
+      "4",
+      "--dist=loadgroup",
+      "--max-worker-restart=0",
+      "-vv",
+      "-ra",
+      "--strict-markers",
+      "--durations=0",
+      "-p",
+      "pytest_evidence",
+      "--evidence-json",
+      "artifacts/test-suite-perf-p30b/risky-2.json"
+    ],
+    "exit_code": 0,
+    "pytest_elapsed_seconds": 298.66,
+    "plugin_wall_seconds": 298.693546399998,
+    "selected_nodes": 11,
+    "reported_nodes": 11,
+    "missing": [],
+    "outcomes": {
+      "PASSED": 11
+    },
+    "phase_seconds": {
+      "setup": 44.9892806999851,
+      "call": 563.173328099947,
+      "teardown": 18.07221449993085
+    },
+    "runtime_fixture_cache_hits": 2,
+    "peak_tree_rss_bytes": 2436378624,
+    "sampled_cpu_seconds_lower_bound": 794.140625,
+    "observed_unique_processes": 78,
+    "peak_observed_processes": 21
+  },
+  {
+    "name": "risky-3",
+    "argv": [
+      "tests/test_frozen_recovery.py::test_real_crash_preserves_committed_boundary_on_retry",
+      "tests/test_artifact_identity.py::test_fresh_process_publishers_have_one_permitted_outcome",
+      "tests/test_acquisition_bounds.py::test_killed_download_resumes_in_a_fresh_process_without_new_allowance",
+      "tests/test_queue.py::test_cancel_stops_a_queued_job_and_a_running_job",
+      "tests/test_frozen_execution.py::test_actual_environment_mismatch_fails_in_real_worker",
+      "tests/test_frozen_execution.py::test_real_frozen_worker_trains_and_publishes",
+      "tests/test_cleaning_throughput.py::test_workers_1_2_4_agree",
+      "tests/test_configurable_workflow.py::test_public_two_source_prepare_direct_queue_and_resume[True]",
+      "tests/test_eval_declared_inputs.py::test_cli_declared_run_under_a_limit_withholds_the_index",
+      "tests/test_harness_adapter.py::test_evidence_cache_reuses_and_recomputes_on_identity_change",
+      "-n",
+      "4",
+      "--dist=loadgroup",
+      "--max-worker-restart=0",
+      "-vv",
+      "-ra",
+      "--strict-markers",
+      "--durations=0",
+      "-p",
+      "pytest_evidence",
+      "--evidence-json",
+      "artifacts/test-suite-perf-p30b/risky-3.json"
+    ],
+    "exit_code": 0,
+    "pytest_elapsed_seconds": 296.51,
+    "plugin_wall_seconds": 296.5450858999975,
+    "selected_nodes": 11,
+    "reported_nodes": 11,
+    "missing": [],
+    "outcomes": {
+      "PASSED": 11
+    },
+    "phase_seconds": {
+      "setup": 44.51473540009465,
+      "call": 560.3103943001479,
+      "teardown": 17.907532799930777
+    },
+    "runtime_fixture_cache_hits": 2,
+    "peak_tree_rss_bytes": 2431422464,
+    "sampled_cpu_seconds_lower_bound": 794.078125,
+    "observed_unique_processes": 83,
+    "peak_observed_processes": 21
+  },
+  {
+    "name": "risky-4",
+    "argv": [
+      "tests/test_frozen_recovery.py::test_real_crash_preserves_committed_boundary_on_retry",
+      "tests/test_artifact_identity.py::test_fresh_process_publishers_have_one_permitted_outcome",
+      "tests/test_acquisition_bounds.py::test_killed_download_resumes_in_a_fresh_process_without_new_allowance",
+      "tests/test_queue.py::test_cancel_stops_a_queued_job_and_a_running_job",
+      "tests/test_frozen_execution.py::test_actual_environment_mismatch_fails_in_real_worker",
+      "tests/test_frozen_execution.py::test_real_frozen_worker_trains_and_publishes",
+      "tests/test_cleaning_throughput.py::test_workers_1_2_4_agree",
+      "tests/test_configurable_workflow.py::test_public_two_source_prepare_direct_queue_and_resume[True]",
+      "tests/test_eval_declared_inputs.py::test_cli_declared_run_under_a_limit_withholds_the_index",
+      "tests/test_harness_adapter.py::test_evidence_cache_reuses_and_recomputes_on_identity_change",
+      "-n",
+      "4",
+      "--dist=loadgroup",
+      "--max-worker-restart=0",
+      "-vv",
+      "-ra",
+      "--strict-markers",
+      "--durations=0",
+      "-p",
+      "pytest_evidence",
+      "--evidence-json",
+      "artifacts/test-suite-perf-p30b/risky-4.json"
+    ],
+    "exit_code": 0,
+    "pytest_elapsed_seconds": 297.39,
+    "plugin_wall_seconds": 295.9347856999957,
+    "selected_nodes": 11,
+    "reported_nodes": 11,
+    "missing": [],
+    "outcomes": {
+      "PASSED": 11
+    },
+    "phase_seconds": {
+      "setup": 44.27407560002757,
+      "call": 559.9634941999684,
+      "teardown": 18.0747943999595
+    },
+    "runtime_fixture_cache_hits": 2,
+    "peak_tree_rss_bytes": 2434850816,
+    "sampled_cpu_seconds_lower_bound": 794.71875,
+    "observed_unique_processes": 82,
+    "peak_observed_processes": 21
+  }
+]

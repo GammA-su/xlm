@@ -1,0 +1,33 @@
+{
+  "starting_head": "343537d8dfd6b30bc6f724436feb1f7b14993163",
+  "python": "3.12.13 (main, Apr  7 2026, 20:53:22) [MSC v.1944 64 bit (AMD64)]",
+  "executable": "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "physical_cpus": 8,
+  "logical_cpus": 16,
+  "ram_bytes": 77231341568,
+  "packages": {
+    "pytest": "9.1.1",
+    "pytest-xdist": "3.8.0",
+    "torch": "2.14.0+cpu",
+    "numpy": "2.5.3",
+    "pyarrow": "25.0.1",
+    "tokenizers": "0.23.2",
+    "lm-eval": "0.4.13",
+    "datasets": "5.0.1",
+    "psutil": "7.2.2"
+  },
+  "uv": "uv 0.11.6 (65950801c 2026-04-09 x86_64-pc-windows-msvc)",
+  "env": {
+    "UV_PROJECT_ENVIRONMENT": "D:\\Project\\xlm-performance-integration-20260923\\.venv",
+    "PYTHONPATH": "D:\\Project\\xlm-test-suite-perf\\src;D:\\Project\\xlm-test-suite-perf\\scripts",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "OMP_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "NUMEXPR_NUM_THREADS": "1",
+    "TOKENIZERS_PARALLELISM": "false",
+    "XLM_HOME": "D:\\Project\\xlm-test-suite-perf\\artifacts\\test-suite-perf-p30b\\home"
+  },
+  "contention": "Another independent -n 0 pytest session was present at baseline launch. No other worktree inspected or modified."
+}

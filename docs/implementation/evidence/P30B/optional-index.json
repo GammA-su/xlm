@@ -1,0 +1,457 @@
+{
+  "wall_seconds": 25.899712899990845,
+  "indexed_tasks": 14685,
+  "profiled": true,
+  "top50": [
+    {
+      "file": "D:\\Project\\xlm-test-suite-perf\\src\\xlm\\evaluation\\harness.py",
+      "line": 438,
+      "function": "build_task_manager",
+      "primitive_calls": 1,
+      "calls": 1,
+      "own_seconds": 8.900000000000001e-06,
+      "cumulative_seconds": 25.899626400000002
+    },
+    {
+      "file": "D:\\Project\\xlm-test-suite-perf\\src\\xlm\\evaluation\\harness.py",
+      "line": 424,
+      "function": "_task_manager_cached",
+      "primitive_calls": 1,
+      "calls": 1,
+      "own_seconds": 5.4300000000000005e-05,
+      "cumulative_seconds": 25.8990802
+    },
+    {
+      "file": "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Lib\\site-packages\\lm_eval\\tasks\\manager.py",
+      "line": 53,
+      "function": "__init__",
+      "primitive_calls": 1,
+      "calls": 1,
+      "own_seconds": 0.0080478,
+      "cumulative_seconds": 24.031961300000003
+    },
+    {
+      "file": "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Lib\\site-packages\\lm_eval\\tasks\\_index.py",
+      "line": 44,
+      "function": "build",
+      "primitive_calls": 1,
+      "calls": 1,
+      "own_seconds": 0.0788978,
+      "cumulative_seconds": 24.0154593
+    },
+    {
+      "file": "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Lib\\site-packages\\lm_eval\\tasks\\_yaml_loader.py",
+      "line": 164,
+      "function": "load_yaml",
+      "primitive_calls": 13988,
+      "calls": 26621,
+      "own_seconds": 0.45787510000000003,
+      "cumulative_seconds": 23.1168656
+    },
+    {
+      "file": "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Lib\\site-packages\\yaml\\__init__.py",
+      "line": 74,
+      "function": "load",
+      "primitive_calls": 26621,
+      "calls": 26621,
+      "own_seconds": 0.16866920000000002,
+      "cumulative_seconds": 10.2056298
+    },
+    {
+      "file": "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Lib\\site-packages\\yaml\\constructor.py",
+      "line": 47,
+      "function": "get_single_data",
+      "primitive_calls": 26621,
+      "calls": 26621,
+      "own_seconds": 3.3176812,
+      "cumulative_seconds": 9.847987
+    },
+    {
+      "file": "C:\\Users\\gamma\\AppData\\Roaming\\uv\\python\\cpython-3.12.13-windows-x86_64-none\\Lib\\pathlib.py",
+      "line": 1228,
+      "function": "resolve",
+      "primitive_calls": 26622,
+      "calls": 26622,
+      "own_seconds": 0.08398520000000001,
+      "cumulative_seconds": 7.749196700000001
+    },
+    {
+      "file": "<frozen ntpath>",
+      "line": 664,
+      "function": "realpath",
+      "primitive_calls": 26623,
+      "calls": 26623,
+      "own_seconds": 0.1773317,
+      "cumulative_seconds": 5.5319031
+    },
+    {
+      "file": "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Lib\\site-packages\\yaml\\constructor.py",
+      "line": 54,
+      "function": "construct_document",
+      "primitive_calls": 26621,
+      "calls": 26621,
+      "own_seconds": 0.12696860000000001,
+      "cumulative_seconds": 4.925966600000001
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method nt._getfinalpathname>",
+      "primitive_calls": 53246,
+      "calls": 53246,
+      "own_seconds": 4.856269500000001,
+      "cumulative_seconds": 4.856269500000001
+    },
+    {
+      "file": "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Lib\\site-packages\\yaml\\constructor.py",
+      "line": 410,
+      "function": "construct_yaml_map",
+      "primitive_calls": 151474,
+      "calls": 179864,
+      "own_seconds": 0.0937003,
+      "cumulative_seconds": 4.310359500000001
+    },
+    {
+      "file": "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Lib\\site-packages\\yaml\\constructor.py",
+      "line": 215,
+      "function": "construct_mapping",
+      "primitive_calls": 89932,
+      "calls": 89932,
+      "own_seconds": 0.1471623,
+      "cumulative_seconds": 4.1735391
+    },
+    {
+      "file": "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Lib\\site-packages\\yaml\\constructor.py",
+      "line": 132,
+      "function": "construct_mapping",
+      "primitive_calls": 89932,
+      "calls": 89932,
+      "own_seconds": 0.43305910000000003,
+      "cumulative_seconds": 3.7907586
+    },
+    {
+      "file": "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Lib\\site-packages\\yaml\\constructor.py",
+      "line": 67,
+      "function": "construct_object",
+      "primitive_calls": 831478,
+      "calls": 831478,
+      "own_seconds": 1.226154,
+      "cumulative_seconds": 3.3728981
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method nt.stat>",
+      "primitive_calls": 31195,
+      "calls": 31195,
+      "own_seconds": 1.4268211000000002,
+      "cumulative_seconds": 2.0838817
+    },
+    {
+      "file": "C:\\Users\\gamma\\AppData\\Roaming\\uv\\python\\cpython-3.12.13-windows-x86_64-none\\Lib\\pathlib.py",
+      "line": 835,
+      "function": "stat",
+      "primitive_calls": 26624,
+      "calls": 26624,
+      "own_seconds": 0.0202331,
+      "cumulative_seconds": 1.9075713
+    },
+    {
+      "file": "<frozen importlib._bootstrap>",
+      "line": 1349,
+      "function": "_find_and_load",
+      "primitive_calls": 1,
+      "calls": 1826,
+      "own_seconds": 0.008854200000000001,
+      "cumulative_seconds": 1.8670634000000002
+    },
+    {
+      "file": "<frozen importlib._bootstrap>",
+      "line": 1304,
+      "function": "_find_and_load_unlocked",
+      "primitive_calls": 1,
+      "calls": 1109,
+      "own_seconds": 0.0049351,
+      "cumulative_seconds": 1.8669983
+    },
+    {
+      "file": "<frozen importlib._bootstrap>",
+      "line": 480,
+      "function": "_call_with_frames_removed",
+      "primitive_calls": 3,
+      "calls": 2425,
+      "own_seconds": 0.0017114,
+      "cumulative_seconds": 1.8659087
+    },
+    {
+      "file": "<frozen importlib._bootstrap>",
+      "line": 911,
+      "function": "_load_unlocked",
+      "primitive_calls": 2,
+      "calls": 1058,
+      "own_seconds": 0.0035668,
+      "cumulative_seconds": 1.865463
+    },
+    {
+      "file": "<frozen importlib._bootstrap_external>",
+      "line": 993,
+      "function": "exec_module",
+      "primitive_calls": 2,
+      "calls": 964,
+      "own_seconds": 0.002707,
+      "cumulative_seconds": 1.865361
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method builtins.exec>",
+      "primitive_calls": 2,
+      "calls": 1527,
+      "own_seconds": 0.0769808,
+      "cumulative_seconds": 1.8644632
+    },
+    {
+      "file": "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Lib\\site-packages\\lm_eval\\tasks\\__init__.py",
+      "line": 1,
+      "function": "<module>",
+      "primitive_calls": 1,
+      "calls": 1,
+      "own_seconds": 1.88e-05,
+      "cumulative_seconds": 1.8591730000000002
+    },
+    {
+      "file": "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Lib\\site-packages\\lm_eval\\tasks\\manager.py",
+      "line": 1,
+      "function": "<module>",
+      "primitive_calls": 1,
+      "calls": 1,
+      "own_seconds": 2.57e-05,
+      "cumulative_seconds": 1.8578371
+    },
+    {
+      "file": "C:\\Users\\gamma\\AppData\\Roaming\\uv\\python\\cpython-3.12.13-windows-x86_64-none\\Lib\\pathlib.py",
+      "line": 1005,
+      "function": "open",
+      "primitive_calls": 26733,
+      "calls": 26733,
+      "own_seconds": 0.029183200000000003,
+      "cumulative_seconds": 1.8089156000000002
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method _io.open>",
+      "primitive_calls": 26764,
+      "calls": 26764,
+      "own_seconds": 1.7548077000000002,
+      "cumulative_seconds": 1.7814495000000001
+    },
+    {
+      "file": "C:\\Users\\gamma\\AppData\\Roaming\\uv\\python\\cpython-3.12.13-windows-x86_64-none\\Lib\\pathlib.py",
+      "line": 551,
+      "function": "drive",
+      "primitive_calls": 202009,
+      "calls": 202009,
+      "own_seconds": 0.18614740000000002,
+      "cumulative_seconds": 1.5472081000000002
+    },
+    {
+      "file": "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Lib\\site-packages\\lm_eval\\api\\task.py",
+      "line": 1,
+      "function": "<module>",
+      "primitive_calls": 1,
+      "calls": 1,
+      "own_seconds": 4.71e-05,
+      "cumulative_seconds": 1.5447621
+    },
+    {
+      "file": "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Lib\\site-packages\\datasets\\__init__.py",
+      "line": 1,
+      "function": "<module>",
+      "primitive_calls": 1,
+      "calls": 1,
+      "own_seconds": 4.99e-05,
+      "cumulative_seconds": 1.4739885000000001
+    },
+    {
+      "file": "C:\\Users\\gamma\\AppData\\Roaming\\uv\\python\\cpython-3.12.13-windows-x86_64-none\\Lib\\pathlib.py",
+      "line": 407,
+      "function": "_load_parts",
+      "primitive_calls": 79249,
+      "calls": 79249,
+      "own_seconds": 0.1458392,
+      "cumulative_seconds": 1.3610607000000001
+    },
+    {
+      "file": "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Lib\\site-packages\\datasets\\arrow_dataset.py",
+      "line": 1,
+      "function": "<module>",
+      "primitive_calls": 1,
+      "calls": 1,
+      "own_seconds": 0.0001767,
+      "cumulative_seconds": 1.2078221
+    },
+    {
+      "file": "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Lib\\site-packages\\yaml\\resolver.py",
+      "line": 143,
+      "function": "resolve",
+      "primitive_calls": 817985,
+      "calls": 817985,
+      "own_seconds": 0.7965098,
+      "cumulative_seconds": 1.189597
+    },
+    {
+      "file": "C:\\Users\\gamma\\AppData\\Roaming\\uv\\python\\cpython-3.12.13-windows-x86_64-none\\Lib\\pathlib.py",
+      "line": 437,
+      "function": "__str__",
+      "primitive_calls": 151275,
+      "calls": 151275,
+      "own_seconds": 0.2363258,
+      "cumulative_seconds": 1.16537
+    },
+    {
+      "file": "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Lib\\site-packages\\yaml\\constructor.py",
+      "line": 402,
+      "function": "construct_yaml_str",
+      "primitive_calls": 621118,
+      "calls": 621118,
+      "own_seconds": 0.2123915,
+      "cumulative_seconds": 1.1135695
+    },
+    {
+      "file": "<frozen importlib._bootstrap>",
+      "line": 1390,
+      "function": "_handle_fromlist",
+      "primitive_calls": 573,
+      "calls": 974,
+      "own_seconds": 0.0013549,
+      "cumulative_seconds": 1.0097274
+    },
+    {
+      "file": "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Lib\\site-packages\\yaml\\constructor.py",
+      "line": 173,
+      "function": "construct_scalar",
+      "primitive_calls": 701457,
+      "calls": 701457,
+      "own_seconds": 0.5209572,
+      "cumulative_seconds": 0.9967886
+    },
+    {
+      "file": "C:\\Users\\gamma\\AppData\\Roaming\\uv\\python\\cpython-3.12.13-windows-x86_64-none\\Lib\\pathlib.py",
+      "line": 387,
+      "function": "_parse_path",
+      "primitive_calls": 79251,
+      "calls": 79251,
+      "own_seconds": 0.48120710000000005,
+      "cumulative_seconds": 0.9918641
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method builtins.__import__>",
+      "primitive_calls": 104,
+      "calls": 177,
+      "own_seconds": 0.0005211,
+      "cumulative_seconds": 0.8822238
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method builtins.isinstance>",
+      "primitive_calls": 3517458,
+      "calls": 3517458,
+      "own_seconds": 0.6102270000000001,
+      "cumulative_seconds": 0.8347338000000001
+    },
+    {
+      "file": "C:\\Users\\gamma\\AppData\\Roaming\\uv\\python\\cpython-3.12.13-windows-x86_64-none\\Lib\\pathlib.py",
+      "line": 447,
+      "function": "__fspath__",
+      "primitive_calls": 81652,
+      "calls": 81652,
+      "own_seconds": 0.06745280000000001,
+      "cumulative_seconds": 0.8174387000000001
+    },
+    {
+      "file": "<frozen importlib._bootstrap_external>",
+      "line": 1066,
+      "function": "get_code",
+      "primitive_calls": 964,
+      "calls": 964,
+      "own_seconds": 0.010367600000000001,
+      "cumulative_seconds": 0.7219925
+    },
+    {
+      "file": "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Lib\\site-packages\\lm_eval\\tasks\\_yaml_loader.py",
+      "line": 27,
+      "function": "_make_loader",
+      "primitive_calls": 26621,
+      "calls": 26621,
+      "own_seconds": 0.061495100000000004,
+      "cumulative_seconds": 0.7118696
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<method '__exit__' of '_io._IOBase' objects>",
+      "primitive_calls": 27645,
+      "calls": 27645,
+      "own_seconds": 0.7057704,
+      "cumulative_seconds": 0.7057704
+    },
+    {
+      "file": "C:\\Users\\gamma\\AppData\\Roaming\\uv\\python\\cpython-3.12.13-windows-x86_64-none\\Lib\\pathlib.py",
+      "line": 380,
+      "function": "with_segments",
+      "primitive_calls": 107540,
+      "calls": 107540,
+      "own_seconds": 0.172075,
+      "cumulative_seconds": 0.7015947
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method builtins.__build_class__>",
+      "primitive_calls": 28941,
+      "calls": 28957,
+      "own_seconds": 0.5482197000000001,
+      "cumulative_seconds": 0.6865436
+    },
+    {
+      "file": "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Lib\\site-packages\\lm_eval\\tasks\\_index.py",
+      "line": 81,
+      "function": "_iter_yaml_files",
+      "primitive_calls": 13990,
+      "calls": 13990,
+      "own_seconds": 0.0054578000000000005,
+      "cumulative_seconds": 0.6144163
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method builtins.sorted>",
+      "primitive_calls": 66,
+      "calls": 66,
+      "own_seconds": 0.0074811,
+      "cumulative_seconds": 0.6135524
+    },
+    {
+      "file": "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Lib\\site-packages\\lm_eval\\tasks\\_yaml_loader.py",
+      "line": 18,
+      "function": "ctor",
+      "primitive_calls": 13253,
+      "calls": 13253,
+      "own_seconds": 0.040729,
+      "cumulative_seconds": 0.6000612000000001
+    },
+    {
+      "file": "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Lib\\site-packages\\lm_eval\\tasks\\_index.py",
+      "line": 85,
+      "function": "<genexpr>",
+      "primitive_calls": 13990,
+      "calls": 13990,
+      "own_seconds": 0.0133217,
+      "cumulative_seconds": 0.5897557
+    }
+  ]
+}

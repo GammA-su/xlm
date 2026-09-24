@@ -1,0 +1,233 @@
+[
+  {
+    "module": "bare_python",
+    "repetition": 0,
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-c",
+      "pass"
+    ],
+    "elapsed_seconds": 0.04875519999768585,
+    "exit_code": 0,
+    "stderr": ""
+  },
+  {
+    "module": "bare_python",
+    "repetition": 1,
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-c",
+      "pass"
+    ],
+    "elapsed_seconds": 0.04247639997629449,
+    "exit_code": 0,
+    "stderr": ""
+  },
+  {
+    "module": "bare_python",
+    "repetition": 2,
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-c",
+      "pass"
+    ],
+    "elapsed_seconds": 0.042121500009670854,
+    "exit_code": 0,
+    "stderr": ""
+  },
+  {
+    "module": "torch",
+    "repetition": 0,
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-c",
+      "import importlib,sys; importlib.import_module(sys.argv[1])",
+      "torch"
+    ],
+    "elapsed_seconds": 2.0424035000032745,
+    "exit_code": 0,
+    "stderr": ""
+  },
+  {
+    "module": "torch",
+    "repetition": 1,
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-c",
+      "import importlib,sys; importlib.import_module(sys.argv[1])",
+      "torch"
+    ],
+    "elapsed_seconds": 2.0059578000218607,
+    "exit_code": 0,
+    "stderr": ""
+  },
+  {
+    "module": "torch",
+    "repetition": 2,
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-c",
+      "import importlib,sys; importlib.import_module(sys.argv[1])",
+      "torch"
+    ],
+    "elapsed_seconds": 2.02158000000054,
+    "exit_code": 0,
+    "stderr": ""
+  },
+  {
+    "module": "pyarrow",
+    "repetition": 0,
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-c",
+      "import importlib,sys; importlib.import_module(sys.argv[1])",
+      "pyarrow"
+    ],
+    "elapsed_seconds": 0.2185366999474354,
+    "exit_code": 0,
+    "stderr": ""
+  },
+  {
+    "module": "pyarrow",
+    "repetition": 1,
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-c",
+      "import importlib,sys; importlib.import_module(sys.argv[1])",
+      "pyarrow"
+    ],
+    "elapsed_seconds": 0.21480449999216944,
+    "exit_code": 0,
+    "stderr": ""
+  },
+  {
+    "module": "pyarrow",
+    "repetition": 2,
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-c",
+      "import importlib,sys; importlib.import_module(sys.argv[1])",
+      "pyarrow"
+    ],
+    "elapsed_seconds": 0.21902590000536293,
+    "exit_code": 0,
+    "stderr": ""
+  },
+  {
+    "module": "datasets",
+    "repetition": 0,
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-c",
+      "import importlib,sys; importlib.import_module(sys.argv[1])",
+      "datasets"
+    ],
+    "elapsed_seconds": 1.5934328000294045,
+    "exit_code": 0,
+    "stderr": ""
+  },
+  {
+    "module": "datasets",
+    "repetition": 1,
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-c",
+      "import importlib,sys; importlib.import_module(sys.argv[1])",
+      "datasets"
+    ],
+    "elapsed_seconds": 1.5902911000302993,
+    "exit_code": 0,
+    "stderr": ""
+  },
+  {
+    "module": "datasets",
+    "repetition": 2,
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-c",
+      "import importlib,sys; importlib.import_module(sys.argv[1])",
+      "datasets"
+    ],
+    "elapsed_seconds": 1.5658054000232369,
+    "exit_code": 0,
+    "stderr": ""
+  },
+  {
+    "module": "lm_eval",
+    "repetition": 0,
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-c",
+      "import importlib,sys; importlib.import_module(sys.argv[1])",
+      "lm_eval"
+    ],
+    "elapsed_seconds": 0.15328159998171031,
+    "exit_code": 0,
+    "stderr": ""
+  },
+  {
+    "module": "lm_eval",
+    "repetition": 1,
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-c",
+      "import importlib,sys; importlib.import_module(sys.argv[1])",
+      "lm_eval"
+    ],
+    "elapsed_seconds": 0.14511729998048395,
+    "exit_code": 0,
+    "stderr": ""
+  },
+  {
+    "module": "lm_eval",
+    "repetition": 2,
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-c",
+      "import importlib,sys; importlib.import_module(sys.argv[1])",
+      "lm_eval"
+    ],
+    "elapsed_seconds": 0.14912320004077628,
+    "exit_code": 0,
+    "stderr": ""
+  },
+  {
+    "module": "xlm.cli.main",
+    "repetition": 0,
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-c",
+      "import importlib,sys; importlib.import_module(sys.argv[1])",
+      "xlm.cli.main"
+    ],
+    "elapsed_seconds": 1.0097133999806829,
+    "exit_code": 0,
+    "stderr": ""
+  },
+  {
+    "module": "xlm.cli.main",
+    "repetition": 1,
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-c",
+      "import importlib,sys; importlib.import_module(sys.argv[1])",
+      "xlm.cli.main"
+    ],
+    "elapsed_seconds": 0.9972951000090688,
+    "exit_code": 0,
+    "stderr": ""
+  },
+  {
+    "module": "xlm.cli.main",
+    "repetition": 2,
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-c",
+      "import importlib,sys; importlib.import_module(sys.argv[1])",
+      "xlm.cli.main"
+    ],
+    "elapsed_seconds": 0.9945942999911495,
+    "exit_code": 0,
+    "stderr": ""
+  }
+]

@@ -1,0 +1,45 @@
+{
+  "required_nodes": 1660,
+  "run_legs": [
+    "final-fast",
+    "final-core",
+    "final-exclusive",
+    "final-heavy",
+    "final-scale",
+    "final-optional"
+  ],
+  "missing_legs": [],
+  "missing_nodes": [],
+  "extra_nodes": [],
+  "outcomes": {
+    "PASSED": 1655,
+    "SKIPPED": 1,
+    "FAILED": 4
+  },
+  "failures": [
+    "tests/test_acquisition_bounds.py::test_nested_acquisition_consumes_parent_preparation_budget",
+    "tests/test_prepare.py::test_full_toy_run_reuses_on_repeat",
+    "tests/test_prepare.py::test_partial_outputs_resume_without_redo",
+    "tests/test_queue.py::test_toy_campaign_runs_sequentially_to_success"
+  ],
+  "skips": [
+    "tests/test_cuda_execution.py::test_cpu_compile_eager_parity"
+  ],
+  "original_serial_nodes": 68,
+  "original_serial_missing_from_final": [],
+  "original_collected_nodes": 1673,
+  "current_collected_nodes": 1681,
+  "new_nodes": [
+    "tests/test_runtime_fixture.py::test_cached_freeze_equals_fresh_inventory_and_plan",
+    "tests/test_runtime_fixture.py::test_changed_capture_input_bypasses_seed[.python-version]",
+    "tests/test_runtime_fixture.py::test_changed_capture_input_bypasses_seed[pyproject.toml]",
+    "tests/test_runtime_fixture.py::test_changed_capture_input_bypasses_seed[uv.lock]",
+    "tests/test_runtime_fixture.py::test_explicit_authored_site_is_always_inventoried",
+    "tests/test_runtime_fixture.py::test_queue_order_and_cancellation_survive_reopening",
+    "tests/test_runtime_fixture.py::test_runtime_seed_returns_private_nested_values",
+    "tests/test_runtime_fixture.py::test_small_prepare_reuse_and_resume_preserve_outputs"
+  ],
+  "original_collected_missing": [],
+  "aggregate_status": "BLOCKED",
+  "aggregate_exit_code": 1
+}

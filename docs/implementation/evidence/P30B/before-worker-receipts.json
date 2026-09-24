@@ -1,0 +1,927 @@
+[
+  {
+    "path": "test_actual_environment_mismat0\\home\\runs\\run_da52b14362e8a02b\\worker-1\\process.json",
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-I",
+      "-S",
+      "-B",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_actual_environment_mismat0\\snapshot\\code\\src\\xlm\\experiments\\bootstrap.py",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_actual_environment_mismat0\\home\\runs\\run_da52b14362e8a02b\\worker-1\\request.json",
+      "f7c16b49ba6ce3eb7c3e04597f90741d0d4c7a8e32ea48d8c8fd6bd0bad598c9"
+    ],
+    "elapsed_seconds": 22.64000000001397,
+    "exit_code": 1,
+    "max_owned_disk_bytes": 2147483648,
+    "observed_pids": [
+      60388,
+      78452
+    ],
+    "output_bytes": 1076,
+    "pid": 78452,
+    "reason": null,
+    "sampled_peak_tree_rss_bytes": 261079040,
+    "sampled_peak_work_bytes": 76551,
+    "reported_work_times": []
+  },
+  {
+    "path": "test_cancel_stops_a_queued_job0\\home_cancelr\\runs\\run_ed08c6c5062dbd5f\\worker-1\\process.json",
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-I",
+      "-S",
+      "-B",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_cancel_stops_a_queued_job0\\snap_cancelr\\code\\src\\xlm\\experiments\\bootstrap.py",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_cancel_stops_a_queued_job0\\home_cancelr\\runs\\run_ed08c6c5062dbd5f\\worker-1\\request.json",
+      "016985e439569391071a788ff61012de5e36df4c9557feb6b9f4980fbcdf79a3"
+    ],
+    "elapsed_seconds": 28.45300000003772,
+    "exit_code": 0,
+    "max_owned_disk_bytes": 2147483648,
+    "observed_pids": [
+      74056,
+      82856
+    ],
+    "output_bytes": 0,
+    "pid": 82856,
+    "reason": null,
+    "sampled_peak_tree_rss_bytes": 329314304,
+    "sampled_peak_work_bytes": 269106,
+    "reported_work_times": []
+  },
+  {
+    "path": "test_changed_live_tree_preserv0\\home_frozen\\runs\\run_ed08c6c5062dbd5f\\worker-1\\process.json",
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-I",
+      "-S",
+      "-B",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_changed_live_tree_preserv0\\snap_frozen\\code\\src\\xlm\\experiments\\bootstrap.py",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_changed_live_tree_preserv0\\home_frozen\\runs\\run_ed08c6c5062dbd5f\\worker-1\\request.json",
+      "47edd8738dc8e3bf4ecf4db0366078858bbc08b422a2d2570187a393f5597767"
+    ],
+    "elapsed_seconds": 33.14100000000326,
+    "exit_code": 0,
+    "max_owned_disk_bytes": 2147483648,
+    "observed_pids": [
+      19700,
+      67616
+    ],
+    "output_bytes": 0,
+    "pid": 67616,
+    "reason": null,
+    "sampled_peak_tree_rss_bytes": 335273984,
+    "sampled_peak_work_bytes": 1158405,
+    "reported_work_times": []
+  },
+  {
+    "path": "test_cli_evaluate_and_generate0\\xlm_home\\runs\\evaluate-14fbcf4468b349b384c18a3dfbe66652\\worker\\process.json",
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-I",
+      "-S",
+      "-B",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_cli_evaluate_and_generate0\\xlm_home\\runs\\evaluate-14fbcf4468b349b384c18a3dfbe66652\\snapshot\\code\\src\\xlm\\experiments\\bootstrap.py",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_cli_evaluate_and_generate0\\xlm_home\\runs\\evaluate-14fbcf4468b349b384c18a3dfbe66652\\worker\\request.json",
+      "10547fa684cae119b8b9c95f7b97a79b6361625a22847f6f4ec0568d3e5a292b"
+    ],
+    "elapsed_seconds": 33.01600000000326,
+    "exit_code": 0,
+    "max_owned_disk_bytes": 2147483648,
+    "observed_pids": [
+      73912,
+      81744
+    ],
+    "output_bytes": 24055,
+    "pid": 73912,
+    "reason": null,
+    "sampled_peak_tree_rss_bytes": 328749056,
+    "sampled_peak_work_bytes": 36673,
+    "reported_work_times": []
+  },
+  {
+    "path": "test_cli_evaluate_and_generate0\\xlm_home\\runs\\evaluate-49094737b284482aa2fabee021792814\\worker\\process.json",
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-I",
+      "-S",
+      "-B",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_cli_evaluate_and_generate0\\xlm_home\\runs\\evaluate-49094737b284482aa2fabee021792814\\snapshot\\code\\src\\xlm\\experiments\\bootstrap.py",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_cli_evaluate_and_generate0\\xlm_home\\runs\\evaluate-49094737b284482aa2fabee021792814\\worker\\request.json",
+      "021a14b75d2b5964f44f14c1f0ea8f63db59c371dc6dce61c747ee618b5267d8"
+    ],
+    "elapsed_seconds": 31.42200000002049,
+    "exit_code": 0,
+    "max_owned_disk_bytes": 2147483648,
+    "observed_pids": [
+      69000,
+      77128
+    ],
+    "output_bytes": 678,
+    "pid": 69000,
+    "reason": null,
+    "sampled_peak_tree_rss_bytes": 335581184,
+    "sampled_peak_work_bytes": 36673,
+    "reported_work_times": []
+  },
+  {
+    "path": "test_cli_resume_reconstructs_r0\\interrupted\\runs\\direct-5f136698a04c4467a7d4153eee592fe7\\worker\\process.json",
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-I",
+      "-S",
+      "-B",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_cli_resume_reconstructs_r0\\interrupted\\runs\\direct-5f136698a04c4467a7d4153eee592fe7\\snapshot\\code\\src\\xlm\\experiments\\bootstrap.py",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_cli_resume_reconstructs_r0\\interrupted\\runs\\direct-5f136698a04c4467a7d4153eee592fe7\\worker\\request.json",
+      "887f6727bab9ac61e001d74c00c771207afc87c9af0f2c989ba2fbce88a69ae4"
+    ],
+    "elapsed_seconds": 28.23399999999674,
+    "exit_code": 0,
+    "max_owned_disk_bytes": 2147483648,
+    "observed_pids": [
+      20608,
+      76264
+    ],
+    "output_bytes": 636,
+    "pid": 76264,
+    "reason": null,
+    "sampled_peak_tree_rss_bytes": 337108992,
+    "sampled_peak_work_bytes": 20706,
+    "reported_work_times": [
+      "Total Steps:        2",
+      "Committed Targets:  16",
+      "Training Time:      0.00s",
+      "Setup Time:         0.00s"
+    ]
+  },
+  {
+    "path": "test_cli_resume_reconstructs_r0\\reference\\runs\\direct-259238619d0b4b9f977a1d5ec06eda26\\worker\\process.json",
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-I",
+      "-S",
+      "-B",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_cli_resume_reconstructs_r0\\reference\\runs\\direct-259238619d0b4b9f977a1d5ec06eda26\\snapshot\\code\\src\\xlm\\experiments\\bootstrap.py",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_cli_resume_reconstructs_r0\\reference\\runs\\direct-259238619d0b4b9f977a1d5ec06eda26\\worker\\request.json",
+      "d894b6abde851ae4b6cf6e8226d8444a7268f75ebfc5e2c86715cbf6ccf13fde"
+    ],
+    "elapsed_seconds": 29.54700000002049,
+    "exit_code": 0,
+    "max_owned_disk_bytes": 2147483648,
+    "observed_pids": [
+      20960,
+      82780
+    ],
+    "output_bytes": 634,
+    "pid": 82780,
+    "reason": null,
+    "sampled_peak_tree_rss_bytes": 338784256,
+    "sampled_peak_work_bytes": 6174,
+    "reported_work_times": [
+      "Total Steps:        5",
+      "Committed Targets:  33",
+      "Training Time:      0.03s",
+      "Setup Time:         0.00s"
+    ]
+  },
+  {
+    "path": "test_cli_resume_reconstructs_r0\\resumed\\runs\\resume-b6b423c4c1124938943602b96447dfc8\\worker\\process.json",
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-I",
+      "-S",
+      "-B",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_cli_resume_reconstructs_r0\\interrupted\\runs\\direct-5f136698a04c4467a7d4153eee592fe7\\snapshot\\code\\src\\xlm\\experiments\\bootstrap.py",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_cli_resume_reconstructs_r0\\resumed\\runs\\resume-b6b423c4c1124938943602b96447dfc8\\worker\\request.json",
+      "dd7efa7bcbd6d21066d07e4c1341913d1a27caa93f45dd6f1c3de5fc28f02df7"
+    ],
+    "elapsed_seconds": 30.51600000000326,
+    "exit_code": 0,
+    "max_owned_disk_bytes": 2147483648,
+    "observed_pids": [
+      76204,
+      81324
+    ],
+    "output_bytes": 369,
+    "pid": 76204,
+    "reason": null,
+    "sampled_peak_tree_rss_bytes": 337248256,
+    "sampled_peak_work_bytes": 6033,
+    "reported_work_times": [
+      "Total Steps:        5",
+      "Committed Targets:  33"
+    ]
+  },
+  {
+    "path": "test_cli_train_and_resume_subp0\\xlm_home\\runs\\direct-36e1cada005b42e6ab2d231d89c05172\\worker\\process.json",
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-I",
+      "-S",
+      "-B",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_cli_train_and_resume_subp0\\xlm_home\\runs\\direct-36e1cada005b42e6ab2d231d89c05172\\snapshot\\code\\src\\xlm\\experiments\\bootstrap.py",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_cli_train_and_resume_subp0\\xlm_home\\runs\\direct-36e1cada005b42e6ab2d231d89c05172\\worker\\request.json",
+      "08c4e82aae0134e00c2f4f30e3e87a7b86a598c976350435295890216af8c070"
+    ],
+    "elapsed_seconds": 35.68800000002375,
+    "exit_code": 0,
+    "max_owned_disk_bytes": 2147483648,
+    "observed_pids": [
+      52084,
+      75056
+    ],
+    "output_bytes": 641,
+    "pid": 52084,
+    "reason": null,
+    "sampled_peak_tree_rss_bytes": 335679488,
+    "sampled_peak_work_bytes": 26077,
+    "reported_work_times": [
+      "Total Steps:        2",
+      "Committed Targets:  32",
+      "Training Time:      0.00s",
+      "Setup Time:         0.00s"
+    ]
+  },
+  {
+    "path": "test_cli_train_and_resume_subp0\\xlm_home\\runs\\resume-2c04bee0ba0845d797f34ac9855dcc1f\\worker\\process.json",
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-I",
+      "-S",
+      "-B",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_cli_train_and_resume_subp0\\xlm_home\\runs\\direct-36e1cada005b42e6ab2d231d89c05172\\snapshot\\code\\src\\xlm\\experiments\\bootstrap.py",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_cli_train_and_resume_subp0\\xlm_home\\runs\\resume-2c04bee0ba0845d797f34ac9855dcc1f\\worker\\request.json",
+      "df6d58037c43cc18408f851e90b7f1fecd695f275552983460bcc24743d9ca86"
+    ],
+    "elapsed_seconds": 33.90600000001723,
+    "exit_code": 0,
+    "max_owned_disk_bytes": 2147483648,
+    "observed_pids": [
+      20740,
+      62876
+    ],
+    "output_bytes": 428,
+    "pid": 20740,
+    "reason": null,
+    "sampled_peak_tree_rss_bytes": 337940480,
+    "sampled_peak_work_bytes": 154752,
+    "reported_work_times": [
+      "Total Steps:        3",
+      "Committed Targets:  48"
+    ]
+  },
+  {
+    "path": "test_cli_train_and_resume_subp0\\xlm_home\\runs\\resume-465eed1a443743f1a434cf89eb90be5a\\worker\\process.json",
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-I",
+      "-S",
+      "-B",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_cli_train_and_resume_subp0\\xlm_home\\runs\\direct-36e1cada005b42e6ab2d231d89c05172\\snapshot\\code\\src\\xlm\\experiments\\bootstrap.py",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_cli_train_and_resume_subp0\\xlm_home\\runs\\resume-465eed1a443743f1a434cf89eb90be5a\\worker\\request.json",
+      "84ade2b467405bd7c3e606b5450e9e12d4ffb8f00a9faf4f2d2a5420ed2b595c"
+    ],
+    "elapsed_seconds": 37.43699999997625,
+    "exit_code": 0,
+    "max_owned_disk_bytes": 2147483648,
+    "observed_pids": [
+      68716,
+      75700
+    ],
+    "output_bytes": 83,
+    "pid": 68716,
+    "reason": null,
+    "sampled_peak_tree_rss_bytes": 334073856,
+    "sampled_peak_work_bytes": 8729,
+    "reported_work_times": []
+  },
+  {
+    "path": "test_crash_recovery_requeues_o0\\home_crash\\runs\\run_ed08c6c5062dbd5f\\worker-2\\process.json",
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-I",
+      "-S",
+      "-B",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_crash_recovery_requeues_o0\\snap_crash\\code\\src\\xlm\\experiments\\bootstrap.py",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_crash_recovery_requeues_o0\\home_crash\\runs\\run_ed08c6c5062dbd5f\\worker-2\\request.json",
+      "669ac108c1dd8f6a43e00023d6f04c503d98211a8539f2c778a0265682f45662"
+    ],
+    "elapsed_seconds": 32.51600000000326,
+    "exit_code": 0,
+    "max_owned_disk_bytes": 2147483648,
+    "observed_pids": [
+      80900,
+      82532
+    ],
+    "output_bytes": 0,
+    "pid": 82532,
+    "reason": null,
+    "sampled_peak_tree_rss_bytes": 335650816,
+    "sampled_peak_work_bytes": 1144483,
+    "reported_work_times": []
+  },
+  {
+    "path": "test_failed_jobs_keep_evidence0\\home_flaky\\runs\\run_605a9efdde60b2f3\\worker-1\\process.json",
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-I",
+      "-S",
+      "-B",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_failed_jobs_keep_evidence0\\snap_flaky\\code\\src\\xlm\\experiments\\bootstrap.py",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_failed_jobs_keep_evidence0\\home_flaky\\runs\\run_605a9efdde60b2f3\\worker-1\\request.json",
+      "cdc426e7825e0a2ebf543e02752ab22b2766f7fe64d6da40699748c44b6ac33b"
+    ],
+    "elapsed_seconds": 29.625,
+    "exit_code": 1,
+    "max_owned_disk_bytes": 2147483648,
+    "observed_pids": [
+      70240,
+      81948
+    ],
+    "output_bytes": 1253,
+    "pid": 70240,
+    "reason": null,
+    "sampled_peak_tree_rss_bytes": 331640832,
+    "sampled_peak_work_bytes": 111323,
+    "reported_work_times": []
+  },
+  {
+    "path": "test_intact_a_executes_after_l0\\home\\runs\\run_eeb088c68acd68ed\\worker-1\\process.json",
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-I",
+      "-S",
+      "-B",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_intact_a_executes_after_l0\\snapshot\\code\\src\\xlm\\experiments\\bootstrap.py",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_intact_a_executes_after_l0\\home\\runs\\run_eeb088c68acd68ed\\worker-1\\request.json",
+      "0b0d5c87b45699b4f49f6ed2696643ad6540b135b523c4147e97c8508010d291"
+    ],
+    "elapsed_seconds": 29.094000000040978,
+    "exit_code": 0,
+    "max_owned_disk_bytes": 2147483648,
+    "observed_pids": [
+      66088,
+      82820
+    ],
+    "output_bytes": 32,
+    "pid": 82820,
+    "reason": null,
+    "sampled_peak_tree_rss_bytes": 335433728,
+    "sampled_peak_work_bytes": 793793,
+    "reported_work_times": []
+  },
+  {
+    "path": "test_offline_workflow_from_cle0\\home\\runs\\direct-ca2f42aa13d84973bf451aca0abfcc53\\worker\\process.json",
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-I",
+      "-S",
+      "-B",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_offline_workflow_from_cle0\\home\\runs\\direct-ca2f42aa13d84973bf451aca0abfcc53\\snapshot\\code\\src\\xlm\\experiments\\bootstrap.py",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_offline_workflow_from_cle0\\home\\runs\\direct-ca2f42aa13d84973bf451aca0abfcc53\\worker\\request.json",
+      "e30f2dc70c72938af4324074daa8ae332f8da52a4757c704b356a1657458f4c5"
+    ],
+    "elapsed_seconds": 31.67200000002049,
+    "exit_code": 0,
+    "max_owned_disk_bytes": 2147483648,
+    "observed_pids": [
+      20440,
+      71888
+    ],
+    "output_bytes": 635,
+    "pid": 71888,
+    "reason": null,
+    "sampled_peak_tree_rss_bytes": 344608768,
+    "sampled_peak_work_bytes": 1283120,
+    "reported_work_times": [
+      "Total Steps:        5",
+      "Committed Targets:  257",
+      "Training Time:      0.08s",
+      "Setup Time:         0.00s"
+    ]
+  },
+  {
+    "path": "test_offline_workflow_from_cle0\\home\\runs\\evaluate-44c8c591b1ee45b2a2ecae66ffe02721\\worker\\process.json",
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-I",
+      "-S",
+      "-B",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_offline_workflow_from_cle0\\home\\runs\\evaluate-44c8c591b1ee45b2a2ecae66ffe02721\\snapshot\\code\\src\\xlm\\experiments\\bootstrap.py",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_offline_workflow_from_cle0\\home\\runs\\evaluate-44c8c591b1ee45b2a2ecae66ffe02721\\worker\\request.json",
+      "95b0d45c4a4dd82dc59d04da7fc4e2c1ef04e1b3db7a591f921934286d7c684e"
+    ],
+    "elapsed_seconds": 29.030999999959022,
+    "exit_code": 0,
+    "max_owned_disk_bytes": 2147483648,
+    "observed_pids": [
+      50332,
+      83004
+    ],
+    "output_bytes": 11912,
+    "pid": 83004,
+    "reason": null,
+    "sampled_peak_tree_rss_bytes": 333197312,
+    "sampled_peak_work_bytes": 28047,
+    "reported_work_times": []
+  },
+  {
+    "path": "test_offline_workflow_from_cle0\\home\\runs\\evaluate-f70bdeffccc04a20bd1cbbcde335b7bd\\worker\\process.json",
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-I",
+      "-S",
+      "-B",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_offline_workflow_from_cle0\\home\\runs\\evaluate-f70bdeffccc04a20bd1cbbcde335b7bd\\snapshot\\code\\src\\xlm\\experiments\\bootstrap.py",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_offline_workflow_from_cle0\\home\\runs\\evaluate-f70bdeffccc04a20bd1cbbcde335b7bd\\worker\\request.json",
+      "f95d93de5f46b6c527c550832e6e9c3c5df62160e44302232c64afe3e077161f"
+    ],
+    "elapsed_seconds": 28.14100000000326,
+    "exit_code": 0,
+    "max_owned_disk_bytes": 2147483648,
+    "observed_pids": [
+      49400,
+      81432
+    ],
+    "output_bytes": 30916,
+    "pid": 49400,
+    "reason": null,
+    "sampled_peak_tree_rss_bytes": 333680640,
+    "sampled_peak_work_bytes": 49287,
+    "reported_work_times": []
+  },
+  {
+    "path": "test_offline_workflow_from_cle0\\resumed_home\\runs\\resume-c0868e3f62d14fabbc8f1de494ca31a4\\worker\\process.json",
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-I",
+      "-S",
+      "-B",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_offline_workflow_from_cle0\\home\\runs\\direct-ca2f42aa13d84973bf451aca0abfcc53\\snapshot\\code\\src\\xlm\\experiments\\bootstrap.py",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_offline_workflow_from_cle0\\resumed_home\\runs\\resume-c0868e3f62d14fabbc8f1de494ca31a4\\worker\\request.json",
+      "3c0d333df906f61ed49d8f323dd6fee4f6dc6cc45b1c5ab467c482fff4c74f78"
+    ],
+    "elapsed_seconds": 30.18800000002375,
+    "exit_code": 0,
+    "max_owned_disk_bytes": 2147483648,
+    "observed_pids": [
+      35184,
+      73524
+    ],
+    "output_bytes": 370,
+    "pid": 35184,
+    "reason": null,
+    "sampled_peak_tree_rss_bytes": 339193856,
+    "sampled_peak_work_bytes": 434828,
+    "reported_work_times": [
+      "Total Steps:        5",
+      "Committed Targets:  257"
+    ]
+  },
+  {
+    "path": "test_public_cli_executes_regis0\\home\\runs\\direct-e34231a9e7eb4a288dc12f5e264fb123\\worker\\process.json",
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-I",
+      "-S",
+      "-B",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_public_cli_executes_regis0\\home\\runs\\direct-e34231a9e7eb4a288dc12f5e264fb123\\snapshot\\code\\src\\xlm\\experiments\\bootstrap.py",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_public_cli_executes_regis0\\home\\runs\\direct-e34231a9e7eb4a288dc12f5e264fb123\\worker\\request.json",
+      "97a8c704f4b61588838be596d2f1106700b895918cd564c2d6db35b312ca5185"
+    ],
+    "elapsed_seconds": 35.82799999997951,
+    "exit_code": 0,
+    "max_owned_disk_bytes": 2147483648,
+    "observed_pids": [
+      30112,
+      66644
+    ],
+    "output_bytes": 647,
+    "pid": 30112,
+    "reason": null,
+    "sampled_peak_tree_rss_bytes": 335949824,
+    "sampled_peak_work_bytes": 20408,
+    "reported_work_times": [
+      "Total Steps:        1",
+      "Committed Targets:  8",
+      "Training Time:      0.02s",
+      "Setup Time:         0.00s"
+    ]
+  },
+  {
+    "path": "test_public_queue_and_diagnost0\\public-home\\runs\\evaluate-9631007a8c0b4e608779d97c36988e31\\worker\\process.json",
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-I",
+      "-S",
+      "-B",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_public_queue_and_diagnost0\\public-home\\runs\\evaluate-9631007a8c0b4e608779d97c36988e31\\snapshot\\code\\src\\xlm\\experiments\\bootstrap.py",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_public_queue_and_diagnost0\\public-home\\runs\\evaluate-9631007a8c0b4e608779d97c36988e31\\worker\\request.json",
+      "f5ba8cdc693bcfe7b2ed8c3dc52f55d5519738d6a6d6400f247d471c9b7d7595"
+    ],
+    "elapsed_seconds": 28.40700000000652,
+    "exit_code": 0,
+    "max_owned_disk_bytes": 2147483648,
+    "observed_pids": [
+      83288,
+      83892
+    ],
+    "output_bytes": 36128,
+    "pid": 83288,
+    "reason": null,
+    "sampled_peak_tree_rss_bytes": 331366400,
+    "sampled_peak_work_bytes": 10741,
+    "reported_work_times": []
+  },
+  {
+    "path": "test_public_queue_and_diagnost0\\public-home\\runs\\run_8efdbc73c971729f\\worker-1\\process.json",
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-I",
+      "-S",
+      "-B",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_public_queue_and_diagnost0\\snapshot\\code\\src\\xlm\\experiments\\bootstrap.py",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_public_queue_and_diagnost0\\public-home\\runs\\run_8efdbc73c971729f\\worker-1\\request.json",
+      "4e6a549f6205e6bda431fd23c9dfe23d5fbb2d58141356670b8ed88ba4839374"
+    ],
+    "elapsed_seconds": 29.92199999996228,
+    "exit_code": 0,
+    "max_owned_disk_bytes": 2147483648,
+    "observed_pids": [
+      76016,
+      76264
+    ],
+    "output_bytes": 24,
+    "pid": 76264,
+    "reason": null,
+    "sampled_peak_tree_rss_bytes": 335589376,
+    "sampled_peak_work_bytes": 945042,
+    "reported_work_times": []
+  },
+  {
+    "path": "test_public_two_source_prepare0\\direct-home\\runs\\direct-c77e2434638748eb9872623e5331b9cd\\worker\\process.json",
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-I",
+      "-S",
+      "-B",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_public_two_source_prepare0\\direct-home\\runs\\direct-c77e2434638748eb9872623e5331b9cd\\snapshot\\code\\src\\xlm\\experiments\\bootstrap.py",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_public_two_source_prepare0\\direct-home\\runs\\direct-c77e2434638748eb9872623e5331b9cd\\worker\\request.json",
+      "3c6d9159caa6c3ceb983583c3cce0e58d07aeb51358953fdb618ab91d378d4a4"
+    ],
+    "elapsed_seconds": 35.46799999999348,
+    "exit_code": 0,
+    "max_owned_disk_bytes": 2147483648,
+    "observed_pids": [
+      67880,
+      73204
+    ],
+    "output_bytes": 637,
+    "pid": 67880,
+    "reason": null,
+    "sampled_peak_tree_rss_bytes": 336789504,
+    "sampled_peak_work_bytes": 147246,
+    "reported_work_times": [
+      "Total Steps:        3",
+      "Committed Targets:  33",
+      "Training Time:      0.06s",
+      "Setup Time:         0.00s"
+    ]
+  },
+  {
+    "path": "test_public_two_source_prepare0\\direct-home\\runs\\evaluate-f6de057886b44ca183a819227e3b513b\\worker\\process.json",
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-I",
+      "-S",
+      "-B",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_public_two_source_prepare0\\direct-home\\runs\\evaluate-f6de057886b44ca183a819227e3b513b\\snapshot\\code\\src\\xlm\\experiments\\bootstrap.py",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_public_two_source_prepare0\\direct-home\\runs\\evaluate-f6de057886b44ca183a819227e3b513b\\worker\\request.json",
+      "efa168c0d72d744aba8b31bedb5037e8c4611859935956ef3a518cacd2139af2"
+    ],
+    "elapsed_seconds": 29.04599999997299,
+    "exit_code": 0,
+    "max_owned_disk_bytes": 2147483648,
+    "observed_pids": [
+      63724,
+      81980
+    ],
+    "output_bytes": 37963,
+    "pid": 81980,
+    "reason": null,
+    "sampled_peak_tree_rss_bytes": 331972608,
+    "sampled_peak_work_bytes": 55953,
+    "reported_work_times": []
+  },
+  {
+    "path": "test_public_two_source_prepare0\\queue-home\\runs\\run_76ab19ebd915bf3f\\worker-1\\process.json",
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-I",
+      "-S",
+      "-B",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_public_two_source_prepare0\\snapshot\\code\\src\\xlm\\experiments\\bootstrap.py",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_public_two_source_prepare0\\queue-home\\runs\\run_76ab19ebd915bf3f\\worker-1\\request.json",
+      "2909316da678de01c0a7456b2a1ab91516a1acf09654cfc33353dbe78040f964"
+    ],
+    "elapsed_seconds": 35.04700000002049,
+    "exit_code": 0,
+    "max_owned_disk_bytes": 2147483648,
+    "observed_pids": [
+      63516,
+      73204
+    ],
+    "output_bytes": 0,
+    "pid": 73204,
+    "reason": null,
+    "sampled_peak_tree_rss_bytes": 335335424,
+    "sampled_peak_work_bytes": 401562,
+    "reported_work_times": []
+  },
+  {
+    "path": "test_public_two_source_prepare0\\resume-home\\runs\\resume-30931b108c10488ab408a138139d591b\\worker\\process.json",
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-I",
+      "-S",
+      "-B",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_public_two_source_prepare0\\direct-home\\runs\\direct-c77e2434638748eb9872623e5331b9cd\\snapshot\\code\\src\\xlm\\experiments\\bootstrap.py",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_public_two_source_prepare0\\resume-home\\runs\\resume-30931b108c10488ab408a138139d591b\\worker\\request.json",
+      "024e41c5855aa341a9f4aadcd0f8f8c7e592cafed4c724b3936ab68180371961"
+    ],
+    "elapsed_seconds": 32.71899999998277,
+    "exit_code": 0,
+    "max_owned_disk_bytes": 2147483648,
+    "observed_pids": [
+      73912,
+      75056
+    ],
+    "output_bytes": 372,
+    "pid": 75056,
+    "reason": null,
+    "sampled_peak_tree_rss_bytes": 339386368,
+    "sampled_peak_work_bytes": 24344,
+    "reported_work_times": [
+      "Total Steps:        3",
+      "Committed Targets:  33"
+    ]
+  },
+  {
+    "path": "test_public_two_source_prepare1\\direct-home\\runs\\direct-1d567c137f0a4d9cb7b592319ada1ee8\\worker\\process.json",
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-I",
+      "-S",
+      "-B",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_public_two_source_prepare1\\direct-home\\runs\\direct-1d567c137f0a4d9cb7b592319ada1ee8\\snapshot\\code\\src\\xlm\\experiments\\bootstrap.py",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_public_two_source_prepare1\\direct-home\\runs\\direct-1d567c137f0a4d9cb7b592319ada1ee8\\worker\\request.json",
+      "42ea23b65d545e50e49cf44dd9dead72e9597963e2b0eb1cc647070a99ece109"
+    ],
+    "elapsed_seconds": 30.15600000001723,
+    "exit_code": 0,
+    "max_owned_disk_bytes": 2147483648,
+    "observed_pids": [
+      38588,
+      82852
+    ],
+    "output_bytes": 1399,
+    "pid": 38588,
+    "reason": null,
+    "sampled_peak_tree_rss_bytes": 336465920,
+    "sampled_peak_work_bytes": 25175,
+    "reported_work_times": [
+      "Total Steps:        3",
+      "Committed Targets:  33",
+      "Training Time:      0.03s",
+      "Setup Time:         0.00s"
+    ]
+  },
+  {
+    "path": "test_public_two_source_prepare1\\queue-home\\runs\\run_fa577c5bc76ec863\\worker-1\\process.json",
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-I",
+      "-S",
+      "-B",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_public_two_source_prepare1\\snapshot\\code\\src\\xlm\\experiments\\bootstrap.py",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_public_two_source_prepare1\\queue-home\\runs\\run_fa577c5bc76ec863\\worker-1\\request.json",
+      "e3a0ea16cc3d3b1334bc6e7de7951f1db082f25df3549a616a87e0652c1673d5"
+    ],
+    "elapsed_seconds": 29.60999999998603,
+    "exit_code": 0,
+    "max_owned_disk_bytes": 2147483648,
+    "observed_pids": [
+      51432,
+      57960
+    ],
+    "output_bytes": 684,
+    "pid": 57960,
+    "reason": null,
+    "sampled_peak_tree_rss_bytes": 336838656,
+    "sampled_peak_work_bytes": 567956,
+    "reported_work_times": []
+  },
+  {
+    "path": "test_public_two_source_prepare1\\resume-home\\runs\\resume-2c644698d2d14bac9f57795fcd299736\\worker\\process.json",
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-I",
+      "-S",
+      "-B",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_public_two_source_prepare1\\direct-home\\runs\\direct-1d567c137f0a4d9cb7b592319ada1ee8\\snapshot\\code\\src\\xlm\\experiments\\bootstrap.py",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_public_two_source_prepare1\\resume-home\\runs\\resume-2c644698d2d14bac9f57795fcd299736\\worker\\request.json",
+      "cad8a85bdce3151528e5d0d52aa2af50fef922983349c155909645ec7fc0d1d5"
+    ],
+    "elapsed_seconds": 29.375,
+    "exit_code": 0,
+    "max_owned_disk_bytes": 2147483648,
+    "observed_pids": [
+      48232,
+      50180
+    ],
+    "output_bytes": 900,
+    "pid": 50180,
+    "reason": null,
+    "sampled_peak_tree_rss_bytes": 340451328,
+    "sampled_peak_work_bytes": 24976,
+    "reported_work_times": [
+      "Total Steps:        3",
+      "Committed Targets:  33"
+    ]
+  },
+  {
+    "path": "test_real_crash_preserves_comm0\\home\\runs\\run_e800059e73cb641a_1\\worker-2\\process.json",
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-I",
+      "-S",
+      "-B",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_real_crash_preserves_comm0\\snapshot\\code\\src\\xlm\\experiments\\bootstrap.py",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_real_crash_preserves_comm0\\home\\runs\\run_e800059e73cb641a_1\\worker-2\\request.json",
+      "cc67042fd7d54212885d7ba1f727f8c488570f805653bb99b4fc5f8d9262a639"
+    ],
+    "elapsed_seconds": 31.90600000001723,
+    "exit_code": 0,
+    "max_owned_disk_bytes": 2147483648,
+    "observed_pids": [
+      45576,
+      80692
+    ],
+    "output_bytes": 0,
+    "pid": 80692,
+    "reason": null,
+    "sampled_peak_tree_rss_bytes": 329875456,
+    "sampled_peak_work_bytes": 830715,
+    "reported_work_times": []
+  },
+  {
+    "path": "test_real_frozen_worker_trains0\\home\\runs\\run_eeb088c68acd68ed\\worker-1\\process.json",
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-I",
+      "-S",
+      "-B",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_real_frozen_worker_trains0\\snapshot\\code\\src\\xlm\\experiments\\bootstrap.py",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_real_frozen_worker_trains0\\home\\runs\\run_eeb088c68acd68ed\\worker-1\\request.json",
+      "047734d3a46ad0a8becf73f03974d7140f238a7574fa03efda32034b6f5075df"
+    ],
+    "elapsed_seconds": 28.78200000000652,
+    "exit_code": 0,
+    "max_owned_disk_bytes": 2147483648,
+    "observed_pids": [
+      67792,
+      74128
+    ],
+    "output_bytes": 32,
+    "pid": 74128,
+    "reason": null,
+    "sampled_peak_tree_rss_bytes": 335417344,
+    "sampled_peak_work_bytes": 793793,
+    "reported_work_times": []
+  },
+  {
+    "path": "test_real_worker_output_bound_0\\home\\runs\\run_1577f1c649d43020\\worker-1\\process.json",
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-I",
+      "-S",
+      "-B",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_real_worker_output_bound_0\\snapshot\\code\\src\\xlm\\experiments\\bootstrap.py",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_real_worker_output_bound_0\\home\\runs\\run_1577f1c649d43020\\worker-1\\request.json",
+      "c910947c1ae91bb064f2761e9e2849ec41d301b4a779e9a0b163b68626f4220d"
+    ],
+    "elapsed_seconds": 26.31199999997625,
+    "exit_code": 1,
+    "max_owned_disk_bytes": 2147483648,
+    "observed_pids": [
+      24428,
+      77524
+    ],
+    "output_bytes": 16777216,
+    "pid": 77524,
+    "reason": "frozen worker output byte limit exceeded",
+    "sampled_peak_tree_rss_bytes": 363565056,
+    "sampled_peak_work_bytes": 16878340,
+    "reported_work_times": []
+  },
+  {
+    "path": "test_toy_campaign_runs_sequent0\\home_camp\\runs\\run_38dce84f65a6cb37\\worker-1\\process.json",
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-I",
+      "-S",
+      "-B",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_toy_campaign_runs_sequent0\\snap_toy_b\\code\\src\\xlm\\experiments\\bootstrap.py",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_toy_campaign_runs_sequent0\\home_camp\\runs\\run_38dce84f65a6cb37\\worker-1\\request.json",
+      "e7ca28ca5a7bed6218b3267e80d5df72450240bf16c7de2434fea84daf1c8edc"
+    ],
+    "elapsed_seconds": 33.10899999999674,
+    "exit_code": 0,
+    "max_owned_disk_bytes": 2147483648,
+    "observed_pids": [
+      2916,
+      20732
+    ],
+    "output_bytes": 0,
+    "pid": 20732,
+    "reason": null,
+    "sampled_peak_tree_rss_bytes": 335572992,
+    "sampled_peak_work_bytes": 1144421,
+    "reported_work_times": []
+  },
+  {
+    "path": "test_toy_campaign_runs_sequent0\\home_camp\\runs\\run_616e871aeff5aae9\\worker-1\\process.json",
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-I",
+      "-S",
+      "-B",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_toy_campaign_runs_sequent0\\snap_toy_a\\code\\src\\xlm\\experiments\\bootstrap.py",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_toy_campaign_runs_sequent0\\home_camp\\runs\\run_616e871aeff5aae9\\worker-1\\request.json",
+      "5b88e98f5f66a6ca11c073beca8330d9fe089a30e6cd3f56c04598a33474ada4"
+    ],
+    "elapsed_seconds": 33.51600000000326,
+    "exit_code": 0,
+    "max_owned_disk_bytes": 2147483648,
+    "observed_pids": [
+      59428,
+      78964
+    ],
+    "output_bytes": 0,
+    "pid": 78964,
+    "reason": null,
+    "sampled_peak_tree_rss_bytes": 334573568,
+    "sampled_peak_work_bytes": 1159713,
+    "reported_work_times": []
+  },
+  {
+    "path": "test_toy_campaign_runs_sequent0\\home_camp\\runs\\run_b64564f8e879a8c5\\worker-1\\process.json",
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-I",
+      "-S",
+      "-B",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_toy_campaign_runs_sequent0\\snap_toy_c\\code\\src\\xlm\\experiments\\bootstrap.py",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_toy_campaign_runs_sequent0\\home_camp\\runs\\run_b64564f8e879a8c5\\worker-1\\request.json",
+      "af7c9cfb9af9bf1afc2898a2dc5ee81b5af1ffa2994a18e10a6ef5da51d4d6fe"
+    ],
+    "elapsed_seconds": 33.48500000004424,
+    "exit_code": 0,
+    "max_owned_disk_bytes": 2147483648,
+    "observed_pids": [
+      45464,
+      80180
+    ],
+    "output_bytes": 0,
+    "pid": 80180,
+    "reason": null,
+    "sampled_peak_tree_rss_bytes": 336769024,
+    "sampled_peak_work_bytes": 1144425,
+    "reported_work_times": []
+  },
+  {
+    "path": "test_worker_rejects_cli_overri0\\rejected-worker\\process.json",
+    "argv": [
+      "D:\\Project\\xlm-performance-integration-20260923\\.venv\\Scripts\\python.exe",
+      "-I",
+      "-S",
+      "-B",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_worker_rejects_cli_overri0\\snapshot\\code\\src\\xlm\\experiments\\bootstrap.py",
+      "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-843\\test_worker_rejects_cli_overri0\\rejected-worker\\request.json",
+      "6f0105fde3122de237ee202e23650e23b8659b62457b52b47ff8b5e8610ee426"
+    ],
+    "elapsed_seconds": 21.67099999997299,
+    "exit_code": 1,
+    "max_owned_disk_bytes": 2147483648,
+    "observed_pids": [
+      41200,
+      81512
+    ],
+    "output_bytes": 1043,
+    "pid": 81512,
+    "reason": null,
+    "sampled_peak_tree_rss_bytes": 260243456,
+    "sampled_peak_work_bytes": 5950,
+    "reported_work_times": []
+  }
+]
