@@ -121,11 +121,6 @@ class ProgressJournal:
         self.journal_fsyncs = 0
         self.journal_bytes_written = 0
         self.journal_reads_elided = 0
-        # Bytes last read or written under the file lock plus the file identity
-        # (file id, size, mtime) observed for them. A reload whose stat shows
-        # the same identity validates these identical bytes instead of reopening
-        # a freshly replaced file (each reopen costs a real-time scan on Windows).
-        self._known: tuple[tuple[int, int, int], bytes] | None = None
         if journal_path.exists():
             lock = journal_path.with_suffix(".lock")
             ensure_plain_path(lock)
@@ -135,12 +130,6 @@ class ProgressJournal:
             # A concurrent creator may publish after the existence check. Never
             # perform a second unlocked read; the first mutation reloads under lock.
             self.state = AcquisitionState(plan_id=plan_id, plan_hash=plan_hash)
-
-    @staticmethod
-    def _identity(stat: os.stat_result) -> tuple[int, int, int] | None:
-        if not stat.st_ino:
-            return None
-        return (stat.st_ino, stat.st_size, stat.st_mtime_ns)
 
     def _load(self, *, checked: bool = False) -> AcquisitionState:
         try:
@@ -152,15 +141,11 @@ class ProgressJournal:
                 ensure_plain_path(self.journal_path)
             if before.st_size > 8 * 1024**2:
                 raise ValueError("journal exceeds 8 MiB")
-            identity = self._identity(before)
-            known = self._known
-            if identity is not None and known is not None and known[0] == identity:
-                payload = known[1]
-                self.journal_reads_elided += 1
-            else:
-                payload = self.journal_path.read_bytes()
-                after = self._identity(self.journal_path.stat())
-                self._known = (identity, payload) if identity and identity == after else None
+            # File id/size/mtime cannot prove unchanged contents: an in-place
+            # writer can restore mtime, and Windows ctime is creation time.
+            # Read under the file lock so external edits cannot be hidden by
+            # cached bytes. Keep the shared ancestor check optimization.
+            payload = self.journal_path.read_bytes()
             state = AcquisitionState.model_validate_json(payload)
             if state.plan_id != self.plan_id or state.plan_hash != self.plan_hash:
                 raise ValueError("journal plan identity mismatch")
@@ -204,8 +189,6 @@ class ProgressJournal:
                 stream.flush()
                 os.fsync(stream.fileno())
             os.replace(temporary, self.journal_path)
-            identity = self._identity(self.journal_path.stat())
-            self._known = (identity, payload) if identity is not None else None
             self.tx_persisted += 1
             self.journal_fsyncs += 1
             self.journal_bytes_written += len(payload)

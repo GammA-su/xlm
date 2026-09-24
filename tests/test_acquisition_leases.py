@@ -198,7 +198,7 @@ def test_journal_reload_sees_an_external_atomic_replace(tmp_path: Path) -> None:
         assert state.cache_hits == 7
     with first.transaction(persist=False) as state:
         assert state.cache_hits == 7
-    assert first.io_stats()["journal_reads_elided"] >= 1
+    assert first.io_stats()["journal_reads_elided"] == 0  # stat tuples cannot prove freshness
 
 
 def test_cached_deadline_is_still_enforced(tmp_path: Path) -> None:
