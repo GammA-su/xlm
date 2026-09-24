@@ -256,6 +256,25 @@ class CanonicalRecordBytes(bytes):
     """
 
     source: dict[str, Any]
+    source_snapshot: Any
+
+
+def _record_snapshot(value: Any) -> Any:
+    """Immutable, type-sensitive guard against mutation after canonical encoding.
+
+    Ordinary equality conflates True/1 and +0.0/-0.0 although JSON bytes differ.
+    Preserve those distinctions and nested mutable values for the splice guard.
+    """
+    if isinstance(value, dict):
+        return (
+            type(value),
+            tuple((_record_snapshot(key), _record_snapshot(item)) for key, item in value.items()),
+        )
+    if isinstance(value, (list, tuple)):
+        return (type(value), tuple(_record_snapshot(item) for item in value))
+    if isinstance(value, float):
+        return (type(value), value.hex())
+    return (type(value), value)
 
 
 def _canonical_json(value: Any) -> str:
@@ -267,6 +286,7 @@ def _canonical_json(value: Any) -> str:
 def encode_record(record: dict[str, Any]) -> bytes:
     data = CanonicalRecordBytes((_canonical_json(record) + "\n").encode("utf-8"))
     data.source = record
+    data.source_snapshot = _record_snapshot(record)
     return data
 
 
@@ -285,6 +305,7 @@ def selected_record(record: dict[str, Any], locator: dict[str, Any], raw: bytes)
         isinstance(raw, CanonicalRecordBytes)
         and getattr(raw, "source", None) is record
         and all(type(key) is str for key in record)
+        and getattr(raw, "source_snapshot", None) == _record_snapshot(record)
     ):
         pair = (_LOCATOR_FIELD_JSON + ":" + _canonical_json(value)).encode("utf-8")
         if not record:
