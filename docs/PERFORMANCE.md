@@ -210,3 +210,64 @@ unchanged. Existing direct CLI commands remain the normal product interfaces.
 
 Next bounded command: run the first command above in a fresh output directory and
 compare its report with the committed [P29 evidence](implementation/evidence/P29/).
+
+## P33: local CUDA throughput diagnostics
+
+[P33](implementation/reports/P33.md) records the RTX 4090 measurements, scientific
+gates, negative experiments and shared-desktop limitations. The only retained
+training implementation change consolidates CUDA gradient finite/norm transfers
+while preserving clipping arithmetic and failed-update behavior. Benchmark
+options do not change research recipe defaults.
+The certified B8 path measured 32.2k targets/s. B16/B32 were faster capacity
+points, but failed the fixed short-trajectory parameter tolerance against B8
+under the released first-update LR; they are not certified drop-in replacements.
+
+In the P33 worktree, reuse the existing `.venv-p33-cuda`; the wrapper invokes
+`uv run --offline --locked --no-sync --extra cuda` and places temporary files and
+caches under this worktree. It never installs or synchronizes dependencies.
+Run one GPU process at a time. The initial fixture command is needed only once:
+
+```powershell
+& scripts/p33_env.ps1 python scripts/benchmark_p33.py --fixture
+& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name local_50m_b8 --microbatch 8 --warmup 10 --steps 50 --vram-cap-gib 14.5
+& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name local_50m_resident_b8 --microbatch 8 --mode compute --warmup 10 --steps 50 --vram-cap-gib 14.5
+```
+
+Use a fresh name; existing result files are not overwritten. The actual 50M
+model, CE objective, optimizer and trainer consume authored full-vocabulary
+synthetic token shards through the real packer/sampler. The global budget is
+65,536 **valid targets** per update; partial microbatches preserve it exactly.
+The default initial-LR policy matches the released trainer, including its first
+base-LR update. `--initial-lr-policy counter_zero` is an explicitly different
+historical diagnostic, not the release behavior.
+
+The resident mode preloads the exact advancing batch sequence before timing;
+it is not a production loader or resumable training interface. Results include
+warmup/measured counts, wall/CUDA-boundary time, rates, peak allocator memory,
+host RSS, telemetry, source hashes, configuration and committed cursor. Device
+event spans include CPU launch gaps; sampled GPU utilization is not SM occupancy.
+Profiles and checkpoint publication are outside the steady-state timing window.
+The shared-desktop 14.5-GiB allocator cap is a diagnostic budget, not a hardware
+capacity claim. OOM exits the process and records a failed result; never reuse
+that trainer for another case.
+
+Runs are capped at 900 seconds, 32 GiB host RSS and a sampled aggregate 8 GiB of
+owned diagnostic files, with at most 200 measured and 20 warmup updates. Resident
+preparation is separately capped at 180 seconds / 24 GiB. The watchdog is an
+application guard, not an OS reservation. An exit 124/125 is a resource abort,
+not a pass. Optional `--save-state` stores all final model parameters and the
+first initial-logit row for bounded comparison; it is not a useful trained model.
+Raw traces/checkpoints stay in ignored `artifacts/p33`; compact JSON evidence is
+under `docs/implementation/evidence/p33`.
+
+Focused validation uses the existing environment:
+
+```powershell
+& scripts/p33_env.ps1 python -m pytest tests/test_p33_gradients.py tests/test_p33_resident.py tests/test_trainer.py -n 0 -q
+```
+
+CUDA tests remain marked `cuda`; a capability skip is not certification. Compile
+and Flash SDPA were unavailable in this environment. No downloads, live corpus,
+evaluation or research training campaign is part of these commands. P34 should
+address bounded producer-process overlap and durable checkpoint publication
+tails only after its cursor/snapshot/recovery contract is reviewed.

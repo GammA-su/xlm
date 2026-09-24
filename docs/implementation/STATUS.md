@@ -1,5 +1,28 @@
 # Implementation status
 
+> **P33 bounded CUDA performance closeout (2026-09-24): COMPLETE within the
+> synthetic diagnostic scope.** On RTX 4090 / torch 2.14.0+cu126, the retained
+> product change consolidates CUDA gradient finite/norm transfers with exact
+> clipping arithmetic and failure semantics. Three actual release-LR updates
+> at the full 65,536-target budget match the frozen reference bit for bit;
+> an actual-50M CUDA test also compares every clipped gradient digest and weight.
+> Final focused gates: **64 CPU + 19 CUDA passed**, no skips; Ruff, format and
+> mypy pass after one formatting-only correction. B8 end-to-end is 32,152 versus
+> 32,044 targets/s (+0.335%, too small for a robust campaign claim); the smaller
+> update diagnostic improves 3.63%, and resident B8 reaches 51,606 targets/s.
+> B32 reaches 48,834 targets/s but **fails** the fixed release-LR parameter gate,
+> as do B16 and native RMSNorm; these are not certified replacements. Original
+> RMSNorm, microbatch/scientific defaults and durability remain unchanged.
+> Bounded 150M B16 / 300M B8 smokes reach 29,826 / 18,714 targets/s. Shared
+> desktop and a 14.5-GiB allocator cap qualify capacity results. Final 50M is
+> **DATA-LIMITED with CPU launch overhead**; recommend P34 bounded producer-process
+> overlap and checkpoint-tail design (observed 50M pause 3.6–62.4 s). No network,
+> installation, live data, evaluation, research campaign, push or merge. No full
+> CPU six-leg gate was run for this scoped CUDA task. See [P33](reports/P33.md)
+> for negative gates, exact commands, raw evidence and planning limits. Next:
+> `git log --reverse --oneline 03e6c4278a8a64301a1c416e37bda7623907e361..HEAD`
+> in the P33 worktree, then review the P34 cursor/snapshot contract before coding.
+
 > **P32 final performance closeout (2026-09-24): CORRECTNESS-COMPLETE within
 > the declared offline scope; final six-leg gate PASSED.** Product `ce2bb32`
 > carries closed-writer SHA/size/file-ID evidence into immediate publication,
