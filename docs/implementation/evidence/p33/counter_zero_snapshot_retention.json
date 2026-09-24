@@ -1,0 +1,26 @@
+[
+  {
+    "path": "G:\\Project\\xlm-p33-cuda\\artifacts\\p33\\eq_reference.pt",
+    "bytes": 803544573,
+    "sha256": "f91dbc8018a06aed37fd50c01ea17ae580a49ce195f6c303fb8a9234c4b5abd3",
+    "action": "remove completed counter-zero diagnostic snapshot after preserving comparison evidence"
+  },
+  {
+    "path": "G:\\Project\\xlm-p33-cuda\\artifacts\\p33\\eq_combined.pt",
+    "bytes": 803544473,
+    "sha256": "e9b6055e90fede9427f8638389e0d6758ccebaa55e935e40c11e582d1706e420",
+    "action": "remove completed counter-zero diagnostic snapshot after preserving comparison evidence"
+  },
+  {
+    "path": "G:\\Project\\xlm-p33-cuda\\artifacts\\p33\\eq_checkpoint_after_cleanup.pt",
+    "bytes": 803546137,
+    "sha256": "0715faa9b861956e69bca20a5d8b6d6a5db9cac507528d96722e7e8152fda2cb",
+    "action": "remove completed counter-zero diagnostic snapshot after preserving comparison evidence"
+  },
+  {
+    "path": "G:\\Project\\xlm-p33-cuda\\artifacts\\p33\\eq_resident.pt",
+    "bytes": 803544473,
+    "sha256": "32ecd7048e324ce5b46a0e30d845c73cd7f1d00c434180abec2b4042b0d9f08c",
+    "action": "remove completed counter-zero diagnostic snapshot after preserving comparison evidence"
+  }
+]

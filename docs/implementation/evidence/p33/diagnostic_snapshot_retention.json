@@ -1,0 +1,50 @@
+﻿[
+    {
+        "path":  "G:\\Project\\xlm-p33-cuda\\artifacts\\p33\\eq_gradient.pt",
+        "bytes":  803544473,
+        "sha256":  "E393A2A9622F0EFE302C7E46F5ED30250BA0ECB64289FDCD5472BF84D81987E3",
+        "disposition":  "verified comparison; temporary snapshot removed"
+    },
+    {
+        "path":  "G:\\Project\\xlm-p33-cuda\\artifacts\\p33\\eq_norm.pt",
+        "bytes":  803543497,
+        "sha256":  "175F2969083F98B82B70185F9A5901ADFAD657522F891805FC191E6088661A30",
+        "disposition":  "verified comparison; temporary snapshot removed"
+    },
+    {
+        "path":  "G:\\Project\\xlm-p33-cuda\\artifacts\\p33\\eq_mb1.pt",
+        "bytes":  333775909,
+        "sha256":  "90C972F9AFFA2FC689507FAC272E3D0696312C2DBE0ACE1D185A9E833429C7BD",
+        "disposition":  "verified comparison; temporary snapshot removed"
+    },
+    {
+        "path":  "G:\\Project\\xlm-p33-cuda\\artifacts\\p33\\eq_mb16.pt",
+        "bytes":  1340414409,
+        "sha256":  "074D0EF83975E87DDD8AB517731F6C1BE9CE343FBBC133335C3DF0E11E2164CB",
+        "disposition":  "verified comparison; temporary snapshot removed"
+    },
+    {
+        "path":  "G:\\Project\\xlm-p33-cuda\\artifacts\\p33\\eq_mb32.pt",
+        "bytes":  1340414409,
+        "sha256":  "F68050A7DC55B51BCE795E576E8CFFEFF8408F8FE2884B5D1CF38C0B8E5278DD",
+        "disposition":  "verified comparison; temporary snapshot removed"
+    },
+    {
+        "path":  "G:\\Project\\xlm-p33-cuda\\artifacts\\p33\\eq_fp32.pt",
+        "bytes":  803543497,
+        "sha256":  "82C1A3B68A6B4C2C5669C374D2052832DBCCED7F7AB289EF6BF11845CAC9AC3C",
+        "disposition":  "verified comparison; temporary snapshot removed"
+    },
+    {
+        "path":  "G:\\Project\\xlm-p33-cuda\\artifacts\\p33\\eq_fused.pt",
+        "bytes":  803544173,
+        "sha256":  "3B2DF29FE851647BE61949E055C1F66D0A0329777684CCDBB8CBD747BEE23E7F",
+        "disposition":  "verified comparison; temporary snapshot removed"
+    },
+    {
+        "path":  "G:\\Project\\xlm-p33-cuda\\artifacts\\p33\\eq_scalar.pt",
+        "bytes":  803544273,
+        "sha256":  "AB51F0128C3E78CEFB59F981FD50374E233EADED5A63BE15F354FD536604B941",
+        "disposition":  "verified comparison; temporary snapshot removed"
+    }
+]

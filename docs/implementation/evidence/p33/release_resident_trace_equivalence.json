@@ -1,0 +1,713 @@
+[
+  {
+    "end_to_end": "release_reference_b8",
+    "compute": "release_reference_compute_b8",
+    "status": "NONEXACT",
+    "updates": 50,
+    "differences": [
+      {
+        "index": 6,
+        "field": "grad_norm",
+        "end_to_end": 0.6595731355710537,
+        "compute": 0.659573234337515,
+        "absolute_error": 9.876646134276967e-08
+      },
+      {
+        "index": 7,
+        "field": "loss",
+        "end_to_end": 10.394515037536621,
+        "compute": 10.398420333862305,
+        "absolute_error": 0.0039052963256835938
+      },
+      {
+        "index": 7,
+        "field": "model_ce_loss",
+        "end_to_end": 10.403298157965764,
+        "compute": 10.403292351984419,
+        "absolute_error": 5.80598134547472e-06
+      },
+      {
+        "index": 7,
+        "field": "grad_norm",
+        "end_to_end": 0.7861389518117953,
+        "compute": 0.7860950787184092,
+        "absolute_error": 4.387309338604872e-05
+      },
+      {
+        "index": 8,
+        "field": "model_ce_loss",
+        "end_to_end": 9.825539957731962,
+        "compute": 9.825533278286457,
+        "absolute_error": 6.679445505142212e-06
+      },
+      {
+        "index": 8,
+        "field": "grad_norm",
+        "end_to_end": 0.7127801329775176,
+        "compute": 0.7127967896713631,
+        "absolute_error": 1.6656693845429338e-05
+      },
+      {
+        "index": 9,
+        "field": "model_ce_loss",
+        "end_to_end": 10.373418499948457,
+        "compute": 10.373402708326466,
+        "absolute_error": 1.579162199050188e-05
+      },
+      {
+        "index": 9,
+        "field": "grad_norm",
+        "end_to_end": 0.8287536740691861,
+        "compute": 0.8287681092124984,
+        "absolute_error": 1.4435143312341303e-05
+      },
+      {
+        "index": 10,
+        "field": "model_ce_loss",
+        "end_to_end": 9.730380780994892,
+        "compute": 9.730377923697233,
+        "absolute_error": 2.857297658920288e-06
+      },
+      {
+        "index": 10,
+        "field": "grad_norm",
+        "end_to_end": 0.8173343539776738,
+        "compute": 0.8172947580849246,
+        "absolute_error": 3.959589274926678e-05
+      },
+      {
+        "index": 11,
+        "field": "model_ce_loss",
+        "end_to_end": 10.333502007648349,
+        "compute": 10.333510260097682,
+        "absolute_error": 8.252449333667755e-06
+      },
+      {
+        "index": 11,
+        "field": "grad_norm",
+        "end_to_end": 0.9140389430117362,
+        "compute": 0.914024513068443,
+        "absolute_error": 1.4429943293148284e-05
+      },
+      {
+        "index": 12,
+        "field": "model_ce_loss",
+        "end_to_end": 9.610098600387573,
+        "compute": 9.61007920280099,
+        "absolute_error": 1.9397586584091187e-05
+      },
+      {
+        "index": 12,
+        "field": "grad_norm",
+        "end_to_end": 1.020708533113742,
+        "compute": 1.0208983447433824,
+        "absolute_error": 0.00018981162964037956
+      },
+      {
+        "index": 13,
+        "field": "loss",
+        "end_to_end": 10.281291961669922,
+        "compute": 10.27739429473877,
+        "absolute_error": 0.0038976669311523438
+      },
+      {
+        "index": 13,
+        "field": "model_ce_loss",
+        "end_to_end": 10.280638740048744,
+        "compute": 10.280640401644632,
+        "absolute_error": 1.6615958884358406e-06
+      },
+      {
+        "index": 13,
+        "field": "grad_norm",
+        "end_to_end": 1.0289487190502382,
+        "compute": 1.0289652799781088,
+        "absolute_error": 1.6560927870612474e-05
+      },
+      {
+        "index": 14,
+        "field": "model_ce_loss",
+        "end_to_end": 9.456186059862375,
+        "compute": 9.456204302608967,
+        "absolute_error": 1.8242746591567993e-05
+      },
+      {
+        "index": 14,
+        "field": "grad_norm",
+        "end_to_end": 1.419470602140785,
+        "compute": 1.4197444399350507,
+        "absolute_error": 0.00027383779426570776
+      },
+      {
+        "index": 15,
+        "field": "model_ce_loss",
+        "end_to_end": 10.21191191766411,
+        "compute": 10.21191167505458,
+        "absolute_error": 2.4260953068733215e-07
+      },
+      {
+        "index": 15,
+        "field": "grad_norm",
+        "end_to_end": 1.1543929406952957,
+        "compute": 1.1544029442536359,
+        "absolute_error": 1.0003558340132557e-05
+      },
+      {
+        "index": 16,
+        "field": "model_ce_loss",
+        "end_to_end": 9.301710814237595,
+        "compute": 9.301911748945713,
+        "absolute_error": 0.00020093470811843872
+      },
+      {
+        "index": 16,
+        "field": "grad_norm",
+        "end_to_end": 2.4831105562034828,
+        "compute": 2.488979445430505,
+        "absolute_error": 0.005868889227022223
+      },
+      {
+        "index": 17,
+        "field": "model_ce_loss",
+        "end_to_end": 10.13130613474641,
+        "compute": 10.131384908687323,
+        "absolute_error": 7.877394091337919e-05
+      },
+      {
+        "index": 17,
+        "field": "grad_norm",
+        "end_to_end": 1.536698192859951,
+        "compute": 1.5377244886463979,
+        "absolute_error": 0.0010262957864468625
+      },
+      {
+        "index": 18,
+        "field": "loss",
+        "end_to_end": 9.156816482543945,
+        "compute": 9.160721778869629,
+        "absolute_error": 0.0039052963256835938
+      },
+      {
+        "index": 18,
+        "field": "model_ce_loss",
+        "end_to_end": 9.159850724041462,
+        "compute": 9.160130690783262,
+        "absolute_error": 0.00027996674180030823
+      },
+      {
+        "index": 18,
+        "field": "grad_norm",
+        "end_to_end": 2.998044664769904,
+        "compute": 2.997222285651941,
+        "absolute_error": 0.0008223791179631235
+      },
+      {
+        "index": 19,
+        "field": "loss",
+        "end_to_end": 10.027400970458984,
+        "compute": 10.027393341064453,
+        "absolute_error": 7.62939453125e-06
+      },
+      {
+        "index": 19,
+        "field": "model_ce_loss",
+        "end_to_end": 10.030243089422584,
+        "compute": 10.030219258740544,
+        "absolute_error": 2.3830682039260864e-05
+      },
+      {
+        "index": 19,
+        "field": "grad_norm",
+        "end_to_end": 1.843269857138972,
+        "compute": 1.8412020532621587,
+        "absolute_error": 0.002067803876813379
+      },
+      {
+        "index": 20,
+        "field": "model_ce_loss",
+        "end_to_end": 9.027485765516758,
+        "compute": 9.027219653129578,
+        "absolute_error": 0.00026611238718032837
+      },
+      {
+        "index": 20,
+        "field": "grad_norm",
+        "end_to_end": 3.4267131442560768,
+        "compute": 3.4153887679723254,
+        "absolute_error": 0.01132437628375138
+      },
+      {
+        "index": 21,
+        "field": "model_ce_loss",
+        "end_to_end": 9.92276896466501,
+        "compute": 9.922743345960043,
+        "absolute_error": 2.5618704967200756e-05
+      },
+      {
+        "index": 21,
+        "field": "grad_norm",
+        "end_to_end": 2.3439335931560956,
+        "compute": 2.34327362404001,
+        "absolute_error": 0.0006599691160857901
+      },
+      {
+        "index": 22,
+        "field": "model_ce_loss",
+        "end_to_end": 8.858753852546215,
+        "compute": 8.858585260808468,
+        "absolute_error": 0.00016859173774719238
+      },
+      {
+        "index": 22,
+        "field": "grad_norm",
+        "end_to_end": 2.6824967834328635,
+        "compute": 2.681455624681474,
+        "absolute_error": 0.0010411587513896592
+      },
+      {
+        "index": 23,
+        "field": "model_ce_loss",
+        "end_to_end": 9.813733780407347,
+        "compute": 9.81363184354268,
+        "absolute_error": 0.00010193686466664076
+      },
+      {
+        "index": 23,
+        "field": "grad_norm",
+        "end_to_end": 2.3046727872168336,
+        "compute": 2.3037307926572264,
+        "absolute_error": 0.0009419945596071955
+      },
+      {
+        "index": 24,
+        "field": "model_ce_loss",
+        "end_to_end": 8.686926774680614,
+        "compute": 8.686845127493143,
+        "absolute_error": 8.164718747138977e-05
+      },
+      {
+        "index": 24,
+        "field": "grad_norm",
+        "end_to_end": 2.661627086944558,
+        "compute": 2.661828178522135,
+        "absolute_error": 0.00020109157757719487
+      },
+      {
+        "index": 25,
+        "field": "model_ce_loss",
+        "end_to_end": 9.686168076936156,
+        "compute": 9.686077190795913,
+        "absolute_error": 9.088614024221897e-05
+      },
+      {
+        "index": 25,
+        "field": "grad_norm",
+        "end_to_end": 2.367689782887989,
+        "compute": 2.3687900223794176,
+        "absolute_error": 0.0011002394914285674
+      },
+      {
+        "index": 26,
+        "field": "model_ce_loss",
+        "end_to_end": 8.49447000771761,
+        "compute": 8.494389723986387,
+        "absolute_error": 8.028373122215271e-05
+      },
+      {
+        "index": 26,
+        "field": "grad_norm",
+        "end_to_end": 2.1168010002923556,
+        "compute": 2.118541768008,
+        "absolute_error": 0.0017407677156442425
+      },
+      {
+        "index": 27,
+        "field": "loss",
+        "end_to_end": 9.519635200500488,
+        "compute": 9.51964282989502,
+        "absolute_error": 7.62939453125e-06
+      },
+      {
+        "index": 27,
+        "field": "model_ce_loss",
+        "end_to_end": 9.524504984728992,
+        "compute": 9.524380993563682,
+        "absolute_error": 0.00012399116531014442
+      },
+      {
+        "index": 27,
+        "field": "grad_norm",
+        "end_to_end": 2.375676766504779,
+        "compute": 2.37518400850235,
+        "absolute_error": 0.0004927580024292055
+      },
+      {
+        "index": 28,
+        "field": "model_ce_loss",
+        "end_to_end": 8.306639075279236,
+        "compute": 8.306527204811573,
+        "absolute_error": 0.00011187046766281128
+      },
+      {
+        "index": 28,
+        "field": "grad_norm",
+        "end_to_end": 2.3901495317786727,
+        "compute": 2.390260356903287,
+        "absolute_error": 0.00011082512461424443
+      },
+      {
+        "index": 29,
+        "field": "model_ce_loss",
+        "end_to_end": 9.374971025856212,
+        "compute": 9.374941018410027,
+        "absolute_error": 3.000744618475437e-05
+      },
+      {
+        "index": 29,
+        "field": "grad_norm",
+        "end_to_end": 2.4904719506079216,
+        "compute": 2.4892569580228554,
+        "absolute_error": 0.001214992585066188
+      },
+      {
+        "index": 30,
+        "field": "model_ce_loss",
+        "end_to_end": 8.112537115812302,
+        "compute": 8.112680695950985,
+        "absolute_error": 0.0001435801386833191
+      },
+      {
+        "index": 30,
+        "field": "grad_norm",
+        "end_to_end": 2.4581557409654806,
+        "compute": 2.4625128174475166,
+        "absolute_error": 0.004357076482035982
+      },
+      {
+        "index": 31,
+        "field": "model_ce_loss",
+        "end_to_end": 9.24451923102606,
+        "compute": 9.24430006428156,
+        "absolute_error": 0.00021916674450039864
+      },
+      {
+        "index": 31,
+        "field": "grad_norm",
+        "end_to_end": 3.057647163879993,
+        "compute": 3.0562188108322648,
+        "absolute_error": 0.001428353047728148
+      },
+      {
+        "index": 32,
+        "field": "model_ce_loss",
+        "end_to_end": 7.932654835283756,
+        "compute": 7.933271426707506,
+        "absolute_error": 0.0006165914237499237
+      },
+      {
+        "index": 32,
+        "field": "grad_norm",
+        "end_to_end": 2.718906438069267,
+        "compute": 2.7267671131436004,
+        "absolute_error": 0.007860675074333301
+      },
+      {
+        "index": 33,
+        "field": "model_ce_loss",
+        "end_to_end": 9.100665224948898,
+        "compute": 9.100452224491164,
+        "absolute_error": 0.00021300045773386955
+      },
+      {
+        "index": 33,
+        "field": "grad_norm",
+        "end_to_end": 2.4306622033222705,
+        "compute": 2.4297251394801784,
+        "absolute_error": 0.000937063842092023
+      },
+      {
+        "index": 34,
+        "field": "model_ce_loss",
+        "end_to_end": 7.696464765816927,
+        "compute": 7.696782473474741,
+        "absolute_error": 0.0003177076578140259
+      },
+      {
+        "index": 34,
+        "field": "grad_norm",
+        "end_to_end": 1.9112455486749744,
+        "compute": 1.9049892221109754,
+        "absolute_error": 0.006256326563998993
+      },
+      {
+        "index": 35,
+        "field": "model_ce_loss",
+        "end_to_end": 8.911312375334091,
+        "compute": 8.911196892615408,
+        "absolute_error": 0.00011548271868377924
+      },
+      {
+        "index": 35,
+        "field": "grad_norm",
+        "end_to_end": 1.9663733949734117,
+        "compute": 1.9660015296992632,
+        "absolute_error": 0.00037186527414845294
+      },
+      {
+        "index": 36,
+        "field": "model_ce_loss",
+        "end_to_end": 7.4835553131997585,
+        "compute": 7.483381126075983,
+        "absolute_error": 0.00017418712377548218
+      },
+      {
+        "index": 36,
+        "field": "grad_norm",
+        "end_to_end": 2.0423881446912753,
+        "compute": 2.0364848731909264,
+        "absolute_error": 0.005903271500348861
+      },
+      {
+        "index": 37,
+        "field": "model_ce_loss",
+        "end_to_end": 8.71426037675701,
+        "compute": 8.714001000858843,
+        "absolute_error": 0.00025937589816749096
+      },
+      {
+        "index": 37,
+        "field": "grad_norm",
+        "end_to_end": 1.8707288573637417,
+        "compute": 1.8712075245559525,
+        "absolute_error": 0.000478667192210791
+      },
+      {
+        "index": 38,
+        "field": "loss",
+        "end_to_end": 7.246880054473877,
+        "compute": 7.244927406311035,
+        "absolute_error": 0.0019526481628417969
+      },
+      {
+        "index": 38,
+        "field": "model_ce_loss",
+        "end_to_end": 7.245411686599255,
+        "compute": 7.245263572782278,
+        "absolute_error": 0.00014811381697654724
+      },
+      {
+        "index": 38,
+        "field": "grad_norm",
+        "end_to_end": 1.9098674577533257,
+        "compute": 1.9081087459347892,
+        "absolute_error": 0.0017587118185364847
+      },
+      {
+        "index": 39,
+        "field": "loss",
+        "end_to_end": 8.5353422164917,
+        "compute": 8.53534984588623,
+        "absolute_error": 7.62939453125e-06
+      },
+      {
+        "index": 39,
+        "field": "model_ce_loss",
+        "end_to_end": 8.529758707387373,
+        "compute": 8.529914544778876,
+        "absolute_error": 0.00015583739150315523
+      },
+      {
+        "index": 39,
+        "field": "grad_norm",
+        "end_to_end": 2.2134381997615904,
+        "compute": 2.2163699841825615,
+        "absolute_error": 0.002931784420971084
+      },
+      {
+        "index": 40,
+        "field": "model_ce_loss",
+        "end_to_end": 7.020844031125307,
+        "compute": 7.020698761567473,
+        "absolute_error": 0.00014526955783367157
+      },
+      {
+        "index": 40,
+        "field": "grad_norm",
+        "end_to_end": 2.010195143042957,
+        "compute": 2.0142687664689833,
+        "absolute_error": 0.0040736234260263515
+      },
+      {
+        "index": 41,
+        "field": "model_ce_loss",
+        "end_to_end": 8.357190594426356,
+        "compute": 8.357175050186925,
+        "absolute_error": 1.5544239431619644e-05
+      },
+      {
+        "index": 41,
+        "field": "grad_norm",
+        "end_to_end": 2.168303339286196,
+        "compute": 2.1691884274991895,
+        "absolute_error": 0.0008850882129936011
+      },
+      {
+        "index": 42,
+        "field": "model_ce_loss",
+        "end_to_end": 6.770151142030954,
+        "compute": 6.769985042512417,
+        "absolute_error": 0.00016609951853752136
+      },
+      {
+        "index": 42,
+        "field": "grad_norm",
+        "end_to_end": 1.8206837916365959,
+        "compute": 1.8265949998523732,
+        "absolute_error": 0.005911208215777286
+      },
+      {
+        "index": 43,
+        "field": "model_ce_loss",
+        "end_to_end": 8.147237474331632,
+        "compute": 8.147552612237632,
+        "absolute_error": 0.0003151379060000181
+      },
+      {
+        "index": 43,
+        "field": "grad_norm",
+        "end_to_end": 2.1095429495644127,
+        "compute": 2.1223108454323736,
+        "absolute_error": 0.012767895867960899
+      },
+      {
+        "index": 44,
+        "field": "loss",
+        "end_to_end": 6.541657447814941,
+        "compute": 6.543610572814941,
+        "absolute_error": 0.001953125
+      },
+      {
+        "index": 44,
+        "field": "model_ce_loss",
+        "end_to_end": 6.538361887447536,
+        "compute": 6.53903707396239,
+        "absolute_error": 0.0006751865148544312
+      },
+      {
+        "index": 44,
+        "field": "grad_norm",
+        "end_to_end": 1.9610629191690017,
+        "compute": 1.9698708240803038,
+        "absolute_error": 0.008807904911302122
+      },
+      {
+        "index": 45,
+        "field": "model_ce_loss",
+        "end_to_end": 7.994312377064489,
+        "compute": 7.996211527613923,
+        "absolute_error": 0.0018991505494341254
+      },
+      {
+        "index": 45,
+        "field": "grad_norm",
+        "end_to_end": 2.3288139413799662,
+        "compute": 2.338955974449692,
+        "absolute_error": 0.01014203306972572
+      },
+      {
+        "index": 46,
+        "field": "loss",
+        "end_to_end": 6.274068832397461,
+        "compute": 6.276021480560303,
+        "absolute_error": 0.0019526481628417969
+      },
+      {
+        "index": 46,
+        "field": "model_ce_loss",
+        "end_to_end": 6.276425756514072,
+        "compute": 6.276808885857463,
+        "absolute_error": 0.0003831293433904648
+      },
+      {
+        "index": 46,
+        "field": "grad_norm",
+        "end_to_end": 1.849133154267322,
+        "compute": 1.8471289158687147,
+        "absolute_error": 0.0020042383986071943
+      },
+      {
+        "index": 47,
+        "field": "loss",
+        "end_to_end": 7.779605865478516,
+        "compute": 7.781558513641357,
+        "absolute_error": 0.0019526481628417969
+      },
+      {
+        "index": 47,
+        "field": "model_ce_loss",
+        "end_to_end": 7.78070483636111,
+        "compute": 7.781850303756073,
+        "absolute_error": 0.0011454673949629068
+      },
+      {
+        "index": 47,
+        "field": "grad_norm",
+        "end_to_end": 1.88290590767154,
+        "compute": 1.8676485508405836,
+        "absolute_error": 0.015257356830956414
+      },
+      {
+        "index": 48,
+        "field": "model_ce_loss",
+        "end_to_end": 6.044741632416844,
+        "compute": 6.045612046960741,
+        "absolute_error": 0.0008704145438969135
+      },
+      {
+        "index": 48,
+        "field": "grad_norm",
+        "end_to_end": 2.111523359947142,
+        "compute": 2.1182276624955847,
+        "absolute_error": 0.0067043025484427865
+      },
+      {
+        "index": 49,
+        "field": "loss",
+        "end_to_end": 7.5998945236206055,
+        "compute": 7.597941875457764,
+        "absolute_error": 0.0019526481628417969
+      },
+      {
+        "index": 49,
+        "field": "model_ce_loss",
+        "end_to_end": 7.595903938869014,
+        "compute": 7.5942879256326705,
+        "absolute_error": 0.0016160132363438606
+      },
+      {
+        "index": 49,
+        "field": "grad_norm",
+        "end_to_end": 2.0469361300721536,
+        "compute": 2.0242495345237588,
+        "absolute_error": 0.022686595548394806
+      }
+    ],
+    "exact_fields": "committed cursor; microbatch counts"
+  },
+  {
+    "end_to_end": "release_final_b32",
+    "compute": "release_final_compute_b32",
+    "status": "EXACT",
+    "updates": 50,
+    "differences": [],
+    "exact_fields": "committed cursor; microbatch counts"
+  },
+  {
+    "end_to_end": "release_final_b8",
+    "compute": "release_final_compute_b8",
+    "status": "EXACT",
+    "updates": 50,
+    "differences": [],
+    "exact_fields": "committed cursor; microbatch counts"
+  }
+]

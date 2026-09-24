@@ -1,0 +1,73 @@
+{
+  "reference": "eq_combined",
+  "criteria": "P33 predeclared short-trajectory bounds",
+  "rows": [
+    {
+      "candidate": "eq_mb1",
+      "status": "VERIFIED",
+      "max_initial_logit_error": 0.015625,
+      "loss_absolute_errors": [
+        0.00390625,
+        0.00390625,
+        0.0
+      ],
+      "max_parameter_error": 4.580710083246231e-06
+    },
+    {
+      "candidate": "eq_mb16",
+      "status": "VERIFIED",
+      "max_initial_logit_error": 0.0,
+      "loss_absolute_errors": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "max_parameter_error": 3.1138770282268524e-06
+    },
+    {
+      "candidate": "eq_mb32",
+      "status": "VERIFIED",
+      "max_initial_logit_error": 0.0,
+      "loss_absolute_errors": [
+        0.0,
+        7.62939453125e-06,
+        7.62939453125e-06
+      ],
+      "max_parameter_error": 3.3031683415174484e-06
+    },
+    {
+      "candidate": "eq_fp32",
+      "status": "VERIFIED",
+      "max_initial_logit_error": 0.02389216423034668,
+      "loss_absolute_errors": [
+        0.0003190040588378906,
+        0.004619693849235773,
+        0.009193581528961658
+      ],
+      "max_parameter_error": 4.316680133342743e-06
+    },
+    {
+      "candidate": "eq_fused",
+      "status": "VERIFIED",
+      "max_initial_logit_error": 0.0,
+      "loss_absolute_errors": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "max_parameter_error": 1.4901161193847656e-08
+    },
+    {
+      "candidate": "eq_scalar",
+      "status": "VERIFIED",
+      "max_initial_logit_error": 0.0,
+      "loss_absolute_errors": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "max_parameter_error": 3.725290298461914e-09
+    }
+  ],
+  "status": "VERIFIED"
+}

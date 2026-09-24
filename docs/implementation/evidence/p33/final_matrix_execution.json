@@ -1,0 +1,77 @@
+﻿[
+    {
+        "exit_status":  0,
+        "name":  "release_eq_reference",
+        "command":  "\u0026 scripts/p33_env.ps1 python scripts/benchmark_p33.py --vram-cap-gib 14.5 --name release_eq_reference --microbatch 8 --warmup 0 --steps 3 --save-state --reference-gradients"
+    },
+    {
+        "exit_status":  0,
+        "name":  "release_eq_gradient",
+        "command":  "\u0026 scripts/p33_env.ps1 python scripts/benchmark_p33.py --vram-cap-gib 14.5 --name release_eq_gradient --microbatch 8 --warmup 0 --steps 3 --save-state"
+    },
+    {
+        "exit_status":  0,
+        "name":  "release_eq_b16",
+        "command":  "\u0026 scripts/p33_env.ps1 python scripts/benchmark_p33.py --vram-cap-gib 14.5 --name release_eq_b16 --microbatch 16 --warmup 0 --steps 3 --save-state"
+    },
+    {
+        "exit_status":  0,
+        "name":  "release_eq_b32",
+        "command":  "\u0026 scripts/p33_env.ps1 python scripts/benchmark_p33.py --vram-cap-gib 14.5 --name release_eq_b32 --microbatch 32 --warmup 0 --steps 3 --save-state"
+    },
+    {
+        "exit_status":  0,
+        "name":  "release_final_b8",
+        "command":  "\u0026 scripts/p33_env.ps1 python scripts/benchmark_p33.py --vram-cap-gib 14.5 --name release_final_b8 --microbatch 8 --profile"
+    },
+    {
+        "exit_status":  0,
+        "name":  "release_diag_reference",
+        "command":  "\u0026 scripts/p33_env.ps1 python scripts/benchmark_p33.py --vram-cap-gib 14.5 --name release_diag_reference --global-targets 8192 --reference-gradients --profile"
+    },
+    {
+        "exit_status":  0,
+        "name":  "release_diag_b8",
+        "command":  "\u0026 scripts/p33_env.ps1 python scripts/benchmark_p33.py --vram-cap-gib 14.5 --name release_diag_b8 --global-targets 8192 --profile"
+    },
+    {
+        "exit_status":  0,
+        "name":  "release_fp32_b8",
+        "command":  "\u0026 scripts/p33_env.ps1 python scripts/benchmark_p33.py --vram-cap-gib 14.5 --name release_fp32_b8 --global-targets 8192 --precision fp32"
+    },
+    {
+        "exit_status":  0,
+        "name":  "release_pinned_b8",
+        "command":  "\u0026 scripts/p33_env.ps1 python scripts/benchmark_p33.py --vram-cap-gib 14.5 --name release_pinned_b8 --global-targets 8192 --transfer pinned"
+    },
+    {
+        "exit_status":  0,
+        "name":  "release_nonblocking_b8",
+        "command":  "\u0026 scripts/p33_env.ps1 python scripts/benchmark_p33.py --vram-cap-gib 14.5 --name release_nonblocking_b8 --global-targets 8192 --transfer nonblocking"
+    },
+    {
+        "exit_status":  0,
+        "name":  "release_checkpoint_b8",
+        "command":  "\u0026 scripts/p33_env.ps1 python scripts/benchmark_p33.py --vram-cap-gib 14.5 --name release_checkpoint_b8 --global-targets 8192 --checkpointing"
+    },
+    {
+        "exit_status":  0,
+        "name":  "release_scalar_b8",
+        "command":  "\u0026 scripts/p33_env.ps1 python scripts/benchmark_p33.py --vram-cap-gib 14.5 --name release_scalar_b8 --global-targets 8192 --optimizer scalar --profile"
+    },
+    {
+        "exit_status":  0,
+        "name":  "release_fused_b8",
+        "command":  "\u0026 scripts/p33_env.ps1 python scripts/benchmark_p33.py --vram-cap-gib 14.5 --name release_fused_b8 --global-targets 8192 --optimizer fused --profile"
+    },
+    {
+        "exit_status":  1,
+        "name":  "capacity_150m_b32",
+        "command":  "\u0026 scripts/p33_env.ps1 python scripts/benchmark_p33.py --vram-cap-gib 14.5 --name capacity_150m_b32 --model 150m --microbatch 32 --warmup 1 --steps 2"
+    },
+    {
+        "exit_status":  1,
+        "name":  "capacity_300m_b16",
+        "command":  "\u0026 scripts/p33_env.ps1 python scripts/benchmark_p33.py --vram-cap-gib 14.5 --name capacity_300m_b16 --model 300m --microbatch 16 --warmup 1 --steps 2"
+    }
+]

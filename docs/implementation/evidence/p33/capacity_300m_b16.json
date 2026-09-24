@@ -1,0 +1,26 @@
+{
+  "status": "OOM",
+  "args": {
+    "fixture": false,
+    "name": "capacity_300m_b16",
+    "model": "300m",
+    "microbatch": 16,
+    "vram_cap_gib": 14.5,
+    "global_targets": 65536,
+    "warmup": 1,
+    "steps": 2,
+    "mode": "end_to_end",
+    "precision": "bf16_fp32_master",
+    "attention": "sdpa",
+    "optimizer": "default",
+    "checkpointing": false,
+    "profile": false,
+    "save_checkpoint": false,
+    "save_state": false,
+    "reference_gradients": false,
+    "reference_rmsnorm": false,
+    "initial_lr_policy": "optimizer",
+    "transfer": "pageable"
+  },
+  "error": "OutOfMemoryError('CUDA out of memory. Tried to allocate 1024.00 MiB. GPU 0 has a total capacity of 23.99 GiB of which 8.03 GiB is free. Process 1732 has 17179869184.00 GiB memory in use. Process 14400 has 17179869184.00 GiB memory in use. Process 13812 has 17179869184.00 GiB memory in use. Process 15088 has 17179869184.00 GiB memory in use. Process 16752 has 17179869184.00 GiB memory in use. Process 16728 has 17179869184.00 GiB memory in use. Process 19352 has 17179869184.00 GiB memory in use. Process 20636 has 17179869184.00 GiB memory in use. Process 17716 has 17179869184.00 GiB memory in use. Process 22832 has 17179869184.00 GiB memory in use. Process 23352 has 17179869184.00 GiB memory in use. Process 23628 has 17179869184.00 GiB memory in use. Process 13636 has 17179869184.00 GiB memory in use. Process 3196 has 17179869184.00 GiB memory in use. Process 22460 has 17179869184.00 GiB memory in use. Process 22040 has 17179869184.00 GiB memory in use. Process 17084 has 17179869184.00 GiB memory in use. Process 7140 has 17179869184.00 GiB memory in use. Process 28008 has 17179869184.00 GiB memory in use. Process 26584 has 17179869184.00 GiB memory in use. Process 13392 has 17179869184.00 GiB memory in use. Process 31236 has 17179869184.00 GiB memory in use. Process 31488 has 17179869184.00 GiB memory in use. Process 29980 has 17179869184.00 GiB memory in use. Process 18936 has 17179869184.00 GiB memory in use. Process 47868 has 17179869184.00 GiB memory in use. Process 9648 has 17179869184.00 GiB memory in use. Process 32108 has 17179869184.00 GiB memory in use. Process 47772 has 17179869184.00 GiB memory in use. Process 52108 has 17179869184.00 GiB memory in use. Process 36244 has 17179869184.00 GiB memory in use. Process 10252 has 17179869184.00 GiB memory in use. Process 58304 has 17179869184.00 GiB memory in use. Process 34456 has 17179869184.00 GiB memory in use. Process 56972 has 17179869184.00 GiB memory in use. Process 52536 has 17179869184.00 GiB memory in use. Process 47572 has 17179869184.00 GiB memory in use. Process 59532 has 17179869184.00 GiB memory in use. Process 66024 has 17179869184.00 GiB memory in use. Process 68736 has 17179869184.00 GiB memory in use. Process 74720 has 17179869184.00 GiB memory in use. Process 74024 has 17179869184.00 GiB memory in use. Process 14172 has 17179869184.00 GiB memory in use. Process 25388 has 17179869184.00 GiB memory in use. Process 4076 has 17179869184.00 GiB memory in use. Process 77516 has 17179869184.00 GiB memory in use. Process 67872 has 17179869184.00 GiB memory in use. Process 43824 has 17179869184.00 GiB memory in use. Process 94088 has 17179869184.00 GiB memory in use. Process 16856 has 17179869184.00 GiB memory in use. Including non-PyTorch memory, this process has 17179869184.00 GiB memory in use. 14.50 GiB allowed; Of the allocated memory 14.28 GiB is allocated by PyTorch, and 110.36 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)')"
+}

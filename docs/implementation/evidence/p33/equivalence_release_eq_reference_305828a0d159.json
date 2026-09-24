@@ -1,0 +1,19 @@
+{
+  "reference": "release_eq_reference",
+  "criteria": "P33 predeclared short-trajectory bounds",
+  "rows": [
+    {
+      "candidate": "release_eq_b16",
+      "status": "FAILED",
+      "error": "Tensor-likes are not close!\n\nMismatched elements: 86360 / 16777216 (0.5%)\nGreatest absolute difference: 0.001989973708987236 at index (3202, 488) (up to 2e-05 allowed)\nGreatest relative difference: 2463.0380859375 at index (4527, 35) (up to 0.0002 allowed)",
+      "max_parameter_error": 0.001989973708987236
+    },
+    {
+      "candidate": "release_eq_b32",
+      "status": "FAILED",
+      "error": "Tensor-likes are not close!\n\nMismatched elements: 123353 / 16777216 (0.7%)\nGreatest absolute difference: 0.0020027710124850273 at index (23994, 412) (up to 2e-05 allowed)\nGreatest relative difference: 3733.478515625 at index (558, 455) (up to 0.0002 allowed)",
+      "max_parameter_error": 0.0020027710124850273
+    }
+  ],
+  "status": "FAILED"
+}

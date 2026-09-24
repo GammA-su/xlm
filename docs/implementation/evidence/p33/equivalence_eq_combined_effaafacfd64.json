@@ -1,0 +1,29 @@
+{
+  "reference": "eq_combined",
+  "criteria": "P33 predeclared short-trajectory bounds",
+  "rows": [
+    {
+      "candidate": "eq_checkpoint_after_cleanup",
+      "status": "VERIFIED",
+      "max_initial_logit_error": 0.0,
+      "loss_absolute_errors": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "max_parameter_error": 0.0
+    },
+    {
+      "candidate": "eq_resident",
+      "status": "VERIFIED",
+      "max_initial_logit_error": 0.0,
+      "loss_absolute_errors": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "max_parameter_error": 0.0
+    }
+  ],
+  "status": "VERIFIED"
+}

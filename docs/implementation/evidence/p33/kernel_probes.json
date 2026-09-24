@@ -1,0 +1,124 @@
+{
+  "transfers": [
+    {
+      "bytes": 131072,
+      "pinned": false,
+      "nonblocking": false,
+      "cuda_ms": 0.03523263931274414,
+      "wall_ms": 0.03544999985024333,
+      "gib_per_second": 3.443450296634123
+    },
+    {
+      "bytes": 131072,
+      "pinned": true,
+      "nonblocking": false,
+      "cuda_ms": 0.029758400917053222,
+      "wall_ms": 0.0299290003022179,
+      "gib_per_second": 4.078663211846536
+    },
+    {
+      "bytes": 131072,
+      "pinned": true,
+      "nonblocking": true,
+      "cuda_ms": 0.018248000144958497,
+      "wall_ms": 0.018338000518269837,
+      "gib_per_second": 6.656686064458523
+    },
+    {
+      "bytes": 8388608,
+      "pinned": false,
+      "nonblocking": false,
+      "cuda_ms": 0.7397465515136719,
+      "wall_ms": 0.7399660005467013,
+      "gib_per_second": 10.557917518139986
+    },
+    {
+      "bytes": 8388608,
+      "pinned": true,
+      "nonblocking": false,
+      "cuda_ms": 0.6748847961425781,
+      "wall_ms": 0.6751310004619882,
+      "gib_per_second": 11.571828274296326
+    },
+    {
+      "bytes": 8388608,
+      "pinned": true,
+      "nonblocking": true,
+      "cuda_ms": 0.645184326171875,
+      "wall_ms": 0.6453460000921041,
+      "gib_per_second": 12.105909076503142
+    }
+  ],
+  "attention": [
+    {
+      "backend": "SDPBackend.MATH",
+      "explicit_mask": true,
+      "max_output_error": 0.0,
+      "max_gradient_error": 0.0,
+      "cuda_ms": 4.030218200683594,
+      "wall_ms": 4.031110000796616,
+      "status": "VERIFIED"
+    },
+    {
+      "backend": "SDPBackend.MATH",
+      "explicit_mask": false,
+      "max_output_error": 0.0,
+      "max_gradient_error": 0.0,
+      "cuda_ms": 2.0499250793457033,
+      "wall_ms": 2.050840000156313,
+      "status": "VERIFIED"
+    },
+    {
+      "backend": "SDPBackend.EFFICIENT_ATTENTION",
+      "explicit_mask": true,
+      "max_output_error": 0.015625,
+      "max_gradient_error": 3.814697265625e-06,
+      "cuda_ms": 1.0316595458984374,
+      "wall_ms": 1.0322920000180602,
+      "status": "VERIFIED"
+    },
+    {
+      "backend": "SDPBackend.EFFICIENT_ATTENTION",
+      "explicit_mask": false,
+      "max_output_error": 0.015625,
+      "max_gradient_error": 3.814697265625e-06,
+      "cuda_ms": 0.7623474884033203,
+      "wall_ms": 0.7627700001467019,
+      "status": "VERIFIED"
+    },
+    {
+      "backend": "SDPBackend.FLASH_ATTENTION",
+      "explicit_mask": true,
+      "status": "NOT RUN",
+      "reason": "No available kernel. Aborting execution."
+    },
+    {
+      "backend": "SDPBackend.FLASH_ATTENTION",
+      "explicit_mask": false,
+      "status": "NOT RUN",
+      "reason": "No available kernel. Aborting execution."
+    }
+  ],
+  "normalization": [
+    {
+      "native": false,
+      "max_errors": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "cuda_ms": 1.0684384155273436,
+      "wall_ms": 1.0691179998684675
+    },
+    {
+      "native": true,
+      "max_errors": [
+        9.5367431640625e-07,
+        4.3655745685100555e-11,
+        4.6566128730773926e-09
+      ],
+      "cuda_ms": 0.5070822525024414,
+      "wall_ms": 0.5076120002195239
+    }
+  ]
+}

@@ -1,0 +1,104 @@
+﻿[
+    {
+        "prefix":  "\u0026 scripts/p33_env.ps1",
+        "arguments":  [
+                          "python",
+                          "-m",
+                          "pytest",
+                          "tests/test_optimizers.py",
+                          "tests/test_trainer.py",
+                          "tests/test_trainer_data.py",
+                          "tests/test_trainer_mixture.py",
+                          "tests/test_p33_gradients.py",
+                          "tests/test_objectives.py",
+                          "tests/test_attention_and_masks.py",
+                          "tests/test_cuda_execution.py",
+                          "-m",
+                          "not cuda",
+                          "-k",
+                          "not compile",
+                          "-n",
+                          "0",
+                          "-q"
+                      ],
+        "exit_status":  0,
+        "name":  "cpu",
+        "log":  "artifacts/p33/final_cpu.log"
+    },
+    {
+        "prefix":  "\u0026 scripts/p33_env.ps1",
+        "arguments":  [
+                          "python",
+                          "-m",
+                          "pytest",
+                          "tests/test_p33_gradients.py",
+                          "tests/test_p33_resident.py",
+                          "tests/test_cuda_execution.py",
+                          "-m",
+                          "cuda",
+                          "-k",
+                          "not compile",
+                          "-n",
+                          "0",
+                          "-q"
+                      ],
+        "exit_status":  0,
+        "name":  "cuda",
+        "log":  "artifacts/p33/final_cuda.log"
+    },
+    {
+        "prefix":  "\u0026 scripts/p33_env.ps1",
+        "arguments":  [
+                          "ruff",
+                          "check",
+                          "src/xlm/optimizers/clipping.py",
+                          "src/xlm/training/trainer.py",
+                          "scripts/benchmark_p33.py",
+                          "scripts/compare_p33_states.py",
+                          "scripts/probe_p33_kernels.py",
+                          "tests/test_p33_gradients.py",
+                          "tests/test_p33_resident.py",
+                          "tests/test_trainer.py"
+                      ],
+        "exit_status":  0,
+        "name":  "ruff",
+        "log":  "artifacts/p33/final_ruff.log"
+    },
+    {
+        "prefix":  "\u0026 scripts/p33_env.ps1",
+        "arguments":  [
+                          "ruff",
+                          "format",
+                          "--check",
+                          "src/xlm/optimizers/clipping.py",
+                          "src/xlm/training/trainer.py",
+                          "scripts/benchmark_p33.py",
+                          "scripts/compare_p33_states.py",
+                          "scripts/probe_p33_kernels.py",
+                          "tests/test_p33_gradients.py",
+                          "tests/test_p33_resident.py",
+                          "tests/test_trainer.py"
+                      ],
+        "exit_status":  1,
+        "name":  "format",
+        "log":  "artifacts/p33/final_format.log"
+    },
+    {
+        "prefix":  "\u0026 scripts/p33_env.ps1",
+        "arguments":  [
+                          "mypy",
+                          "--follow-imports=silent",
+                          "src/xlm/optimizers/clipping.py",
+                          "src/xlm/training/trainer.py",
+                          "scripts/benchmark_p33.py",
+                          "scripts/compare_p33_states.py",
+                          "scripts/probe_p33_kernels.py",
+                          "tests/test_p33_gradients.py",
+                          "tests/test_p33_resident.py",
+                          "tests/test_trainer.py"
+                      ],
+        "exit_status":  0,
+        "name":  "mypy",
+        "log":  "artifacts/p33/final_mypy.log"
+    }
+]

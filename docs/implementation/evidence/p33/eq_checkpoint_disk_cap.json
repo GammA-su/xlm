@@ -1,0 +1,9 @@
+{
+  "status": "ABORTED",
+  "experiment": "eq_checkpoint",
+  "exit_status": 125,
+  "reason": "8 GiB aggregate local-artifact guard; earlier retained diagnostic logits dominated disk use",
+  "cap_bytes": 8589934592,
+  "subsequent_inventory_bytes": 8724728074,
+  "corrective_action": "Compare completed snapshots, retain comparison JSON and SHA-256 inventory, remove only named verified temporary snapshots. Cap unchanged."
+}

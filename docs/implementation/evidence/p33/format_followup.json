@@ -1,0 +1,5 @@
+﻿{
+    "change":  "Ruff line wrapping only in initial-logit slice; tests and mypy were not repeated for formatting.",
+    "ruff_exit":  0,
+    "format_exit":  0
+}

@@ -1,0 +1,450 @@
+[
+  {
+    "evidence": "baseline_compute_b8.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name baseline_compute_b8 --model 50m --microbatch 8 --global-targets 8192 --warmup 10 --steps 50 --mode compute --precision bf16_fp32_master --attention sdpa --optimizer default",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "baseline_e2e_b8.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name baseline_e2e_b8 --model 50m --microbatch 8 --global-targets 8192 --warmup 10 --steps 50 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --profile",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "capacity_150m_b32.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name capacity_150m_b32 --model 150m --microbatch 32 --vram-cap-gib 14.5 --global-targets 65536 --warmup 1 --steps 2 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --initial-lr-policy optimizer --transfer pageable",
+    "status": "OOM",
+    "exit": 1,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "capacity_300m_b16.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name capacity_300m_b16 --model 300m --microbatch 16 --vram-cap-gib 14.5 --global-targets 65536 --warmup 1 --steps 2 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --initial-lr-policy optimizer --transfer pageable",
+    "status": "OOM",
+    "exit": 1,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "capacity_50m_b64.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name capacity_50m_b64 --model 50m --microbatch 64 --vram-cap-gib 14.5 --global-targets 65536 --warmup 1 --steps 2 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --initial-lr-policy optimizer --transfer pageable",
+    "status": "OOM",
+    "exit": 1,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "causal_e2e_b8.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name causal_e2e_b8 --model 50m --microbatch 8 --global-targets 8192 --warmup 10 --steps 50 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --profile",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "eq_checkpoint_after_cleanup.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name eq_checkpoint_after_cleanup --model 50m --microbatch 8 --vram-cap-gib 0.0 --global-targets 8192 --warmup 0 --steps 3 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --checkpointing --save-state --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "eq_combined.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name eq_combined --model 50m --microbatch 8 --vram-cap-gib 0.0 --global-targets 8192 --warmup 0 --steps 3 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --save-state --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "eq_fp32.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name eq_fp32 --model 50m --microbatch 8 --vram-cap-gib 0.0 --global-targets 8192 --warmup 0 --steps 3 --mode end_to_end --precision fp32 --attention sdpa --optimizer default --save-state --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "eq_fused.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name eq_fused --model 50m --microbatch 8 --vram-cap-gib 0.0 --global-targets 8192 --warmup 0 --steps 3 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer fused --save-state --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "eq_gradient.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name eq_gradient --model 50m --microbatch 8 --vram-cap-gib 0.0 --global-targets 8192 --warmup 0 --steps 3 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --save-state --reference-rmsnorm --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "eq_mb1.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name eq_mb1 --model 50m --microbatch 1 --vram-cap-gib 0.0 --global-targets 8192 --warmup 0 --steps 3 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --save-state --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "eq_mb16.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name eq_mb16 --model 50m --microbatch 16 --vram-cap-gib 0.0 --global-targets 8192 --warmup 0 --steps 3 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --save-state --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "eq_mb32.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name eq_mb32 --model 50m --microbatch 32 --vram-cap-gib 0.0 --global-targets 8192 --warmup 0 --steps 3 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --save-state --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "eq_norm.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name eq_norm --model 50m --microbatch 8 --vram-cap-gib 0.0 --global-targets 8192 --warmup 0 --steps 3 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --save-state --reference-gradients --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "eq_reference.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name eq_reference --model 50m --microbatch 8 --vram-cap-gib 0.0 --global-targets 8192 --warmup 0 --steps 3 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --save-state --reference-gradients --reference-rmsnorm --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "eq_resident.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name eq_resident --model 50m --microbatch 8 --vram-cap-gib 0.0 --global-targets 8192 --warmup 0 --steps 3 --mode compute --precision bf16_fp32_master --attention sdpa --optimizer default --save-state --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "eq_scalar.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name eq_scalar --model 50m --microbatch 8 --vram-cap-gib 0.0 --global-targets 8192 --warmup 0 --steps 3 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer scalar --save-state --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "final_compute_full_b32.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name final_compute_full_b32 --model 50m --microbatch 32 --vram-cap-gib 14.0 --global-targets 65536 --warmup 10 --steps 50 --mode compute --precision bf16_fp32_master --attention sdpa --optimizer default --initial-lr-policy counter_zero --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "final_full_b16.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name final_full_b16 --model 50m --microbatch 16 --vram-cap-gib 14.0 --global-targets 65536 --warmup 10 --steps 50 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "final_full_b32.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name final_full_b32 --model 50m --microbatch 32 --vram-cap-gib 14.0 --global-targets 65536 --warmup 10 --steps 50 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --profile --save-checkpoint --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "final_full_b32_repeat.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name final_full_b32_repeat --model 50m --microbatch 32 --vram-cap-gib 14.0 --global-targets 65536 --warmup 10 --steps 50 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --initial-lr-policy counter_zero --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "grad_sync_compute_b8.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name grad_sync_compute_b8 --model 50m --microbatch 8 --global-targets 8192 --warmup 10 --steps 50 --mode compute --precision bf16_fp32_master --attention sdpa --optimizer default --profile",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "grad_sync_e2e_b8.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name grad_sync_e2e_b8 --model 50m --microbatch 8 --global-targets 8192 --warmup 10 --steps 50 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "native_norm_e2e_b8.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name native_norm_e2e_b8 --model 50m --microbatch 8 --vram-cap-gib 0.0 --global-targets 8192 --warmup 10 --steps 50 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --profile --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "optim_foreach.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name optim_foreach --model 50m --microbatch 8 --global-targets 8192 --warmup 10 --steps 50 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer foreach",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "optim_fused.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name optim_fused --model 50m --microbatch 8 --global-targets 8192 --warmup 10 --steps 50 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer fused",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "optim_scalar.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name optim_scalar --model 50m --microbatch 8 --global-targets 8192 --warmup 10 --steps 50 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer scalar",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "prefetch_e2e_b8.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name prefetch_e2e_b8 --model 50m --microbatch 8 --global-targets 8192 --warmup 10 --steps 50 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --prefetch",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "prod_combined.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name prod_combined --model 50m --microbatch 8 --vram-cap-gib 0.0 --global-targets 8192 --warmup 0 --steps 3 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --save-state --initial-lr-policy optimizer --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "prod_reference.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name prod_reference --model 50m --microbatch 8 --vram-cap-gib 0.0 --global-targets 8192 --warmup 0 --steps 3 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --save-state --reference-gradients --reference-rmsnorm --initial-lr-policy optimizer --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "reference_compute_full_b8.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name reference_compute_full_b8 --model 50m --microbatch 8 --vram-cap-gib 14.0 --global-targets 65536 --warmup 10 --steps 50 --mode compute --precision bf16_fp32_master --attention sdpa --optimizer default --reference-gradients --reference-rmsnorm --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "reference_full_b8.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name reference_full_b8 --model 50m --microbatch 8 --vram-cap-gib 14.0 --global-targets 65536 --warmup 10 --steps 50 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --profile --reference-gradients --reference-rmsnorm --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "release_checkpoint_b8.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name release_checkpoint_b8 --model 50m --microbatch 8 --vram-cap-gib 14.5 --global-targets 8192 --warmup 10 --steps 50 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --checkpointing --initial-lr-policy optimizer --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "release_diag_b8.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name release_diag_b8 --model 50m --microbatch 8 --vram-cap-gib 14.5 --global-targets 8192 --warmup 10 --steps 50 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --profile --initial-lr-policy optimizer --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "release_diag_reference.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name release_diag_reference --model 50m --microbatch 8 --vram-cap-gib 14.5 --global-targets 8192 --warmup 10 --steps 50 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --profile --reference-gradients --initial-lr-policy optimizer --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "release_eq_b16.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name release_eq_b16 --model 50m --microbatch 16 --vram-cap-gib 14.5 --global-targets 65536 --warmup 0 --steps 3 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --save-state --initial-lr-policy optimizer --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "release_eq_b32.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name release_eq_b32 --model 50m --microbatch 32 --vram-cap-gib 14.5 --global-targets 65536 --warmup 0 --steps 3 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --save-state --initial-lr-policy optimizer --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "release_eq_gradient.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name release_eq_gradient --model 50m --microbatch 8 --vram-cap-gib 14.5 --global-targets 65536 --warmup 0 --steps 3 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --save-state --initial-lr-policy optimizer --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "release_eq_reference.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name release_eq_reference --model 50m --microbatch 8 --vram-cap-gib 14.5 --global-targets 65536 --warmup 0 --steps 3 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --save-state --reference-gradients --initial-lr-policy optimizer --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "release_final_b16.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name release_final_b16 --model 50m --microbatch 16 --vram-cap-gib 14.5 --global-targets 65536 --warmup 10 --steps 50 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --initial-lr-policy optimizer --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "release_final_b32.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name release_final_b32 --model 50m --microbatch 32 --vram-cap-gib 14.5 --global-targets 65536 --warmup 10 --steps 50 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --profile --save-checkpoint --initial-lr-policy optimizer --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "release_final_b8.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name release_final_b8 --model 50m --microbatch 8 --vram-cap-gib 14.5 --global-targets 65536 --warmup 10 --steps 50 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --profile --initial-lr-policy optimizer --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "release_final_compute_b32.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name release_final_compute_b32 --model 50m --microbatch 32 --vram-cap-gib 14.5 --global-targets 65536 --warmup 10 --steps 50 --mode compute --precision bf16_fp32_master --attention sdpa --optimizer default --initial-lr-policy optimizer --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "release_final_compute_b8.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name release_final_compute_b8 --model 50m --microbatch 8 --vram-cap-gib 14.5 --global-targets 65536 --warmup 10 --steps 50 --mode compute --precision bf16_fp32_master --attention sdpa --optimizer default --initial-lr-policy optimizer --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "release_fp32_b8.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name release_fp32_b8 --model 50m --microbatch 8 --vram-cap-gib 14.5 --global-targets 8192 --warmup 10 --steps 50 --mode end_to_end --precision fp32 --attention sdpa --optimizer default --initial-lr-policy optimizer --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "release_fused_b8.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name release_fused_b8 --model 50m --microbatch 8 --vram-cap-gib 14.5 --global-targets 8192 --warmup 10 --steps 50 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer fused --profile --initial-lr-policy optimizer --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "release_nonblocking_b8.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name release_nonblocking_b8 --model 50m --microbatch 8 --vram-cap-gib 14.5 --global-targets 8192 --warmup 10 --steps 50 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --initial-lr-policy optimizer --transfer nonblocking",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "release_pinned_b8.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name release_pinned_b8 --model 50m --microbatch 8 --vram-cap-gib 14.5 --global-targets 8192 --warmup 10 --steps 50 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --initial-lr-policy optimizer --transfer pinned",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "release_reference_b8.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name release_reference_b8 --model 50m --microbatch 8 --vram-cap-gib 14.5 --global-targets 65536 --warmup 10 --steps 50 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --reference-gradients --initial-lr-policy optimizer --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "release_reference_compute_b8.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name release_reference_compute_b8 --model 50m --microbatch 8 --vram-cap-gib 14.5 --global-targets 65536 --warmup 10 --steps 50 --mode compute --precision bf16_fp32_master --attention sdpa --optimizer default --reference-gradients --initial-lr-policy optimizer --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "release_scalar_b8.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name release_scalar_b8 --model 50m --microbatch 8 --vram-cap-gib 14.5 --global-targets 8192 --warmup 10 --steps 50 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer scalar --profile --initial-lr-policy optimizer --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "size150_b16.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name size150_b16 --model 150m --microbatch 16 --vram-cap-gib 14.5 --global-targets 65536 --warmup 10 --steps 20 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --initial-lr-policy optimizer --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "size150_b16_checkpoint.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name size150_b16_checkpoint --model 150m --microbatch 16 --vram-cap-gib 14.5 --global-targets 65536 --warmup 10 --steps 20 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --checkpointing --initial-lr-policy optimizer --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "size150_b8.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name size150_b8 --model 150m --microbatch 8 --vram-cap-gib 14.5 --global-targets 65536 --warmup 10 --steps 20 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --initial-lr-policy optimizer --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "size300_b16_checkpoint.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name size300_b16_checkpoint --model 300m --microbatch 16 --vram-cap-gib 14.5 --global-targets 65536 --warmup 10 --steps 20 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --checkpointing --initial-lr-policy optimizer --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "size300_b4.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name size300_b4 --model 300m --microbatch 4 --vram-cap-gib 14.5 --global-targets 65536 --warmup 10 --steps 20 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --initial-lr-policy optimizer --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "size300_b8.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name size300_b8 --model 300m --microbatch 8 --vram-cap-gib 14.5 --global-targets 65536 --warmup 10 --steps 20 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --initial-lr-policy optimizer --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "sweep_b1.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name sweep_b1 --model 50m --microbatch 1 --global-targets 65536 --warmup 10 --steps 50 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "sweep_b16.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name sweep_b16 --model 50m --microbatch 16 --vram-cap-gib 0.0 --global-targets 65536 --warmup 10 --steps 50 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "sweep_b2.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name sweep_b2 --model 50m --microbatch 2 --global-targets 65536 --warmup 10 --steps 50 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "sweep_b32.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name sweep_b32 --model 50m --microbatch 32 --vram-cap-gib 0.0 --global-targets 65536 --warmup 10 --steps 50 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "sweep_b4.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name sweep_b4 --model 50m --microbatch 4 --global-targets 65536 --warmup 10 --steps 50 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  },
+  {
+    "evidence": "sweep_b8.json",
+    "command": "& scripts/p33_env.ps1 python scripts/benchmark_p33.py --name sweep_b8 --model 50m --microbatch 8 --global-targets 65536 --warmup 10 --steps 50 --mode end_to_end --precision bf16_fp32_master --attention sdpa --optimizer default --transfer pageable",
+    "status": "VERIFIED",
+    "exit": 0,
+    "note": "Historical options refer to the harness revision recorded in the evidence; earlier counter-zero and removed prototypes are not current recommended settings."
+  }
+]

@@ -1,0 +1,40 @@
+{
+  "reference": "eq_reference",
+  "criteria": "P33 predeclared short-trajectory bounds",
+  "rows": [
+    {
+      "candidate": "eq_gradient",
+      "status": "VERIFIED",
+      "max_initial_logit_error": 0.0,
+      "loss_absolute_errors": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "max_parameter_error": 0.0
+    },
+    {
+      "candidate": "eq_norm",
+      "status": "VERIFIED",
+      "max_initial_logit_error": 0.015625,
+      "loss_absolute_errors": [
+        0.0,
+        0.0,
+        7.62939453125e-06
+      ],
+      "max_parameter_error": 3.4086406230926514e-06
+    },
+    {
+      "candidate": "eq_combined",
+      "status": "VERIFIED",
+      "max_initial_logit_error": 0.015625,
+      "loss_absolute_errors": [
+        0.0,
+        0.0,
+        7.62939453125e-06
+      ],
+      "max_parameter_error": 3.4086406230926514e-06
+    }
+  ],
+  "status": "VERIFIED"
+}

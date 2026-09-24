@@ -1,0 +1,13 @@
+{
+  "reference": "prod_reference",
+  "criteria": "P33 predeclared short-trajectory bounds",
+  "rows": [
+    {
+      "candidate": "prod_combined",
+      "status": "FAILED",
+      "error": "Tensor-likes are not close!\n\nMismatched elements: 57508 / 16777216 (0.3%)\nGreatest absolute difference: 0.001997990533709526 at index (20902, 296) (up to 2e-05 allowed)\nGreatest relative difference: 762.103271484375 at index (31580, 458) (up to 0.0002 allowed)",
+      "max_parameter_error": 0.001997990533709526
+    }
+  ],
+  "status": "FAILED"
+}
