@@ -43,6 +43,57 @@ class LegacyArtifactReuseError(ArtifactConflictError):
     """Legacy integrity is insufficient for v2 automatic request-equivalent reuse."""
 
 
+class DurabilityError(OSError):
+    """A required durability boundary could not be established."""
+
+
+def fsync_fileobj(fileobj: Any) -> None:
+    """Flush Python buffering, then force file content to stable storage."""
+    fileobj.flush()
+    os.fsync(fileobj.fileno())
+
+
+def write_durable_bytes(path: Path, data: bytes) -> None:
+    """Write ``data`` to a new file with flush + fsync before close."""
+    with path.open("xb") as output:
+        output.write(data)
+        fsync_fileobj(output)
+
+
+def directory_sync_supported() -> bool:
+    """Whether this platform can fsync a directory through the stdlib.
+
+    POSIX exposes directory file descriptors; Windows refuses to open a
+    directory at all (Permission denied), so no directory-entry durability
+    can be established there with the available APIs — and none is faked.
+    """
+    return os.name != "nt"
+
+
+def sync_directory(path: Path) -> bool:
+    """fsync a directory so creations/renames inside it reach stable storage.
+
+    Returns True when the boundary was established. Returns False without
+    touching anything where the platform cannot do it (Windows). Raises
+    :class:`DurabilityError` when the platform should support it but the
+    call fails, so publication fails closed instead of reporting a
+    durability it never established.
+    """
+    if os.name == "nt":
+        return False
+    try:
+        fd = os.open(path, os.O_RDONLY)
+    except OSError as exc:
+        raise DurabilityError(f"cannot open directory for sync: {path} ({exc})") from exc
+    try:
+        os.fsync(fd)
+    except OSError as exc:
+        raise DurabilityError(f"directory sync failed: {path} ({exc})") from exc
+    finally:
+        os.close(fd)
+    return True
+
+
 def compute_file_sha256(path: Path, *, max_bytes: int | None = None) -> str:
     hasher = hashlib.sha256()
     size = 0
@@ -167,9 +218,16 @@ class ArtifactStore:
             try:
                 manifest_files: list[ArtifactFile] = []
                 used = 0
+                created_subdirs: set[Path] = set()
                 for name, content in proposed.items():
                     target = validate_manifest_path(stage_path, name)
                     target.parent.mkdir(parents=True, exist_ok=True)
+                    # Every ancestor up to the staging root holds entries
+                    # this artifact depends on; sync each of them.
+                    ancestor = target.parent
+                    while ancestor != stage_path and ancestor != ancestor.parent:
+                        created_subdirs.add(ancestor)
+                        ancestor = ancestor.parent
                     hasher, size = hashlib.sha256(), 0
                     with target.open("xb") as output:
                         for chunk in self._chunks(content):
@@ -179,10 +237,32 @@ class ArtifactStore:
                             output.write(chunk)
                             hasher.update(chunk)
                             size += len(chunk)
+                        # Payload bytes are durable before anything describes them.
+                        fsync_fileobj(output)
                     manifest_files.append(
                         ArtifactFile(path=name, size_bytes=size, sha256=hasher.hexdigest())
                     )
-                candidate = preliminary.model_copy(update={"files": manifest_files})
+                # Payload directory entries are durable before the manifest
+                # that references their hashes becomes durable. (On POSIX a
+                # failed sync raises and aborts publication; on Windows the
+                # calls report False and the manifest records that honestly.)
+                directory_sync = sync_directory(stage_path)
+                for subdir in sorted(created_subdirs):
+                    subdir_sync = sync_directory(subdir)
+                    directory_sync = subdir_sync and directory_sync
+                candidate = preliminary.model_copy(
+                    update={
+                        "files": manifest_files,
+                        "cosmetic_metadata": {
+                            **preliminary.cosmetic_metadata,
+                            "durability": {
+                                "file_sync": "fsync",
+                                "directory_sync": directory_sync,
+                                "platform": os.name,
+                            },
+                        },
+                    }
+                )
                 candidate.production_key = identity_digest(candidate.production_identity())
                 candidate.content_hash = identity_digest(candidate.output_identity())
                 manifest_bytes = canonical_json(candidate.model_dump())
@@ -214,17 +294,29 @@ class ArtifactStore:
                         )
                     return dest
 
-                (stage_path / "manifest.json").write_bytes(manifest_bytes)
-                (stage_path / "_COMPLETED").write_text(
-                    f"COMPLETED at {candidate.created_at}\n", encoding="utf-8"
+                # Completion is last: manifest, then marker, each durable
+                # before the next exists. No state exists where _COMPLETED is
+                # durable while a required payload or the manifest is not.
+                write_durable_bytes(stage_path / "manifest.json", manifest_bytes)
+                write_durable_bytes(
+                    stage_path / "_COMPLETED",
+                    f"COMPLETED at {candidate.created_at}\n".encode(),
                 )
+                # Manifest and marker directory entries are durable before the
+                # staging tree becomes visible under its final name.
+                restaged_sync = sync_directory(stage_path)
+                directory_sync = restaged_sync and directory_sync
                 dest.parent.mkdir(parents=True, exist_ok=True)
+                parent_sync = sync_directory(dest.parent)
+                directory_sync = parent_sync and directory_sync
                 self._checked_destination(artifact_id, kind)
                 if dest.exists():
                     raise ArtifactConflictError(
                         "Artifact conflict: destination appeared during publish"
                     )
                 stage_path.rename(dest)
+                # The rename itself is durable before this call returns.
+                sync_directory(dest.parent)
                 return dest
             finally:
                 # Only this attempt's private, UUID-named staging is ever removed.

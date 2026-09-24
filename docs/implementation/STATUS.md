@@ -1,5 +1,16 @@
 # Implementation status
 
+> **Checkpoint/artifact durability (synchronous baseline): IMPLEMENTED /
+> VERIFIED (bounded offline)** on `fix/checkpoint-durability`. `publish_artifact`
+> now orders flush+fsync per payload, staging/subdir syncs, durable manifest,
+> durable `_COMPLETED` last, rename, parent sync — zero fsyncs before.
+> Durability facts ride identity-neutral in `cosmetic_metadata`; Windows
+> directory sync honestly reported unsupported (file fsync + NTFS rename +
+> fail-closed verification instead). 15 new failure-injection/observability
+> tests + 101 related tests passed; ruff/mypy clean. Cost ~5–6 ms per fsync
+> on this box. See [reports/CHECKPOINT-DURABILITY.md](reports/CHECKPOINT-DURABILITY.md).
+> Overall production acceptance remains BLOCKED; main is unchanged.
+
 > **Performance integration 2026-09-23 (P28 + Astra P29/P29B/P29C):
 > INTEGRATED / GATE-TESTED (bounded offline)** on
 > `integrate/performance-20260923`. One P28 + 13 Astra + 7 P29C commits
