@@ -1801,6 +1801,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "filelock" },
+    { name = "numpy" },
     { name = "psutil" },
     { name = "pyarrow" },
     { name = "pydantic" },
@@ -1837,6 +1838,7 @@ dev = [
 requires-dist = [
     { name = "filelock", specifier = ">=3.13.0" },
     { name = "lm-eval", marker = "extra == 'eval'", specifier = "==0.4.13" },
+    { name = "numpy", specifier = "==2.5.3" },
     { name = "psutil", specifier = ">=5.9.0" },
     { name = "pyarrow", specifier = ">=15.0.0" },
     { name = "pydantic", specifier = ">=2.7.0" },
