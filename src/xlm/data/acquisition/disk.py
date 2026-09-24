@@ -132,7 +132,7 @@ class StorageCapacityManager:
             if resource == "temp":
                 used += account.occupancy.get("nested_temp", 0)
             control = (
-                2 * self.journal.journal_path.stat().st_size
+                self.journal.control_bytes() + self.journal.journal_path.stat().st_size
                 if resource == "temp" and self.journal and self.journal.journal_path.exists()
                 else 0
             )
@@ -432,6 +432,7 @@ class StorageCapacityManager:
                 "journal_bytes": self.journal.journal_path.stat().st_size
                 if self.journal and self.journal.journal_path.exists()
                 else 0,
+                "control_disk_bytes": self.journal.control_bytes() if self.journal else 0,
                 "cache_hits": self.journal.state.cache_hits if self.journal else self._cache_hits,
                 **{
                     f"reserved_{key}_bytes": sum(value.values())

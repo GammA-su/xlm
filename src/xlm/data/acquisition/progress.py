@@ -14,7 +14,13 @@ from pathlib import Path
 from filelock import FileLock
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from xlm.artifacts.manifest import canonical_payload_path, ensure_plain_path, validate_component
+from xlm.artifacts.manifest import (
+    canonical_payload_path,
+    comparable_resolved,
+    ensure_plain_path,
+    validate_component,
+)
+from xlm.data.acquisition.control import regular_size, retire_replacements, validate_diagnostic
 
 
 class ProgressCorruptionError(RuntimeError):
@@ -143,6 +149,7 @@ class ProgressJournal:
             ensure_plain_path(lock)
             with FileLock(str(lock), timeout=10):
                 self.state = self._load()
+                self._retire_replacements()
         else:
             # A concurrent creator may publish after the existence check. Never
             # perform a second unlocked read; the first mutation reloads under lock.
@@ -189,7 +196,7 @@ class ProgressJournal:
         if len(payload) > 8 * 1024**2:
             raise ProgressCorruptionError("journal exceeds 8 MiB")
         # Account for the current journal plus the private atomic replacement.
-        control = self.journal_path.stat().st_size if self.journal_path.exists() else 0
+        control = self.control_bytes()
         occupied = (
             account.occupancy.get("temp", 0)
             + account.occupancy.get("nested_temp", 0)
@@ -237,6 +244,7 @@ class ProgressJournal:
                 raise ValueError(f"Artifact path contains a symlink/junction: {lock}")
             with FileLock(str(lock), timeout=10):
                 self.state = self._load(checked=True)
+                self._retire_replacements()
                 if self.state.schema_version != 2:
                     raise ProgressCorruptionError(
                         "legacy journal accounting is unresolved; cannot resume"
@@ -244,6 +252,81 @@ class ProgressJournal:
                 yield self.state
                 if persist:
                     self._write()
+
+    def _performance_path(self) -> Path | None:
+        scratch = self.state.storage_roots.get("scratch")
+        if scratch is None:
+            return None
+        root = Path(scratch)
+        if comparable_resolved(self.journal_path) != comparable_resolved(
+            root / "journals" / f"{self.plan_id}.progress.json"
+        ):
+            return None  # Generic preparation journals have no acquisition sidecar.
+        return root / "performance" / f"{self.plan_id}.perf.json"
+
+    def _retire_replacements(self) -> None:
+        """FileLock held: old replacement bytes are not committed journal state."""
+
+        def validate(payload: bytes) -> None:
+            orphan = AcquisitionState.model_validate_json(payload)
+            if orphan.plan_id != self.plan_id or orphan.plan_hash != self.plan_hash:
+                raise ValueError("foreign journal replacement")
+            if orphan.schema_version != 2:
+                raise ValueError("unsupported journal replacement schema")
+
+        try:
+            retire_replacements(self.journal_path, 8 * 1024**2, validate)
+            performance = self._performance_path()
+            if performance is not None:
+                retire_replacements(
+                    performance, 1024**2, lambda payload: validate_diagnostic(payload, self.plan_id)
+                )
+        except (ValueError, OSError) as exc:
+            raise ProgressCorruptionError("owned control-file reconciliation refused") from exc
+
+    def control_bytes(self) -> int:
+        """Existing logical bytes, with FileLock held; replacements retired first."""
+        total = regular_size(self.journal_path, 8 * 1024**2)
+        total += regular_size(self.journal_path.with_suffix(".lock"), 1024)
+        performance = self._performance_path()
+        if performance is not None:
+            total += regular_size(performance, 1024**2)
+            total += regular_size(
+                performance.parent.parent / "locks" / f"acq_{self.plan_id}.lock", 1024
+            )
+        return total
+
+    def write_diagnostic(self, payload: bytes) -> Path:
+        """Best-effort caller: diagnostic old+replacement bytes share the scratch cap."""
+        if len(payload) > 1024**2:
+            raise ProgressCorruptionError("diagnostic exceeds 1 MiB")
+        validate_diagnostic(payload, self.plan_id)
+        with self.transaction(persist=False) as state:
+            target = self._performance_path()
+            if target is None:
+                raise ProgressCorruptionError("diagnostic has no owned acquisition root")
+            account = state.accounting
+            occupied = (
+                account.occupancy.get("temp", 0)
+                + account.occupancy.get("nested_temp", 0)
+                + sum(account.reservations.get("temp", {}).values())
+            )
+            if occupied + self.control_bytes() + len(payload) > account.limits["temp"]:
+                raise ProgressCorruptionError(
+                    "scratch limit including diagnostic replacement exceeded"
+                )
+            ensure_plain_path(target)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            temporary = target.with_name(target.name + "." + uuid.uuid4().hex + ".tmp")
+            try:
+                with temporary.open("xb") as stream:
+                    stream.write(payload)
+                    stream.flush()
+                    os.fsync(stream.fileno())
+                os.replace(temporary, target)
+            finally:
+                temporary.unlink(missing_ok=True)
+            return target
 
     def save(self) -> None:
         with self.transaction(persist=False):

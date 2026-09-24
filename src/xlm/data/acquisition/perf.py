@@ -51,7 +51,10 @@ import uuid
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from xlm.data.acquisition.progress import ProgressJournal
 
 PERF_VERSION = 1
 MAX_SLOWEST_REQUESTS = 8
@@ -578,12 +581,21 @@ class PerfTelemetry:
             ],
         }
 
-    def write_sidecar(self, scratch_dir: Path, plan_id: str, doc: dict[str, Any]) -> Path:
+    def write_sidecar(
+        self,
+        scratch_dir: Path,
+        plan_id: str,
+        doc: dict[str, Any],
+        *,
+        journal: ProgressJournal | None = None,
+    ) -> Path:
         """Persist the sidecar atomically under the attempt's owned scratch tree."""
+        payload = json.dumps(doc, indent=2).encode("utf-8")
+        if journal is not None:
+            return journal.write_diagnostic(payload)
         target_dir = scratch_dir / "performance"
         target_dir.mkdir(parents=True, exist_ok=True)
         target = target_dir / f"{plan_id}.perf.json"
-        payload = json.dumps(doc, indent=2).encode("utf-8")
         temporary = target_dir / f"{target.name}.{uuid.uuid4().hex}.tmp"
         try:
             with temporary.open("xb") as stream:

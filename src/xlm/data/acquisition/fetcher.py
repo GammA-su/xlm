@@ -770,7 +770,9 @@ class BoundedFetcher:
                         doc["cpu_process_seconds"] = max(0.0, time.process_time() - cpu_start)
                     except Exception:
                         pass
-                self.perf.write_sidecar(self.scratch_dir, self.plan.plan_id, doc)
+                self.perf.write_sidecar(
+                    self.scratch_dir, self.plan.plan_id, doc, journal=self.journal
+                )
             except Exception:
                 pass
             try:
