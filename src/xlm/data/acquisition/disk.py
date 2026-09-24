@@ -22,8 +22,12 @@ from xlm.data.sources.transport import BudgetExhaustedError
 #: of several per 64 KiB read. Windows grow geometrically per stream: the first
 #: is ``ACCOUNTING_INITIAL_WINDOW_BYTES`` and each next equals the amount already
 #: used, capped at ``ACCOUNTING_WINDOW_BYTES``. A crash therefore strands at most
-#: max(initial, already used) and never more than the cap per active stream;
-#: limits are never exceeded and usage is never under-counted.
+#: max(initial, already used) per active streaming lease, up to the cap.
+#: Indivisible ``consume(amount)`` charges can reserve more than the cap when
+#: amount exceeds it (e.g. one bounded Parquet group); their bound is
+#: max(cap, amount). Older crash reservations remain charged across retries,
+#: so the per-lease bound is not a bound on cumulative stranded allowance.
+#: All reservations still share the persisted resource ceiling.
 ACCOUNTING_INITIAL_WINDOW_BYTES = 64 * 1024
 ACCOUNTING_WINDOW_BYTES = 16 * 1024 * 1024
 

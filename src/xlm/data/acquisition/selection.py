@@ -7,6 +7,7 @@ import json
 import threading
 import uuid
 import zlib
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import closing
 from pathlib import Path
@@ -93,7 +94,7 @@ def _jsonl_selection(
     name: str,
     start: int,
     stop: int,
-    scanned_counter: list[int] | None = None,
+    scanned_counter: Callable[[], None] | None = None,
 ) -> Any:
     with fetcher._open(name, {}) as response:
         if (
@@ -147,7 +148,7 @@ def _jsonl_selection(
                 del pending[:size]
                 if raw.strip():
                     if scanned_counter is not None:
-                        scanned_counter[0] += 1
+                        scanned_counter()
                     else:
                         fetcher.capacity_mgr.record_units(
                             "records_scanned", 1, fetcher.plan.limits.max_scanned_records
@@ -182,7 +183,7 @@ def _gz_jsonl_selection(
     name: str,
     start: int,
     stop: int,
-    scanned_counter: list[int] | None = None,
+    scanned_counter: Callable[[], None] | None = None,
 ) -> Any:
     """Bounded selected rows from ``.jsonl.gz`` via incremental streaming decode.
 
@@ -271,7 +272,7 @@ def _gz_jsonl_selection(
                 del pending[:size]
                 if raw.strip():
                     if scanned_counter is not None:
-                        scanned_counter[0] += 1
+                        scanned_counter()
                     else:
                         fetcher.capacity_mgr.record_units(
                             "records_scanned", 1, limits.max_scanned_records
@@ -310,7 +311,7 @@ def _selection_iterator(
     *,
     columns: list[str] | None = None,
     coalesce_bytes: int | None = None,
-    scanned_counter: list[int] | None = None,
+    scanned_counter: Callable[[], None] | None = None,
 ) -> Any:
     """Dispatch selected-record iteration by file kind (JSONL, GZ, Parquet)."""
     if source.endswith(".jsonl"):
@@ -336,7 +337,7 @@ def _parquet_selection(
     *,
     columns: list[str] | None = None,
     coalesce_bytes: int | None = None,
-    scanned_counter: list[int] | None = None,
+    scanned_counter: Callable[[], None] | None = None,
 ) -> Any:
     """Selected Parquet rows; legacy exact ranges unless projection/coalescing set."""
     if columns is None and coalesce_bytes is None:
@@ -351,7 +352,7 @@ def _parquet_selection_exact(
     name: str,
     start: int,
     stop: int,
-    scanned_counter: list[int] | None = None,
+    scanned_counter: Callable[[], None] | None = None,
 ) -> Any:
     limits = fetcher.plan.limits
     with (
@@ -390,7 +391,7 @@ def _parquet_selection_exact(
                         rows = batch.to_pylist()
                     for record in rows:
                         if scanned_counter is not None:
-                            scanned_counter[0] += 1
+                            scanned_counter()
                         else:
                             fetcher.capacity_mgr.record_units(
                                 "records_scanned", 1, limits.max_scanned_records
@@ -588,7 +589,7 @@ def _parquet_selection_projected(
     stop: int,
     columns: list[str] | None,
     coalesce_bytes: int | None,
-    scanned_counter: list[int] | None = None,
+    scanned_counter: Callable[[], None] | None = None,
 ) -> Any:
     """Projected narrow decode: required column chunks only, merged spans."""
     limits = fetcher.plan.limits
@@ -647,7 +648,7 @@ def _parquet_selection_projected(
                             rows = batch.to_pylist()
                         for record in rows:
                             if scanned_counter is not None:
-                                scanned_counter[0] += 1
+                                scanned_counter()
                             else:
                                 fetcher.capacity_mgr.record_units(
                                     "records_scanned", 1, limits.max_scanned_records
@@ -694,8 +695,6 @@ class _BatchCommitter:
 
     def __init__(self, capacity_mgr: StorageCapacityManager, scanned_maximum: int) -> None:
         self._capacity_mgr = capacity_mgr
-        self.scanned: list[int] = [0]
-        self._charged_scanned = 0
         self._scan = CapacityLease(
             capacity_mgr,
             "records_scanned",
@@ -706,14 +705,14 @@ class _BatchCommitter:
         )
         self._temp = CapacityLease(capacity_mgr, "temp")
 
+    def scanned(self) -> None:
+        """Reserve scan allowance before parsing, including skipped records."""
+        self._scan.consume_to_ceiling(1)
+
     def add_retained(self, payload_len: int) -> None:
         self._temp.consume(payload_len)
 
     def maybe_commit(self, *, force: bool = False) -> None:
-        delta = self.scanned[0] - self._charged_scanned
-        if delta:
-            self._charged_scanned = self.scanned[0]
-            self._scan.consume_to_ceiling(delta)
         self._capacity_mgr.check_deadline()
         if force:
             self.close()
