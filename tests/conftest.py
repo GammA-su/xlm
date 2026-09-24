@@ -6,8 +6,57 @@ import os
 import socket
 from collections.abc import Generator
 from pathlib import Path
+from typing import TYPE_CHECKING, cast
 
 import pytest
+
+if TYPE_CHECKING:
+    from runtime_fixture import RuntimeSeed
+    from xlm.experiments.plans import ExecutablePlan
+
+
+def pytest_addoption(parser: pytest.Parser) -> None:
+    parser.addoption(
+        "--fresh-runtime", action="store_true", help="Disable queue fixture runtime reuse"
+    )
+
+
+@pytest.fixture(scope="session")
+def runtime_seed() -> Generator[RuntimeSeed, None, None]:
+    from runtime_fixture import RuntimeSeed
+
+    lock = Path(__file__).resolve().parents[1] / "uv.lock"
+    seed = RuntimeSeed.capture(lock)
+    yield seed
+    seed.verify_unchanged(lock)
+
+
+@pytest.fixture(autouse=True)
+def queue_runtime_prerequisite(
+    request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch
+) -> Generator[None, None, None]:
+    from runtime_fixture import RUNTIME_FIXTURE_NODES
+
+    nodeid = request.node.nodeid.rsplit("@p30b-", 1)[0]
+    if nodeid not in RUNTIME_FIXTURE_NODES or request.config.getoption("--fresh-runtime"):
+        yield
+        return
+    import test_queue
+
+    seed = cast("RuntimeSeed", request.getfixturevalue("runtime_seed"))
+    hits = 0
+
+    def freeze(plan: ExecutablePlan, snapshot: Path, extras: list[str]) -> ExecutablePlan:
+        nonlocal hits
+        result, used = seed.freeze(plan, snapshot, extras)
+        hits += int(used)
+        return result
+
+    monkeypatch.setattr(test_queue, "freeze_execution", freeze)
+    yield
+    request.node.user_properties.extend(
+        [("runtime_fixture_cache_hits", hits), ("runtime_fixture_key", seed.key)]
+    )
 
 
 @pytest.fixture(scope="session")
