@@ -139,6 +139,7 @@ def private_domain_home(request: pytest.FixtureRequest, monkeypatch: pytest.Monk
         monkeypatch.setenv("XLM_HOME", str(path / "fallback-home"))
 
 
+@pytest.hookimpl(trylast=True)
 def pytest_configure(config: pytest.Config) -> None:
     """Give each xdist worker its own XLM_HOME before anything resolves paths.
 
@@ -151,6 +152,9 @@ def pytest_configure(config: pytest.Config) -> None:
         base = os.environ.get("XLM_HOME")
         if base:
             os.environ["XLM_HOME"] = str(Path(base) / f"worker-{worker}")
+    from thread_diagnostics import install_safe_timeout
+
+    install_safe_timeout(config)
 
 
 @pytest.fixture(autouse=True)
