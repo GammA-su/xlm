@@ -166,11 +166,22 @@ class BoundedFetcher:
         self.journal = ProgressJournal(
             self.journal_path, plan.plan_id, plan.compute_behavioral_hash()
         )
-        self.journal.bind_roots(scratch=scratch_dir, output=output_dir)
+        limits = plan.limits
+        # The first atomic journal write is scratch usage too. Bind its limits
+        # and roots together, before authorization or any other startup write.
+        self.journal.bind_roots(
+            scratch=scratch_dir,
+            output=output_dir,
+            resource_limits={
+                "transfer": limits.max_transferred_bytes,
+                "decompressed": limits.max_decompressed_bytes,
+                "temp": limits.max_temp_disk_bytes,
+                "output": limits.max_output_disk_bytes,
+            },
+        )
         with self.journal.transaction() as state:
             if plan.authorization and not state.authorization:
                 state.authorization = plan.authorization.model_dump()
-        limits = plan.limits
         self.capacity_mgr = StorageCapacityManager(
             limits.max_transferred_bytes,
             limits.max_decompressed_bytes,

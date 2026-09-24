@@ -336,12 +336,16 @@ class ProgressJournal:
         with self.transaction() as state:
             state.status, state.error_reason = status, error
 
-    def bind_roots(self, **roots: Path) -> None:
+    def bind_roots(self, *, resource_limits: dict[str, int] | None = None, **roots: Path) -> None:
         resolved = {key: str(value.resolve()) for key, value in roots.items()}
         with self.transaction() as state:
             if state.storage_roots and state.storage_roots != resolved:
                 raise ProgressCorruptionError("changing storage roots cannot reset accounting")
             state.storage_roots = resolved
+            if resource_limits is not None:
+                if state.accounting.limits and state.accounting.limits != resource_limits:
+                    raise ValueError("resource limits changed under an existing account")
+                state.accounting.limits = dict(resource_limits)
 
     def record_request(self, maximum: int) -> None:
         from xlm.data.sources.transport import BudgetExhaustedError

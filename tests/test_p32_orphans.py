@@ -203,3 +203,17 @@ def test_diagnostics_share_scratch_limit_and_orphan_lock(tmp_path: Path) -> None
         )
     assert target.read_bytes() == payload
     assert not list(target.parent.glob("*.tmp"))
+
+
+def test_initial_journal_bytes_are_bounded_before_first_write(tmp_path: Path) -> None:
+    from test_acquisition_leases import plan_for
+    from xlm.data.acquisition.fetcher import BoundedFetcher
+    from xlm.data.acquisition.plan import AcquisitionLimits
+
+    plan = plan_for(47183, ["rows.jsonl"], limits=AcquisitionLimits(max_temp_disk_bytes=128))
+    with pytest.raises(ProgressCorruptionError, match="scratch limit"):
+        BoundedFetcher(plan, tmp_path / "scratch", tmp_path / "output")
+    files = [path for path in (tmp_path / "scratch").rglob("*") if path.is_file()]
+    assert sum(path.stat().st_size for path in files) <= 128
+    assert not list((tmp_path / "scratch").rglob("*.json"))
+    assert not list((tmp_path / "scratch").rglob("*.tmp"))
