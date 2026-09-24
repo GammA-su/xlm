@@ -144,7 +144,13 @@ class StorageCapacityManager:
             )
 
     def reserve(
-        self, resource: str, amount: int, *, publication: bool = False, persistent: bool = False
+        self,
+        resource: str,
+        amount: int,
+        *,
+        publication: bool = False,
+        persistent: bool = False,
+        on_reserved: Callable[[AcquisitionState, str], None] | None = None,
     ) -> str:
         if amount < 0:
             raise ValueError("negative reservation")
@@ -170,6 +176,10 @@ class StorageCapacityManager:
                 "external_" if persistent else "publication_" if publication else ""
             ) + uuid.uuid4().hex
             pending[token] = amount
+            if on_reserved is not None:
+                if self.journal is None:
+                    raise ValueError("publication intent requires a journal")
+                on_reserved(self.journal.state, token)
             return token
 
     def settle(self, resource: str, token: str, actual: int) -> None:
@@ -346,7 +356,13 @@ class StorageCapacityManager:
             raise BudgetExhaustedError("cumulative records_scanned limit exceeded")
 
     def reserve_disk_space(
-        self, target_dir: Path, estimated_bytes: int, is_temp: bool = True
+        self,
+        target_dir: Path,
+        estimated_bytes: int,
+        is_temp: bool = True,
+        *,
+        publication: bool = False,
+        on_reserved: Callable[[AcquisitionState, str], None] | None = None,
     ) -> str:
         ensure_plain_path(target_dir)
         existing = target_dir
@@ -355,7 +371,12 @@ class StorageCapacityManager:
         usage = shutil.disk_usage(existing)
         if usage.free - estimated_bytes < self.min_free_headroom_bytes:
             raise DiskCeilingExceededError("physical disk headroom guard reached")
-        return self.reserve("temp" if is_temp else "output", estimated_bytes)
+        return self.reserve(
+            "temp" if is_temp else "output",
+            estimated_bytes,
+            publication=publication,
+            on_reserved=on_reserved,
+        )
 
     def reconcile_disk(self, resource: str, directory: Path) -> int:
         """Caller holds the plan execution lock; no writer may remain active."""

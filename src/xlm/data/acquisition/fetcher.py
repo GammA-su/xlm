@@ -45,6 +45,7 @@ from xlm.data.acquisition.progress import (
     ProgressJournal,
     apply_file_progress,
 )
+from xlm.data.acquisition.publication import publish_output, reconcile_publications
 from xlm.data.acquisition.records import RecordLimitError, inspect_records
 from xlm.data.sources.transport import (
     BudgetExhaustedError,
@@ -680,19 +681,15 @@ class BoundedFetcher:
                                 state.file_progress[rel_path].record_count = records
                         self.perf.record_scanned(records or 0, file=rel_path)
                         self.perf.record_retained(records or 0, file=rel_path)
-                        token = self.capacity_mgr.reserve_disk_space(
-                            self.output_dir, offset, is_temp=False
-                        )
                         with self.perf.timed("serialize", file=rel_path):
-                            AtomicFileWriter.atomic_complete(partial, final_path)
-                        self.capacity_mgr.settle("output", token, offset)
-                        with self.perf.timed("accounting"):
-                            self.journal.mark_file_completed(
+                            publish_output(
+                                self,
                                 rel_path,
+                                partial,
                                 offset,
+                                digest.hexdigest(),
+                                records,
                                 new_etag,
-                                digest=digest.hexdigest(),
-                                records=records,
                             )
                         return final_path
                 except (urllib.error.URLError, OSError, http.client.IncompleteRead) as exc:
@@ -715,6 +712,7 @@ class BoundedFetcher:
                 with self.perf.timed("accounting"):
                     self.journal.set_status("IN_PROGRESS")
                 try:
+                    reconcile_publications(self)
                     if self.plan.mode == AcquisitionMode.SELECTED_RECORDS:
                         from xlm.data.acquisition.selection import acquire_selection
 

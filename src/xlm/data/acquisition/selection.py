@@ -17,7 +17,7 @@ import pyarrow.parquet as pq
 
 from xlm.artifacts.manifest import ensure_plain_path
 from xlm.artifacts.store import compute_file_sha256
-from xlm.data.acquisition.disk import AtomicFileWriter, CapacityLease, StorageCapacityManager
+from xlm.data.acquisition.disk import CapacityLease, StorageCapacityManager
 from xlm.data.acquisition.progress import ProgressCorruptionError
 from xlm.data.acquisition.records import (
     RecordLimitError,
@@ -858,12 +858,10 @@ def _acquire_selection_serial(
             fetcher.perf.record_write_seconds(writer.flush_seconds - write_mark, file=source)
     fetcher.perf.record_peak_rss(writer.peak_rss_bytes)
     digest, size = writer.digest.hexdigest(), writer.size
-    token = fetcher.capacity_mgr.reserve_disk_space(fetcher.output_dir, size, is_temp=False)
     with fetcher.perf.timed("serialize", file=name):
-        AtomicFileWriter.atomic_complete(temporary, destination)
-    fetcher.capacity_mgr.settle("output", token, size)
-    with fetcher.perf.timed("accounting"):
-        fetcher.journal.mark_file_completed(name, size, digest=digest, records=count)
+        from xlm.data.acquisition.publication import publish_output
+
+        publish_output(fetcher, name, temporary, size, digest, count)
 
 
 def _acquire_selection_parallel(
@@ -954,12 +952,10 @@ def _acquire_selection_parallel(
             raise
         # Account the merged staging, then retire chunk files (bounded 2x peak).
         fetcher.capacity_mgr.settle("temp", merge_token, total_size)
-        token = fetcher.capacity_mgr.reserve_disk_space(fetcher.output_dir, size, is_temp=False)
         with fetcher.perf.timed("serialize", file=name):
-            AtomicFileWriter.atomic_complete(temporary, destination)
-        fetcher.capacity_mgr.settle("output", token, size)
-        with fetcher.perf.timed("accounting"):
-            fetcher.journal.mark_file_completed(name, size, digest=digest, records=count)
+            from xlm.data.acquisition.publication import publish_output
+
+            publish_output(fetcher, name, temporary, size, digest, count)
     finally:
         for path in chunk_paths:
             try:

@@ -48,6 +48,22 @@ class ResourceAccount(BaseModel):
         return self
 
 
+class PublicationIntent(BaseModel):
+    """Durable proof of the private inode admitted for exclusive publication."""
+
+    model_config = ConfigDict(extra="forbid")
+    plan_hash: str
+    partial_path: str
+    destination: str
+    content_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    size: int = Field(ge=0)
+    device: int = Field(ge=0)
+    inode: int = Field(gt=0)
+    output_token: str = Field(pattern=r"^publication_[0-9a-f]{32}$")
+    etag: str | None = None
+    records: int | None = Field(default=None, ge=0)
+
+
 class FileProgress(BaseModel):
     model_config = ConfigDict(extra="forbid")
     file_path: str
@@ -61,6 +77,7 @@ class FileProgress(BaseModel):
     record_count: int | None = None
     status: str = "pending"
     error: str | None = None
+    publication: PublicationIntent | None = None
 
 
 class AcquisitionState(BaseModel):
