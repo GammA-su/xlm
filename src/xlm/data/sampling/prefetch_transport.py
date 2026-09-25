@@ -66,9 +66,9 @@ class BoundedConnection:
             daemon=True,
             name="xlm-prefetch-reader",
         )
-        self._reader.start()
         self._peek: Any = None
         self._writer: threading.Thread | None = None
+        self._reader.start()
 
     def poll(self, timeout: float = 0.0) -> bool:
         if self._peek is not None:
@@ -112,7 +112,11 @@ class BoundedConnection:
 
         writer = threading.Thread(target=write, daemon=True, name="xlm-prefetch-writer")
         self._writer = writer
-        writer.start()
+        try:
+            writer.start()
+        except RuntimeError as exc:
+            self._writer = None
+            raise OSError("prefetch writer could not start") from exc
         if not finished.wait(self.timeout_seconds):
             # The caller reaps the child; closing cancels Windows overlapped send.
             self.close()

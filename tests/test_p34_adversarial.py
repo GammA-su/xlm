@@ -15,6 +15,7 @@ from xlm.data.sampling.prefetch import PrefetchProducerError, PrefetchProtocolEr
 from xlm.data.tokens import TokenShardReader
 
 
+@pytest.mark.serial
 def test_control_send_has_a_deadline(shards: dict[str, TokenShardReader]) -> None:  # noqa: F811
     with prefetcher(shards) as pre:
         child = psutil.Process(pre.producer_pid)
@@ -168,3 +169,36 @@ def test_large_numpy_frame_uses_bounded_pickle_buffers() -> None:
     finally:
         child.close()
         bounded.close()
+
+
+@pytest.mark.parametrize("kind", ["reader", "writer"])
+def test_transport_thread_start_failure_reaps_owned_child(
+    shards: dict[str, TokenShardReader],  # noqa: F811
+    monkeypatch: pytest.MonkeyPatch,
+    kind: str,
+) -> None:
+    before = {p.pid for p in psutil.Process().children()}
+    pre = prefetcher(shards) if kind == "writer" else None
+    original = threading.Thread.start
+
+    def fail(thread: threading.Thread) -> None:
+        if thread.name == f"xlm-prefetch-{kind}":
+            raise RuntimeError("authored thread admission failure")
+        original(thread)
+
+    try:
+        with monkeypatch.context() as patch:
+            patch.setattr(threading.Thread, "start", fail)
+            with pytest.raises(PrefetchProducerError):
+                if pre is None:
+                    prefetcher(shards)
+                else:
+                    initial = pre.get_state()
+                    try:
+                        pre.next_step_microbatches(GLOBAL)
+                    finally:
+                        assert pre.get_state() == initial and pre.pending_update is None
+        assert {p.pid for p in psutil.Process().children()} <= before
+    finally:
+        if pre is not None:
+            pre.close()

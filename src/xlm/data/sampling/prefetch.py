@@ -534,9 +534,25 @@ class PrefetchingBatcher:
             name="xlm-prefetch-producer",
             daemon=True,
         )
-        process.start()
-        child.close()
-        transport = BoundedConnection(parent, self.depth + 2, self.timeout_seconds)
+        try:
+            process.start()
+            child.close()
+            transport = BoundedConnection(parent, self.depth + 2, self.timeout_seconds)
+        except BaseException as exc:
+            # Ownership must exist even if the reader cannot start: there is no
+            # batcher finalizer yet to reap the already spawned child.
+            parent.close()
+            child.close()
+            if process.pid is not None:
+                if process.is_alive():
+                    process.terminate()
+                process.join(timeout=5)
+                if process.is_alive():
+                    process.kill()
+                    process.join(timeout=5)
+            if isinstance(exc, Exception):
+                raise PrefetchProducerError("producer transport startup failed") from exc
+            raise
         self._process, self._conn = process, transport
         self._finalizer = weakref.finalize(self, _shutdown, process, transport)
         message = self._receive_raw()
