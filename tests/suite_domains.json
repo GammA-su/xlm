@@ -115,6 +115,12 @@
       "exclusive": false,
       "reason": "Private authored tree, plugins, source documents, preparation, direct/queue/resume homes; captured A and mutated B both private."
     },
+    "tests/test_configurable_workflow.py::test_public_two_source_prepare_direct_queue_and_resume[producer_cpu]": {
+      "tier": "serial_heavy",
+      "group": "p30b-two-source-producer",
+      "exclusive": false,
+      "reason": "Private authored tree, shards and direct/queue/resume homes; one owned bounded CPU producer per worker, reaped before exit."
+    },
     "tests/test_continuation_p05.py::test_cpu_fresh_process_continuation_parity": {
       "tier": "serial_core",
       "group": "p30b-continuation-p05",

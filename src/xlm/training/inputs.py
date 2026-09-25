@@ -374,6 +374,9 @@ def build_training_batcher(
     from xlm.data.sampling import MixtureBatcher
     from xlm.training.data import TrainingBatcher
 
+    mode = training.get("producer_prefetch", "off")
+    if mode not in ("off", "process_depth1"):
+        raise ValueError("Unknown producer_prefetch mode")
     kwargs = {
         k: training[k]
         for k in ("context_length", "global_batch_valid_targets", "microbatch_sequences")
@@ -385,13 +388,26 @@ def build_training_batcher(
             eos_token_id=tokenizer.eos_token_id,
         )
     if isinstance(source, MixtureInput):
-        return MixtureBatcher(
+        batcher = MixtureBatcher(
             source.recipe,
             source.readers,
             emit_tensors=True,
             exposure_plan=data.get("exposure_plan"),
             **kwargs,
         )
+        if mode == "process_depth1":
+            from xlm.data.sampling.prefetch import PrefetchingBatcher, ProducerSpec
+
+            producer = PrefetchingBatcher(
+                ProducerSpec.from_batcher(batcher),
+                batcher.get_state(),
+                verify_content=True,
+            )
+            batcher.close()  # The child rebuilt its own readers; release the parent's maps.
+            return producer
+        return batcher
+    if mode != "off":
+        raise ValueError("Process producer requires an explicit mixture/shard packing input")
     return TrainingBatcher(
         source,
         exhaustion_policy=data.get("exhaustion_policy", "error"),

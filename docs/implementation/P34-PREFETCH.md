@@ -7,8 +7,21 @@ the GPU trains the current one. Batch contents, order, masks, target counts,
 trace chain and committed cursors are identical to the synchronous batcher;
 this is enforced by tests and a bit-exact actual-50M CUDA gate.
 
-It is **not** wired into `xlm train` or recipes. Enabling it in a research
-recipe is a separate contract decision (see the P34 report).
+It is **off by default**. The explicit run setting is:
+
+```yaml
+training:
+  producer_prefetch: process_depth1
+```
+
+`off` keeps the synchronous `MixtureBatcher`; `process_depth1` wraps it in a
+depth-1 `PrefetchingBatcher` with per-update content verification. Any other
+value is rejected. The setting is validated by `TrainingConfig`, recorded in
+the frozen execution envelope, and honored identically by direct training, the
+queue worker, and checkpoint resume: resume reconstructs the batcher from the
+frozen envelope, so a resumed run cannot silently change the mode. Non-mixture
+inputs reject the option. Direct domain-API construction below remains
+available.
 
 ## Use
 
@@ -56,8 +69,21 @@ unconsumed update is discarded across restart and regenerated identically.
   state is still at the committed boundary (failures before `optimizer.step`),
   otherwise resume from the last checkpoint. Calling `next_step_microbatches`
   again without `commit`/`rollback` raises `PrefetchProtocolError`.
+* An interrupted optimizer boundary leaves the trainer **in doubt**
+  (`RecoveryRequiredError` on further `train_step`/`_save_checkpoint` calls):
+  the optimizer may have partially mutated, so the run must reload the last
+  complete checkpoint in a fresh trainer. On CUDA, the trainer additionally
+  synchronizes the current stream after the optimizer step and before
+  promoting the cursor, so an asynchronous optimizer failure can never surface
+  after the schedule/counters/cursor have advanced.
 * The child exits when the consumer closes it, is garbage collected, or dies
   (pipe EOF); it is also a daemon process.
+* Transport failures (`BrokenPipeError`, EOF, Windows poll errors, killed
+  child) surface as `PrefetchProducerError` domain failures without cursor
+  advancement. A consumed update still commits after producer death because
+  commit performs no producer IPC. Back-to-back resets with speculative
+  updates in flight cannot deadlock the duplex pipe: the reset handshake keeps
+  a live inbound reader while the large state crosses.
 
 ## Metadata representation
 

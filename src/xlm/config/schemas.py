@@ -239,6 +239,7 @@ class TrainingConfig(StrictConfigModel):
     budget: BudgetConfig
     schedule: dict[str, Any]  # Validated via schedule registry
     activation_checkpointing: bool = False
+    producer_prefetch: Literal["off", "process_depth1"] = "off"
     compile: bool = False
     init_seed: int = 101
     data_seed: int = 20260918

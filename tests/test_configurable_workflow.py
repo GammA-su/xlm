@@ -175,9 +175,21 @@ def factory(config, *, artifact):
     return names
 
 
-@pytest.mark.parametrize("auxiliary", [False, True])
+@pytest.mark.parametrize(
+    "auxiliary,producer,device",
+    [
+        pytest.param(False, False, "cpu", id="False"),
+        pytest.param(True, False, "cpu", id="True"),
+        pytest.param(False, True, "cpu", id="producer_cpu"),
+        pytest.param(False, True, "cuda", id="producer_cuda", marks=pytest.mark.cuda),
+    ],
+)
 @pytest.mark.serial
-def test_public_two_source_prepare_direct_queue_and_resume(tmp_path: Path, auxiliary: bool) -> None:
+def test_public_two_source_prepare_direct_queue_and_resume(
+    tmp_path: Path, auxiliary: bool, producer: bool, device: str
+) -> None:
+    if device == "cuda" and not torch.cuda.is_available():
+        pytest.skip("CUDA hardware required")
     from test_frozen_execution import authored_tree
 
     tree = authored_tree(tmp_path / "tree")
@@ -336,8 +348,9 @@ def register(registry, capabilities):
         "objective": {"type": "authored_aux" if auxiliary else "cross_entropy"},
         "optimizer": {"type": "adamw", "lr": 0.01},
         "training": {
-            "device": "cpu",
+            "device": device,
             "precision": "fp32",
+            "producer_prefetch": "process_depth1" if producer else "off",
             "context_length": 8,
             "init_seed": 7,
             "data_seed": 42,
@@ -356,7 +369,7 @@ def register(registry, capabilities):
     draft = tree / "draft.yaml"
     draft.write_text(yaml.safe_dump(config), encoding="utf-8")
     direct_home, queue_home = tmp_path / "direct-home", tmp_path / "queue-home"
-    cli(tree, direct_home, evidence, "train", str(draft), "--device", "cpu")
+    cli(tree, direct_home, evidence, "train", str(draft), "--device", device)
     snapshot = tmp_path / "snapshot"
     plan = tmp_path / "plan.json"
     cli(
@@ -382,25 +395,25 @@ def register(registry, capabilities):
         "--snapshot-dir",
         str(snapshot),
         "--device",
-        "cpu",
+        device,
     )
     if auxiliary:
         # Live B cannot execute. Submitted A and A's checkpoint must still run
         # their captured plugin, including its original schema and factory.
         (plugin / "entry.py").write_text('raise RuntimeError("LIVE_PLUGIN_B_EXECUTED")\n')
-    cli(tree, queue_home, evidence, "queue", "run", "--once", "--device", "cpu")
+    cli(tree, queue_home, evidence, "queue", "run", "--once", "--device", device)
     direct, queued = checkpoints(direct_home), checkpoints(queue_home)
     assert set(direct) == {16, 32, 33}, direct
     assert set(queued) == {16, 32, 33}, queued
     resumed_home = tmp_path / "resume-home"
-    cli(tree, resumed_home, evidence, "resume", str(direct[16]), "--device", "cpu")
+    cli(tree, resumed_home, evidence, "resume", str(direct[16]), "--device", device)
     resumed = checkpoints(resumed_home)
     assert set(resumed) == {32, 33}
     for other in (queued[33], resumed[33]):
         for name in ("model.pt", "objective.pt", "optimizer.pt", "rng_state.pt"):
             assert_state_equal(
-                torch.load(direct[33] / name, weights_only=True),
-                torch.load(other / name, weights_only=True),
+                torch.load(direct[33] / name, weights_only=True, map_location="cpu"),
+                torch.load(other / name, weights_only=True, map_location="cpu"),
             )
         for name in ("schedule.json", "data_state.json"):
             assert json.loads((direct[33] / name).read_text()) == json.loads(
@@ -422,6 +435,9 @@ def register(registry, capabilities):
         assert all(t["byte_span"][1] > t["byte_span"][0] for t in rows)
     execution = json.loads((direct[33] / "execution.json").read_text())
     assert execution["envelope"]["config"]["data"]["mixture"] == recipe.model_dump(mode="json")
+    assert execution["envelope"]["config"]["training"]["producer_prefetch"] == (
+        "process_depth1" if producer else "off"
+    )
     if auxiliary:
         objective = torch.load(direct[33] / "objective.pt", weights_only=True)
         assert objective["aux_param"].item() > 1.0
@@ -445,6 +461,8 @@ def register(registry, capabilities):
             str(direct[33]),
             "--suite",
             "synthetic_mc",
+            "--device",
+            device,
             "--json",
         )
         receipt = json.loads(evaluated.stdout)[0]
