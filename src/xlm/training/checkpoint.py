@@ -16,6 +16,7 @@ import io
 import json
 import random
 import tempfile
+from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -95,6 +96,7 @@ class CheckpointManager:
         self.runtime_config = runtime_config
         self.execution = execution
         self._published_bytes = 0
+        self.boundary_guard: Callable[[], None] | None = None
 
     def _save_tensor(self, state: Any, path: Path) -> None:
         """Bound private serialization before the artifact store copies these bytes."""
@@ -145,6 +147,8 @@ class CheckpointManager:
         Writes state to a local staging directory, computes checksums, writes
         metadata, and atomically publishes through ArtifactStore.
         """
+        if self.boundary_guard is not None:
+            self.boundary_guard()
         now_str = datetime.now(UTC).isoformat()
         from xlm.artifacts.manifest import identity_digest
         from xlm.artifacts.store import compute_file_sha256

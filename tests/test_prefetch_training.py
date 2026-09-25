@@ -20,6 +20,7 @@ from xlm.data.tokens import TokenShardReader
 from xlm.tokenizers.byte import ByteTokenizer
 
 torch = pytest.importorskip("torch")
+from torch.nn import Module  # noqa: E402
 
 from xlm.artifacts.ledger import RunLedger  # noqa: E402
 from xlm.artifacts.store import ArtifactStore  # noqa: E402
@@ -42,7 +43,7 @@ BUDGET = UPDATES * GLOBAL
 
 
 def build(
-    root: Path, batcher: Any, **counters: int
+    root: Path, batcher: Any, **counters: Any
 ) -> tuple[Trainer, CheckpointManager, list[Path]]:
     paths = ArtifactPaths(root=root)
     manager = CheckpointManager(
@@ -94,7 +95,7 @@ def build(
     return trainer, manager, saved
 
 
-def digest(model: torch.nn.Module) -> str:
+def digest(model: Module) -> str:
     value = hashlib.sha256()
     for name, tensor in model.state_dict().items():
         value.update(name.encode() + tensor.detach().contiguous().numpy().tobytes())
@@ -359,14 +360,16 @@ def test_train_owns_producer_shutdown(
 
 @pytest.mark.cuda
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA hardware required")
+@pytest.mark.parametrize("producer", [False, True])
 def test_cuda_commit_barrier_failure_requires_recovery(
     shards: dict[str, TokenShardReader],  # noqa: F811
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
+    producer: bool,
 ) -> None:
     from xlm.training.trainer import RecoveryRequiredError
 
-    with prefetcher(shards) as batcher:
+    with prefetcher(shards) if producer else make_batcher(shards) as batcher:
         trainer, _, _ = build(tmp_path / "run", batcher)
         trainer.device = "cuda"
         trainer.model.to("cuda")

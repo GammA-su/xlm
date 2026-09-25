@@ -179,6 +179,7 @@ class Trainer:
         self._consecutive_scaler_skips = 0
         self._last_step_skipped = False
         self._update_in_doubt = False
+        self.checkpoint_manager.boundary_guard = self._require_committed_boundary
 
         # Precision scaler setup
         self.scaler: Any = None
@@ -220,8 +221,7 @@ class Trainer:
 
     def _save_checkpoint(self, checkpoint_id: str) -> Path:
         """Save a checkpoint at the current state."""
-        if self._update_in_doubt:
-            raise RecoveryRequiredError("Cannot checkpoint an interrupted optimizer boundary")
+        self._require_committed_boundary()
         return self.checkpoint_manager.save_checkpoint(
             checkpoint_id=checkpoint_id,
             run_id=self.run_id,
@@ -240,6 +240,10 @@ class Trainer:
             scaler=self.scaler,
             precision=self.precision,
         )
+
+    def _require_committed_boundary(self) -> None:
+        if self._update_in_doubt:
+            raise RecoveryRequiredError("Resume a complete checkpoint in a fresh trainer")
 
     def execution_report(self) -> dict[str, Any]:
         """Report the exact execution modes this trainer runs under.
@@ -282,12 +286,16 @@ class Trainer:
 
     def train_step(self) -> TrainingStepMetrics | None:
         """Rollback failed preparation; never reuse a partially updated optimizer."""
-        if self._update_in_doubt:
-            raise RecoveryRequiredError("Resume a complete checkpoint in a fresh trainer")
+        self._require_committed_boundary()
         try:
             return self._train_step()
         except BaseException:
-            self.batcher.rollback()
+            try:
+                self.batcher.rollback()
+            except Exception:
+                # Preserve the primary failure (especially optimizer ambiguity).
+                # A failed producer rollback already closes/poisons its transport.
+                pass
             raise
 
     def _train_step(self) -> TrainingStepMetrics | None:
@@ -440,11 +448,7 @@ class Trainer:
         self.optimizer.zero_grad()
 
         # 7. Advance schedule and counters
-        if (
-            torch is not None
-            and getattr(self.batcher, "requires_cuda_commit_barrier", False)
-            and torch.device(self.device).type == "cuda"
-        ):
+        if torch is not None and torch.device(self.device).type == "cuda":
             # Surface asynchronous optimizer failures before promoting the cursor.
             # The producer may continue speculative preparation during this wait.
             torch.cuda.current_stream(self.device).synchronize()
@@ -492,6 +496,7 @@ class Trainer:
 
     def train(self) -> TrainingSummary:
         """Run training until budget is satisfied, time runs out, or stop is requested."""
+        self._require_committed_boundary()
         setup_start = time.monotonic()
         # Move model to device
         self.model.to(self.device)
