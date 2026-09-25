@@ -1,5 +1,24 @@
 # Implementation status
 
+> **P35 Milestone 2 (2026-09-25): IMPLEMENTED/VERIFIED within the authored/synthetic
+> scope; opt-in, safe to integrate once the listed NOT RUN regressions pass.**
+> Branch `research/p35-m2-eval-cadence` from `517a9b8`. Science-v1
+> `evaluation.science` adds an absolute committed-target cadence (§K tables
+> verbatim) with `quick_lm`, `full_lm`, `search_benchmark` and `endpoint_confirmation`
+> events. First crossing is verified: the 1M event fires at C=1,048,576 with
+> unchanged 65,536-target updates. Crossings are recorded before the periodic
+> checkpoint; every attempt is an immutable artifact; the canonical receipt is the
+> first complete attempt; failed, partial or missing events make the run
+> evaluation-incomplete and never produce a score. Scoring uses a digest-verified
+> replica under a state guard; runs with and without evaluation are bitwise
+> identical on CPU and CUDA. Adds text-only CE, UTF-8 BPB, equal-domain
+> aggregation, a pinned LM inventory format, and a BLiMP tier-partition firewall
+> (a new gap closure). Tests: 89 new focused tests, 363-passed CPU regression
+> (1 pre-existing cp932 failure, reproduced on `517a9b8`), 16 CUDA passed, 12/12
+> mutants killed, and Ruff/format/mypy clean. NOT RUN: the science workflow test,
+> harness regressions, a frozen CLI/queue cadence run, and 50M scorer/guard cost.
+> See [P35-M2](reports/P35-M2.md). Next: run the NOT RUN regressions, then M3.
+
 > **P35 Milestone 1 (2026-09-25): COMPLETE within the authored/synthetic scope;
 > safe to integrate as an opt-in.** Branch `research/p35-m1-lr-rng-identity`
 > from `991dd39`, three product/test commits plus docs. `xlm-science-v1`

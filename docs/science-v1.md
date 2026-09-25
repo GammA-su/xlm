@@ -109,6 +109,46 @@ envelopes carry the runtime policy
 `{"torch_threads": 1, "scientific_runtime": "trainer_scoped_v1"}`. Legacy
 envelopes keep `{"torch_threads": 1, "deterministic_algorithms": true}`.
 
+## Evaluation cadence (P35 Milestone 2)
+
+`evaluation.every_valid_targets` is a legacy declaration and has never triggered
+evaluation. Science-v1 runs declare `evaluation.science`. Every field is
+required, and the block is data only:
+
+```yaml
+evaluation:
+  science:
+    version: xlm-eval-cadence-v1
+    cadence: pilot_32m            # screen_128m | full_1b | authored_fixture
+    fixture_thresholds: null      # explicit ints, authored_fixture only
+    confirmation_registered: false
+    quick_lm: {manifest: /abs/quick/manifest.json, manifest_id: <sha256>}
+    full_lm: {manifest: /abs/full/manifest.json, manifest_id: <sha256>}
+    search_benchmark: {inputs: /abs/search/manifest.yaml, manifest_id: <sha256>, blimp_universe: [...]}
+    endpoint_confirmation: null   # {lm: {...}, benchmark: {...} | null}
+    scoring: {forward_precision: fp32, logprob_dtype: fp64, rolling_stride: 256}
+```
+
+- Contract tables are bound to their budgets (32M/128M/1B). An event fires after
+  the first *committed* update with `C >= threshold`. Its receipt records both the
+  planned threshold and the actual `C`; updates are never shortened to hit a
+  threshold. The endpoint fires once, after the exact-budget (possibly partial)
+  update.
+- Every planned tier needs pinned local inputs, and inputs without a planned
+  event are refused. Nothing is downloaded; `latest` is never accepted.
+- Primary LM metric is `equal_domain_text_ce_nats_per_token`: nats per scored
+  text token, with BOS/EOS/padding excluded and equal fixed domain weights over
+  per-domain sums. Also reported: micro CE, `text_bpb` (bits per canonical UTF-8
+  byte) and the separate `eos_inclusive_ce_nats_per_token_diagnostic`.
+- Event state is kept in `science.json`. Attempts are immutable `evaluations`
+  artifacts. The canonical receipt is the first complete attempt. A failed,
+  partial or unreached event leaves the run evaluation-incomplete.
+- A changed plan or evaluator refuses ordinary resume. A fork re-originates the
+  plan at the fork's committed count.
+- Scoring uses a digest-verified replica of the model, never the live one.
+  Evaluation that changes live training state stops the run until it is resumed
+  from a checkpoint.
+
 ## Resume and forks
 
 Ordinary resume requires an identical policy (version, LR policy, RNG policy,
