@@ -21,6 +21,11 @@ uv run --locked --extra cuda xlm train plan.json --device cuda --max-targets 128
 ```
 
 `plan.json` and ticket files are user/runtime-generated, not literal paths.
+
+`experiments/draft_science_v1_*.yaml` are non-executable drafts that opt into
+[xlm-science-v1](../docs/science-v1.md): an explicit endpoint LR policy,
+`training_seed` and runtime block. The historical `baseline_*` drafts stay
+schema v1 and keep legacy semantics; none of the drafts is a production default.
 `xlm train` takes the plan path positionally; training authorization is checked
 at `xlm experiment submit` time via `--ticket`, not at `xlm train` time.
 The offline commands above are executed verbatim by the P22 runbook tests;

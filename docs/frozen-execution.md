@@ -22,6 +22,13 @@ through the existing ledger authorization token. A textual authorization label
 does not grant authority. Admission sidecars are mandatory. Revalidation at launch
 rejects independent changes; it never repairs a submitted plan or snapshot.
 
+Configurations that select `xlm-science-v1` (see [science-v1](science-v1.md))
+also bind their LR policy, training seed and runtime block. Their envelope
+carries a trainer-scoped runtime policy instead of the process-wide
+deterministic flag, which legacy envelopes keep unchanged. The worker then
+leaves runtime flags to the trainer, which sets them for each update and
+restores them afterwards.
+
 Captures include the allowed `src/`, `recipes/`, `manifests/`, Python pin,
 `pyproject.toml`, and `uv.lock` closure, including untracked implementation files.
 Root corpus directories, environments, caches, and secret-like filenames are

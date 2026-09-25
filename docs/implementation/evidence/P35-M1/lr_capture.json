@@ -1,0 +1,308 @@
+{
+  "endpoint_cpu": {
+    "captured_at_optimizer_step": [
+      [
+        6.5536e-06,
+        6.5536e-06
+      ],
+      [
+        1.31072e-05,
+        1.31072e-05
+      ]
+    ],
+    "device": "cpu",
+    "lr_receipts": [
+      [
+        1,
+        0,
+        65536,
+        65536,
+        [
+          6.5536e-06,
+          6.5536e-06
+        ]
+      ],
+      [
+        2,
+        65536,
+        65536,
+        131072,
+        [
+          1.31072e-05,
+          1.31072e-05
+        ]
+      ]
+    ],
+    "metrics": [
+      {
+        "committed_valid_targets": 65536,
+        "learning_rate": 6.5536e-06,
+        "lr_next": null,
+        "lr_schedule_counter": 65536,
+        "lr_used": [
+          6.5536e-06,
+          6.5536e-06
+        ],
+        "step": 1,
+        "valid_targets": 65536
+      },
+      {
+        "committed_valid_targets": 131072,
+        "learning_rate": 1.31072e-05,
+        "lr_next": null,
+        "lr_schedule_counter": 131072,
+        "lr_used": [
+          1.31072e-05,
+          1.31072e-05
+        ],
+        "step": 2,
+        "valid_targets": 65536
+      }
+    ],
+    "policy": "target_endpoint_before_update_v1",
+    "runtime_receipt": {
+      "attention_policy": "strict_deterministic_v1",
+      "cublas_workspace_config": null,
+      "device": "cpu",
+      "expected_ops": [],
+      "flags": {
+        "bf16_reduced_precision_reduction": true,
+        "cudnn_deterministic": true,
+        "deterministic_algorithms": true,
+        "deterministic_warn_only": false,
+        "float32_matmul_precision": "highest",
+        "matmul_allow_tf32": false
+      },
+      "observed_ops": [],
+      "requested_backend": "eager",
+      "scope": "attention operator probe only; not a whole-model determinism certificate",
+      "sdpa_restriction": null,
+      "torch": "2.14.0+cu126"
+    }
+  },
+  "endpoint_cuda_statistical": {
+    "captured_at_optimizer_step": [
+      [
+        6.5536e-06,
+        6.5536e-06
+      ],
+      [
+        1.31072e-05,
+        1.31072e-05
+      ]
+    ],
+    "device": "cuda",
+    "lr_receipts": [
+      [
+        1,
+        0,
+        65536,
+        65536,
+        [
+          6.5536e-06,
+          6.5536e-06
+        ]
+      ],
+      [
+        2,
+        65536,
+        65536,
+        131072,
+        [
+          1.31072e-05,
+          1.31072e-05
+        ]
+      ]
+    ],
+    "metrics": [
+      {
+        "committed_valid_targets": 65536,
+        "learning_rate": 6.5536e-06,
+        "lr_next": null,
+        "lr_schedule_counter": 65536,
+        "lr_used": [
+          6.5536e-06,
+          6.5536e-06
+        ],
+        "step": 1,
+        "valid_targets": 65536
+      },
+      {
+        "committed_valid_targets": 131072,
+        "learning_rate": 1.31072e-05,
+        "lr_next": null,
+        "lr_schedule_counter": 131072,
+        "lr_used": [
+          1.31072e-05,
+          1.31072e-05
+        ],
+        "step": 2,
+        "valid_targets": 65536
+      }
+    ],
+    "policy": "target_endpoint_before_update_v1",
+    "runtime_receipt": {
+      "attention_policy": "statistical_efficient_v1",
+      "cublas_workspace_config": null,
+      "device": "cuda",
+      "device_name": "NVIDIA GeForce RTX 4090",
+      "expected_ops": [
+        "aten::_efficient_attention_forward",
+        "aten::_efficient_attention_backward"
+      ],
+      "flags": {
+        "bf16_reduced_precision_reduction": true,
+        "cudnn_deterministic": false,
+        "deterministic_algorithms": false,
+        "deterministic_warn_only": false,
+        "float32_matmul_precision": "highest",
+        "matmul_allow_tf32": false
+      },
+      "observed_ops": [
+        "aten::_efficient_attention_backward",
+        "aten::_efficient_attention_forward",
+        "aten::_scaled_dot_product_efficient_attention",
+        "aten::_scaled_dot_product_efficient_attention_backward",
+        "aten::scaled_dot_product_attention"
+      ],
+      "probe": {
+        "dtype": "bfloat16",
+        "shape": [
+          1,
+          2,
+          16,
+          8
+        ]
+      },
+      "requested_backend": "sdpa",
+      "scope": "attention operator probe only; not a whole-model determinism certificate",
+      "sdpa_restriction": [
+        "EFFICIENT_ATTENTION"
+      ],
+      "torch": "2.14.0+cu126"
+    }
+  },
+  "endpoint_partial_cpu": {
+    "captured_at_optimizer_step": [
+      [
+        6.5536e-06,
+        6.5536e-06
+      ],
+      [
+        6.6536e-06,
+        6.6536e-06
+      ]
+    ],
+    "device": "cpu",
+    "lr_receipts": [
+      [
+        1,
+        0,
+        65536,
+        65536,
+        [
+          6.5536e-06,
+          6.5536e-06
+        ]
+      ],
+      [
+        2,
+        65536,
+        1000,
+        66536,
+        [
+          6.6536e-06,
+          6.6536e-06
+        ]
+      ]
+    ],
+    "metrics": [
+      {
+        "committed_valid_targets": 65536,
+        "learning_rate": 6.5536e-06,
+        "lr_next": null,
+        "lr_schedule_counter": 65536,
+        "lr_used": [
+          6.5536e-06,
+          6.5536e-06
+        ],
+        "step": 1,
+        "valid_targets": 65536
+      },
+      {
+        "committed_valid_targets": 66536,
+        "learning_rate": 6.6536e-06,
+        "lr_next": null,
+        "lr_schedule_counter": 66536,
+        "lr_used": [
+          6.6536e-06,
+          6.6536e-06
+        ],
+        "step": 2,
+        "valid_targets": 1000
+      }
+    ],
+    "policy": "target_endpoint_before_update_v1",
+    "runtime_receipt": {
+      "attention_policy": "strict_deterministic_v1",
+      "cublas_workspace_config": null,
+      "device": "cpu",
+      "expected_ops": [],
+      "flags": {
+        "bf16_reduced_precision_reduction": true,
+        "cudnn_deterministic": true,
+        "deterministic_algorithms": true,
+        "deterministic_warn_only": false,
+        "float32_matmul_precision": "highest",
+        "matmul_allow_tf32": false
+      },
+      "observed_ops": [],
+      "requested_backend": "eager",
+      "scope": "attention operator probe only; not a whole-model determinism certificate",
+      "sdpa_restriction": null,
+      "torch": "2.14.0+cu126"
+    }
+  },
+  "legacy_cpu": {
+    "captured_at_optimizer_step": [
+      [
+        0.001,
+        0.001
+      ],
+      [
+        6.5536e-06,
+        6.5536e-06
+      ]
+    ],
+    "device": "cpu",
+    "lr_receipts": [],
+    "metrics": [
+      {
+        "committed_valid_targets": 65536,
+        "learning_rate": 6.5536e-06,
+        "lr_next": 6.5536e-06,
+        "lr_schedule_counter": null,
+        "lr_used": [
+          0.001,
+          0.001
+        ],
+        "step": 1,
+        "valid_targets": 65536
+      },
+      {
+        "committed_valid_targets": 131072,
+        "learning_rate": 1.31072e-05,
+        "lr_next": 1.31072e-05,
+        "lr_schedule_counter": null,
+        "lr_used": [
+          6.5536e-06,
+          6.5536e-06
+        ],
+        "step": 2,
+        "valid_targets": 65536
+      }
+    ],
+    "policy": "legacy_base_then_postcommit_v1",
+    "runtime_receipt": null
+  }
+}

@@ -1,5 +1,30 @@
 # Implementation status
 
+> **P35 Milestone 1 (2026-09-25): COMPLETE within the authored/synthetic scope;
+> safe to integrate as an opt-in.** Branch `research/p35-m1-lr-rng-identity`
+> from `991dd39`, three product/test commits plus docs. `xlm-science-v1`
+> (explicit `science_version`, `lr_policy: target_endpoint_before_update_v1`,
+> `training_seed`, `runtime` block) is opt-in. Schema-v1 configs and checkpoints
+> resolve to the legacy policy. The historical config digest and a
+> checkpoint produced by the unmodified code continue bit-identically.
+> `optimizer.step` observed **0.0000065536 then 0.0000131072** at the 50M
+> reference (legacy: 0.001 then 0.0000065536) on CPU and CUDA. Actual partial N
+> is honored, and zero-valid work never steps. LR receipts are published only
+> after the data commit, and every failure stage, including the CUDA barrier,
+> leaves none. Training RNG is reseeded after construction and resume restores
+> without reseeding. Attention/TF32/BF16-reduction policy is scoped per update
+> and bound into the envelope. Direct, queue and resume share one identity on
+> CUDA (strict mode also bitwise). Final gate from a clean export of `9f4c392`:
+> **221 CPU + 17 CUDA + 5 serial passed**, plus 2 capability skips. There is
+> one pre-existing cp932 README failure, and the CPU frozen legs are BLOCKED;
+> both reproduce on the baseline. Ruff, format and mypy pass on 16 files.
+> Strict-mode full-model cost, science-path throughput and CPU frozen
+> workflows are NOT RUN. No real data, pilot, campaign, network, install, push
+> or merge. See [P35-M1](reports/P35-M1.md) and [science-v1](../science-v1.md).
+> Next prompt: **Implement P35 handoff Milestone 2 only (target-threshold
+> evaluation cadence and state-preserving scoring) on top of M1; keep legacy
+> behavior, use focused offline tests, and do not launch real-data training.**
+
 > **P35 scientific contract (2026-09-25): IMPLEMENTED design / VERIFIED bounded
 > audit**, on `research/p35-scientific-contract`, engineering base `febbf8b`.
 > [Scientific contract](reports/P35-SCIENTIFIC-CONTRACT.md) covers A–Z;

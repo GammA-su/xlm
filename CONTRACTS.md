@@ -11,6 +11,9 @@ P35 does not change existing execution defaults or reinterpret legacy checkpoint
 C09/C10 LR semantics and C12's suggested promotion thresholds remain historical
 for legacy runs; the P35 specification governs new scientific comparisons once
 implemented. Missing implementation is not permission to launch an ambiguous run.
+Milestone 1 (LR policy, training RNG, runtime identity) is implemented as the
+explicit opt-in described in [science-v1](docs/science-v1.md); schema-v1
+configurations and checkpoints resolve to the legacy policy with unchanged hashes.
 
 ## C01 — Configuration and freeze
 
