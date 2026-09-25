@@ -1,0 +1,643 @@
+{
+  "invalid_or_failed": [
+    {
+      "file": "final_p33_sync_r1_invalid.json",
+      "status": "INVALID_CONTENDED"
+    }
+  ],
+  "cases": {
+    "final_fast_sync": {
+      "runs": [
+        "final_fast_sync_r1",
+        "final_fast_sync_r2",
+        "final_fast_sync_r3"
+      ],
+      "targets_per_second": [
+        38703.3,
+        39530.1,
+        40650.3
+      ],
+      "median": 39530.12181950436,
+      "min": 38703.32873655122,
+      "max": 40650.30287284147,
+      "update_wall_median_ms": [
+        1712.5,
+        1665.8,
+        1608.2
+      ],
+      "update_wall_p90_ms": [
+        1867.8,
+        1816.0,
+        1764.6
+      ],
+      "final_parameter_digests": [
+        "2a4e0ea7860daffad444eb4bbf4b094a8afb1194e1c77484caa14c0c6dfc38a3",
+        "36322bf3af00cc76a29ad22625c57d442ffbe85d7fdb86e1631448a04f376b7b"
+      ],
+      "trace_digests": [
+        "95345fef790968a06e8477bafe8b3636ab3187ef8bf92c66d71e892f76225509",
+        "a8c71949ef214c22708415768824b4dcdcbfc87b3e2ed91f94381cfd3e91c187"
+      ],
+      "max_allocated_gib": 3.817272663116455,
+      "max_reserved_gib": 4.474609375,
+      "max_trainer_rss_gib": 1.5063018798828125,
+      "max_producer_rss_gib": 0.0,
+      "trainer_cpu_percent_one_core": [
+        90.9,
+        92.1,
+        92.2
+      ],
+      "producer_cpu_percent_one_core": [
+        0,
+        0,
+        0
+      ],
+      "system_cpu_percent": [
+        21.7,
+        28.6,
+        22.4
+      ],
+      "gpu_util_percent": [
+        36.9,
+        31.8,
+        32.0
+      ],
+      "mem_util_percent": [
+        19.0,
+        18.3,
+        18.5
+      ],
+      "power_w": [
+        162.3,
+        160.8,
+        163.8
+      ],
+      "device_memory_mib": [
+        13308,
+        13319,
+        13305
+      ],
+      "sm_mhz": [
+        2685,
+        2684,
+        2683
+      ],
+      "telemetry_samples": [
+        76,
+        74,
+        73
+      ],
+      "setup_seconds": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "sections": {
+        "instrumented_update_wall_ms": 1611.622800002806,
+        "loader_cpu": {
+          "cpu_wall_ms": 332.7663000090979,
+          "cuda_span_ms": 332.93927001953125,
+          "calls": 1
+        },
+        "zero_grad": {
+          "cpu_wall_ms": 0.2932000206783414,
+          "cuda_span_ms": 0.16383999516256154,
+          "calls": 2
+        },
+        "H2D_tensor_to": {
+          "cpu_wall_ms": 6.93010026589036,
+          "cuda_span_ms": 4.733472011983395,
+          "calls": 68
+        },
+        "forward": {
+          "cpu_wall_ms": 434.1460000141524,
+          "cuda_span_ms": 449.43206214904785,
+          "calls": 17
+        },
+        "objective": {
+          "cpu_wall_ms": 63.52830014657229,
+          "cuda_span_ms": 51.00044846534729,
+          "calls": 17
+        },
+        "backward": {
+          "cpu_wall_ms": 718.9502000110224,
+          "cuda_span_ms": 725.4412117004395,
+          "calls": 17
+        },
+        "finite_gradients": {
+          "cpu_wall_ms": 14.503599959425628,
+          "cuda_span_ms": 14.543423652648926,
+          "calls": 1
+        },
+        "clipping": {
+          "cpu_wall_ms": 8.289699966553599,
+          "cuda_span_ms": 8.450464248657227,
+          "calls": 1
+        },
+        "optimizer": {
+          "cpu_wall_ms": 1.7954000504687428,
+          "cuda_span_ms": 5.46611213684082,
+          "calls": 1
+        }
+      }
+    },
+    "final_p33_producer": {
+      "runs": [
+        "final_p33_producer_r1",
+        "final_p33_producer_r2"
+      ],
+      "targets_per_second": [
+        50336.9,
+        50926.2
+      ],
+      "median": 50631.52733030821,
+      "min": 50336.87161744641,
+      "max": 50926.18304317001,
+      "update_wall_median_ms": [
+        1296.3,
+        1287.7
+      ],
+      "update_wall_p90_ms": [
+        1445.2,
+        1433.5
+      ],
+      "final_parameter_digests": [
+        "36322bf3af00cc76a29ad22625c57d442ffbe85d7fdb86e1631448a04f376b7b"
+      ],
+      "trace_digests": [
+        "a8c71949ef214c22708415768824b4dcdcbfc87b3e2ed91f94381cfd3e91c187"
+      ],
+      "max_allocated_gib": 3.817272663116455,
+      "max_reserved_gib": 4.474609375,
+      "max_trainer_rss_gib": 1.4765205383300781,
+      "max_producer_rss_gib": 0.5475845336914062,
+      "trainer_cpu_percent_one_core": [
+        91.2,
+        93.1
+      ],
+      "producer_cpu_percent_one_core": [
+        66.5,
+        68.3
+      ],
+      "system_cpu_percent": [
+        27.2,
+        30.4
+      ],
+      "gpu_util_percent": [
+        40.6,
+        40.6
+      ],
+      "mem_util_percent": [
+        23.9,
+        23.7
+      ],
+      "power_w": [
+        182.6,
+        186.6
+      ],
+      "device_memory_mib": [
+        13312,
+        13311
+      ],
+      "sm_mhz": [
+        2677,
+        2685
+      ],
+      "telemetry_samples": [
+        59,
+        58
+      ],
+      "setup_seconds": [
+        2.5,
+        2.47
+      ],
+      "blocked_takes": [
+        8.0,
+        3.0
+      ],
+      "consumer_wait_ms_per_update": [
+        10.91,
+        7.26
+      ],
+      "producer_ms_per_update": [
+        989.2,
+        987.9
+      ]
+    },
+    "final_p33_sync": {
+      "runs": [
+        "final_p33_sync_r1_retry",
+        "final_p33_sync_r2",
+        "final_p33_sync_r3"
+      ],
+      "targets_per_second": [
+        31386.5,
+        32268.4,
+        32189.5
+      ],
+      "median": 32189.48361535893,
+      "min": 31386.48043638809,
+      "max": 32268.353903986208,
+      "update_wall_median_ms": [
+        2070.6,
+        2011.5,
+        2046.9
+      ],
+      "update_wall_p90_ms": [
+        2295.1,
+        2213.7,
+        2176.4
+      ],
+      "final_parameter_digests": [
+        "2a4e0ea7860daffad444eb4bbf4b094a8afb1194e1c77484caa14c0c6dfc38a3",
+        "36322bf3af00cc76a29ad22625c57d442ffbe85d7fdb86e1631448a04f376b7b"
+      ],
+      "trace_digests": [
+        "95345fef790968a06e8477bafe8b3636ab3187ef8bf92c66d71e892f76225509",
+        "a8c71949ef214c22708415768824b4dcdcbfc87b3e2ed91f94381cfd3e91c187"
+      ],
+      "max_allocated_gib": 3.817272663116455,
+      "max_reserved_gib": 4.474609375,
+      "max_trainer_rss_gib": 1.4754486083984375,
+      "max_producer_rss_gib": 0.0,
+      "trainer_cpu_percent_one_core": [
+        91.5,
+        91.9,
+        92.6
+      ],
+      "producer_cpu_percent_one_core": [
+        0,
+        0,
+        0
+      ],
+      "system_cpu_percent": [
+        26.4,
+        24.3,
+        20.5
+      ],
+      "gpu_util_percent": [
+        29.3,
+        27.0,
+        25.2
+      ],
+      "mem_util_percent": [
+        14.7,
+        15.5,
+        14.7
+      ],
+      "power_w": [
+        147.3,
+        145.7,
+        145.6
+      ],
+      "device_memory_mib": [
+        13307,
+        13307,
+        13306
+      ],
+      "sm_mhz": [
+        2685,
+        2681,
+        2679
+      ],
+      "telemetry_samples": [
+        94,
+        91,
+        92
+      ],
+      "setup_seconds": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "sections": {
+        "instrumented_update_wall_ms": 1883.8927000178955,
+        "loader_cpu": {
+          "cpu_wall_ms": 671.6954000294209,
+          "cuda_span_ms": 671.873046875,
+          "calls": 1
+        },
+        "zero_grad": {
+          "cpu_wall_ms": 0.34580001374706626,
+          "cuda_span_ms": 0.1617919944692403,
+          "calls": 2
+        },
+        "H2D_tensor_to": {
+          "cpu_wall_ms": 6.57329976093024,
+          "cuda_span_ms": 4.773920010775328,
+          "calls": 68
+        },
+        "forward": {
+          "cpu_wall_ms": 430.0517998635769,
+          "cuda_span_ms": 445.67820739746094,
+          "calls": 17
+        },
+        "objective": {
+          "cpu_wall_ms": 67.99900002079085,
+          "cuda_span_ms": 54.595903635025024,
+          "calls": 17
+        },
+        "backward": {
+          "cpu_wall_ms": 658.1706001306884,
+          "cuda_span_ms": 664.7709159851074,
+          "calls": 17
+        },
+        "finite_gradients": {
+          "cpu_wall_ms": 10.6971999630332,
+          "cuda_span_ms": 10.461503982543945,
+          "calls": 1
+        },
+        "clipping": {
+          "cpu_wall_ms": 6.373399985022843,
+          "cuda_span_ms": 6.4146881103515625,
+          "calls": 1
+        },
+        "optimizer": {
+          "cpu_wall_ms": 2.3111000191420317,
+          "cuda_span_ms": 6.108160018920898,
+          "calls": 1
+        }
+      }
+    },
+    "final_prefetch": {
+      "runs": [
+        "final_prefetch_r1",
+        "final_prefetch_r2",
+        "final_prefetch_r3"
+      ],
+      "targets_per_second": [
+        49327.2,
+        51064.5,
+        50588.1
+      ],
+      "median": 50588.13508340779,
+      "min": 49327.17770257279,
+      "max": 51064.468835763495,
+      "update_wall_median_ms": [
+        1303.8,
+        1256.9,
+        1286.3
+      ],
+      "update_wall_p90_ms": [
+        1520.0,
+        1407.7,
+        1424.4
+      ],
+      "final_parameter_digests": [
+        "2a4e0ea7860daffad444eb4bbf4b094a8afb1194e1c77484caa14c0c6dfc38a3",
+        "36322bf3af00cc76a29ad22625c57d442ffbe85d7fdb86e1631448a04f376b7b"
+      ],
+      "trace_digests": [
+        "95345fef790968a06e8477bafe8b3636ab3187ef8bf92c66d71e892f76225509",
+        "a8c71949ef214c22708415768824b4dcdcbfc87b3e2ed91f94381cfd3e91c187"
+      ],
+      "max_allocated_gib": 3.817272663116455,
+      "max_reserved_gib": 4.474609375,
+      "max_trainer_rss_gib": 1.4712257385253906,
+      "max_producer_rss_gib": 0.5477676391601562,
+      "trainer_cpu_percent_one_core": [
+        91.6,
+        91.7,
+        90.7
+      ],
+      "producer_cpu_percent_one_core": [
+        34.6,
+        35.6,
+        34.2
+      ],
+      "system_cpu_percent": [
+        34.0,
+        30.9,
+        28.4
+      ],
+      "gpu_util_percent": [
+        43.3,
+        40.4,
+        40.3
+      ],
+      "mem_util_percent": [
+        23.6,
+        23.5,
+        23.7
+      ],
+      "power_w": [
+        184.6,
+        187.3,
+        187.4
+      ],
+      "device_memory_mib": [
+        13312,
+        13305,
+        13305
+      ],
+      "sm_mhz": [
+        2682,
+        2684,
+        2684
+      ],
+      "telemetry_samples": [
+        59,
+        58,
+        58
+      ],
+      "setup_seconds": [
+        2.55,
+        2.43,
+        2.39
+      ],
+      "blocked_takes": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "consumer_wait_ms_per_update": [
+        3.2,
+        3.49,
+        2.97
+      ],
+      "producer_ms_per_update": [
+        509.8,
+        512.8,
+        499.9
+      ],
+      "sections": {
+        "instrumented_update_wall_ms": 1183.4543999866582,
+        "loader_cpu": {
+          "cpu_wall_ms": 3.0161000322550535,
+          "cuda_span_ms": 3.131392002105713,
+          "calls": 1
+        },
+        "zero_grad": {
+          "cpu_wall_ms": 0.2223000628873706,
+          "cuda_span_ms": 0.1034239970613271,
+          "calls": 2
+        },
+        "H2D_tensor_to": {
+          "cpu_wall_ms": 6.601099914405495,
+          "cuda_span_ms": 4.572192024439573,
+          "calls": 68
+        },
+        "forward": {
+          "cpu_wall_ms": 423.64150000503287,
+          "cuda_span_ms": 438.8646755218506,
+          "calls": 17
+        },
+        "objective": {
+          "cpu_wall_ms": 63.69869998889044,
+          "cuda_span_ms": 50.640064001083374,
+          "calls": 17
+        },
+        "backward": {
+          "cpu_wall_ms": 648.7366000073962,
+          "cuda_span_ms": 655.0646076202393,
+          "calls": 17
+        },
+        "finite_gradients": {
+          "cpu_wall_ms": 11.71940000494942,
+          "cuda_span_ms": 11.754048347473145,
+          "calls": 1
+        },
+        "clipping": {
+          "cpu_wall_ms": 4.786700010299683,
+          "cuda_span_ms": 4.828415870666504,
+          "calls": 1
+        },
+        "optimizer": {
+          "cpu_wall_ms": 1.5736000495962799,
+          "cuda_span_ms": 5.388256072998047,
+          "calls": 1
+        }
+      }
+    },
+    "final_resident": {
+      "runs": [
+        "final_resident_r1",
+        "final_resident_r2",
+        "final_resident_r3"
+      ],
+      "targets_per_second": [
+        49895.6,
+        50775.2,
+        50791.5
+      ],
+      "median": 50775.229346530556,
+      "min": 49895.587301450425,
+      "max": 50791.526449359626,
+      "update_wall_median_ms": [
+        1289.5,
+        1277.5,
+        1289.9
+      ],
+      "update_wall_p90_ms": [
+        1486.2,
+        1452.8,
+        1471.6
+      ],
+      "final_parameter_digests": [
+        "2a4e0ea7860daffad444eb4bbf4b094a8afb1194e1c77484caa14c0c6dfc38a3",
+        "36322bf3af00cc76a29ad22625c57d442ffbe85d7fdb86e1631448a04f376b7b"
+      ],
+      "trace_digests": [
+        "95345fef790968a06e8477bafe8b3636ab3187ef8bf92c66d71e892f76225509",
+        "a8c71949ef214c22708415768824b4dcdcbfc87b3e2ed91f94381cfd3e91c187"
+      ],
+      "max_allocated_gib": 3.943000316619873,
+      "max_reserved_gib": 4.6015625,
+      "max_trainer_rss_gib": 2.320964813232422,
+      "max_producer_rss_gib": 0.0,
+      "trainer_cpu_percent_one_core": [
+        89.4,
+        89.6,
+        89.7
+      ],
+      "producer_cpu_percent_one_core": [
+        0,
+        0,
+        0
+      ],
+      "system_cpu_percent": [
+        30.2,
+        26.0,
+        23.6
+      ],
+      "gpu_util_percent": [
+        39.5,
+        40.3,
+        40.2
+      ],
+      "mem_util_percent": [
+        22.7,
+        23.4,
+        23.6
+      ],
+      "power_w": [
+        182.3,
+        184.7,
+        185.5
+      ],
+      "device_memory_mib": [
+        13432,
+        13436,
+        13435
+      ],
+      "sm_mhz": [
+        2680,
+        2680,
+        2678
+      ],
+      "telemetry_samples": [
+        59,
+        58,
+        58
+      ],
+      "setup_seconds": [
+        23.52,
+        23.23,
+        23.55
+      ],
+      "sections": {
+        "instrumented_update_wall_ms": 1194.2704999819398,
+        "loader_cpu": {
+          "cpu_wall_ms": 0.01109996810555458,
+          "cuda_span_ms": 0.03481600061058998,
+          "calls": 1
+        },
+        "zero_grad": {
+          "cpu_wall_ms": 0.2749999985098839,
+          "cuda_span_ms": 0.07936000009067357,
+          "calls": 2
+        },
+        "forward": {
+          "cpu_wall_ms": 428.19540010532364,
+          "cuda_span_ms": 442.93382263183594,
+          "calls": 17
+        },
+        "objective": {
+          "cpu_wall_ms": 62.432800012174994,
+          "cuda_span_ms": 49.9139518737793,
+          "calls": 17
+        },
+        "backward": {
+          "cpu_wall_ms": 662.0523001183756,
+          "cuda_span_ms": 668.7931461334229,
+          "calls": 17
+        },
+        "finite_gradients": {
+          "cpu_wall_ms": 10.760999983176589,
+          "cuda_span_ms": 10.749119758605957,
+          "calls": 1
+        },
+        "clipping": {
+          "cpu_wall_ms": 6.392000010237098,
+          "cuda_span_ms": 6.445792198181152,
+          "calls": 1
+        },
+        "optimizer": {
+          "cpu_wall_ms": 1.8425000016577542,
+          "cuda_span_ms": 5.505023956298828,
+          "calls": 1
+        }
+      }
+    }
+  }
+}

@@ -242,55 +242,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     baseline_mib = device_memory_used_mib()
     if foreign or baseline_mib > args.max_baseline_mib:
         raise RuntimeError(f"GPU not exclusive: processes={foreign} baseline_mib={baseline_mib}")
-    torch.cuda.set_per_process_memory_fraction(
-        args.vram_cap_gib * GIB / torch.cuda.get_device_properties(0).total_memory
-    )
-    torch.set_num_threads(1)
-    config = json.loads((ROOT / f"recipes/models/{args.model}.yaml").read_text())
-    recipe = json.loads((ROOT / f"recipes/experiments/baseline_{args.model}.yaml").read_text())
-    config["attention_backend"] = "sdpa"
-    model = create_transformer_baseline(config, device="cuda", seed=101)
-    initial_digest = parameter_digest(model)
-    objective = CrossEntropyObjective().cuda()
-    optimizer, manifest = create_adamw_optimizer(recipe["optimizer"], model, objective)
-    schedule = WarmupCosineSchedule(
-        WarmupCosineScheduleConfig(**recipe["training"]["schedule"]),
-        base_lr=recipe["optimizer"]["lr"],
-    )
-    source = make_batcher(args.loader, args.microbatch, args.global_targets)
-    fixture = source.readers["synthetic"].manifest.to_dict()
-    frozen = json.loads(FIXTURE_EVIDENCE.read_text())["manifest"]
-    if fixture["checksum_sha256"] != frozen["checksum_sha256"]:
-        raise RuntimeError("fixture differs from the frozen P33 fixture")
-    total_updates = args.warmup + args.steps
-    max_targets = (total_updates + 3) * args.global_targets
-    setup_begin = time.perf_counter()
-    active: BatcherProtocol
-    if args.mode == "resident":
-        active = P33.ResidentBatcher(source, total_updates + 2)
-    elif args.mode == "prefetch":
-        with P33.batcher(args.microbatch, args.global_targets) as described:
-            spec = ProducerSpec.from_batcher(described)
-        if args.loader == "p33":
-            spec = dataclasses.replace(spec, factory=p33_producer_factory)
-        active = PrefetchingBatcher(spec, source.get_state(), depth=args.depth)
-    else:
-        active = source
-    setup_seconds = time.perf_counter() - setup_begin
-    manager = CheckpointManager(paths=ArtifactPaths(root=LOCAL / "checkpoints" / args.name))
-    trainer = Trainer(
-        model,
-        objective,
-        optimizer,
-        manifest,
-        schedule,
-        active,
-        manager,
-        run_id=args.name,
-        plan_id="p34-bounded-synthetic",
-        device="cuda",
-        precision="bf16_fp32_master",
-        max_valid_targets=max_targets,
+    built = build(args)
+    trainer, source, active, model = built.trainer, built.source, built.active, built.model
+    initial_digest, fixture, setup_seconds = (
+        built.initial_digest,
+        built.fixture,
+        built.setup_seconds,
     )
     producer = active.producer_pid if isinstance(active, PrefetchingBatcher) else None
     start = time.monotonic()
@@ -393,6 +350,72 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         if isinstance(active, PrefetchingBatcher):
             active.close()
         source.close()
+
+
+@dataclasses.dataclass
+class Built:
+    trainer: Trainer
+    source: Any
+    active: Any
+    model: torch.nn.Module
+    initial_digest: str
+    fixture: dict[str, Any]
+    setup_seconds: float
+
+
+def build(args: argparse.Namespace) -> Built:
+    """The real model, optimizer, schedule, loader mode and Trainer for one case."""
+    torch.cuda.set_per_process_memory_fraction(
+        args.vram_cap_gib * GIB / torch.cuda.get_device_properties(0).total_memory
+    )
+    torch.set_num_threads(1)
+    config = json.loads((ROOT / f"recipes/models/{args.model}.yaml").read_text())
+    recipe = json.loads((ROOT / f"recipes/experiments/baseline_{args.model}.yaml").read_text())
+    config["attention_backend"] = "sdpa"
+    model = create_transformer_baseline(config, device="cuda", seed=101)
+    initial_digest = parameter_digest(model)
+    objective = CrossEntropyObjective().cuda()
+    optimizer, manifest = create_adamw_optimizer(recipe["optimizer"], model, objective)
+    schedule = WarmupCosineSchedule(
+        WarmupCosineScheduleConfig(**recipe["training"]["schedule"]),
+        base_lr=recipe["optimizer"]["lr"],
+    )
+    source = make_batcher(args.loader, args.microbatch, args.global_targets)
+    fixture = source.readers["synthetic"].manifest.to_dict()
+    frozen = json.loads(FIXTURE_EVIDENCE.read_text())["manifest"]
+    if fixture["checksum_sha256"] != frozen["checksum_sha256"]:
+        raise RuntimeError("fixture differs from the frozen P33 fixture")
+    total_updates = args.warmup + args.steps
+    max_targets = (total_updates + 3) * args.global_targets
+    setup_begin = time.perf_counter()
+    active: BatcherProtocol
+    if args.mode == "resident":
+        active = P33.ResidentBatcher(source, total_updates + 2)
+    elif args.mode == "prefetch":
+        with P33.batcher(args.microbatch, args.global_targets) as described:
+            spec = ProducerSpec.from_batcher(described)
+        if args.loader == "p33":
+            spec = dataclasses.replace(spec, factory=p33_producer_factory)
+        active = PrefetchingBatcher(spec, source.get_state(), depth=args.depth)
+    else:
+        active = source
+    setup_seconds = time.perf_counter() - setup_begin
+    manager = CheckpointManager(paths=ArtifactPaths(root=LOCAL / "checkpoints" / args.name))
+    trainer = Trainer(
+        model,
+        objective,
+        optimizer,
+        manifest,
+        schedule,
+        active,
+        manager,
+        run_id=args.name,
+        plan_id="p34-bounded-synthetic",
+        device="cuda",
+        precision="bf16_fp32_master",
+        max_valid_targets=max_targets,
+    )
+    return Built(trainer, source, active, model, initial_digest, fixture, setup_seconds)
 
 
 def main() -> None:

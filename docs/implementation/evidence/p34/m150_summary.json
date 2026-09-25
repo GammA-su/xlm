@@ -1,0 +1,185 @@
+{
+  "invalid_or_failed": [],
+  "cases": {
+    "m150_fast_sync": {
+      "runs": [
+        "m150_fast_sync_r1"
+      ],
+      "targets_per_second": [
+        37416.9
+      ],
+      "median": 37416.88266237127,
+      "min": 37416.88266237127,
+      "max": 37416.88266237127,
+      "update_wall_median_ms": [
+        1723.1
+      ],
+      "update_wall_p90_ms": [
+        1896.2
+      ],
+      "final_parameter_digests": [
+        "216b6b870dfcaf6bd3d8a80e8dafc289ad8651ebda05ae00f2e918d0d0f621b7"
+      ],
+      "trace_digests": [
+        "ceac7814a6ef2c6f4034f6cceeb781a7bda0a60a4e3a727197a237378e04608f"
+      ],
+      "max_allocated_gib": 12.170197010040283,
+      "max_reserved_gib": 13.626953125,
+      "max_trainer_rss_gib": 1.4762153625488281,
+      "max_producer_rss_gib": 0.0,
+      "trainer_cpu_percent_one_core": [
+        92.1
+      ],
+      "producer_cpu_percent_one_core": [
+        0
+      ],
+      "system_cpu_percent": [
+        26.9
+      ],
+      "gpu_util_percent": [
+        61.7
+      ],
+      "mem_util_percent": [
+        40.7
+      ],
+      "power_w": [
+        276.4
+      ],
+      "device_memory_mib": [
+        22683
+      ],
+      "sm_mhz": [
+        2676
+      ],
+      "telemetry_samples": [
+        31
+      ],
+      "setup_seconds": [
+        0.0
+      ]
+    },
+    "m150_p33_sync": {
+      "runs": [
+        "m150_p33_sync_r1"
+      ],
+      "targets_per_second": [
+        30202.9
+      ],
+      "median": 30202.874407068284,
+      "min": 30202.874407068284,
+      "max": 30202.874407068284,
+      "update_wall_median_ms": [
+        2177.7
+      ],
+      "update_wall_p90_ms": [
+        2310.6
+      ],
+      "final_parameter_digests": [
+        "d7c5402a14693a51b55cffc45750c87aa158b4ac2ce89d5effc74c4ca57862ca"
+      ],
+      "trace_digests": [
+        "ceac7814a6ef2c6f4034f6cceeb781a7bda0a60a4e3a727197a237378e04608f"
+      ],
+      "max_allocated_gib": 12.170197010040283,
+      "max_reserved_gib": 13.626953125,
+      "max_trainer_rss_gib": 1.46026611328125,
+      "max_producer_rss_gib": 0.0,
+      "trainer_cpu_percent_one_core": [
+        89.2
+      ],
+      "producer_cpu_percent_one_core": [
+        0
+      ],
+      "system_cpu_percent": [
+        27.1
+      ],
+      "gpu_util_percent": [
+        53.2
+      ],
+      "mem_util_percent": [
+        34.3
+      ],
+      "power_w": [
+        240.4
+      ],
+      "device_memory_mib": [
+        22683
+      ],
+      "sm_mhz": [
+        2673
+      ],
+      "telemetry_samples": [
+        39
+      ],
+      "setup_seconds": [
+        0.0
+      ]
+    },
+    "m150_prefetch": {
+      "runs": [
+        "m150_prefetch_r1"
+      ],
+      "targets_per_second": [
+        46431.4
+      ],
+      "median": 46431.36809028131,
+      "min": 46431.36809028131,
+      "max": 46431.36809028131,
+      "update_wall_median_ms": [
+        1390.0
+      ],
+      "update_wall_p90_ms": [
+        1509.3
+      ],
+      "final_parameter_digests": [
+        "e76047a4b3f70370abf500b750273cc5412e591418e47f549c5c7ae0727ef979"
+      ],
+      "trace_digests": [
+        "ceac7814a6ef2c6f4034f6cceeb781a7bda0a60a4e3a727197a237378e04608f"
+      ],
+      "max_allocated_gib": 12.170197010040283,
+      "max_reserved_gib": 13.626953125,
+      "max_trainer_rss_gib": 1.4524192810058594,
+      "max_producer_rss_gib": 0.546142578125,
+      "trainer_cpu_percent_one_core": [
+        92.7
+      ],
+      "producer_cpu_percent_one_core": [
+        30.2
+      ],
+      "system_cpu_percent": [
+        28.2
+      ],
+      "gpu_util_percent": [
+        79.6
+      ],
+      "mem_util_percent": [
+        53.2
+      ],
+      "power_w": [
+        332.3
+      ],
+      "device_memory_mib": [
+        22684
+      ],
+      "sm_mhz": [
+        2665
+      ],
+      "telemetry_samples": [
+        26
+      ],
+      "setup_seconds": [
+        2.42
+      ],
+      "blocked_takes": [
+        0.0
+      ],
+      "consumer_wait_ms_per_update": [
+        3.06
+      ],
+      "producer_ms_per_update": [
+        478.2
+      ]
+    }
+  }
+}

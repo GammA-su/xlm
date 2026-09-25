@@ -1,0 +1,500 @@
+[
+  {
+    "name": "final_p33_sync_r1",
+    "command": [
+      "scripts/benchmark_p34.py",
+      "--name",
+      "final_p33_sync_r1",
+      "--mode",
+      "end_to_end",
+      "--loader",
+      "p33",
+      "--sections"
+    ],
+    "exit": 3,
+    "seconds": 136.32800000003772,
+    "attempt": 0,
+    "stdout_tail": "{\"status\": \"INVALID_CONTENDED\", \"tokens_per_second\": 31130.141225524785, \"wall_seconds\": 105.2613277999917, \"max_allocated\": 4098765312, \"final_parameters_sha256\": \"2a4e0ea7860daffad444eb4bbf4b094a8afb1194e1c77484caa14c0c6dfc38a3\"}\n",
+    "stderr_tail": ""
+  },
+  {
+    "name": "final_p33_sync_r1_retry",
+    "command": [
+      "scripts/benchmark_p34.py",
+      "--name",
+      "final_p33_sync_r1_retry",
+      "--mode",
+      "end_to_end",
+      "--loader",
+      "p33",
+      "--sections"
+    ],
+    "exit": 0,
+    "seconds": 135.40599999995902,
+    "attempt": 1,
+    "stdout_tail": "{\"status\": \"VERIFIED\", \"tokens_per_second\": 31386.48043638809, \"wall_seconds\": 104.40163899998879, \"max_allocated\": 4098765312, \"final_parameters_sha256\": \"2a4e0ea7860daffad444eb4bbf4b094a8afb1194e1c77484caa14c0c6dfc38a3\"}\n",
+    "stderr_tail": ""
+  },
+  {
+    "name": "final_fast_sync_r1",
+    "command": [
+      "scripts/benchmark_p34.py",
+      "--name",
+      "final_fast_sync_r1",
+      "--mode",
+      "end_to_end",
+      "--sections"
+    ],
+    "exit": 0,
+    "seconds": 111.56300000002375,
+    "attempt": 0,
+    "stdout_tail": "{\"status\": \"VERIFIED\", \"tokens_per_second\": 38703.32873655122, \"wall_seconds\": 84.66455230000429, \"max_allocated\": 4098765312, \"final_parameters_sha256\": \"2a4e0ea7860daffad444eb4bbf4b094a8afb1194e1c77484caa14c0c6dfc38a3\"}\n",
+    "stderr_tail": ""
+  },
+  {
+    "name": "final_prefetch_r1",
+    "command": [
+      "scripts/benchmark_p34.py",
+      "--name",
+      "final_prefetch_r1",
+      "--mode",
+      "prefetch",
+      "--sections"
+    ],
+    "exit": 0,
+    "seconds": 102.60899999999674,
+    "attempt": 0,
+    "stdout_tail": "{\"status\": \"VERIFIED\", \"tokens_per_second\": 49327.17770257279, \"wall_seconds\": 66.42991050001001, \"max_allocated\": 4098765312, \"final_parameters_sha256\": \"2a4e0ea7860daffad444eb4bbf4b094a8afb1194e1c77484caa14c0c6dfc38a3\"}\n",
+    "stderr_tail": ""
+  },
+  {
+    "name": "final_resident_r1",
+    "command": [
+      "scripts/benchmark_p34.py",
+      "--name",
+      "final_resident_r1",
+      "--mode",
+      "resident",
+      "--sections"
+    ],
+    "exit": 0,
+    "seconds": 112.28200000000652,
+    "attempt": 0,
+    "stdout_tail": "{\"status\": \"VERIFIED\", \"tokens_per_second\": 49895.587301450425, \"wall_seconds\": 65.67314219998661, \"max_allocated\": 4233764352, \"final_parameters_sha256\": \"2a4e0ea7860daffad444eb4bbf4b094a8afb1194e1c77484caa14c0c6dfc38a3\"}\n",
+    "stderr_tail": ""
+  },
+  {
+    "name": "final_p33_sync_r2",
+    "command": [
+      "scripts/benchmark_p34.py",
+      "--name",
+      "final_p33_sync_r2",
+      "--mode",
+      "end_to_end",
+      "--loader",
+      "p33"
+    ],
+    "exit": 0,
+    "seconds": 143.43699999997625,
+    "attempt": 0,
+    "stdout_tail": "{\"status\": \"VERIFIED\", \"tokens_per_second\": 32268.353903986208, \"wall_seconds\": 101.5484090000391, \"max_allocated\": 4098765312, \"final_parameters_sha256\": \"36322bf3af00cc76a29ad22625c57d442ffbe85d7fdb86e1631448a04f376b7b\"}\n",
+    "stderr_tail": ""
+  },
+  {
+    "name": "final_fast_sync_r2",
+    "command": [
+      "scripts/benchmark_p34.py",
+      "--name",
+      "final_fast_sync_r2",
+      "--mode",
+      "end_to_end"
+    ],
+    "exit": 0,
+    "seconds": 109.06300000002375,
+    "attempt": 0,
+    "stdout_tail": "{\"status\": \"VERIFIED\", \"tokens_per_second\": 39530.12181950436, \"wall_seconds\": 82.89374910003971, \"max_allocated\": 4098765312, \"final_parameters_sha256\": \"36322bf3af00cc76a29ad22625c57d442ffbe85d7fdb86e1631448a04f376b7b\"}\n",
+    "stderr_tail": ""
+  },
+  {
+    "name": "final_prefetch_r2",
+    "command": [
+      "scripts/benchmark_p34.py",
+      "--name",
+      "final_prefetch_r2",
+      "--mode",
+      "prefetch"
+    ],
+    "exit": 0,
+    "seconds": 98.51500000001397,
+    "attempt": 0,
+    "stdout_tail": "{\"status\": \"VERIFIED\", \"tokens_per_second\": 51064.468835763495, \"wall_seconds\": 64.16986360005103, \"max_allocated\": 4098765312, \"final_parameters_sha256\": \"36322bf3af00cc76a29ad22625c57d442ffbe85d7fdb86e1631448a04f376b7b\"}\n",
+    "stderr_tail": ""
+  },
+  {
+    "name": "final_resident_r2",
+    "command": [
+      "scripts/benchmark_p34.py",
+      "--name",
+      "final_resident_r2",
+      "--mode",
+      "resident"
+    ],
+    "exit": 0,
+    "seconds": 110.17199999996228,
+    "attempt": 0,
+    "stdout_tail": "{\"status\": \"VERIFIED\", \"tokens_per_second\": 50775.229346530556, \"wall_seconds\": 64.53540519997478, \"max_allocated\": 4233764352, \"final_parameters_sha256\": \"36322bf3af00cc76a29ad22625c57d442ffbe85d7fdb86e1631448a04f376b7b\"}\n",
+    "stderr_tail": ""
+  },
+  {
+    "name": "final_p33_sync_r3",
+    "command": [
+      "scripts/benchmark_p34.py",
+      "--name",
+      "final_p33_sync_r3",
+      "--mode",
+      "end_to_end",
+      "--loader",
+      "p33"
+    ],
+    "exit": 0,
+    "seconds": 130.10899999999674,
+    "attempt": 0,
+    "stdout_tail": "{\"status\": \"VERIFIED\", \"tokens_per_second\": 32189.48361535893, \"wall_seconds\": 101.79722169996239, \"max_allocated\": 4098765312, \"final_parameters_sha256\": \"36322bf3af00cc76a29ad22625c57d442ffbe85d7fdb86e1631448a04f376b7b\"}\n",
+    "stderr_tail": ""
+  },
+  {
+    "name": "final_fast_sync_r3",
+    "command": [
+      "scripts/benchmark_p34.py",
+      "--name",
+      "final_fast_sync_r3",
+      "--mode",
+      "end_to_end"
+    ],
+    "exit": 0,
+    "seconds": 105.26600000000326,
+    "attempt": 0,
+    "stdout_tail": "{\"status\": \"VERIFIED\", \"tokens_per_second\": 40650.30287284147, \"wall_seconds\": 80.6094855000265, \"max_allocated\": 4098765312, \"final_parameters_sha256\": \"36322bf3af00cc76a29ad22625c57d442ffbe85d7fdb86e1631448a04f376b7b\"}\n",
+    "stderr_tail": ""
+  },
+  {
+    "name": "final_prefetch_r3",
+    "command": [
+      "scripts/benchmark_p34.py",
+      "--name",
+      "final_prefetch_r3",
+      "--mode",
+      "prefetch"
+    ],
+    "exit": 0,
+    "seconds": 98.96799999999348,
+    "attempt": 0,
+    "stdout_tail": "{\"status\": \"VERIFIED\", \"tokens_per_second\": 50588.13508340779, \"wall_seconds\": 64.77408179995837, \"max_allocated\": 4098765312, \"final_parameters_sha256\": \"36322bf3af00cc76a29ad22625c57d442ffbe85d7fdb86e1631448a04f376b7b\"}\n",
+    "stderr_tail": ""
+  },
+  {
+    "name": "final_resident_r3",
+    "command": [
+      "scripts/benchmark_p34.py",
+      "--name",
+      "final_resident_r3",
+      "--mode",
+      "resident"
+    ],
+    "exit": 0,
+    "seconds": 109.95400000002701,
+    "attempt": 0,
+    "stdout_tail": "{\"status\": \"VERIFIED\", \"tokens_per_second\": 50791.526449359626, \"wall_seconds\": 64.51469820004422, \"max_allocated\": 4233764352, \"final_parameters_sha256\": \"36322bf3af00cc76a29ad22625c57d442ffbe85d7fdb86e1631448a04f376b7b\"}\n",
+    "stderr_tail": ""
+  },
+  {
+    "name": "final_p33_producer_r1",
+    "command": [
+      "scripts/benchmark_p34.py",
+      "--name",
+      "final_p33_producer_r1",
+      "--mode",
+      "prefetch",
+      "--loader",
+      "p33"
+    ],
+    "exit": 0,
+    "seconds": 99.625,
+    "attempt": 0,
+    "stdout_tail": "{\"status\": \"VERIFIED\", \"tokens_per_second\": 50336.87161744641, \"wall_seconds\": 65.09741059999214, \"max_allocated\": 4098765312, \"final_parameters_sha256\": \"36322bf3af00cc76a29ad22625c57d442ffbe85d7fdb86e1631448a04f376b7b\"}\n",
+    "stderr_tail": ""
+  },
+  {
+    "name": "final_p33_producer_r2",
+    "command": [
+      "scripts/benchmark_p34.py",
+      "--name",
+      "final_p33_producer_r2",
+      "--mode",
+      "prefetch",
+      "--loader",
+      "p33"
+    ],
+    "exit": 0,
+    "seconds": 98.90700000000652,
+    "attempt": 0,
+    "stdout_tail": "{\"status\": \"VERIFIED\", \"tokens_per_second\": 50926.18304317001, \"wall_seconds\": 64.34411150001688, \"max_allocated\": 4098765312, \"final_parameters_sha256\": \"36322bf3af00cc76a29ad22625c57d442ffbe85d7fdb86e1631448a04f376b7b\"}\n",
+    "stderr_tail": ""
+  },
+  {
+    "name": "m150_p33_sync_r1",
+    "command": [
+      "scripts/benchmark_p34.py",
+      "--name",
+      "m150_p33_sync_r1",
+      "--mode",
+      "end_to_end",
+      "--loader",
+      "p33",
+      "--model",
+      "150m",
+      "--microbatch",
+      "16",
+      "--steps",
+      "20"
+    ],
+    "exit": 0,
+    "seconds": 75.07799999997951,
+    "attempt": 0,
+    "stdout_tail": "{\"status\": \"VERIFIED\", \"tokens_per_second\": 30202.874407068284, \"wall_seconds\": 43.39719399996102, \"max_allocated\": 13067649536, \"final_parameters_sha256\": \"d7c5402a14693a51b55cffc45750c87aa158b4ac2ce89d5effc74c4ca57862ca\"}\n",
+    "stderr_tail": ""
+  },
+  {
+    "name": "m150_fast_sync_r1",
+    "command": [
+      "scripts/benchmark_p34.py",
+      "--name",
+      "m150_fast_sync_r1",
+      "--mode",
+      "end_to_end",
+      "--model",
+      "150m",
+      "--microbatch",
+      "16",
+      "--steps",
+      "20"
+    ],
+    "exit": 0,
+    "seconds": 62.20299999997951,
+    "attempt": 0,
+    "stdout_tail": "{\"status\": \"VERIFIED\", \"tokens_per_second\": 37416.88266237127, \"wall_seconds\": 35.03017639997415, \"max_allocated\": 13067649536, \"final_parameters_sha256\": \"216b6b870dfcaf6bd3d8a80e8dafc289ad8651ebda05ae00f2e918d0d0f621b7\"}\n",
+    "stderr_tail": ""
+  },
+  {
+    "name": "m150_prefetch_r1",
+    "command": [
+      "scripts/benchmark_p34.py",
+      "--name",
+      "m150_prefetch_r1",
+      "--mode",
+      "prefetch",
+      "--model",
+      "150m",
+      "--microbatch",
+      "16",
+      "--steps",
+      "20"
+    ],
+    "exit": 0,
+    "seconds": 65.01600000000326,
+    "attempt": 0,
+    "stdout_tail": "{\"status\": \"VERIFIED\", \"tokens_per_second\": 46431.36809028131, \"wall_seconds\": 28.229191899998114, \"max_allocated\": 13067649536, \"final_parameters_sha256\": \"e76047a4b3f70370abf500b750273cc5412e591418e47f549c5c7ae0727ef979\"}\n",
+    "stderr_tail": ""
+  },
+  {
+    "name": "m300_p33_sync_r1",
+    "command": [
+      "scripts/benchmark_p34.py",
+      "--name",
+      "m300_p33_sync_r1",
+      "--mode",
+      "end_to_end",
+      "--loader",
+      "p33",
+      "--model",
+      "300m",
+      "--microbatch",
+      "8",
+      "--steps",
+      "20"
+    ],
+    "exit": 0,
+    "seconds": 118.59299999999348,
+    "attempt": 0,
+    "stdout_tail": "{\"status\": \"VERIFIED\", \"tokens_per_second\": 18281.975381993212, \"wall_seconds\": 71.6946595000336, \"max_allocated\": 12723365376, \"final_parameters_sha256\": \"2e3be7f3710974a42f08be8c4851c4d481eca84dc59db4658503b2a15a81eefa\"}\n",
+    "stderr_tail": ""
+  },
+  {
+    "name": "m300_fast_sync_r1",
+    "command": [
+      "scripts/benchmark_p34.py",
+      "--name",
+      "m300_fast_sync_r1",
+      "--mode",
+      "end_to_end",
+      "--model",
+      "300m",
+      "--microbatch",
+      "8",
+      "--steps",
+      "20"
+    ],
+    "exit": 0,
+    "seconds": 102.18800000002375,
+    "attempt": 0,
+    "stdout_tail": "{\"status\": \"VERIFIED\", \"tokens_per_second\": 21664.91789905066, \"wall_seconds\": 60.499652299971785, \"max_allocated\": 12723365376, \"final_parameters_sha256\": \"2e3be7f3710974a42f08be8c4851c4d481eca84dc59db4658503b2a15a81eefa\"}\n",
+    "stderr_tail": ""
+  },
+  {
+    "name": "m300_prefetch_r1",
+    "command": [
+      "scripts/benchmark_p34.py",
+      "--name",
+      "m300_prefetch_r1",
+      "--mode",
+      "prefetch",
+      "--model",
+      "300m",
+      "--microbatch",
+      "8",
+      "--steps",
+      "20"
+    ],
+    "exit": 0,
+    "seconds": 115.20299999997951,
+    "attempt": 0,
+    "stdout_tail": "{\"status\": \"VERIFIED\", \"tokens_per_second\": 20706.329662835888, \"wall_seconds\": 63.30045069998596, \"max_allocated\": 12723365376, \"final_parameters_sha256\": \"2e3be7f3710974a42f08be8c4851c4d481eca84dc59db4658503b2a15a81eefa\"}\n",
+    "stderr_tail": ""
+  },
+  {
+    "name": "m150_fast_sync_r2",
+    "command": [
+      "scripts/benchmark_p34.py",
+      "--name",
+      "m150_fast_sync_r2",
+      "--mode",
+      "end_to_end",
+      "--model",
+      "150m",
+      "--microbatch",
+      "16",
+      "--steps",
+      "20"
+    ],
+    "exit": 0,
+    "seconds": 68.81300000002375,
+    "attempt": 0,
+    "stdout_tail": "{\"status\": \"VERIFIED\", \"tokens_per_second\": 34096.235208749895, \"wall_seconds\": 38.44178079999983, \"max_allocated\": 13067649536, \"final_parameters_sha256\": \"216b6b870dfcaf6bd3d8a80e8dafc289ad8651ebda05ae00f2e918d0d0f621b7\"}\n",
+    "stderr_tail": ""
+  },
+  {
+    "name": "m150_fast_sync_r3",
+    "command": [
+      "scripts/benchmark_p34.py",
+      "--name",
+      "m150_fast_sync_r3",
+      "--mode",
+      "end_to_end",
+      "--model",
+      "150m",
+      "--microbatch",
+      "16",
+      "--steps",
+      "20"
+    ],
+    "exit": 0,
+    "seconds": 62.53100000001723,
+    "attempt": 0,
+    "stdout_tail": "{\"status\": \"VERIFIED\", \"tokens_per_second\": 37461.38170460093, \"wall_seconds\": 34.98856530000921, \"max_allocated\": 13067649536, \"final_parameters_sha256\": \"216b6b870dfcaf6bd3d8a80e8dafc289ad8651ebda05ae00f2e918d0d0f621b7\"}\n",
+    "stderr_tail": ""
+  },
+  {
+    "name": "m300_fast_sync_r2",
+    "command": [
+      "scripts/benchmark_p34.py",
+      "--name",
+      "m300_fast_sync_r2",
+      "--mode",
+      "end_to_end",
+      "--model",
+      "300m",
+      "--microbatch",
+      "8",
+      "--steps",
+      "20"
+    ],
+    "exit": 0,
+    "seconds": 104.68800000002375,
+    "attempt": 0,
+    "stdout_tail": "{\"status\": \"VERIFIED\", \"tokens_per_second\": 21191.72192801057, \"wall_seconds\": 61.850566199980676, \"max_allocated\": 12723365376, \"final_parameters_sha256\": \"2e3be7f3710974a42f08be8c4851c4d481eca84dc59db4658503b2a15a81eefa\"}\n",
+    "stderr_tail": ""
+  },
+  {
+    "name": "m300_prefetch_r2",
+    "command": [
+      "scripts/benchmark_p34.py",
+      "--name",
+      "m300_prefetch_r2",
+      "--mode",
+      "prefetch",
+      "--model",
+      "300m",
+      "--microbatch",
+      "8",
+      "--steps",
+      "20"
+    ],
+    "exit": 0,
+    "seconds": 114.43799999996554,
+    "attempt": 0,
+    "stdout_tail": "{\"status\": \"VERIFIED\", \"tokens_per_second\": 21325.899396915727, \"wall_seconds\": 61.4614172000438, \"max_allocated\": 12723365376, \"final_parameters_sha256\": \"ce776982db9f0a58538a5031c83baab646ba8b714cf3cd58c4cca36f727df629\"}\n",
+    "stderr_tail": ""
+  },
+  {
+    "name": "m300_fast_sync_r3",
+    "command": [
+      "scripts/benchmark_p34.py",
+      "--name",
+      "m300_fast_sync_r3",
+      "--mode",
+      "end_to_end",
+      "--model",
+      "300m",
+      "--microbatch",
+      "8",
+      "--steps",
+      "20"
+    ],
+    "exit": 0,
+    "seconds": 113.92200000002049,
+    "attempt": 0,
+    "stdout_tail": "{\"status\": \"VERIFIED\", \"tokens_per_second\": 19352.166415255302, \"wall_seconds\": 67.72988469997654, \"max_allocated\": 12723365376, \"final_parameters_sha256\": \"2e3be7f3710974a42f08be8c4851c4d481eca84dc59db4658503b2a15a81eefa\"}\n",
+    "stderr_tail": ""
+  },
+  {
+    "name": "m300_prefetch_r3",
+    "command": [
+      "scripts/benchmark_p34.py",
+      "--name",
+      "m300_prefetch_r3",
+      "--mode",
+      "prefetch",
+      "--model",
+      "300m",
+      "--microbatch",
+      "8",
+      "--steps",
+      "20"
+    ],
+    "exit": 0,
+    "seconds": 115.78099999995902,
+    "attempt": 0,
+    "stdout_tail": "{\"status\": \"VERIFIED\", \"tokens_per_second\": 21432.44639798933, \"wall_seconds\": 61.15587439999217, \"max_allocated\": 12723365376, \"final_parameters_sha256\": \"2e3be7f3710974a42f08be8c4851c4d481eca84dc59db4658503b2a15a81eefa\"}\n",
+    "stderr_tail": ""
+  }
+]

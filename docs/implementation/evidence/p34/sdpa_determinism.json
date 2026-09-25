@@ -1,0 +1,35 @@
+{
+  "torch": "2.14.0+cu126",
+  "gpu": "NVIDIA GeForce RTX 4090",
+  "50m_b8_causal_flag": {
+    "repeats": 30,
+    "distinct_outputs": 1,
+    "distinct_gradients": 1
+  },
+  "50m_b8_explicit_mask": {
+    "repeats": 30,
+    "distinct_outputs": 1,
+    "distinct_gradients": 1
+  },
+  "150m_b16_causal_flag": {
+    "repeats": 30,
+    "distinct_outputs": 1,
+    "distinct_gradients": 1
+  },
+  "150m_b16_explicit_mask": {
+    "repeats": 30,
+    "distinct_outputs": 1,
+    "distinct_gradients": 1
+  },
+  "300m_b8_causal_flag": {
+    "repeats": 30,
+    "distinct_outputs": 1,
+    "distinct_gradients": 17
+  },
+  "300m_b8_explicit_mask": {
+    "repeats": 30,
+    "distinct_outputs": 1,
+    "distinct_gradients": 2
+  },
+  "deterministic_mode": "runs (deterministic variant selected)"
+}

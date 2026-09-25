@@ -1,0 +1,252 @@
+{
+  "status": "VERIFIED",
+  "args": {
+    "name": "checkpoint_tails",
+    "back_to_back": 4,
+    "spaced": 3,
+    "gap_seconds": 60.0,
+    "probe_gib": 1.0,
+    "probes": 2
+  },
+  "head": "75fd8a93e61423260456879343d361659828e103",
+  "volume": "G:",
+  "physical_disk": "PhysicalDrive1",
+  "temp_dir": "G:\\Project\\xlm-opus55-p34\\artifacts\\p34\\tmp",
+  "checkpoints": [
+    {
+      "index": 0,
+      "regime": "back_to_back",
+      "phases": {
+        "sha256_cpu": 0.325620501593221,
+        "hashing": 0.0004020999767817557,
+        "d2h_storage_copy": 0.12541449995478615,
+        "serialize_model": 0.33525600004941225,
+        "d2h_model": 0.046336500032339245,
+        "serialize_objective": 0.0011331000132486224,
+        "d2h_objective": 0.0,
+        "optimizer_snapshot": 0.02122090000193566,
+        "serialize_optimizer": 0.5971292000031099,
+        "d2h_optimizer": 0.0790779999224469,
+        "serialize_rng_state": 0.00183119997382164,
+        "d2h_rng_state": 0.0,
+        "fsync": 1.5833340000244789,
+        "publication_including_hash_fsync": 2.4773549999808893,
+        "total_pause": 3.5214334999909624,
+        "post_save_verification_outside_pause": 0.6022286000079475
+      },
+      "physical_disk_written_bytes": 928858624,
+      "published_bytes": 598835373,
+      "foreign_processes": []
+    },
+    {
+      "index": 1,
+      "regime": "back_to_back",
+      "phases": {
+        "sha256_cpu": 0.3160953997867182,
+        "hashing": 0.000506300013512373,
+        "d2h_storage_copy": 0.10011860000668094,
+        "serialize_model": 0.3217222000239417,
+        "d2h_model": 0.03596890001790598,
+        "serialize_objective": 0.0013609000016003847,
+        "d2h_objective": 0.0,
+        "optimizer_snapshot": 0.025541900016833097,
+        "serialize_optimizer": 0.5883046000381,
+        "d2h_optimizer": 0.06414969998877496,
+        "serialize_rng_state": 0.0015172999701462686,
+        "d2h_rng_state": 0.0,
+        "fsync": 1.2659226998803206,
+        "publication_including_hash_fsync": 2.0046710000024177,
+        "total_pause": 3.028028499975335,
+        "post_save_verification_outside_pause": 0.4977187000331469
+      },
+      "physical_disk_written_bytes": 750563328,
+      "published_bytes": 598835373,
+      "foreign_processes": []
+    },
+    {
+      "index": 2,
+      "regime": "back_to_back",
+      "phases": {
+        "sha256_cpu": 0.31542100466322154,
+        "hashing": 0.0004618999664671719,
+        "d2h_storage_copy": 0.10196620092028752,
+        "serialize_model": 0.30501619999995455,
+        "d2h_model": 0.0369359003379941,
+        "serialize_objective": 0.0036955999676138163,
+        "d2h_objective": 0.0,
+        "optimizer_snapshot": 0.02474849997088313,
+        "serialize_optimizer": 1.7976646999595687,
+        "d2h_optimizer": 0.06503030058229342,
+        "serialize_rng_state": 0.0015625000232830644,
+        "d2h_rng_state": 0.0,
+        "fsync": 22.222566800075583,
+        "publication_including_hash_fsync": 22.970601600012742,
+        "total_pause": 25.282712100015488,
+        "post_save_verification_outside_pause": 0.49389959999825805
+      },
+      "physical_disk_written_bytes": 1142986240,
+      "published_bytes": 598835373,
+      "foreign_processes": []
+    },
+    {
+      "index": 3,
+      "regime": "back_to_back",
+      "phases": {
+        "sha256_cpu": 0.3206987015437335,
+        "hashing": 0.000318799982778728,
+        "d2h_storage_copy": 0.09468470048159361,
+        "serialize_model": 1.3399313000263646,
+        "d2h_model": 0.029935400118120015,
+        "serialize_objective": 0.002799100009724498,
+        "d2h_objective": 0.0,
+        "optimizer_snapshot": 0.021257399988826364,
+        "serialize_optimizer": 2.667279699991923,
+        "d2h_optimizer": 0.0647493003634736,
+        "serialize_rng_state": 0.0016075000166893005,
+        "d2h_rng_state": 0.0,
+        "fsync": 9.398025499947835,
+        "publication_including_hash_fsync": 10.173129700007848,
+        "total_pause": 14.29519460001029,
+        "post_save_verification_outside_pause": 0.5120326000032946
+      },
+      "physical_disk_written_bytes": 1121273856,
+      "published_bytes": 598835373,
+      "foreign_processes": []
+    },
+    {
+      "index": 4,
+      "regime": "spaced",
+      "phases": {
+        "sha256_cpu": 0.32291359652299434,
+        "hashing": 0.00032000005012378097,
+        "d2h_storage_copy": 0.09384710009908304,
+        "serialize_model": 0.28672510001342744,
+        "d2h_model": 0.03239140013465658,
+        "serialize_objective": 0.001012900029309094,
+        "d2h_objective": 0.0,
+        "optimizer_snapshot": 0.019750199979171157,
+        "serialize_optimizer": 0.5782860000035726,
+        "d2h_optimizer": 0.06145569996442646,
+        "serialize_rng_state": 0.0018139000167138875,
+        "d2h_rng_state": 0.0,
+        "fsync": 1.2715641001123004,
+        "publication_including_hash_fsync": 2.0442811000393704,
+        "total_pause": 2.9965221000020392,
+        "post_save_verification_outside_pause": 0.4826861000037752
+      },
+      "physical_disk_written_bytes": 750796800,
+      "published_bytes": 598835373,
+      "foreign_processes": []
+    },
+    {
+      "index": 5,
+      "regime": "spaced",
+      "phases": {
+        "sha256_cpu": 0.3219228060916066,
+        "hashing": 0.0003198999911546707,
+        "d2h_storage_copy": 0.09318710048682988,
+        "serialize_model": 0.29702329996507615,
+        "d2h_model": 0.02927680022548884,
+        "serialize_objective": 0.0011570999631658196,
+        "d2h_objective": 0.0,
+        "optimizer_snapshot": 0.02013039996381849,
+        "serialize_optimizer": 0.6231282000080682,
+        "d2h_optimizer": 0.06391030026134104,
+        "serialize_rng_state": 0.0014353999868035316,
+        "d2h_rng_state": 0.0,
+        "fsync": 1.689790100150276,
+        "publication_including_hash_fsync": 2.5602164000156336,
+        "total_pause": 3.5735533999977633,
+        "post_save_verification_outside_pause": 0.4875535999890417
+      },
+      "physical_disk_written_bytes": 1059572224,
+      "published_bytes": 598835373,
+      "foreign_processes": []
+    },
+    {
+      "index": 6,
+      "regime": "spaced",
+      "phases": {
+        "sha256_cpu": 0.31826389901107177,
+        "hashing": 0.0003111000405624509,
+        "d2h_storage_copy": 0.09187340049538761,
+        "serialize_model": 0.2865762999863364,
+        "d2h_model": 0.031649800192099065,
+        "serialize_objective": 0.0009160999907180667,
+        "d2h_objective": 0.0,
+        "optimizer_snapshot": 0.020222999970428646,
+        "serialize_optimizer": 0.5729793999926187,
+        "d2h_optimizer": 0.06022360030328855,
+        "serialize_rng_state": 0.001557100040372461,
+        "d2h_rng_state": 0.0,
+        "fsync": 1.291197799902875,
+        "publication_including_hash_fsync": 2.0640912000089884,
+        "total_pause": 3.0207565000164323,
+        "post_save_verification_outside_pause": 0.49729750002734363
+      },
+      "physical_disk_written_bytes": 750845952,
+      "published_bytes": 598835373,
+      "foreign_processes": []
+    }
+  ],
+  "raw_write_probes": [
+    {
+      "bytes": 1073741824,
+      "wall_seconds": 22.651720999972895,
+      "mib_per_second": 45.20627814554246,
+      "chunk_mib_per_second": {
+        "min": 40.05929025355105,
+        "median": 46.88052242401071,
+        "max": 48.84611360094275
+      },
+      "chunk_seconds": [
+        1.3787234000046737,
+        1.59763189998921,
+        1.5639476000214927,
+        1.555095900024753,
+        1.5714769000187516,
+        1.4576552999787964,
+        1.338396399980411,
+        1.355437999998685,
+        1.3651725000236183,
+        1.3988648999948055,
+        1.3102373000001535,
+        1.3507850000169128,
+        1.3482959999819286,
+        1.343844800023362,
+        1.3475423000054434,
+        1.3682975000119768
+      ],
+      "physical_disk_written_bytes": 1074036736
+    },
+    {
+      "bytes": 1073741824,
+      "wall_seconds": 8.449935500044376,
+      "mib_per_second": 121.1843569687156,
+      "chunk_mib_per_second": {
+        "min": 25.307444924612046,
+        "median": 373.9798821141484,
+        "max": 386.3964306023379
+      },
+      "chunk_seconds": [
+        1.369972999964375,
+        1.3629439999931492,
+        2.528900099976454,
+        1.0544757000170648,
+        0.16605470003560185,
+        0.17379260004963726,
+        0.1711322000483051,
+        0.17133110004942864,
+        0.16636900004232302,
+        0.17621010000584647,
+        0.17010930000105873,
+        0.26633179996861145,
+        0.16829370002960786,
+        0.16563300002599135,
+        0.1682435999973677,
+        0.16981880000093952
+      ],
+      "physical_disk_written_bytes": 1073905664
+    }
+  ]
+}

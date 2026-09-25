@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import shlex
 import subprocess
 import sys
 import time
@@ -61,7 +62,7 @@ def main() -> None:
     parser.add_argument("--cases", nargs="+", choices=sorted(CASES), required=True)
     parser.add_argument("--reps", nargs="+", type=int, default=[1, 2, 3])
     parser.add_argument("--sections-rep", type=int, default=1)
-    parser.add_argument("--extra", nargs="*", default=[])
+    parser.add_argument("--extra", default="", help="extra benchmark arguments, one string")
     parser.add_argument("--prefix", default="final")
     parser.add_argument("--record", default="matrix_execution.json")
     args = parser.parse_args()
@@ -69,7 +70,7 @@ def main() -> None:
     log: list[dict[str, object]] = json.loads(record.read_text()) if record.exists() else []
     for rep in args.reps:
         for case in args.cases:
-            extra = list(args.extra) + (["--sections"] if rep == args.sections_rep else [])
+            extra = shlex.split(args.extra) + (["--sections"] if rep == args.sections_rep else [])
             run_case(f"{args.prefix}_{case}_r{rep}", CASES[case] + extra, log)
             record.parent.mkdir(parents=True, exist_ok=True)
             record.write_text(json.dumps(log, indent=2) + "\n", encoding="utf-8")

@@ -1,0 +1,130 @@
+{
+  "head": "75fd8a93e61423260456879343d361659828e103",
+  "decompose": {
+    "p33": {
+      "uninstrumented_ms": {
+        "median": 778.6901500076056,
+        "all": [
+          734.2002999503165,
+          843.2097000186332,
+          816.2598999915645,
+          776.7494000145234,
+          733.4488999913447,
+          819.2238999763504,
+          766.587599995546,
+          780.6309000006877,
+          850.3055999753997,
+          737.2342000016943
+        ]
+      },
+      "stage_ms_median": {
+        "mixture_scheduling": 0.40425005136057734,
+        "mmap_token_read": 20.635349879739806,
+        "document_index_lookup": 23.938649595947936,
+        "window_selection_total": 47.836100158747286,
+        "packing_and_provenance_lists": 76.91810000687838,
+        "exposure_accounting": 0.8789001440163702,
+        "microbatch_tensors_and_metadata": 21.291599987307563,
+        "next_step_total": 801.579250022769,
+        "trainer_attention_mask_from_lists": 4.272750025847927,
+        "commit_state_copy": 1.3184999988880008
+      },
+      "trace_replay": {
+        "targets": 65536,
+        "mean_record_bytes": 223.0131072998047,
+        "p33_chain_ms": 528.7632999825291,
+        "json_dumps_only_ms": 279.3154999963008,
+        "sha256_hexdigest_only_ms": 62.58470000466332,
+        "exact_fold_ms": 135.66400000127032,
+        "fold_equals_chain": true
+      }
+    },
+    "current": {
+      "uninstrumented_ms": {
+        "median": 390.3031999943778,
+        "all": [
+          352.86729998188093,
+          269.067500019446,
+          389.22199996886775,
+          347.03030000673607,
+          334.7048999858089,
+          391.38440001988783,
+          446.0879999678582,
+          320.6965000135824,
+          411.9626999599859,
+          396.0372000001371
+        ]
+      },
+      "stage_ms_median": {
+        "mixture_scheduling": 0.3886497870553285,
+        "mmap_token_read": 19.933100324124098,
+        "document_index_lookup": 26.455799816176295,
+        "window_selection_total": 50.0231496989727,
+        "packing_and_provenance_lists": 110.77879994991235,
+        "exposure_accounting": 0.8842498064041138,
+        "microbatch_tensors_and_metadata": 23.29690000624396,
+        "next_step_total": 367.5861500087194,
+        "trainer_attention_mask_from_lists": 3.8431499851867557,
+        "commit_state_copy": 1.4948499738238752
+      },
+      "trace_replay": {
+        "targets": 65536,
+        "mean_record_bytes": 223.0131072998047,
+        "p33_chain_ms": 538.8243999914266,
+        "json_dumps_only_ms": 296.295200008899,
+        "sha256_hexdigest_only_ms": 61.76559999585152,
+        "exact_fold_ms": 149.44080001441762,
+        "fold_equals_chain": true
+      }
+    }
+  },
+  "ipc": {
+    "windows": 129,
+    "tensor_bytes": 2179584,
+    "pickle_bytes": {
+      "full_trainingbatch_pickle": 4071628,
+      "compact_arrays_and_state": 2192070,
+      "state_only_json": 38604
+    },
+    "exact_provenance_materialization_ms": 23.802799987606704,
+    "prepared_update_pickle_bytes": 5099939,
+    "full_trainingbatch_pickle": {
+      "child_startup_s": 3.044407900015358,
+      "consumer_receive_ms_median": 18.374399980530143,
+      "producer_send_ms_median": 19.319799990626052,
+      "exitcode": 0
+    },
+    "compact_arrays_and_state": {
+      "child_startup_s": 3.0294971000403166,
+      "consumer_receive_ms_median": 1.2118499726057053,
+      "producer_send_ms_median": 2.9464499675668776,
+      "exitcode": 0
+    },
+    "shared_memory_slot": {
+      "child_startup_s": 2.9449744999874383,
+      "consumer_receive_ms_median": 0.23600002168677747,
+      "producer_send_ms_median": 0.30509999487549067,
+      "exitcode": 0
+    }
+  },
+  "ceiling": [
+    {
+      "loader": "current",
+      "producer_startup_s": 2.3871193999657407,
+      "updates": 20,
+      "updates_per_second": 2.207026087406573,
+      "targets_per_second": 144639.66166427717,
+      "producer_ms_per_update": 442.8136649890803
+    },
+    {
+      "loader": "p33",
+      "producer_startup_s": 2.4488878000411205,
+      "updates": 20,
+      "updates_per_second": 1.149560420166371,
+      "targets_per_second": 75337.59169602329,
+      "producer_ms_per_update": 859.8389250022592
+    }
+  ],
+  "foreign_processes_after": [],
+  "status": "VERIFIED"
+}
