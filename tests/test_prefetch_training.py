@@ -355,3 +355,41 @@ def test_train_owns_producer_shutdown(
         assert summary.committed_valid_targets == BUDGET
         assert digest(trainer.model) == reference[0]
         assert not psutil.pid_exists(pid)
+
+
+@pytest.mark.cuda
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA hardware required")
+def test_cuda_commit_barrier_failure_requires_recovery(
+    shards: dict[str, TokenShardReader],  # noqa: F811
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from xlm.training.trainer import RecoveryRequiredError
+
+    with prefetcher(shards) as batcher:
+        trainer, _, _ = build(tmp_path / "run", batcher)
+        trainer.device = "cuda"
+        trainer.model.to("cuda")
+        trainer.objective.to("cuda")
+        assert trainer.train_step() is not None
+        assert not trainer._update_in_doubt
+        before = batcher.get_state()
+
+        class FailedStream:
+            def synchronize(self) -> None:
+                raise RuntimeError("authored asynchronous optimizer failure")
+
+        with monkeypatch.context() as patch:
+            patch.setattr(torch.cuda, "current_stream", lambda device: FailedStream())
+            with pytest.raises(RuntimeError, match="asynchronous optimizer"):
+                trainer.train_step()
+        torch.cuda.synchronize()
+        # The optimizer already ran, so the boundary is ambiguous even though
+        # the cursor never advanced: no retry, no checkpoint, fresh recovery.
+        assert trainer.committed_valid_targets == GLOBAL
+        assert batcher.get_state() == before
+        assert trainer._update_in_doubt
+        with pytest.raises(RecoveryRequiredError):
+            trainer.train_step()
+        with pytest.raises(RecoveryRequiredError):
+            trainer._save_checkpoint("invalid")
