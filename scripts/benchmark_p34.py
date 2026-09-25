@@ -324,6 +324,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     "takes",
                     "blocked_takes",
                     "consumer_wait_seconds",
+                    "verify_content_seconds",
                     "produce_seconds",
                     "discarded_stale",
                     "resets",
@@ -391,6 +392,21 @@ def build(args: argparse.Namespace) -> Built:
     active: BatcherProtocol
     if args.mode == "resident":
         active = P33.ResidentBatcher(source, total_updates + 2)
+    elif args.mode == "prefetch" and getattr(args, "production_config", False):
+        from xlm.training.inputs import MixtureInput, build_training_batcher
+
+        active = build_training_batcher(
+            MixtureInput(source.recipe, source.readers),
+            {},
+            {
+                **recipe["training"],
+                "microbatch_sequences": args.microbatch,
+                "global_batch_valid_targets": args.global_targets,
+                "producer_prefetch": "process_depth1",
+            },
+            None,
+        )
+        assert isinstance(active, PrefetchingBatcher) and active.verify_content
     elif args.mode == "prefetch":
         with P33.batcher(args.microbatch, args.global_targets) as described:
             spec = ProducerSpec.from_batcher(described)
@@ -432,6 +448,7 @@ def main() -> None:
     parser.add_argument("--vram-cap-gib", type=float, default=14.5)
     parser.add_argument("--max-baseline-mib", type=int, default=11_000)
     parser.add_argument("--sections", action="store_true")
+    parser.add_argument("--production-config", action="store_true")
     parser.add_argument("--save-checkpoints", type=int, default=0)
     args = parser.parse_args()
     if not (

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import random
 from pathlib import Path
 from typing import Any
 from unittest.mock import patch
@@ -140,6 +141,57 @@ def test_window_fold_keeps_encoded_byte_limit() -> None:
         extend_target_trace_chain("", "s", 0, [doc], [""], [0], [4], [(0, 1)], [0])
 
 
+def test_fold_fuzz_compares_serialized_bytes_to_original() -> None:
+    """Capture every SHA input, including bool fallbacks and lone surrogates."""
+    import hashlib
+
+    rng = random.Random(34)
+    alphabet = list('a/%"\\\x00\t\n\r') + [
+        chr(c) for c in (0x7F, 0xE9, 0x2028, 0x2029, 0xD800, 0xDFFF, 0x1F642)
+    ]
+    numbers = [0, -1, 1, -(2**130), 10**200, True, False]
+    original = hashlib.sha256
+    for _ in range(120):
+        strings = ["".join(rng.choices(alphabet, k=rng.randrange(25))) for _ in range(5)]
+        rows = [
+            (
+                strings[0],
+                strings[1],
+                rng.choice(numbers),
+                rng.choice(numbers),
+                (rng.choice(numbers), rng.choice(numbers)),
+            )
+            for _ in range(rng.randrange(1, 12))
+        ]
+        epoch = rng.choice(numbers)
+        captures: list[list[bytes]] = []
+        for folded in (False, True):
+            seen: list[bytes] = []
+
+            def record(raw: bytes, seen: list[bytes] = seen) -> Any:
+                seen.append(raw)
+                return original(raw)
+
+            with patch("hashlib.sha256", record):
+                if folded:
+                    docs, lineages, offsets, labels, spans = _columns(rows)
+                    extend_target_trace_chain(
+                        strings[2],
+                        strings[3],
+                        epoch,
+                        docs,
+                        lineages,
+                        offsets,
+                        labels,
+                        spans,
+                        list(range(len(rows))),
+                    )
+                else:
+                    _fold(strings[2], strings[3], epoch, rows)
+            captures.append(seen)
+        assert captures[0] == captures[1]
+
+
 @pytest.mark.parametrize("global_targets", [7, 300])
 def test_batcher_state_matches_per_target_reference(tmp_path: Path, global_targets: int) -> None:
     """Chain, 256-record trace, truncation and byte coverage match the old loop."""
@@ -149,7 +201,17 @@ def test_batcher_state_matches_per_target_reference(tmp_path: Path, global_targe
         [document("abc" * (1 + i % 9), i) for i in range(60)], True
     )
 
-    def reference_fold(previous, source, epoch, docs, lineages, offsets, labels, spans, kept):
+    def reference_fold(
+        previous: str,
+        source: str,
+        epoch: int,
+        docs: list[str],
+        lineages: list[str],
+        offsets: list[int],
+        labels: list[int],
+        spans: list[Any],
+        kept: list[int],
+    ) -> str:
         rows = [(docs[i], lineages[i], offsets[i], labels[i], spans[i]) for i in kept]
         return _fold(previous, source, epoch, rows)
 
@@ -191,13 +253,13 @@ def test_budget_trim_does_not_restart_index_scan(tmp_path: Path) -> None:
     original = json.loads
     visits = []
 
-    def loads(*args, **kwargs):
+    def loads(*args: Any, **kwargs: Any) -> Any:
         result = original(*args, **kwargs)
         if isinstance(result, dict) and "doc_id" in result:
             visits.append(result["doc_id"])
         return result
 
-    labels = []
+    labels: list[int] = []
     with patch("json.loads", loads):
         for _ in range(100):
             for batch in batcher.next_step_microbatches():
