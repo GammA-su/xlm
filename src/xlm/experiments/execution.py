@@ -138,6 +138,18 @@ def resolve_execution_config(config: dict[str, Any]) -> tuple[dict[str, Any], di
     if training["budget"]["max_train_seconds"] is None:
         training["budget"]["max_train_seconds"] = 600.0
     resolved["training"] = training
+    evaluation = resolved.get("evaluation")
+    if isinstance(evaluation, dict) and evaluation.get("science") is not None:
+        # Science-v1 cadence (P35 M2): validated only when declared, so schema-v1
+        # evaluation sections keep their historical bytes.
+        from xlm.config.schemas import ScienceEvaluationConfig
+        from xlm.training.evaluation import plan_from_config
+
+        if training.get("science_version") is None:
+            raise ValueError("evaluation.science requires training.science_version")
+        science_evaluation = ScienceEvaluationConfig.model_validate(evaluation["science"])
+        evaluation["science"] = science_evaluation.model_dump(mode="json")
+        plan_from_config(evaluation["science"], int(training["budget"]["max_valid_targets"]))
     validate_component_selection(resolved, catalog)
     data = resolved["data"]
     normalize_training_data(data, training)

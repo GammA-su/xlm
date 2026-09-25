@@ -451,6 +451,12 @@ class CheckpointManager:
                 f"{current_policy.identity()}); ordinary resume refused, fork or start a "
                 "new experiment explicitly"
             )
+        if science is not None and saved_science is not None and not is_fork:
+            # Evaluation plan/evaluator identity, also before any state is restored.
+            try:
+                science._saved_evaluation(saved_science)
+            except ScientificPolicyError as exc:
+                raise IncompatibleCheckpointError(str(exc)) from exc
 
         # 3. Restore model weights & validate tied weights
         if model is not None:
@@ -570,9 +576,14 @@ class CheckpointManager:
         # 9. Adopt committed science history last; restored RNG is authoritative.
         if science is not None and saved_science is not None and saved_policy == current_policy:
             try:
-                science.restore(saved_science)
+                science.restore(saved_science, fork=is_fork)
             except (KeyError, TypeError, ScientificPolicyError) as exc:
                 raise IncompatibleCheckpointError(f"science state rejected: {exc}") from exc
+        if science is not None and is_fork:
+            try:
+                science.rebase_evaluation(meta.committed_valid_targets)
+            except ScientificPolicyError as exc:
+                raise IncompatibleCheckpointError(str(exc)) from exc
 
         return meta
 

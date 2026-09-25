@@ -584,6 +584,11 @@ class ConditionalLikelihoodScorer:
             diagnostics={
                 "eos_nll": eos_nll,
                 "first_token_conditioned_on_bos": True,
+                # Coverage evidence: the sums above silently skip unscored targets.
+                "scored_text_targets": sum(
+                    1 for t in range(1, num_text_tokens + 1) if t in scored_targets_nll
+                ),
+                "eos_target_scored": (num_text_tokens + 1) in scored_targets_nll,
             },
         )
 

@@ -154,6 +154,8 @@ class TrainingComponents:
     data_identity: str
     construction: dict[str, Any]
     science: ScientificState
+    # Science-v1 evaluation controller; None unless ``evaluation.science`` is declared.
+    evaluation: Any = None
 
 
 def construct_training_components(
@@ -223,6 +225,21 @@ def construct_training_components(
     }
     construction["identity"] = identity_digest(construction)
     science = ScientificState(ScientificPolicy.from_training(training))
+    evaluation = None
+    science_evaluation = (config.get("evaluation") or {}).get("science")
+    if science_evaluation is not None:
+        # Built before the training reseed: evaluator construction cannot
+        # consume the science-v1 training RNG stream.
+        from xlm.training.evaluation import build_evaluation_controller
+
+        evaluation = build_evaluation_controller(
+            science_evaluation,
+            budget=int(training["budget"]["max_valid_targets"]),
+            tokenizer=tokenizer,
+            context_length=int(model.config.context_length),
+            device=device,
+        )
+        evaluation.attach(science)
     if science.policy.is_science and fresh_training_rng:
         assert science.policy.training_seed is not None
         science.train_start_rng = reseed_training_rng(science.policy.training_seed, device)
@@ -237,6 +254,7 @@ def construct_training_components(
         data_identity,
         construction,
         science,
+        evaluation,
     )
 
 

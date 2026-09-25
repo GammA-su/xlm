@@ -923,6 +923,7 @@ def execute_plan_run(
         activation_checkpointing=bool(training.get("activation_checkpointing", False)),
         compile_model=bool(training.get("compile", False)),
         science=components.science,
+        evaluation=components.evaluation,
     )
 
     # Resume an interrupted attempt through the existing checkpoint loader. Never
@@ -1002,13 +1003,15 @@ def execute_plan_run(
         last_loss = metrics.loss
         if lease_manager is not None and job.device.startswith("cuda"):
             lease_manager.heartbeat(job.device, job.job_id)
-    summary = {
+    summary: dict[str, Any] = {
         "steps": steps,
         "committed_valid_targets": trainer.committed_valid_targets,
         "final_loss": last_loss,
         "checkpoint_id": f"{job.job_id}_final",
         "resumed_checkpoint": str(restored) if restored else None,
     }
+    if trainer.evaluation is not None:
+        summary["evaluation"] = trainer.evaluation.completeness().to_dict()
     if trainer.committed_valid_targets != plan.budget_valid_targets:
         raise QueueError("training stopped before the exact target budget; refusing success")
     if not already_final:

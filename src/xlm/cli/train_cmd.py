@@ -267,6 +267,7 @@ def _train_in_process(
             activation_checkpointing=run_checkpointing,
             compile_model=run_compile,
             science=components.science,
+            evaluation=components.evaluation,
         )
     except Exception as e:
         typer.echo(f"Error: invalid execution configuration: {e}", err=True)
@@ -289,6 +290,8 @@ def _train_in_process(
     )
     typer.echo(f"Training Time:      {summary.total_training_time_seconds:.2f}s")
     typer.echo(f"Setup Time:         {summary.setup_time_seconds:.2f}s")
+    if trainer.evaluation is not None:
+        typer.echo(f"Evaluation:         {json.dumps(trainer.evaluation.completeness().to_dict())}")
     typer.echo("=" * 60)
 
 
@@ -443,7 +446,8 @@ def _resume_in_process(
         scaler=resume_scaler,
         science=components.science,
     )
-    if not fork and meta.committed_valid_targets == target_budget:
+    at_budget = not fork and meta.committed_valid_targets == target_budget
+    if at_budget and components.evaluation is None:
         typer.echo(
             "Resume complete: frozen target budget is already committed; checkpoint preserved."
         )
@@ -491,7 +495,16 @@ def _resume_in_process(
         parent_checkpoint_id=parent_chk,
         parent_plan_id=parent_plan,
         science=components.science,
+        evaluation=components.evaluation,
     )
+    if at_budget and trainer.evaluation is not None:
+        # The budget is committed; only evaluation events this state still owes run.
+        trainer._evaluate_boundary()
+        typer.echo(f"Evaluation: {json.dumps(trainer.evaluation.completeness().to_dict())}")
+        typer.echo(
+            "Resume complete: frozen target budget is already committed; checkpoint preserved."
+        )
+        return
     if resume_scaler is not None:
         # The checkpoint's scaler state was restored into this object; the
         # trainer must continue from it rather than from a fresh scaler.
@@ -514,4 +527,6 @@ def _resume_in_process(
         if summary.final_loss is not None
         else "Final Loss: N/A"
     )
+    if trainer.evaluation is not None:
+        typer.echo(f"Evaluation:         {json.dumps(trainer.evaluation.completeness().to_dict())}")
     typer.echo("=" * 60)

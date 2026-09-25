@@ -14,7 +14,7 @@ import math
 import os
 import random
 from collections.abc import Iterator, Mapping
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from xlm.artifacts.manifest import canonical_json
 from xlm.config.science import (
@@ -25,6 +25,9 @@ from xlm.config.science import (
     ScientificPolicy,
     ScientificPolicyError,
 )
+
+if TYPE_CHECKING:
+    from xlm.evaluation.receipts import EvaluationLedger
 
 SCIENCE_STATE_VERSION = 1
 LR_RECEIPT_COLUMNS = (
@@ -98,6 +101,9 @@ class ScientificState:
         self.train_start_rng: dict[str, Any] | None = None
         self.lr_receipts: list[list[Any]] = []
         self.runtime_receipts: list[dict[str, Any]] = []
+        # Science-v1 evaluation events (P35 M2); ``None`` when no cadence is declared,
+        # which keeps M1 ``science.json`` files byte-identical.
+        self.evaluation: EvaluationLedger | None = None
 
     def record_lr(self, receipt: list[Any]) -> None:
         if len(self.lr_receipts) >= MAX_LR_RECEIPTS:
@@ -110,16 +116,48 @@ class ScientificState:
         self.runtime_receipts.append(receipt)
 
     def to_checkpoint(self) -> dict[str, Any]:
-        return {
+        payload = {
             "version": SCIENCE_STATE_VERSION,
             "policy": self.policy.identity(),
             "train_start_rng": self.train_start_rng,
             "lr_receipts": {"columns": list(LR_RECEIPT_COLUMNS), "rows": self.lr_receipts},
             "runtime_receipts": self.runtime_receipts,
         }
+        if self.evaluation is not None:
+            payload["evaluation"] = self.evaluation.to_dict()
+        return payload
 
-    def restore(self, saved: Mapping[str, Any]) -> None:
-        """Adopt a checkpoint's committed history (same policy only; never reseeds)."""
+    def _saved_evaluation(self, saved: Mapping[str, Any]) -> EvaluationLedger | None:
+        """Parse and check a saved evaluation ledger against this run's plan."""
+        from xlm.evaluation.receipts import EvaluationLedger, EvaluationLedgerError
+
+        raw = saved.get("evaluation")
+        if (raw is None) != (self.evaluation is None):
+            raise ScientificPolicyError(
+                "evaluation cadence presence differs between checkpoint and run; "
+                "ordinary resume refused"
+            )
+        if raw is None or self.evaluation is None:
+            return None
+        try:
+            ledger = EvaluationLedger.from_dict(raw)
+        except (EvaluationLedgerError, KeyError, TypeError, ValueError) as exc:
+            raise ScientificPolicyError(f"unreadable evaluation ledger: {exc}") from exc
+        if ledger.plan.digest() != self.evaluation.plan.digest():
+            raise ScientificPolicyError("evaluation plan changed; ordinary resume refused")
+        if ledger.evaluator_digests != self.evaluation.evaluator_digests:
+            raise ScientificPolicyError(
+                "evaluator or evaluation inputs changed since the run was planned; "
+                "ordinary resume refused"
+            )
+        return ledger
+
+    def restore(self, saved: Mapping[str, Any], *, fork: bool = False) -> None:
+        """Adopt a checkpoint's committed history (same policy only; never reseeds).
+
+        An explicit fork does not inherit the parent's evaluation events: the
+        fork's plan is re-originated at its starting committed count instead.
+        """
         if saved.get("version") != SCIENCE_STATE_VERSION:
             raise ScientificPolicyError("unsupported science checkpoint state version")
         if ScientificPolicy.from_identity(saved["policy"]) != self.policy:
@@ -129,6 +167,7 @@ class ScientificState:
             raise ScientificPolicyError("unknown LR receipt layout")
         if self.lr_receipts:
             raise ScientificPolicyError("cannot restore into a run that already committed updates")
+        ledger = None if fork else self._saved_evaluation(saved)
         self.train_start_rng = saved.get("train_start_rng")
         self.lr_receipts = [list(row) for row in receipts["rows"]]
         # Earlier attempts' observations first, then any made by this attempt
@@ -136,6 +175,23 @@ class ScientificState:
         self.runtime_receipts = [
             dict(r) for r in saved.get("runtime_receipts", [])
         ] + self.runtime_receipts
+        if ledger is not None:
+            self.evaluation = ledger
+
+    def rebase_evaluation(self, origin_committed_targets: int) -> None:
+        """Start a forked run's fresh evaluation plan at the fork's committed count."""
+        if self.evaluation is None:
+            return
+        from xlm.evaluation.cadence import CadenceError, rebase_plan
+        from xlm.evaluation.receipts import EvaluationLedger
+
+        if not self.evaluation.untouched:
+            raise ScientificPolicyError("a fork starts a fresh evaluation plan")
+        try:
+            plan = rebase_plan(self.evaluation.plan, origin_committed_targets)
+        except CadenceError as exc:
+            raise ScientificPolicyError(f"fork evaluation plan: {exc}") from exc
+        self.evaluation = EvaluationLedger(plan, self.evaluation.evaluator_digests)
 
 
 def validate_group_lr_semantics(

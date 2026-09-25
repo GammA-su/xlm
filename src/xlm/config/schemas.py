@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictInt, field_validator, model_validator
 
 from xlm.core.registry import (
     architectures,
@@ -279,12 +279,72 @@ class TrainingConfig(StrictConfigModel):
         return self
 
 
+class LMInventoryRef(StrictConfigModel):
+    """A local LM validation manifest pinned by content identity (never 'latest')."""
+
+    manifest: str = Field(min_length=1)
+    manifest_id: str = Field(pattern=r"^[0-9a-f]{64}$")
+
+
+class BenchmarkInputsRef(StrictConfigModel):
+    """Declared local benchmark inputs pinned by manifest identity."""
+
+    inputs: str = Field(min_length=1)
+    manifest_id: str = Field(pattern=r"^[0-9a-f]{64}$")
+    blimp_universe: list[str] = Field(max_length=1024)
+
+
+class EndpointConfirmationRef(StrictConfigModel):
+    lm: LMInventoryRef
+    benchmark: BenchmarkInputsRef | None
+
+
+class LMScoringConfig(StrictConfigModel):
+    """Frozen evaluation-time precision and rolling-window rule; nothing defaulted."""
+
+    forward_precision: Literal["fp32", "bf16_autocast"]
+    logprob_dtype: Literal["fp32", "fp64"]
+    rolling_stride: StrictInt = Field(gt=0)
+
+
+EvaluationTierName = Literal["quick_lm", "full_lm", "search_benchmark", "endpoint_confirmation"]
+
+
+class ScienceEvaluationConfig(StrictConfigModel):
+    """Science-v1 evaluation cadence (P35 M2). Thresholds are data, never callbacks.
+
+    ``cadence`` names a frozen contract table (§K) bound to the run budget, or
+    ``authored_fixture`` with explicit non-research thresholds for smoke runs.
+    Every tier with a planned event must name its inputs; inputs without a
+    planned event are refused rather than ignored.
+    """
+
+    version: Literal["xlm-eval-cadence-v1"]
+    cadence: Literal["pilot_32m", "screen_128m", "full_1b", "authored_fixture"]
+    fixture_thresholds: dict[EvaluationTierName, list[StrictInt]] | None
+    confirmation_registered: bool
+    quick_lm: LMInventoryRef | None
+    full_lm: LMInventoryRef | None
+    search_benchmark: BenchmarkInputsRef | None
+    endpoint_confirmation: EndpointConfirmationRef | None
+    scoring: LMScoringConfig
+
+    @model_validator(mode="after")
+    def validate_fixture_scope(self) -> ScienceEvaluationConfig:
+        if (self.cadence == "authored_fixture") != (self.fixture_thresholds is not None):
+            raise ValueError("fixture_thresholds are required for, and only for, authored_fixture")
+        return self
+
+
 class EvaluationConfig(StrictConfigModel):
     suite: Literal["search", "confirmation", "final"] = "search"
     policy_artifact: str | None = None
+    # Legacy declaration only; it has never triggered evaluation. Science-v1
+    # cadence is ``science`` below and is resolved only when present.
     every_valid_targets: int = Field(default=16000000, gt=0)
     checkpoint_selection: str = "last_at_declared_budget"
     allow_final: bool = False
+    science: ScienceEvaluationConfig | None = None
 
 
 class ResourceConfig(StrictConfigModel):

@@ -18,7 +18,7 @@ import signal
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from xlm.config.science import LEGACY_LR_POLICY, ScientificPolicy
 from xlm.core.contracts import RunStatus, TrainingBatch
@@ -46,6 +46,9 @@ except ImportError:
     torch = None  # type: ignore[assignment]
     nn = None  # type: ignore[assignment]
     optim = None  # type: ignore[assignment]
+
+if TYPE_CHECKING:
+    from xlm.training.evaluation import EvaluationController
 
 
 class TrainerError(Exception):
@@ -140,6 +143,7 @@ class Trainer:
         compile_mode: str = "default",
         max_scaler_skips: int = 50,
         science: ScientificState | None = None,
+        evaluation: EvaluationController | None = None,
     ) -> None:
         self.model = model
         self.objective = objective
@@ -198,6 +202,7 @@ class Trainer:
         self._consecutive_scaler_skips = 0
         self._last_step_skipped = False
         self._update_in_doubt = False
+        self._evaluation_compromised = False
         self.checkpoint_manager.boundary_guard = self._require_committed_boundary
 
         # Precision scaler setup
@@ -233,6 +238,13 @@ class Trainer:
                     precision=self.precision,
                 )
             )
+
+        # Science-v1 evaluation events (P35 M2). Legacy runs never get a controller.
+        self.evaluation = evaluation
+        if evaluation is not None:
+            if not self.science.policy.is_science:
+                raise TrainerError("an evaluation cadence requires the xlm-science-v1 policy")
+            evaluation.bind_trainer(self)
 
     def _get_autocast_context(self) -> Any:
         """Return precision context manager."""
@@ -287,7 +299,7 @@ class Trainer:
         )
 
     def _require_committed_boundary(self) -> None:
-        if self._update_in_doubt:
+        if self._update_in_doubt or self._evaluation_compromised:
             raise RecoveryRequiredError("Resume a complete checkpoint in a fresh trainer")
 
     def execution_report(self) -> dict[str, Any]:
@@ -336,8 +348,11 @@ class Trainer:
     def train_step(self) -> TrainingStepMetrics | None:
         """Rollback failed preparation; never reuse a partially updated optimizer."""
         self._require_committed_boundary()
+        if self.evaluation is not None:
+            # Initial-state events and events restored as due by a resume.
+            self._evaluate_boundary()
         try:
-            return self._train_step()
+            metrics = self._train_step()
         except BaseException:
             try:
                 self.batcher.rollback()
@@ -346,6 +361,16 @@ class Trainer:
                 # A failed producer rollback already closes/poisons its transport.
                 pass
             raise
+        if metrics is not None and self.evaluation is not None:
+            self._evaluate_boundary()
+        return metrics
+
+    def _evaluate_boundary(self) -> None:
+        """Record and evaluate science-v1 events due at the committed state (never mid-update)."""
+        assert self.evaluation is not None
+        self._require_committed_boundary()
+        self.evaluation.record_crossings(self)
+        self.evaluation.run_pending(self)
 
     def _train_step(self) -> TrainingStepMetrics | None:
         """Execute one update inside the run's scientific runtime scope (legacy: none)."""
@@ -547,6 +572,10 @@ class Trainer:
         if receipt is not None:
             # Only a committed update publishes an LR receipt.
             self.science.record_lr(receipt)
+        if self.evaluation is not None:
+            # First crossing at this committed C; recorded before any periodic
+            # checkpoint so that checkpoint knows the state still owes events.
+            self.evaluation.record_crossings(self)
 
         step_sec = time.monotonic() - step_start
         self.total_training_time_seconds += step_sec
@@ -653,6 +682,9 @@ class Trainer:
         run_start = time.monotonic()
 
         try:
+            if self.evaluation is not None:
+                # A resume at the exact budget still owes its endpoint events.
+                self._evaluate_boundary()
             while self.committed_valid_targets < self.max_valid_targets:
                 if (
                     execution

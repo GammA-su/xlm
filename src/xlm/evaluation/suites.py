@@ -402,6 +402,35 @@ def partition_blimp_subdatasets(
     }
 
 
+def assert_blimp_tier_membership(
+    subdatasets: Sequence[str], universe: Sequence[str], tier: SuiteTier
+) -> None:
+    """Every declared BLiMP subdataset must belong to this tier's partition.
+
+    BLiMP uses the ``train`` split at every tier, so the split firewall alone
+    cannot keep a developer run away from final subdatasets. The partition is
+    computed over the declared full subdataset universe, the same way
+    :func:`resolve_suite` assigns tiers, and a subdataset outside the requested
+    tier's share is refused.
+    """
+    if tier is SuiteTier.FINAL:
+        raise SplitFirewallError("developer BLiMP membership checks never admit the final tier")
+    if not universe:
+        raise SplitFirewallError(
+            "BLiMP selections require the declared full subdataset universe; without it the "
+            "tier partition, and therefore the final-split firewall, cannot be established"
+        )
+    unknown = sorted(set(subdatasets) - set(universe))
+    if unknown:
+        raise SplitFirewallError(f"BLiMP subdatasets {unknown} are not in the declared universe")
+    allowed = set(partition_blimp_subdatasets(universe)[tier])
+    outside = sorted(set(subdatasets) - allowed)
+    if outside:
+        raise SplitFirewallError(
+            f"BLiMP subdatasets {outside} belong to another tier's partition, not '{tier}'"
+        )
+
+
 def partition_grouped_items(
     items: Sequence[Mapping[str, Any]],
     tier: SuiteTier,
