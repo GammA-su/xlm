@@ -1,0 +1,34 @@
+{
+  "checkpoint_id": "p35_legacy_fixture",
+  "legacy_resolved_config_digest": "f383f2a70b57dbcf87e8863888e2e35e36d805bb837019adacd2e31a82588d15",
+  "legacy_resolved_training_keys": [
+    "activation_checkpointing",
+    "budget",
+    "checkpoint_every_valid_targets",
+    "compile",
+    "context_length",
+    "data_seed",
+    "device",
+    "global_batch_valid_targets",
+    "gradient_clip_norm",
+    "init_seed",
+    "microbatch_sequences",
+    "precision",
+    "producer_prefetch",
+    "schedule"
+  ],
+  "saved_group_lrs": [
+    0.005,
+    0.005
+  ],
+  "source_commit": "991dd397b5c682d3250b5f7437465192869b13f5",
+  "update1_lr_used": [
+    0.01,
+    0.01
+  ],
+  "update2_lr_used": [
+    0.005,
+    0.005
+  ],
+  "update2_model_sha256": "b8e57d733a721897cddc6a59641bccfc5b0b04fc6e1fc66a63a6854a2d9852db"
+}

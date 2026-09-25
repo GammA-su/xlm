@@ -1,0 +1,9 @@
+{
+  "type": "warmup_cosine",
+  "version": "1",
+  "counter": "committed_valid_targets",
+  "base_lr": 0.01,
+  "horizon_valid_targets": 64,
+  "warmup_valid_targets": 32,
+  "min_lr_ratio": 0.1
+}

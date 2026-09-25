@@ -3,3 +3,6 @@
 fixtures/eval/inputs/** text eol=lf
 # Frozen integration lineage bytes (digests recorded in lineage.json).
 docs/implementation/evidence/P23-D02-D04-D05/int01/combined-artifacts/** text eol=lf
+# P35 legacy checkpoint produced by the pre-migration code: checksummed bytes
+# (including CRLF JSON written on Windows) must never be converted.
+tests/fixtures/p35_legacy_checkpoint/checkpoint/** -text

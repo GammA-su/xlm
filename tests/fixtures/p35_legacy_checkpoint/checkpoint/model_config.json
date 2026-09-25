@@ -1,0 +1,20 @@
+{
+  "architecture": "transformer_baseline",
+  "architecture_version": "1",
+  "attention_backend": "eager",
+  "bias": false,
+  "context_length": 8,
+  "dropout": 0.0,
+  "expected_unique_parameters": null,
+  "ffn": "swiglu",
+  "hidden_size": 16,
+  "initialization_policy": "baseline_v1",
+  "intermediate_size": 32,
+  "max_deployed_parameters": null,
+  "normalization": "rmsnorm",
+  "num_attention_heads": 2,
+  "num_layers": 1,
+  "position_encoding": "rope",
+  "tie_embeddings": true,
+  "vocab_size": 32
+}

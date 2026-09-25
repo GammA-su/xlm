@@ -59,3 +59,5 @@ secrets/
 .DS_Store
 Thumbs.db
 desktop.ini
+# Authored toy checkpoint produced by pre-P35 code; loaded with weights_only=True.
+!tests/fixtures/p35_legacy_checkpoint/checkpoint/*.pt

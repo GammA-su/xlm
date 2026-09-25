@@ -1,0 +1,8 @@
+{
+  "shard_id": "in_memory",
+  "stream_token_offset": 17,
+  "epoch": 0,
+  "committed_valid_targets": 16,
+  "processed_valid_targets": 16,
+  "overlapping_context_token": 8
+}

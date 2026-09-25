@@ -1,0 +1,32 @@
+{
+  "checkpoint_id": "p35_legacy_fixture",
+  "run_id": "p35_legacy_run",
+  "step": 1,
+  "committed_valid_targets": 16,
+  "processed_valid_targets": 16,
+  "plan_id": "p35_legacy_plan",
+  "model_config": {
+    "architecture": "transformer_baseline",
+    "architecture_version": "1",
+    "vocab_size": 32,
+    "num_layers": 1,
+    "hidden_size": 16,
+    "num_attention_heads": 2,
+    "intermediate_size": 32,
+    "tie_embeddings": true,
+    "bias": false,
+    "dropout": 0.0,
+    "normalization": "rmsnorm",
+    "position_encoding": "rope",
+    "ffn": "swiglu",
+    "expected_unique_parameters": null,
+    "max_deployed_parameters": null,
+    "context_length": 8,
+    "attention_backend": "eager",
+    "initialization_policy": "baseline_v1"
+  },
+  "precision": "fp32",
+  "parent_checkpoint_id": null,
+  "parent_plan_id": null,
+  "created_at": "2026-09-25T18:14:37.617902+00:00"
+}
