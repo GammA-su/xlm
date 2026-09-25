@@ -1,6 +1,14 @@
 # XLM — Complete Implementation Prompt Pack
 
-**Implementation audit (2026-09-19):** Prompt 23 is complete. Bounded offline and CUDA checks have evidence; production acceptance is blocked by documented correctness and integration gaps. Read [final acceptance](docs/implementation/FINAL_ACCEPTANCE.md), [status](docs/implementation/STATUS.md), and the [Windows](docs/runbooks/windows.md) / [Linux](docs/runbooks/linux.md) runbooks before running experiments. No research results or full live-source verification are claimed.
+**Current research entry point (2026-09-25):** P35 defines the
+[scientific training contract](docs/implementation/reports/P35-SCIENTIFIC-CONTRACT.md)
+and [Opus implementation handoff](docs/implementation/handoffs/P35-OPUS-HANDOFF.md)
+on the frozen P34 engineering baseline. The next step is the versioned LR/seed
+migration and evaluation integration, followed by a user-run 32M-target pilot.
+No research campaign or baseline-quality result is claimed. Read the latest
+[status](docs/implementation/STATUS.md) before executing historical examples.
+
+**Historical implementation audit (2026-09-19):** Prompt 23 is complete. Bounded offline and CUDA checks have evidence; production acceptance was blocked by documented correctness and integration gaps. See [final acceptance](docs/implementation/FINAL_ACCEPTANCE.md) and the [Windows](docs/runbooks/windows.md) / [Linux](docs/runbooks/linux.md) runbooks for that stage's workflow.
 
 **Prepared:** 18 September 2026. **Deliverable:** an implementation plan and executable acceptance requirements for a coding agent, not an already implemented XLM application. The recipes specify the configuration language to build; remote sources remain unadmitted until verified locally.
 

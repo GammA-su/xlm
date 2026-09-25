@@ -1,5 +1,13 @@
 # Evaluation policy and holdout isolation
 
+**P35 research selection:** [xlm-science-v1](docs/implementation/reports/P35-SCIENTIFIC-CONTRACT.md)
+specifies fixed-distribution held-out text CE as the same-tokenizer 50M primary
+endpoint, text BPB for tokenizer comparisons, and independent training-pair
+uncertainty. The four-task index below remains a secondary capability report;
+its scoring, coverage and holdout rules are unchanged. New cadence and statistical
+integration are specified in the [handoff](docs/implementation/handoffs/P35-OPUS-HANDOFF.md),
+not implemented by this documentation milestone.
+
 ## Core scores
 
 Base models, zero-shot conditional likelihood, no chat template or benchmark fine-tuning. Core tasks: BLiMP macro accuracy; ARC-Easy `acc_norm`; HellaSwag `acc_norm`; PIQA `acc`. Save both accuracy metrics for the multiple-choice tasks. Pin task IDs, prompt templates, dataset revisions and scorer implementation. Inspect `acc_norm` in that revision; the inspected harness uses answer-string character length, not token count. Add a regression fixture that would expose a normalization change.

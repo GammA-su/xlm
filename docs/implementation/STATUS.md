@@ -1,5 +1,26 @@
 # Implementation status
 
+> **P35 scientific contract (2026-09-25): IMPLEMENTED design / VERIFIED bounded
+> audit**, on `research/p35-scientific-contract`, engineering base `febbf8b`.
+> [Scientific contract](reports/P35-SCIENTIFIC-CONTRACT.md) covers A–Z;
+> [Opus handoff](handoffs/P35-OPUS-HANDOFF.md) specifies five sequential steps.
+> Decisions: controlled statistical reproducibility; paired B8/B16/B32 quality–cost
+> study; versioned positive first-update warmup; one-pair screens, five-pair robust
+> 50M confirmation, three-pair larger-scale confirmation; held-out CE primary;
+> user-run 32M pilot. Code audit found the legacy first-step LR spike/next-LR log,
+> within-shard order not shuffled by data_seed, unwired evaluation cadence, and
+> old comparison statistics insufficient for the new seed-level decision rule.
+> No product defaults/code/recipes/lockfile changed. Synthetic 14.891-s attention
+> probe: strict deterministic efficient SDPA available at all three sizes, sampled
+> forwards identical, all strict repeated backwards identical; busy-desktop
+> operator timing is not a full-model speed certificate. Parameter counts verified;
+> seven existing schedule tests passed. See [P35 record](reports/P35.md) for exact
+> checks and limits. Real inputs/pilot and research studies NOT RUN; execution
+> awaits handoff implementation and actual artifact/hash-bound user authorization.
+> No network, install, acquisition, campaign, push or merge. Next prompt:
+> **Implement P35 handoff milestone 1 only; preserve legacy LR/RNG behavior,
+> run focused offline tests, and do not launch real-data training.**
+
 > **P34 final adversarial review (2026-09-25): SAFE TO INTEGRATE the repaired
 > series on `review/p34-astra-final`, within the frozen synthetic scope.** Starting
 > `745e66e` was clean but had blockers: synchronous CUDA bypassed the completion

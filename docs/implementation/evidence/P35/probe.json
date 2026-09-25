@@ -1,0 +1,559 @@
+{
+  "scope": "authored synthetic single attention operator, not model training",
+  "python": "3.12.13",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "torch": "2.14.0+cu126",
+  "cuda": "12.6",
+  "gpu": "NVIDIA GeForce RTX 4090",
+  "gpu_memory_cap_fraction": 0.1,
+  "deadline_seconds": 120,
+  "counts": {
+    "50m": 49883648,
+    "150m": 149942016,
+    "300m": 299418624
+  },
+  "attention": [
+    {
+      "shape": "50m_b8",
+      "q_shape": [
+        8,
+        8,
+        512,
+        64
+      ],
+      "q_stride": [
+        262144,
+        64,
+        512,
+        1
+      ],
+      "mask": "causal",
+      "deterministic": false,
+      "repeats": 12,
+      "operators": [
+        "aten::_efficient_attention_backward",
+        "aten::_efficient_attention_forward",
+        "aten::_scaled_dot_product_efficient_attention",
+        "aten::_scaled_dot_product_efficient_attention_backward",
+        "aten::scaled_dot_product_attention"
+      ],
+      "milliseconds": [
+        0.4106239974498749,
+        0.5527359843254089,
+        0.5040959715843201,
+        0.7374399900436401,
+        0.5737599730491638,
+        0.8012480139732361,
+        1.0352319478988647,
+        1.1741119623184204,
+        0.5372800230979919,
+        0.8548799753189087,
+        0.6748160123825073,
+        0.643455982208252
+      ],
+      "median_ms": 0.6591359972953796,
+      "peak_allocated_bytes": 48772096,
+      "peak_reserved_bytes": 65011712,
+      "distinct_forward": 1,
+      "distinct_backward": 1
+    },
+    {
+      "shape": "50m_b8",
+      "q_shape": [
+        8,
+        8,
+        512,
+        64
+      ],
+      "q_stride": [
+        262144,
+        64,
+        512,
+        1
+      ],
+      "mask": "causal",
+      "deterministic": true,
+      "repeats": 12,
+      "operators": [
+        "aten::_efficient_attention_backward",
+        "aten::_efficient_attention_forward",
+        "aten::_scaled_dot_product_efficient_attention",
+        "aten::_scaled_dot_product_efficient_attention_backward",
+        "aten::scaled_dot_product_attention"
+      ],
+      "milliseconds": [
+        0.5825279951095581,
+        0.7182719707489014,
+        0.7916160225868225,
+        0.7148799896240234,
+        0.726751983165741,
+        1.021440029144287,
+        0.8441920280456543,
+        0.6691840291023254,
+        0.7935360074043274,
+        1.2893760204315186,
+        0.7305600047111511,
+        0.697920024394989
+      ],
+      "median_ms": 0.728655993938446,
+      "peak_allocated_bytes": 48772096,
+      "peak_reserved_bytes": 65011712,
+      "distinct_forward": 1,
+      "distinct_backward": 1,
+      "forward_equal_to_default": true,
+      "forward_max_abs_difference": 0.0
+    },
+    {
+      "shape": "50m_b8",
+      "q_shape": [
+        8,
+        8,
+        512,
+        64
+      ],
+      "q_stride": [
+        262144,
+        64,
+        512,
+        1
+      ],
+      "mask": "partial_mask",
+      "deterministic": false,
+      "repeats": 12,
+      "operators": [
+        "aten::_efficient_attention_backward",
+        "aten::_efficient_attention_forward",
+        "aten::_scaled_dot_product_efficient_attention",
+        "aten::_scaled_dot_product_efficient_attention_backward",
+        "aten::scaled_dot_product_attention"
+      ],
+      "milliseconds": [
+        0.5877760052680969,
+        0.8884479999542236,
+        0.8529279828071594,
+        0.8855999708175659,
+        0.6903679966926575,
+        1.0381120443344116,
+        0.8165119886398315,
+        0.6430400013923645,
+        0.6450240015983582,
+        0.6886720061302185,
+        0.6519680023193359,
+        0.9247999787330627
+      ],
+      "median_ms": 0.7534399926662445,
+      "peak_allocated_bytes": 52966400,
+      "peak_reserved_bytes": 65011712,
+      "distinct_forward": 1,
+      "distinct_backward": 1
+    },
+    {
+      "shape": "50m_b8",
+      "q_shape": [
+        8,
+        8,
+        512,
+        64
+      ],
+      "q_stride": [
+        262144,
+        64,
+        512,
+        1
+      ],
+      "mask": "partial_mask",
+      "deterministic": true,
+      "repeats": 12,
+      "operators": [
+        "aten::_efficient_attention_backward",
+        "aten::_efficient_attention_forward",
+        "aten::_scaled_dot_product_efficient_attention",
+        "aten::_scaled_dot_product_efficient_attention_backward",
+        "aten::scaled_dot_product_attention"
+      ],
+      "milliseconds": [
+        1.1878399848937988,
+        1.0017280578613281,
+        0.9945600032806396,
+        1.094655990600586,
+        1.0250240564346313,
+        0.9613760113716125,
+        1.2345600128173828,
+        1.3123199939727783,
+        1.5313279628753662,
+        1.0351680517196655,
+        1.0814399719238281,
+        1.1363519430160522
+      ],
+      "median_ms": 1.088047981262207,
+      "peak_allocated_bytes": 52966400,
+      "peak_reserved_bytes": 65011712,
+      "distinct_forward": 1,
+      "distinct_backward": 1,
+      "forward_equal_to_default": true,
+      "forward_max_abs_difference": 0.0
+    },
+    {
+      "shape": "150m_b16",
+      "q_shape": [
+        16,
+        12,
+        512,
+        64
+      ],
+      "q_stride": [
+        393216,
+        64,
+        768,
+        1
+      ],
+      "mask": "causal",
+      "deterministic": false,
+      "repeats": 12,
+      "operators": [
+        "aten::_efficient_attention_backward",
+        "aten::_efficient_attention_forward",
+        "aten::_scaled_dot_product_efficient_attention",
+        "aten::_scaled_dot_product_efficient_attention_backward",
+        "aten::scaled_dot_product_attention"
+      ],
+      "milliseconds": [
+        1.5513279438018799,
+        2.5767359733581543,
+        0.8743680119514465,
+        0.8826559782028198,
+        0.9413440227508545,
+        0.7663360238075256,
+        1.2027839422225952,
+        0.8629119992256165,
+        0.8340160250663757,
+        0.9211199879646301,
+        0.7901120185852051,
+        1.4094079732894897
+      ],
+      "median_ms": 0.901887983083725,
+      "peak_allocated_bytes": 143688704,
+      "peak_reserved_bytes": 174063616,
+      "distinct_forward": 1,
+      "distinct_backward": 1
+    },
+    {
+      "shape": "150m_b16",
+      "q_shape": [
+        16,
+        12,
+        512,
+        64
+      ],
+      "q_stride": [
+        393216,
+        64,
+        768,
+        1
+      ],
+      "mask": "causal",
+      "deterministic": true,
+      "repeats": 12,
+      "operators": [
+        "aten::_efficient_attention_backward",
+        "aten::_efficient_attention_forward",
+        "aten::_scaled_dot_product_efficient_attention",
+        "aten::_scaled_dot_product_efficient_attention_backward",
+        "aten::scaled_dot_product_attention"
+      ],
+      "milliseconds": [
+        0.7157760262489319,
+        1.0455679893493652,
+        0.8320320248603821,
+        1.044319987297058,
+        1.364192008972168,
+        0.9654719829559326,
+        0.952895998954773,
+        1.0143680572509766,
+        0.9357439875602722,
+        1.0196160078048706,
+        0.883072018623352,
+        0.9617919921875
+      ],
+      "median_ms": 0.9636319875717163,
+      "peak_allocated_bytes": 143688704,
+      "peak_reserved_bytes": 174063616,
+      "distinct_forward": 1,
+      "distinct_backward": 1,
+      "forward_equal_to_default": true,
+      "forward_max_abs_difference": 0.0
+    },
+    {
+      "shape": "150m_b16",
+      "q_shape": [
+        16,
+        12,
+        512,
+        64
+      ],
+      "q_stride": [
+        393216,
+        64,
+        768,
+        1
+      ],
+      "mask": "partial_mask",
+      "deterministic": false,
+      "repeats": 12,
+      "operators": [
+        "aten::_efficient_attention_backward",
+        "aten::_efficient_attention_forward",
+        "aten::_scaled_dot_product_efficient_attention",
+        "aten::_scaled_dot_product_efficient_attention_backward",
+        "aten::scaled_dot_product_attention"
+      ],
+      "milliseconds": [
+        0.907263994216919,
+        1.1231039762496948,
+        1.1315840482711792,
+        1.2665280103683472,
+        1.122655987739563,
+        1.3446400165557861,
+        1.2440320253372192,
+        1.1157759428024292,
+        1.1432000398635864,
+        1.607583999633789,
+        1.1473599672317505,
+        1.1514240503311157
+      ],
+      "median_ms": 1.1452800035476685,
+      "peak_allocated_bytes": 152077312,
+      "peak_reserved_bytes": 174063616,
+      "distinct_forward": 1,
+      "distinct_backward": 1
+    },
+    {
+      "shape": "150m_b16",
+      "q_shape": [
+        16,
+        12,
+        512,
+        64
+      ],
+      "q_stride": [
+        393216,
+        64,
+        768,
+        1
+      ],
+      "mask": "partial_mask",
+      "deterministic": true,
+      "repeats": 12,
+      "operators": [
+        "aten::_efficient_attention_backward",
+        "aten::_efficient_attention_forward",
+        "aten::_scaled_dot_product_efficient_attention",
+        "aten::_scaled_dot_product_efficient_attention_backward",
+        "aten::scaled_dot_product_attention"
+      ],
+      "milliseconds": [
+        1.0515199899673462,
+        2.2598400115966797,
+        1.3523199558258057,
+        1.6141120195388794,
+        1.3643519878387451,
+        1.5316799879074097,
+        1.2945599555969238,
+        1.3161280155181885,
+        1.297152042388916,
+        1.7060480117797852,
+        2.4030721187591553,
+        2.1997439861297607
+      ],
+      "median_ms": 1.4480159878730774,
+      "peak_allocated_bytes": 152077312,
+      "peak_reserved_bytes": 174063616,
+      "distinct_forward": 1,
+      "distinct_backward": 1,
+      "forward_equal_to_default": true,
+      "forward_max_abs_difference": 0.0
+    },
+    {
+      "shape": "300m_b8",
+      "q_shape": [
+        8,
+        16,
+        512,
+        64
+      ],
+      "q_stride": [
+        524288,
+        64,
+        1024,
+        1
+      ],
+      "mask": "causal",
+      "deterministic": false,
+      "repeats": 12,
+      "operators": [
+        "aten::_efficient_attention_backward",
+        "aten::_efficient_attention_forward",
+        "aten::_scaled_dot_product_efficient_attention",
+        "aten::_scaled_dot_product_efficient_attention_backward",
+        "aten::scaled_dot_product_attention"
+      ],
+      "milliseconds": [
+        0.7229440212249756,
+        1.9553920030593872,
+        1.4917759895324707,
+        0.8208000063896179,
+        0.8578879833221436,
+        0.8606719970703125,
+        1.2528640031814575,
+        0.8920639753341675,
+        0.9470400214195251,
+        1.9568320512771606,
+        0.9435840249061584,
+        2.2674880027770996
+      ],
+      "median_ms": 0.9453120231628418,
+      "peak_allocated_bytes": 95179776,
+      "peak_reserved_bytes": 121634816,
+      "distinct_forward": 1,
+      "distinct_backward": 2
+    },
+    {
+      "shape": "300m_b8",
+      "q_shape": [
+        8,
+        16,
+        512,
+        64
+      ],
+      "q_stride": [
+        524288,
+        64,
+        1024,
+        1
+      ],
+      "mask": "causal",
+      "deterministic": true,
+      "repeats": 12,
+      "operators": [
+        "aten::_efficient_attention_backward",
+        "aten::_efficient_attention_forward",
+        "aten::_scaled_dot_product_efficient_attention",
+        "aten::_scaled_dot_product_efficient_attention_backward",
+        "aten::scaled_dot_product_attention"
+      ],
+      "milliseconds": [
+        0.8846079707145691,
+        2.323391914367676,
+        1.3325120210647583,
+        1.662335991859436,
+        1.1048959493637085,
+        2.2124478816986084,
+        1.0778239965438843,
+        1.0869439840316772,
+        1.1247040033340454,
+        1.2577600479125977,
+        1.7871999740600586,
+        1.5800319910049438
+      ],
+      "median_ms": 1.295136034488678,
+      "peak_allocated_bytes": 95179776,
+      "peak_reserved_bytes": 121634816,
+      "distinct_forward": 1,
+      "distinct_backward": 1,
+      "forward_equal_to_default": true,
+      "forward_max_abs_difference": 0.0
+    },
+    {
+      "shape": "300m_b8",
+      "q_shape": [
+        8,
+        16,
+        512,
+        64
+      ],
+      "q_stride": [
+        524288,
+        64,
+        1024,
+        1
+      ],
+      "mask": "partial_mask",
+      "deterministic": false,
+      "repeats": 12,
+      "operators": [
+        "aten::_efficient_attention_backward",
+        "aten::_efficient_attention_forward",
+        "aten::_scaled_dot_product_efficient_attention",
+        "aten::_scaled_dot_product_efficient_attention_backward",
+        "aten::scaled_dot_product_attention"
+      ],
+      "milliseconds": [
+        1.397760033607483,
+        2.9915199279785156,
+        1.5545599460601807,
+        2.4891200065612793,
+        2.4919679164886475,
+        2.6175360679626465,
+        1.6662720441818237,
+        1.6658879518508911,
+        2.273024082183838,
+        1.7249280214309692,
+        2.6491200923919678,
+        1.78985595703125
+      ],
+      "median_ms": 2.031440019607544,
+      "peak_allocated_bytes": 99374080,
+      "peak_reserved_bytes": 121634816,
+      "distinct_forward": 1,
+      "distinct_backward": 1
+    },
+    {
+      "shape": "300m_b8",
+      "q_shape": [
+        8,
+        16,
+        512,
+        64
+      ],
+      "q_stride": [
+        524288,
+        64,
+        1024,
+        1
+      ],
+      "mask": "partial_mask",
+      "deterministic": true,
+      "repeats": 12,
+      "operators": [
+        "aten::_efficient_attention_backward",
+        "aten::_efficient_attention_forward",
+        "aten::_scaled_dot_product_efficient_attention",
+        "aten::_scaled_dot_product_efficient_attention_backward",
+        "aten::scaled_dot_product_attention"
+      ],
+      "milliseconds": [
+        2.08076810836792,
+        2.138592004776001,
+        2.873663902282715,
+        2.703455924987793,
+        2.1319680213928223,
+        2.239039897918701,
+        2.8415679931640625,
+        2.2418880462646484,
+        2.7363200187683105,
+        4.205632209777832,
+        2.3772480487823486,
+        2.3998401165008545
+      ],
+      "median_ms": 2.3885440826416016,
+      "peak_allocated_bytes": 99374080,
+      "peak_reserved_bytes": 121634816,
+      "distinct_forward": 1,
+      "distinct_backward": 1,
+      "forward_equal_to_default": true,
+      "forward_max_abs_difference": 0.0
+    }
+  ],
+  "wall_seconds": 14.89100000000326,
+  "process_rss_bytes_at_end": 880508928
+}

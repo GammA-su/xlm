@@ -2,6 +2,16 @@
 
 These are proposed XLM v1 contracts, not external standards. A deliberate change requires a versioned migration and new comparison lineage.
 
+**P35 scientific-contract migration (2026-09-25):** New research follows
+[xlm-science-v1](docs/implementation/reports/P35-SCIENTIFIC-CONTRACT.md).
+Its explicit endpoint-before-update LR policy, separate training RNG, statistical
+reproducibility and variance-calibrated promotion rules require the versioned
+[implementation handoff](docs/implementation/handoffs/P35-OPUS-HANDOFF.md).
+P35 does not change existing execution defaults or reinterpret legacy checkpoints.
+C09/C10 LR semantics and C12's suggested promotion thresholds remain historical
+for legacy runs; the P35 specification governs new scientific comparisons once
+implemented. Missing implementation is not permission to launch an ambiguous run.
+
 ## C01 — Configuration and freeze
 
 Use strict versioned Pydantic schemas for source, transform, pool, tokenizer, model, objective, optimizer, schedule, training, evaluation, comparison and campaign configurations. Allow YAML inheritance through a bounded `extends` mechanism and named preset references. Deep-merge maps, replace lists, reject duplicate YAML keys, reject non-finite values and unknown fields, and show the fully resolved configuration before execution. Reject path traversal, recursive interpolation and arbitrary code. Explicit environment interpolation is restricted to declared variables; secret values are never serialized.
