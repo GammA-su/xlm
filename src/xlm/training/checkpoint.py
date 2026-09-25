@@ -34,6 +34,9 @@ from xlm.optimizers import (
 )
 from xlm.schedules.base import BaseSchedule
 from xlm.training.data import BatcherProtocol
+from xlm.training.science import ScientificState
+
+MAX_SCIENCE_STATE_BYTES = 128 * 1024**2
 
 try:
     import torch
@@ -141,6 +144,7 @@ class CheckpointManager:
         parent_plan_id: str | None = None,
         scaler: Any | None = None,
         precision: str = "fp32",
+        science: ScientificState | None = None,
     ) -> Path:
         """Atomically serialize and publish a complete training checkpoint.
 
@@ -279,6 +283,15 @@ class CheckpointManager:
                 self._save_tensor(rng_state, rng_pt_path)
                 files_to_publish["rng_state.pt"] = rng_pt_path
 
+            # 6a. Science-v1 provenance. Legacy checkpoints keep their historical
+            # file set; the absence of science.json is what marks them legacy.
+            if science is not None and science.policy.is_science:
+                science_path = stage_dir / "science.json"
+                science_path.write_text(
+                    json.dumps(science.to_checkpoint(), sort_keys=True), encoding="utf-8"
+                )
+                files_to_publish["science.json"] = science_path
+
             # 6b. Gradient scaler state (FP16 mode only; absent otherwise, never faked)
             if scaler is not None and torch is not None:
                 scaler_pt_path = stage_dir / "scaler.pt"
@@ -345,6 +358,7 @@ class CheckpointManager:
         device: Any = "cpu",
         is_fork: bool = False,
         scaler: Any | None = None,
+        science: ScientificState | None = None,
     ) -> CheckpointMetadata:
         """Verify checksums, validate plan compatibility, and restore state.
 
@@ -359,6 +373,9 @@ class CheckpointManager:
             expected_plan_id: If set and not forking, ensures plan_id matches.
             device: Map location for tensor deserialization.
             is_fork: Whether this reload is for an explicit forked run.
+            science: This run's scientific state. ``None`` means the legacy policy.
+                Ordinary resume requires the checkpoint's policy to match; the
+                committed LR/RNG history is adopted without any reseed.
 
         Returns:
             Restored CheckpointMetadata.
@@ -413,6 +430,26 @@ class CheckpointManager:
                 f"Checkpoint plan_id '{meta.plan_id}' does not match expected "
                 f"plan '{expected_plan_id}'. "
                 "Use --fork to resume an altered plan from this checkpoint."
+            )
+
+        # 2b. Scientific policy compatibility, before any state is restored.
+        saved_science = self._read_science_state(checkpoint_dir)
+        from xlm.config.science import ScientificPolicy, ScientificPolicyError
+
+        try:
+            saved_policy = (
+                ScientificPolicy.from_identity(saved_science["policy"])
+                if saved_science is not None
+                else ScientificPolicy.legacy()
+            )
+        except (KeyError, TypeError, ScientificPolicyError) as exc:
+            raise IncompatibleCheckpointError(f"unreadable scientific policy: {exc}") from exc
+        current_policy = science.policy if science is not None else ScientificPolicy.legacy()
+        if saved_policy != current_policy and not is_fork:
+            raise IncompatibleCheckpointError(
+                f"scientific policy changed ({saved_policy.identity()} -> "
+                f"{current_policy.identity()}); ordinary resume refused, fork or start a "
+                "new experiment explicitly"
             )
 
         # 3. Restore model weights & validate tied weights
@@ -530,4 +567,25 @@ class CheckpointManager:
             if "cuda" in rng_data and torch.cuda.is_available():
                 torch.cuda.set_rng_state_all(rng_data["cuda"])
 
+        # 9. Adopt committed science history last; restored RNG is authoritative.
+        if science is not None and saved_science is not None and saved_policy == current_policy:
+            try:
+                science.restore(saved_science)
+            except (KeyError, TypeError, ScientificPolicyError) as exc:
+                raise IncompatibleCheckpointError(f"science state rejected: {exc}") from exc
+
         return meta
+
+    @staticmethod
+    def _read_science_state(checkpoint_dir: Path) -> dict[str, Any] | None:
+        path = checkpoint_dir / "science.json"
+        if not path.is_file():
+            return None
+        with path.open("rb") as stream:
+            raw = stream.read(MAX_SCIENCE_STATE_BYTES + 1)
+        if len(raw) > MAX_SCIENCE_STATE_BYTES:
+            raise CorruptCheckpointError("science.json exceeds its byte bound")
+        value = json.loads(raw)
+        if not isinstance(value, dict):
+            raise CorruptCheckpointError("science.json must be an object")
+        return value

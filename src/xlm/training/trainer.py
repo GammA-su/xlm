@@ -20,6 +20,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
+from xlm.config.science import LEGACY_LR_POLICY, ScientificPolicy
 from xlm.core.contracts import RunStatus, TrainingBatch
 from xlm.models.backends import maybe_compile, validate_precision
 from xlm.models.base import BaseModel
@@ -31,6 +32,11 @@ from xlm.optimizers import (
 from xlm.schedules.base import BaseSchedule
 from xlm.training.checkpoint import CheckpointManager
 from xlm.training.data import BatcherProtocol
+from xlm.training.science import (
+    ScientificRuntime,
+    ScientificState,
+    validate_group_lr_semantics,
+)
 
 try:
     import torch
@@ -56,7 +62,15 @@ class RecoveryRequiredError(TrainerError):
 
 @dataclass(frozen=True)
 class TrainingStepMetrics:
-    """Structured metrics emitted for each completed optimizer update."""
+    """Structured metrics emitted for each completed optimizer update.
+
+    ``learning_rate`` keeps its historical meaning under every policy: the
+    schedule evaluated at the post-update committed count (under the legacy
+    policy, the LR the *next* update will see). ``lr_used`` is what
+    ``optimizer.step`` actually read, per parameter group. ``lr_next`` is the
+    LR already installed for the next update, or ``None`` when the policy
+    derives it from that update's actual valid targets.
+    """
 
     step: int
     loss: float
@@ -68,6 +82,10 @@ class TrainingStepMetrics:
     grad_norm: float
     learning_rate: float
     step_time_seconds: float
+    lr_policy: str = LEGACY_LR_POLICY
+    lr_used: tuple[float, ...] = ()
+    lr_schedule_counter: int | None = None
+    lr_next: float | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -121,6 +139,7 @@ class Trainer:
         compile_model: bool = False,
         compile_mode: str = "default",
         max_scaler_skips: int = 50,
+        science: ScientificState | None = None,
     ) -> None:
         self.model = model
         self.objective = objective
@@ -190,6 +209,31 @@ class Trainer:
         ):
             self.scaler = torch.amp.GradScaler("cuda")
 
+        # Scientific policy: legacy unless a science-v1 state is supplied.
+        self.science = science or ScientificState(ScientificPolicy.legacy())
+        self.runtime = ScientificRuntime(self.science.policy.runtime, self.device)
+        if self.science.policy.is_science:
+            validate_group_lr_semantics(
+                optimizer,
+                optimizer_manifest.groups,
+                getattr(schedule, "base_lr", None),
+            )
+            self.runtime.check_environment()
+            model_config = getattr(model, "config", None)
+            backend = str(getattr(model_config, "attention_backend", "unknown"))
+            hidden = int(getattr(model_config, "hidden_size", 0))
+            heads = int(getattr(model_config, "num_attention_heads", 0))
+            if heads <= 0 or hidden % heads:
+                raise TrainerError("science-v1 requires a model config declaring attention shape")
+            self.science.record_runtime(
+                self.runtime.attention_receipt(
+                    attention_backend=backend,
+                    num_heads=heads,
+                    head_dim=hidden // heads,
+                    precision=self.precision,
+                )
+            )
+
     def _get_autocast_context(self) -> Any:
         """Return precision context manager."""
         if torch is None:
@@ -239,6 +283,7 @@ class Trainer:
             parent_plan_id=self.parent_plan_id,
             scaler=self.scaler,
             precision=self.precision,
+            science=self.science,
         )
 
     def _require_committed_boundary(self) -> None:
@@ -262,6 +307,10 @@ class Trainer:
             ),
             "compile": dict(self.compile_report),
             "scaler_active": self.scaler is not None,
+            "scientific_policy": self.science.policy.identity(),
+            "runtime_receipt": (
+                self.science.runtime_receipts[-1] if self.science.runtime_receipts else None
+            ),
         }
 
     def _skip_scaler_step(self, reason: str) -> None:
@@ -299,6 +348,11 @@ class Trainer:
             raise
 
     def _train_step(self) -> TrainingStepMetrics | None:
+        """Execute one update inside the run's scientific runtime scope (legacy: none)."""
+        with self.runtime.scope():
+            return self._train_update()
+
+    def _train_update(self) -> TrainingStepMetrics | None:
         """Execute exactly one complete optimizer update across microbatches."""
         remaining_budget = self.max_valid_targets - self.committed_valid_targets
         if remaining_budget <= 0:
@@ -322,6 +376,14 @@ class Trainer:
             # Wholly empty update: skip step, decay, and schedule advance
             self.batcher.commit()
             return None
+
+        # Endpoint policy: derive f(C+N) from the actual valid N before any
+        # compute. It is installed immediately before optimizer mutation, so
+        # every pre-mutation failure leaves group LRs untouched.
+        committed_before = self.committed_valid_targets
+        endpoint_lr: float | None = None
+        if self.science.policy.endpoint_lr:
+            endpoint_lr = self.schedule.get_lr(committed_before + n_global)
 
         # 3. Accumulate gradients across microbatches
         accumulated_loss = 0.0
@@ -438,6 +500,10 @@ class Trainer:
         grad_norm = clip_global_gradient_norm(unique_params, max_norm=self.gradient_clip_norm)
 
         # 6. Optimizer step & zero grad
+        if endpoint_lr is not None:
+            for group in self.optimizer.param_groups:
+                group["lr"] = endpoint_lr * group.get("lr_multiplier", 1.0)
+        lr_used = tuple(float(group["lr"]) for group in self.optimizer.param_groups)
         self._update_in_doubt = True
         if self.scaler is not None:
             self.scaler.step(self.optimizer)
@@ -453,7 +519,20 @@ class Trainer:
             # The producer may continue speculative preparation during this wait.
             torch.cuda.current_stream(self.device).synchronize()
         new_committed = self.committed_valid_targets + n_global
-        lr = self.schedule.apply_lr_to_optimizer(self.optimizer, counter_value=new_committed)
+        lr_next: float | None
+        if endpoint_lr is None:
+            lr = self.schedule.apply_lr_to_optimizer(self.optimizer, counter_value=new_committed)
+            lr_next = lr
+        else:
+            # The next LR depends on the next update's actual N; only the
+            # historical post-update schedule value is reported here.
+            lr = self.schedule.get_lr(new_committed)
+            lr_next = None
+        receipt = (
+            [self.step + 1, committed_before, n_global, new_committed, list(lr_used)]
+            if self.science.policy.is_science
+            else None
+        )
 
         self.committed_valid_targets = new_committed
         self.processed_valid_targets += sum(
@@ -465,6 +544,9 @@ class Trainer:
         self.batcher.commit()
         self._update_in_doubt = False
         self._consecutive_scaler_skips = 0
+        if receipt is not None:
+            # Only a committed update publishes an LR receipt.
+            self.science.record_lr(receipt)
 
         step_sec = time.monotonic() - step_start
         self.total_training_time_seconds += step_sec
@@ -480,6 +562,10 @@ class Trainer:
             grad_norm=grad_norm,
             learning_rate=lr,
             step_time_seconds=step_sec,
+            lr_policy=self.science.policy.lr_policy,
+            lr_used=lr_used,
+            lr_schedule_counter=new_committed if endpoint_lr is not None else None,
+            lr_next=lr_next,
         )
 
         # 9. Periodic checkpointing

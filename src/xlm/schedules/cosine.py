@@ -42,9 +42,13 @@ class WarmupCosineSchedule(BaseSchedule):
     def get_lr(self, counter_value: int) -> float:
         """Calculate learning rate at counter_value without side effects.
 
-        Documented boundary behavior:
-        - For an update spanning [T_start, T_end), the learning rate is determined
-          by T_start (start boundary).
+        Documented boundary behavior (the math is policy-independent; the
+        trainer's versioned ``lr_policy`` chooses which counter it passes):
+        - ``legacy_base_then_postcommit_v1``: update 1 uses the optimizer base
+          LR; after each update the trainer applies f(T_end), so later updates
+          spanning [T_start, T_end) use f(T_start) (start boundary).
+        - ``target_endpoint_before_update_v1``: an update spanning
+          [C, C + N) with N actual valid targets uses f(C + N) (endpoint).
         """
         if counter_value < 0:
             raise ValueError(f"counter_value cannot be negative, got {counter_value}")
