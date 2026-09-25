@@ -8,6 +8,7 @@ process or unexplained device memory shares the GPU. No downloads or installs.
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import hashlib
 import importlib.util
 import json
@@ -18,6 +19,7 @@ import subprocess
 import sys
 import threading
 import time
+import types
 from dataclasses import asdict
 from pathlib import Path
 from typing import Any
@@ -28,7 +30,9 @@ import torch
 
 from xlm.config.schemas import WarmupCosineScheduleConfig
 from xlm.core.paths import ArtifactPaths
+from xlm.data.sampling.mixture import MixtureRecipe
 from xlm.data.sampling.prefetch import PrefetchingBatcher, ProducerSpec
+from xlm.data.tokens import TokenShardReader
 from xlm.models.transformer import create_transformer_baseline
 from xlm.objectives.cross_entropy import CrossEntropyObjective
 from xlm.optimizers.adamw import create_adamw_optimizer
@@ -55,6 +59,52 @@ def _p33() -> Any:
 
 
 P33 = _p33()
+# The certified P33 base. Only this pinned repository file is executed, never
+# configurable code, artifacts or corpus text.
+P33_HEAD = "8fd05c11e1bdfd84e075000d59e14c315c986f36"
+
+
+def p33_stream() -> Any:
+    """The P33 MixtureBatcher (per-target trace dicts) for reference loaders."""
+    code = subprocess.check_output(
+        ["git", "show", f"{P33_HEAD}:src/xlm/data/sampling/stream.py"], cwd=ROOT, text=True
+    )
+    module = types.ModuleType("p33_reference_stream")
+    sys.modules[module.__name__] = module
+    exec(compile(code, "p33_reference_stream.py", "exec"), module.__dict__)
+    return module
+
+
+def p33_producer_factory(spec: ProducerSpec) -> Any:
+    """Producer-side P33 loader: isolates hiding the loader from shortening it."""
+    readers = {s: TokenShardReader(Path(d)) for s, d in spec.shards.items()}
+    return p33_stream().MixtureBatcher(
+        MixtureRecipe.model_validate(spec.recipe),
+        readers,
+        context_length=spec.context_length,
+        global_batch_valid_targets=spec.global_batch_valid_targets,
+        microbatch_sequences=spec.microbatch_sequences,
+        emit_tensors=False,
+        max_open_shards=spec.max_open_shards,
+    )
+
+
+def make_batcher(loader: str, microbatch: int, targets: int) -> Any:
+    source = P33.batcher(microbatch, targets)
+    if loader == "current":
+        return source
+    reader = source.readers["synthetic"]
+    reference = p33_stream().MixtureBatcher(
+        source.recipe,
+        {"synthetic": reader},
+        context_length=512,
+        global_batch_valid_targets=targets,
+        microbatch_sequences=microbatch,
+        emit_tensors=True,
+        max_open_shards=1,
+    )
+    source.close()
+    return reference
 
 
 def write_json(path: Path, value: Any) -> None:
@@ -207,7 +257,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         WarmupCosineScheduleConfig(**recipe["training"]["schedule"]),
         base_lr=recipe["optimizer"]["lr"],
     )
-    source = P33.batcher(args.microbatch, args.global_targets)
+    source = make_batcher(args.loader, args.microbatch, args.global_targets)
     fixture = source.readers["synthetic"].manifest.to_dict()
     frozen = json.loads(FIXTURE_EVIDENCE.read_text())["manifest"]
     if fixture["checksum_sha256"] != frozen["checksum_sha256"]:
@@ -219,9 +269,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     if args.mode == "resident":
         active = P33.ResidentBatcher(source, total_updates + 2)
     elif args.mode == "prefetch":
-        active = PrefetchingBatcher(
-            ProducerSpec.from_batcher(source), source.get_state(), depth=args.depth
-        )
+        with P33.batcher(args.microbatch, args.global_targets) as described:
+            spec = ProducerSpec.from_batcher(described)
+        if args.loader == "p33":
+            spec = dataclasses.replace(spec, factory=p33_producer_factory)
+        active = PrefetchingBatcher(spec, source.get_state(), depth=args.depth)
     else:
         active = source
     setup_seconds = time.perf_counter() - setup_begin
@@ -348,6 +400,7 @@ def main() -> None:
     parser.add_argument("--name", required=True)
     parser.add_argument("--model", choices=["50m", "150m", "300m"], default="50m")
     parser.add_argument("--mode", choices=["end_to_end", "resident", "prefetch"], required=True)
+    parser.add_argument("--loader", choices=["current", "p33"], default="current")
     parser.add_argument("--microbatch", type=int, default=8)
     parser.add_argument("--depth", type=int, default=1)
     parser.add_argument("--global-targets", type=int, default=65536)
