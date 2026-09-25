@@ -1,5 +1,25 @@
 # Implementation status
 
+> **P34 final adversarial review (2026-09-25): SAFE TO INTEGRATE the repaired
+> series on `review/p34-astra-final`, within the frozen synthetic scope.** Starting
+> `745e66e` was clean but had blockers: synchronous CUDA bypassed the completion
+> barrier, the bound checkpoint manager could publish in-doubt state, pipe waits
+> escaped deadlines, and four consumed-envelope claims were unchecked. Repairs
+> retain the Opus exact trace fold and compact spawned producer; add bounded
+> lifetime reading, frame admission and failure cleanup; and protect all CUDA
+> optimizer/checkpoint boundaries. Final adversarial selection: 53 passed;
+> earlier related CPU selection: 103 passed (overlapping counts). CUDA: three
+> barrier/exactness nodes and public direct/queue/resume workflow passed. Ruff,
+> format and mypy pass on all 10 changed Python files. Production-config B8:
+> **45,679 targets/s**, resident **46,654**, ratio **97.91%**; synchronous **36,247**.
+> Content verification remains on (3.06 ms/update). Eight lifecycle iterations
+> leave zero children/threads and constant handle count. CPU-only frozen release
+> legs remain NOT RUN because the installed CUDA wheel fails their unchanged
+> environment check. No network, installations, live data, campaign, push or
+> merge. See [P34 final review](reports/P34.md), which supersedes the earlier
+> candidate verdict below. No further P34 engineering prompt is needed. Next:
+> `git log --reverse --oneline 745e66e..HEAD` in this review worktree.
+
 > **P34 final integration candidate (2026-09-25): COMPLETE within the synthetic
 > diagnostic scope; branch `integrate/p34-final-candidate`.** Opus series
 > applied cleanly onto the P33 base with proven tree identity, then five

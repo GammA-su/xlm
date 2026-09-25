@@ -1,0 +1,87 @@
+{
+  "scope": "authored offline CPU probes; no GPU training",
+  "lifecycle": [
+    {
+      "iteration": 0,
+      "rss": 533340160,
+      "handles": 336,
+      "remaining_children": 0
+    },
+    {
+      "iteration": 1,
+      "rss": 533143552,
+      "handles": 336,
+      "remaining_children": 0
+    },
+    {
+      "iteration": 2,
+      "rss": 533680128,
+      "handles": 336,
+      "remaining_children": 0
+    },
+    {
+      "iteration": 3,
+      "rss": 532402176,
+      "handles": 336,
+      "remaining_children": 0
+    },
+    {
+      "iteration": 4,
+      "rss": 533078016,
+      "handles": 336,
+      "remaining_children": 0
+    },
+    {
+      "iteration": 5,
+      "rss": 532058112,
+      "handles": 336,
+      "remaining_children": 0
+    },
+    {
+      "iteration": 6,
+      "rss": 532586496,
+      "handles": 336,
+      "remaining_children": 0
+    },
+    {
+      "iteration": 7,
+      "rss": 531591168,
+      "handles": 336,
+      "remaining_children": 0
+    }
+  ],
+  "payload_bytes": 5099237,
+  "positions": 66048,
+  "verify_seconds_total": 0.038153199886437505,
+  "paired_consumer_ms": {
+    "False": [
+      3.7299999967217445,
+      4.835099971387535,
+      4.331400035880506,
+      4.841600020881742,
+      3.292399982456118,
+      4.551799967885017,
+      3.626600024290383,
+      3.713299985975027,
+      3.6499000270850956,
+      3.49059997824952,
+      3.3794999471865594,
+      3.699399996548891
+    ],
+    "True": [
+      7.7578000491485,
+      6.4495999831706285,
+      7.514099997933954,
+      7.642199983820319,
+      7.331900007557124,
+      7.427999982610345,
+      6.13090000115335,
+      5.978000001050532,
+      6.3387000118382275,
+      7.829300011508167,
+      6.486100028268993,
+      7.504799985326827
+    ]
+  },
+  "paired_difference_median_ms": 2.9914000479038805
+}

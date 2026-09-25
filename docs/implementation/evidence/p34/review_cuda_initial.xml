@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="3" time="17.295" timestamp="2026-09-25T18:45:03.672020+02:00" hostname="BetA-C1"><testcase classname="tests.test_prefetch_training" name="test_cuda_commit_barrier_failure_requires_recovery[False]" time="5.615" /><testcase classname="tests.test_prefetch_training" name="test_cuda_commit_barrier_failure_requires_recovery[True]" time="0.966" /><testcase classname="tests.test_p34_prefetch_cuda" name="test_actual_50m_prefetched_updates_match_synchronous_loader" time="7.932"><failure message="xlm.data.sampling.prefetch.PrefetchProducerError: producer pipe closed">self = &lt;multiprocessing.connection.PipeConnection object at 0x0000016779793500&gt;
+maxsize = 134217728
+
+    def _recv_bytes(self, maxsize=None):
+        if self._got_empty_message:
+            self._got_empty_message = False
+            return io.BytesIO()
+        else:
+            bsize = 128 if maxsize is None else min(maxsize, 128)
+            try:
+&gt;               ov, err = _winapi.ReadFile(self._handle, bsize,
+                                            overlapped=True)
+E                                           BrokenPipeError: [WinError 109] パイプは終了しました。
+
+C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\multiprocessing\connection.py:317: BrokenPipeError
+
+During handling of the above exception, another exception occurred:
+
+conn = &lt;multiprocessing.connection.PipeConnection object at 0x0000016779793500&gt;
+inbox = &lt;queue.Queue object at 0x000001677CD35E80&gt;
+stopped = &lt;threading.Event at 0x1677cd36b70: set&gt;
+
+    def _read_frames(conn: Any, inbox: queue.Queue[Any], stopped: threading.Event) -&gt; None:
+        # No reference to the batcher/transport: their finalizers remain reachable.
+        while not stopped.is_set():
+            try:
+                if not conn.poll(0.05):
+                    continue
+&gt;               value: Any = conn.recv_bytes(MAX_FRAME_BYTES)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+src\xlm\data\sampling\prefetch_transport.py:42: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\multiprocessing\connection.py:216: in recv_bytes
+    buf = self._recv_bytes(maxlength)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;multiprocessing.connection.PipeConnection object at 0x0000016779793500&gt;
+maxsize = 134217728
+
+    def _recv_bytes(self, maxsize=None):
+        if self._got_empty_message:
+            self._got_empty_message = False
+            return io.BytesIO()
+        else:
+            bsize = 128 if maxsize is None else min(maxsize, 128)
+            try:
+                ov, err = _winapi.ReadFile(self._handle, bsize,
+                                            overlapped=True)
+                try:
+                    if err == _winapi.ERROR_IO_PENDING:
+                        waitres = _winapi.WaitForMultipleObjects(
+                            [ov.event], False, INFINITE)
+                        assert waitres == WAIT_OBJECT_0
+                except:
+                    ov.cancel()
+                    raise
+                finally:
+                    nread, err = ov.GetOverlappedResult(True)
+                    if err == 0:
+                        f = io.BytesIO()
+                        f.write(ov.getbuffer())
+                        return f
+                    elif err == _winapi.ERROR_MORE_DATA:
+                        return self._get_more_data(ov, maxsize)
+            except OSError as e:
+                if e.winerror == _winapi.ERROR_BROKEN_PIPE:
+&gt;                   raise EOFError
+E                   EOFError
+
+C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\multiprocessing\connection.py:337: EOFError
+
+The above exception was the direct cause of the following exception:
+
+self = &lt;xlm.data.sampling.prefetch.PrefetchingBatcher object at 0x00000167713CF620&gt;
+
+    def _receive_raw(self) -&gt; tuple[Any, ...]:
+        assert self._conn is not None and self._process is not None
+        self._conn.timeout_seconds = self.timeout_seconds
+        deadline = time.monotonic() + self.timeout_seconds
+        try:
+            while not self._conn.poll(0.05):
+                if not self._process.is_alive():
+                    exitcode = self._process.exitcode
+                    self.close()
+                    raise PrefetchProducerError(f"producer exited with code {exitcode}")
+                if time.monotonic() &gt;= deadline:
+                    self.close()
+                    raise PrefetchProducerError("producer exceeded its response timeout")
+        except OSError as exc:
+            # Windows PeekNamedPipe can fail during poll, before recv_bytes.
+            self.close()
+            raise PrefetchProducerError("producer pipe poll failed") from exc
+        try:
+&gt;           message: tuple[Any, ...] = self._conn.recv()
+                                       ^^^^^^^^^^^^^^^^^
+
+src\xlm\data\sampling\prefetch.py:608: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;xlm.data.sampling.prefetch_transport.BoundedConnection object at 0x000001677CD36390&gt;
+
+    def recv(self) -&gt; tuple[Any, ...]:
+        if not self.poll(self.timeout_seconds):
+            raise TimeoutError("prefetch receive exceeded deadline")
+        value, self._peek = self._peek, None
+        if isinstance(value, BaseException):
+&gt;           raise OSError("prefetch pipe receive failed") from value
+E           OSError: prefetch pipe receive failed
+
+src\xlm\data\sampling\prefetch_transport.py:88: OSError
+
+The above exception was the direct cause of the following exception:
+
+tmp_path = WindowsPath('G:/Project/xlm-p34-astra-final/artifacts/p34-review/tmp/pytest-of-gamma/pytest-5/test_actual_50m_prefetched_upd0')
+
+    @pytest.mark.cuda
+    def test_actual_50m_prefetched_updates_match_synchronous_loader(tmp_path: Path) -&gt; None:
+        """Frozen P33 fixture, 65,536 targets per update, release LR; compare every bit."""
+        if not torch.cuda.is_available():
+            pytest.skip("CUDA unavailable")
+        from xlm.config.schemas import WarmupCosineScheduleConfig
+        from xlm.core.paths import ArtifactPaths
+        from xlm.data.sampling.prefetch import PrefetchingBatcher, ProducerSpec
+        from xlm.models.transformer import create_transformer_baseline
+        from xlm.objectives.cross_entropy import CrossEntropyObjective
+        from xlm.optimizers.adamw import create_adamw_optimizer
+        from xlm.schedules.cosine import WarmupCosineSchedule
+        from xlm.training.checkpoint import CheckpointManager
+        from xlm.training.trainer import Trainer
+    
+        spec = importlib.util.spec_from_file_location(
+            "p34_cuda_harness", ROOT / "scripts/benchmark_p33.py"
+        )
+        assert spec is not None and spec.loader is not None
+        harness: Any = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(harness)
+        harness.LOCAL = tmp_path / "local"
+        harness.EVIDENCE = tmp_path / "evidence"
+        harness.fixture()
+        frozen = json.loads((ROOT / "docs/implementation/evidence/p33/fixture.json").read_text())
+        assert (
+            json.loads((harness.EVIDENCE / "fixture.json").read_text())["manifest"]["checksum_sha256"]
+            == frozen["manifest"]["checksum_sha256"]
+        )
+        config = json.loads((ROOT / "recipes/models/50m.yaml").read_text())
+        config["attention_backend"] = "sdpa"
+        recipe = json.loads((ROOT / "recipes/experiments/baseline_50m.yaml").read_text())
+        trajectories = []
+        for prefetch in (False, True):
+            source = harness.batcher(8, 65536)
+            batcher: Any = (
+                PrefetchingBatcher(
+                    ProducerSpec.from_batcher(source), source.get_state(), verify_content=True
+                )
+                if prefetch
+                else source
+            )
+            model = create_transformer_baseline(config, device="cuda", seed=101)
+            objective = CrossEntropyObjective().cuda()
+            optimizer, manifest = create_adamw_optimizer(recipe["optimizer"], model, objective)
+            trainer = Trainer(
+                model,
+                objective,
+                optimizer,
+                manifest,
+                WarmupCosineSchedule(
+                    WarmupCosineScheduleConfig(**recipe["training"]["schedule"]),
+                    base_lr=recipe["optimizer"]["lr"],
+                ),
+                batcher,
+                CheckpointManager(paths=ArtifactPaths(root=tmp_path / str(prefetch))),
+                run_id="p34-equivalence",
+                plan_id="p34",
+                device="cuda",
+                precision="bf16_fp32_master",
+                max_valid_targets=3 * 65536,
+            )
+            digests: list[str] = []
+            rates: list[float] = []
+    
+            def record(
+                opt: Any,
+                args: Any,
+                kwargs: Any,
+                digests: list[str] = digests,
+                rates: list[float] = rates,
+            ) -&gt; None:
+                rates.append(float(opt.param_groups[0]["lr"]))
+                digest = hashlib.sha256()
+                for group in opt.param_groups:
+                    for parameter in group["params"]:
+                        if parameter.grad is not None:
+                            digest.update(parameter.grad.detach().cpu().numpy().tobytes())
+                digests.append(digest.hexdigest())
+    
+            optimizer.register_step_pre_hook(record)
+            try:
+                metrics = []
+                for _ in range(3):
+&gt;                   metric = trainer.train_step()
+                             ^^^^^^^^^^^^^^^^^^^^
+
+tests\test_p34_prefetch_cuda.py:101: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\xlm\training\trainer.py:291: in train_step
+    return self._train_step()
+           ^^^^^^^^^^^^^^^^^^
+src\xlm\training\trainer.py:311: in _train_step
+    microbatches = self.batcher.next_step_microbatches(remaining_budget=remaining_budget)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src\xlm\data\sampling\prefetch.py:700: in next_step_microbatches
+    update = self._take(remaining_budget)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src\xlm\data\sampling\prefetch.py:757: in _take
+    self._pump(lambda: bool(self._ready))
+src\xlm\data\sampling\prefetch.py:642: in _pump
+    message = self._receive_raw()
+              ^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;xlm.data.sampling.prefetch.PrefetchingBatcher object at 0x00000167713CF620&gt;
+
+    def _receive_raw(self) -&gt; tuple[Any, ...]:
+        assert self._conn is not None and self._process is not None
+        self._conn.timeout_seconds = self.timeout_seconds
+        deadline = time.monotonic() + self.timeout_seconds
+        try:
+            while not self._conn.poll(0.05):
+                if not self._process.is_alive():
+                    exitcode = self._process.exitcode
+                    self.close()
+                    raise PrefetchProducerError(f"producer exited with code {exitcode}")
+                if time.monotonic() &gt;= deadline:
+                    self.close()
+                    raise PrefetchProducerError("producer exceeded its response timeout")
+        except OSError as exc:
+            # Windows PeekNamedPipe can fail during poll, before recv_bytes.
+            self.close()
+            raise PrefetchProducerError("producer pipe poll failed") from exc
+        try:
+            message: tuple[Any, ...] = self._conn.recv()
+        except (EOFError, OSError) as exc:
+            self.close()
+&gt;           raise PrefetchProducerError("producer pipe closed") from exc
+E           xlm.data.sampling.prefetch.PrefetchProducerError: producer pipe closed
+
+src\xlm\data\sampling\prefetch.py:611: PrefetchProducerError</failure></testcase></testsuite></testsuites>
