@@ -27,8 +27,8 @@ import collections
 import copy
 import hashlib
 import logging
+import math
 import multiprocessing
-import threading
 import time
 import weakref
 from collections.abc import Callable
@@ -40,6 +40,7 @@ import numpy as np
 
 from xlm.core.contracts import TrainingBatch
 from xlm.data.sampling.mixture import MixtureRecipe
+from xlm.data.sampling.prefetch_transport import BoundedConnection, send_message
 from xlm.data.sampling.scheduler import RepeatBudgetExceededError, SourceExhaustedError
 from xlm.data.sampling.stream import MixtureBatcher, MixtureStreamError
 from xlm.data.tokens import TokenShardReader
@@ -403,11 +404,17 @@ def _producer_main(conn: _Connection, spec: ProducerSpec, initial_state: dict[st
         batcher = spec.build()
         batcher.load_state(initial_state)
         state = batcher.get_state()
-        conn.send(
-            ("ready", PREFETCH_PROTOCOL_VERSION, state_digest(state), time.perf_counter() - started)
+        send_message(
+            conn,
+            (
+                "ready",
+                PREFETCH_PROTOCOL_VERSION,
+                state_digest(state),
+                time.perf_counter() - started,
+            ),
         )
     except BaseException as exc:
-        conn.send(_error_message(0, exc))
+        send_message(conn, _error_message(0, exc))
         return
     generation, ordinal, poisoned = 0, 0, False
     try:
@@ -425,10 +432,10 @@ def _producer_main(conn: _Connection, spec: ProducerSpec, initial_state: dict[st
                 try:
                     batcher.load_state(state)
                     poisoned = False
-                    conn.send(("reset_ok", generation, state_digest(batcher.get_state())))
+                    send_message(conn, ("reset_ok", generation, state_digest(batcher.get_state())))
                 except BaseException as exc:
                     poisoned = True
-                    conn.send(_error_message(generation, exc))
+                    send_message(conn, _error_message(generation, exc))
                 continue
             if kind != "produce":
                 raise PrefetchProtocolError(f"unknown producer request {kind!r}")
@@ -448,9 +455,9 @@ def _producer_main(conn: _Connection, spec: ProducerSpec, initial_state: dict[st
                 update = _encode(batches, generation, ordinal, budget, start, end_state, begin)
             except BaseException as exc:
                 poisoned = True
-                conn.send(_error_message(generation, exc))
+                send_message(conn, _error_message(generation, exc))
                 continue
-            conn.send(("update", generation, update))
+            send_message(conn, ("update", generation, update))
             ordinal += 1
     finally:
         batcher.close()
@@ -461,24 +468,17 @@ def _shutdown(process: Any, conn: _Connection) -> None:
     # Close first: EOF on the child's next receive (or a failed send) always
     # reaps it, while a farewell message could block forever on a full pipe.
     try:
-        try:
-            while conn.poll(0):
-                conn.recv()  # Unblock a child mid-send so it can observe EOF.
-        except (EOFError, OSError):
-            pass
-    finally:
-        try:
-            conn.close()
-        except (OSError, ValueError):
-            pass
-    process.join(timeout=10)
+        conn.close()
+    except (OSError, ValueError):
+        pass
+    process.join(timeout=0.25)
     if process.is_alive():
         process.terminate()
         process.join(timeout=5)
     if process.is_alive():
         process.kill()
         process.join(timeout=5)
-    conn.close()
+    conn.join_reader()
 
 
 class PrefetchingBatcher:
@@ -501,7 +501,7 @@ class PrefetchingBatcher:
     ) -> None:
         if not 1 <= depth <= 2:
             raise ValueError("prefetch depth must be 1 or 2")
-        if timeout_seconds <= 0:
+        if not math.isfinite(timeout_seconds) or timeout_seconds <= 0:
             raise ValueError("timeout_seconds must be positive")
         self.spec = spec
         self.depth = depth
@@ -510,6 +510,7 @@ class PrefetchingBatcher:
         self._committed = copy.deepcopy(initial_state)
         self._committed_digest = state_digest(self._committed)
         self._generation = 0
+        self._ordinal = 0
         self._ready: collections.deque[PreparedUpdate] = collections.deque()
         self._outstanding = 0
         self._pending: PreparedUpdate | None = None
@@ -535,8 +536,9 @@ class PrefetchingBatcher:
         )
         process.start()
         child.close()
-        self._process, self._conn = process, parent
-        self._finalizer = weakref.finalize(self, _shutdown, process, parent)
+        transport = BoundedConnection(parent, self.depth + 2, self.timeout_seconds)
+        self._process, self._conn = process, transport
+        self._finalizer = weakref.finalize(self, _shutdown, process, transport)
         message = self._receive_raw()
         if message[0] == "error":
             self.close()
@@ -566,6 +568,7 @@ class PrefetchingBatcher:
         self._pending = None
         self._needs_reset = False
         self._generation = 0
+        self._ordinal = 0
         self._stats["restarts"] += 1
         self._start_process()
 
@@ -586,6 +589,7 @@ class PrefetchingBatcher:
 
     def _receive_raw(self) -> tuple[Any, ...]:
         assert self._conn is not None and self._process is not None
+        self._conn.timeout_seconds = self.timeout_seconds
         deadline = time.monotonic() + self.timeout_seconds
         try:
             while not self._conn.poll(0.05):
@@ -618,17 +622,23 @@ class PrefetchingBatcher:
         if self._conn is None or self._finalizer is None or not self._finalizer.alive:
             raise PrefetchProducerError("producer is closed; call restart()")
         try:
+            self._conn.timeout_seconds = self.timeout_seconds
             self._conn.send(message)
         except OSError as exc:
             # A dead child surfaces here as BrokenPipeError, not as a valid reply.
             self._needs_reset = True
             self._outstanding = 0
+            self._pending = None
             self.close()
             raise PrefetchProducerError("producer pipe closed during send") from exc
 
     def _pump(self, until: Callable[[], bool]) -> None:
         """Receive until ``until()``; stale generations are discarded unread."""
+        deadline = time.monotonic() + self.timeout_seconds
         while not until():
+            if time.monotonic() >= deadline:
+                self.close()
+                raise PrefetchProducerError("producer exceeded its protocol timeout")
             message = self._receive_raw()
             if message[1] != self._generation:
                 self._stats["discarded_stale"] += 1
@@ -657,58 +667,23 @@ class PrefetchingBatcher:
             self._needs_reset = True
             raise PrefetchProtocolError("prepared update target count differs")
 
-    def _reset(self, state: dict[str, Any], wait: bool) -> None:
+    def _reset(self, state: dict[str, Any]) -> None:
         self._generation += 1
+        self._ordinal = 0
         self._ready.clear()
         self._outstanding = 0
         self._needs_reset = False
         self._stats["resets"] += 1
         self._reset_ack = None
-        self._reset_error: tuple[Any, ...] | None = None
-        sender_done = threading.Event()
-        diver = threading.Thread(
-            target=self._divert_while_sending,
-            args=(self._generation, sender_done),
-            daemon=True,
-        )
-        diver.start()
-        try:
-            self._send(("reset", self._generation, state))
-        finally:
-            sender_done.set()
-            diver.join()
-        if self._reset_error is not None:
+        # The lifetime reader drains partial child sends during every control
+        # write, including tiny produce requests. No reset-specific reader race.
+        self._send(("reset", self._generation, state))
+        # Finish this handshake before another reset can accumulate acknowledgments
+        # in the bounded inbox. Rollback is an exceptional, non-hot path.
+        self._pump(lambda: self._reset_ack is not None)
+        if self._reset_ack != state_digest(state):
             self._needs_reset = True
-            self._outstanding = 0
-            self._raise_remote(self._reset_error)
-        if wait:
-            self._pump(lambda: self._reset_ack is not None)
-
-    def _divert_while_sending(self, generation: int, sender_done: threading.Event) -> None:
-        """Keep inbound flowing while the main thread blocks in a large send.
-
-        A Windows duplex pipe deadlocks when both sides block in large writes
-        with nobody reading. Only this thread receives during the window; every
-        message predates the new generation except a fast ``reset_ok``, which
-        is recorded exactly like :meth:`_pump` records it.
-        """
-        assert self._conn is not None
-        while not sender_done.is_set():
-            try:
-                if not self._conn.poll(0.05):
-                    continue
-                message = self._conn.recv()
-            except (EOFError, OSError):
-                return  # Death surfaces on the main thread as a domain error.
-            if message[1] != generation:
-                self._stats["discarded_stale"] += 1
-                continue
-            if message[0] == "reset_ok":
-                self._reset_ack = message[2]
-            elif message[0] == "update":
-                self._ready.append(message[2])  # Defensive: no produce sent yet.
-            elif message[0] == "error":
-                self._reset_error = message
+            raise PrefetchProtocolError("producer reset state differs")
 
     def _request(self, budget: int | None) -> None:
         self._send(("produce", self._generation, budget))
@@ -721,24 +696,45 @@ class PrefetchingBatcher:
         if self._pending is not None:
             raise PrefetchProtocolError("previous update was neither committed nor rolled back")
         if self._needs_reset:
-            self._reset(self._committed, wait=False)
+            self._reset(self._committed)
         update = self._take(remaining_budget)
         if update.remaining_budget != remaining_budget:
             # Speculation assumed a different budget; regenerate synchronously.
             self._stats["budget_mispredictions"] += 1
-            self._reset(self._committed, wait=False)
+            self._reset(self._committed)
             update = self._take(remaining_budget)
+        if (
+            update.generation != self._generation
+            or update.ordinal != self._ordinal
+            or update.remaining_budget != remaining_budget
+        ):
+            self._needs_reset = True
+            raise PrefetchProtocolError("prepared update generation/ordinal/budget differs")
         if update.start_state_digest != self._committed_digest:
             self._needs_reset = True
             raise PrefetchProtocolError("prepared update does not start at the committed state")
+        if self.verify_content:
+            began_verification = time.perf_counter()
+            content_matches = update.compute_content_digest() == update.content_digest
+            self._stats["verify_content_seconds"] += time.perf_counter() - began_verification
+            if not content_matches:
+                self._needs_reset = True
+                raise PrefetchProtocolError("prepared update content digest mismatch")
         if update.empty:
+            if update.valid_targets != 0 or update.end_state is not None:
+                self._needs_reset = True
+                raise PrefetchProtocolError("empty update carries target progress")
             self._needs_reset = True  # The child rolled back; resynchronize explicitly.
             return []
         self._check_end_binding(update)
-        if self.verify_content and update.compute_content_digest() != update.content_digest:
+        limit = self.spec.global_batch_valid_targets
+        if remaining_budget is not None:
+            limit = min(limit, remaining_budget)
+        if not 0 < update.valid_targets <= limit:
             self._needs_reset = True
-            raise PrefetchProtocolError("prepared update content digest mismatch")
+            raise PrefetchProtocolError("prepared update exceeds requested target budget")
         self._pending = update
+        self._ordinal += 1
         if remaining_budget is None or remaining_budget - update.valid_targets > 0:
             if self._outstanding < self.depth:
                 ahead = (
@@ -792,7 +788,7 @@ class PrefetchingBatcher:
         self._stats["rollbacks"] += 1
         if self._conn is None or self._finalizer is None or not self._finalizer.alive:
             return  # Already closed: no speculation remains to invalidate.
-        self._reset(self._committed, wait=False)
+        self._reset(self._committed)
         if had_pending:
             self._request(budget)  # Same committed state, same budget: same update.
 
@@ -805,7 +801,7 @@ class PrefetchingBatcher:
         if self._pending is not None:
             raise PrefetchProtocolError("load_state with an unfinished update")
         candidate = copy.deepcopy(state_dict)
-        self._reset(candidate, wait=True)
+        self._reset(candidate)
         digest = state_digest(candidate)
         if self._reset_ack != digest:
             raise PrefetchProtocolError("producer state differs from the loaded state")
