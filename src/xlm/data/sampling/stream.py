@@ -115,6 +115,7 @@ class MixtureBatcher:
         self._uncommitted = copy.deepcopy(self._committed)
         if max_open_shards < 0:
             raise ValueError("max_open_shards cannot be negative")
+        self.max_open_shards = max_open_shards
         self._token_maps = TokenMapCache(max_open_shards) if max_open_shards else None
 
     def close(self) -> None:

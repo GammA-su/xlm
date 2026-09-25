@@ -344,8 +344,12 @@ class Trainer:
 
             attention_mask = mb_device.loss_mask
             if "input_attention_mask" in mb.metadata:
-                attention_mask = torch.tensor(
-                    mb.metadata["input_attention_mask"], dtype=torch.bool, device=self.device
+                prepared = mb.metadata["input_attention_mask"]
+                # A prefetched update carries a CPU bool tensor; lists keep the old path.
+                attention_mask = (
+                    prepared.to(device=self.device, dtype=torch.bool)
+                    if isinstance(prepared, torch.Tensor)
+                    else torch.tensor(prepared, dtype=torch.bool, device=self.device)
                 )
             if mb.metadata.get("packing_mode") == "isolated_document":
                 from xlm.models.masks import build_isolated_document_mask
