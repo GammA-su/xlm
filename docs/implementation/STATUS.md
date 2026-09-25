@@ -1,5 +1,22 @@
 # Implementation status
 
+> **P34 final integration candidate (2026-09-25): COMPLETE within the synthetic
+> diagnostic scope; branch `integrate/p34-final-candidate`.** Opus series
+> applied cleanly onto the P33 base with proven tree identity, then five
+> minimal Astra safety ports: fail-closed CUDA commit boundary with in-doubt
+> optimizer state, transport domain normalization, duplex-pipe reset-deadlock
+> repair (found deterministically during porting), end-state binding checks,
+> and the explicit `training.producer_prefetch` run option (default off,
+> frozen in the envelope, honored by direct/queue/resume). Actual-50M B8
+> release-LR updates are bit exact with the barrier active; the producer sits
+> at the resident ceiling (r3 100.1%, r4 101.3%; 3.6–3.9 ms consumer wait,
+> zero blocked takes). CPU: prefetch 18 + training 12 + trace/config 19 +
+> trainer suites 25 passed; CUDA: exactness + barrier + producer workflow
+> passed. Ruff/format/mypy clean on changed modules. CPU workflow params and
+> queue/frozen serial selections NOT RUN (no locked CPU env; pristine tree
+> fails identically). See [P34-FINAL](reports/P34-FINAL.md). Next: review §26,
+> then integrate.
+
 > **P34 independent training-throughput challenger (Opus, 2026-09-25): COMPLETE
 > within the synthetic diagnostic scope; branch `perf/opus55-p34-independent`.**
 > 50M B8 end-to-end rises from 32,189 to **50,588 targets/s** (medians of three
