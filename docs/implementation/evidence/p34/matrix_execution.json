@@ -496,5 +496,47 @@
     "attempt": 0,
     "stdout_tail": "{\"status\": \"VERIFIED\", \"tokens_per_second\": 21432.44639798933, \"wall_seconds\": 61.15587439999217, \"max_allocated\": 12723365376, \"final_parameters_sha256\": \"2e3be7f3710974a42f08be8c4851c4d481eca84dc59db4658503b2a15a81eefa\"}\n",
     "stderr_tail": ""
+  },
+  {
+    "name": "m300_resident_r1",
+    "command": [
+      "scripts/benchmark_p34.py",
+      "--name",
+      "m300_resident_r1",
+      "--mode",
+      "resident",
+      "--model",
+      "300m",
+      "--microbatch",
+      "8",
+      "--steps",
+      "20"
+    ],
+    "exit": 0,
+    "seconds": 114.90700000000652,
+    "attempt": 0,
+    "stdout_tail": "{\"status\": \"VERIFIED\", \"tokens_per_second\": 21702.26347628599, \"wall_seconds\": 60.39554359996691, \"max_allocated\": 12792976896, \"final_parameters_sha256\": \"2e3be7f3710974a42f08be8c4851c4d481eca84dc59db4658503b2a15a81eefa\"}\n",
+    "stderr_tail": ""
+  },
+  {
+    "name": "m300_resident_r2",
+    "command": [
+      "scripts/benchmark_p34.py",
+      "--name",
+      "m300_resident_r2",
+      "--mode",
+      "resident",
+      "--model",
+      "300m",
+      "--microbatch",
+      "8",
+      "--steps",
+      "20"
+    ],
+    "exit": 0,
+    "seconds": 114.43799999996554,
+    "attempt": 0,
+    "stdout_tail": "{\"status\": \"VERIFIED\", \"tokens_per_second\": 21916.59800088913, \"wall_seconds\": 59.80490220000502, \"max_allocated\": 12792976896, \"final_parameters_sha256\": \"2e3be7f3710974a42f08be8c4851c4d481eca84dc59db4658503b2a15a81eefa\"}\n",
+    "stderr_tail": ""
   }
 ]

@@ -1,5 +1,26 @@
 # Implementation status
 
+> **P34 independent training-throughput challenger (Opus, 2026-09-25): COMPLETE
+> within the synthetic diagnostic scope; branch `perf/opus55-p34-independent`.**
+> 50M B8 end-to-end rises from 32,189 to **50,588 targets/s** (medians of three
+> uncontended runs, +57.2%), 99.6% of the same-session resident ceiling (50,775),
+> with every loader mode ending in one identical parameter digest. Two changes:
+> an exact, always-on window-level fold of the C07 trace chain (loader
+> 779 -> 390 ms/update; synchronous 39,530 targets/s, +22.8%), and an opt-in
+> spawned `PrefetchingBatcher` that runs the unchanged batcher one update ahead,
+> ships compact arrays and keeps committed state in the trainer (zero blocked
+> updates; 3.0-3.5 ms consumer cost). Speculation is bound by start/end state
+> digests and generations; producer, consumer, commit and resume failures all
+> regenerate the exact sequence. Actual-50M CUDA updates are bit exact. Checkpoint
+> tails (3.0 s typical, 14-25 s back-to-back) are SLC-cache exhaustion on the
+> DRAM-less G: SSD, not serialization; async publication is not implemented.
+> Memory-efficient SDPA backward is nondeterministic on the certified path
+> (pre-existing). Gates: **201 CPU + 20 CUDA passed**, no skips; Ruff/format/mypy
+> pass. Full six-leg gate, live data and research training not run. See
+> [P34-OPUS](reports/P34-OPUS.md) and [P34-PREFETCH](P34-PREFETCH.md). Next:
+> `git log --reverse --oneline 8fd05c11e1bdfd84e075000d59e14c315c986f36..HEAD`
+> in `G:\Project\xlm-opus55-p34`, then cross-review against Astra's P34.
+
 > **P33 bounded CUDA performance closeout (2026-09-24): COMPLETE within the
 > synthetic diagnostic scope.** On RTX 4090 / torch 2.14.0+cu126, the retained
 > product change consolidates CUDA gradient finite/norm transfers with exact

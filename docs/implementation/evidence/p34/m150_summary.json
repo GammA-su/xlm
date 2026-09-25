@@ -3,19 +3,27 @@
   "cases": {
     "m150_fast_sync": {
       "runs": [
-        "m150_fast_sync_r1"
+        "m150_fast_sync_r1",
+        "m150_fast_sync_r2",
+        "m150_fast_sync_r3"
       ],
       "targets_per_second": [
-        37416.9
+        37416.9,
+        34096.2,
+        37461.4
       ],
       "median": 37416.88266237127,
-      "min": 37416.88266237127,
-      "max": 37416.88266237127,
+      "min": 34096.235208749895,
+      "max": 37461.38170460093,
       "update_wall_median_ms": [
-        1723.1
+        1723.1,
+        1888.1,
+        1722.6
       ],
       "update_wall_p90_ms": [
-        1896.2
+        1896.2,
+        2154.2,
+        1892.4
       ],
       "final_parameter_digests": [
         "216b6b870dfcaf6bd3d8a80e8dafc289ad8651ebda05ae00f2e918d0d0f621b7"
@@ -28,33 +36,53 @@
       "max_trainer_rss_gib": 1.4762153625488281,
       "max_producer_rss_gib": 0.0,
       "trainer_cpu_percent_one_core": [
-        92.1
+        92.1,
+        94.3,
+        89.7
       ],
       "producer_cpu_percent_one_core": [
+        0,
+        0,
         0
       ],
       "system_cpu_percent": [
-        26.9
+        26.9,
+        33.4,
+        31.4
       ],
       "gpu_util_percent": [
-        61.7
+        61.7,
+        50.6,
+        65.5
       ],
       "mem_util_percent": [
-        40.7
+        40.7,
+        31.9,
+        43.7
       ],
       "power_w": [
-        276.4
+        276.4,
+        271.5,
+        291.8
       ],
       "device_memory_mib": [
-        22683
+        22683,
+        22531,
+        22522
       ],
       "sm_mhz": [
-        2676
+        2676,
+        2669,
+        2674
       ],
       "telemetry_samples": [
+        31,
+        35,
         31
       ],
       "setup_seconds": [
+        0.0,
+        0.0,
         0.0
       ]
     },
