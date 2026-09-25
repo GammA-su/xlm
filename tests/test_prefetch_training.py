@@ -241,6 +241,9 @@ def test_consumer_failure_recovers_from_checkpoint_exactly(
         trainer, _, saved = build(tmp_path / "run", batcher)
         with inject(stage, trainer, at_update=2), pytest.raises(Injected):
             run_to_end(trainer, metrics)
+        # Failures at/after the optimizer boundary leave the trainer in doubt;
+        # earlier failures roll back cleanly and stay serviceable.
+        assert trainer._update_in_doubt == (stage in ("optimizer", "before_commit", "after_commit"))
         # Crash: in-memory model/optimizer may be past the committed boundary.
         # Recovery trusts only the last published checkpoint.
         last = saved[-1]
@@ -257,7 +260,7 @@ def test_consumer_failure_recovers_from_checkpoint_exactly(
         resumed.batcher.close()  # type: ignore[attr-defined]
 
 
-@pytest.mark.parametrize("stage", ["before_h2d", "device_failure_mid_accumulation", "optimizer"])
+@pytest.mark.parametrize("stage", ["before_h2d", "device_failure_mid_accumulation"])
 def test_pre_optimizer_failure_retries_in_process_exactly(
     shards: dict[str, TokenShardReader],  # noqa: F811
     tmp_path: Path,
@@ -270,10 +273,42 @@ def test_pre_optimizer_failure_retries_in_process_exactly(
         with inject(stage, trainer, at_update=2):
             with pytest.raises(Injected):
                 run_to_end(trainer, metrics)
+            assert not trainer._update_in_doubt
             batcher.rollback()  # parameters are untouched before optimizer.step
             run_to_end(trainer, metrics)
         assert (digest(trainer.model), metrics, batcher.get_state()) == reference
-        assert batcher.stats()["rollbacks"] == 1
+        # One rollback from the fail-closed train_step wrapper plus the explicit one.
+        assert batcher.stats()["rollbacks"] == 2
+
+
+def test_optimizer_failure_requires_durable_recovery(
+    shards: dict[str, TokenShardReader],  # noqa: F811
+    tmp_path: Path,
+    reference: tuple[str, list[Any], dict[str, Any]],
+) -> None:
+    from xlm.training.trainer import RecoveryRequiredError
+
+    metrics: list[Any] = []
+    with prefetcher(shards) as batcher:
+        trainer, _, saved = build(tmp_path / "run", batcher)
+        with inject("optimizer", trainer, at_update=2), pytest.raises(Injected):
+            run_to_end(trainer, metrics)
+        # Ambiguous partial mutation: the real step may have run before failing.
+        # No more updates, no checkpoint, no in-process retry -- reload from durable.
+        assert trainer._update_in_doubt
+        assert batcher.get_state()["committed_valid_targets"] == 2 * GLOBAL
+        with pytest.raises(RecoveryRequiredError):
+            trainer.train_step()
+        with pytest.raises(RecoveryRequiredError):
+            trainer._save_checkpoint("invalid")
+        last = saved[-1]
+    assert len(metrics) == 2 and len(saved) == 2
+    resumed = resume(tmp_path / "run", last, shards)
+    try:
+        run_to_end(resumed, metrics)
+        assert (digest(resumed.model), metrics, resumed.batcher.get_state()) == reference
+    finally:
+        resumed.batcher.close()  # type: ignore[attr-defined]
 
 
 def test_resume_regenerates_the_discarded_prefetched_update(
@@ -302,3 +337,21 @@ def test_resume_regenerates_the_discarded_prefetched_update(
         assert (digest(resumed.model), metrics, resumed.batcher.get_state()) == reference
     finally:
         resumed.batcher.close()  # type: ignore[attr-defined]
+
+
+def test_train_owns_producer_shutdown(
+    shards: dict[str, TokenShardReader],  # noqa: F811
+    tmp_path: Path,
+    reference: tuple[str, list[Any], dict[str, Any]],
+) -> None:
+    import psutil
+
+    with prefetcher(shards) as batcher:
+        trainer, _, _ = build(tmp_path / "run", batcher)
+        pid = batcher.producer_pid
+        assert pid is not None
+        summary = trainer.train()
+        assert summary.termination_reason == "completed"
+        assert summary.committed_valid_targets == BUDGET
+        assert digest(trainer.model) == reference[0]
+        assert not psutil.pid_exists(pid)

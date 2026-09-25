@@ -50,6 +50,10 @@ class NonFiniteGradientError(TrainerError):
     """Raised when non-finite (NaN or Inf) loss or gradients are detected."""
 
 
+class RecoveryRequiredError(TrainerError):
+    """An interrupted optimizer boundary must resume in a fresh trainer."""
+
+
 @dataclass(frozen=True)
 class TrainingStepMetrics:
     """Structured metrics emitted for each completed optimizer update."""
@@ -174,6 +178,7 @@ class Trainer:
         self.max_scaler_skips = max_scaler_skips
         self._consecutive_scaler_skips = 0
         self._last_step_skipped = False
+        self._update_in_doubt = False
 
         # Precision scaler setup
         self.scaler: Any = None
@@ -215,6 +220,8 @@ class Trainer:
 
     def _save_checkpoint(self, checkpoint_id: str) -> Path:
         """Save a checkpoint at the current state."""
+        if self._update_in_doubt:
+            raise RecoveryRequiredError("Cannot checkpoint an interrupted optimizer boundary")
         return self.checkpoint_manager.save_checkpoint(
             checkpoint_id=checkpoint_id,
             run_id=self.run_id,
@@ -274,6 +281,16 @@ class Trainer:
             )
 
     def train_step(self) -> TrainingStepMetrics | None:
+        """Rollback failed preparation; never reuse a partially updated optimizer."""
+        if self._update_in_doubt:
+            raise RecoveryRequiredError("Resume a complete checkpoint in a fresh trainer")
+        try:
+            return self._train_step()
+        except BaseException:
+            self.batcher.rollback()
+            raise
+
+    def _train_step(self) -> TrainingStepMetrics | None:
         """Execute exactly one complete optimizer update across microbatches."""
         remaining_budget = self.max_valid_targets - self.committed_valid_targets
         if remaining_budget <= 0:
@@ -413,6 +430,7 @@ class Trainer:
         grad_norm = clip_global_gradient_norm(unique_params, max_norm=self.gradient_clip_norm)
 
         # 6. Optimizer step & zero grad
+        self._update_in_doubt = True
         if self.scaler is not None:
             self.scaler.step(self.optimizer)
             self.scaler.update()
@@ -422,6 +440,14 @@ class Trainer:
         self.optimizer.zero_grad()
 
         # 7. Advance schedule and counters
+        if (
+            torch is not None
+            and getattr(self.batcher, "requires_cuda_commit_barrier", False)
+            and torch.device(self.device).type == "cuda"
+        ):
+            # Surface asynchronous optimizer failures before promoting the cursor.
+            # The producer may continue speculative preparation during this wait.
+            torch.cuda.current_stream(self.device).synchronize()
         new_committed = self.committed_valid_targets + n_global
         lr = self.schedule.apply_lr_to_optimizer(self.optimizer, counter_value=new_committed)
 
@@ -433,6 +459,7 @@ class Trainer:
 
         # 8. Commit data batcher state for this completed update
         self.batcher.commit()
+        self._update_in_doubt = False
         self._consecutive_scaler_skips = 0
 
         step_sec = time.monotonic() - step_start
@@ -579,6 +606,8 @@ class Trainer:
             signal.signal(signal.SIGINT, prev_sigint)
             if prev_sigterm is not None and hasattr(signal, "SIGTERM"):
                 signal.signal(signal.SIGTERM, prev_sigterm)
+            if getattr(self.batcher, "close_on_trainer_exit", False):
+                self.batcher.close()  # type: ignore[attr-defined]
 
         # Final checkpoint and ledger state update
         if self.termination_reason == "completed":
