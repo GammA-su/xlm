@@ -28,6 +28,7 @@ import copy
 import hashlib
 import logging
 import multiprocessing
+import threading
 import time
 import weakref
 from collections.abc import Callable
@@ -457,10 +458,19 @@ def _producer_main(conn: _Connection, spec: ProducerSpec, initial_state: dict[st
 
 
 def _shutdown(process: Any, conn: _Connection) -> None:
+    # Close first: EOF on the child's next receive (or a failed send) always
+    # reaps it, while a farewell message could block forever on a full pipe.
     try:
-        conn.send(("stop",))
-    except (OSError, ValueError):
-        pass
+        try:
+            while conn.poll(0):
+                conn.recv()  # Unblock a child mid-send so it can observe EOF.
+        except (EOFError, OSError):
+            pass
+    finally:
+        try:
+            conn.close()
+        except (OSError, ValueError):
+            pass
     process.join(timeout=10)
     if process.is_alive():
         process.terminate()
@@ -476,6 +486,9 @@ class PrefetchingBatcher:
 
     ``depth`` bounds prepared-but-unconsumed updates beyond the one being trained.
     """
+
+    close_on_trainer_exit = True
+    requires_cuda_commit_barrier = True
 
     def __init__(
         self,
@@ -574,14 +587,19 @@ class PrefetchingBatcher:
     def _receive_raw(self) -> tuple[Any, ...]:
         assert self._conn is not None and self._process is not None
         deadline = time.monotonic() + self.timeout_seconds
-        while not self._conn.poll(0.05):
-            if not self._process.is_alive():
-                exitcode = self._process.exitcode
-                self.close()
-                raise PrefetchProducerError(f"producer exited with code {exitcode}")
-            if time.monotonic() >= deadline:
-                self.close()
-                raise PrefetchProducerError("producer exceeded its response timeout")
+        try:
+            while not self._conn.poll(0.05):
+                if not self._process.is_alive():
+                    exitcode = self._process.exitcode
+                    self.close()
+                    raise PrefetchProducerError(f"producer exited with code {exitcode}")
+                if time.monotonic() >= deadline:
+                    self.close()
+                    raise PrefetchProducerError("producer exceeded its response timeout")
+        except OSError as exc:
+            # Windows PeekNamedPipe can fail during poll, before recv_bytes.
+            self.close()
+            raise PrefetchProducerError("producer pipe poll failed") from exc
         try:
             message: tuple[Any, ...] = self._conn.recv()
         except (EOFError, OSError) as exc:
@@ -599,7 +617,14 @@ class PrefetchingBatcher:
     def _send(self, message: tuple[Any, ...]) -> None:
         if self._conn is None or self._finalizer is None or not self._finalizer.alive:
             raise PrefetchProducerError("producer is closed; call restart()")
-        self._conn.send(message)
+        try:
+            self._conn.send(message)
+        except OSError as exc:
+            # A dead child surfaces here as BrokenPipeError, not as a valid reply.
+            self._needs_reset = True
+            self._outstanding = 0
+            self.close()
+            raise PrefetchProducerError("producer pipe closed during send") from exc
 
     def _pump(self, until: Callable[[], bool]) -> None:
         """Receive until ``until()``; stale generations are discarded unread."""
@@ -617,6 +642,21 @@ class PrefetchingBatcher:
             elif message[0] == "reset_ok":
                 self._reset_ack = message[2]
 
+    def _check_end_binding(self, update: PreparedUpdate) -> None:
+        """Recompute the child's end-state claims before the trainer may use them."""
+        if update.end_state is None or update.end_state_digest is None:
+            self._needs_reset = True
+            raise PrefetchProtocolError("prepared update carries no ending committed state")
+        if state_digest(update.end_state) != update.end_state_digest:
+            self._needs_reset = True
+            raise PrefetchProtocolError("prepared update ending state digest differs")
+        advanced = (
+            update.end_state["committed_valid_targets"] - self._committed["committed_valid_targets"]
+        )
+        if advanced != update.valid_targets:
+            self._needs_reset = True
+            raise PrefetchProtocolError("prepared update target count differs")
+
     def _reset(self, state: dict[str, Any], wait: bool) -> None:
         self._generation += 1
         self._ready.clear()
@@ -624,9 +664,51 @@ class PrefetchingBatcher:
         self._needs_reset = False
         self._stats["resets"] += 1
         self._reset_ack = None
-        self._send(("reset", self._generation, state))
+        self._reset_error: tuple[Any, ...] | None = None
+        sender_done = threading.Event()
+        diver = threading.Thread(
+            target=self._divert_while_sending,
+            args=(self._generation, sender_done),
+            daemon=True,
+        )
+        diver.start()
+        try:
+            self._send(("reset", self._generation, state))
+        finally:
+            sender_done.set()
+            diver.join()
+        if self._reset_error is not None:
+            self._needs_reset = True
+            self._outstanding = 0
+            self._raise_remote(self._reset_error)
         if wait:
             self._pump(lambda: self._reset_ack is not None)
+
+    def _divert_while_sending(self, generation: int, sender_done: threading.Event) -> None:
+        """Keep inbound flowing while the main thread blocks in a large send.
+
+        A Windows duplex pipe deadlocks when both sides block in large writes
+        with nobody reading. Only this thread receives during the window; every
+        message predates the new generation except a fast ``reset_ok``, which
+        is recorded exactly like :meth:`_pump` records it.
+        """
+        assert self._conn is not None
+        while not sender_done.is_set():
+            try:
+                if not self._conn.poll(0.05):
+                    continue
+                message = self._conn.recv()
+            except (EOFError, OSError):
+                return  # Death surfaces on the main thread as a domain error.
+            if message[1] != generation:
+                self._stats["discarded_stale"] += 1
+                continue
+            if message[0] == "reset_ok":
+                self._reset_ack = message[2]
+            elif message[0] == "update":
+                self._ready.append(message[2])  # Defensive: no produce sent yet.
+            elif message[0] == "error":
+                self._reset_error = message
 
     def _request(self, budget: int | None) -> None:
         self._send(("produce", self._generation, budget))
@@ -649,12 +731,13 @@ class PrefetchingBatcher:
         if update.start_state_digest != self._committed_digest:
             self._needs_reset = True
             raise PrefetchProtocolError("prepared update does not start at the committed state")
-        if self.verify_content and update.compute_content_digest() != update.content_digest:
-            self._needs_reset = True
-            raise PrefetchProtocolError("prepared update content digest mismatch")
         if update.empty:
             self._needs_reset = True  # The child rolled back; resynchronize explicitly.
             return []
+        self._check_end_binding(update)
+        if self.verify_content and update.compute_content_digest() != update.content_digest:
+            self._needs_reset = True
+            raise PrefetchProtocolError("prepared update content digest mismatch")
         self._pending = update
         if remaining_budget is None or remaining_budget - update.valid_targets > 0:
             if self._outstanding < self.depth:
@@ -670,7 +753,11 @@ class PrefetchingBatcher:
         begin = time.perf_counter()
         assert self._conn is not None
         # Blocked means nothing prepared had even reached the pipe yet.
-        blocked = not self._ready and not self._conn.poll(0)
+        try:
+            blocked = not self._ready and not self._conn.poll(0)
+        except OSError as exc:
+            self.close()
+            raise PrefetchProducerError("producer pipe poll failed") from exc
         self._pump(lambda: bool(self._ready))
         waited = time.perf_counter() - begin
         self._stats["consumer_wait_seconds"] += waited
@@ -703,6 +790,8 @@ class PrefetchingBatcher:
         had_pending = self._pending is not None
         self._pending = None
         self._stats["rollbacks"] += 1
+        if self._conn is None or self._finalizer is None or not self._finalizer.alive:
+            return  # Already closed: no speculation remains to invalidate.
         self._reset(self._committed, wait=False)
         if had_pending:
             self._request(budget)  # Same committed state, same budget: same update.

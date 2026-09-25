@@ -28,6 +28,7 @@ from xlm.data.sampling.prefetch import (
     PrefetchProtocolError,
     ProducerSpec,
     _encode,
+    state_digest,
 )
 from xlm.data.tokens import TokenShardReader, TokenShardWriter
 from xlm.tokenizers.byte import ByteTokenizer
@@ -248,6 +249,26 @@ def test_rollback_discards_stale_speculation_and_replays(
         pre.commit()
 
 
+def test_back_to_back_resets_cannot_deadlock_the_duplex_pipe(
+    shards: dict[str, TokenShardReader],
+) -> None:
+    budget = GLOBAL * 50
+    expected, states = reference_run(shards, 2, budget)
+    with prefetcher(shards, depth=2) as pre:
+        first = record(pre.next_step_microbatches(budget))
+        assert first == expected[0]
+        # A trainer-level rollback followed immediately by another rollback,
+        # with speculative updates still in flight: the large reset state and
+        # a large update must never block each other while nobody reads.
+        pre.rollback()
+        pre.rollback()
+        assert record(pre.next_step_microbatches(budget)) == first
+        pre.commit()
+        assert pre.get_state() == states[0]
+        assert record(pre.next_step_microbatches(budget - GLOBAL)) == expected[1]
+        pre.commit()
+
+
 def test_budget_misprediction_regenerates_with_the_actual_budget(
     shards: dict[str, TokenShardReader],
 ) -> None:
@@ -376,3 +397,78 @@ def _gone(pid: int, seconds: float) -> bool:
             return True
         time.sleep(0.1)
     return False
+
+
+def test_consumed_update_commits_after_producer_death(
+    shards: dict[str, TokenShardReader],
+) -> None:
+    budget = GLOBAL * 50
+    with prefetcher(shards) as pre:
+        batches = pre.next_step_microbatches(budget)
+        consumed = record(batches)
+        expected = pre.pending_update
+        assert expected is not None
+        psutil.Process(pre.producer_pid).kill()  # type: ignore[arg-type]
+        # Commit performs no producer IPC: already-consumed work still commits.
+        pre.commit()
+        state = pre.get_state()
+        assert state["committed_valid_targets"] == expected.valid_targets
+        assert state == expected.end_state
+        with pytest.raises(PrefetchProducerError):
+            pre.next_step_microbatches(budget - expected.valid_targets)
+        pre.restart()
+        regenerated = pre.next_step_microbatches(budget - expected.valid_targets)
+        update = pre.pending_update
+        assert update is not None
+        # Regeneration resumes from the committed post-death state, not a replay.
+        assert update.start_state_digest == state_digest(state)
+        assert update.start_state_digest != expected.start_state_digest
+        assert record(regenerated) != consumed
+
+
+def test_broken_pipe_and_poll_failures_are_domain_errors(
+    shards: dict[str, TokenShardReader],
+) -> None:
+    import unittest.mock as mock
+
+    with prefetcher(shards) as pre:
+        before = pre.get_state()
+        pid = pre.producer_pid
+        conn, process = pre._conn, pre._process
+        assert conn is not None and process is not None
+        pre._conn = mock.Mock(wraps=conn)
+        pre._conn.send.side_effect = BrokenPipeError("closed")
+        try:
+            with pytest.raises(PrefetchProducerError, match="during send"):
+                pre.next_step_microbatches(GLOBAL)
+        finally:
+            pre._conn = conn
+        assert pre.get_state() == before
+        assert pid is not None and _gone(pid, 15)  # the dead child was reaped
+    with prefetcher(shards) as pre:
+        before = pre.get_state()
+        conn = pre._conn
+        assert conn is not None
+        pre._conn = mock.Mock(wraps=conn)
+        pre._conn.poll.side_effect = OSError("poll failed")
+        try:
+            with pytest.raises(PrefetchProducerError, match="poll failed"):
+                pre.next_step_microbatches(GLOBAL)
+        finally:
+            pre._conn = conn
+        assert pre.get_state() == before
+
+
+def test_consumed_update_rejects_tampered_end_binding(
+    shards: dict[str, TokenShardReader],
+) -> None:
+    import dataclasses
+
+    with prefetcher(shards) as pre:
+        update = pre._take(GLOBAL)
+        tampered = dataclasses.replace(update, valid_targets=update.valid_targets + 1)
+        pre._ready.appendleft(tampered)
+        pre._outstanding += 1
+        with pytest.raises(PrefetchProtocolError, match="target count"):
+            pre.next_step_microbatches(GLOBAL)
+        assert pre.get_state()["committed_valid_targets"] == 0
