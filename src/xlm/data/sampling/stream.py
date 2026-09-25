@@ -25,7 +25,7 @@ from xlm.data.sampling.scheduler import (
     ScheduleState,
     SourceExhaustedError,
 )
-from xlm.data.sampling.trace import target_trace_digest
+from xlm.data.sampling.trace import extend_target_trace_chain
 from xlm.data.token_cache import TokenMapCache
 from xlm.data.tokens import TokenShardReader
 
@@ -404,27 +404,38 @@ class MixtureBatcher:
                 if not flag and token == self.bos_token_id
             )
             padding = sum(1 for flag in packed.loss_mask if not flag) - bos_excluded
-            for index, flag in enumerate(packed.loss_mask):
-                if not flag:
-                    continue
-                trace = {
+            kept = [index for index, flag in enumerate(packed.loss_mask) if flag]
+            epoch = self._uncommitted["epochs"][source_id]
+            # One exact chain fold per window; see extend_target_trace_chain.
+            self._uncommitted["trace_digest"] = extend_target_trace_chain(
+                self._uncommitted["trace_digest"],
+                source_id,
+                epoch,
+                packed.doc_ids,
+                packed.lineage_ids,
+                packed.token_offsets,
+                packed.labels,
+                packed.byte_spans,
+                kept,
+            )
+            if any(packed.byte_spans[index][0] < 0 for index in kept):
+                self._uncommitted["byte_coverage_complete"] = False
+            recorded = self._uncommitted["last_step_trace"]
+            room = max(0, 256 - len(recorded))
+            recorded.extend(
+                {
                     "source_id": source_id,
                     "doc_id": packed.doc_ids[index],
                     "lineage_id": packed.lineage_ids[index],
                     "token_offset": packed.token_offsets[index],
                     "label": packed.labels[index],
                     "byte_span": list(packed.byte_spans[index]),
-                    "epoch": self._uncommitted["epochs"][source_id],
+                    "epoch": epoch,
                 }
-                self._uncommitted["trace_digest"] = target_trace_digest(
-                    self._uncommitted["trace_digest"], trace
-                )
-                if trace["byte_span"][0] < 0:
-                    self._uncommitted["byte_coverage_complete"] = False
-                if len(self._uncommitted["last_step_trace"]) < 256:
-                    self._uncommitted["last_step_trace"].append(trace)
-                else:
-                    self._uncommitted["last_step_trace_truncated"] = True
+                for index in kept[:room]
+            )
+            if len(kept) > room:
+                self._uncommitted["last_step_trace_truncated"] = True
 
             self.scheduler.record_exposure(
                 source_id=source_id,
