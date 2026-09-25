@@ -10,6 +10,7 @@ from typing import Any
 
 from xlm.artifacts.manifest import canonical_json, identity_digest
 from xlm.artifacts.store import compute_file_sha256
+from xlm.config.science import runtime_policy_for
 from xlm.core.paths import ArtifactPaths
 from xlm.experiments.environment import installed_runtime, runtime_locations
 from xlm.experiments.snapshot import CodeSnapshot, load_snapshot, verify_snapshot
@@ -70,6 +71,7 @@ def resolve_execution_config(config: dict[str, Any]) -> tuple[dict[str, Any], di
     """Resolve registered defaults before identity. No new component execution paths."""
     from xlm.config import schemas  # noqa: F401 - register built-in factories
     from xlm.config.schemas import TrainingConfig
+    from xlm.config.science import STATISTICAL_ATTENTION, omit_absent_science_fields
     from xlm.training.components import (
         component_catalog,
         selected_entry,
@@ -115,7 +117,20 @@ def resolve_execution_config(config: dict[str, Any]) -> tuple[dict[str, Any], di
         entry = selected_entry(catalog, category, raw)
         resolved[field] = entry.config_schema.model_validate(raw).model_dump(mode="json")
         components[field] = {"key": entry.key, "serializer": entry.serializer_version}
-    training = TrainingConfig.model_validate(resolved["training"]).model_dump(mode="json")
+    training = omit_absent_science_fields(
+        TrainingConfig.model_validate(resolved["training"]).model_dump(mode="json")
+    )
+    runtime = training.get("runtime")
+    if runtime is not None:
+        backend = resolved["model"].get("attention_backend")
+        allowed = (
+            ("sdpa",) if runtime["attention_policy"] == STATISTICAL_ATTENTION else ("sdpa", "eager")
+        )
+        if backend not in allowed:
+            raise ValueError(
+                f"attention_policy '{runtime['attention_policy']}' requires attention_backend "
+                f"in {allowed}, got '{backend}'"
+            )
     schedule = training["schedule"]
     entry = selected_entry(catalog, "schedule", schedule)
     training["schedule"] = entry.config_schema.model_validate(schedule).model_dump(mode="json")
@@ -202,7 +217,7 @@ def make_envelope(
         "code_hash": snapshot.code_hash,
         "dependency_hash": compute_file_sha256(lock, max_bytes=8 * 1024**2),
         "environment": installed_runtime(lock, extras),
-        "runtime_policy": policy or {"torch_threads": 1, "deterministic_algorithms": True},
+        "runtime_policy": policy or runtime_policy_for(resolved, purpose),
     }
     return {**payload, "execution_hash": identity_digest(payload)}
 
@@ -218,7 +233,9 @@ def validate_envelope(
     payload = {k: v for k, v in envelope.items() if k != "execution_hash"}
     if envelope.get("version") != 1 or envelope.get("execution_hash") != identity_digest(payload):
         raise ValueError("execution envelope identity mismatch")
-    if envelope.get("runtime_policy") != {"torch_threads": 1, "deterministic_algorithms": True}:
+    if envelope.get("runtime_policy") != runtime_policy_for(
+        envelope.get("config", {}), str(envelope.get("purpose"))
+    ):
         raise ValueError("unsupported frozen runtime policy")
     snapshot = load_snapshot(snapshot_dir)
     if snapshot.code_hash != envelope["code_hash"]:

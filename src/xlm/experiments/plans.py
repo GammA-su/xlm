@@ -24,6 +24,7 @@ from typing import Any
 
 from xlm.config.composer import ConfigComposer, compute_plan_hash
 from xlm.config.schemas import ExperimentDraftConfig
+from xlm.config.science import seed_fields
 from xlm.core.paths import ArtifactPaths
 from xlm.experiments.snapshot import CodeSnapshot, capture_snapshot
 
@@ -129,7 +130,7 @@ class ExecutablePlan:
             or envelope["dependency_hash"] != self.dependency_hash
             or self.budget_valid_targets != config["training"]["budget"]["max_valid_targets"]
             or self.budget_max_seconds != config["training"]["budget"]["max_train_seconds"]
-            or self.seeds != {k: config["training"][k] for k in ("init_seed", "data_seed")}
+            or self.seeds != seed_fields(config["training"])
             or self.checkpoint_every_valid_targets
             != config["training"]["checkpoint_every_valid_targets"]
         ):
@@ -202,7 +203,7 @@ def freeze_execution(plan: ExecutablePlan, snapshot_dir: Path, extras: list[str]
     training = plan.resolved_config["training"]
     plan.budget_valid_targets = training["budget"]["max_valid_targets"]
     plan.budget_max_seconds = training["budget"]["max_train_seconds"]
-    plan.seeds = {k: training[k] for k in ("init_seed", "data_seed")}
+    plan.seeds = seed_fields(training)
     plan.checkpoint_every_valid_targets = training["checkpoint_every_valid_targets"]
     plan.plan_hash = identity_digest(plan.identity_payload())
     plan.plan_id = f"plan_{plan.draft_id}_{plan.plan_hash[:12]}"
@@ -338,10 +339,7 @@ def resolve_experiment_plan(
         )
 
     # Seeds: any seed change alters the plan hash.
-    seeds = {
-        "init_seed": int(training.init_seed),
-        "data_seed": int(training.data_seed),
-    }
+    seeds = seed_fields(training.model_dump())
 
     budget_targets = int(training.budget.max_valid_targets)
     budget_seconds = training.budget.max_train_seconds
@@ -477,7 +475,7 @@ def _resolve_smoke_plan(
         resolved_config=resolved,
         code_snapshot=snapshot,
         dependency_hash=dependency_hash(workspace),
-        seeds={k: training[k] for k in ("init_seed", "data_seed")},
+        seeds=seed_fields(training),
         budget_valid_targets=targets,
         budget_max_seconds=training["budget"]["max_train_seconds"],
         estimated_new_disk_gib=SMOKE_MAX_NEW_DISK_GIB,

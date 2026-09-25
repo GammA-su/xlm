@@ -14,6 +14,7 @@ import psutil
 
 from xlm.artifacts.manifest import ensure_plain_path
 from xlm.artifacts.store import compute_file_sha256
+from xlm.config.science import STRICT_ATTENTION, STRICT_CUBLAS_WORKSPACE
 from xlm.experiments.execution import read_json, validate_envelope, write_json
 
 
@@ -80,6 +81,11 @@ def launch_worker(
             ),
         }
     )
+    runtime = envelope["config"].get("training", {}).get("runtime") or {}
+    if runtime.get("attention_policy") == STRICT_ATTENTION:
+        # cuBLAS reads its workspace configuration when the process creates a
+        # handle; strict science runs get it from their owned worker's start.
+        env["CUBLAS_WORKSPACE_CONFIG"] = STRICT_CUBLAS_WORKSPACE
     argv = [
         str(python),
         "-I",

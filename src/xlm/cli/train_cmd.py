@@ -266,6 +266,7 @@ def _train_in_process(
             checkpoint_every_valid_targets=training_cfg.get("checkpoint_every_valid_targets"),
             activation_checkpointing=run_checkpointing,
             compile_model=run_compile,
+            science=components.science,
         )
     except Exception as e:
         typer.echo(f"Error: invalid execution configuration: {e}", err=True)
@@ -376,7 +377,8 @@ def _resume_in_process(
     original = runtime["plan"]
     resolved = execution["envelope"]["config"]
     training_cfg = resolved["training"]
-    components = construct_training_components(resolved, device=device)
+    # The checkpoint's RNG state is authoritative: never reseed a resumed run.
+    components = construct_training_components(resolved, device=device, fresh_training_rng=False)
     if components.data_identity != runtime["data_identity"]:
         raise ValueError("resume data identity changed; refusing a different token stream")
     model, objective = components.model, components.objective
@@ -439,6 +441,7 @@ def _resume_in_process(
         device=device,
         is_fork=fork,
         scaler=resume_scaler,
+        science=components.science,
     )
     if not fork and meta.committed_valid_targets == target_budget:
         typer.echo(
@@ -487,6 +490,7 @@ def _resume_in_process(
         processed_valid_targets=meta.processed_valid_targets,
         parent_checkpoint_id=parent_chk,
         parent_plan_id=parent_plan,
+        science=components.science,
     )
     if resume_scaler is not None:
         # The checkpoint's scaler state was restored into this object; the

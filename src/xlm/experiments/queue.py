@@ -922,6 +922,7 @@ def execute_plan_run(
         checkpoint_every_valid_targets=plan.checkpoint_every_valid_targets,
         activation_checkpointing=bool(training.get("activation_checkpointing", False)),
         compile_model=bool(training.get("compile", False)),
+        science=components.science,
     )
 
     # Resume an interrupted attempt through the existing checkpoint loader. Never
@@ -965,6 +966,7 @@ def execute_plan_run(
             expected_plan_id=plan.plan_id,
             device=device,
             scaler=trainer.scaler,
+            science=components.science,
         )
         if meta.committed_valid_targets > plan.budget_valid_targets:
             raise QueueError("retry checkpoint exceeds frozen target budget")

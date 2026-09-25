@@ -229,6 +229,14 @@ class BudgetConfig(StrictConfigModel):
     max_train_seconds: float | None = Field(default=None, gt=0.0)
 
 
+class ScientificRuntimeConfig(StrictConfigModel):
+    """Science-v1 runtime identity; every field is explicit, nothing is defaulted."""
+
+    attention_policy: Literal["statistical_efficient_v1", "strict_deterministic_v1"]
+    matmul_tf32: Literal["disabled", "enabled"]
+    bf16_reduced_precision_reduction: Literal["allowed", "disallowed"]
+
+
 class TrainingConfig(StrictConfigModel):
     device: Literal["cuda", "cpu"] = "cuda"
     precision: str = "bf16_fp32_master"
@@ -244,6 +252,31 @@ class TrainingConfig(StrictConfigModel):
     init_seed: int = 101
     data_seed: int = 20260918
     checkpoint_every_valid_targets: int = Field(default=16000000, gt=0)
+    # P35 science-v1 fields. Absent in schema-v1 material, which resolves to the
+    # legacy policy; resolution omits them so historical identities are unchanged.
+    science_version: Literal["xlm-science-v1"] | None = None
+    lr_policy: (
+        Literal["legacy_base_then_postcommit_v1", "target_endpoint_before_update_v1"] | None
+    ) = None
+    training_seed: int | None = Field(default=None, ge=0, lt=2**63)
+    runtime: ScientificRuntimeConfig | None = None
+
+    @model_validator(mode="after")
+    def validate_scientific_policy(self) -> TrainingConfig:
+        from xlm.config.science import STATISTICAL_ATTENTION, ScientificPolicy
+
+        policy = ScientificPolicy.from_training(
+            {
+                "science_version": self.science_version,
+                "lr_policy": self.lr_policy,
+                "training_seed": self.training_seed,
+                "runtime": self.runtime.model_dump() if self.runtime is not None else None,
+            }
+        )
+        runtime = policy.runtime or {}
+        if runtime.get("attention_policy") == STATISTICAL_ATTENTION and self.device != "cuda":
+            raise ValueError("statistical_efficient_v1 attention requires a CUDA device")
+        return self
 
 
 class EvaluationConfig(StrictConfigModel):

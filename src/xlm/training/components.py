@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from xlm.optimizers import ParameterGroupManifest
     from xlm.schedules.base import BaseSchedule
     from xlm.training.data import BatcherProtocol
+    from xlm.training.science import ScientificState
 
 
 def component_catalog(plugins: list[str] | None = None) -> dict[str, Registry[Any]]:
@@ -152,20 +153,32 @@ class TrainingComponents:
     tokenizer: Any
     data_identity: str
     construction: dict[str, Any]
+    science: ScientificState
 
 
-def construct_training_components(config: dict[str, Any], *, device: str) -> TrainingComponents:
-    """Build registered components once; the existing Trainer owns all updates."""
+def construct_training_components(
+    config: dict[str, Any], *, device: str, fresh_training_rng: bool = True
+) -> TrainingComponents:
+    """Build registered components once; the existing Trainer owns all updates.
+
+    ``init_seed`` seeds construction. Legacy runs then train on whatever global
+    RNG state construction left behind (historical coupling). Science-v1 runs
+    reseed every training generator from ``training_seed`` only after all
+    components exist, unless ``fresh_training_rng`` is false because a
+    checkpoint restore will supply the authoritative RNG state.
+    """
     import random
 
     import torch
 
+    from xlm.config.science import ScientificPolicy
     from xlm.core.paths import ArtifactPaths
     from xlm.training.inputs import (
         build_training_batcher,
         resolve_training_input,
         resolve_training_tokenizer,
     )
+    from xlm.training.science import ScientificState, reseed_training_rng
 
     catalog = component_catalog(config.get("plugins"))
     validate_component_selection(config, catalog)
@@ -209,6 +222,10 @@ def construct_training_components(config: dict[str, Any], *, device: str) -> Tra
         for category, entry in entries.items()
     }
     construction["identity"] = identity_digest(construction)
+    science = ScientificState(ScientificPolicy.from_training(training))
+    if science.policy.is_science and fresh_training_rng:
+        assert science.policy.training_seed is not None
+        science.train_start_rng = reseed_training_rng(science.policy.training_seed, device)
     return TrainingComponents(
         model,
         objective,
@@ -219,6 +236,7 @@ def construct_training_components(config: dict[str, Any], *, device: str) -> Tra
         tokenizer,
         data_identity,
         construction,
+        science,
     )
 
 

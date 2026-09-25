@@ -60,7 +60,10 @@ def run_worker(request: dict[str, Any]) -> int:
     from xlm.training.trainer import Trainer
 
     torch.set_num_threads(envelope["runtime_policy"]["torch_threads"])
-    torch.use_deterministic_algorithms(envelope["runtime_policy"]["deterministic_algorithms"])
+    if "deterministic_algorithms" in envelope["runtime_policy"]:
+        # Historical frozen policy, applied process-wide exactly as before.
+        # Science-v1 runtime flags are owned and restored by the trainer scope.
+        torch.use_deterministic_algorithms(envelope["runtime_policy"]["deterministic_algorithms"])
     seed = envelope["config"].get("training", {}).get("init_seed", 0)
     random.seed(seed)
     torch.manual_seed(seed)
