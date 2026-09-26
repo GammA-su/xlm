@@ -1,0 +1,21 @@
+{
+  "scope": "meta shape inspection and file sizes; zero additional training targets",
+  "unique_model_parameters": 49883648,
+  "trainable_model_parameters": 49883648,
+  "unique_parameter_tensors": 92,
+  "trainable_objective_parameters": 0,
+  "objective_state_entries": 0,
+  "fp32_master_parameter_bytes": 199534592,
+  "adamw_expected_two_moment_fp32_elements": 99767296,
+  "adamw_expected_two_moment_bytes": 399069184,
+  "adamw_expected_step_scalars": 92,
+  "optimizer_qualification": "Analytic stock AdamW state accounting, not a captured optimizer inventory; no optimizer checkpoint was saved in the 50M measurement. GPU peaks in cost-50m.json include the actually allocated training state.",
+  "evidence_bytes_before_this_inventory": 294293,
+  "scratch_bytes_at_inventory": 73983984,
+  "dependencies": {
+    "pyproject.toml": "d503fbd9c69bee626e387b0e230fdfcf762327993e73ab711e039550495ebe54",
+    "uv.lock": "658f83d08e7003c0642223759736dcccfa983ce0bab4b75f8f2b234e7a114631",
+    ".python-version": "50b10393ce287fb4af7616d016dd16ac1a56412af4d2c74cde7ddc5ad5c78761"
+  },
+  "nvidia_smi": "NVIDIA GeForce RTX 4090, 596.49, 24564 MiB, 9053 MiB, 23 %"
+}

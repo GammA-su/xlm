@@ -1,0 +1,69 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0
+rootdir: G:\Project\xlm-p35-microbatch-astra
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0, xdist-3.8.0
+created: 8/8 workers
+8 workers [213 items]
+
+........................................................................ [ 33%]
+..........................................F..........................F.. [ 67%]
+.....................................................................    [100%]
+================================== FAILURES ===================================
+_ test_evidence_refuses_a_receipt_that_disagrees_with_its_declaration[False-global_update_payload_digest_v1-presence disagrees] _
+[gw2] win32 -- Python 3.12.13 G:\Project\xlm-p35-m3\.venv-p35-m3\Scripts\python.exe
+
+tmp_path = WindowsPath('G:/Project/xlm-p35-microbatch-astra/.hardening-scratch/pytest-of-gamma/pytest-3/popen-gw2/test_evidence_refuses_a_receip1')
+chain_present = False, declared = 'global_update_payload_digest_v1'
+message = 'presence disagrees'
+
+    @pytest.mark.parametrize(
+        ("chain_present", "declared", "message"),
+        [
+            (True, None, "presence disagrees"),  # an undeclared chain
+            (False, "global_update_payload_digest_v1", "presence disagrees"),  # declared, missing
+            (True, "global_update_payload_digest_v2", "version differs"),
+        ],
+    )
+    def test_evidence_refuses_a_receipt_that_disagrees_with_its_declaration(
+        tmp_path: Any, chain_present: bool, declared: str | None, message: str
+    ) -> None:
+        from test_p35_m4_evidence import BATCH, BUDGET, _count, publish_run
+        from xlm.comparison.science_evidence import EvidenceError, extract_run_evidence
+
+        chain = evidence_chain([BATCH] * (BUDGET // BATCH)) if chain_present else None
+        ckpt = publish_run(tmp_path, "r", (1, 2, 3), update_payloads=chain, declare_receipt=declared)
+>       with pytest.raises(EvidenceError, match=message):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'presence disagrees'
+E         Actual message: "inconsistent receipt history: unreadable update payload chain: 'NoneType' object has no attribute 'get'"
+
+tests\test_p35_hardening_payload.py:462: AssertionError
+_________ test_evidence_refuses_a_history_beyond_the_committed_state __________
+[gw2] win32 -- Python 3.12.13 G:\Project\xlm-p35-m3\.venv-p35-m3\Scripts\python.exe
+
+tmp_path = WindowsPath('G:/Project/xlm-p35-microbatch-astra/.hardening-scratch/pytest-of-gamma/pytest-3/popen-gw2/test_evidence_refuses_a_histor0')
+
+    def test_evidence_refuses_a_history_beyond_the_committed_state(tmp_path: Any) -> None:
+        """A7 at evidence level: LR + chain one update beyond the checkpoint's committed count."""
+        from test_p35_m4_evidence import BATCH, BUDGET, _count, publish_run
+        from xlm.comparison.science_evidence import EvidenceError, extract_run_evidence
+
+        updates_n = BUDGET // BATCH + 1
+        lr = [[i + 1, i * BATCH, BATCH, (i + 1) * BATCH, [1e-6]] for i in range(updates_n)]
+        ckpt = publish_run(
+            tmp_path, "r", (1, 2, 3), lr_rows=lr, update_payloads=evidence_chain([BATCH] * updates_n)
+        )
+>       with pytest.raises(EvidenceError, match="LR receipts account for"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'LR receipts account for'
+E         Actual message: 'inconsistent receipt history: LR/payload receipt history claims C=80, ahead of the committed data state C=64: refused, never truncated'
+
+tests\test_p35_hardening_payload.py:476: AssertionError
+- generated xml file: G:\Project\xlm-p35-microbatch-astra\docs\implementation\evidence\P35-MICROBATCH-HARDENING-ASTRA\hardening.xml -
+=========================== short test summary info ===========================
+FAILED tests/test_p35_hardening_payload.py::test_evidence_refuses_a_receipt_that_disagrees_with_its_declaration[False-global_update_payload_digest_v1-presence disagrees]
+FAILED tests/test_p35_hardening_payload.py::test_evidence_refuses_a_history_beyond_the_committed_state
+======================= 2 failed, 211 passed in 56.36s ========================

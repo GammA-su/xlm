@@ -1,0 +1,13 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0
+rootdir: G:\Project\xlm-p35-microbatch-astra
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0, xdist-3.8.0
+collected 70 items / 66 deselected / 4 selected
+
+tests\test_p35_m3_toy_flow.py .                                          [ 25%]
+tests\test_p35_hardening_runtime.py .                                    [ 50%]
+tests\test_p35_astra_boundaries.py ..                                    [100%]
+
+- generated xml file: G:\Project\xlm-p35-microbatch-astra\docs\implementation\evidence\P35-MICROBATCH-HARDENING-ASTRA\serial.xml -
+================ 4 passed, 66 deselected in 341.94s (0:05:41) =================

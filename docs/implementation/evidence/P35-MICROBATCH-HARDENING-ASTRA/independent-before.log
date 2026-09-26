@@ -1,0 +1,93 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0
+rootdir: G:\Project\xlm-p35-microbatch-astra
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0, xdist-3.8.0
+collected 17 items
+
+docs\implementation\evidence\P35-MICROBATCH-HARDENING-ASTRA\test_independent.py . [  5%]
+........F......F                                                         [100%]
+
+================================== FAILURES ===================================
+________________ test_guard_unserializable_receipt_must_poison ________________
+
+tmp_path = WindowsPath('G:/Project/xlm-p35-microbatch-astra/.hardening-scratch/pytest-of-gamma/pytest-0/test_guard_unserializable_rece0')
+
+    def test_guard_unserializable_receipt_must_poison(tmp_path: Path) -> None:
+        def mutate(t: Any, model: Any) -> None:
+            t.science.update_payloads._staged = [2, 16, 16, object()]
+
+        trainer = guarded_trainer(tmp_path, mutate)
+        with pytest.raises(RecoveryRequiredError):
+>           trainer.train_step()
+
+docs\implementation\evidence\P35-MICROBATCH-HARDENING-ASTRA\test_independent.py:183:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\xlm\training\trainer.py:458: in train_step
+    self._evaluate_boundary()
+src\xlm\training\trainer.py:475: in _evaluate_boundary
+    self.evaluation.run_pending(self)
+src\xlm\training\evaluation.py:432: in run_pending
+    self._run_event(trainer, record, shared, documents)
+src\xlm\training\evaluation.py:684: in _run_event
+    report = guard.restore_and_verify()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+src\xlm\training\evaluation.py:245: in restore_and_verify
+    after = training_state_fingerprint(self.trainer)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src\xlm\training\evaluation.py:159: in training_state_fingerprint
+    fingerprint["update_payload_receipt"] = identity_digest(payloads.guard_state())
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src\xlm\artifacts\manifest.py:161: in identity_digest
+    return hashlib.sha256(canonical_json(value)).hexdigest()
+                          ^^^^^^^^^^^^^^^^^^^^^
+src\xlm\artifacts\manifest.py:153: in canonical_json
+    check(value, 0)
+src\xlm\artifacts\manifest.py:144: in check
+    check(child, depth + 1)
+src\xlm\artifacts\manifest.py:147: in check
+    check(child, depth + 1)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+item = <object object at 0x000001BB3EBC0CA0>, depth = 2
+
+    def check(item: Any, depth: int) -> None:
+        nonlocal remaining, nodes
+        nodes += 1
+        if depth > 32 or nodes > 100_000 or remaining < 0:
+            raise ValueError("Artifact metadata exceeds bounded manifest limits")
+        if isinstance(item, str):
+            remaining -= len(item)
+        elif isinstance(item, dict):
+            for key, child in item.items():
+                if not isinstance(key, str):
+                    raise ValueError("Artifact metadata keys must be strings")
+                check(key, depth + 1)
+                check(child, depth + 1)
+        elif isinstance(item, list):
+            for child in item:
+                check(child, depth + 1)
+        elif item is not None and type(item) not in (int, float, bool):
+>           raise ValueError(f"Artifact metadata is not JSON data: {type(item).__name__}")
+E           ValueError: Artifact metadata is not JSON data: object
+
+src\xlm\artifacts\manifest.py:149: ValueError
+_______________ test_evidence_rejects_wrong_lr_schedule_counter _______________
+
+tmp_path = WindowsPath('G:/Project/xlm-p35-microbatch-astra/.hardening-scratch/pytest-of-gamma/pytest-0/test_evidence_rejects_wrong_lr0')
+
+    def test_evidence_rejects_wrong_lr_schedule_counter(tmp_path: Path) -> None:
+        chain = UpdatePayloadChain()
+        for step in range(1, 5):
+            chain.stage(step=step, committed_before=(step - 1) * 16, valid_targets=16, payload="a" * 64)
+            chain.commit()
+>       checkpoint = publish_run(tmp_path, update_payloads=chain.to_dict())
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: publish_run() missing 2 required positional arguments: 'run_id' and 'seeds'
+
+docs\implementation\evidence\P35-MICROBATCH-HARDENING-ASTRA\test_independent.py:239: TypeError
+- generated xml file: G:\Project\xlm-p35-microbatch-astra\docs\implementation\evidence\P35-MICROBATCH-HARDENING-ASTRA\independent-before.xml -
+=========================== short test summary info ===========================
+FAILED docs/implementation/evidence/P35-MICROBATCH-HARDENING-ASTRA/test_independent.py::test_guard_unserializable_receipt_must_poison
+FAILED docs/implementation/evidence/P35-MICROBATCH-HARDENING-ASTRA/test_independent.py::test_evidence_rejects_wrong_lr_schedule_counter
+======================== 2 failed, 15 passed in 13.04s ========================

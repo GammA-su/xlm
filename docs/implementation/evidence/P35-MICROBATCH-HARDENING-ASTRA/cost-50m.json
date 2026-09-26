@@ -1,0 +1,161 @@
+{
+  "scope": "actual 50M architecture, authored tokens only; performance diagnostic, NOT training evidence",
+  "design": "one full warmup + one complete off and on update, fresh identical initialization per block; fixed order, no uncertainty estimate",
+  "total_targets": 196608,
+  "wall_seconds": 20.281000000075437,
+  "output_bytes": 3685549,
+  "targets_per_second_delta_percent": 9.96035266832842,
+  "device": "NVIDIA GeForce RTX 4090",
+  "torch": "2.14.0+cu126",
+  "python": "3.12.13 (main, Apr  7 2026, 20:53:22) [MSC v.1944 64 bit (AMD64)]",
+  "blocks": [
+    {
+      "label": "warmup",
+      "receipt": false,
+      "targets": 65536,
+      "seconds": 2.1957472000503913,
+      "targets_per_second": 29846.78746191546,
+      "cpu_ms": {
+        "canonical": 0,
+        "bind": 0,
+        "digest": 0,
+        "stage": 0,
+        "commit": 0
+      },
+      "receipt_total_cpu_ms": 0,
+      "stream_sync_count": 1,
+      "measurement_global_sync_count": 2,
+      "peak_allocated": 3742228992,
+      "peak_reserved": 4215275520,
+      "rss_bytes": 1665830912,
+      "tree_rss_bytes": 2228789248,
+      "microbatch_rows": [
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        1
+      ],
+      "unique_parameters": 49883648,
+      "chain": null
+    },
+    {
+      "label": "off",
+      "receipt": false,
+      "targets": 65536,
+      "seconds": 2.078709200024605,
+      "targets_per_second": 31527.257395707045,
+      "cpu_ms": {
+        "canonical": 0,
+        "bind": 0,
+        "digest": 0,
+        "stage": 0,
+        "commit": 0
+      },
+      "receipt_total_cpu_ms": 0,
+      "stream_sync_count": 1,
+      "measurement_global_sync_count": 2,
+      "peak_allocated": 3738034688,
+      "peak_reserved": 4236247040,
+      "rss_bytes": 1790234624,
+      "tree_rss_bytes": 2353168384,
+      "microbatch_rows": [
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        1
+      ],
+      "unique_parameters": 49883648,
+      "chain": null
+    },
+    {
+      "label": "on",
+      "receipt": true,
+      "targets": 65536,
+      "seconds": 1.8904169999295846,
+      "targets_per_second": 34667.48341897112,
+      "cpu_ms": {
+        "canonical": 7.366299978457391,
+        "bind": 4.182000062428415,
+        "digest": 4.197799949906766,
+        "stage": 0.017700018361210823,
+        "commit": 0.01780001912266016
+      },
+      "receipt_total_cpu_ms": 11.599599965848029,
+      "stream_sync_count": 1,
+      "measurement_global_sync_count": 2,
+      "peak_allocated": 3738034688,
+      "peak_reserved": 4236247040,
+      "rss_bytes": 1795002368,
+      "tree_rss_bytes": 2357882880,
+      "microbatch_rows": [
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        1
+      ],
+      "unique_parameters": 49883648,
+      "chain": {
+        "version": "global_update_payload_digest_v1",
+        "chain_version": "xlm-update-payload-chain-v1",
+        "genesis": "75b5523ca0c15a2208a7f562fa436a26dc8fee7ae593262b888cf1493c37f8f6",
+        "columns": [
+          "step",
+          "committed_before",
+          "valid_targets",
+          "payload_digest",
+          "chain_digest"
+        ],
+        "rows": [
+          [
+            1,
+            0,
+            65536,
+            "3edb0110247c4764516eed685d88bedf6d9367b6b2599598eaa96b9965684d54",
+            "e0486ad487e6beef4dda10ecb35c767b292233525f0dd37c0193afcdceb8cf4e"
+          ]
+        ],
+        "head": "e0486ad487e6beef4dda10ecb35c767b292233525f0dd37c0193afcdceb8cf4e"
+      }
+    }
+  ],
+  "limitations": "one update per arm, cold producer and optimizer startup, shared desktop, no population overhead or quality inference; stream sync instrumentation is not a driver trace"
+}

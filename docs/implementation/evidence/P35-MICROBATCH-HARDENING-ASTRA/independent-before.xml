@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="17" time="13.038" timestamp="2026-09-26T22:16:11.234823+02:00" hostname="BetA-C1"><testcase classname="docs.implementation.evidence.P35-MICROBATCH-HARDENING-ASTRA.test_independent" name="test_A1_after_binding_mutation_is_a_demonstrated_trust_boundary" time="2.460" /><testcase classname="docs.implementation.evidence.P35-MICROBATCH-HARDENING-ASTRA.test_independent" name="test_resealed_history_refuses_before_restore[A2_ahead]" time="0.842" /><testcase classname="docs.implementation.evidence.P35-MICROBATCH-HARDENING-ASTRA.test_independent" name="test_resealed_history_refuses_before_restore[A2_behind]" time="0.754" /><testcase classname="docs.implementation.evidence.P35-MICROBATCH-HARDENING-ASTRA.test_independent" name="test_resealed_history_refuses_before_restore[A2_step]" time="0.784" /><testcase classname="docs.implementation.evidence.P35-MICROBATCH-HARDENING-ASTRA.test_independent" name="test_resealed_history_refuses_before_restore[A2_partial]" time="0.771" /><testcase classname="docs.implementation.evidence.P35-MICROBATCH-HARDENING-ASTRA.test_independent" name="test_resealed_history_refuses_before_restore[A7]" time="0.781" /><testcase classname="docs.implementation.evidence.P35-MICROBATCH-HARDENING-ASTRA.test_independent" name="test_resealed_history_refuses_before_restore[A8]" time="0.747" /><testcase classname="docs.implementation.evidence.P35-MICROBATCH-HARDENING-ASTRA.test_independent" name="test_A3_fault_inside_joint_commit_requires_recovery" time="0.788" /><testcase classname="docs.implementation.evidence.P35-MICROBATCH-HARDENING-ASTRA.test_independent" name="test_A4_evaluator_changes_an_existing_staged_receipt" time="0.401" /><testcase classname="docs.implementation.evidence.P35-MICROBATCH-HARDENING-ASTRA.test_independent" name="test_guard_unserializable_receipt_must_poison" time="0.254"><failure message="ValueError: Artifact metadata is not JSON data: object">tmp_path = WindowsPath('G:/Project/xlm-p35-microbatch-astra/.hardening-scratch/pytest-of-gamma/pytest-0/test_guard_unserializable_rece0')
+
+    def test_guard_unserializable_receipt_must_poison(tmp_path: Path) -&gt; None:
+        def mutate(t: Any, model: Any) -&gt; None:
+            t.science.update_payloads._staged = [2, 16, 16, object()]
+
+        trainer = guarded_trainer(tmp_path, mutate)
+        with pytest.raises(RecoveryRequiredError):
+&gt;           trainer.train_step()
+
+docs\implementation\evidence\P35-MICROBATCH-HARDENING-ASTRA\test_independent.py:183:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\xlm\training\trainer.py:458: in train_step
+    self._evaluate_boundary()
+src\xlm\training\trainer.py:475: in _evaluate_boundary
+    self.evaluation.run_pending(self)
+src\xlm\training\evaluation.py:432: in run_pending
+    self._run_event(trainer, record, shared, documents)
+src\xlm\training\evaluation.py:684: in _run_event
+    report = guard.restore_and_verify()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+src\xlm\training\evaluation.py:245: in restore_and_verify
+    after = training_state_fingerprint(self.trainer)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src\xlm\training\evaluation.py:159: in training_state_fingerprint
+    fingerprint["update_payload_receipt"] = identity_digest(payloads.guard_state())
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src\xlm\artifacts\manifest.py:161: in identity_digest
+    return hashlib.sha256(canonical_json(value)).hexdigest()
+                          ^^^^^^^^^^^^^^^^^^^^^
+src\xlm\artifacts\manifest.py:153: in canonical_json
+    check(value, 0)
+src\xlm\artifacts\manifest.py:144: in check
+    check(child, depth + 1)
+src\xlm\artifacts\manifest.py:147: in check
+    check(child, depth + 1)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+item = &lt;object object at 0x000001BB3EBC0CA0&gt;, depth = 2
+
+    def check(item: Any, depth: int) -&gt; None:
+        nonlocal remaining, nodes
+        nodes += 1
+        if depth &gt; 32 or nodes &gt; 100_000 or remaining &lt; 0:
+            raise ValueError("Artifact metadata exceeds bounded manifest limits")
+        if isinstance(item, str):
+            remaining -= len(item)
+        elif isinstance(item, dict):
+            for key, child in item.items():
+                if not isinstance(key, str):
+                    raise ValueError("Artifact metadata keys must be strings")
+                check(key, depth + 1)
+                check(child, depth + 1)
+        elif isinstance(item, list):
+            for child in item:
+                check(child, depth + 1)
+        elif item is not None and type(item) not in (int, float, bool):
+&gt;           raise ValueError(f"Artifact metadata is not JSON data: {type(item).__name__}")
+E           ValueError: Artifact metadata is not JSON data: object
+
+src\xlm\artifacts\manifest.py:149: ValueError</failure></testcase><testcase classname="docs.implementation.evidence.P35-MICROBATCH-HARDENING-ASTRA.test_independent" name="test_A5_alias_semantics[duplicate]" time="0.070" /><testcase classname="docs.implementation.evidence.P35-MICROBATCH-HARDENING-ASTRA.test_independent" name="test_A5_alias_semantics[non_string]" time="0.041" /><testcase classname="docs.implementation.evidence.P35-MICROBATCH-HARDENING-ASTRA.test_independent" name="test_A5_alias_semantics[out_of_table]" time="0.046" /><testcase classname="docs.implementation.evidence.P35-MICROBATCH-HARDENING-ASTRA.test_independent" name="test_A5_alias_semantics[changed]" time="0.048" /><testcase classname="docs.implementation.evidence.P35-MICROBATCH-HARDENING-ASTRA.test_independent" name="test_A5_alias_semantics[unique]" time="0.044" /><testcase classname="docs.implementation.evidence.P35-MICROBATCH-HARDENING-ASTRA.test_independent" name="test_A6_changed_policy_fork_pre_readiness" time="0.549" /><testcase classname="docs.implementation.evidence.P35-MICROBATCH-HARDENING-ASTRA.test_independent" name="test_evidence_rejects_wrong_lr_schedule_counter" time="0.002"><failure message="TypeError: publish_run() missing 2 required positional arguments: 'run_id' and 'seeds'">tmp_path = WindowsPath('G:/Project/xlm-p35-microbatch-astra/.hardening-scratch/pytest-of-gamma/pytest-0/test_evidence_rejects_wrong_lr0')
+
+    def test_evidence_rejects_wrong_lr_schedule_counter(tmp_path: Path) -&gt; None:
+        chain = UpdatePayloadChain()
+        for step in range(1, 5):
+            chain.stage(step=step, committed_before=(step - 1) * 16, valid_targets=16, payload="a" * 64)
+            chain.commit()
+&gt;       checkpoint = publish_run(tmp_path, update_payloads=chain.to_dict())
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: publish_run() missing 2 required positional arguments: 'run_id' and 'seeds'
+
+docs\implementation\evidence\P35-MICROBATCH-HARDENING-ASTRA\test_independent.py:239: TypeError</failure></testcase></testsuite></testsuites>

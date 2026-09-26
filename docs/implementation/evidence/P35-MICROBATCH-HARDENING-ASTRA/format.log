@@ -1,0 +1,208 @@
+unformatted: File would be reformatted
+   --> src\xlm\comparison\science_evidence.py:257:24
+    |
+256 |
+    - def _update_boundaries(
+    -     rows: list[list[Any]], committed: int, *, receipted: bool = False
+    - ) -> tuple[str, int]:
+257 + def _update_boundaries(
+258 +     rows: list[list[Any]], committed: int, *, receipted: bool = False
+259 + ) -> tuple[str, int]:
+260 |     """Digest of every committed update's (committed_before, valid_targets)."""
+--------------------------------------------------------------------------------
+272 |         )
+    -     if receipted:
+    -         from xlm.data.sampling.update_payload import MAX_CHAIN_ROWS, receipt_history_digest
+    -
+    -         if len(rows) > MAX_CHAIN_ROWS:
+    -             raise EvidenceError("update boundary history exceeds its row bound")
+    -         return receipt_history_digest(boundaries), len(boundaries)
+    -     return identity_digest(boundaries), len(boundaries)
+273 +     if receipted:
+274 +         from xlm.data.sampling.update_payload import MAX_CHAIN_ROWS, receipt_history_digest
+275 +
+276 +         if len(rows) > MAX_CHAIN_ROWS:
+277 +             raise EvidenceError("update boundary history exceeds its row bound")
+278 +         return receipt_history_digest(boundaries), len(boundaries)
+279 +     return identity_digest(boundaries), len(boundaries)
+280 |
+--------------------------------------------------------------------------------
+364 |         raise EvidenceError("data state and checkpoint metadata disagree on committed targets")
+    -     receipted = training.get("update_payload_receipt") is not None
+    -     boundaries_digest, updates = _update_boundaries(lr["rows"], committed, receipted=receipted)
+    -     if updates != int(meta["step"]):
+    -         raise EvidenceError("LR receipts and checkpoint step disagree")
+    -     payload_receipt, payload_chain = _update_payload_receipt(
+    -         science, lr["rows"], training.get("update_payload_receipt")
+    -     )
+    -     if receipted:
+    -         from xlm.config.science import ScientificPolicyError
+    -         from xlm.training.science import check_receipt_history
+    -
+    -         try:
+    -             check_receipt_history(
+    -                 science,
+    -                 step=meta["step"],
+    -                 committed=meta["committed_valid_targets"],
+    -                 data_committed=data_state.get("committed_valid_targets"),
+    -             )
+    -         except ScientificPolicyError as exc:
+    -             raise EvidenceError(f"inconsistent receipt history: {exc}") from exc
+365 +     receipted = training.get("update_payload_receipt") is not None
+366 +     boundaries_digest, updates = _update_boundaries(lr["rows"], committed, receipted=receipted)
+367 +     if updates != int(meta["step"]):
+368 +         raise EvidenceError("LR receipts and checkpoint step disagree")
+369 +     payload_receipt, payload_chain = _update_payload_receipt(
+370 +         science, lr["rows"], training.get("update_payload_receipt")
+371 +     )
+372 +     if receipted:
+373 +         from xlm.config.science import ScientificPolicyError
+374 +         from xlm.training.science import check_receipt_history
+375 +
+376 +         try:
+377 +             check_receipt_history(
+378 +                 science,
+379 +                 step=meta["step"],
+380 +                 committed=meta["committed_valid_targets"],
+381 +                 data_committed=data_state.get("committed_valid_targets"),
+382 +             )
+383 +         except ScientificPolicyError as exc:
+384 +             raise EvidenceError(f"inconsistent receipt history: {exc}") from exc
+385 |
+    |
+
+unformatted: File would be reformatted
+   --> src\xlm\data\sampling\update_payload.py:75:76
+    |
+74  | #: Committed-update bound. The largest planned P35 run is the 300M confirmation,
+    - #: 6B targets at 65,536 per update = 91,553 updates; a 1B-target 50M run is
+75  + #: 6B targets at 65,536 per update = 91,553 updates; a 1B-target 50M run is
+76  | #: 15,259. 400,000 also covers a 1B-parameter model at 20 targets/parameter
+--------------------------------------------------------------------------------
+102 |
+    - class PayloadReceiptError(ValueError):
+    -     """An update payload cannot be canonicalized, or a chain is inconsistent."""
+    -
+    -
+    - def receipt_history_digest(value: Any) -> str:
+    -     """Hash bounded receipt history with the existing canonical JSON bytes.
+    -
+    -     Artifact metadata's 100,000-node / 8 MiB limits are too small for planned
+    -     LR/payload histories. Callers bound the row count; streaming serialization
+    -     enforces the science-state 128 MiB ceiling without a second full JSON copy.
+    -     This does not relax the artifact manifest limits or change digest semantics.
+    -     """
+    -     digest = hashlib.sha256()
+    -     size = 0
+    -     encoder = json.JSONEncoder(sort_keys=True, separators=(",", ":"), allow_nan=False)
+    -     for chunk in encoder.iterencode(value):
+    -         raw = chunk.encode("utf-8")
+    -         size += len(raw)
+    -         if size > 128 * 1024**2:
+    -             raise PayloadReceiptError("receipt history exceeds the 128 MiB science-state bound")
+    -         digest.update(raw)
+    -     return digest.hexdigest()
+    -
+    -
+    - def _int_array(value: Any, name: str) -> np.ndarray:
+103 + class PayloadReceiptError(ValueError):
+104 +     """An update payload cannot be canonicalized, or a chain is inconsistent."""
+105 +
+106 +
+107 + def receipt_history_digest(value: Any) -> str:
+108 +     """Hash bounded receipt history with the existing canonical JSON bytes.
+109 +
+110 +     Artifact metadata's 100,000-node / 8 MiB limits are too small for planned
+111 +     LR/payload histories. Callers bound the row count; streaming serialization
+112 +     enforces the science-state 128 MiB ceiling without a second full JSON copy.
+113 +     This does not relax the artifact manifest limits or change digest semantics.
+114 +     """
+115 +     digest = hashlib.sha256()
+116 +     size = 0
+117 +     encoder = json.JSONEncoder(sort_keys=True, separators=(",", ":"), allow_nan=False)
+118 +     for chunk in encoder.iterencode(value):
+119 +         raw = chunk.encode("utf-8")
+120 +         size += len(raw)
+121 +         if size > 128 * 1024**2:
+122 +             raise PayloadReceiptError("receipt history exceeds the 128 MiB science-state bound")
+123 +         digest.update(raw)
+124 +     return digest.hexdigest()
+125 +
+126 +
+127 + def _int_array(value: Any, name: str) -> np.ndarray:
+128 |     if hasattr(value, "detach") and hasattr(value, "device"):  # a torch tensor
+    |
+
+unformatted: File would be reformatted
+   --> src\xlm\training\evaluation.py:124:29
+    |
+123 |     }
+    -     if payloads is not None:
+    -         science_receipts["update_payload_receipt_declared"] = True
+    -         from xlm.data.sampling.update_payload import MAX_CHAIN_ROWS, receipt_history_digest
+    -
+    -         if max(len(payloads.rows), len(trainer.science.lr_receipts)) > MAX_CHAIN_ROWS:
+    -             raise ValueError("guarded receipt history exceeds its row bound")
+    -         science_digest = receipt_history_digest(science_receipts)
+    -     else:
+    -         science_digest = identity_digest(science_receipts)
+124 +     if payloads is not None:
+125 +         science_receipts["update_payload_receipt_declared"] = True
+126 +         from xlm.data.sampling.update_payload import MAX_CHAIN_ROWS, receipt_history_digest
+127 +
+128 +         if max(len(payloads.rows), len(trainer.science.lr_receipts)) > MAX_CHAIN_ROWS:
+129 +             raise ValueError("guarded receipt history exceeds its row bound")
+130 +         science_digest = receipt_history_digest(science_receipts)
+131 +     else:
+132 +         science_digest = identity_digest(science_receipts)
+133 |     fingerprint = {
+--------------------------------------------------------------------------------
+161 |         "data_cursor": identity_digest(batcher_state),
+    -         "science_receipts": science_digest,
+162 +         "science_receipts": science_digest,
+163 |         "runtime_flags": identity_digest(_runtime_flags()),
+164 |     }
+165 |     if payloads is not None:
+    -         fingerprint["update_payload_receipt"] = receipt_history_digest(payloads.guard_state())
+166 +         fingerprint["update_payload_receipt"] = receipt_history_digest(payloads.guard_state())
+167 |     return fingerprint
+--------------------------------------------------------------------------------
+251 |         torch.set_grad_enabled(self._grad_enabled)
+    -         try:
+    -             after = training_state_fingerprint(self.trainer)
+    -         except Exception:
+    -             if "update_payload_receipt" not in self._before:
+    -                 raise  # receipt-disabled runs retain the historical guard behavior
+    -             # Unreadable live state is a failed verification, never a recoverable
+    -             # evaluator error. The controller publishes FAILED and poisons the run.
+    -             changed = ["update_payload_receipt_unreadable"]
+    -         else:
+    -             changed = sorted(key for key, value in self._before.items() if after.get(key) != value)
+252 +         try:
+253 +             after = training_state_fingerprint(self.trainer)
+254 +         except Exception:
+255 +             if "update_payload_receipt" not in self._before:
+256 +                 raise  # receipt-disabled runs retain the historical guard behavior
+257 +             # Unreadable live state is a failed verification, never a recoverable
+258 +             # evaluator error. The controller publishes FAILED and poisons the run.
+259 +             changed = ["update_payload_receipt_unreadable"]
+260 +         else:
+261 +             changed = sorted(key for key, value in self._before.items() if after.get(key) != value)
+262 |         if not _rng_equal(self._rng, _capture_rng()):
+    |
+
+unformatted: File would be reformatted
+  --> tests\test_p35_receipt_history_regressions.py:41:12
+   |
+40 |     chain.rows[-1][3] = "b" * 64
+   -     assert training_state_fingerprint(trainer)["update_payload_receipt"] != fingerprint[
+   -         "update_payload_receipt"
+   -     ]
+41 +     assert (
+42 +         training_state_fingerprint(trainer)["update_payload_receipt"]
+43 +         != fingerprint["update_payload_receipt"]
+44 +     )
+45 |
+   |
+
+4 files would be reformatted, 10 files already formatted

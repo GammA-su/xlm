@@ -1,0 +1,296 @@
+{
+  "scope": "authored tiny CUDA; no quality or live-data claim",
+  "total_targets": 591,
+  "wall_seconds": 37.14099999994505,
+  "output_bytes": 1360753,
+  "equal_consumed_payloads_provenance_chain_and_resume": true,
+  "runs": {
+    "sync": {
+      "phase": "sync",
+      "pid": 95884,
+      "device": "cuda",
+      "chain": {
+        "version": "global_update_payload_digest_v1",
+        "chain_version": "xlm-update-payload-chain-v1",
+        "genesis": "75b5523ca0c15a2208a7f562fa436a26dc8fee7ae593262b888cf1493c37f8f6",
+        "columns": [
+          "step",
+          "committed_before",
+          "valid_targets",
+          "payload_digest",
+          "chain_digest"
+        ],
+        "rows": [
+          [
+            1,
+            0,
+            96,
+            "dc83b1048676d32ffdffd1de8b1741f55ed1517820ca3262252ae6cda0ddb3d8",
+            "5b4a8dfb8319e64fb84a526e58ba36417bbf8d3c592cbeea1ae4a14fdab99a93"
+          ],
+          [
+            2,
+            96,
+            96,
+            "6a62628109d8ec9acb6115130f95dc426f7866ad7c1c4684e5ea3797111053cd",
+            "d6c37fb995db60fade8f2fd15be57b961284b57aba2e5ac68f0d645af3dfd8d1"
+          ],
+          [
+            3,
+            192,
+            5,
+            "8585ba09577af59161ec815c86ce5cf0fbd7e0252c22116d4056097249195a9a",
+            "ff9c8fcc018a8f2c1ce26bcc32636839cdedf8a56d4423ce21679275d6008056"
+          ]
+        ],
+        "head": "ff9c8fcc018a8f2c1ce26bcc32636839cdedf8a56d4423ce21679275d6008056"
+      },
+      "lr": [
+        [
+          1,
+          0,
+          96,
+          96,
+          [
+            0.0007052501652377368,
+            0.0007052501652377368
+          ]
+        ],
+        [
+          2,
+          96,
+          96,
+          192,
+          [
+            0.00010203763484211194,
+            0.00010203763484211194
+          ]
+        ],
+        [
+          3,
+          192,
+          5,
+          197,
+          [
+            0.0001,
+            0.0001
+          ]
+        ]
+      ],
+      "consumed_digests": [
+        "dc83b1048676d32ffdffd1de8b1741f55ed1517820ca3262252ae6cda0ddb3d8",
+        "6a62628109d8ec9acb6115130f95dc426f7866ad7c1c4684e5ea3797111053cd",
+        "8585ba09577af59161ec815c86ce5cf0fbd7e0252c22116d4056097249195a9a"
+      ],
+      "stock_forward_inputs_unchanged": true,
+      "committed": 197,
+      "peak_gpu_allocated": 67623424
+    },
+    "producer": {
+      "phase": "producer",
+      "pid": 90068,
+      "device": "cuda",
+      "chain": {
+        "version": "global_update_payload_digest_v1",
+        "chain_version": "xlm-update-payload-chain-v1",
+        "genesis": "75b5523ca0c15a2208a7f562fa436a26dc8fee7ae593262b888cf1493c37f8f6",
+        "columns": [
+          "step",
+          "committed_before",
+          "valid_targets",
+          "payload_digest",
+          "chain_digest"
+        ],
+        "rows": [
+          [
+            1,
+            0,
+            96,
+            "dc83b1048676d32ffdffd1de8b1741f55ed1517820ca3262252ae6cda0ddb3d8",
+            "5b4a8dfb8319e64fb84a526e58ba36417bbf8d3c592cbeea1ae4a14fdab99a93"
+          ],
+          [
+            2,
+            96,
+            96,
+            "6a62628109d8ec9acb6115130f95dc426f7866ad7c1c4684e5ea3797111053cd",
+            "d6c37fb995db60fade8f2fd15be57b961284b57aba2e5ac68f0d645af3dfd8d1"
+          ],
+          [
+            3,
+            192,
+            5,
+            "8585ba09577af59161ec815c86ce5cf0fbd7e0252c22116d4056097249195a9a",
+            "ff9c8fcc018a8f2c1ce26bcc32636839cdedf8a56d4423ce21679275d6008056"
+          ]
+        ],
+        "head": "ff9c8fcc018a8f2c1ce26bcc32636839cdedf8a56d4423ce21679275d6008056"
+      },
+      "lr": [
+        [
+          1,
+          0,
+          96,
+          96,
+          [
+            0.0007052501652377368,
+            0.0007052501652377368
+          ]
+        ],
+        [
+          2,
+          96,
+          96,
+          192,
+          [
+            0.00010203763484211194,
+            0.00010203763484211194
+          ]
+        ],
+        [
+          3,
+          192,
+          5,
+          197,
+          [
+            0.0001,
+            0.0001
+          ]
+        ]
+      ],
+      "consumed_digests": [
+        "dc83b1048676d32ffdffd1de8b1741f55ed1517820ca3262252ae6cda0ddb3d8",
+        "6a62628109d8ec9acb6115130f95dc426f7866ad7c1c4684e5ea3797111053cd",
+        "8585ba09577af59161ec815c86ce5cf0fbd7e0252c22116d4056097249195a9a"
+      ],
+      "stock_forward_inputs_unchanged": true,
+      "committed": 197,
+      "peak_gpu_allocated": 67623424
+    },
+    "first": {
+      "phase": "first",
+      "pid": 14216,
+      "device": "cuda",
+      "chain": {
+        "version": "global_update_payload_digest_v1",
+        "chain_version": "xlm-update-payload-chain-v1",
+        "genesis": "75b5523ca0c15a2208a7f562fa436a26dc8fee7ae593262b888cf1493c37f8f6",
+        "columns": [
+          "step",
+          "committed_before",
+          "valid_targets",
+          "payload_digest",
+          "chain_digest"
+        ],
+        "rows": [
+          [
+            1,
+            0,
+            96,
+            "dc83b1048676d32ffdffd1de8b1741f55ed1517820ca3262252ae6cda0ddb3d8",
+            "5b4a8dfb8319e64fb84a526e58ba36417bbf8d3c592cbeea1ae4a14fdab99a93"
+          ]
+        ],
+        "head": "5b4a8dfb8319e64fb84a526e58ba36417bbf8d3c592cbeea1ae4a14fdab99a93"
+      },
+      "lr": [
+        [
+          1,
+          0,
+          96,
+          96,
+          [
+            0.0007052501652377368,
+            0.0007052501652377368
+          ]
+        ]
+      ],
+      "consumed_digests": [
+        "dc83b1048676d32ffdffd1de8b1741f55ed1517820ca3262252ae6cda0ddb3d8"
+      ],
+      "stock_forward_inputs_unchanged": true,
+      "committed": 96,
+      "peak_gpu_allocated": 67425280
+    },
+    "resume": {
+      "phase": "resume",
+      "pid": 88572,
+      "device": "cuda",
+      "chain": {
+        "version": "global_update_payload_digest_v1",
+        "chain_version": "xlm-update-payload-chain-v1",
+        "genesis": "75b5523ca0c15a2208a7f562fa436a26dc8fee7ae593262b888cf1493c37f8f6",
+        "columns": [
+          "step",
+          "committed_before",
+          "valid_targets",
+          "payload_digest",
+          "chain_digest"
+        ],
+        "rows": [
+          [
+            1,
+            0,
+            96,
+            "dc83b1048676d32ffdffd1de8b1741f55ed1517820ca3262252ae6cda0ddb3d8",
+            "5b4a8dfb8319e64fb84a526e58ba36417bbf8d3c592cbeea1ae4a14fdab99a93"
+          ],
+          [
+            2,
+            96,
+            96,
+            "6a62628109d8ec9acb6115130f95dc426f7866ad7c1c4684e5ea3797111053cd",
+            "d6c37fb995db60fade8f2fd15be57b961284b57aba2e5ac68f0d645af3dfd8d1"
+          ],
+          [
+            3,
+            192,
+            5,
+            "8585ba09577af59161ec815c86ce5cf0fbd7e0252c22116d4056097249195a9a",
+            "ff9c8fcc018a8f2c1ce26bcc32636839cdedf8a56d4423ce21679275d6008056"
+          ]
+        ],
+        "head": "ff9c8fcc018a8f2c1ce26bcc32636839cdedf8a56d4423ce21679275d6008056"
+      },
+      "lr": [
+        [
+          1,
+          0,
+          96,
+          96,
+          [
+            0.0007052501652377368,
+            0.0007052501652377368
+          ]
+        ],
+        [
+          2,
+          96,
+          96,
+          192,
+          [
+            0.00010203763484211194,
+            0.00010203763484211194
+          ]
+        ],
+        [
+          3,
+          192,
+          5,
+          197,
+          [
+            0.0001,
+            0.0001
+          ]
+        ]
+      ],
+      "consumed_digests": [
+        "6a62628109d8ec9acb6115130f95dc426f7866ad7c1c4684e5ea3797111053cd",
+        "8585ba09577af59161ec815c86ce5cf0fbd7e0252c22116d4056097249195a9a"
+      ],
+      "stock_forward_inputs_unchanged": true,
+      "committed": 197,
+      "peak_gpu_allocated": 67629056
+    }
+  }
+}

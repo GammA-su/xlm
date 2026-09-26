@@ -1,0 +1,189 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0
+rootdir: G:\Project\xlm-p35-microbatch-astra
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0, xdist-3.8.0
+collected 20 items / 16 deselected / 4 selected
+
+docs\implementation\evidence\P35-MICROBATCH-HARDENING-ASTRA\test_independent.py F [ 25%]
+FFF                                                                      [100%]
+
+================================== FAILURES ===================================
+_______________ test_evidence_rejects_wrong_lr_schedule_counter _______________
+
+tmp_path = WindowsPath('G:/Project/xlm-p35-microbatch-astra/.hardening-scratch/pytest-of-gamma/pytest-1/test_evidence_rejects_wrong_lr0')
+
+    def test_evidence_rejects_wrong_lr_schedule_counter(tmp_path: Path) -> None:
+        chain = UpdatePayloadChain()
+        for step in range(1, 5):
+            chain.stage(step=step, committed_before=(step - 1) * 16, valid_targets=16, payload="a" * 64)
+            chain.commit()
+        checkpoint = publish_run(tmp_path, "independent", (101, 10001, 20260918), update_payloads=chain.to_dict())
+
+        def damage(science: dict[str, Any]) -> dict[str, Any]:
+            science["lr_receipts"]["rows"][1][3] += 1
+            return science
+
+        reseal(checkpoint, {"science.json": damage})
+>       with pytest.raises(EvidenceError, match="LR|history|schedule"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE EvidenceError
+
+docs\implementation\evidence\P35-MICROBATCH-HARDENING-ASTRA\test_independent.py:246: Failed
+___________ test_planned_history_guard_and_evidence_fit[1000000000] ___________
+
+tmp_path = WindowsPath('G:/Project/xlm-p35-microbatch-astra/.hardening-scratch/pytest-of-gamma/pytest-1/test_planned_history_guard_and0')
+targets = 1000000000
+
+    @pytest.mark.parametrize("targets", [1_000_000_000, 3_000_000_000, 6_000_000_000])
+    def test_planned_history_guard_and_evidence_fit(tmp_path: Path, targets: int) -> None:
+        from xlm.comparison.science_evidence import _update_boundaries
+        from xlm.training.evaluation import training_state_fingerprint
+
+        trainer = receipt_trainer(tmp_path)
+        chain = trainer.science.update_payloads
+        before = 0
+        while before < targets:
+            step = len(chain.rows) + 1
+            valid = min(65536, targets - before)
+            chain.stage(step=step, committed_before=before, valid_targets=valid, payload="a" * 64)
+            chain.commit()
+            trainer.science.lr_receipts.append([step, before, valid, before + valid, [1e-3, 1e-3]])
+            before += valid
+        # Fabricated histories prove bounded metadata handling only, no training claim.
+>       fingerprint = training_state_fingerprint(trainer)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+docs\implementation\evidence\P35-MICROBATCH-HARDENING-ASTRA\test_independent.py:266:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\xlm\training\evaluation.py:155: in training_state_fingerprint
+    "science_receipts": identity_digest(science_receipts),
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src\xlm\artifacts\manifest.py:161: in identity_digest
+    return hashlib.sha256(canonical_json(value)).hexdigest()
+                          ^^^^^^^^^^^^^^^^^^^^^
+src\xlm\artifacts\manifest.py:153: in canonical_json
+    check(value, 0)
+src\xlm\artifacts\manifest.py:144: in check
+    check(child, depth + 1)
+src\xlm\artifacts\manifest.py:147: in check
+    check(child, depth + 1)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+item = [12499, 819068928, 65536, 819134464, [0.001, 0.001]], depth = 2
+
+    def check(item: Any, depth: int) -> None:
+        nonlocal remaining, nodes
+        nodes += 1
+        if depth > 32 or nodes > 100_000 or remaining < 0:
+>           raise ValueError("Artifact metadata exceeds bounded manifest limits")
+E           ValueError: Artifact metadata exceeds bounded manifest limits
+
+src\xlm\artifacts\manifest.py:136: ValueError
+___________ test_planned_history_guard_and_evidence_fit[3000000000] ___________
+
+tmp_path = WindowsPath('G:/Project/xlm-p35-microbatch-astra/.hardening-scratch/pytest-of-gamma/pytest-1/test_planned_history_guard_and1')
+targets = 3000000000
+
+    @pytest.mark.parametrize("targets", [1_000_000_000, 3_000_000_000, 6_000_000_000])
+    def test_planned_history_guard_and_evidence_fit(tmp_path: Path, targets: int) -> None:
+        from xlm.comparison.science_evidence import _update_boundaries
+        from xlm.training.evaluation import training_state_fingerprint
+
+        trainer = receipt_trainer(tmp_path)
+        chain = trainer.science.update_payloads
+        before = 0
+        while before < targets:
+            step = len(chain.rows) + 1
+            valid = min(65536, targets - before)
+            chain.stage(step=step, committed_before=before, valid_targets=valid, payload="a" * 64)
+            chain.commit()
+            trainer.science.lr_receipts.append([step, before, valid, before + valid, [1e-3, 1e-3]])
+            before += valid
+        # Fabricated histories prove bounded metadata handling only, no training claim.
+>       fingerprint = training_state_fingerprint(trainer)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+docs\implementation\evidence\P35-MICROBATCH-HARDENING-ASTRA\test_independent.py:266:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\xlm\training\evaluation.py:155: in training_state_fingerprint
+    "science_receipts": identity_digest(science_receipts),
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src\xlm\artifacts\manifest.py:161: in identity_digest
+    return hashlib.sha256(canonical_json(value)).hexdigest()
+                          ^^^^^^^^^^^^^^^^^^^^^
+src\xlm\artifacts\manifest.py:153: in canonical_json
+    check(value, 0)
+src\xlm\artifacts\manifest.py:144: in check
+    check(child, depth + 1)
+src\xlm\artifacts\manifest.py:147: in check
+    check(child, depth + 1)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+item = [12499, 819068928, 65536, 819134464, [0.001, 0.001]], depth = 2
+
+    def check(item: Any, depth: int) -> None:
+        nonlocal remaining, nodes
+        nodes += 1
+        if depth > 32 or nodes > 100_000 or remaining < 0:
+>           raise ValueError("Artifact metadata exceeds bounded manifest limits")
+E           ValueError: Artifact metadata exceeds bounded manifest limits
+
+src\xlm\artifacts\manifest.py:136: ValueError
+___________ test_planned_history_guard_and_evidence_fit[6000000000] ___________
+
+tmp_path = WindowsPath('G:/Project/xlm-p35-microbatch-astra/.hardening-scratch/pytest-of-gamma/pytest-1/test_planned_history_guard_and2')
+targets = 6000000000
+
+    @pytest.mark.parametrize("targets", [1_000_000_000, 3_000_000_000, 6_000_000_000])
+    def test_planned_history_guard_and_evidence_fit(tmp_path: Path, targets: int) -> None:
+        from xlm.comparison.science_evidence import _update_boundaries
+        from xlm.training.evaluation import training_state_fingerprint
+
+        trainer = receipt_trainer(tmp_path)
+        chain = trainer.science.update_payloads
+        before = 0
+        while before < targets:
+            step = len(chain.rows) + 1
+            valid = min(65536, targets - before)
+            chain.stage(step=step, committed_before=before, valid_targets=valid, payload="a" * 64)
+            chain.commit()
+            trainer.science.lr_receipts.append([step, before, valid, before + valid, [1e-3, 1e-3]])
+            before += valid
+        # Fabricated histories prove bounded metadata handling only, no training claim.
+>       fingerprint = training_state_fingerprint(trainer)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+docs\implementation\evidence\P35-MICROBATCH-HARDENING-ASTRA\test_independent.py:266:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\xlm\training\evaluation.py:155: in training_state_fingerprint
+    "science_receipts": identity_digest(science_receipts),
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src\xlm\artifacts\manifest.py:161: in identity_digest
+    return hashlib.sha256(canonical_json(value)).hexdigest()
+                          ^^^^^^^^^^^^^^^^^^^^^
+src\xlm\artifacts\manifest.py:153: in canonical_json
+    check(value, 0)
+src\xlm\artifacts\manifest.py:144: in check
+    check(child, depth + 1)
+src\xlm\artifacts\manifest.py:147: in check
+    check(child, depth + 1)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+item = [12499, 819068928, 65536, 819134464, [0.001, 0.001]], depth = 2
+
+    def check(item: Any, depth: int) -> None:
+        nonlocal remaining, nodes
+        nodes += 1
+        if depth > 32 or nodes > 100_000 or remaining < 0:
+>           raise ValueError("Artifact metadata exceeds bounded manifest limits")
+E           ValueError: Artifact metadata exceeds bounded manifest limits
+
+src\xlm\artifacts\manifest.py:136: ValueError
+- generated xml file: G:\Project\xlm-p35-microbatch-astra\docs\implementation\evidence\P35-MICROBATCH-HARDENING-ASTRA\defects-before.xml -
+=========================== short test summary info ===========================
+FAILED docs/implementation/evidence/P35-MICROBATCH-HARDENING-ASTRA/test_independent.py::test_evidence_rejects_wrong_lr_schedule_counter
+FAILED docs/implementation/evidence/P35-MICROBATCH-HARDENING-ASTRA/test_independent.py::test_planned_history_guard_and_evidence_fit[1000000000]
+FAILED docs/implementation/evidence/P35-MICROBATCH-HARDENING-ASTRA/test_independent.py::test_planned_history_guard_and_evidence_fit[3000000000]
+FAILED docs/implementation/evidence/P35-MICROBATCH-HARDENING-ASTRA/test_independent.py::test_planned_history_guard_and_evidence_fit[6000000000]
+====================== 4 failed, 16 deselected in 8.88s =======================

@@ -560,3 +560,267 @@ training.update_payload_receipt in all three arms. Measure the receipt's cost
 at the real 50M/B8 shape with a bounded profile. Record the user's
 preregistered practical and non-inferiority margins in the comparison
 manifest. Produce a frozen plan for user authorization. Do not launch any run."**
+
+## 14. Independent Astra review (2026-09-26)
+
+**Verdict: SAFE AFTER SPECIFIC FIXES.** This is an independent review of the
+receipt implementation, not authorization to run the study. Starting clean
+HEAD was `e7644a3e667db2892ece23b4ca8d737c83b800c8` on
+`review/p35-microbatch-astra`, worktree `G:\Project\xlm-p35-microbatch-astra`.
+The source diff from `d7942ba7cfa1c15f8c9eefe8770c58b655208d84` and all requested
+prior reports were reviewed before tests or product edits. The independent
+[PRETEST](../evidence/P35-MICROBATCH-HARDENING-ASTRA/PRETEST.md) recorded
+**BLOCKED pending independent verification**. Sections 1-13 above remain the
+implementing agent's historical account; this section records the later review.
+
+Evidence is under
+[`P35-MICROBATCH-HARDENING-ASTRA`](../evidence/P35-MICROBATCH-HARDENING-ASTRA/COMMANDS.md).
+Its command ledger gives exact selections, environment, exit statuses and
+failed first attempts. All data used here is authored. No network, install,
+live data, 32M pilot, formal microbatch study, research campaign, push or merge.
+
+### 14.1 Six blockers and independent attacks
+
+| Area | Independent finding and evidence | Status |
+|---|---|---|
+| Consumed tensors | `bind_consumed` compares all six consumed array fields value-for-value, partition and light metadata, optional carried provenance, then verifies the producer seal. Same-shape token/label/mask/position changes, detached replacements and both provenance/tensor mismatches refuse before compute. Device tensors refuse without receipt-induced CUDA synchronization. | VERIFIED at the pre-compute binding boundary |
+| LR / payload / data C | The loader validates full contiguous histories, every schedule counter, checkpoint step, metadata C and data C before mutable restore. Both directions of disagreement, partial endpoint, duplicate and intermediate-C attacks refuse without truncation. | VERIFIED |
+| Receipt authority | A3 throws after LR append and data commit but before chain append. No successful boundary, next update or normal checkpoint; previous checkpoint reload remains usable. The real frozen queue worker reports failure. | VERIFIED fail-stop authority; **not** rollback of every in-memory field |
+| Evaluator guard | Rows, head, staging, declaration/version and receipt presence are covered. A newly found unreadable-state escape was fixed; invalid staging, rows and whole receipt now require recovery. Receipt-disabled behavior retains its historical branch. | IMPLEMENTED / VERIFIED after fix |
+| Compact aliases | Unique stock `_encode` output works; duplicate decoded strings, non-strings and invalid codes refuse. Changed decoded strings change the digest. The encoder's dictionary interning emits unique strings. | VERIFIED |
+| Resume / forks | Same-version/same-policy on-to-on continues; on/off changes, version changes, legacy and pre-readiness evidence manufacture refuse. C>0 policy change refuses; C=0 re-origin starts at genesis. Ordinary resume and both fork-policy branches share lineage validation. | VERIFIED |
+
+The scratch adversaries are separate from Opus's mutation runner, in
+[`test_independent.py`](../evidence/P35-MICROBATCH-HARDENING-ASTRA/test_independent.py).
+All eight attacks reached their intended behavior. There are no syntax/import
+error kills and no claim that all eight were killed:
+
+| Attack | Result |
+|---|---|
+| A1: mutate after bind, before forward | **Survives intentional Python injection.** The committed row retains the earlier digest while a forward spy observes the changed token. This explicitly demonstrates the trust boundary. |
+| A2: matching LR/chain, wrong data C | Refused before restore, in both directions; metadata-step and partial-endpoint variants also refuse. |
+| A3: joint receipt commit exception | `ScienceReceiptCommitError`, then `RecoveryRequiredError` for both next update and terminal checkpoint. Prior authoritative checkpoint resumes to completion. |
+| A4: mutate an already-staged receipt during evaluation | Guard detects `update_payload_receipt`; evaluation poisons live training. |
+| A5: identical decoded alias at two codes | Explicit duplicate-alias refusal; unique/changed/non-string/out-of-table controls reach their distinct intended outcomes. |
+| A6: changed-policy fork from pre-readiness checkpoint | Refused before any restored state can manufacture a receipt history. |
+| A7: duplicate final row and recompute chain links | Refused: recomputed hashes do not make duplicated update coordinates contiguous. |
+| A8: valid final C, incorrect intermediate C | Refused: endpoint equality cannot replace update-by-update continuity. |
+
+### 14.2 After-binding mutation assessment
+
+For the current stock formal-study path, this is **FOLLOW-UP ONLY**, conditional
+on freezing the inspected code/model/objective. It is not a universal guarantee
+for every Python extension accepted by the engine. The stock Transformer reads
+token IDs through its embedding; mask operations allocate new masks; RoPE reads
+position indices and modifies its caches/activations, not input positions; CE
+uses `torch.where` for safe labels and masked losses without writing labels or
+loss masks. The no-op and auxiliary objective paths inspected do not modify the
+batch inputs. Producer arrays are process-local received data, not a live
+shared-memory writer from the child process.
+
+The tiny CUDA route diagnostic clones forward inputs and confirms that the stock
+forward leaves them unchanged on direct, producer and resumed executions. CE's
+non-mutating behavior is source-reviewed; the forward observer is not presented
+as an objective-write detector. A malicious/replaced model, objective or hook
+can still mutate after binding, as A1 proves. Such an extension would invalidate
+the equality claim and needs a separate mutation review or enforcement before
+use. No redundant payload hashing or GPU synchronization was added here.
+
+### 14.3 Three newly found defects and repairs
+
+1. **Planned histories could not be fingerprinted/extracted.** The generic
+   artifact JSON helper has a 100,000-node / 8 MiB contract. The evaluator
+   hashed full LR and payload histories with it; all planned 1B/3B/6B metadata
+   probes failed. The boundary digest also used it and exceeds the node bound
+   for the 3B/6B update lists. Added bounded streaming canonical JSON hashing
+   for declared receipt histories only, preserving the existing SHA-256 byte
+   semantics, with caller row limits and a 128 MiB byte ceiling. Generic artifact
+   limits and receipt-disabled branches are unchanged. The three planned-scale
+   tests now fingerprint real trainer state and compute boundary digests.
+2. **An unreadable evaluator mutation escaped fail-stop handling.** A staged
+   receipt containing an unserializable object made verification raise before
+   `_evaluation_compromised` was set. For a guard captured with a declared
+   receipt, inability to fingerprint is now a failed verification, so the
+   controller publishes failure and refuses continuation/checkpointing. The
+   historical receipt-disabled exception behavior is retained.
+3. **M4 extraction accepted a wrong LR schedule counter.** Checkpoint loading
+   already rejected it. Extraction now invokes the same full receipt-history
+   validator after the existing declaration/boundary checks. Keeping those
+   earlier checks preserves established diagnostic messages.
+
+Eight permanent regressions are in `tests/test_p35_receipt_history_regressions.py`.
+The first M4 scratch probe had an incorrect fixture-helper call; that failed
+before the attack and was corrected, then the actual acceptance defect was
+reproduced. It is not counted as an attack kill. The initial two hardening
+regression failures were changed refusal messages, not accepted corruption;
+their validation order was repaired and five focused related cases passed.
+
+### 14.4 Reader and serialization bounds
+
+[`bounds-compatibility.json`](../evidence/P35-MICROBATCH-HARDENING-ASTRA/bounds-compatibility.json)
+contains arithmetic, not invented training receipts. With global valid targets
+65,536 and the stock two AdamW groups, reserving 24 serialized characters for
+each finite nonnegative binary64 LR value:
+
+| Planned campaign | Updates | Final partial | Chain row-list bytes | LR row-list upper bytes | Total with 4 KiB header + 8 MiB ancillary allowance |
+|---|---:|---:|---:|---:|---:|
+| 50M / 1B | 15,259 | 51,712 | 2,474,410 | 1,389,329 | 12,256,443 |
+| 150M / 3B | 45,777 | 24,064 | 7,479,362 | 4,258,021 | 20,130,087 |
+| 300M / 6B | **91,553** | 48,128 | 14,986,626 | 8,560,965 | 31,940,295 |
+
+The historical 91,554 figure above was an arithmetic error. The active science
+guide/source comment now use 91,553. The longest planned chain row is 162 bytes,
+well below 192. All planned row histories fit the 64 MiB reader; the largest
+leaves 43,557,177 bytes after rows and the 4 KiB header allowance. No reader
+bound was raised.
+
+**Qualification:** row counts alone do not prove that every possible complete
+`science.json` fits 64 MiB. Auxiliary ledgers and optimizer-group count vary;
+the 8 MiB allowance is not a code-enforced maximum. Before the study, the frozen
+resource plan must budget the entire file within the reader limit. The review
+does not certify arbitrarily expanded metadata. The 400k row ceiling is wider
+internal storage, not a promise of extraction at every allowed storage size.
+Its maximum chain allowance is 77,604,096 bytes. With two LR groups, the stated
+numeric domain and the same ancillary allowance, the conservative combined
+bound is 129,192,704 bytes, below 128 MiB (134,217,728). Other configurations
+remain subject to the actual whole-file save check. This is mutual coherence
+under the declared shape, not a universal full-file bound derived from rows.
+
+Streaming history hashing removes the smaller, previously hidden metadata
+ceilings. It remains O(history length); large-scale guard work and full campaign
+metadata growth have not been benchmarked as a research run.
+
+### 14.5 Real CUDA / producer / fresh process
+
+[`cuda-routes.json`](../evidence/P35-MICROBATCH-HARDENING-ASTRA/cuda-routes.json)
+records four distinct child processes: synchronous, `process_depth1`, first
+checkpoint segment and resumed segment. All use the same authored payload.
+The actual CPU microbatches' canonical payload/provenance digests equal the
+committed receipt rows. Direct, producer and final resumed LR histories/chains
+are identical. Updates are `[96, 96, 5]`; resume begins from C=96. Executed
+target exposure across the three complete routes is 591 targets (the same
+197-target stream repeated three times),
+37.14 s, 1,360,753 scratch bytes. These are tiny CUDA diagnostics, not quality
+measurements. The diagnostic's clone/equality observer itself synchronizes;
+it is separate from the production receipt's CPU-only path.
+
+### 14.6 Actual 50M-shape receipt cost
+
+[`cost-50m.json`](../evidence/P35-MICROBATCH-HARDENING-ASTRA/cost-50m.json) and
+[`cost_50m.py`](../evidence/P35-MICROBATCH-HARDENING-ASTRA/cost_50m.py) record one
+bounded diagnostic on RTX 4090, Python 3.12.13, torch 2.14.0+cu126. Architecture
+is the repository 50M preset: **49,883,648 unique deployed/trainable model
+parameters**, no trainable objective auxiliaries, stock AdamW, BF16 activations
+with FP32 master parameters, statistical efficient SDPA. B8, context 512,
+global valid targets 65,536, actual producer route. The tokenizer/text is
+authored byte-token data; this is not representative language-model training.
+
+One complete warmup, one receipt-off update and one receipt-on update use fresh
+identical initialization per block: **196,608 total targets**, **20.281 s**,
+**3,685,549 scratch bytes**. No checkpoints/weights were published by this
+measurement. The subprocess watchdog is 295 s, allocator fraction 0.5, and
+output inventory remains below 1 GiB. No retry spent additional measurement
+targets. Each update has sixteen eight-sequence microbatches and one short
+one-sequence tail because valid-target masks determine the global boundary.
+The 65,536-target authored stream is repeated across the three blocks; the
+196,608 total is compute exposure, not unique corpus exposure. The model has
+199,534,592 bytes of FP32 master parameters; stock AdamW's two FP32 moments
+account analytically for 99,767,296 elements / 399,069,184 bytes, plus one step
+scalar per parameter tensor. Objective state/auxiliaries are empty. These state
+figures are analytic accounting, not a saved optimizer inventory; the measured
+GPU peaks include the actual training allocations. A separate meta-device
+inventory consumes no training targets.
+
+| Metric | Receipt off | Receipt on |
+|---|---:|---:|
+| End-to-end update seconds | 2.078709 | 1.890417 |
+| Targets/s | 31,527.26 | 34,667.48 |
+| Canonicalization CPU ms, including bind | 0 | 7.3663 |
+| Bind CPU ms, nested in canonicalization | 0 | 4.1820 |
+| Payload digest CPU ms | 0 | 4.1978 |
+| Stage + commit CPU ms | 0 | 0.0355 |
+| Total measured receipt CPU ms, no double-counted bind | 0 | **11.5996** |
+| Peak GPU allocated bytes | 3,738,034,688 | 3,738,034,688 |
+| Peak GPU reserved bytes | 4,236,247,040 | 4,236,247,040 |
+| Parent RSS bytes, sampled after update | 1,790,234,624 | 1,795,002,368 |
+| Process-tree RSS bytes, sampled after update | 2,353,168,384 | 2,357,882,880 |
+| Explicit stream synchronize calls | 1 | 1 |
+
+Each block also has two measurement-only global synchronizations. This counts
+explicit Python calls, not implicit driver synchronization. The observed
+throughput delta is **+9.96%** for receipt-on, but the fixed-order single samples,
+cold producer/optimizer startup and shared desktop make a causal speedup or
+population overhead claim unjustified. The defensible result is bounded CPU
+receipt work and unchanged observed GPU peaks/sync count. No optimization or
+training-quality conclusion follows.
+
+### 14.7 Formal v2 eligibility and pilot
+
+`microbatch_grouping_v2` can support the stated claim for a frozen stock study:
+initial weights, M5 membership/order, exact global payload chain, global batch
+and boundaries, optimizer/LR, runtime/code/environment and evaluation are
+MUST_MATCH; only `microbatch_sequences` is intentionally varied. Final weight
+digest may differ. Missing/null payload evidence is unknown and INELIGIBLE;
+ambiguous declaration or malformed chain is rejected during extraction. The
+new counter check closes the independently demonstrated extraction gap.
+
+M4 also retains historical pre-M5 sentinels. Equality of two such sentinels is
+not proof of real M5 data. The formal comparison manifest must freeze actual
+M5 membership/order identities, along with the required real data and margins.
+These remain preregistration/input requirements, not outputs of this review.
+
+Receipt-disabled pilot paths still execute no payload hashing/rows/receipt
+checks, retain their historical checkpoint/science keys and guard behavior,
+and keep the pilot plan identity. The pilot draft and all dependency files are
+byte-identical in Git to the certified parent. C0 barrier, recovery/retention
+at the 1M/4M crossings, endpoint fail-stop and queue classification are covered
+by the authored focused regressions and real frozen-worker tests. No actual
+32M pilot was run; synthetic threshold fixtures are not a pilot substitute.
+
+### 14.8 Verification ledger and closeout
+
+| Requirement | Status | Evidence / limit |
+|---|---|---|
+| Six blockers, stock scope | VERIFIED | Existing hardening/readiness tests plus independent A1-A8; A1 is an observed trust boundary |
+| Three new source repairs | IMPLEMENTED / VERIFIED | 20 independent cases and 8 permanent regressions |
+| Affected trainer/checkpoint/producer/evaluator/pilot | VERIFIED | 278 passed, exit 0 |
+| Hardening/readiness | VERIFIED after focused repair | 211 passed + 2 diagnostic failures initially; 5 related repair cases passed; no blanket rerun claim |
+| M4/M5/comparison | VERIFIED except recorded environment failure | 305 passed, one P17 CRLF raw-byte failure, exit 1 |
+| Serial queue and M3 recovery | VERIFIED | 4 passed, 66 deselected, exit 0, 341.94 s |
+| Science direct/queue/resume workflows | VERIFIED | 3 passed, exit 0, 577.58 s; both attention policies plus M2 cadence |
+| CUDA route/resume equivalence | VERIFIED | Four processes, exact chains, final partial update |
+| 50M receipt cost | VERIFIED diagnostic | Caps respected; one update per arm, no statistical performance claim |
+| Ruff / format / scoped mypy | VERIFIED | Final exits 0; 17 formatted files, 6 typed source modules |
+| Dependency / pilot draft identity | VERIFIED | Parent blob and normalized worktree hashes in bounds JSON |
+| Whole repository acceptance / long-run campaign performance | NOT RUN | Requested focused selection only; streaming guard is O(history) |
+| Arbitrary mutating Python extensions | OUT OF SCOPE | A1 survives; separate review/enforcement required for those extensions |
+| Actual formal study launch | BLOCKED pending prerequisites | Real frozen M5 data/order, margins, manifest, resource plan, authorization |
+| Network / install / live data / pilot / formal study / push / merge | OUT OF SCOPE | None performed |
+
+P17 classification is supported by actual parent evidence: the Git blob for
+`comparison/promotion.py` has SHA-256
+`04e961acb3dfe643742fa0777b7e9a98838139d8d34dbd08dda7689713aa8842` at both parent
+and starting HEAD; the CRLF worktree hash is
+`31c22cce117e2cac30cfccba75b88c752aad99337f3b290fbed72a0a759645b4`. All five
+protected files normalize exactly to their unchanged parent blobs. The failing
+golden assertion was not weakened or excluded.
+
+The next task is planning only: **"Prepare the formal P35 B8/B16/B32 comparison
+on this reviewed branch. Freeze real M5 membership/order, stock code and all
+matched contracts. Obtain and record the user's practical/NI margins; use the
+recorded 50M diagnostic for the resource plan and budget the entire science
+metadata file. Produce the comparison manifest and frozen plan for user
+authorization. Do not launch."** No margins were chosen by this review.
+
+Closeout: the final requested science workflow group passed all three cases
+(exit 0); every executed CUDA case ran, with zero skips in the recorded
+selections. The source/regression repair is local commit
+`8e5f6c57520337531c7d2c1c581b03cfdb72b4c9`. The following documentation commit
+contains this independent section, the active guide/status changes and bounded
+evidence. PowerShell logs were decoded from UTF-16 to UTF-8 for review;
+terminal trailing whitespace was trimmed from logs/JUnit after the staged
+whitespace check flagged it. Failed first-run diagnostics remain present. At closeout the evidence
+directory held 42 files / 249,625 bytes before this final ledger text. The
+earlier scratch inventory was 73,983,984 bytes, not a peak-disk measurement.
+`git diff --check` passed and dependency/pilot files have no diff from starting
+HEAD. No push, merge, tag, data upload or weight publication occurred.

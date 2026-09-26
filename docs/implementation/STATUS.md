@@ -1,5 +1,32 @@
 # Implementation status
 
+> **P35 INDEPENDENT MICROBATCH REVIEW (2026-09-26): SAFE AFTER SPECIFIC FIXES.**
+> Worktree `G:\Project\xlm-p35-microbatch-astra`, starting `e7644a3`.
+> Three repaired defects: planned-length receipt hashing exceeded generic
+> metadata limits; unreadable evaluator mutations escaped recovery-required
+> handling; M4 extraction accepted a wrong LR schedule counter. Eight new
+> regressions pass. Independent A1 demonstrates a post-binding Python mutation
+> boundary; stock Transformer/CE input behavior was reviewed and CUDA-observed.
+> Scope is frozen stock code, not arbitrary mutating extensions.
+>
+> Direct/producer CUDA chains and fresh-process continuation agree, including
+> a five-target final update. Actual 49,883,648-parameter B8/context-512/global-65536
+> diagnostic: 196,608 total targets, 20.3 s, 3.69 MB output; 11.60 ms receipt CPU
+> work/update, unchanged GPU peaks and explicit stream-sync count. One update
+> per arm cannot estimate a population throughput effect. No training-quality claim.
+>
+> Final validation is recorded in the appended independent
+> [report](reports/P35-MICROBATCH-EVIDENCE-HARDENING.md#14-independent-astra-review-2026-09-26)
+> and [command ledger](evidence/P35-MICROBATCH-HARDENING-ASTRA/COMMANDS.md).
+> Dependency files and receipt-disabled pilot draft are unchanged. No network,
+> install, live data, 32M pilot, formal study, push or merge. Before B8/B16/B32:
+> freeze real M5 data/order, stock code, practical/NI margins, comparison manifest,
+> whole-file metadata/resource budget and user authorization. Next prompt:
+> **"Prepare the formal P35 B8/B16/B32 plan from this reviewed branch using the
+> recorded 50M cost. Freeze all required inputs and margins; do not launch."**
+
+Historical implementing-agent and earlier milestone records follow.
+
 > **P35 MICRO-BATCH EVIDENCE HARDENING (2026-09-26; not a new milestone):
 > MICRO-BATCH EVIDENCE CERTIFIED — READY FOR FORMAL STUDY** (the receipt only,
 > local Windows/CUDA, self-certified by the implementing agent). Branch

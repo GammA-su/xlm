@@ -585,6 +585,12 @@ Changing any value, or the order of sequences, changes it.
   refused before any compute. A device tensor is refused without
   synchronizing. On the synchronous path the microbatches handed to the trainer
   are hashed directly.
+- **Binding trust boundary.** Binding is checked once before compute. The stock
+  Transformer, mask/RoPE and cross-entropy paths read the batch inputs without
+  modifying them. Python hooks or replacement model/objective code can mutate
+  tensors after that check; the receipt is not an immutable execution trace.
+  Freeze the inspected model/objective/code with the study. A changed extension
+  needs its own input-mutation review before claiming payload equality.
 - **Compact provenance aliases.** A producer string table with a repeated
   string, or a code outside the table, is refused. It could otherwise encode
   one decoded provenance two ways. The stock encoder never emits either.
@@ -613,14 +619,24 @@ Changing any value, or the order of sequences, changes it.
   C = 0 state starts its own chain at genesis.
 - **Evaluation guard.** The declared chain, its head, its staged receipt and
   its declaration are guarded like the LR receipts. An evaluator that changes
-  them fails its attempt and requires recovery.
+  them fails its attempt and requires recovery, including mutations that make
+  the receipt impossible to fingerprint. Declared histories use bounded
+  streaming canonical hashing, so planned runs do not inherit the generic
+  artifact-metadata node/byte ceilings.
 - **Bounds.** At most 400,000 committed updates and 192 bytes per serialized
-  row. The largest planned run, 300M/6B, has 91,554 updates. The chain stays
-  within the 128 MiB `science.json` read bound, and a larger file is refused
-  at save time.
+  row. The largest planned run, 300M/6B, has 91,553 updates, ending with 48,128
+  valid targets. Its chain and two-group LR rows occupy at most 23,547,591
+  bytes under the stock numeric contract. The 400k limit is a wider internal
+  storage ceiling, not a promise that every such checkpoint is M4-extractable.
+  Complete `science.json` is capped at 128 MiB when saved; the M4 reader has
+  a separate 64 MiB limit. The frozen resource plan must account for the whole
+  file, including auxiliary ledgers and optimizer groups. The independent
+  bounds report reserves 8 MiB for ancillary metadata; this is an allowance,
+  not an enforced metadata maximum. No reader limit was raised.
 - **Evidence.** Evidence v3 reads the chain. Its presence and version must
   match the envelope's `training.update_payload_receipt`. v1/v2 records read
-  "no receipt".
+  "no receipt". Extraction also checks each LR schedule counter and the full
+  receipt history against checkpoint step, metadata C and committed data C.
 
 Runs without the declaration execute none of these paths.
 
