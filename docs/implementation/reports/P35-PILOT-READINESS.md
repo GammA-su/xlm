@@ -599,6 +599,8 @@ Mutation method (runner SHA-256 `8fa3a0d7…` and every edit in
 | 9 | microbatch v2 ignores a chain mismatch | `test_a_payload_chain_mismatch…`, `test_a_run_without_the_receipt…` | `assert not True` (eligible) |
 | 10 | a required event without a route still plans | `test_missing_policy_blocks…`, `test_authored_fixtures_also_fail_closed…[recovery_checkpoints-lost1]` | `[] == ['quick_lm@1000000', …]` |
 
+After the mutation round, the only source change was restoring the original CRLF line endings of `cli/train_cmd.py`, `experiments/queue.py`, `training/checkpoint.py` and `training/trainer.py`, which the edits had normalized to LF. `git diff --ignore-cr-at-eol` is empty, and none of these files is a mutation target.
+
 A first runner attempt used a node id without its parametrization suffix. The
 control run caught it (pytest exit 4, "no tests ran") before any mutant ran.
 The id was corrected; no mutant verdict was affected.
