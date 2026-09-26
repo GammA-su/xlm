@@ -14,7 +14,8 @@ long documents rebuilds RoPE caches on the scored module). A guard captures
 and restores Python/NumPy/torch CPU/CUDA RNG, per-module train/eval flags and
 grad mode, and verifies that parameters, all buffers, gradients, optimizer,
 schedule, objective, scaler, counters, the committed data cursor, science
-receipts and process runtime flags are unchanged. A change to live state is
+receipts (including a declared update payload receipt chain and its staging)
+and process runtime flags are unchanged. A change to live state is
 not repaired: the attempt fails and the trainer refuses to continue or
 checkpoint until it is resumed from a durable checkpoint.
 """
@@ -105,10 +106,24 @@ def _runtime_flags() -> dict[str, Any]:
 
 
 def training_state_fingerprint(trainer: Any) -> dict[str, str]:
-    """Digests of every piece of training state evaluation must not change."""
+    """Digests of every piece of training state evaluation must not change.
+
+    With a declared update payload receipt, its declaration, committed rows,
+    head and staged receipt are one more guarded component
+    (``update_payload_receipt``); runs without it keep the historical component
+    set, and a receipt attached by an evaluator shows as a science-receipt change.
+    """
     objective = trainer.objective
     batcher_state = json.dumps(trainer.batcher.get_state(), sort_keys=True, default=repr)
-    return {
+    payloads = trainer.science.update_payloads
+    science_receipts: dict[str, Any] = {
+        "train_start_rng": trainer.science.train_start_rng,
+        "lr_receipts": trainer.science.lr_receipts,
+        "runtime_receipts": len(trainer.science.runtime_receipts),
+    }
+    if payloads is not None:
+        science_receipts["update_payload_receipt_declared"] = True
+    fingerprint = {
         "model_tensors": module_tensor_digest(trainer.model),
         "model_attributes": identity_digest(_module_attributes(trainer.model)),
         "module_modes": identity_digest(
@@ -137,15 +152,12 @@ def training_state_fingerprint(trainer: Any) -> dict[str, str]:
             }
         ),
         "data_cursor": identity_digest(batcher_state),
-        "science_receipts": identity_digest(
-            {
-                "train_start_rng": trainer.science.train_start_rng,
-                "lr_receipts": trainer.science.lr_receipts,
-                "runtime_receipts": len(trainer.science.runtime_receipts),
-            }
-        ),
+        "science_receipts": identity_digest(science_receipts),
         "runtime_flags": identity_digest(_runtime_flags()),
     }
+    if payloads is not None:
+        fingerprint["update_payload_receipt"] = identity_digest(payloads.guard_state())
+    return fingerprint
 
 
 def _capture_rng() -> dict[str, Any]:

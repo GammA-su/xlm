@@ -64,6 +64,12 @@ class RecoveryRequiredError(TrainerError):
     """An interrupted optimizer boundary must resume in a fresh trainer."""
 
 
+class ScienceReceiptCommitError(RecoveryRequiredError):
+    """The update's data/optimizer authority committed but its required science receipts
+    did not: the boundary is poisoned. No further update, checkpoint or success follows;
+    resume from the previous authoritative checkpoint."""
+
+
 class InitialEvaluationBarrierError(TrainerError):
     """Required C = 0 evaluations are not complete: optimizer update 1 may not begin."""
 
@@ -520,6 +526,10 @@ class Trainer:
         if payloads is not None:
             from xlm.data.sampling.update_payload import canonical_update
 
+            if not self.science.policy.is_science:
+                raise TrainerError("an update payload receipt requires the xlm-science-v1 policy")
+            # On the producer path this also proves the consumed microbatches are the
+            # pending prepared update (a replaced tensor is refused before transfer).
             canonical = canonical_update(self.batcher, microbatches)
             if canonical.valid_targets != n_global:
                 raise TrainerError(
@@ -690,13 +700,28 @@ class Trainer:
 
         # 8. Commit data batcher state for this completed update
         self.batcher.commit()
-        self._update_in_doubt = False
-        self._consecutive_scaler_skips = 0
-        if receipt is not None:
-            # Only a committed update publishes an LR receipt.
-            self.science.record_lr(receipt)
-        if payloads is not None:
-            payloads.commit()  # the same committed boundary as the LR receipt
+        if payloads is None:
+            self._update_in_doubt = False
+            self._consecutive_scaler_skips = 0
+            if receipt is not None:
+                # Only a committed update publishes an LR receipt.
+                self.science.record_lr(receipt)
+        else:
+            # A required payload receipt is part of the update's authority: the LR
+            # receipt and payload row commit as one science operation, and the
+            # boundary stays in doubt until both exist. A failure here poisons the
+            # boundary (no update, checkpoint or success until a fresh trainer
+            # reloads the previous authoritative checkpoint); nothing is rolled back.
+            assert receipt is not None  # staging refused non-science policies above
+            try:
+                self.science.commit_receipted_update(receipt)
+            except BaseException as exc:
+                raise ScienceReceiptCommitError(
+                    f"update {self.step} committed its data and optimizer state but its "
+                    "required LR/payload receipts did not commit; the boundary is poisoned"
+                ) from exc
+            self._update_in_doubt = False
+            self._consecutive_scaler_skips = 0
         if self.evaluation is not None:
             # First crossing at this committed C; recorded before any periodic
             # checkpoint so that checkpoint knows the state still owes events.

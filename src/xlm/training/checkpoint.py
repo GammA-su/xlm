@@ -153,6 +153,22 @@ class CheckpointManager:
         """
         if self.boundary_guard is not None:
             self.boundary_guard()
+        if science is not None and science.update_payloads is not None:
+            # A declared payload receipt is part of the committed state: an
+            # incoherent receipt set is never published as a checkpoint.
+            from xlm.config.science import ScientificPolicyError
+            from xlm.training.science import ScientificRuntimeError
+
+            if batcher is None:
+                raise CheckpointError("a declared update payload receipt needs the data state")
+            try:
+                science.check_receipt_alignment(
+                    step=step,
+                    committed=committed_valid_targets,
+                    data_committed=batcher.get_state().get("committed_valid_targets"),
+                )
+            except (ScientificPolicyError, ScientificRuntimeError) as exc:
+                raise CheckpointError(f"receipt history is not coherent: {exc}") from exc
         now_str = datetime.now(UTC).isoformat()
         from xlm.artifacts.manifest import identity_digest
         from xlm.artifacts.store import compute_file_sha256
@@ -287,9 +303,17 @@ class CheckpointManager:
             # file set; the absence of science.json is what marks them legacy.
             if science is not None and science.policy.is_science:
                 science_path = stage_dir / "science.json"
-                science_path.write_text(
-                    json.dumps(science.to_checkpoint(), sort_keys=True), encoding="utf-8"
-                )
+                science_text = json.dumps(science.to_checkpoint(), sort_keys=True)
+                if (
+                    science.update_payloads is not None
+                    and len(science_text.encode("utf-8")) > MAX_SCIENCE_STATE_BYTES
+                ):
+                    # Never publish receipts no loader would accept (fail closed here).
+                    raise CheckpointError(
+                        f"science.json with its update payload receipt exceeds the "
+                        f"{MAX_SCIENCE_STATE_BYTES}-byte bound"
+                    )
+                science_path.write_text(science_text, encoding="utf-8")
                 files_to_publish["science.json"] = science_path
 
             # 6b. Gradient scaler state (FP16 mode only; absent otherwise, never faked)
@@ -458,13 +482,11 @@ class CheckpointManager:
                 science._saved_checkpoints(saved_science)
             except ScientificPolicyError as exc:
                 raise IncompatibleCheckpointError(str(exc)) from exc
-        if science is not None and saved_science is not None and saved_policy == current_policy:
-            # Update payload receipt chain (pilot readiness): presence and every link,
-            # before any state is restored; forks keep the data lineage, so they too.
-            try:
-                science._saved_update_payloads(saved_science)
-            except ScientificPolicyError as exc:
-                raise IncompatibleCheckpointError(str(exc)) from exc
+        # Update payload receipt lineage, before any state is restored, for ordinary
+        # resume and every kind of fork (a no-op when neither side has the receipt).
+        self._check_receipt_lineage(
+            checkpoint_dir, meta, science, saved_science, saved_policy == current_policy, is_fork
+        )
 
         # 2c. Document-order identity (P35 M5), before any state is restored. Forks
         # keep the data lineage, so they require the identical order as well.
@@ -610,6 +632,88 @@ class CheckpointManager:
                 raise IncompatibleCheckpointError(str(exc)) from exc
 
         return meta
+
+    @staticmethod
+    def _check_receipt_lineage(
+        checkpoint_dir: Path,
+        meta: CheckpointMetadata,
+        science: ScientificState | None,
+        saved_science: dict[str, Any] | None,
+        same_policy: bool,
+        is_fork: bool,
+    ) -> None:
+        """Update payload receipt semantics across resume and forks (refuse before restore).
+
+        * Presence and version never change within a lineage, for ordinary
+          resume and for every fork (same policy, changed policy, legacy or
+          pre-readiness parent): enabling, disabling or re-versioning the receipt
+          is a new experiment from initialization.
+        * A carried chain must agree with the checkpoint's LR history, step,
+          committed count and committed data state (:func:`check_receipt_history`).
+        * A same-policy fork inherits the chain with the data lineage. A
+          changed-policy fork does not adopt the parent's LR history, so it may
+          not continue a chain: it is refused unless it starts from the initial
+          C = 0 state, where the child begins its own chain at genesis.
+        """
+        required = science is not None and science.update_payloads is not None
+        saved = saved_science.get("update_payloads") if saved_science is not None else None
+        if not required and saved is None:
+            return  # neither side declares the receipt: historical behavior
+        from xlm.config.science import ScientificPolicyError
+        from xlm.data.sampling.update_payload import CHAIN_VERSION, PAYLOAD_VERSION
+        from xlm.training.science import check_receipt_history
+
+        route = "fork" if is_fork else "ordinary resume"
+        if required != (saved is not None):
+            raise IncompatibleCheckpointError(
+                "update payload receipt presence differs between checkpoint and run "
+                f"({'receipted' if saved is not None else 'receipt-free or pre-readiness'} "
+                f"checkpoint, {'receipted' if required else 'receipt-free'} run, {route}); a "
+                "chain cannot start mid-lineage or be dropped: enabling or disabling the "
+                "receipt is a new experiment from initialization"
+            )
+        assert science is not None and saved_science is not None
+        if (
+            not isinstance(saved, dict)
+            or saved.get("version") != PAYLOAD_VERSION
+            or saved.get("chain_version") != CHAIN_VERSION
+        ):
+            found = (
+                (saved.get("version"), saved.get("chain_version"))
+                if isinstance(saved, dict)
+                else None
+            )
+            raise IncompatibleCheckpointError(
+                f"update payload receipt version differs (checkpoint {found}, run "
+                f"{(PAYLOAD_VERSION, CHAIN_VERSION)}, {route}); a changed receipt version is a "
+                "new experiment, never a continuation"
+            )
+        data_path = checkpoint_dir / "data_state.json"
+        if not data_path.is_file():
+            raise CorruptCheckpointError(f"Missing data_state.json at {checkpoint_dir}")
+        data_state = json.loads(data_path.read_text(encoding="utf-8"))
+        try:
+            check_receipt_history(
+                saved_science,
+                step=meta.step,
+                committed=meta.committed_valid_targets,
+                data_committed=(
+                    data_state.get("committed_valid_targets")
+                    if isinstance(data_state, dict)
+                    else None
+                ),
+            )
+            if same_policy:
+                science._saved_update_payloads(saved_science)
+        except ScientificPolicyError as exc:
+            raise IncompatibleCheckpointError(str(exc)) from exc
+        if not same_policy and (meta.step != 0 or meta.committed_valid_targets != 0):
+            raise IncompatibleCheckpointError(
+                "a changed-scientific-policy fork cannot continue an update payload receipt "
+                "chain: the chain certifies one policy's committed lineage from initialization "
+                "and the fork does not adopt the parent's LR history; start a new experiment "
+                "(a fork of the initial C=0 state begins its own chain at genesis)"
+            )
 
     @staticmethod
     def _read_science_state(checkpoint_dir: Path) -> dict[str, Any] | None:

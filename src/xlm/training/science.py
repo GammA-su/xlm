@@ -118,6 +118,59 @@ class ScientificState:
             raise ScientificRuntimeError("LR receipt log exceeds its bound")
         self.lr_receipts.append(receipt)
 
+    def commit_receipted_update(self, receipt: list[Any]) -> None:
+        """Commit one update's LR receipt and payload row as one science operation.
+
+        Used only when the update payload receipt is declared. Everything that
+        can refuse (bounds, the staged receipt matching this update, lock-step
+        with the LR history) is checked before either history is appended. A
+        failure in here leaves the trainer's boundary in doubt: the caller never
+        treats the update as authoritative (see ``Trainer._train_update``).
+        """
+        chain = self.update_payloads
+        if chain is None:
+            raise ScientificRuntimeError("no update payload receipt is declared")
+        step, before, valid = (int(v) for v in receipt[:3])
+        if len(self.lr_receipts) >= MAX_LR_RECEIPTS:
+            raise ScientificRuntimeError("LR receipt log exceeds its bound")
+        if len(self.lr_receipts) != len(chain.rows) or (
+            chain.rows and [int(v) for v in chain.rows[-1][:3]] != self.lr_receipts[-1][:3]
+        ):
+            raise ScientificRuntimeError(
+                "LR receipts and the update payload chain are not in lock step"
+            )
+        chain.prepare_commit(step, before, valid)  # refuses before anything is appended
+        self.lr_receipts.append(receipt)
+        chain.commit()
+
+    def check_receipt_alignment(self, *, step: int, committed: int, data_committed: Any) -> None:
+        """Save-time check (declared receipt only, O(1)): histories, counters and data agree.
+
+        The full row-by-row check runs when a checkpoint is loaded
+        (:func:`check_receipt_history`); commits keep the histories in lock
+        step, so the tails decide agreement here.
+        """
+        chain = self.update_payloads
+        if chain is None:
+            return
+        lr = self.lr_receipts
+        if not len(lr) == len(chain.rows) == step:
+            raise ScientificRuntimeError(
+                f"receipt history has {len(lr)} LR and {len(chain.rows)} payload rows for "
+                f"step {step}"
+            )
+        endpoint = 0
+        if lr:
+            tail = [int(v) for v in lr[-1][:3]]
+            if tail != [int(v) for v in chain.rows[-1][:3]]:
+                raise ScientificRuntimeError("LR and payload receipt tails disagree")
+            endpoint = tail[1] + tail[2]
+        if not endpoint == committed == _data_committed(data_committed):
+            raise ScientificRuntimeError(
+                f"receipt history ends at C={endpoint}, the trainer committed {committed} and "
+                f"the data state {data_committed}"
+            )
+
     def record_runtime(self, receipt: dict[str, Any]) -> None:
         if len(self.runtime_receipts) >= MAX_RUNTIME_RECEIPTS:
             raise ScientificRuntimeError("runtime receipt log exceeds its bound")
@@ -136,6 +189,12 @@ class ScientificState:
         if self.checkpoints is not None:
             payload["checkpoints"] = self.checkpoints.to_dict()
         if self.update_payloads is not None:
+            if len(self.update_payloads.rows) != len(self.lr_receipts):
+                # An incoherent receipt set is never serialized as scientific history.
+                raise ScientificRuntimeError(
+                    "LR receipts and the update payload chain disagree in length; the "
+                    "boundary is not authoritative"
+                )
             payload["update_payloads"] = self.update_payloads.to_dict()
         return payload
 
@@ -270,6 +329,82 @@ class ScientificState:
         except CadenceError as exc:
             raise ScientificPolicyError(f"fork evaluation plan: {exc}") from exc
         self.evaluation = EvaluationLedger(plan, self.evaluation.evaluator_digests)
+
+
+def _data_committed(value: Any) -> int:
+    if type(value) is not int or value < 0:
+        raise ScientificPolicyError(
+            "the committed data state records no committed_valid_targets; a required update "
+            "payload receipt cannot be bound to it"
+        )
+    return value
+
+
+def check_receipt_history(
+    saved: Mapping[str, Any], *, step: int, committed: int, data_committed: Any
+) -> None:
+    """Load-time check of a checkpoint carrying the update payload receipt (Astra A7).
+
+    Runs before any model, optimizer, scaler, schedule or data state is restored.
+    The payload chain must verify from its genesis; the LR receipts must be one
+    contiguous committed-update history from ``(step 1, C 0)`` whose schedule
+    counter is each update's endpoint ``C + N``; both must agree update by
+    update; and the history's update count and final endpoint ``C`` must equal
+    the checkpoint step, the checkpoint's committed count and the committed data
+    state's count. History ahead of the data (claimed work the data never
+    committed) and data ahead of the history (work without required receipts)
+    are both refused; neither history is ever truncated or extended to fit.
+    """
+    from xlm.data.sampling.update_payload import PayloadReceiptError, verify_chain
+
+    raw = saved.get("update_payloads")
+    try:
+        verify_chain(raw)  # type: ignore[arg-type]
+    except (PayloadReceiptError, AttributeError, KeyError, TypeError, ValueError) as exc:
+        raise ScientificPolicyError(f"unreadable update payload chain: {exc}") from exc
+    receipts = saved.get("lr_receipts")
+    if not isinstance(receipts, Mapping) or receipts.get("columns") != list(LR_RECEIPT_COLUMNS):
+        raise ScientificPolicyError("unknown LR receipt layout")
+    rows = receipts.get("rows")
+    if not isinstance(rows, list) or len(rows) > MAX_LR_RECEIPTS:
+        raise ScientificPolicyError("LR receipt rows are missing or unbounded")
+    endpoint = 0
+    for number, row in enumerate(rows, start=1):
+        if (
+            not isinstance(row, list)
+            or len(row) != len(LR_RECEIPT_COLUMNS)
+            or any(type(value) is not int for value in row[:4])
+        ):
+            raise ScientificPolicyError(f"malformed LR receipt at update {number}")
+        if row[0] != number or row[1] != endpoint or row[2] <= 0 or row[3] != row[1] + row[2]:
+            raise ScientificPolicyError(
+                f"LR receipts are not one contiguous committed-update history at update {number}"
+            )
+        endpoint += row[2]
+    if [list(r[:3]) for r in raw["rows"]] != [list(r[:3]) for r in rows]:  # type: ignore[index]
+        raise ScientificPolicyError(
+            "update payload chain does not match the committed LR receipts update by update"
+        )
+    data = _data_committed(data_committed)
+    if endpoint > data:
+        raise ScientificPolicyError(
+            f"LR/payload receipt history claims C={endpoint}, ahead of the committed data "
+            f"state C={data}: refused, never truncated"
+        )
+    if data > endpoint:
+        raise ScientificPolicyError(
+            f"committed data state C={data} exceeds the LR/payload receipt history "
+            f"C={endpoint}: committed work without its required receipts is refused"
+        )
+    if committed != endpoint:
+        raise ScientificPolicyError(
+            f"checkpoint metadata records C={committed}, the receipt history and data state "
+            f"C={endpoint}"
+        )
+    if step != len(rows):
+        raise ScientificPolicyError(
+            f"checkpoint step {step} differs from the {len(rows)} receipted committed updates"
+        )
 
 
 def validate_group_lr_semantics(
