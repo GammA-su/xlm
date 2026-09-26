@@ -72,7 +72,7 @@ CHAIN_VERSION = "xlm-update-payload-chain-v1"
 CHAIN_COLUMNS = ("step", "committed_before", "valid_targets", "payload_digest", "chain_digest")
 CHAIN_GENESIS = identity_digest({"version": CHAIN_VERSION, "genesis": PAYLOAD_VERSION})
 #: Committed-update bound. The largest planned P35 run is the 300M confirmation,
-#: 6B targets at 65,536 per update = 91,554 updates; a 1B-target 50M run is
+#: 6B targets at 65,536 per update = 91,553 updates; a 1B-target 50M run is
 #: 15,259. 400,000 also covers a 1B-parameter model at 20 targets/parameter
 #: (20B targets = 305,176 updates) with headroom, while keeping the serialized
 #: chain (below) and the lock-step LR receipts inside the existing 128 MiB
@@ -102,6 +102,26 @@ _LE_INT64 = np.dtype("<i8")
 
 class PayloadReceiptError(ValueError):
     """An update payload cannot be canonicalized, or a chain is inconsistent."""
+
+
+def receipt_history_digest(value: Any) -> str:
+    """Hash bounded receipt history with the existing canonical JSON bytes.
+
+    Artifact metadata's 100,000-node / 8 MiB limits are too small for planned
+    LR/payload histories. Callers bound the row count; streaming serialization
+    enforces the science-state 128 MiB ceiling without a second full JSON copy.
+    This does not relax the artifact manifest limits or change digest semantics.
+    """
+    digest = hashlib.sha256()
+    size = 0
+    encoder = json.JSONEncoder(sort_keys=True, separators=(",", ":"), allow_nan=False)
+    for chunk in encoder.iterencode(value):
+        raw = chunk.encode("utf-8")
+        size += len(raw)
+        if size > 128 * 1024**2:
+            raise PayloadReceiptError("receipt history exceeds the 128 MiB science-state bound")
+        digest.update(raw)
+    return digest.hexdigest()
 
 
 def _int_array(value: Any, name: str) -> np.ndarray:

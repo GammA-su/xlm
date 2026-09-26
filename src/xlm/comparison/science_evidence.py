@@ -254,7 +254,9 @@ def _order_identity(config_order: Any, state_order: Any) -> tuple[str, str, str]
     return order_id, membership_id, M5_ORDER_POLICY
 
 
-def _update_boundaries(rows: list[list[Any]], committed: int) -> tuple[str, int]:
+def _update_boundaries(
+    rows: list[list[Any]], committed: int, *, receipted: bool = False
+) -> tuple[str, int]:
     """Digest of every committed update's (committed_before, valid_targets)."""
     position = 0
     boundaries: list[list[int]] = []
@@ -268,6 +270,12 @@ def _update_boundaries(rows: list[list[Any]], committed: int) -> tuple[str, int]
         raise EvidenceError(
             f"LR receipts account for {position} targets, checkpoint committed {committed}"
         )
+    if receipted:
+        from xlm.data.sampling.update_payload import MAX_CHAIN_ROWS, receipt_history_digest
+
+        if len(rows) > MAX_CHAIN_ROWS:
+            raise EvidenceError("update boundary history exceeds its row bound")
+        return receipt_history_digest(boundaries), len(boundaries)
     return identity_digest(boundaries), len(boundaries)
 
 
@@ -354,12 +362,26 @@ def extract_run_evidence(
     committed = int(meta["committed_valid_targets"])
     if int(data_state.get("committed_valid_targets", -1)) != committed:
         raise EvidenceError("data state and checkpoint metadata disagree on committed targets")
-    boundaries_digest, updates = _update_boundaries(lr["rows"], committed)
+    receipted = training.get("update_payload_receipt") is not None
+    boundaries_digest, updates = _update_boundaries(lr["rows"], committed, receipted=receipted)
     if updates != int(meta["step"]):
         raise EvidenceError("LR receipts and checkpoint step disagree")
     payload_receipt, payload_chain = _update_payload_receipt(
         science, lr["rows"], training.get("update_payload_receipt")
     )
+    if receipted:
+        from xlm.config.science import ScientificPolicyError
+        from xlm.training.science import check_receipt_history
+
+        try:
+            check_receipt_history(
+                science,
+                step=meta["step"],
+                committed=meta["committed_valid_targets"],
+                data_committed=data_state.get("committed_valid_targets"),
+            )
+        except ScientificPolicyError as exc:
+            raise EvidenceError(f"inconsistent receipt history: {exc}") from exc
 
     bindings = envelope["bindings"]
     components = bindings["components"]

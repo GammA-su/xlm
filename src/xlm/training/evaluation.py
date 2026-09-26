@@ -123,6 +123,13 @@ def training_state_fingerprint(trainer: Any) -> dict[str, str]:
     }
     if payloads is not None:
         science_receipts["update_payload_receipt_declared"] = True
+        from xlm.data.sampling.update_payload import MAX_CHAIN_ROWS, receipt_history_digest
+
+        if max(len(payloads.rows), len(trainer.science.lr_receipts)) > MAX_CHAIN_ROWS:
+            raise ValueError("guarded receipt history exceeds its row bound")
+        science_digest = receipt_history_digest(science_receipts)
+    else:
+        science_digest = identity_digest(science_receipts)
     fingerprint = {
         "model_tensors": module_tensor_digest(trainer.model),
         "model_attributes": identity_digest(_module_attributes(trainer.model)),
@@ -152,11 +159,11 @@ def training_state_fingerprint(trainer: Any) -> dict[str, str]:
             }
         ),
         "data_cursor": identity_digest(batcher_state),
-        "science_receipts": identity_digest(science_receipts),
+        "science_receipts": science_digest,
         "runtime_flags": identity_digest(_runtime_flags()),
     }
     if payloads is not None:
-        fingerprint["update_payload_receipt"] = identity_digest(payloads.guard_state())
+        fingerprint["update_payload_receipt"] = receipt_history_digest(payloads.guard_state())
     return fingerprint
 
 
@@ -242,8 +249,16 @@ class TrainingStateGuard:
         if torch.is_grad_enabled() != self._grad_enabled:
             restored.append("grad_enabled")
         torch.set_grad_enabled(self._grad_enabled)
-        after = training_state_fingerprint(self.trainer)
-        changed = sorted(key for key, value in self._before.items() if after.get(key) != value)
+        try:
+            after = training_state_fingerprint(self.trainer)
+        except Exception:
+            if "update_payload_receipt" not in self._before:
+                raise  # receipt-disabled runs retain the historical guard behavior
+            # Unreadable live state is a failed verification, never a recoverable
+            # evaluator error. The controller publishes FAILED and poisons the run.
+            changed = ["update_payload_receipt_unreadable"]
+        else:
+            changed = sorted(key for key, value in self._before.items() if after.get(key) != value)
         if not _rng_equal(self._rng, _capture_rng()):
             changed.append("rng_restore")
         return {"restored": restored, "changed": changed, "verified": sorted(self._before)}
