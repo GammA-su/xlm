@@ -1,7 +1,37 @@
 # Implementation status
 
+> **P35 Milestone 2 certification closeout (2026-09-26): M2 CERTIFIED — SAFE TO
+> INTEGRATE** (opt-in, authored/synthetic scope). No product change; one new test
+> (`92e5eba`). A new CUDA frozen workflow runs an authored cadence through CLI
+> train, experiment plan/submit + queue run, and CLI resume. Results:
+>
+> - Thresholds 8/24 fire at the natural boundaries C=16/32, and the endpoint at 33.
+> - Update sizes stay 16/16/1 and the M1 LR receipts are unchanged.
+> - Checkpoints owe events between crossing and scoring; an owed event is scored
+>   after a fresh-store resume, and nothing is rescored at an at-budget resume.
+> - Direct and queued receipts are identical, and the training state is bitwise
+>   equal to a cadence-free run.
+> - One envelope; legacy is refused.
+> - Mutants M-A (crossing after checkpoint) and M-C (queue drops the controller)
+>   are both killed.
+>
+> Missing regressions, `-n 0`, 717.5 s: 52 passed, 3 failed, 0 skipped:
+>
+> - M1 workflow: 2/2.
+> - Harness adapter: 14/14.
+> - Declared inputs: 36/39.
+>
+> The 3 failures are `xlm evaluate` CLI nodes that need the CPU-only frozen
+> extra. They fail identically on a clean `517a9b8` export and pass with
+> `--device cuda`: a pre-existing environment issue, not M2. The 34 cited
+> guard/attempt/firewall nodes were rerun green. Real-inventory scorer
+> throughput is unmeasured, and FAILED-event rescoring belongs to M3. See
+> [P35-M2 §8](reports/P35-M2.md#8-certification-closeout-2026-09-26).
+> Next: **P35 Milestone 3 only** (prompt in §8.5).
+
 > **P35 Milestone 2 (2026-09-25): IMPLEMENTED/VERIFIED within the authored/synthetic
 > scope; opt-in, safe to integrate once the listed NOT RUN regressions pass.**
+> *(Superseded by the certification closeout above.)*
 > Branch `research/p35-m2-eval-cadence` from `517a9b8`. Science-v1
 > `evaluation.science` adds an absolute committed-target cadence (§K tables
 > verbatim) with `quick_lm`, `full_lm`, `search_benchmark` and `endpoint_confirmation`
