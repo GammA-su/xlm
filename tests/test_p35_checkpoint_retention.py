@@ -201,20 +201,25 @@ def test_replacement_is_published_and_verified_before_any_retirement(tmp_path: P
     store = trainer.checkpoint_manager.store
     original = store.retire_artifact
     seen: list[tuple[str, list[str]]] = []
+    violations: list[str] = []
 
     def observe(artifact_id: str, kind: str, *, expected_manifest_sha256: str) -> int:
-        replacement = trainer.checkpoints.ledger.retention_log  # type: ignore[union-attr]
-        del replacement
+        # Record, never raise: retention records a failed retirement and continues,
+        # so an exception raised here would be swallowed instead of failing the test.
         newest = max(
             trainer.checkpoints.ledger.published(),  # type: ignore[union-attr]
             key=lambda r: r.actual_committed_targets,
         )
-        store.verify_artifact(tmp_path / "checkpoints" / newest.artifact_id)
+        try:
+            store.verify_artifact(tmp_path / "checkpoints" / newest.artifact_id)
+        except Exception as exc:  # noqa: BLE001 - asserted empty below
+            violations.append(f"{artifact_id} retired before {newest.artifact_id}: {exc}")
         seen.append((artifact_id, present(tmp_path)))
         return original(artifact_id, kind, expected_manifest_sha256=expected_manifest_sha256)
 
     store.retire_artifact = observe  # type: ignore[method-assign]
     run_all(trainer)
+    assert violations == []
     assert [name for name, _ in seen] == [
         "m2_run_ckpt-t8-a001",
         "m2_run_ckpt-t16-a001",
