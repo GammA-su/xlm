@@ -1,5 +1,51 @@
 # Implementation status
 
+> **P35 Milestone 5 LOCAL WINDOWS/CUDA CERTIFICATION CLOSEOUT (2026-09-26): M5
+> CERTIFIED — SAFE TO INTEGRATE** as an opt-in. Worktree
+> `G:\Project\xlm-p35-m5-local`, branch `review/p35-m5-local`, starting HEAD
+> `dc41a32`, clean, exact certified parent `221c4e0` (locally certified M4).
+> Windows build 26200, Python 3.12.13, torch 2.14.0+cu126, CUDA 12.6, RTX 4090
+> (driver 596.49), NumPy 2.5.3, lm-eval 0.4.13, no XLM CUDA workload, sequential
+> GPU work. No network/install/sync/live-data/Mix-01/real-orders/training/
+> pilot/campaign/push/merge; no new study; no product-source change; dependency
+> files unchanged.
+>
+> - **Primary M5 runtime:** 86/86 (51.4 s), all torch nodes executed. First run
+>   81/86: one parametrized schema test used a POSIX-only `/abs/...` fixture
+>   (not absolute on Windows); test-only fixture fix, product untouched.
+> - **Resume:** same-order A→A exact (weights/cursor/trace/order receipt);
+>   cross-order A→B, A→native, native→A (stream) and A→B-fork refused BEFORE any
+>   model/optimizer/schedule/scaler/data restore. Forks cannot change order by
+>   design — new experiment required.
+> - **Producer:** real spawned `process_depth1` serves the frozen order
+>   (input_ids+labels equal, states equal, 5 updates). **Pilot:** real authored
+>   order bindings VERIFIED for A and B (identities differ, membership kept);
+>   foreign/tampered/missing/unpinned/outside-root BLOCK; 32M draft stays
+>   NONEXECUTABLE.
+> - **M4 regression:** 226/227 (sole failure = proven pre-existing CRLF
+>   artifact; P17 blobs untouched, 47/47 comparison green). **M1–M3 group:**
+>   205/205 closing (one stale exact-dict assertion gained the designed
+>   `document_order: VERIFIED` entry — test-only). **Serial:** 2 passed, 24
+>   deselected. **Workflow:** 3/3.
+> - **Real M5 evidence:** bounded frozen ordered toy (2048 targets, SUCCEEDED)
+>   extracts as v2 with real order `a955f9a4…`/membership `a18d59ab…`/M5 policy,
+>   all cross-checks OK. **Pre-M5:** exact sentinels preserved, v1 verifiable.
+>   **Bundle/allocation:** 26/26 (C0/C2/C4→A, C1/C3→B; all-A, foreign
+>   membership, relabelled-seed, retry-inflation all refused).
+> - **Interleaving:** quotas/budget/boundaries identical across orders; traces
+>   differ by design (same membership ≠ same token sequence).
+> - **Static:** ruff check/format clean (28 files); scoped mypy 16 files clean
+>   (cloud torch-absent ignores reassessed as justified with torch present);
+>   dependency diff empty.
+> - **Risks A–D** reviewed, no redesign: recomputation cost (future pilot
+>   concern), 20M-doc bound (no problem), mixture-substitution ineligibility (by
+>   design), v2 versioning (explicit everywhere).
+>
+> See [P35-M5 §19](reports/P35-M5.md#19-local-windowscuda-certification-closeout-2026-09-26-rtx-4090).
+> Next: integrate M5; pin real tokenizer/shards/exposure; build two independent
+> real order manifests; choose margins from policy/variance; obtain GPU
+> authorization. DO NOT START another milestone here.
+
 > **P35 Milestone 5 (2026-09-26): IMPLEMENTED; VERIFIED at the data/identity/
 > evidence level; NEEDS LOCAL CERTIFICATION.** Branch
 > `research/p35-m5-document-order` from certified M4 `221c4e0`. Linux cloud

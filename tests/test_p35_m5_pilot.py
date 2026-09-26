@@ -87,9 +87,11 @@ def test_the_w_pilot_cannot_fall_back_to_shard_native_order() -> None:
         ("manifest", "/abs/order-*.json"),
     ],
 )
-def test_order_binding_refuses_unpinned_identities(key: str, value: str) -> None:
+def test_order_binding_refuses_unpinned_identities(tmp_path: Path, key: str, value: str) -> None:
+    # NOTE (local cert): the manifest fixture must be absolute on this platform;
+    # the cloud `/abs/...` literal is not absolute on Windows (`Path.is_absolute`).
     good = {
-        "manifest": "/abs/orders/a.json",
+        "manifest": str(tmp_path / "orders" / "a.json"),
         "order_manifest_id": "a" * 64,
         "canonical_membership_id": "b" * 64,
     }
