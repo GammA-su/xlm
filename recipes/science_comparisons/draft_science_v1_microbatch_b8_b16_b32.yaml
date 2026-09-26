@@ -1,0 +1,191 @@
+{
+  "science_comparison_version": "xlm-science-comparison-v1",
+  "status": "draft_nonexecutable_no_results",
+  "preregistered_at": "DRAFT: set when the user freezes this manifest before any run",
+  "parent_baseline": {
+    "id": "xlm-50m-provisional-recipe",
+    "version": "unfrozen-draft"
+  },
+  "schedule": {
+    "lr_policy": "target_endpoint_before_update_v1",
+    "base_lr": 0.001,
+    "warmup_targets": 10000000,
+    "horizon_targets": 1000000000,
+    "min_lr_ratio": 0.1
+  },
+  "primary_metric": {
+    "name": "equal_domain_text_ce_nats_per_token",
+    "direction": "lower_is_better"
+  },
+  "ci_level": 0.95,
+  "stopping_rule": "fixed_n_all_pairs_no_early_success_v1",
+  "promotion_rule_version": "xlm-p35-promotion-v1",
+  "final_checkpoint_requirement": "exact_budget_endpoint_v1",
+  "failure_policy": "failed_or_missing_pair_blocks_confirmation_v1",
+  "order_robustness": {
+    "required": false,
+    "m5_order_evidence": null
+  },
+  "scale_promotion": {
+    "intent": false,
+    "prerequisite": null,
+    "resource_plan_ref": null,
+    "ablation_refs": []
+  },
+  "fixed_values": {
+    "global_batch_valid_targets": 65536,
+    "context_length": 512,
+    "precision": "bf16_fp32_master",
+    "science_version": "xlm-science-v1",
+    "lr_policy": "target_endpoint_before_update_v1"
+  },
+  "comparison_id": "draft-science-v1-microbatch-b8-b16-b32-screen",
+  "title": "B8 vs B16/B32 accumulation grouping: 128M exploratory screen (P35 section E)",
+  "description": "DRAFT / NONEXECUTABLE / NO_RESULTS. Freezes the comparable-evidence definition of the future P35 section E batch screen: three exploratory paired tuples E0/E1/E2 at 128M targets on a 1B horizon/10M warmup, identical global 65,536 valid targets per update, exact committed target trace and update boundaries across arms, parameter hashes not compared. Candidates B16 and B32 share one Bonferroni family of 2. The non-inferiority margin, per-domain/BLiMP guardrail margins and the margin rationale are UNSET: the user freezes them (section P) before any run. The later five-pair 1B confirmation of at most one challenger needs its own manifest. No run, result, or winner exists.",
+  "track": "microbatch_grouping_v1",
+  "scale_stage": "50m",
+  "study_stage": "screen",
+  "question": "noninferiority",
+  "control_arm": {
+    "arm_id": "b8",
+    "label": "B8 (8 sequences per accumulation call)",
+    "intervention": {
+      "microbatch_sequences": 8
+    }
+  },
+  "candidate_arms": [
+    {
+      "arm_id": "b16",
+      "label": "B16",
+      "intervention": {
+        "microbatch_sequences": 16
+      }
+    },
+    {
+      "arm_id": "b32",
+      "label": "B32",
+      "intervention": {
+        "microbatch_sequences": 32
+      }
+    }
+  ],
+  "replicate_roster": [
+    {
+      "tuple_id": "E0",
+      "role": "exploratory",
+      "init_seed": 101,
+      "training_seed": 10001,
+      "data_seed": 20260918,
+      "order_manifest_id": "shard_native_no_order_manifest"
+    },
+    {
+      "tuple_id": "E1",
+      "role": "exploratory",
+      "init_seed": 211,
+      "training_seed": 10002,
+      "data_seed": 20260919,
+      "order_manifest_id": "shard_native_no_order_manifest"
+    },
+    {
+      "tuple_id": "E2",
+      "role": "exploratory",
+      "init_seed": 307,
+      "training_seed": 10003,
+      "data_seed": 20260920,
+      "order_manifest_id": "shard_native_no_order_manifest"
+    }
+  ],
+  "intended_differences": [
+    "microbatch_sequences"
+  ],
+  "required_invariants": [
+    "model_architecture",
+    "model_component",
+    "model_parameter_count",
+    "attention_backend",
+    "initial_model_state_digest",
+    "objective",
+    "init_seed",
+    "training_seed",
+    "data_seed",
+    "order_manifest_id",
+    "within_source_order_policy",
+    "tokenizer_identity",
+    "vocab_size",
+    "data_input_identity",
+    "mixture_components",
+    "mixture_exhaustion_policy",
+    "mixture_scheduler",
+    "packing_policy",
+    "context_length",
+    "exposure_plan_identity",
+    "data_trace_digest",
+    "per_source_exposure",
+    "global_batch_valid_targets",
+    "budget_targets",
+    "committed_targets",
+    "update_boundaries_digest",
+    "optimizer",
+    "gradient_clip_norm",
+    "schedule",
+    "lr_policy",
+    "science_version",
+    "precision",
+    "runtime_policy",
+    "compile",
+    "activation_checkpointing",
+    "producer_prefetch",
+    "device",
+    "runtime_device_name",
+    "runtime_torch",
+    "code_hash",
+    "dependency_hash",
+    "environment_digest",
+    "evaluation_plan_digest",
+    "evaluator_identities",
+    "checkpoint_plan_digest"
+  ],
+  "training_budget_targets": 128000000,
+  "primary_endpoint": {
+    "tier": "full_lm",
+    "planned_threshold": 128000000
+  },
+  "secondary_metrics": [
+    {
+      "name": "blimp_acc",
+      "direction": "higher_is_better",
+      "role": "descriptive",
+      "source": {
+        "tier": "search_benchmark",
+        "planned_threshold": 128000000,
+        "path": [
+          "tasks",
+          "blimp",
+          "value"
+        ]
+      },
+      "regression_margin": null
+    }
+  ],
+  "curve_metric": {
+    "name": "equal_domain_text_ce_nats_per_token",
+    "direction": "lower_is_better",
+    "tier": "quick_lm",
+    "start_target": 16000000,
+    "end_target": 128000000
+  },
+  "practical_margin": null,
+  "noninferiority_margin": null,
+  "margin_rationale": null,
+  "efficiency": {
+    "name": "successful_targets_per_second",
+    "direction": "higher_is_better",
+    "minimum_relative_gain": 0.05
+  },
+  "confirmatory_pairs": null,
+  "multiplicity": {
+    "family_id": "p35-batch-selection-screen",
+    "family_size": 2,
+    "guardrail_family_size": 0
+  }
+}
