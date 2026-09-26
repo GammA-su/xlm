@@ -81,11 +81,19 @@ class EventRecord:
 
         Attempts from a lost lineage (a replay that reached a numerically
         different state) or a different evaluator are history, never canonical.
+        A P35 M3 rescore from a retained checkpoint has its own computation
+        identity (it loads the checkpoint instead of copying the live model) and
+        joins the lineage only through an explicit ``lineage_identity`` that was
+        verified against this crossing's computation before scoring.
         """
         if self.due is None:
             return []
         identity = self.due["computation_identity"]
-        return [a for a in self.attempts if a["computation_identity"] == identity]
+        return [
+            a
+            for a in self.attempts
+            if a.get("lineage_identity", a["computation_identity"]) == identity
+        ]
 
     @property
     def status(self) -> EventStatus:
@@ -320,24 +328,26 @@ class AttemptStore:
                 break
             source = outcome if outcome is not None else started
             assert source is not None
-            summaries.append(
-                {
-                    "number": number,
-                    "started_artifact": self.artifact_id(event_id, number, "started")
-                    if started is not None
-                    else None,
-                    "outcome_artifact": self.artifact_id(event_id, number, "outcome")
-                    if outcome is not None
-                    else None,
-                    "status": (
-                        outcome["status"] if outcome is not None else EventStatus.INTERRUPTED.value
-                    ),
-                    "computation_identity": source["computation_identity"],
-                    "model_state_digest": source["model_state"]["state_digest"],
-                    "actual_committed_targets": source["actual_committed_targets"],
-                    "failure": outcome.get("failure") if outcome is not None else None,
-                }
-            )
+            summary = {
+                "number": number,
+                "started_artifact": self.artifact_id(event_id, number, "started")
+                if started is not None
+                else None,
+                "outcome_artifact": self.artifact_id(event_id, number, "outcome")
+                if outcome is not None
+                else None,
+                "status": (
+                    outcome["status"] if outcome is not None else EventStatus.INTERRUPTED.value
+                ),
+                "computation_identity": source["computation_identity"],
+                "model_state_digest": source["model_state"]["state_digest"],
+                "actual_committed_targets": source["actual_committed_targets"],
+                "failure": outcome.get("failure") if outcome is not None else None,
+            }
+            if "lineage_identity" in source:  # P35 M3 checkpoint rescore attempts only
+                summary["lineage_identity"] = source["lineage_identity"]
+                summary["route"] = source.get("route")
+            summaries.append(summary)
         else:
             raise EvaluationLedgerError(f"event '{event_id}' exceeds {MAX_ATTEMPT_NUMBER} attempts")
         return summaries

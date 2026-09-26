@@ -681,6 +681,10 @@ class LMValidationEvaluator:
         return EvaluationOutcome(AttemptOutcome.COMPLETE, metrics, coverage)
 
 
+class CheckpointIdentityError(InvalidMetricError):
+    """The checkpoint or evaluator is not the one an evaluation event requires."""
+
+
 def score_checkpoint_validation(
     checkpoint: Path,
     *,
@@ -692,21 +696,43 @@ def score_checkpoint_validation(
     logprob_dtype: str = "fp64",
     device: str = "cpu",
     tokenizer_path: str | None = None,
+    tokenizer: Any = None,
+    expected_state_digest: str | None = None,
+    expected_evaluator_digest: str | None = None,
+    runtime: Mapping[str, str] | None = None,
 ) -> dict[str, Any]:
-    """Separate-process path: score an immutable checkpoint and bind what was loaded."""
+    """Separate-process path: score an immutable checkpoint and bind what was loaded.
+
+    P35 M3 (all optional, off by default): ``expected_state_digest`` and
+    ``expected_evaluator_digest`` refuse, before anything is scored, a
+    checkpoint whose loaded weights or an evaluator whose tokenizer, inventory
+    or scoring policy differ from what an event requires. ``tokenizer`` passes
+    the run's loaded tokenizer instead of a path, and ``runtime`` scores under
+    the run's scoped scientific runtime (same kernel restrictions as training).
+    """
     from xlm.artifacts.store import ArtifactStore, compute_file_sha256
     from xlm.core.paths import ArtifactPaths
     from xlm.evaluation.state_digest import model_state_digest
     from xlm.models.serialization import load_model_for_inference
     from xlm.tokenizers.loading import checkpoint_weights_hash, load_inference_tokenizer
+    from xlm.training.science import ScientificRuntime
 
+    if tokenizer is not None and tokenizer_path is not None:
+        raise ValueError("pass a tokenizer object or a tokenizer path, not both")
     checkpoint = checkpoint.resolve()
     ArtifactStore(ArtifactPaths(root=checkpoint.parent.parent)).verify_artifact(checkpoint)
     weights_sha256 = checkpoint_weights_hash(checkpoint)
     model = load_model_for_inference(checkpoint, device=device)
     if checkpoint_weights_hash(checkpoint) != weights_sha256:
         raise InvalidMetricError("checkpoint weights changed while they were being loaded")
-    tokenizer = load_inference_tokenizer(checkpoint, tokenizer_path)
+    state_digest = model_state_digest(model)
+    if expected_state_digest is not None and state_digest != expected_state_digest:
+        raise CheckpointIdentityError(
+            f"checkpoint {checkpoint.name} holds model state {state_digest[:16]}…, not the "
+            f"state {expected_state_digest[:16]}… the event was crossed at"
+        )
+    if tokenizer is None:
+        tokenizer = load_inference_tokenizer(checkpoint, tokenizer_path)
     inventory = load_pinned_inventory(
         manifest_path, manifest_id=manifest_id, tokenizer_fingerprint=tokenizer.fingerprint
     )
@@ -717,21 +743,28 @@ def score_checkpoint_validation(
         logprob_dtype=logprob_dtype,
     )
     evaluator = LMValidationEvaluator(tier, inventory, tokenizer, policy)
-    state_digest = model_state_digest(model)
-    outcome = evaluator.evaluate(
-        model,
-        device=device,
-        context=EvaluationContext(
-            event_id=f"checkpoint:{checkpoint.name}",
-            actual_committed_targets=int(
-                json.loads((checkpoint / "checkpoint_meta.json").read_text(encoding="utf-8"))[
-                    "committed_valid_targets"
-                ]
+    if (
+        expected_evaluator_digest is not None
+        and identity_digest(evaluator.identity()) != expected_evaluator_digest
+    ):
+        raise CheckpointIdentityError(
+            "evaluator identity (tokenizer, inventory, scoring policy or scorer source) "
+            "differs from the one the event was planned with"
+        )
+    meta = json.loads((checkpoint / "checkpoint_meta.json").read_text(encoding="utf-8"))
+    with ScientificRuntime(runtime, device).scope():
+        outcome = evaluator.evaluate(
+            model,
+            device=device,
+            context=EvaluationContext(
+                event_id=f"checkpoint:{checkpoint.name}",
+                actual_committed_targets=int(meta["committed_valid_targets"]),
+                model_state_digest=state_digest,
+                provenance={"route": "checkpoint_separate_process_v1"},
             ),
-            model_state_digest=state_digest,
-            provenance={"route": "checkpoint_separate_process_v1"},
-        ),
-    )
+        )
+    if model_state_digest(model) != state_digest:
+        raise InvalidMetricError("the scored checkpoint model changed during scoring")
     return {
         "model_state": {
             "kind": "checkpoint_v1",
@@ -739,6 +772,9 @@ def score_checkpoint_validation(
             "checkpoint_manifest_sha256": compute_file_sha256(checkpoint / "manifest.json"),
             "weights_sha256": weights_sha256,
             "state_digest": state_digest,
+        },
+        "checkpoint_meta": {
+            key: meta.get(key) for key in ("run_id", "plan_id", "step", "committed_valid_targets")
         },
         "evaluator": evaluator.identity(),
         "status": outcome.status.value,

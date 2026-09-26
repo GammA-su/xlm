@@ -360,14 +360,15 @@ class EvaluationController:
 
     def computation(self, trainer: Any, event: PlannedEvent, digest: str) -> dict[str, Any]:
         """What one scoring computes; shared by events at one state with one evaluator."""
-        return {
-            "version": RECEIPT_VERSION,
-            "tier": event.tier.value,
-            "model_state": {"kind": "in_memory_replica_v1", "state_digest": digest},
-            "evaluator": self.evaluator_digests[event.tier.value],
-            "device": trainer.device,
-            "scientific_runtime": trainer.science.policy.runtime,
-        }
+        from xlm.evaluation.rescore import planned_computation
+
+        return planned_computation(
+            event.tier.value,
+            digest,
+            self.evaluator_digests[event.tier.value],
+            trainer.device,
+            trainer.science.policy.runtime,
+        )
 
     def record_crossings(self, trainer: Any) -> list[str]:
         """Mark every event whose threshold the committed count reached; no scoring."""
@@ -430,6 +431,91 @@ class EvaluationController:
         trainer._require_committed_boundary()
         self._reconcile(record)
         self._run_event(trainer, record, {}, {})
+
+    def recover_from_retained(self, trainer: Any, checkpoints: Any) -> list[dict[str, Any]]:
+        """Rescore unresolved events of past boundaries from their exact retained checkpoints.
+
+        Only events whose live state is gone (crossed at an earlier committed
+        count) are considered, only their own checkpoint (by model-state
+        digest) is used, and the M2 per-lineage attempt bound applies. Each
+        refusal is reported; nothing falls back to another checkpoint. The
+        separate model load consumes RNG, so the training-state guard restores
+        and verifies everything exactly as around ordinary scoring.
+        """
+        from pathlib import Path
+
+        from xlm.evaluation.rescore import (
+            RESCORABLE_TIERS,
+            UNRESOLVED,
+            RescoreInputs,
+            RescoreRefused,
+            locate_exact_checkpoint,
+            rescore_event,
+        )
+        from xlm.training.trainer import RecoveryRequiredError
+
+        trainer._require_committed_boundary()
+        assert self._store is not None
+        root = Path(trainer.checkpoint_manager.store.paths.root)
+        checkpoints.settle()
+        report: list[dict[str, Any]] = []
+        for record in self.ledger.ordered():
+            if record.due is None:
+                continue
+            if record.due["actual_committed_targets"] == trainer.committed_valid_targets:
+                continue  # the live state still exists: run_pending owns it
+            self._reconcile(record)
+            if record.status not in UNRESOLVED:
+                continue
+            entry: dict[str, Any] = {
+                "event_id": record.event_id,
+                "actual_committed_targets": record.due["actual_committed_targets"],
+                "status_before": record.status.value,
+            }
+            if len(record.lineage_attempts()) >= MAX_ATTEMPTS_PER_EVENT:
+                report.append({**entry, "action": "skipped", "code": "attempt_bound_reached"})
+                continue
+            try:
+                if record.event.tier not in RESCORABLE_TIERS:
+                    raise RescoreRefused(
+                        "tier_not_rescorable",
+                        f"{record.event.tier.value} has no verified checkpoint scoring route",
+                    )
+                located = locate_exact_checkpoint(checkpoints.ledger, record.due, root)
+                inputs = RescoreInputs.from_evaluator(self.evaluators[record.event.tier])
+                guard = TrainingStateGuard(trainer)
+                guard.capture()
+                try:
+                    summary = rescore_event(
+                        ledger=self.ledger,
+                        event_id=record.event_id,
+                        store=self._store,
+                        run=self._run,
+                        checkpoint_dir=root / "checkpoints" / located.artifact_id,
+                        inputs=inputs,
+                        device=trainer.device,
+                        runtime=trainer.science.policy.runtime,
+                    )
+                finally:
+                    guard_report = guard.restore_and_verify()
+                if guard_report["changed"]:
+                    trainer._evaluation_compromised = True
+                    raise RecoveryRequiredError(
+                        "checkpoint rescoring changed live training state: "
+                        f"{guard_report['changed']}"
+                    )
+                report.append(
+                    {
+                        **entry,
+                        "action": "rescored",
+                        "checkpoint": located.artifact_id,
+                        "attempt": summary["number"],
+                        "status": summary["status"],
+                    }
+                )
+            except RescoreRefused as exc:
+                report.append({**entry, "action": "refused", "code": exc.code, "reason": str(exc)})
+        return report
 
     def _run_event(
         self,

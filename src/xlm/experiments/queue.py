@@ -1016,6 +1016,10 @@ def execute_plan_run(
         "checkpoint_id": f"{job.job_id}_final",
         "resumed_checkpoint": str(restored) if restored else None,
     }
+    if trainer.committed_valid_targets == plan.budget_valid_targets:
+        rescores = trainer.recover_failed_evaluations()
+        if rescores is not None:
+            summary["rescores"] = rescores
     if trainer.evaluation is not None:
         summary["evaluation"] = trainer.evaluation.completeness().to_dict()
     if trainer.committed_valid_targets != plan.budget_valid_targets:

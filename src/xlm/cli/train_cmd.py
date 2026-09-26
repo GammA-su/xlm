@@ -508,8 +508,12 @@ def _resume_in_process(
         checkpoints=components.checkpoints,
     )
     if at_budget and (trainer.evaluation is not None or trainer.checkpoints is not None):
-        # The budget is committed; only events this state still owes run.
+        # The budget is committed; only events this state still owes run, plus
+        # exact-checkpoint rescoring of earlier unresolved events.
         trainer._evaluate_boundary()
+        rescores = trainer.recover_failed_evaluations()
+        if rescores is not None:
+            typer.echo(f"Rescores: {json.dumps(rescores)}")
         if trainer.evaluation is not None:
             typer.echo(f"Evaluation: {json.dumps(trainer.evaluation.completeness().to_dict())}")
         typer.echo(

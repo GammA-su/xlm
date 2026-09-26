@@ -375,6 +375,23 @@ class Trainer:
             return self.checkpoints.save_terminal(self, reason)
         return self._save_checkpoint(f"{self.run_id}_{reason}")
 
+    def recover_failed_evaluations(self) -> list[dict[str, Any]] | None:
+        """At the exact budget: rescore past unresolved events from exact retained checkpoints.
+
+        Requires both science-v1 cadences. Afterwards retention runs again, so a
+        checkpoint kept only for an event that is now complete is released
+        under the normal policy instead of being retained indefinitely.
+        """
+        if self.evaluation is None or self.checkpoints is None:
+            return None
+        report = self.evaluation.recover_from_retained(self, self.checkpoints)
+        if any(entry.get("status") == "complete" for entry in report):
+            last = self.checkpoints.ledger.last_good()
+            if last is not None:
+                self.checkpoints.apply_retention(self, after=last.artifact_id)
+        self.checkpoints.ledger.note({"rescore_pass": report})
+        return report
+
     def train_step(self) -> TrainingStepMetrics | None:
         """Rollback failed preparation; never reuse a partially updated optimizer."""
         self._require_committed_boundary()
@@ -755,6 +772,7 @@ class Trainer:
 
             if self.committed_valid_targets >= self.max_valid_targets:
                 self.termination_reason = "completed"
+                self.recover_failed_evaluations()
 
         except Exception as exc:
             self.termination_reason = "failed"
