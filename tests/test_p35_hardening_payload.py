@@ -379,6 +379,18 @@ def extended(sizes: list[int], extra: int) -> dict[str, Any]:
         ("data_count_missing", history([16]), 1, 16, None, "records no committed_valid_targets"),
         ("data_count_bool", history([16]), 1, 16, True, "records no committed_valid_targets"),
     ],
+    ids=[
+        "chain_and_lr_ahead_A7",
+        "history_ahead_at_zero_A7",
+        "data_ahead",
+        "chain_behind_data",
+        "meta_ahead",
+        "step_off",
+        "partial_off_by_one",
+        "partial_meta_off_by_one",
+        "data_count_missing",
+        "data_count_bool",
+    ],
 )
 def test_history_and_committed_state_must_agree(
     name: str, saved: dict[str, Any], step: int, c: int, data: Any, message: str

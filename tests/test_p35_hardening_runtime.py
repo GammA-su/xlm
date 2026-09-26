@@ -642,6 +642,13 @@ def parent_checkpoint(root: Path, *, receipt: bool, committed: int = BATCH) -> P
         ("off_to_on_changed_policy", False, True, True, "presence differs"),
         ("on_to_on_changed_policy", True, True, True, "changed-scientific-policy fork"),
     ],
+    ids=[
+        "on_to_off_same_policy",
+        "off_to_on_same_policy",
+        "on_to_off_changed_policy",
+        "off_to_on_changed_policy",
+        "on_to_on_changed_policy",
+    ],
 )
 def test_fork_receipt_semantics_refuse_before_restore(
     tmp_path: Path,
