@@ -157,14 +157,25 @@ def publish_run(
     config_order: dict[str, Any] | None = None,
     state_order: dict[str, Any] | None = None,
     update_payloads: dict[str, Any] | None = None,
+    declare_receipt: str | None | bool = True,
 ) -> Path:
     """Publish one AUTHORED science-v1-shaped endpoint checkpoint and its eval attempts.
 
     ``config_order``/``state_order`` (P35 M5) are the pinned ``data.document_order``
     and the committed data state's ``document_order`` receipt; ``None`` is pre-M5.
+    A published ``update_payloads`` chain is declared in the envelope as a real
+    frozen run declares it; ``declare_receipt`` overrides the declaration
+    (``None``/a version string) for mismatch fixtures.
     """
     store = ArtifactStore(ArtifactPaths(root=root))
     config = _config(seeds, microbatch, science=science)
+    declared = (
+        ("global_update_payload_digest_v1" if update_payloads is not None else None)
+        if declare_receipt is True
+        else declare_receipt
+    )
+    if declared is not None:
+        config["training"]["update_payload_receipt"] = declared
     if config_order is not None:
         config["data"]["document_order"] = dict(config_order)
     code, dep = h("code"), h("lock")

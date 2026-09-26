@@ -272,19 +272,29 @@ def _update_boundaries(rows: list[list[Any]], committed: int) -> tuple[str, int]
 
 
 def _update_payload_receipt(
-    science: Mapping[str, Any], lr_rows: list[list[Any]]
+    science: Mapping[str, Any], lr_rows: list[list[Any]], declared: Any = None
 ) -> tuple[Any, Any]:
     """``(receipt version, chain head)`` from ``science.json``; ``(None, None)`` if absent.
 
     The chain is re-derived from its genesis and must match the LR receipts
     update by update (step, committed_before, valid targets). A present but
-    inconsistent chain is refused, never replaced by "unknown".
+    inconsistent chain is refused, never replaced by "unknown". Its presence and
+    version must be exactly what the frozen envelope declared
+    (``training.update_payload_receipt``): an undeclared chain or a declared but
+    missing one is ambiguous evidence and is refused.
     """
     from xlm.data.sampling.update_payload import PayloadReceiptError, verify_chain
 
     raw = science.get("update_payloads")
+    if (raw is None) != (declared is None):
+        raise EvidenceError(
+            "update payload receipt presence disagrees with the execution envelope "
+            f"declaration ({declared!r}); refusing ambiguous receipt evidence"
+        )
     if raw is None:
         return None, None
+    if not isinstance(raw, Mapping) or raw.get("version") != declared:
+        raise EvidenceError("update payload receipt version differs from its declaration")
     try:
         head = verify_chain(raw)
     except (PayloadReceiptError, KeyError, TypeError, ValueError) as exc:
@@ -347,7 +357,9 @@ def extract_run_evidence(
     boundaries_digest, updates = _update_boundaries(lr["rows"], committed)
     if updates != int(meta["step"]):
         raise EvidenceError("LR receipts and checkpoint step disagree")
-    payload_receipt, payload_chain = _update_payload_receipt(science, lr["rows"])
+    payload_receipt, payload_chain = _update_payload_receipt(
+        science, lr["rows"], training.get("update_payload_receipt")
+    )
 
     bindings = envelope["bindings"]
     components = bindings["components"]
