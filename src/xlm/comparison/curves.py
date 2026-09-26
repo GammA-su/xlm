@@ -10,6 +10,7 @@ number is labeled measured or estimated.
 
 from __future__ import annotations
 
+import math
 from collections.abc import Mapping, Sequence
 from dataclasses import asdict, dataclass, field
 from typing import Any
@@ -258,3 +259,46 @@ def curves_from_mapping(data: Mapping[str, Any]) -> LearningCurve:
         )
     except (KeyError, TypeError, ValueError) as exc:
         raise CurveError(f"malformed learning curve mapping: {exc}") from exc
+
+
+# --------------------------------------------------------------- P35 M4 addition
+
+LINEAR_TARGET_AREA_VERSION = "xlm-p35-linear-target-area-v1"
+
+
+def fixed_linear_target_area(
+    points: Sequence[tuple[int, int, float]], start_target: int, end_target: int
+) -> float:
+    """Trapezoidal learning-curve area over *target counts*, divided by the interval (§K).
+
+    ``points`` are ``(planned_threshold, actual_committed_targets, metric)`` for
+    every planned evaluation point in ``[start_target, end_target]``. The x axis
+    is the actual committed target count at which each point was evaluated,
+    never wall time. The planned grid must contain both ``start_target`` and
+    ``end_target``: a missing endpoint is refused, never interpolated or
+    extrapolated. The untrained point is excluded by choosing ``start_target``.
+    """
+    if start_target >= end_target:
+        raise CurveError("curve interval must have start_target < end_target")
+    ordered = sorted(points, key=lambda p: p[0])
+    planned = [p[0] for p in ordered]
+    if len(set(planned)) != len(planned):
+        raise CurveError("duplicate planned thresholds in a curve")
+    if any(t < start_target or t > end_target for t in planned):
+        raise CurveError("curve point outside the declared target interval")
+    if not planned or planned[0] != start_target:
+        raise CurveError(f"curve start point {start_target} is missing; area incomplete")
+    if planned[-1] != end_target:
+        raise CurveError(f"curve endpoint {end_target} is missing; area incomplete")
+    xs = [p[1] for p in ordered]
+    if any(later <= earlier for earlier, later in zip(xs, xs[1:], strict=False)):
+        raise CurveError("actual committed targets must increase along the curve")
+    if xs[0] < start_target or xs[-1] != end_target:
+        raise CurveError("actual curve range does not cover the declared target interval")
+    for _, _, value in ordered:
+        if type(value) not in (int, float) or not math.isfinite(value):
+            raise CurveError("curve metric values must be finite")
+    area = 0.0
+    for (_, x0, y0), (_, x1, y1) in zip(ordered, ordered[1:], strict=False):
+        area += 0.5 * (y0 + y1) * (x1 - x0)
+    return area / (xs[-1] - xs[0])
