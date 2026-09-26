@@ -458,3 +458,14 @@ def test_per_sequence_attribution_is_one_column_not_characters() -> None:
     mixed.input_ids = mixed.labels = mixed.loss_mask = [[1, 1, 1]] * 2
     with pytest.raises(PayloadReceiptError, match="mixes per-sequence"):
         canonical_from_microbatches([mixed])
+
+
+def test_a_moved_loss_mask_bit_with_the_same_count_changes_the_digest(readers: Any) -> None:
+    [batches] = updates(readers, 8, count=1)
+    moved = copy.deepcopy(batches)
+    mask = moved[0].loss_mask
+    row = next(r for r in range(len(mask)) if 0 in mask[r] and 1 in mask[r])
+    on, off = mask[row].index(1), mask[row].index(0)
+    mask[row][on], mask[row][off] = 0, 1
+    assert canonical_from_microbatches(moved).valid_targets == GLOBAL  # count unchanged
+    assert digest(moved) != digest(batches)
