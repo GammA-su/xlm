@@ -103,6 +103,7 @@ def resolve_execution_config(config: dict[str, Any]) -> tuple[dict[str, Any], di
         "dependency_hash",
         "created_at",
         "plugins",
+        "science_pilot",
     }
     if unknown:
         raise ValueError(f"unsupported executable configuration fields: {sorted(unknown)}")
@@ -161,6 +162,15 @@ def resolve_execution_config(config: dict[str, Any]) -> tuple[dict[str, Any], di
         science_evaluation = ScienceEvaluationConfig.model_validate(evaluation["science"])
         evaluation["science"] = science_evaluation.model_dump(mode="json")
         plan_from_config(evaluation["science"], int(training["budget"]["max_valid_targets"]))
+    if resolved.get("science_pilot") is not None:
+        # P35 M3 pilot requirements are data-only and bound into the envelope/plan hash.
+        from xlm.experiments.science_pilot import SciencePilotConfig
+
+        if training.get("science_version") is None:
+            raise ValueError("science_pilot requires training.science_version")
+        resolved["science_pilot"] = SciencePilotConfig.model_validate(
+            resolved["science_pilot"]
+        ).model_dump(mode="json")
     validate_component_selection(resolved, catalog)
     data = resolved["data"]
     normalize_training_data(data, training)

@@ -1,0 +1,204 @@
+{
+  "schema_version": 1,
+  "kind": "experiment_draft",
+  "id": "pilot_science_v1_32m_p0",
+  "status": "draft_science_v1_pilot_not_executable",
+  "track": "baseline",
+  "model": {
+    "preset": "50m",
+    "attention_backend": "sdpa",
+    "dropout": 0.0
+  },
+  "data": {
+    "pool_artifact": null,
+    "tokenizer_artifact": null,
+    "tokenizer": {
+      "type": "bpe",
+      "target_vocab_size": 32768
+    },
+    "mixture_preset": "mix01",
+    "exposure_plan": null,
+    "packing_policy": "causal_stream_eos",
+    "cross_document_attention": true
+  },
+  "objective": {
+    "type": "cross_entropy",
+    "version": "1"
+  },
+  "optimizer": {
+    "type": "adamw",
+    "lr": 0.001,
+    "betas": [
+      0.9,
+      0.95
+    ],
+    "eps": 1e-08,
+    "weight_decay": 0.1,
+    "decay_norms": false,
+    "decay_embeddings": true
+  },
+  "training": {
+    "device": "cuda",
+    "precision": "bf16_fp32_master",
+    "context_length": 512,
+    "global_batch_valid_targets": 65536,
+    "microbatch_sequences": 8,
+    "gradient_clip_norm": 1.0,
+    "budget": {
+      "max_valid_targets": 32000000,
+      "max_train_seconds": 3600
+    },
+    "schedule": {
+      "type": "warmup_cosine",
+      "counter": "committed_valid_targets",
+      "horizon_valid_targets": 1000000000,
+      "warmup_valid_targets": 10000000,
+      "min_lr_ratio": 0.1
+    },
+    "activation_checkpointing": false,
+    "compile": false,
+    "init_seed": 101,
+    "data_seed": 20260918,
+    "checkpoint_every_valid_targets": 16000000,
+    "producer_prefetch": "process_depth1",
+    "science_version": "xlm-science-v1",
+    "lr_policy": "target_endpoint_before_update_v1",
+    "training_seed": 10001,
+    "runtime": {
+      "attention_policy": "statistical_efficient_v1",
+      "matmul_tf32": "disabled",
+      "bf16_reduced_precision_reduction": "allowed"
+    },
+    "checkpoint_cadence": {
+      "version": "xlm-checkpoint-cadence-v1",
+      "cadence": "pilot_32m",
+      "fixture_milestones": null,
+      "fixture_recovery": null,
+      "retention": "latest_two_recovery_plus_pinned_v1",
+      "protected_references": []
+    }
+  },
+  "evaluation": {
+    "suite": "search",
+    "policy_artifact": null,
+    "every_valid_targets": 16000000,
+    "checkpoint_selection": "last_at_declared_budget",
+    "allow_final": false
+  },
+  "resources": {
+    "profile_artifact": null,
+    "max_new_disk_gib": 8,
+    "max_gpu_processes": 1,
+    "total_wall_seconds": 3600,
+    "max_gpu_allocated_gib": 20,
+    "max_process_tree_rss_gib": 16
+  },
+  "authorization": {
+    "state": "not_authorized",
+    "plan_hash": null
+  },
+  "science_pilot": {
+    "version": "xlm-science-pilot-v1",
+    "contract": "p35_w_32m_pilot",
+    "status": "draft_nonexecutable",
+    "device": "cuda",
+    "seed_tuple": "P0",
+    "document_order": "shard_native_within_source_order",
+    "expected": {
+      "parameters": 49883648,
+      "budget_valid_targets": 32000000,
+      "global_batch_valid_targets": 65536,
+      "full_updates": 488,
+      "final_update_targets": 18432,
+      "total_updates": 489,
+      "microbatch_sequences": 8,
+      "context_length": 512,
+      "vocab_size": 32768,
+      "dropout": 0.0,
+      "seeds": {
+        "init_seed": 101,
+        "training_seed": 10001,
+        "data_seed": 20260918
+      },
+      "lr": {
+        "policy": "target_endpoint_before_update_v1",
+        "base_lr": 0.001,
+        "warmup_valid_targets": 10000000,
+        "horizon_valid_targets": 1000000000,
+        "min_lr_ratio": 0.1
+      },
+      "precision": "bf16_fp32_master",
+      "attention_policy": "statistical_efficient_v1",
+      "attention_backend": "sdpa",
+      "producer_prefetch": "process_depth1",
+      "checkpoint_cadence": "pilot_32m",
+      "evaluation_cadence": "pilot_32m",
+      "mixture_preset": "mix01",
+      "mixture_components": [
+        "essential_science",
+        "essential_practical",
+        "essential_prose",
+        "nemotron_organic_high",
+        "nemotron_organic_medium_high",
+        "finepdfs_en",
+        "synth_en_explanations",
+        "nemotron_wiki_rewrite",
+        "finewiki_en",
+        "ifm_behaviors_general_planning",
+        "common_pile_prose",
+        "simple_stories"
+      ],
+      "limits": {
+        "total_wall_seconds": 3600,
+        "max_gpu_allocated_gib": 20,
+        "max_process_tree_rss_gib": 16,
+        "max_new_output_gib": 8,
+        "max_gpu_processes": 1
+      }
+    },
+    "storage_roots": {
+      "data_root": null,
+      "checkpoint_root": null,
+      "temp_root": null,
+      "evaluation_input_roots": null,
+      "output_root": null
+    },
+    "capacity": {
+      "checkpoint_size_source": null,
+      "evaluation_evidence_bytes": null,
+      "cache_bytes": null,
+      "safety_margin_bytes": null,
+      "checkpoint_bytes": null
+    },
+    "tokenizer": {
+      "artifact_digest": null,
+      "fit_input_hash": null
+    },
+    "evaluation": {
+      "cadence": "pilot_32m",
+      "fixture_thresholds": null,
+      "confirmation_registered": false,
+      "quick_lm": null,
+      "full_lm": null,
+      "search_benchmark": null,
+      "scoring": null
+    },
+    "cold_data": {
+      "min_source_transitions": 2,
+      "each_component_visited": true,
+      "runtime_cold_open_evidence": "not_instrumented_report_not_run"
+    },
+    "benchmarks": {
+      "max_items_per_task": 100,
+      "group_half_tasks": [
+        "hellaswag",
+        "piqa"
+      ],
+      "group_assignments": null
+    },
+    "resume_verification": {
+      "from_threshold": 16000000,
+      "fresh_process": true
+    }
+  }
+}

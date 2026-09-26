@@ -62,6 +62,17 @@ def experiment_plan_cmd(
             help="Use C13 tiny-model smoke caps; no production/profile/evaluation readiness claim.",
         ),
     ] = False,
+    bindings: Annotated[
+        Path | None,
+        typer.Option(
+            "--bindings",
+            help="Science pilot drafts only: operator bindings of local artifacts (JSON).",
+        ),
+    ] = None,
+    review: Annotated[
+        Path | None,
+        typer.Option("--review", help="Science pilot drafts only: write the review JSON here."),
+    ] = None,
 ) -> None:
     """Resolve a draft into an immutable plan. Read-only apart from artifacts."""
     from xlm.experiments.plans import resolve_experiment_plan
@@ -79,6 +90,21 @@ def experiment_plan_cmd(
         if not isinstance(measured_profile, dict):
             typer.echo("Error: profile JSON must be a mapping.", err=True)
             raise typer.Exit(code=1)
+
+    from xlm.config.composer import ConfigComposer
+
+    try:
+        pilot_draft = "science_pilot" in ConfigComposer(_workspace()).compose(draft)
+    except Exception:  # noqa: BLE001 - the generic path reports its own resolution error
+        pilot_draft = False
+    if pilot_draft:
+        _plan_science_pilot(
+            draft, bindings, review, output, snapshot_dir, measured_profile, as_json
+        )
+        return
+    if bindings is not None or review is not None:
+        typer.echo("Error: --bindings/--review apply to science pilot drafts only.", err=True)
+        raise typer.Exit(code=1)
 
     try:
         plan = resolve_experiment_plan(
@@ -120,6 +146,105 @@ def experiment_plan_cmd(
     if output is not None:
         typer.echo(f"Output:          {output}")
     typer.echo("============================================================")
+
+
+def _write_review(path: Path | None, review: dict[str, object]) -> None:
+    if path is None:
+        return
+    from xlm.experiments.execution import write_json
+
+    write_json(path, review)
+
+
+def _echo_review(review: dict[str, object], as_json: bool) -> None:
+    if as_json:
+        typer.echo(json.dumps(review, indent=2, sort_keys=True, default=str))
+        return
+    typer.echo("============================================================")
+    typer.echo(f"Science pilot:   {review.get('status')}  (contract {review.get('contract')})")
+    plan = review.get("plan")
+    if isinstance(plan, dict):
+        typer.echo(f"Plan hash:       {plan.get('plan_hash')}")
+    blockers = review.get("blockers") or []
+    typer.echo(f"Blockers:        {len(blockers) if isinstance(blockers, list) else blockers}")
+    if isinstance(blockers, list):
+        for blocker in blockers[:40]:
+            typer.echo(f"  - [{blocker['code']}] {blocker['detail']}")
+    for warning in review.get("warnings") or []:  # type: ignore[attr-defined]
+        typer.echo(f"Warning:         {warning}")
+    commands = review.get("commands") or {}
+    if isinstance(commands, dict):
+        typer.echo(f"Launch:          {commands.get('launch')}")
+    typer.echo("Nothing was executed; planning and validation never authorize or train.")
+    typer.echo("============================================================")
+
+
+def _plan_science_pilot(
+    draft: Path,
+    bindings: Path | None,
+    review_path: Path | None,
+    output: Path | None,
+    snapshot_dir: Path | None,
+    measured_profile: dict[str, object] | None,
+    as_json: bool,
+) -> None:
+    from xlm.experiments.science_pilot import plan_science_pilot
+
+    try:
+        result = plan_science_pilot(
+            draft,
+            workspace_root=_workspace(),
+            bindings_path=bindings,
+            snapshot_dir=snapshot_dir,
+            output_path=output,
+            review_path=review_path,
+            measured_profile=measured_profile,
+        )
+    except Exception as exc:
+        typer.echo(f"Error: cannot plan science pilot: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    _write_review(review_path, result.review)
+    _echo_review(result.review, as_json)
+
+
+@experiment_app.command("validate")
+def experiment_validate_cmd(
+    plan_file: Annotated[Path, typer.Argument(help="Frozen plan JSON from 'experiment plan'.")],
+    ticket: Annotated[
+        Path | None, typer.Option("--ticket", help="Operator ticket to check against the plan.")
+    ] = None,
+    review: Annotated[
+        Path | None, typer.Option("--review", help="Write the validation review JSON here.")
+    ] = None,
+    as_json: Annotated[bool, typer.Option("--json", help="Emit the review as JSON.")] = False,
+) -> None:
+    """Re-verify a frozen plan now. Nonzero exit unless RESOLVED or EXECUTABLE; never runs it."""
+    from xlm.experiments.authorization import AuthorizationError, load_ticket
+    from xlm.experiments.plans import ExecutablePlan
+    from xlm.experiments.science_pilot import PilotStatus, validate_science_pilot_plan
+
+    try:
+        plan = ExecutablePlan.load(plan_file)
+        ticket_obj = load_ticket(ticket) if ticket is not None else None
+    except (AuthorizationError, OSError, ValueError, KeyError, TypeError) as exc:
+        typer.echo(f"Error: cannot load plan/ticket: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    if "science_pilot" not in plan.resolved_config:
+        typer.echo(
+            "Error: 'experiment validate' checks science pilot plans; other plans are "
+            "validated by 'experiment submit'",
+            err=True,
+        )
+        raise typer.Exit(code=1)
+    try:
+        result = validate_science_pilot_plan(plan, ticket=ticket_obj, plan_path=plan_file)
+    except Exception as exc:
+        typer.echo(f"Error: validation failed: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    _write_review(review, result.review)
+    _echo_review(result.review, as_json)
+    if result.status not in (PilotStatus.RESOLVED, PilotStatus.EXECUTABLE):
+        raise typer.Exit(code=1)
 
 
 @experiment_app.command("authorize")

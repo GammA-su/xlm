@@ -390,6 +390,12 @@ class ResourceConfig(StrictConfigModel):
     profile_artifact: str | None = None
     max_new_disk_gib: float | None = Field(default=None, gt=0.0)
     max_gpu_processes: int = Field(default=1, gt=0)
+    # P35 M3 outer job ceilings, enforced only when declared: total wall time
+    # across every queue attempt (startup/training/checkpoints/evaluation/
+    # recovery), GPU allocator cap with a headroom check, process-tree RSS.
+    total_wall_seconds: float | None = Field(default=None, gt=0.0)
+    max_gpu_allocated_gib: float | None = Field(default=None, gt=0.0)
+    max_process_tree_rss_gib: float | None = Field(default=None, gt=0.0)
 
 
 class AuthorizationConfig(StrictConfigModel):
@@ -419,6 +425,9 @@ class ExperimentDraftConfig(StrictConfigModel):
     resources: ResourceConfig
     authorization: AuthorizationConfig
     plugins: list[str] = Field(default_factory=list, max_length=16)
+    # P35 M3 science-v1 pilot requirements; validated by the pilot planner
+    # (``xlm.experiments.science_pilot``), never interpreted as code.
+    science_pilot: dict[str, Any] | None = None
 
 
 class ExecutableExperimentPlanConfig(StrictConfigModel):

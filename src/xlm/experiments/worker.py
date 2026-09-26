@@ -39,6 +39,28 @@ def validate_request_options(request: dict[str, Any]) -> None:
         raise ValueError("a frozen training worker cannot be a dry run")
 
 
+def apply_gpu_allocation_cap(cap_gib: float) -> dict[str, Any]:
+    """Declared GPU memory ceiling (P35 M3): check desktop headroom, then cap the allocator.
+
+    Fails before any training allocation when the device does not currently
+    have the declared amount free (other processes, e.g. the desktop, hold
+    memory); otherwise limits this process's caching allocator to the cap.
+    """
+    import torch
+
+    if cap_gib <= 0:
+        raise ValueError("max_gpu_allocated_gib must be positive")
+    free, total = torch.cuda.mem_get_info()
+    cap = int(cap_gib * 1024**3)
+    if cap > free:
+        raise RuntimeError(
+            f"GPU headroom insufficient: {free / 1024**3:.2f} GiB free, declared cap "
+            f"{cap_gib:.2f} GiB; lower the cap or free the device before launching"
+        )
+    torch.cuda.set_per_process_memory_fraction(cap / total)
+    return {"cap_bytes": cap, "free_bytes_at_start": free, "total_bytes": total}
+
+
 def run_worker(request: dict[str, Any]) -> int:
     import psutil
 
@@ -80,6 +102,9 @@ def run_worker(request: dict[str, Any]) -> int:
     context["observations"]["max_owned_disk_bytes"] = request.get(
         "max_owned_disk_bytes", 2 * 1024**3
     )
+    gpu_cap = (envelope["config"].get("resources") or {}).get("max_gpu_allocated_gib")
+    if gpu_cap is not None and envelope["config"].get("training", {}).get("device") == "cuda":
+        context["observations"]["gpu_allocation_cap"] = apply_gpu_allocation_cap(float(gpu_cap))
     action = request["action"]
     result: dict[str, Any]
     if action == "queue":

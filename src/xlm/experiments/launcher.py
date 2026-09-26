@@ -101,6 +101,14 @@ def launch_worker(
         )
         + 120
     )
+    limit_reason = "frozen worker wall-time limit exceeded"
+    wall_limit = request.get("wall_seconds_limit")
+    if wall_limit is not None and float(wall_limit) < limit:
+        # P35 M3: the job's remaining total allowance (startup, training,
+        # checkpoints, evaluation and recovery all count) bounds this attempt.
+        limit = float(wall_limit)
+        limit_reason = "total wall allowance exhausted"
+    rss_cap = request.get("max_process_tree_rss_bytes")
     started = time.monotonic()
     exceeded = threading.Event()
     guard = threading.Lock()
@@ -181,8 +189,10 @@ def launch_worker(
                     peak_rss = max(peak_rss, sum(p.memory_info().rss for p in processes))
                 except psutil.Error:
                     pass
+                if rss_cap is not None and peak_rss > int(rss_cap):
+                    reason = "process-tree RSS limit exceeded"
                 if time.monotonic() - started > limit:
-                    reason = "frozen worker wall-time limit exceeded"
+                    reason = limit_reason
                 if exceeded.is_set():
                     reason = "frozen worker output byte limit exceeded"
                 if reason:
@@ -211,6 +221,8 @@ def launch_worker(
             "output_bytes": output_bytes,
             "sampled_peak_work_bytes": peak_work_bytes,
             "max_owned_disk_bytes": disk_cap,
+            "wall_seconds_limit": limit,
+            "max_process_tree_rss_bytes": rss_cap,
         },
     )
     if exit_code != 0 or reason:

@@ -258,6 +258,12 @@ def resolve_experiment_plan(
 
     composer = ConfigComposer(workspace)
     composed = composer.compose(draft_file)
+    if composed.get("science_pilot") is not None:
+        # P35 M3: pilot drafts resolve only through their bindings and preflights.
+        raise PlanError(
+            "science pilot drafts are planned with operator bindings "
+            "(xlm experiment plan <draft> --bindings <file>), never through the generic path"
+        )
     if smoke:
         return _resolve_smoke_plan(composed, workspace, snapshot_dir)
     draft = ExperimentDraftConfig.model_validate(composed)

@@ -731,6 +731,36 @@ class ExperimentQueue:
         if self._cancel_requested(job):
             return self._finish_cancelled(job, plan, "cancelled before start")
 
+        # 1a. Science pilot plans repeat their root/capacity checks before any GPU lease.
+        from xlm.experiments.science_pilot import pilot_runtime_preflight
+
+        try:
+            problems = pilot_runtime_preflight(plan, self.paths.root)
+        except Exception as exc:  # noqa: BLE001 - an unverifiable pilot plan never runs
+            problems = [f"{type(exc).__name__}: {exc}"]
+        if problems:
+            return self._finish_blocked(job, plan, "pilot preflight: " + "; ".join(problems))
+
+        # 1b. Total job wall allowance (P35 M3): persisted across attempts, checked
+        # before any lease or worker launch; a resumed attempt gets only the rest.
+        from xlm.experiments.wall_budget import (
+            AttemptClock,
+            WallAllowance,
+            WallAllowanceError,
+            WallAllowanceExpired,
+            declared_total_seconds,
+        )
+
+        allowance: WallAllowance | None = None
+        try:
+            total_wall = declared_total_seconds(plan.resolved_config.get("resources"))
+            if total_wall is not None:
+                allowance = WallAllowance.load_or_create(
+                    Path(job.work_dir), plan_hash=plan.plan_hash, total_seconds=total_wall
+                )
+        except WallAllowanceError as exc:
+            return self._finish_blocked(job, plan, f"wall allowance: {exc}")
+
         # 2. GPU lease for accelerator jobs.
         lease_held = False
         if job.device.startswith("cuda"):
@@ -758,6 +788,15 @@ class ExperimentQueue:
         job = self._heartbeat(job)
         self._record_attempt(job_id, job.attempts_made, RunStatus.RUNNING.value, None)
 
+        clock: AttemptClock | None = None
+        if allowance is not None:
+            try:
+                clock = AttemptClock(allowance, job.attempts_made)
+            except WallAllowanceExpired as exc:
+                if lease_held:
+                    self.leases.release(job.device, job.job_id)
+                return self._finish_incomplete(job, plan, str(exc), allowance)
+
         outcome: dict[str, Any] = {"job_id": job_id}
         try:
             if executor is not None:
@@ -768,30 +807,50 @@ class ExperimentQueue:
                 self._heartbeat(job)
                 if lease_held:
                     self.leases.heartbeat(job.device, job.job_id)
+                if clock is not None:
+                    clock.tick()
 
+            resources = plan.resolved_config.get("resources") or {}
+            request: dict[str, Any] = {
+                "action": "queue",
+                "envelope": plan.execution_envelope,
+                "plan": plan.to_dict(),
+                "job": job.to_dict(),
+                "snapshot_dir": job.snapshot_dir,
+                "runtime_locations": admission["runtime_locations"],
+                "artifact_home": str(self.paths.root.resolve()),
+                "max_owned_disk_bytes": int(
+                    (admission["authorization"].get("max_new_disk_gib") or 2) * 1024**3
+                ),
+            }
+            if clock is not None:
+                request["wall_seconds_limit"] = clock.limit
+            if resources.get("max_process_tree_rss_gib") is not None:
+                request["max_process_tree_rss_bytes"] = int(
+                    float(resources["max_process_tree_rss_gib"]) * 1024**3
+                )
             result = launch_worker(
-                {
-                    "action": "queue",
-                    "envelope": plan.execution_envelope,
-                    "plan": plan.to_dict(),
-                    "job": job.to_dict(),
-                    "snapshot_dir": job.snapshot_dir,
-                    "runtime_locations": admission["runtime_locations"],
-                    "artifact_home": str(self.paths.root.resolve()),
-                    "max_owned_disk_bytes": int(
-                        (admission["authorization"].get("max_new_disk_gib") or 2) * 1024**3
-                    ),
-                },
+                request,
                 Path(job.work_dir) / f"worker-{job.attempts_made}",
                 should_cancel=lambda: self._cancel_requested(job),
                 heartbeat=heartbeat,
             )
             outcome.update(result)
             if result.get("cancelled"):
+                if clock is not None:
+                    clock.finish("cancelled")
                 return self._finish_cancelled(job, plan, str(result.get("reason", "cancelled")))
+            if clock is not None:
+                clock.finish("succeeded")
+                result = {**result, "wall_allowance": clock.allowance.to_dict()}
             return self._finish_succeeded(job, plan, result)
         except Exception as exc:  # noqa: BLE001 - failure evidence must be recorded
             reason = f"{type(exc).__name__}: {exc}\n{traceback.format_exc(limit=8)}"
+            if clock is not None:
+                expired = clock.elapsed() >= clock.limit or "total wall allowance" in str(exc)
+                clock.finish("expired" if expired else "failed")
+                if expired:
+                    return self._finish_incomplete(job, plan, reason, clock.allowance)
             return self._finish_failed(job, plan, reason)
         finally:
             if lease_held:
@@ -822,6 +881,36 @@ class ExperimentQueue:
         self._close_attempt(job.job_id, job.attempts_made, RunStatus.FAILED.value, reason)
         self._write_run_record(failed, plan, {"failure_reason": reason})
         return {"ran": True, "job_id": job.job_id, "state": "FAILED", "reason": reason}
+
+    def _finish_incomplete(
+        self, job: QueueJob, plan: ExecutablePlan, reason: str, allowance: Any
+    ) -> dict[str, Any]:
+        """The total wall allowance expired before the exact budget: never a success."""
+        from xlm.experiments.wall_budget import INCOMPLETE
+
+        summary = f"{INCOMPLETE}: total wall allowance exhausted before the exact target budget"
+        failed = QueueJob(
+            **{**job.to_dict(), "state": RunStatus.FAILED.value, "last_reason": summary}
+        )
+        self._write_job_row(failed)
+        self.ledger.transition_run(job.job_id, RunStatus.RUNNING, RunStatus.FAILED)
+        self._close_attempt(job.job_id, job.attempts_made, RunStatus.FAILED.value, reason)
+        self._write_run_record(
+            failed,
+            plan,
+            {
+                "completion": INCOMPLETE,
+                "failure_reason": reason,
+                "wall_allowance": allowance.to_dict(),
+            },
+        )
+        return {
+            "ran": True,
+            "job_id": job.job_id,
+            "state": "FAILED",
+            "completion": INCOMPLETE,
+            "reason": summary,
+        }
 
     def _finish_cancelled(self, job: QueueJob, plan: ExecutablePlan, reason: str) -> dict[str, Any]:
         cancelled = QueueJob(
