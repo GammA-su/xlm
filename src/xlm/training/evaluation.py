@@ -289,6 +289,8 @@ class EvaluationController:
         self._store: AttemptStore | None = None
         self._run: dict[str, Any] = {}
         self._attempted: set[str] = set()
+        #: P35 pilot readiness: ``RecoverabilityPolicy`` or ``None`` (M2/M3 behavior).
+        self.recoverability: Any = None
 
     # ------------------------------------------------------------------ binding
 
@@ -416,6 +418,53 @@ class EvaluationController:
             if len(record.lineage_attempts()) >= MAX_ATTEMPTS_PER_EVENT:
                 continue
             self._run_event(trainer, record, shared, documents)
+
+    def settle_required(self, trainer: Any) -> list[str]:
+        """Pilot readiness: retry required events at the live C = 0 / endpoint boundary.
+
+        Each retry is an ordinary M2 attempt at the same committed state: the
+        next attempt number on the crossing's lineage, scored from a
+        digest-verified replica, bounded by ``MAX_ATTEMPTS_PER_EVENT`` and
+        canonicalized by ``first_complete_attempt_v1``. Nothing here changes
+        attempt semantics; the policy only decides that the retry happens now
+        instead of after a restart. Returns the event ids that were retried.
+        """
+        from xlm.evaluation.recoverability import live_retry_candidates
+
+        policy = self.recoverability
+        if policy is None:
+            return []
+        committed = trainer.committed_valid_targets
+        if not (
+            (committed == 0 and policy.barrier)
+            or (committed == self.ledger.plan.budget_valid_targets and policy.endpoint_fail_stop)
+        ):
+            return []  # every other boundary keeps the unchanged M2/M3 behavior
+        retried: list[str] = []
+        for _ in range(MAX_ATTEMPTS_PER_EVENT):
+            for record in self.ledger.ordered():
+                if record.due is not None and record.due["actual_committed_targets"] == committed:
+                    self._reconcile(record)
+            candidates = live_retry_candidates(self.ledger, committed, self.recoverability)
+            if not candidates:
+                break
+            for event_id in candidates:
+                self._attempted.discard(event_id)
+            retried.extend(candidates)
+            self.run_pending(trainer)
+        return retried
+
+    def barrier_blockers(self) -> list[str]:
+        """Required C = 0 events without a canonical COMPLETE receipt (policy only)."""
+        from xlm.evaluation.recoverability import barrier_blockers
+
+        return barrier_blockers(self.ledger, self.recoverability)
+
+    def required_incomplete(self) -> list[str]:
+        """Required events still incomplete when the endpoint policy fail-stops."""
+        from xlm.evaluation.recoverability import required_incomplete
+
+        return required_incomplete(self.ledger, self.recoverability)
 
     def rerun(self, trainer: Any, event_id: str) -> None:
         """Deliberately score an event again at its own committed state.

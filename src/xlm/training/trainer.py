@@ -64,6 +64,14 @@ class RecoveryRequiredError(TrainerError):
     """An interrupted optimizer boundary must resume in a fresh trainer."""
 
 
+class InitialEvaluationBarrierError(TrainerError):
+    """Required C = 0 evaluations are not complete: optimizer update 1 may not begin."""
+
+
+class RequiredEvaluationIncompleteError(TrainerError):
+    """Required evaluations stayed incomplete at the budget (``EVALUATION_INCOMPLETE``)."""
+
+
 @dataclass(frozen=True)
 class TrainingStepMetrics:
     """Structured metrics emitted for each completed optimizer update.
@@ -392,6 +400,33 @@ class Trainer:
         self.checkpoints.ledger.note({"rescore_pass": report})
         return report
 
+    def _require_initial_barrier(self) -> None:
+        """Pilot readiness: no update from C = 0 while a required C = 0 event is incomplete."""
+        if self.evaluation is None or self.committed_valid_targets != 0:
+            return
+        blockers = self.evaluation.barrier_blockers()
+        if blockers:
+            raise InitialEvaluationBarrierError(
+                "required_initial_evaluation_barrier_v1: optimizer update 1 may not begin "
+                f"while required C=0 evaluations are incomplete: {blockers}"
+            )
+
+    def require_required_evaluations(self) -> None:
+        """Pilot readiness endpoint fail-stop: every required event must be COMPLETE.
+
+        Called at the exact budget after the rescore pass. Under the policy's
+        ``endpoint_live_retry_then_fail_stop_v1`` an incomplete required event
+        makes the run ``EVALUATION_INCOMPLETE``; it is never reported as success.
+        """
+        if self.evaluation is None:
+            return
+        incomplete = self.evaluation.required_incomplete()
+        if incomplete:
+            raise RequiredEvaluationIncompleteError(
+                f"EVALUATION_INCOMPLETE: required evaluations are not complete at the "
+                f"budget after bounded retries and exact-checkpoint rescoring: {incomplete}"
+            )
+
     def train_step(self) -> TrainingStepMetrics | None:
         """Rollback failed preparation; never reuse a partially updated optimizer."""
         self._require_committed_boundary()
@@ -427,9 +462,16 @@ class Trainer:
             self.checkpoints.at_boundary(self)
         if self.evaluation is not None:
             self.evaluation.run_pending(self)
+            # Pilot readiness: bounded live retries of required events at C = 0 and
+            # at the exact budget, then the C = 0 barrier (no-ops without a policy).
+            self.evaluation.settle_required(self)
+            self._require_initial_barrier()
 
     def _train_step(self) -> TrainingStepMetrics | None:
         """Execute one update inside the run's scientific runtime scope (legacy: none)."""
+        # Defense in depth: the barrier is re-checked from the ledger alone, so an
+        # update can never begin from C = 0 without the required receipts.
+        self._require_initial_barrier()
         with self.runtime.scope():
             return self._train_update()
 
@@ -795,6 +837,17 @@ class Trainer:
         # Final checkpoint and ledger state update
         if self.termination_reason == "completed":
             self.save_terminal_checkpoint("final")
+            try:
+                self.require_required_evaluations()
+            except RequiredEvaluationIncompleteError:
+                self.termination_reason = "failed"
+                try:
+                    self.checkpoint_manager.ledger.transition_run(
+                        self.run_id, from_state=RunStatus.RUNNING, to_state=RunStatus.FAILED
+                    )
+                except Exception:
+                    pass
+                raise
             try:
                 self.checkpoint_manager.ledger.transition_run(
                     self.run_id, from_state=RunStatus.RUNNING, to_state=RunStatus.SUCCEEDED

@@ -417,8 +417,16 @@ class CheckpointController:
         committed, step = trainer.committed_valid_targets, trainer.step
         digest = model_state_digest(trainer.model)
         cursor = cursor_digest(trainer.batcher)
-        milestone = any(e.role is CheckpointRole.MILESTONE for e in events)
-        role = CheckpointRole.MILESTONE if milestone else CheckpointRole.RECOVERY
+        roles = {e.role for e in events}
+        # Strongest retention wins at a shared boundary: milestone, then rolling
+        # recovery; a boundary owed only to evaluation recovery keeps that role.
+        # Terminal states (no event) are rolling recovery states, as in M3.
+        if CheckpointRole.MILESTONE in roles:
+            role = CheckpointRole.MILESTONE
+        elif CheckpointRole.RECOVERY in roles or not events:
+            role = CheckpointRole.RECOVERY
+        else:
+            role = CheckpointRole.EVALUATION_RECOVERY
         slug = f"t{events[0].threshold}" if events else f"{reason}-c{committed}"
         attempt, superseded, adopted_dir = self._resolve_attempt(
             trainer, slug, committed=committed, step=step, digest=digest, cursor=cursor
@@ -798,14 +806,31 @@ class CheckpointController:
                     )
 
 
-def build_checkpoint_controller(config: Mapping[str, Any], *, budget: int) -> CheckpointController:
-    """Construct the controller from a validated ``training.checkpoint_cadence`` block."""
-    plan = build_checkpoint_plan(
-        str(config["cadence"]),
-        budget,
-        fixture_milestones=config.get("fixture_milestones"),
-        fixture_recovery=config.get("fixture_recovery"),
-    )
+def build_checkpoint_controller(
+    config: Mapping[str, Any],
+    *,
+    budget: int,
+    evaluation_plan: Any = None,
+    recoverability: Any = None,
+) -> CheckpointController:
+    """Construct the controller from a validated ``training.checkpoint_cadence`` block.
+
+    With a pilot-readiness recoverability policy the plan also carries the
+    ``evaluation_recovery`` events derived from the run's evaluation plan.
+    """
+    if recoverability is not None:
+        from xlm.evaluation.recoverability import checkpoint_plan_with_recovery
+
+        plan = checkpoint_plan_with_recovery(
+            config, budget, evaluation_plan=evaluation_plan, policy=recoverability
+        )
+    else:
+        plan = build_checkpoint_plan(
+            str(config["cadence"]),
+            budget,
+            fixture_milestones=config.get("fixture_milestones"),
+            fixture_recovery=config.get("fixture_recovery"),
+        )
     if config.get("retention") != RETENTION_POLICY:
         raise CheckpointEventError(f"unsupported retention policy {config.get('retention')!r}")
     return CheckpointController(

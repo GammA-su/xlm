@@ -10,9 +10,14 @@
   (matched by model-state digest, never by step or filename).
 
 Everything else owned by the run is retirable: older rolling recovery states,
-and superseded lost-lineage publications. The decision is a pure, deterministic
-function of verified records; it lists a reason for every kept and every
-retired artifact so the dependency is explicit and inspectable. It never looks
+superseded lost-lineage publications, and (P35 pilot readiness)
+``evaluation_recovery`` states once no unresolved evaluation needs them and
+they are no longer the last good state. An evaluation-recovery checkpoint is
+never a milestone and never counts toward the latest two rolling states.
+
+The decision is a pure, deterministic function of verified records; it lists
+a reason for every kept and every retired artifact so the dependency is
+explicit and inspectable. It never looks
 at filenames or directory listings, and it never runs before the replacement
 checkpoint is published and verified.
 """
@@ -28,6 +33,7 @@ KEEP_RECOVERY = 2
 
 MILESTONE = "milestone"
 RECOVERY = "recovery"
+EVALUATION_RECOVERY = "evaluation_recovery"
 SUPERSEDED = "superseded"
 
 
@@ -93,7 +99,7 @@ def decide_retention(
     def keep(candidate: RetentionCandidate, reason: str) -> None:
         decision.keep.setdefault(candidate.artifact_id, []).append(reason)
 
-    live = [c for c in candidates if c.role in (MILESTONE, RECOVERY)]
+    live = [c for c in candidates if c.role in (MILESTONE, RECOVERY, EVALUATION_RECOVERY)]
     if live:
         keep(max(live, key=RetentionCandidate.order_key), "last_good_state")
     recovery = sorted(
@@ -118,6 +124,9 @@ def decide_retention(
             decision.retire[candidate.artifact_id] = "superseded_lost_lineage"
         elif candidate.role == RECOVERY:
             decision.retire[candidate.artifact_id] = "rolling_recovery_beyond_latest_two"
+        elif candidate.role == EVALUATION_RECOVERY:
+            # Every evaluation that needed exactly this state is resolved.
+            decision.retire[candidate.artifact_id] = "evaluation_recovery_released"
         else:  # pragma: no cover - milestones are always kept above
             raise AssertionError(f"unexpected retention role {candidate.role}")
     return decision

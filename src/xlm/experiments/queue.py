@@ -1119,4 +1119,7 @@ def execute_plan_run(
         summary["checkpoints"] = trainer.checkpoints.ledger.summary()
     elif not already_final:
         trainer._save_checkpoint(str(summary["checkpoint_id"]))
+    # Pilot readiness: with an endpoint fail-stop policy an evaluation-incomplete
+    # run fails here (after its endpoint state is durable), never SUCCEEDED.
+    trainer.require_required_evaluations()
     return summary

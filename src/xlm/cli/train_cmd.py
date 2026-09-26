@@ -516,6 +516,8 @@ def _resume_in_process(
             typer.echo(f"Rescores: {json.dumps(rescores)}")
         if trainer.evaluation is not None:
             typer.echo(f"Evaluation: {json.dumps(trainer.evaluation.completeness().to_dict())}")
+        # Pilot readiness: an endpoint fail-stop policy refuses an incomplete result.
+        trainer.require_required_evaluations()
         typer.echo(
             "Resume complete: frozen target budget is already committed; checkpoint preserved."
         )

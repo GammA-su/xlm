@@ -357,6 +357,10 @@ class CheckpointRole(StrEnum):
     MILESTONE = "milestone"
     #: Rolling recovery state: only the latest two are retained.
     RECOVERY = "recovery"
+    #: Exact state of a required evaluation boundary that no milestone or rolling
+    #: recovery event retains (pilot readiness). Kept only while an evaluation
+    #: that needs exactly this state is unresolved; never a scientific milestone.
+    EVALUATION_RECOVERY = "evaluation_recovery"
 
 
 @dataclass(frozen=True)
@@ -443,9 +447,12 @@ class CheckpointPlan:
     excluded_before_origin: tuple[str, ...] = ()
     version: str = CHECKPOINT_CADENCE_VERSION
     notes: tuple[str, ...] = field(default=(), compare=False)
+    #: Identity of the evaluation-recoverability policy the plan was built under
+    #: (pilot readiness). ``None`` keeps M3 plan identities byte-identical.
+    recoverability: Mapping[str, Any] | None = None
 
     def identity(self) -> dict[str, Any]:
-        return {
+        identity: dict[str, Any] = {
             "version": self.version,
             "cadence": self.cadence,
             "research": self.research,
@@ -454,6 +461,9 @@ class CheckpointPlan:
             "events": [event.to_dict() for event in self.events],
             "excluded_before_origin": list(self.excluded_before_origin),
         }
+        if self.recoverability is not None:
+            identity["recoverability"] = dict(self.recoverability)
+        return identity
 
     def digest(self) -> str:
         return identity_digest(self.identity())
@@ -485,6 +495,7 @@ class CheckpointPlan:
         )
         if [e.threshold for e in events] != sorted({e.threshold for e in events}):
             raise CadenceError("saved checkpoint events are not strictly ordered")
+        recoverability = payload.get("recoverability")
         return cls(
             cadence=str(payload["cadence"]),
             research=bool(payload["research"]),
@@ -493,6 +504,7 @@ class CheckpointPlan:
             events=events,
             excluded_before_origin=tuple(payload.get("excluded_before_origin", ())),
             notes=tuple(payload.get("notes", ())),
+            recoverability=dict(recoverability) if recoverability is not None else None,
         )
 
 
@@ -503,6 +515,8 @@ def build_checkpoint_plan(
     fixture_milestones: Sequence[int] | None = None,
     fixture_recovery: Sequence[int] | None = None,
     origin_committed_targets: int = 0,
+    evaluation_recovery: Sequence[int] = (),
+    recoverability: Mapping[str, Any] | None = None,
 ) -> CheckpointPlan:
     """Resolve a checkpoint cadence into the frozen plan of one run.
 
@@ -512,6 +526,13 @@ def build_checkpoint_plan(
     endpoint (threshold equal to the budget) must be a milestone: the exact
     final state is always retained. Thresholds below a fork origin belong to
     the parent run and are recorded as excluded.
+
+    ``evaluation_recovery`` (pilot readiness) adds ``evaluation_recovery``
+    events at required evaluation thresholds that no milestone or recovery
+    event covers. They share the first-crossing rule, so the checkpoint lands
+    on exactly the boundary where the evaluation event is recorded; they never
+    replace a milestone or rolling recovery role at the same threshold.
+    ``recoverability`` binds the policy identity into the plan identity.
     """
     if budget_valid_targets <= 0:
         raise CadenceError("a checkpoint plan requires a positive target budget")
@@ -552,7 +573,15 @@ def build_checkpoint_plan(
             )
     if budget_valid_targets not in table.milestones:
         raise CadenceError("the exact-budget endpoint must be a pinned checkpoint milestone")
-    roles = {t: CheckpointRole.RECOVERY for t in table.recovery}
+    if evaluation_recovery and recoverability is None:
+        raise CadenceError("evaluation recovery checkpoints require a recoverability policy")
+    roles = {
+        t: CheckpointRole.EVALUATION_RECOVERY
+        for t in _checked_thresholds(
+            "evaluation recovery", sorted(set(evaluation_recovery)), budget_valid_targets
+        )
+    }
+    roles.update({t: CheckpointRole.RECOVERY for t in table.recovery})
     roles.update({t: CheckpointRole.MILESTONE for t in table.milestones})
     events: list[PlannedCheckpoint] = []
     excluded: list[str] = []
@@ -572,11 +601,15 @@ def build_checkpoint_plan(
         events=tuple(events),
         excluded_before_origin=tuple(excluded),
         notes=table.notes,
+        recoverability=dict(recoverability) if recoverability is not None else None,
     )
 
 
 def rebase_checkpoint_plan(plan: CheckpointPlan, origin_committed_targets: int) -> CheckpointPlan:
     """Re-origin an untouched checkpoint plan for an explicit fork."""
+    evaluation_recovery = [
+        e.threshold for e in plan.events if e.role is CheckpointRole.EVALUATION_RECOVERY
+    ]
     if plan.cadence == AUTHORED_FIXTURE:
         return build_checkpoint_plan(
             AUTHORED_FIXTURE,
@@ -588,9 +621,15 @@ def rebase_checkpoint_plan(plan: CheckpointPlan, origin_committed_targets: int) 
                 e.threshold for e in plan.events if e.role is CheckpointRole.RECOVERY
             ],
             origin_committed_targets=origin_committed_targets,
+            evaluation_recovery=evaluation_recovery,
+            recoverability=plan.recoverability,
         )
     return build_checkpoint_plan(
-        plan.cadence, plan.budget_valid_targets, origin_committed_targets=origin_committed_targets
+        plan.cadence,
+        plan.budget_valid_targets,
+        origin_committed_targets=origin_committed_targets,
+        evaluation_recovery=evaluation_recovery,
+        recoverability=plan.recoverability,
     )
 
 

@@ -270,6 +270,21 @@ class ScienceCheckpointConfig(StrictConfigModel):
         return self
 
 
+class EvaluationRecoverabilityConfig(StrictConfigModel):
+    """Science-v1 recoverability of required evaluation events (P35 pilot readiness).
+
+    Every field is required and data only. ``disabled`` is an explicit choice
+    that the pilot planner refuses whenever it leaves a required event without
+    a route. See :mod:`xlm.evaluation.recoverability`.
+    """
+
+    version: Literal["xlm-evaluation-recoverability-v1"]
+    required_events: Literal["all_planned_events_v1"]
+    initial_barrier: Literal["required_initial_evaluation_barrier_v1", "disabled"]
+    recovery_checkpoints: Literal["evaluation_recovery_checkpoints_v1", "disabled"]
+    endpoint: Literal["endpoint_live_retry_then_fail_stop_v1", "disabled"]
+
+
 class TrainingConfig(StrictConfigModel):
     device: Literal["cuda", "cpu"] = "cuda"
     precision: str = "bf16_fp32_master"
@@ -296,6 +311,11 @@ class TrainingConfig(StrictConfigModel):
     # P35 M3: absolute checkpoint cadence. When present it replaces the relative
     # ``checkpoint_every_valid_targets`` cadence, which is then inert.
     checkpoint_cadence: ScienceCheckpointConfig | None = None
+    # P35 pilot readiness: required-evaluation barrier, evaluation-recovery
+    # checkpoints and endpoint fail-stop. Omitted when absent (historical bytes).
+    evaluation_recoverability: EvaluationRecoverabilityConfig | None = None
+    # P35 pilot readiness: committed per-update global payload receipt chain.
+    update_payload_receipt: Literal["global_update_payload_digest_v1"] | None = None
 
     @model_validator(mode="after")
     def validate_scientific_policy(self) -> TrainingConfig:
@@ -303,6 +323,13 @@ class TrainingConfig(StrictConfigModel):
 
         if self.checkpoint_cadence is not None and self.science_version is None:
             raise ValueError("training.checkpoint_cadence requires training.science_version")
+        if self.evaluation_recoverability is not None and self.checkpoint_cadence is None:
+            raise ValueError(
+                "training.evaluation_recoverability requires training.checkpoint_cadence "
+                "(and training.science_version)"
+            )
+        if self.update_payload_receipt is not None and self.science_version is None:
+            raise ValueError("training.update_payload_receipt requires training.science_version")
 
         policy = ScientificPolicy.from_training(
             {

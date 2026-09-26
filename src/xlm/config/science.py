@@ -132,9 +132,14 @@ class ScientificPolicy:
 
 
 #: Optional science-v1 training blocks that are not part of the policy identity
-#: (P35 M3 checkpoint cadence). Absent keys are dropped exactly like the policy
-#: fields, so configurations without them keep their historical bytes.
-OPTIONAL_SCIENCE_TRAINING_BLOCKS = ("checkpoint_cadence",)
+#: (P35 M3 checkpoint cadence; pilot-readiness recoverability policy and update
+#: payload receipt). Absent keys are dropped exactly like the policy fields, so
+#: configurations without them keep their historical bytes.
+OPTIONAL_SCIENCE_TRAINING_BLOCKS = (
+    "checkpoint_cadence",
+    "evaluation_recoverability",
+    "update_payload_receipt",
+)
 
 
 def omit_absent_science_fields(training: dict[str, Any]) -> dict[str, Any]:

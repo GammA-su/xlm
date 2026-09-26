@@ -227,6 +227,11 @@ def construct_training_components(
     }
     construction["identity"] = identity_digest(construction)
     science = ScientificState(ScientificPolicy.from_training(training))
+    recoverability = None
+    if training.get("evaluation_recoverability") is not None:
+        from xlm.evaluation.recoverability import RecoverabilityPolicy
+
+        recoverability = RecoverabilityPolicy.from_config(training["evaluation_recoverability"])
     evaluation = None
     science_evaluation = (config.get("evaluation") or {}).get("science")
     if science_evaluation is not None:
@@ -241,14 +246,25 @@ def construct_training_components(
             context_length=int(model.config.context_length),
             device=device,
         )
+        evaluation.recoverability = recoverability
         evaluation.attach(science)
+    if recoverability is not None and (
+        evaluation is None or training.get("checkpoint_cadence") is None
+    ):
+        raise ValueError(
+            "training.evaluation_recoverability requires evaluation.science and "
+            "training.checkpoint_cadence"
+        )
     checkpoints = None
     checkpoint_cadence = training.get("checkpoint_cadence")
     if checkpoint_cadence is not None:
         from xlm.training.milestones import build_checkpoint_controller
 
         checkpoints = build_checkpoint_controller(
-            checkpoint_cadence, budget=int(training["budget"]["max_valid_targets"])
+            checkpoint_cadence,
+            budget=int(training["budget"]["max_valid_targets"]),
+            evaluation_plan=evaluation.plan if evaluation is not None else None,
+            recoverability=recoverability,
         )
         checkpoints.attach(science)
     if science.policy.is_science and fresh_training_rng:

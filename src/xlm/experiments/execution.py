@@ -162,6 +162,12 @@ def resolve_execution_config(config: dict[str, Any]) -> tuple[dict[str, Any], di
         science_evaluation = ScienceEvaluationConfig.model_validate(evaluation["science"])
         evaluation["science"] = science_evaluation.model_dump(mode="json")
         plan_from_config(evaluation["science"], int(training["budget"]["max_valid_targets"]))
+    if training.get("evaluation_recoverability") is not None:
+        # P35 pilot readiness: the recoverability policy needs the evaluation cadence
+        # and derives evaluation-recovery checkpoints; resolve both plans now.
+        from xlm.evaluation.recoverability import run_plans_from_config
+
+        run_plans_from_config(resolved)
     if resolved.get("science_pilot") is not None:
         # P35 M3 pilot requirements are data-only and bound into the envelope/plan hash.
         from xlm.experiments.science_pilot import SciencePilotConfig
