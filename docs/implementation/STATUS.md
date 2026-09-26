@@ -1,5 +1,41 @@
 # Implementation status
 
+> **P35 Milestone 4 LOCAL CUDA CERTIFICATION CLOSEOUT (2026-09-26): M4 CERTIFIED
+> — SAFE TO INTEGRATE** as an opt-in. Worktree `G:\Project\xlm-p35-m4-local`,
+> branch `review/p35-m4-local`, starting HEAD `9e3239f`, clean, certified parent
+> `9f57869` verified as ancestor. Windows 10 Pro (26200), Python 3.12.13, torch
+> 2.14.0+cu126, RTX 4090 (driver 596.49), NumPy 2.5.3, lm-eval 0.4.13, no XLM
+> CUDA process, sequential GPU work. No network/install/sync/live-data/pilot/
+> campaign/push/merge; no M5; no product-code change; dependency files unchanged.
+>
+> - **M4 focused suite:** 179 passed, 1 failed (of 180). The failure is the P17
+>   golden-SHA test on CRLF checkout bytes; all five git blobs match the golden
+>   and all five working-tree files equal certified M3 — a proven pre-existing
+>   Windows environment artifact, not an M4 defect.
+> - **Legacy `test_comparison.py`:** 47 passed (cloud NOT RUN closed).
+> - **Real frozen evidence:** no retained M3 toy bytes remained, so one bounded
+>   authored-toy frozen flow was created with existing utilities (direct 4096 +
+>   frozen 2048 targets, toy BPE/model, generated text only). Endpoint
+>   `run_b66d98f3ccb11927_ckpt-t2048-a001` extracts via the real ArtifactStore:
+>   `xlm-science-run-evidence-v1`, digest `ebc95509…`, science-v1, 6768 params
+>   (real torch path), seeds 101/10001/20260918, order sentinel
+>   `shard_native_no_order_manifest`, batch 256/microbatch 2, LR endpoint,
+>   RTX 4090/torch 2.14.0+cu126, all evaluations COMPLETE. Cross-checks all OK;
+>   repeat extraction identical; tampered copy refused. Single-real-run screen is
+>   INCOMPLETE with no CI/winner.
+> - **Legacy:** P17 blobs unchanged (5/5), 4 legacy-evidence nodes passed,
+>   `test_comparison.py` 47 passed. **Spot checks:** 9/9 (A–E) passed.
+> - **Static:** ruff check clean, format 17/17 clean, scoped mypy 10 files clean
+>   (unscoped 7 errors are pre-existing in untouched files); dependency diff empty.
+> - **Qualifications:** microbatch per-update mask/position digest absent (harden
+>   before B8/B16/B32); throughput/VRAM operator-declared; driver/cuDNN not
+>   separately recorded (same-machine pairing unblocked); margins intentionally
+>   null (must be chosen before confirmation, never invented).
+>
+> See [P35-M4 §25](reports/P35-M4.md#25-local-cuda-certification-closeout-2026-09-26-windowsrtx-4090).
+> Next: integrate M4, then the M5 prompt in P35-M4 §24. M5 may begin after
+> integration. DO NOT START M5 here.
+
 > **P35 Milestone 4 (2026-09-26): IMPLEMENTED and VERIFIED within the
 > authored/synthetic scope; SAFE TO INTEGRATE as an opt-in.** Branch
 > `research/p35-m4-comparisons` from certified M3 `9f57869`. No training,
