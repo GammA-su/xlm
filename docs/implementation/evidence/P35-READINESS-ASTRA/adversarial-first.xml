@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="28" time="52.724" timestamp="2026-09-26T20:05:34.663353+02:00" hostname="BetA-C1"><testcase classname="tests.test_p35_astra_boundaries" name="test_stat_cap_stops_before_order_or_execution_scan" time="0.145" /><testcase classname="tests.test_p35_astra_boundaries" name="test_success_arriving_after_wall_limit_is_refused" time="0.014" /><testcase classname="tests.test_p35_astra_boundaries" name="test_queue_never_promotes_failed_evaluation_or_late_success[False]" time="18.450" /><testcase classname="tests.test_p35_astra_boundaries" name="test_queue_never_promotes_failed_evaluation_or_late_success[True]" time="18.453" /><testcase classname="docs.implementation.evidence.P35-READINESS-ASTRA.test_adversarial" name="test_A1_resume_does_not_refund_exhausted_attempts" time="2.565" /><testcase classname="docs.implementation.evidence.P35-READINESS-ASTRA.test_adversarial" name="test_A2_endpoint_is_durable_before_required_check" time="1.349" /><testcase classname="docs.implementation.evidence.P35-READINESS-ASTRA.test_adversarial" name="test_A3_partial_pins_recovery_state" time="1.227" /><testcase classname="docs.implementation.evidence.P35-READINESS-ASTRA.test_adversarial" name="test_groupings_and_all_semantic_mutations" time="0.160" /><testcase classname="docs.implementation.evidence.P35-READINESS-ASTRA.test_adversarial" name="test_A4_shifted_provenance_changes_receipt_and_ipc_digest" time="0.041" /><testcase classname="docs.implementation.evidence.P35-READINESS-ASTRA.test_adversarial" name="test_documented_prepared_handoff_weakness" time="0.039" /><testcase classname="docs.implementation.evidence.P35-READINESS-ASTRA.test_adversarial" name="test_A5_absent_attention_differs_from_explicit_ones" time="0.045" /><testcase classname="docs.implementation.evidence.P35-READINESS-ASTRA.test_adversarial" name="test_A6_lr_without_payload_is_rejected" time="0.384" /><testcase classname="docs.implementation.evidence.P35-READINESS-ASTRA.test_adversarial" name="test_A7_documented_chain_beyond_data_is_accepted_on_load" time="0.192" /><testcase classname="docs.implementation.evidence.P35-READINESS-ASTRA.test_adversarial" name="test_failure_never_commits_receipt[forward]" time="0.194" /><testcase classname="docs.implementation.evidence.P35-READINESS-ASTRA.test_adversarial" name="test_failure_never_commits_receipt[nonfinite]" time="0.201"><failure message="xlm.training.trainer.NonFiniteGradientError: Non-finite gradient encountered in parameter at step 0">tmp_path = WindowsPath('G:/Project/xlm-p35-readiness-astra/.astra-scratch/pytest-of-gamma/pytest-5/test_failure_never_commits_rec1')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x0000024091D07DA0&gt;
+stage = 'nonfinite'
+
+    @pytest.mark.parametrize("stage", ["forward", "nonfinite", "optimizer", "data_commit"])
+    def test_failure_never_commits_receipt(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, stage: str) -&gt; None:
+        trainer = payload_trainer(tmp_path)
+
+        def fail(*args: Any, **kwargs: Any) -&gt; Any:
+            raise RuntimeError("authored fault")
+
+        if stage == "forward":
+            monkeypatch.setattr(trainer.model, "forward", fail)
+        elif stage == "nonfinite":
+            monkeypatch.setattr("xlm.optimizers.clipping.gradients_are_finite", lambda p: False)
+        elif stage == "optimizer":
+            monkeypatch.setattr(trainer.optimizer, "step", fail)
+        else:
+            monkeypatch.setattr(trainer.batcher, "commit", fail)
+        with pytest.raises(RuntimeError):
+&gt;           trainer.train_step()
+
+docs\implementation\evidence\P35-READINESS-ASTRA\test_adversarial.py:188:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\xlm\training\trainer.py:439: in train_step
+    metrics = self._train_step()
+              ^^^^^^^^^^^^^^^^^^
+src\xlm\training\trainer.py:481: in _train_step
+    return self._train_update()
+           ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;xlm.training.trainer.Trainer object at 0x0000024091D62060&gt;
+
+    def _train_update(self) -&gt; TrainingStepMetrics | None:
+        """Execute exactly one complete optimizer update across microbatches."""
+        remaining_budget = self.max_valid_targets - self.committed_valid_targets
+        if remaining_budget &lt;= 0:
+            return None
+        self._last_step_skipped = False
+
+        step_start = time.monotonic()
+
+        # 1. Fetch microbatches with exact remaining budget cap
+        microbatches = self.batcher.next_step_microbatches(remaining_budget=remaining_budget)
+        if not microbatches:
+            return None
+
+        # 2. Count total valid targets across all microbatches in this update
+        n_global = sum(
+            int(mb.loss_mask.sum().item()) if hasattr(mb.loss_mask, "sum") else sum(mb.loss_mask)
+            for mb in microbatches
+        )
+
+        if n_global &lt;= 0:
+            # Wholly empty update: skip step, decay, and schedule advance
+            self.batcher.commit()
+            return None
+
+        # Endpoint policy: derive f(C+N) from the actual valid N before any
+        # compute. It is installed immediately before optimizer mutation, so
+        # every pre-mutation failure leaves group LRs untouched.
+        committed_before = self.committed_valid_targets
+        endpoint_lr: float | None = None
+        if self.science.policy.endpoint_lr:
+            endpoint_lr = self.schedule.get_lr(committed_before + n_global)
+
+        # Pilot readiness: canonical global-update payload receipt, hashed from the
+        # CPU representation before any device transfer; staged now, committed
+        # only with the data cursor (a failed or in-doubt update never enters it).
+        payloads = self.science.update_payloads
+        if payloads is not None:
+            from xlm.data.sampling.update_payload import canonical_update
+
+            canonical = canonical_update(self.batcher, microbatches)
+            if canonical.valid_targets != n_global:
+                raise TrainerError(
+                    f"update payload binds {canonical.valid_targets} valid targets, the "
+                    f"update has {n_global}"
+                )
+            payloads.stage(
+                step=self.step + 1,
+                committed_before=committed_before,
+                valid_targets=n_global,
+                payload=canonical.digest(),
+            )
+
+        # 3. Accumulate gradients across microbatches
+        accumulated_loss = 0.0
+        accumulated_ce_loss = 0.0
+        accumulated_aux_loss = 0.0
+
+        self.model.train()
+        self.objective.train()
+        self.optimizer.zero_grad()
+
+        autocast_cm = self._get_autocast_context()
+
+        for mb in microbatches:
+            mb_valid = (
+                int(mb.loss_mask.sum().item())
+                if hasattr(mb.loss_mask, "sum")
+                else sum(mb.loss_mask)
+            )
+            if mb_valid == 0:
+                continue
+
+            # Move batch inputs to device
+            input_ids = (
+                mb.input_ids.to(self.device) if hasattr(mb.input_ids, "to") else mb.input_ids
+            )
+            labels = mb.labels.to(self.device) if hasattr(mb.labels, "to") else mb.labels
+            loss_mask = (
+                mb.loss_mask.to(self.device) if hasattr(mb.loss_mask, "to") else mb.loss_mask
+            )
+            pos_ids = (
+                mb.position_ids.to(self.device)
+                if mb.position_ids is not None and hasattr(mb.position_ids, "to")
+                else mb.position_ids
+            )
+
+            mb_device = TrainingBatch(
+                input_ids=input_ids,
+                labels=labels,
+                loss_mask=loss_mask,
+                position_ids=pos_ids,
+                segment_ids=mb.segment_ids,
+                source_attribution=mb.source_attribution,
+                metadata=mb.metadata,
+            )
+
+            attention_mask = mb_device.loss_mask
+            if "input_attention_mask" in mb.metadata:
+                prepared = mb.metadata["input_attention_mask"]
+                # A prefetched update carries a CPU bool tensor; lists keep the old path.
+                attention_mask = (
+                    prepared.to(device=self.device, dtype=torch.bool)
+                    if isinstance(prepared, torch.Tensor)
+                    else torch.tensor(prepared, dtype=torch.bool, device=self.device)
+                )
+            if mb.metadata.get("packing_mode") == "isolated_document":
+                from xlm.models.masks import build_isolated_document_mask
+
+                segments = torch.as_tensor(mb.segment_ids, dtype=torch.long, device=self.device)
+                attention_mask = build_isolated_document_mask(segments, attention_mask)
+            with autocast_cm:
+                model_out = self.exec_model(
+                    input_ids=mb_device.input_ids,
+                    attention_mask=attention_mask,
+                    position_ids=mb_device.position_ids,
+                )
+                loss_res = self.objective(model_out, mb_device)
+
+            loss_val = (
+                float(loss_res.loss.item())
+                if hasattr(loss_res.loss, "item")
+                else float(loss_res.loss)
+            )
+            if math.isnan(loss_val) or math.isinf(loss_val):
+                if self.scaler is not None:
+                    # Loss-scaler protocol: skip the update without consuming data
+                    # and let the scaler back off, instead of failing the run.
+                    self._skip_scaler_step(f"Non-finite loss '{loss_val}' at step {self.step}")
+                    return None
+                self.batcher.rollback()
+                raise NonFiniteGradientError(
+                    f"Non-finite loss '{loss_val}' encountered at step {self.step}"
+                )
+
+            # Weight by actual valid target share in this microbatch
+            share = float(mb_valid) / float(n_global)
+            accumulated_loss += loss_val * share
+            accumulated_ce_loss += loss_res.unscaled_loss_sum / float(n_global)
+            accumulated_aux_loss += getattr(loss_res, "auxiliary_loss", 0.0) * share
+
+            # Backward accumulation
+            if self.scaler is not None:
+                scale = float(loss_res.valid_target_denominator) / float(n_global)
+                self.scaler.scale(loss_res.loss * scale).backward()
+            else:
+                accumulate_microbatch_gradient(loss_res, total_valid_targets=n_global)
+
+        # 4. Check for non-finite gradients
+        if self.scaler is not None:
+            self.scaler.unscale_(self.optimizer)
+
+        unique_params = self._get_unique_trainable_parameters()
+        from xlm.optimizers.clipping import gradients_are_finite
+
+        if not gradients_are_finite(unique_params):
+            if self.scaler is not None:
+                self._skip_scaler_step(f"Non-finite gradient at step {self.step}")
+                return None
+            self.batcher.rollback()
+&gt;           raise NonFiniteGradientError(
+                f"Non-finite gradient encountered in parameter at step {self.step}"
+            )
+E           xlm.training.trainer.NonFiniteGradientError: Non-finite gradient encountered in parameter at step 0
+
+src\xlm\training\trainer.py:643: NonFiniteGradientError</failure></testcase><testcase classname="docs.implementation.evidence.P35-READINESS-ASTRA.test_adversarial" name="test_failure_never_commits_receipt[optimizer]" time="0.188" /><testcase classname="docs.implementation.evidence.P35-READINESS-ASTRA.test_adversarial" name="test_failure_never_commits_receipt[data_commit]" time="0.206" /><testcase classname="docs.implementation.evidence.P35-READINESS-ASTRA.test_adversarial" name="test_documented_receipt_commit_failure_leaves_unpoisoned_boundary" time="0.194" /><testcase classname="docs.implementation.evidence.P35-READINESS-ASTRA.test_adversarial" name="test_both_presence_mismatches_refuse_before_restore[False]" time="0.459" /><testcase classname="docs.implementation.evidence.P35-READINESS-ASTRA.test_adversarial" name="test_both_presence_mismatches_refuse_before_restore[True]" time="0.478" /><testcase classname="docs.implementation.evidence.P35-READINESS-ASTRA.test_adversarial" name="test_real_process_producer_receipt_matches_direct" time="0.838" /><testcase classname="docs.implementation.evidence.P35-READINESS-ASTRA.test_adversarial" name="test_c0_closed_barrier_has_no_lr_row[invalid_full]" time="0.853" /><testcase classname="docs.implementation.evidence.P35-READINESS-ASTRA.test_adversarial" name="test_c0_closed_barrier_has_no_lr_row[partial_search]" time="0.804" /><testcase classname="docs.implementation.evidence.P35-READINESS-ASTRA.test_adversarial" name="test_c0_closed_barrier_has_no_lr_row[planned_only]" time="0.195" /><testcase classname="docs.implementation.evidence.P35-READINESS-ASTRA.test_adversarial" name="test_c0_crash_retains_attempt_history[after_checkpoint]" time="0.621" /><testcase classname="docs.implementation.evidence.P35-READINESS-ASTRA.test_adversarial" name="test_c0_crash_retains_attempt_history[after_failed_attempt]" time="0.778" /><testcase classname="docs.implementation.evidence.P35-READINESS-ASTRA.test_adversarial" name="test_historical_chain_tamper_rejected_before_restore" time="0.509" /><testcase classname="docs.implementation.evidence.P35-READINESS-ASTRA.test_adversarial" name="test_evaluator_payload_chain_mutation_is_currently_unprotected" time="0.488" /></testsuite></testsuites>

@@ -1,0 +1,95 @@
+{
+  "python": "3.12.13 (main, Apr  7 2026, 20:53:22) [MSC v.1944 64 bit (AMD64)]",
+  "executable": "G:\\Project\\xlm-p35-m3\\.venv-p35-m3\\Scripts\\python.exe",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "torch": "2.14.0+cu126",
+  "cuda_runtime": "12.6",
+  "gpu": "NVIDIA GeForce RTX 4090",
+  "packages": {
+    "numpy": "2.5.3",
+    "lm_eval": "0.4.13",
+    "pytest": "9.1.1",
+    "ruff": "0.16.8",
+    "mypy": "2.3.1",
+    "pytest-xdist": "3.8.0"
+  },
+  "git_checks": {
+    "pyproject.toml": {
+      "head_equals_parent": true,
+      "git_blob_sha256": "75723d525207f7ff3d71fee35f9e69a258c4bc493fcc971189965c9d672fc54e",
+      "worktree_sha256": "d503fbd9c69bee626e387b0e230fdfcf762327993e73ab711e039550495ebe54",
+      "worktree_equal_after_crlf_normalization": true
+    },
+    "uv.lock": {
+      "head_equals_parent": true,
+      "git_blob_sha256": "c44ecb0a0ed55e277d1bd24ee267e6ac8342f2e6e98efa2db11322ee458bac65",
+      "worktree_sha256": "658f83d08e7003c0642223759736dcccfa983ce0bab4b75f8f2b234e7a114631",
+      "worktree_equal_after_crlf_normalization": true
+    },
+    ".python-version": {
+      "head_equals_parent": true,
+      "git_blob_sha256": "aa0d6581054e6e4ff3f91839deca7a854ad37221b8784d060b42d0f847ff1a3b",
+      "worktree_sha256": "50b10393ce287fb4af7616d016dd16ac1a56412af4d2c74cde7ddc5ad5c78761",
+      "worktree_equal_after_crlf_normalization": true
+    },
+    "src/xlm/comparison/promotion.py": {
+      "head_equals_parent": true,
+      "git_blob_sha256": "04e961acb3dfe643742fa0777b7e9a98838139d8d34dbd08dda7689713aa8842",
+      "worktree_sha256": "31c22cce117e2cac30cfccba75b88c752aad99337f3b290fbed72a0a759645b4",
+      "worktree_equal_after_crlf_normalization": true
+    },
+    "src/xlm/comparison/tracks.py": {
+      "head_equals_parent": true,
+      "git_blob_sha256": "07d9b7a158a4171d68bbf30fb6b9249eb1aade156f37e076f91b3c474354d019",
+      "worktree_sha256": "2a251dd36d53b9555e486d667d6d6ed87bc932be8c59d52f3b63be086f852abe",
+      "worktree_equal_after_crlf_normalization": true
+    },
+    "src/xlm/comparison/bootstrap.py": {
+      "head_equals_parent": true,
+      "git_blob_sha256": "546033327a9b00d6030481e6702346f4c1c9e0d29995c2d0990b82ba1d3ced92",
+      "worktree_sha256": "19b1e3544f682444154f17827e1e9409c4dba9b7c80cf7806024b33ca59e382e",
+      "worktree_equal_after_crlf_normalization": true
+    },
+    "src/xlm/cli/compare_cmd.py": {
+      "head_equals_parent": true,
+      "git_blob_sha256": "f30254bd29d6015ff43cafd0893c26186db77a36c0d54f21af00f6458b55618e",
+      "worktree_sha256": "07e88ff432dd724c8a3f50497d4ea5220dabd4e010252c738776962039ea3c3a",
+      "worktree_equal_after_crlf_normalization": true
+    },
+    "src/xlm/comparison/recipes.py": {
+      "head_equals_parent": true,
+      "git_blob_sha256": "36498a181e648314cea23742eb8e79748e352a6f7afb63db572deca3d5ad15ef",
+      "worktree_sha256": "e1baea40d17166df894ce3a3c6cfe0c59c1b26b653dcf17db77640e7129d25c3",
+      "worktree_equal_after_crlf_normalization": true
+    }
+  },
+  "torch_loaded_by_pure_import": false,
+  "public_exports": {
+    "BenchmarkFixtureDataset": "xlm.evaluation.fixtures",
+    "BenchmarkFixtureScorer": "xlm.evaluation.scorer",
+    "BoundaryPolicy": "xlm.evaluation.likelihood",
+    "ConditionalLikelihoodScorer": "xlm.evaluation.likelihood",
+    "ContinuationTooLongError": "xlm.evaluation.likelihood",
+    "CrossBoundaryMergeError": "xlm.evaluation.likelihood",
+    "DocumentScoringResult": "xlm.evaluation.likelihood",
+    "FixedDiagnosticProbe": "xlm.evaluation.diagnostics",
+    "InvalidChoiceError": "xlm.evaluation.fixtures",
+    "MinimalPairItem": "xlm.evaluation.fixtures",
+    "MinimalPairItemResult": "xlm.evaluation.scorer",
+    "MultipleChoiceItem": "xlm.evaluation.fixtures",
+    "MultipleChoiceItemResult": "xlm.evaluation.scorer",
+    "RawLikelihoodCache": "xlm.evaluation.scorer",
+    "ScoringRequest": "xlm.evaluation.likelihood",
+    "ScoringResult": "xlm.evaluation.likelihood",
+    "SourceDiagnostic": "xlm.evaluation.diagnostics",
+    "TokenPair": "xlm.evaluation.likelihood",
+    "WindowTruncationPolicy": "xlm.evaluation.likelihood",
+    "ZeroScoredTokensError": "xlm.evaluation.likelihood",
+    "evaluate_fixed_diagnostic_probes": "xlm.evaluation.diagnostics",
+    "evaluate_validation_sources": "xlm.evaluation.diagnostics",
+    "get_synthetic_minimal_pair_fixture": "xlm.evaluation.fixtures",
+    "get_synthetic_multiple_choice_fixture": "xlm.evaluation.fixtures",
+    "prepare_token_pair": "xlm.evaluation.likelihood"
+  },
+  "nvidia_smi": "Sat Sep 26 20:25:44 2026       \n+-----------------------------------------------------------------------------------------+\n| NVIDIA-SMI 596.49                 Driver Version: 596.49         CUDA Version: 13.2     |\n+-----------------------------------------+------------------------+----------------------+\n| GPU  Name                  Driver-Model | Bus-Id          Disp.A | Volatile Uncorr. ECC |\n| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |\n|                                         |                        |               MIG M. |\n|=========================================+========================+======================|\n|   0  NVIDIA GeForce RTX 4090      WDDM  |   00000000:26:00.0  On |                  Off |\n|  0%   54C    P0             48W /  450W |    9644MiB /  24564MiB |     37%      Default |\n|                                         |                        |                  N/A |\n+-----------------------------------------+------------------------+----------------------+\n\n+-----------------------------------------------------------------------------------------+\n| Processes:                                                                              |\n|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |\n|        ID   ID                                                               Usage      |\n|=========================================================================================|\n|    0   N/A  N/A            3196    C+G   ...s\\Mozilla Firefox\\firefox.exe      N/A      |\n|    0   N/A  N/A            4076    C+G   ....0.4234.48\\msedgewebview2.exe      N/A      |\n|    0   N/A  N/A            7140    C+G   ...UI3Apps\\PowerToys.Peek.UI.exe      N/A      |\n|    0   N/A  N/A            9648    C+G   ...em_tray\\lghub_system_tray.exe      N/A      |\n|    0   N/A  N/A           10252    C+G   ....0.4234.48\\msedgewebview2.exe      N/A      |\n|    0   N/A  N/A           13636    C+G   ...s\\Mozilla Firefox\\firefox.exe      N/A      |\n|    0   N/A  N/A           13812    C+G   ...2txyewy\\CrossDeviceResume.exe      N/A      |\n|    0   N/A  N/A           14172    C+G   ...Anti-Malware\\Malwarebytes.exe      N/A      |\n|    0   N/A  N/A           14400    C+G   ...gram Files\\Parsec\\parsecd.exe      N/A      |\n|    0   N/A  N/A           15088    C+G   C:\\Windows\\explorer.exe               N/A      |\n|    0   N/A  N/A           16728    C+G   ..._cw5n1h2txyewy\\SearchHost.exe      N/A      |\n|    0   N/A  N/A           16752    C+G   ...y\\StartMenuExperienceHost.exe      N/A      |\n|    0   N/A  N/A           16856    C+G   ...Toys\\PowerToys.FancyZones.exe      N/A      |\n|    0   N/A  N/A           17084    C+G   ...Files\\PowerToys\\PowerToys.exe      N/A      |\n|    0   N/A  N/A           17716    C+G   ...IA app\\CEF\\NVIDIA Overlay.exe      N/A      |\n|    0   N/A  N/A           18936    C+G   ....0.4234.48\\msedgewebview2.exe      N/A      |\n|    0   N/A  N/A           19352    C+G   ....0.4234.48\\msedgewebview2.exe      N/A      |\n|    0   N/A  N/A           20636    C+G   ...IA app\\CEF\\NVIDIA Overlay.exe      N/A      |\n|    0   N/A  N/A           22040    C+G   ...8bbwe\\Microsoft.CmdPal.UI.exe      N/A      |\n|    0   N/A  N/A           22460    C+G   ...pps\\PowerToys.QuickAccess.exe      N/A      |\n|    0   N/A  N/A           23352    C+G   ...5n1h2txyewy\\TextInputHost.exe      N/A      |\n|    0   N/A  N/A           23628    C+G   ...8bbwe\\PhoneExperienceHost.exe      N/A      |\n|    0   N/A  N/A           25388    C+G   ...les\\TeamViewer\\TeamViewer.exe      N/A      |\n|    0   N/A  N/A           26584    C+G   ...s\\PowerToys.ColorPickerUI.exe      N/A      |\n|    0   N/A  N/A           28008    C+G   ...s\\PowerToys.ShortcutGuide.exe      N/A      |\n|    0   N/A  N/A           29980    C+G   ...\\cef.win64\\steamwebhelper.exe      N/A      |\n|    0   N/A  N/A           31236    C+G   ...xyewy\\ShellExperienceHost.exe      N/A      |\n|    0   N/A  N/A           31488    C+G   ...s\\Mozilla Firefox\\firefox.exe      N/A      |\n|    0   N/A  N/A           32108    C+G   ...yApp\\MicrosoftSecurityApp.exe      N/A      |\n|    0   N/A  N/A           34456    C+G   ...ekyb3d8bbwe\\CalculatorApp.exe      N/A      |\n|    0   N/A  N/A           36244    C+G   ...2.1_x64__pc75e8sa7ep4e\\XD.exe      N/A      |\n|    0   N/A  N/A           43824    C+G   ...8wekyb3d8bbwe\\M365Copilot.exe      N/A      |\n|    0   N/A  N/A           47572    C+G   ...x64__dt26b99r8h8gj\\RtkUWP.exe      N/A      |\n|    0   N/A  N/A           47772    C+G   ...lare WARP\\Cloudflare WARP.exe      N/A      |\n|    0   N/A  N/A           47868    C+G   ...rvices\\BlueStacksServices.exe      N/A      |\n|    0   N/A  N/A           52108    C+G   ...n\\AdobeNotificationClient.exe      N/A      |\n|    0   N/A  N/A           56972    C+G   ...SnippingTool\\SnippingTool.exe      N/A      |\n|    0   N/A  N/A           58304    C+G   ...em32\\ApplicationFrameHost.exe      N/A      |\n|    0   N/A  N/A           59532    C+G   ...indows\\System32\\ShellHost.exe      N/A      |\n|    0   N/A  N/A           66024    C+G   ...ekyb3d8bbwe\\CalculatorApp.exe      N/A      |\n|    0   N/A  N/A           67872    C+G   ...ms\\Microsoft VS Code\\Code.exe      N/A      |\n|    0   N/A  N/A           68736    C+G   ...encode-aidesktop\\OpenCode.exe      N/A      |\n|    0   N/A  N/A           73332      C   ...indows-x86_64-none\\python.exe      N/A      |\n|    0   N/A  N/A           74024    C+G   ...yb3d8bbwe\\Notepad\\Notepad.exe      N/A      |\n|    0   N/A  N/A           74720    C+G   ...yb3d8bbwe\\WindowsTerminal.exe      N/A      |\n|    0   N/A  N/A           82492    C+G   ...t\\Edge\\Application\\msedge.exe      N/A      |\n|    0   N/A  N/A           94088    C+G   ....0.4234.48\\msedgewebview2.exe      N/A      |\n+-----------------------------------------------------------------------------------------+\n"
+}

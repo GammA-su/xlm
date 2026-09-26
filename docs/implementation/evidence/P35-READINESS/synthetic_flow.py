@@ -2,7 +2,8 @@
 
 Run from the repository root:
 
-    python docs/implementation/evidence/P35-READINESS/synthetic_flow.py <output.json>
+    uv run --offline --locked --no-sync --extra cuda --extra eval python \
+        docs/implementation/evidence/P35-READINESS/synthetic_flow.py <output.json>
 
 Part A (recoverability, pure planner/ledger/retention decisions):
   C=0 barrier with an injected search failure and a retry; a small quick
@@ -22,7 +23,6 @@ The Trainer/queue execution of Part A is covered by
 from __future__ import annotations
 
 import json
-import resource
 import statistics
 import sys
 import tempfile
@@ -305,7 +305,7 @@ def part_c() -> dict[str, Any]:
         "synchronous_path_percent_of_planning_update": round(
             100 * sync_ms / 1000 / update_seconds, 3
         ),
-        "note": "CPU-only cloud container; SYNTHETIC arrays; no GPU; no device sync involved",
+        "note": "CPU-only measurement; SYNTHETIC arrays; no GPU; no device sync involved",
     }
 
 
@@ -319,7 +319,17 @@ def main(output: Path) -> None:
             "part_c_overhead": part_c(),
         }
     result["wall_seconds"] = round(time.perf_counter() - began, 3)
-    result["peak_rss_mib"] = round(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024, 1)
+    if sys.platform == "win32":
+        import psutil
+
+        result["peak_rss_mib"] = round(psutil.Process().memory_info().peak_wset / 1024**2, 1)
+        result["peak_rss_measurement"] = "Windows peak working set (psutil peak_wset)"
+    else:
+        import resource
+
+        peak = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        result["peak_rss_mib"] = round(peak / (1024**2 if sys.platform == "darwin" else 1024), 1)
+        result["peak_rss_measurement"] = "resource.getrusage ru_maxrss"
     output.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(json.dumps({k: result[k] for k in ("wall_seconds", "peak_rss_mib")}))
 

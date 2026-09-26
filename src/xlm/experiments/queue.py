@@ -840,6 +840,34 @@ class ExperimentQueue:
                 if clock is not None:
                     clock.finish("cancelled")
                 return self._finish_cancelled(job, plan, str(result.get("reason", "cancelled")))
+            from xlm.evaluation.recoverability import (
+                EVALUATION_INCOMPLETE,
+                RecoverabilityPolicy,
+            )
+
+            policy_config = plan.resolved_config.get("training", {}).get(
+                "evaluation_recoverability"
+            )
+            policy = RecoverabilityPolicy.from_config(policy_config) if policy_config else None
+            evaluation = result.get("evaluation")
+            incomplete = result.get("completion") == EVALUATION_INCOMPLETE or (
+                policy is not None
+                and policy.endpoint_fail_stop
+                and (not isinstance(evaluation, dict) or evaluation.get("complete") is not True)
+            )
+            if incomplete or result.get("state") == "FAILED":
+                if clock is not None:
+                    clock.finish("failed")
+                    if clock.allowance.remaining_seconds <= 0:
+                        return self._finish_incomplete(
+                            job, plan, "total wall allowance exhausted", clock.allowance
+                        )
+                return self._finish_failed(
+                    job,
+                    plan,
+                    str(result.get("reason", "required evaluation completeness missing")),
+                    completion=EVALUATION_INCOMPLETE if incomplete else None,
+                )
             if clock is not None:
                 clock.finish("succeeded")
                 result = {**result, "wall_allowance": clock.allowance.to_dict()}
@@ -868,7 +896,14 @@ class ExperimentQueue:
         self._write_run_record(done, plan, {"result": result})
         return {"ran": True, "job_id": job.job_id, "state": "SUCCEEDED", **result}
 
-    def _finish_failed(self, job: QueueJob, plan: ExecutablePlan, reason: str) -> dict[str, Any]:
+    def _finish_failed(
+        self,
+        job: QueueJob,
+        plan: ExecutablePlan,
+        reason: str,
+        *,
+        completion: str | None = None,
+    ) -> dict[str, Any]:
         failed = QueueJob(
             **{
                 **job.to_dict(),
@@ -879,8 +914,9 @@ class ExperimentQueue:
         self._write_job_row(failed)
         self.ledger.transition_run(job.job_id, RunStatus.RUNNING, RunStatus.FAILED)
         self._close_attempt(job.job_id, job.attempts_made, RunStatus.FAILED.value, reason)
-        self._write_run_record(failed, plan, {"failure_reason": reason})
-        return {"ran": True, "job_id": job.job_id, "state": "FAILED", "reason": reason}
+        details = {"completion": completion} if completion is not None else {}
+        self._write_run_record(failed, plan, {"failure_reason": reason, **details})
+        return {"ran": True, "job_id": job.job_id, "state": "FAILED", "reason": reason, **details}
 
     def _finish_incomplete(
         self, job: QueueJob, plan: ExecutablePlan, reason: str, allowance: Any

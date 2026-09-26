@@ -1,0 +1,287 @@
+E501 Line too long (104 > 100)
+  --> docs\implementation\evidence\P35-READINESS-ASTRA\compatibility.py:32:101
+   |
+30 |                         "git_blob_sha256": hashlib.sha256(head).hexdigest(),
+31 |                         "worktree_sha256": hashlib.sha256(work).hexdigest(),
+32 |                         "worktree_equal_after_crlf_normalization": work.replace(b"\r\n", b"\n") == head}
+   |                                                                                                     ^^^^
+33 |         assert head == base and work.replace(b"\r\n", b"\n") == head
+34 |     import xlm.evaluation as evaluation
+   |
+
+F401 [*] `xlm.evaluation.cadence` imported but unused
+  --> docs\implementation\evidence\P35-READINESS-ASTRA\compatibility.py:35:12
+   |
+33 |         assert head == base and work.replace(b"\r\n", b"\n") == head
+34 |     import xlm.evaluation as evaluation
+35 |     import xlm.evaluation.cadence
+   |            ^^^^^^^^^^^^^^^^^^^^^^
+36 |
+37 |     torch_after_pure_import = "torch" in sys.modules
+   |
+help: Remove unused import: `xlm.evaluation.cadence`
+   |
+34 |     import xlm.evaluation as evaluation
+   -     import xlm.evaluation.cadence
+35 |
+   |
+
+E501 Line too long (115 > 100)
+   --> docs\implementation\evidence\P35-READINESS-ASTRA\receipt_spot.py:112:101
+    |
+110 |         "peak_gpu_memory_delta_bytes": max(r["peak_cuda_allocated_bytes"] for r in enabled_rows)
+111 |             - max(r["peak_cuda_allocated_bytes"] for r in disabled),
+112 |         "new_cuda_sync": "No device access in receipt functions by source inspection; profiler check is separate.",
+    |                                                                                                     ^^^^^^^^^^^^^^^
+113 |         "limitation": "Small model and synchronous synthetic-token batcher do not estimate 50M/B8/producer overhead.",
+114 |     }
+    |
+
+E501 Line too long (118 > 100)
+   --> docs\implementation\evidence\P35-READINESS-ASTRA\receipt_spot.py:113:101
+    |
+111 |             - max(r["peak_cuda_allocated_bytes"] for r in disabled),
+112 |         "new_cuda_sync": "No device access in receipt functions by source inspection; profiler check is separate.",
+113 |         "limitation": "Small model and synchronous synthetic-token batcher do not estimate 50M/B8/producer overhead.",
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^
+114 |     }
+115 |     output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> docs\implementation\evidence\P35-READINESS-ASTRA\test_adversarial.py:2:1
+   |
+ 1 |   """Isolated authored adversaries; documented weakness assertions are NOT certifications."""
+ 2 | / from __future__ import annotations
+ 3 | |
+ 4 | | import copy
+ 5 | | import json
+ 6 | | from dataclasses import replace
+ 7 | | from pathlib import Path
+ 8 | | from types import SimpleNamespace
+ 9 | | from typing import Any
+10 | |
+11 | | import numpy as np
+12 | | import pytest
+13 | | import torch
+14 | |
+15 | | from p35_eval_support import CallbackEvaluator, RecordingEvaluator, reload, run_all
+16 | | from test_p35_readiness_runtime import (
+17 | |     BUDGET, FULL, QUICK, SEARCH, attempts, c0_trainer, endpoint_trainer,
+18 | |     payload_trainer, recovery_trainer,
+19 | | )
+20 | | from xlm.data.sampling.update_payload import (
+21 | |     UpdatePayloadChain, canonical_from_microbatches, canonical_from_prepared, canonical_update,
+22 | | )
+23 | | from xlm.evaluation.outcome import EvaluationOutcome
+24 | | from xlm.evaluation.receipts import AttemptOutcome
+25 | | from xlm.training.trainer import InitialEvaluationBarrierError, NonFiniteGradientError, RequiredEvaluationIncompleteError
+   | |_________________________________________________________________________________________________________________________^
+help: Organize imports
+   |
+16 | from test_p35_readiness_runtime import (
+   -     BUDGET, FULL, QUICK, SEARCH, attempts, c0_trainer, endpoint_trainer,
+   -     payload_trainer, recovery_trainer,
+17 +     BUDGET,
+18 +     FULL,
+19 +     QUICK,
+20 +     SEARCH,
+21 +     attempts,
+22 +     c0_trainer,
+23 +     endpoint_trainer,
+24 +     payload_trainer,
+25 +     recovery_trainer,
+26 | )
+27 | from xlm.data.sampling.update_payload import (
+   -     UpdatePayloadChain, canonical_from_microbatches, canonical_from_prepared, canonical_update,
+28 +     UpdatePayloadChain,
+29 +     canonical_from_microbatches,
+30 +     canonical_from_prepared,
+31 +     canonical_update,
+32 | )
+33 | from xlm.evaluation.outcome import EvaluationOutcome
+34 | from xlm.evaluation.receipts import AttemptOutcome
+   - from xlm.training.trainer import InitialEvaluationBarrierError, NonFiniteGradientError, RequiredEvaluationIncompleteError
+35 + from xlm.training.trainer import (
+36 +     InitialEvaluationBarrierError,
+37 +     NonFiniteGradientError,
+38 +     RequiredEvaluationIncompleteError,
+39 + )
+40 |
+   |
+
+F401 [*] `p35_eval_support.RecordingEvaluator` imported but unused
+  --> docs\implementation\evidence\P35-READINESS-ASTRA\test_adversarial.py:15:49
+   |
+13 | import torch
+14 |
+15 | from p35_eval_support import CallbackEvaluator, RecordingEvaluator, reload, run_all
+   |                                                 ^^^^^^^^^^^^^^^^^^
+16 | from test_p35_readiness_runtime import (
+17 |     BUDGET, FULL, QUICK, SEARCH, attempts, c0_trainer, endpoint_trainer,
+   |
+help: Remove unused import: `p35_eval_support.RecordingEvaluator`
+   |
+14 |
+   - from p35_eval_support import CallbackEvaluator, RecordingEvaluator, reload, run_all
+15 + from p35_eval_support import CallbackEvaluator, reload, run_all
+16 | from test_p35_readiness_runtime import (
+   |
+
+E501 Line too long (121 > 100)
+  --> docs\implementation\evidence\P35-READINESS-ASTRA\test_adversarial.py:25:101
+   |
+23 | from xlm.evaluation.outcome import EvaluationOutcome
+24 | from xlm.evaluation.receipts import AttemptOutcome
+25 | from xlm.training.trainer import InitialEvaluationBarrierError, NonFiniteGradientError, RequiredEvaluationIncompleteError
+   |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^
+
+E501 Line too long (104 > 100)
+  --> docs\implementation\evidence\P35-READINESS-ASTRA\test_adversarial.py:97:101
+   |
+95 |     chains = []
+96 |     for group in (1, 2, 4, 8, 16, 32):
+97 |         payload = canonical_from_microbatches(regroup(rows, group, batches[0].metadata["packing_mode"]))
+   |                                                                                                     ^^^^
+98 |         chain = UpdatePayloadChain()
+99 |         chain.stage(step=1, committed_before=0, valid_targets=payload.valid_targets, payload=payload.digest())
+   |
+
+E501 Line too long (110 > 100)
+   --> docs\implementation\evidence\P35-READINESS-ASTRA\test_adversarial.py:99:101
+    |
+ 97 |         payload = canonical_from_microbatches(regroup(rows, group, batches[0].metadata["packing_mode"]))
+ 98 |         chain = UpdatePayloadChain()
+ 99 |         chain.stage(step=1, committed_before=0, valid_targets=payload.valid_targets, payload=payload.digest())
+    |                                                                                                     ^^^^^^^^^^
+100 |         chain.commit()
+101 |         chains.append(chain.head)
+    |
+
+E501 Line too long (110 > 100)
+   --> docs\implementation\evidence\P35-READINESS-ASTRA\test_adversarial.py:109:101
+    |
+107 |         assert canonical_from_microbatches(mutate(batches, field)).digest() != base, field
+108 |     rows[0], rows[1] = rows[1], rows[0]
+109 |     assert canonical_from_microbatches(regroup(rows, 8, batches[0].metadata["packing_mode"])).digest() != base
+    |                                                                                                     ^^^^^^^^^^
+
+E501 Line too long (102 > 100)
+   --> docs\implementation\evidence\P35-READINESS-ASTRA\test_adversarial.py:117:101
+    |
+115 |     batches = authored_update(tmp_path)
+116 |     prepared = _encode(batches, 0, 0, None, "start", None, 0.0)
+117 |     provenance = replace(prepared.provenance, doc_ids=np.roll(prepared.provenance.doc_ids, 1, axis=0))
+    |                                                                                                     ^^
+118 |     shifted = replace(prepared, provenance=provenance)
+119 |     assert shifted.compute_content_digest() != prepared.content_digest
+    |
+
+E501 Line too long (106 > 100)
+   --> docs\implementation\evidence\P35-READINESS-ASTRA\test_adversarial.py:144:101
+    |
+142 |         right.metadata["input_attention_mask"] = np.ones_like(right.loss_mask, dtype=bool)
+143 |     assert any(not value for mb in missing for row in mb.loss_mask for value in row)
+144 |     assert canonical_from_microbatches(missing).digest() != canonical_from_microbatches(explicit).digest()
+    |                                                                                                     ^^^^^^
+
+E501 Line too long (105 > 100)
+   --> docs\implementation\evidence\P35-READINESS-ASTRA\test_adversarial.py:161:101
+    |
+159 |     """SURVIVING adversary: a self-consistent LR/chain pair is not checked against data C."""
+160 |     trainer = payload_trainer(tmp_path)
+161 |     trainer.science.update_payloads.stage(step=1, committed_before=0, valid_targets=16, payload="a" * 64)
+    |                                                                                                     ^^^^^
+162 |     trainer.science.update_payloads.commit()
+163 |     trainer.science.record_lr([1, 0, 16, 16, [0.001]])
+    |
+
+E501 Line too long (108 > 100)
+   --> docs\implementation\evidence\P35-READINESS-ASTRA\test_adversarial.py:173:101
+    |
+172 | @pytest.mark.parametrize("stage", ["forward", "nonfinite", "optimizer", "data_commit"])
+173 | def test_failure_never_commits_receipt(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, stage: str) -> None:
+    |                                                                                                     ^^^^^^^^
+174 |     trainer = payload_trainer(tmp_path)
+    |
+
+E501 Line too long (101 > 100)
+   --> docs\implementation\evidence\P35-READINESS-ASTRA\test_adversarial.py:213:101
+    |
+212 | @pytest.mark.parametrize("saved_receipt", [False, True])
+213 | def test_both_presence_mismatches_refuse_before_restore(tmp_path: Path, saved_receipt: bool) -> None:
+    |                                                                                                     ^
+214 |     from xlm.training.checkpoint import IncompatibleCheckpointError
+    |
+
+E501 Line too long (112 > 100)
+   --> docs\implementation\evidence\P35-READINESS-ASTRA\test_adversarial.py:242:101
+    |
+240 |             expected = direct.next_step_microbatches(remaining)
+241 |             assert all(isinstance(m.input_ids, torch.Tensor) for m in actual + expected)
+242 |             assert canonical_update(producer, actual).digest() == canonical_from_microbatches(expected).digest()
+    |                                                                                                     ^^^^^^^^^^^^
+243 |             for index, mb in enumerate(expected):
+244 |                 provenance = producer.pending_update.microbatch_provenance(index)
+    |
+
+E501 Line too long (104 > 100)
+   --> docs\implementation\evidence\P35-READINESS-ASTRA\test_adversarial.py:295:101
+    |
+293 |     reload(second, cp)
+294 |     assert second.train_step() is not None
+295 |     expected = [(1, "complete")] if position == "after_checkpoint" else [(1, "failed"), (2, "complete")]
+    |                                                                                                     ^^^^
+296 |     assert attempts(second, "search_benchmark@0") == expected
+    |
+
+I001 [*] Import block is un-sorted or un-formatted
+   --> docs\implementation\evidence\P35-READINESS-ASTRA\test_adversarial.py:300:5
+    |
+299 |   def test_historical_chain_tamper_rejected_before_restore(tmp_path: Path) -> None:
+300 | /     import hashlib
+301 | |     from xlm.training.checkpoint import IncompatibleCheckpointError
+    | |___________________________________________________________________^
+302 |
+303 |       first = payload_trainer(tmp_path / "first")
+    |
+help: Organize imports
+    |
+300 |     import hashlib
+301 +
+302 |     from xlm.training.checkpoint import IncompatibleCheckpointError
+    |
+
+E501 Line too long (109 > 100)
+   --> docs\implementation\evidence\P35-READINESS-ASTRA\test_adversarial.py:335:101
+    |
+334 |     def mutate_live(model: Any) -> None:
+335 |         trainer.science.update_payloads.stage(step=1, committed_before=0, valid_targets=16, payload="b" * 64)
+    |                                                                                                     ^^^^^^^^^
+336 |         trainer.science.update_payloads.commit()
+    |
+
+E501 Line too long (102 > 100)
+   --> docs\implementation\evidence\P35-READINESS-ASTRA\test_adversarial.py:338:101
+    |
+336 |         trainer.science.update_payloads.commit()
+337 |
+338 |     trainer.evaluation.evaluators[SEARCH] = CallbackEvaluator(SEARCH, mutate_live, label=SEARCH.value)
+    |                                                                                                     ^^
+339 |     trainer._evaluate_boundary()
+340 |     assert trainer.evaluation.ledger.records["search_benchmark@0"].status.value == "complete"
+    |
+
+E501 Line too long (115 > 100)
+   --> tests\test_p35_astra_boundaries.py:141:101
+    |
+139 |     job = queue.get_job(job_id)
+140 |     completed = list(Path(job.work_dir).rglob("checkpoint_meta.json"))
+141 |     endpoint = [p for p in completed if json.loads(p.read_text(encoding="utf-8"))["committed_valid_targets"] == 64]
+    |                                                                                                     ^^^^^^^^^^^^^^^
+142 |     assert endpoint
+143 |     assert all((p.parent / "_COMPLETED").is_file() for p in endpoint)
+    |
+
+Found 21 errors.
+[*] 4 fixable with the `--fix` option.

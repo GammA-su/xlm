@@ -1,5 +1,12 @@
 # Implementation status
 
+> Latest local review: **ASTRA INDEPENDENT REVIEW + LOCAL CUDA CERTIFICATION**
+> (2026-09-26), **SAFE AFTER SPECIFIC FIXES**. Pilot-critical repairs implemented
+> and verified; receipt-disabled pilot software is safe to integrate. Formal
+> microbatch receipt remains BLOCKED on documented adversarial gaps. See the
+> appended closeout below and [readiness report](reports/P35-PILOT-READINESS.md).
+> No real pilot, data preparation, study, push or merge occurred.
+
 > **P35 PILOT-READINESS HARDENING (2026-09-26; not Milestone 6): IMPLEMENTED;
 > pure decisions VERIFIED; NEEDS LOCAL CERTIFICATION.** Branch
 > `research/p35-pilot-readiness` from certified M5 `8ccb4bc` (tag
@@ -1723,3 +1730,56 @@
 - Full-size public planning still lacks measured profile lookup integration;
   smoke/production guards remain. External pilot/profile/evaluation work is NOT RUN.
 - Final complete platform rerun: NOT RUN. Overall production acceptance: BLOCKED.
+
+## ASTRA INDEPENDENT REVIEW + LOCAL CUDA CERTIFICATION
+
+2026-09-26, `review/p35-readiness-astra`, starting HEAD
+`176e351b37a84f323b8fe53c10fa2ea87e5251c2`, clean worktree. Windows/Python
+3.12.13/torch 2.14.0+cu126/CUDA 12.6/RTX 4090/driver 596.49; existing locked
+CUDA+eval environment, offline and no-sync. No new milestone or real-data work.
+
+**SAFE AFTER SPECIFIC FIXES:** the pilot fixes are now implemented and verified.
+Stat caps gate expensive order/hash resolution; worker/queue preserve
+EVALUATION_INCOMPLETE and refuse false success; final wall completion rejects
+success arriving after its allowance. The synthetic evidence script is portable
+to Windows. Keep the pilot receipt disabled. Scientific recovery design and
+bounded runtime paths are supported; full-size performance is NOT RUN.
+
+- Primary readiness: **112 passed**, including all **17** formerly unrun Torch
+  nodes, no skips. Affected M1–M5: **232 passed**. Comparison/evidence:
+  **252 passed, 1 failed** (unchanged P17 CRLF golden-byte test; Git blobs proven
+  unchanged). Public workflow: **3 passed** on repaired code. Serial CUDA toy:
+  **1 passed** before repairs and **1 passed** after, 24 complementary deselections
+  each. Focused repairs/additional adversaries: **87 passed**, no skips.
+- Independent A1–A8: retry persistence, endpoint durability, PARTIAL retention,
+  shifted provenance, attention distinction, LR alignment and queue fail-stop
+  covered. **A7 survives**: valid LR/chain history can exceed checkpoint/data C
+  on load. Other reproduced pre-study gaps: detached producer-consumer tensors,
+  receipt commit failure, evaluator chain mutation, duplicate compact aliases.
+  Changed-policy fork receipt validation remains source-reviewed, not certified.
+- Actual process producer equals direct Torch payload; fresh-process resume with
+  dropout and partial final update equals uninterrupted rows/head/LR. These stock
+  path successes do not close the adversarial gaps. M4 v2 formal study BLOCKED.
+- Independent nominal capacity: **5 scientific + 2 terminal + 2 transient = 9P**,
+  plus separate bounded overhead. Repeated deletion faults require storage fail-stop.
+- Tiny B8 CUDA receipt spot: **163,840 targets**, **6.781 s**, **96 KiB** runtime
+  files; **0.3771 ms/update** receipt CPU, **−0.493%** observed throughput delta,
+  **0 bytes** peak GPU delta, same one explicit stream sync/update. This is a
+  **6,768-parameter authored diagnostic**, not 50M pilot performance qualification.
+- Ruff check/format **39 files** clean; mypy **23 source files** clean; dependency
+  trio unchanged. Full repository acceptance audit NOT RUN. CPU/CUDA install
+  policy unchanged. No network, downloads, install, live data, margins, pilot,
+  campaign, push or merge.
+
+Evidence and exact commands:
+[P35-READINESS-ASTRA](evidence/P35-READINESS-ASTRA/COMMANDS.md),
+[pre-test review](evidence/P35-READINESS-ASTRA/PRETEST.md),
+[findings](evidence/P35-READINESS-ASTRA/REVIEW.md), and
+[report closeout](reports/P35-PILOT-READINESS.md#astra-independent-review--local-cuda-certification).
+The historical cloud sections above are retained as history.
+
+Next operator command: **`git show --stat HEAD`** to review the local certification
+commit for integration, with pilot receipt still disabled. Real pilot launch remains
+blocked on separately authorized real bindings, measured profile/checkpoint capacity,
+frozen plan and matching ticket. Formal microbatch work first requires the documented
+receipt repairs and recertification. No next milestone is started here.

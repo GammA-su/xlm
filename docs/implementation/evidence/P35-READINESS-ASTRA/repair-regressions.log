@@ -1,0 +1,108 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0
+rootdir: G:\Project\xlm-p35-readiness-astra
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0, xdist-3.8.0
+collected 87 items
+
+tests\test_p35_astra_boundaries.py ......                                [  6%]
+tests\test_p35_wall_allowance.py ......                                  [ 13%]
+tests\test_p35_readiness_planner.py ..............                       [ 29%]
+tests\test_p35_science_pilot.py ................................         [ 66%]
+docs\implementation\evidence\P35-READINESS-ASTRA\test_adversarial.py ... [ 70%]
+..........................                                               [100%]
+
+=================================== PASSES ====================================
+____________ test_small_stat_fixture_reports_source_and_both_caps _____________
+---------------------------- Captured stdout call -----------------------------
+{"fixture_only_lowered_caps": true, "report": {"basis": "stat() of the bound shard files before any hashing or index scan", "caps": {"per_shard_bytes": 32, "aggregate_bytes": 48, "json_file_bytes": 8388608}, "per_source": {"authored": {"files": {"tokens.bin": 64}, "shard_bytes": 64, "aggregate_counted_bytes": 64, "exceeds_shard_cap": true, "oversized_json": []}}, "aggregate_bytes": 64, "exceeds_aggregate_cap": true, "aggregate_excess_bytes": 16, "sources_exceeding_shard_cap": ["authored"]}, "blockers": [{"code": "frozen_input_cap_exceeded", "detail": "source 'authored' shard files total 64 bytes (cap 32); oversized JSON []"}, {"code": "frozen_input_cap_exceeded", "detail": "aggregate frozen shard inputs 64 bytes exceed the unchanged 48-byte cap by 16; largest sources: authored=64"}]}
+- generated xml file: G:\Project\xlm-p35-readiness-astra\docs\implementation\evidence\P35-READINESS-ASTRA\repair-regressions.xml -
+=========================== short test summary info ===========================
+PASSED tests/test_p35_astra_boundaries.py::test_stat_cap_stops_before_order_or_execution_scan
+PASSED tests/test_p35_astra_boundaries.py::test_success_arriving_after_wall_limit_is_refused
+PASSED tests/test_p35_astra_boundaries.py::test_queue_never_promotes_failed_evaluation_or_late_success[False]
+PASSED tests/test_p35_astra_boundaries.py::test_queue_never_promotes_failed_evaluation_or_late_success[True]
+PASSED tests/test_p35_astra_boundaries.py::test_real_worker_transports_only_evaluation_incomplete[RequiredEvaluationIncompleteError]
+PASSED tests/test_p35_astra_boundaries.py::test_real_worker_transports_only_evaluation_incomplete[RecoveryRequiredError]
+PASSED tests/test_p35_wall_allowance.py::test_resume_receives_only_the_remaining_allowance
+PASSED tests/test_p35_wall_allowance.py::test_consumption_is_persisted_while_running_so_a_crash_cannot_refund_it
+PASSED tests/test_p35_wall_allowance.py::test_allowance_is_bound_to_its_plan_and_total
+PASSED tests/test_p35_wall_allowance.py::test_queue_resume_gets_the_remaining_allowance_and_success_is_recorded
+PASSED tests/test_p35_wall_allowance.py::test_expired_allowance_is_incomplete_never_success
+PASSED tests/test_p35_wall_allowance.py::test_a_real_frozen_worker_is_stopped_at_the_allowance
+PASSED tests/test_p35_readiness_planner.py::test_checked_in_draft_declares_the_v1_policy_and_stays_nonexecutable
+PASSED tests/test_p35_readiness_planner.py::test_draft_review_table_has_a_route_for_every_required_event
+PASSED tests/test_p35_readiness_planner.py::test_missing_policy_blocks_the_research_pilot_with_every_lost_event
+PASSED tests/test_p35_readiness_planner.py::test_authored_fixtures_also_fail_closed_on_a_missing_route[initial_barrier-lost0]
+PASSED tests/test_p35_readiness_planner.py::test_authored_fixtures_also_fail_closed_on_a_missing_route[recovery_checkpoints-lost1]
+PASSED tests/test_p35_readiness_planner.py::test_authored_fixtures_also_fail_closed_on_a_missing_route[endpoint-lost2]
+PASSED tests/test_p35_readiness_planner.py::test_recoverability_policy_is_bound_into_the_plan_hash
+PASSED tests/test_p35_readiness_planner.py::test_capacity_counts_worst_case_recovery_states_and_transients
+PASSED tests/test_p35_readiness_planner.py::test_capacity_without_recovery_checkpoints_is_the_m3_bound
+PASSED tests/test_p35_readiness_planner.py::test_insufficient_capacity_blocks_and_the_measured_size_is_mandatory
+PASSED tests/test_p35_readiness_planner.py::test_caps_are_unchanged_and_the_resolver_uses_the_named_constants
+PASSED tests/test_p35_readiness_planner.py::test_input_report_names_the_sources_and_bytes_against_the_caps
+PASSED tests/test_p35_readiness_planner.py::test_input_check_stats_real_files_without_reading_them
+PASSED tests/test_p35_readiness_planner.py::test_input_check_blocks_without_raising_the_cap
+PASSED tests/test_p35_science_pilot.py::test_checked_in_draft_is_visibly_nonexecutable
+PASSED tests/test_p35_science_pilot.py::test_draft_states_the_exact_p35_pilot
+PASSED tests/test_p35_science_pilot.py::test_any_deviation_from_the_contract_is_blocked[<lambda>-config_deviation0]
+PASSED tests/test_p35_science_pilot.py::test_any_deviation_from_the_contract_is_blocked[<lambda>-config_deviation1]
+PASSED tests/test_p35_science_pilot.py::test_any_deviation_from_the_contract_is_blocked[<lambda>-config_deviation2]
+PASSED tests/test_p35_science_pilot.py::test_any_deviation_from_the_contract_is_blocked[<lambda>-config_deviation3]
+PASSED tests/test_p35_science_pilot.py::test_any_deviation_from_the_contract_is_blocked[<lambda>-config_deviation4]
+PASSED tests/test_p35_science_pilot.py::test_any_deviation_from_the_contract_is_blocked[<lambda>-resource_limit_unset]
+PASSED tests/test_p35_science_pilot.py::test_any_deviation_from_the_contract_is_blocked[<lambda>-arithmetic_mismatch]
+PASSED tests/test_p35_science_pilot.py::test_any_deviation_from_the_contract_is_blocked[<lambda>-contract_deviation0]
+PASSED tests/test_p35_science_pilot.py::test_any_deviation_from_the_contract_is_blocked[<lambda>-contract_deviation1]
+PASSED tests/test_p35_science_pilot.py::test_the_generic_planner_cannot_bypass_pilot_preflight
+PASSED tests/test_p35_science_pilot.py::test_bindings_refuse_latest_wildcards_and_relative_paths[path0-latest-explicit identity]
+PASSED tests/test_p35_science_pilot.py::test_bindings_refuse_latest_wildcards_and_relative_paths[path1-ABC-64-hex]
+PASSED tests/test_p35_science_pilot.py::test_bindings_refuse_latest_wildcards_and_relative_paths[path2-tokenizers/current-absolute]
+PASSED tests/test_p35_science_pilot.py::test_bindings_refuse_latest_wildcards_and_relative_paths[path3-/data/*.json-wildcard]
+PASSED tests/test_p35_science_pilot.py::test_bindings_refuse_latest_wildcards_and_relative_paths[path4-latest-explicit identity]
+PASSED tests/test_p35_science_pilot.py::test_bindings_refuse_latest_wildcards_and_relative_paths[path5-relative/root-absolute]
+PASSED tests/test_p35_science_pilot.py::test_bindings_refuse_latest_wildcards_and_relative_paths[path6-null-explicit identity]
+PASSED tests/test_p35_science_pilot.py::test_bindings_refuse_latest_wildcards_and_relative_paths[path7-TODO-explicit identity]
+PASSED tests/test_p35_science_pilot.py::test_bindings_refuse_latest_wildcards_and_relative_paths[path8-None-explicit identity]
+PASSED tests/test_p35_science_pilot.py::test_bindings_refuse_latest_wildcards_and_relative_paths[path9- tbd -explicit identity]
+PASSED tests/test_p35_science_pilot.py::test_group_half_membership_uses_the_frozen_partition
+PASSED tests/test_p35_science_pilot.py::test_capacity_counts_retained_new_and_staging_bytes
+PASSED tests/test_p35_science_pilot.py::test_authored_pilot_resolves_to_a_frozen_hash_bound_plan
+PASSED tests/test_p35_science_pilot.py::test_plan_hash_is_stable_and_follows_scientific_inputs
+PASSED tests/test_p35_science_pilot.py::test_validation_never_authorizes_and_needs_the_operator_ticket
+PASSED tests/test_p35_science_pilot.py::test_cli_plan_and_validate_expose_states_and_exit_codes
+PASSED tests/test_p35_science_pilot.py::test_missing_component_or_bad_pins_block_and_write_no_plan
+PASSED tests/test_p35_science_pilot.py::test_every_path_must_stay_inside_its_declared_root
+PASSED tests/test_p35_science_pilot.py::test_heldout_document_in_training_membership_blocks
+PASSED tests/test_p35_science_pilot.py::test_capacity_shortfall_or_unmeasured_size_blocks
+PASSED docs/implementation/evidence/P35-READINESS-ASTRA/test_adversarial.py::test_A1_resume_does_not_refund_exhausted_attempts
+PASSED docs/implementation/evidence/P35-READINESS-ASTRA/test_adversarial.py::test_A2_endpoint_is_durable_before_required_check
+PASSED docs/implementation/evidence/P35-READINESS-ASTRA/test_adversarial.py::test_A3_partial_pins_recovery_state
+PASSED docs/implementation/evidence/P35-READINESS-ASTRA/test_adversarial.py::test_groupings_and_all_semantic_mutations
+PASSED docs/implementation/evidence/P35-READINESS-ASTRA/test_adversarial.py::test_A4_shifted_provenance_changes_receipt_and_ipc_digest
+PASSED docs/implementation/evidence/P35-READINESS-ASTRA/test_adversarial.py::test_documented_prepared_handoff_weakness
+PASSED docs/implementation/evidence/P35-READINESS-ASTRA/test_adversarial.py::test_A5_absent_attention_differs_from_explicit_ones
+PASSED docs/implementation/evidence/P35-READINESS-ASTRA/test_adversarial.py::test_A6_lr_without_payload_is_rejected
+PASSED docs/implementation/evidence/P35-READINESS-ASTRA/test_adversarial.py::test_A7_documented_chain_beyond_data_is_accepted_on_load
+PASSED docs/implementation/evidence/P35-READINESS-ASTRA/test_adversarial.py::test_failure_never_commits_receipt[forward]
+PASSED docs/implementation/evidence/P35-READINESS-ASTRA/test_adversarial.py::test_failure_never_commits_receipt[nonfinite]
+PASSED docs/implementation/evidence/P35-READINESS-ASTRA/test_adversarial.py::test_failure_never_commits_receipt[optimizer]
+PASSED docs/implementation/evidence/P35-READINESS-ASTRA/test_adversarial.py::test_failure_never_commits_receipt[data_commit]
+PASSED docs/implementation/evidence/P35-READINESS-ASTRA/test_adversarial.py::test_native_exact_rescore_satisfies_required_endpoint
+PASSED docs/implementation/evidence/P35-READINESS-ASTRA/test_adversarial.py::test_documented_receipt_commit_failure_leaves_unpoisoned_boundary
+PASSED docs/implementation/evidence/P35-READINESS-ASTRA/test_adversarial.py::test_both_presence_mismatches_refuse_before_restore[False]
+PASSED docs/implementation/evidence/P35-READINESS-ASTRA/test_adversarial.py::test_both_presence_mismatches_refuse_before_restore[True]
+PASSED docs/implementation/evidence/P35-READINESS-ASTRA/test_adversarial.py::test_real_process_producer_receipt_matches_direct
+PASSED docs/implementation/evidence/P35-READINESS-ASTRA/test_adversarial.py::test_c0_closed_barrier_has_no_lr_row[invalid_full]
+PASSED docs/implementation/evidence/P35-READINESS-ASTRA/test_adversarial.py::test_c0_closed_barrier_has_no_lr_row[partial_search]
+PASSED docs/implementation/evidence/P35-READINESS-ASTRA/test_adversarial.py::test_c0_closed_barrier_has_no_lr_row[planned_only]
+PASSED docs/implementation/evidence/P35-READINESS-ASTRA/test_adversarial.py::test_c0_crash_retains_attempt_history[after_checkpoint]
+PASSED docs/implementation/evidence/P35-READINESS-ASTRA/test_adversarial.py::test_c0_crash_retains_attempt_history[after_failed_attempt]
+PASSED docs/implementation/evidence/P35-READINESS-ASTRA/test_adversarial.py::test_historical_chain_tamper_rejected_before_restore
+PASSED docs/implementation/evidence/P35-READINESS-ASTRA/test_adversarial.py::test_evaluator_payload_chain_mutation_is_currently_unprotected
+PASSED docs/implementation/evidence/P35-READINESS-ASTRA/test_adversarial.py::test_scaler_skip_discards_staged_receipt
+PASSED docs/implementation/evidence/P35-READINESS-ASTRA/test_adversarial.py::test_schema_edge_representations
+PASSED docs/implementation/evidence/P35-READINESS-ASTRA/test_adversarial.py::test_duplicate_compact_strings_are_a_documented_representation_limitation
+PASSED docs/implementation/evidence/P35-READINESS-ASTRA/test_adversarial.py::test_small_stat_fixture_reports_source_and_both_caps
+======================= 87 passed in 387.78s (0:06:27) ========================

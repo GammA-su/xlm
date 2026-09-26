@@ -158,11 +158,17 @@ class AttemptClock:
         self.allowance.save()
 
     def finish(self, outcome: str) -> None:
+        elapsed = self.elapsed()
+        late_success = outcome == "succeeded" and elapsed >= self.limit
+        if late_success:
+            outcome = "expired"
         self.entry["ended_at"] = _now()
         self.entry["outcome"] = outcome
-        self._record(self.elapsed())
+        self._record(elapsed)
         if outcome == "succeeded":
             self.allowance.status = "completed"
         elif self.allowance.remaining_seconds <= 0:
             self.allowance.status = "expired"
         self.allowance.save()
+        if late_success:
+            raise WallAllowanceExpired("total wall allowance exhausted before success publication")

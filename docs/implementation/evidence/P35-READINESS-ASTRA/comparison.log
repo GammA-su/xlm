@@ -1,0 +1,50 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0
+rootdir: G:\Project\xlm-p35-readiness-astra
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0, xdist-3.8.0
+collected 253 items
+
+tests\test_p35_m4_stats.py ..........................................    [ 16%]
+tests\test_p35_m4_manifest.py .......................................... [ 33%]
+...................                                                      [ 40%]
+tests\test_p35_m4_eligibility.py ....................................    [ 54%]
+tests\test_p35_m4_promotion.py ..........................                [ 65%]
+tests\test_p35_m4_evidence.py ...........F...                            [ 71%]
+tests\test_p35_m5_evidence.py ..........................                 [ 81%]
+tests\test_comparison.py ............................................... [100%]
+
+================================== FAILURES ===================================
+_________ test_legacy_p17_modules_are_byte_identical_to_certified_m3 __________
+
+    def test_legacy_p17_modules_are_byte_identical_to_certified_m3() -> None:
+        golden = {
+            "src/xlm/comparison/promotion.py": (
+                "04e961acb3dfe643742fa0777b7e9a98838139d8d34dbd08dda7689713aa8842"
+            ),
+            "src/xlm/comparison/tracks.py": (
+                "07d9b7a158a4171d68bbf30fb6b9249eb1aade156f37e076f91b3c474354d019"
+            ),
+            "src/xlm/comparison/bootstrap.py": (
+                "546033327a9b00d6030481e6702346f4c1c9e0d29995c2d0990b82ba1d3ced92"
+            ),
+            "src/xlm/cli/compare_cmd.py": (
+                "f30254bd29d6015ff43cafd0893c26186db77a36c0d54f21af00f6458b55618e"
+            ),
+            "src/xlm/comparison/recipes.py": (
+                "36498a181e648314cea23742eb8e79748e352a6f7afb63db572deca3d5ad15ef"
+            ),
+        }
+        for rel, digest in golden.items():
+>           assert hashlib.sha256((REPO / rel).read_bytes()).hexdigest() == digest, rel
+E           AssertionError: src/xlm/comparison/promotion.py
+E           assert '31c22cce117e...72a0a759645b4' == '04e961acb3df...7689713aa8842'
+E
+E             - 04e961acb3dfe643742fa0777b7e9a98838139d8d34dbd08dda7689713aa8842
+E             + 31c22cce117e2cac30cfccba75b88c752aad99337f3b290fbed72a0a759645b4
+
+tests\test_p35_m4_evidence.py:819: AssertionError
+- generated xml file: G:\Project\xlm-p35-readiness-astra\docs\implementation\evidence\P35-READINESS-ASTRA\comparison.xml -
+=========================== short test summary info ===========================
+FAILED tests/test_p35_m4_evidence.py::test_legacy_p17_modules_are_byte_identical_to_certified_m3
+======================= 1 failed, 252 passed in 15.98s ========================

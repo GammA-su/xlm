@@ -115,12 +115,24 @@ def run_worker(request: dict[str, Any]) -> int:
         plan.validate_identity()
         if plan.execution_envelope != envelope:
             raise ValueError("worker plan/envelope mismatch")
-        result = execute_plan_run(
-            plan,
-            QueueJob(**request["job"]),
-            lambda: (work / "cancel.requested").exists(),
-            execution=context,
-        )
+        from xlm.evaluation.recoverability import EVALUATION_INCOMPLETE
+        from xlm.training.trainer import RequiredEvaluationIncompleteError
+
+        try:
+            result = execute_plan_run(
+                plan,
+                QueueJob(**request["job"]),
+                lambda: (work / "cancel.requested").exists(),
+                execution=context,
+            )
+        except RequiredEvaluationIncompleteError as exc:
+            # Transport the typed scientific failure through the verified result
+            # envelope. Other failures (especially compromised state) still raise.
+            result = {
+                "state": "FAILED",
+                "completion": EVALUATION_INCOMPLETE,
+                "reason": f"{type(exc).__name__}: {exc}"[:4000],
+            }
     elif action == "train":
         from xlm.cli.train_cmd import _train_in_process
 

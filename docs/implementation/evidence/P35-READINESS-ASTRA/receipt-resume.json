@@ -1,0 +1,229 @@
+{
+  "scope": "authored CPU science-v1; dropout 0.2; three fresh processes",
+  "total_targets": 106,
+  "equal_rows_head_and_lr": true,
+  "runs": {
+    "uninterrupted": {
+      "phase": "uninterrupted",
+      "pid": 94092,
+      "committed": 53,
+      "step": 4,
+      "lr": [
+        [
+          1,
+          0,
+          16,
+          16,
+          [
+            0.0005,
+            0.0005
+          ]
+        ],
+        [
+          2,
+          16,
+          16,
+          32,
+          [
+            0.001,
+            0.001
+          ]
+        ],
+        [
+          3,
+          32,
+          16,
+          48,
+          [
+            0.00055,
+            0.00055
+          ]
+        ],
+        [
+          4,
+          48,
+          5,
+          53,
+          [
+            0.00033787146842830104,
+            0.00033787146842830104
+          ]
+        ]
+      ],
+      "chain": {
+        "version": "global_update_payload_digest_v1",
+        "chain_version": "xlm-update-payload-chain-v1",
+        "genesis": "75b5523ca0c15a2208a7f562fa436a26dc8fee7ae593262b888cf1493c37f8f6",
+        "columns": [
+          "step",
+          "committed_before",
+          "valid_targets",
+          "payload_digest",
+          "chain_digest"
+        ],
+        "rows": [
+          [
+            1,
+            0,
+            16,
+            "594d6bd69ab22e5ec1134efa10df319902c5bcfa9a51d723de619e519c58e505",
+            "58be135d664e2aceff782d0dd7bb5284676ec1735f7e9f360a8fbdea32a0a7bb"
+          ],
+          [
+            2,
+            16,
+            16,
+            "dcf785d6db1144fb3eb0c64420fec62ca9d0368e743f4ecaf4e37bf8d8f03f98",
+            "e9febe162f7c777fbab69866695b5fda7d7f758b526e3ba374f4b466a8a57901"
+          ],
+          [
+            3,
+            32,
+            16,
+            "140a3c09c699e135cdc383e74db6c34001ec44083d957c741b021929df13b321",
+            "a41a5ad9f748b296447f062f21a24cc7683c40889a75fcda54a436c096c32baa"
+          ],
+          [
+            4,
+            48,
+            5,
+            "f1448eb7f1b3503ca5fcc6e8a292a14ffcb1d24031205eb0d13b8821b25706b3",
+            "a2eef3b44d0d9d3e77319f1e05cfc4c9ecaaa85a76926e665217ea144f5559a0"
+          ]
+        ],
+        "head": "a2eef3b44d0d9d3e77319f1e05cfc4c9ecaaa85a76926e665217ea144f5559a0"
+      }
+    },
+    "first": {
+      "phase": "first",
+      "pid": 94744,
+      "committed": 16,
+      "step": 1,
+      "lr": [
+        [
+          1,
+          0,
+          16,
+          16,
+          [
+            0.0005,
+            0.0005
+          ]
+        ]
+      ],
+      "chain": {
+        "version": "global_update_payload_digest_v1",
+        "chain_version": "xlm-update-payload-chain-v1",
+        "genesis": "75b5523ca0c15a2208a7f562fa436a26dc8fee7ae593262b888cf1493c37f8f6",
+        "columns": [
+          "step",
+          "committed_before",
+          "valid_targets",
+          "payload_digest",
+          "chain_digest"
+        ],
+        "rows": [
+          [
+            1,
+            0,
+            16,
+            "594d6bd69ab22e5ec1134efa10df319902c5bcfa9a51d723de619e519c58e505",
+            "58be135d664e2aceff782d0dd7bb5284676ec1735f7e9f360a8fbdea32a0a7bb"
+          ]
+        ],
+        "head": "58be135d664e2aceff782d0dd7bb5284676ec1735f7e9f360a8fbdea32a0a7bb"
+      }
+    },
+    "resume": {
+      "phase": "resume",
+      "pid": 55200,
+      "committed": 53,
+      "step": 4,
+      "lr": [
+        [
+          1,
+          0,
+          16,
+          16,
+          [
+            0.0005,
+            0.0005
+          ]
+        ],
+        [
+          2,
+          16,
+          16,
+          32,
+          [
+            0.001,
+            0.001
+          ]
+        ],
+        [
+          3,
+          32,
+          16,
+          48,
+          [
+            0.00055,
+            0.00055
+          ]
+        ],
+        [
+          4,
+          48,
+          5,
+          53,
+          [
+            0.00033787146842830104,
+            0.00033787146842830104
+          ]
+        ]
+      ],
+      "chain": {
+        "version": "global_update_payload_digest_v1",
+        "chain_version": "xlm-update-payload-chain-v1",
+        "genesis": "75b5523ca0c15a2208a7f562fa436a26dc8fee7ae593262b888cf1493c37f8f6",
+        "columns": [
+          "step",
+          "committed_before",
+          "valid_targets",
+          "payload_digest",
+          "chain_digest"
+        ],
+        "rows": [
+          [
+            1,
+            0,
+            16,
+            "594d6bd69ab22e5ec1134efa10df319902c5bcfa9a51d723de619e519c58e505",
+            "58be135d664e2aceff782d0dd7bb5284676ec1735f7e9f360a8fbdea32a0a7bb"
+          ],
+          [
+            2,
+            16,
+            16,
+            "dcf785d6db1144fb3eb0c64420fec62ca9d0368e743f4ecaf4e37bf8d8f03f98",
+            "e9febe162f7c777fbab69866695b5fda7d7f758b526e3ba374f4b466a8a57901"
+          ],
+          [
+            3,
+            32,
+            16,
+            "140a3c09c699e135cdc383e74db6c34001ec44083d957c741b021929df13b321",
+            "a41a5ad9f748b296447f062f21a24cc7683c40889a75fcda54a436c096c32baa"
+          ],
+          [
+            4,
+            48,
+            5,
+            "f1448eb7f1b3503ca5fcc6e8a292a14ffcb1d24031205eb0d13b8821b25706b3",
+            "a2eef3b44d0d9d3e77319f1e05cfc4c9ecaaa85a76926e665217ea144f5559a0"
+          ]
+        ],
+        "head": "a2eef3b44d0d9d3e77319f1e05cfc4c9ecaaa85a76926e665217ea144f5559a0"
+      }
+    }
+  }
+}

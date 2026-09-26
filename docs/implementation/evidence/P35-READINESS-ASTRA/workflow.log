@@ -1,0 +1,11 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0
+rootdir: G:\Project\xlm-p35-readiness-astra
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0, xdist-3.8.0
+collected 3 items
+
+tests\test_p35_science_workflow.py ...                                   [100%]
+
+- generated xml file: G:\Project\xlm-p35-readiness-astra\docs\implementation\evidence\P35-READINESS-ASTRA\workflow.xml -
+======================== 3 passed in 556.88s (0:09:16) ========================

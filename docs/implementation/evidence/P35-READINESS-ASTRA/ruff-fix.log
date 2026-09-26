@@ -1,0 +1,151 @@
+E501 Line too long (104 > 100)
+  --> docs\implementation\evidence\P35-READINESS-ASTRA\compatibility.py:32:101
+   |
+30 |                         "git_blob_sha256": hashlib.sha256(head).hexdigest(),
+31 |                         "worktree_sha256": hashlib.sha256(work).hexdigest(),
+32 |                         "worktree_equal_after_crlf_normalization": work.replace(b"\r\n", b"\n") == head}
+   |                                                                                                     ^^^^
+33 |         assert head == base and work.replace(b"\r\n", b"\n") == head
+34 |     import xlm.evaluation as evaluation
+   |
+
+E501 Line too long (104 > 100)
+   --> docs\implementation\evidence\P35-READINESS-ASTRA\test_adversarial.py:111:101
+    |
+109 |     chains = []
+110 |     for group in (1, 2, 4, 8, 16, 32):
+111 |         payload = canonical_from_microbatches(regroup(rows, group, batches[0].metadata["packing_mode"]))
+    |                                                                                                     ^^^^
+112 |         chain = UpdatePayloadChain()
+113 |         chain.stage(step=1, committed_before=0, valid_targets=payload.valid_targets, payload=payload.digest())
+    |
+
+E501 Line too long (110 > 100)
+   --> docs\implementation\evidence\P35-READINESS-ASTRA\test_adversarial.py:113:101
+    |
+111 |         payload = canonical_from_microbatches(regroup(rows, group, batches[0].metadata["packing_mode"]))
+112 |         chain = UpdatePayloadChain()
+113 |         chain.stage(step=1, committed_before=0, valid_targets=payload.valid_targets, payload=payload.digest())
+    |                                                                                                     ^^^^^^^^^^
+114 |         chain.commit()
+115 |         chains.append(chain.head)
+    |
+
+E501 Line too long (110 > 100)
+   --> docs\implementation\evidence\P35-READINESS-ASTRA\test_adversarial.py:123:101
+    |
+121 |         assert canonical_from_microbatches(mutate(batches, field)).digest() != base, field
+122 |     rows[0], rows[1] = rows[1], rows[0]
+123 |     assert canonical_from_microbatches(regroup(rows, 8, batches[0].metadata["packing_mode"])).digest() != base
+    |                                                                                                     ^^^^^^^^^^
+
+E501 Line too long (102 > 100)
+   --> docs\implementation\evidence\P35-READINESS-ASTRA\test_adversarial.py:131:101
+    |
+129 |     batches = authored_update(tmp_path)
+130 |     prepared = _encode(batches, 0, 0, None, "start", None, 0.0)
+131 |     provenance = replace(prepared.provenance, doc_ids=np.roll(prepared.provenance.doc_ids, 1, axis=0))
+    |                                                                                                     ^^
+132 |     shifted = replace(prepared, provenance=provenance)
+133 |     assert shifted.compute_content_digest() != prepared.content_digest
+    |
+
+E501 Line too long (106 > 100)
+   --> docs\implementation\evidence\P35-READINESS-ASTRA\test_adversarial.py:158:101
+    |
+156 |         right.metadata["input_attention_mask"] = np.ones_like(right.loss_mask, dtype=bool)
+157 |     assert any(not value for mb in missing for row in mb.loss_mask for value in row)
+158 |     assert canonical_from_microbatches(missing).digest() != canonical_from_microbatches(explicit).digest()
+    |                                                                                                     ^^^^^^
+
+E501 Line too long (105 > 100)
+   --> docs\implementation\evidence\P35-READINESS-ASTRA\test_adversarial.py:175:101
+    |
+173 |     """SURVIVING adversary: a self-consistent LR/chain pair is not checked against data C."""
+174 |     trainer = payload_trainer(tmp_path)
+175 |     trainer.science.update_payloads.stage(step=1, committed_before=0, valid_targets=16, payload="a" * 64)
+    |                                                                                                     ^^^^^
+176 |     trainer.science.update_payloads.commit()
+177 |     trainer.science.record_lr([1, 0, 16, 16, [0.001]])
+    |
+
+E501 Line too long (108 > 100)
+   --> docs\implementation\evidence\P35-READINESS-ASTRA\test_adversarial.py:187:101
+    |
+186 | @pytest.mark.parametrize("stage", ["forward", "nonfinite", "optimizer", "data_commit"])
+187 | def test_failure_never_commits_receipt(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, stage: str) -> None:
+    |                                                                                                     ^^^^^^^^
+188 |     trainer = payload_trainer(tmp_path)
+    |
+
+E501 Line too long (101 > 100)
+   --> docs\implementation\evidence\P35-READINESS-ASTRA\test_adversarial.py:227:101
+    |
+226 | @pytest.mark.parametrize("saved_receipt", [False, True])
+227 | def test_both_presence_mismatches_refuse_before_restore(tmp_path: Path, saved_receipt: bool) -> None:
+    |                                                                                                     ^
+228 |     from xlm.training.checkpoint import IncompatibleCheckpointError
+    |
+
+E501 Line too long (112 > 100)
+   --> docs\implementation\evidence\P35-READINESS-ASTRA\test_adversarial.py:256:101
+    |
+254 |             expected = direct.next_step_microbatches(remaining)
+255 |             assert all(isinstance(m.input_ids, torch.Tensor) for m in actual + expected)
+256 |             assert canonical_update(producer, actual).digest() == canonical_from_microbatches(expected).digest()
+    |                                                                                                     ^^^^^^^^^^^^
+257 |             for index, mb in enumerate(expected):
+258 |                 provenance = producer.pending_update.microbatch_provenance(index)
+    |
+
+E501 Line too long (104 > 100)
+   --> docs\implementation\evidence\P35-READINESS-ASTRA\test_adversarial.py:309:101
+    |
+307 |     reload(second, cp)
+308 |     assert second.train_step() is not None
+309 |     expected = [(1, "complete")] if position == "after_checkpoint" else [(1, "failed"), (2, "complete")]
+    |                                                                                                     ^^^^
+310 |     assert attempts(second, "search_benchmark@0") == expected
+    |
+
+E501 Line too long (109 > 100)
+   --> docs\implementation\evidence\P35-READINESS-ASTRA\test_adversarial.py:350:101
+    |
+349 |     def mutate_live(model: Any) -> None:
+350 |         trainer.science.update_payloads.stage(step=1, committed_before=0, valid_targets=16, payload="b" * 64)
+    |                                                                                                     ^^^^^^^^^
+351 |         trainer.science.update_payloads.commit()
+    |
+
+E501 Line too long (102 > 100)
+   --> docs\implementation\evidence\P35-READINESS-ASTRA\test_adversarial.py:353:101
+    |
+351 |         trainer.science.update_payloads.commit()
+352 |
+353 |     trainer.evaluation.evaluators[SEARCH] = CallbackEvaluator(SEARCH, mutate_live, label=SEARCH.value)
+    |                                                                                                     ^^
+354 |     trainer._evaluate_boundary()
+355 |     assert trainer.evaluation.ledger.records["search_benchmark@0"].status.value == "complete"
+    |
+
+E501 Line too long (102 > 100)
+   --> docs\implementation\evidence\P35-READINESS-ASTRA\test_adversarial.py:360:101
+    |
+360 | def test_scaler_skip_discards_staged_receipt(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    |                                                                                                     ^^
+361 |     trainer = payload_trainer(tmp_path)
+362 |     trainer.scaler = torch.amp.GradScaler("cpu", init_scale=16)
+    |
+
+E501 Line too long (115 > 100)
+   --> tests\test_p35_astra_boundaries.py:141:101
+    |
+139 |     job = queue.get_job(job_id)
+140 |     completed = list(Path(job.work_dir).rglob("checkpoint_meta.json"))
+141 |     endpoint = [p for p in completed if json.loads(p.read_text(encoding="utf-8"))["committed_valid_targets"] == 64]
+    |                                                                                                     ^^^^^^^^^^^^^^^
+142 |     assert endpoint
+143 |     assert all((p.parent / "_COMPLETED").is_file() for p in endpoint)
+    |
+
+Found 18 errors (3 fixed, 15 remaining).

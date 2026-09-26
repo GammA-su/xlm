@@ -546,6 +546,17 @@ all data orders, stochastic sampling or IID resampling. See
 
 ## Global-update payload receipt (P35 pilot readiness)
 
+**Local adversarial review limitation:** keep this receipt disabled in the first
+32M B8 pilot. It is not yet qualified for a formal microbatch comparison. The
+review reproduced gaps in the prepared-array/consumed-tensor binding, receipt
+commit failure handling, chain/data-counter validation on checkpoint load, and
+the evaluator state guard. The standard producer and ordinary resume paths pass
+the authored checks, but that does not close these adversarial gaps. Duplicate
+compact string aliases can also create false inequality. Repair and recertify
+these paths before using v2 study evidence; the track's static `certified` flag
+does not supersede this operational restriction. See the ASTRA review appended
+to [P35 pilot readiness](implementation/reports/P35-PILOT-READINESS.md).
+
 For microbatch-grouping studies, declare in `training`:
 
 ```yaml

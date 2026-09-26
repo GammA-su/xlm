@@ -1,0 +1,169 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0
+rootdir: G:\Project\xlm-p35-readiness-astra
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0, xdist-3.8.0
+collected 4 items
+
+tests\test_p35_astra_boundaries.py FFFF                                  [100%]
+
+================================== FAILURES ===================================
+_____________ test_stat_cap_stops_before_order_or_execution_scan ______________
+
+tmp_path = WindowsPath('G:/Project/xlm-p35-readiness-astra/.astra-scratch/pytest-of-gamma/pytest-4/test_stat_cap_stops_before_ord0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000002598657CA70>
+
+    def test_stat_cap_stops_before_order_or_execution_scan(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        from test_p35_readiness_planner import draft
+        from xlm.experiments import science_pilot as pilot
+
+        raw = draft()
+        raw["data"]["sources"] = {"authored": str(tmp_path)}
+        findings = pilot.Findings()
+        monkeypatch.setattr(pilot, "check_storage_roots", lambda *a, **k: None)
+        monkeypatch.setattr(
+            pilot, "frozen_input_sizes", lambda sources: {"authored": {"tokens.bin": 2**31 + 1}}
+        )
+
+        def forbidden(*args: Any, **kwargs: Any) -> None:
+            raise AssertionError("expensive scan after known stat blocker")
+
+        monkeypatch.setattr(pilot, "check_document_order", forbidden)
+        monkeypatch.setattr("xlm.experiments.execution.resolve_execution_config", forbidden)
+>       result = pilot.run_preflight(
+            raw,
+            pilot.SciencePilotConfig.model_validate(raw["science_pilot"]),
+            findings,
+            artifact_home=tmp_path,
+            outputs=[],
+            snapshot_bytes=0,
+            measured_profile=None,
+            measure_size=False,
+        )
+
+tests\test_p35_astra_boundaries.py:32:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\xlm\experiments\science_pilot.py:1860: in run_preflight
+    check_document_order(config, pilot, findings)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = ({'schema_version': 1, 'kind': 'experiment_draft', 'id': 'pilot_science_v1_32m_p0', 'status': 'draft_science_v1_pilot_...rification=PilotResume(from_threshold=16000000, fresh_process=True)), Findings(blockers=[], warnings=[], preflight={}))
+kwargs = {}
+
+    def forbidden(*args: Any, **kwargs: Any) -> None:
+>       raise AssertionError("expensive scan after known stat blocker")
+E       AssertionError: expensive scan after known stat blocker
+
+tests\test_p35_astra_boundaries.py:28: AssertionError
+______________ test_success_arriving_after_wall_limit_is_refused ______________
+
+tmp_path = WindowsPath('G:/Project/xlm-p35-readiness-astra/.astra-scratch/pytest-of-gamma/pytest-4/test_success_arriving_after_wa0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000025986595B80>
+
+    def test_success_arriving_after_wall_limit_is_refused(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        from xlm.experiments import wall_budget
+
+        now = [0.0]
+        monkeypatch.setattr(wall_budget, "_monotonic", lambda: now[0])
+        allowance = WallAllowance.load_or_create(tmp_path, plan_hash="p", total_seconds=2)
+        clock = AttemptClock(allowance, 1)
+        now[0] = 2.01
+>       with pytest.raises(WallAllowanceExpired):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE WallAllowanceExpired
+
+tests\test_p35_astra_boundaries.py:60: Failed
+_____ test_queue_never_promotes_failed_evaluation_or_late_success[False] ______
+
+tmp_path = WindowsPath('G:/Project/xlm-p35-readiness-astra/.astra-scratch/pytest-of-gamma/pytest-4/test_queue_never_promotes_fail0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000259866110A0>
+late = False
+
+    @pytest.mark.parametrize("late", [False, True])
+    def test_queue_never_promotes_failed_evaluation_or_late_success(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, late: bool
+    ) -> None:
+        from test_p35_wall_allowance import queue_for, record, wall_plan
+        from test_queue import submit_toy
+        from xlm.experiments import wall_budget
+
+        now = [0.0]
+        monkeypatch.setattr(wall_budget, "_monotonic", lambda: now[0])
+        plan, path, snapshot = wall_plan(tmp_path, "astra", total=10)
+        queue = queue_for(tmp_path, "astra")
+        job_id = submit_toy(queue, plan, path, snapshot, device="cuda")
+
+        def worker(*args: Any, **kwargs: Any) -> dict[str, Any]:
+            if late:
+                now[0] = 11
+                return {"steps": 2, "committed_valid_targets": 64}
+            return {
+                "state": "FAILED",
+                "completion": "EVALUATION_INCOMPLETE",
+                "reason": "RequiredEvaluationIncompleteError: authored exhausted search",
+            }
+
+        monkeypatch.setattr("xlm.experiments.launcher.launch_worker", worker)
+        result = queue.run_job(job_id)
+        completion = "INCOMPLETE" if late else "EVALUATION_INCOMPLETE"
+        assert result["state"] == "FAILED"
+        assert result["completion"] == completion
+        saved = record(queue, job_id)
+>       assert saved["status"] == "FAILED" and saved["completion"] == completion
+E       AssertionError: assert ('SUCCEEDED' == 'FAILED'
+E
+E         - FAILED
+E         + SUCCEEDED)
+
+tests\test_p35_astra_boundaries.py:97: AssertionError
+______ test_queue_never_promotes_failed_evaluation_or_late_success[True] ______
+
+tmp_path = WindowsPath('G:/Project/xlm-p35-readiness-astra/.astra-scratch/pytest-of-gamma/pytest-4/test_queue_never_promotes_fail1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000025992C7F0B0>
+late = True
+
+    @pytest.mark.parametrize("late", [False, True])
+    def test_queue_never_promotes_failed_evaluation_or_late_success(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, late: bool
+    ) -> None:
+        from test_p35_wall_allowance import queue_for, record, wall_plan
+        from test_queue import submit_toy
+        from xlm.experiments import wall_budget
+
+        now = [0.0]
+        monkeypatch.setattr(wall_budget, "_monotonic", lambda: now[0])
+        plan, path, snapshot = wall_plan(tmp_path, "astra", total=10)
+        queue = queue_for(tmp_path, "astra")
+        job_id = submit_toy(queue, plan, path, snapshot, device="cuda")
+
+        def worker(*args: Any, **kwargs: Any) -> dict[str, Any]:
+            if late:
+                now[0] = 11
+                return {"steps": 2, "committed_valid_targets": 64}
+            return {
+                "state": "FAILED",
+                "completion": "EVALUATION_INCOMPLETE",
+                "reason": "RequiredEvaluationIncompleteError: authored exhausted search",
+            }
+
+        monkeypatch.setattr("xlm.experiments.launcher.launch_worker", worker)
+        result = queue.run_job(job_id)
+        completion = "INCOMPLETE" if late else "EVALUATION_INCOMPLETE"
+>       assert result["state"] == "FAILED"
+E       AssertionError: assert 'SUCCEEDED' == 'FAILED'
+E
+E         - FAILED
+E         + SUCCEEDED
+
+tests\test_p35_astra_boundaries.py:94: AssertionError
+- generated xml file: G:\Project\xlm-p35-readiness-astra\docs\implementation\evidence\P35-READINESS-ASTRA\defects-before.xml -
+=========================== short test summary info ===========================
+FAILED tests/test_p35_astra_boundaries.py::test_stat_cap_stops_before_order_or_execution_scan
+FAILED tests/test_p35_astra_boundaries.py::test_success_arriving_after_wall_limit_is_refused
+FAILED tests/test_p35_astra_boundaries.py::test_queue_never_promotes_failed_evaluation_or_late_success[False]
+FAILED tests/test_p35_astra_boundaries.py::test_queue_never_promotes_failed_evaluation_or_late_success[True]
+============================= 4 failed in 41.86s ==============================

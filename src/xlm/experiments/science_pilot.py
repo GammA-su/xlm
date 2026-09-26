@@ -1857,10 +1857,14 @@ def run_preflight(
 
     context = PreflightContext()
     check_storage_roots(config, pilot, findings, artifact_home=artifact_home, outputs=outputs)
+    # Order validation opens shard readers too: gate both it and resolution on
+    # the cheap size diagnostic, before reading or hashing any shard contents.
+    before = len(findings.blockers)
+    check_input_bytes(config, findings)
+    if len(findings.blockers) > before:
+        return context
     check_document_order(config, pilot, findings)
     check_recoverability(config, pilot, findings)
-    # Stat-only size report against the unchanged caps, before resolution hashes inputs.
-    check_input_bytes(config, findings)
     before = len(findings.blockers)
     try:
         resolved, exec_bindings = resolve_execution_config(copy.deepcopy(config))

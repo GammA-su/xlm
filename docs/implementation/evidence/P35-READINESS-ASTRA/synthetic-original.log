@@ -1,0 +1,11 @@
+uv : Traceback (most recent call last):
+At G:\Project\xlm-p35-readiness-astra\docs\implementation\evidence\P35-READINESS-ASTRA\env.ps1:25 char:1
++ uv run --offline --locked --no-sync --extra cuda --extra eval @args
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+  File "G:\Project\xlm-p35-readiness-astra\docs\implementation\evidence\P35-READINESS\synthetic_flow.py", line 25, in <
+module>
+    import resource
+ModuleNotFoundError: No module named 'resource'

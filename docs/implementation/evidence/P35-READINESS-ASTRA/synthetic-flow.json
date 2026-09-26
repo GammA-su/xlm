@@ -1,0 +1,101 @@
+{
+  "label": "SYNTHETIC / AUTHORED - not the pilot, no training",
+  "part_a_recoverability": {
+    "attempts_quick_lm@1000": [
+      [
+        1,
+        "failed"
+      ],
+      [
+        2,
+        "complete"
+      ]
+    ],
+    "barrier": {
+      "after_failure": [
+        "search_benchmark@0: failed"
+      ],
+      "after_retry": [],
+      "retried": [
+        "search_benchmark@0"
+      ]
+    },
+    "canonical_quick_lm@1000": "SYNTHETIC-quick_lm@1000-a2",
+    "checkpoint_due_at_first_crossing_c1024": [
+      "checkpoint@1000"
+    ],
+    "evaluation_recovery_checkpoints": [
+      "checkpoint@1000"
+    ],
+    "required_incomplete_at_budget": [],
+    "t1000_after_rescore": "evaluation_recovery_released",
+    "t1000_while_failed": [
+      "evaluation_dependency:quick_lm@1000"
+    ],
+    "trace": [
+      "C=0 barrier after the injected search failure: ['search_benchmark@0: failed']",
+      "retry ['search_benchmark@0'] at C=0 -> barrier OPEN: update 1 may begin"
+    ],
+    "unrecoverable_required": []
+  },
+  "part_b_fairness": {
+    "all_digests_equal": true,
+    "all_heads_equal": true,
+    "chain_heads": {
+      "B16": "d0b14c8525e261cfd59ddf08f837bb67daa4ac6aec542a05eae6fa1e3907d416",
+      "B32": "d0b14c8525e261cfd59ddf08f837bb67daa4ac6aec542a05eae6fa1e3907d416",
+      "B8": "d0b14c8525e261cfd59ddf08f837bb67daa4ac6aec542a05eae6fa1e3907d416"
+    },
+    "digests": {
+      "B16": [
+        "0aac900579991698f5f01d9df14043f79b983a1f8922a4697de033361cb60aba",
+        "35becd5a0d7b48f9f1f58e3c36ac9706c2a875ba9a10697f1293cd96f7135a12"
+      ],
+      "B32": [
+        "0aac900579991698f5f01d9df14043f79b983a1f8922a4697de033361cb60aba",
+        "35becd5a0d7b48f9f1f58e3c36ac9706c2a875ba9a10697f1293cd96f7135a12"
+      ],
+      "B8": [
+        "0aac900579991698f5f01d9df14043f79b983a1f8922a4697de033361cb60aba",
+        "35becd5a0d7b48f9f1f58e3c36ac9706c2a875ba9a10697f1293cd96f7135a12"
+      ],
+      "P34_producer_B8": [
+        "0aac900579991698f5f01d9df14043f79b983a1f8922a4697de033361cb60aba",
+        "35becd5a0d7b48f9f1f58e3c36ac9706c2a875ba9a10697f1293cd96f7135a12"
+      ]
+    },
+    "microbatches_per_update": {
+      "B16": [
+        3,
+        3
+      ],
+      "B32": [
+        2,
+        2
+      ],
+      "B8": [
+        6,
+        6
+      ]
+    }
+  },
+  "part_c_overhead": {
+    "note": "CPU-only measurement; SYNTHETIC arrays; no GPU; no device sync involved",
+    "planning_update_seconds_at_p34_b8_rate": 1.4347,
+    "producer_path_median_ms": 23.024,
+    "producer_path_percent_of_planning_update": 1.605,
+    "repetitions": {
+      "producer": 20,
+      "synchronous": 5
+    },
+    "shape": [
+      128,
+      512
+    ],
+    "synchronous_list_path_median_ms": 68.07,
+    "synchronous_path_percent_of_planning_update": 4.745
+  },
+  "peak_rss_measurement": "Windows peak working set (psutil peak_wset)",
+  "peak_rss_mib": 76.1,
+  "wall_seconds": 0.982
+}

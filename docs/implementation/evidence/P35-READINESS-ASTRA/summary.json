@@ -1,0 +1,236 @@
+{
+  "suites": {
+    "adversarial-first": {
+      "tests": 28,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 52.724,
+      "runtime_nodes": 0,
+      "failed_nodes": [
+        "docs.implementation.evidence.P35-READINESS-ASTRA.test_adversarial::test_failure_never_commits_receipt[nonfinite]"
+      ]
+    },
+    "affected": {
+      "tests": 232,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 154.535,
+      "runtime_nodes": 0,
+      "failed_nodes": []
+    },
+    "comparison": {
+      "tests": 253,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 15.944,
+      "runtime_nodes": 0,
+      "failed_nodes": [
+        "tests.test_p35_m4_evidence::test_legacy_p17_modules_are_byte_identical_to_certified_m3"
+      ]
+    },
+    "defects-before": {
+      "tests": 4,
+      "failures": 4,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 40.016,
+      "runtime_nodes": 0,
+      "failed_nodes": [
+        "tests.test_p35_astra_boundaries::test_stat_cap_stops_before_order_or_execution_scan",
+        "tests.test_p35_astra_boundaries::test_success_arriving_after_wall_limit_is_refused",
+        "tests.test_p35_astra_boundaries::test_queue_never_promotes_failed_evaluation_or_late_success[False]",
+        "tests.test_p35_astra_boundaries::test_queue_never_promotes_failed_evaluation_or_late_success[True]"
+      ]
+    },
+    "readiness": {
+      "tests": 112,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 32.345,
+      "runtime_nodes": 17,
+      "failed_nodes": []
+    },
+    "repair-regressions": {
+      "tests": 87,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 387.551,
+      "runtime_nodes": 0,
+      "failed_nodes": []
+    },
+    "serial-after-repair": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 172.544,
+      "runtime_nodes": 0,
+      "failed_nodes": []
+    },
+    "serial": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 147.967,
+      "runtime_nodes": 0,
+      "failed_nodes": []
+    },
+    "workflow": {
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 556.666,
+      "runtime_nodes": 0,
+      "failed_nodes": []
+    }
+  },
+  "scratch_files": 11099,
+  "scratch_logical_bytes": 137219590,
+  "worker_measurements": [
+    {
+      "path": ".astra-scratch/pytest-of-gamma/pytest-6/test_science_v1_cadence_throug0/direct-home/runs/direct-d7e4e29972cb4cf0b8dd5c4c97ba0cd0/worker/process.json",
+      "elapsed_seconds": 34.42200000002049,
+      "sampled_peak_tree_rss_bytes": 1749561344,
+      "sampled_peak_work_bytes": 28578,
+      "output_bytes": 2339,
+      "reason": null,
+      "exit_code": 0
+    },
+    {
+      "path": ".astra-scratch/pytest-of-gamma/pytest-6/test_science_v1_cadence_throug0/direct-home/runs/resume-d97c608d9b1048a49f92886d0f22b568/worker/process.json",
+      "elapsed_seconds": 30.07799999997951,
+      "sampled_peak_tree_rss_bytes": 924536832,
+      "sampled_peak_work_bytes": 9209,
+      "output_bytes": 544,
+      "reason": null,
+      "exit_code": 0
+    },
+    {
+      "path": ".astra-scratch/pytest-of-gamma/pytest-6/test_science_v1_cadence_throug0/plain-home/runs/direct-4536e68950594a9591a09507a5b06e0f/worker/process.json",
+      "elapsed_seconds": 34.78200000000652,
+      "sampled_peak_tree_rss_bytes": 1657671680,
+      "sampled_peak_work_bytes": 151713,
+      "output_bytes": 2257,
+      "reason": null,
+      "exit_code": 0
+    },
+    {
+      "path": ".astra-scratch/pytest-of-gamma/pytest-6/test_science_v1_cadence_throug0/queue-home/runs/run_afdf2bcb8140c268/worker-1/process.json",
+      "elapsed_seconds": 33.375,
+      "sampled_peak_tree_rss_bytes": 1750323200,
+      "sampled_peak_work_bytes": 681390,
+      "output_bytes": 321,
+      "reason": null,
+      "exit_code": 0
+    },
+    {
+      "path": ".astra-scratch/pytest-of-gamma/pytest-6/test_science_v1_cadence_throug0/resume-home/runs/resume-4959b0bc31ce4636b092216a5c241d9e/worker/process.json",
+      "elapsed_seconds": 32.71899999992456,
+      "sampled_peak_tree_rss_bytes": 1754198016,
+      "sampled_peak_work_bytes": 28525,
+      "output_bytes": 783,
+      "reason": null,
+      "exit_code": 0
+    },
+    {
+      "path": ".astra-scratch/pytest-of-gamma/pytest-6/test_science_v1_direct_queue_a0/direct-home/runs/direct-6855199eda1a425cb16226eb387ee538/worker/process.json",
+      "elapsed_seconds": 28.68799999996554,
+      "sampled_peak_tree_rss_bytes": 1691828224,
+      "sampled_peak_work_bytes": 151722,
+      "output_bytes": 2257,
+      "reason": null,
+      "exit_code": 0
+    },
+    {
+      "path": ".astra-scratch/pytest-of-gamma/pytest-6/test_science_v1_direct_queue_a0/queue-home/runs/run_7b99cdbd5be5d17b/worker-1/process.json",
+      "elapsed_seconds": 28.5,
+      "sampled_peak_tree_rss_bytes": 1660039168,
+      "sampled_peak_work_bytes": 584061,
+      "output_bytes": 321,
+      "reason": null,
+      "exit_code": 0
+    },
+    {
+      "path": ".astra-scratch/pytest-of-gamma/pytest-6/test_science_v1_direct_queue_a0/resume-home/runs/resume-191011ec84da44f59b75c660e0b7da6a/worker/process.json",
+      "elapsed_seconds": 28.56299999996554,
+      "sampled_peak_tree_rss_bytes": 1687875584,
+      "sampled_peak_work_bytes": 26385,
+      "output_bytes": 701,
+      "reason": null,
+      "exit_code": 0
+    },
+    {
+      "path": ".astra-scratch/pytest-of-gamma/pytest-6/test_science_v1_direct_queue_a1/direct-home/runs/direct-0700b15801474c7c9547d1359ce7d96d/worker/process.json",
+      "elapsed_seconds": 28.51500000001397,
+      "sampled_peak_tree_rss_bytes": 1678548992,
+      "sampled_peak_work_bytes": 26210,
+      "output_bytes": 2256,
+      "reason": null,
+      "exit_code": 0
+    },
+    {
+      "path": ".astra-scratch/pytest-of-gamma/pytest-6/test_science_v1_direct_queue_a1/queue-home/runs/run_f4b3a8addb96b37b/worker-1/process.json",
+      "elapsed_seconds": 29.25,
+      "sampled_peak_tree_rss_bytes": 1662812160,
+      "sampled_peak_work_bytes": 567523,
+      "output_bytes": 321,
+      "reason": null,
+      "exit_code": 0
+    },
+    {
+      "path": ".astra-scratch/pytest-of-gamma/pytest-6/test_science_v1_direct_queue_a1/resume-home/runs/resume-dd37415a73d34dab994464e02b525486/worker/process.json",
+      "elapsed_seconds": 29.531000000075437,
+      "sampled_peak_tree_rss_bytes": 1659731968,
+      "sampled_peak_work_bytes": 129499,
+      "output_bytes": 701,
+      "reason": null,
+      "exit_code": 0
+    },
+    {
+      "path": ".astra-scratch/pytest-of-gamma/pytest-7/test_a_real_frozen_worker_is_s0/home_real/runs/run_a0a965faf9053cc5/worker-1/process.json",
+      "elapsed_seconds": 4.062000000034459,
+      "sampled_peak_tree_rss_bytes": 502333440,
+      "sampled_peak_work_bytes": 95552,
+      "output_bytes": 0,
+      "reason": "total wall allowance exhausted",
+      "exit_code": 1
+    },
+    {
+      "path": ".astra-scratch/pytest-of-gamma/pytest-7/test_real_worker_transports_on0/home_transport/runs/run_130054104a580298/worker-1/process.json",
+      "elapsed_seconds": 32.64099999994505,
+      "sampled_peak_tree_rss_bytes": 1402544128,
+      "sampled_peak_work_bytes": 454542,
+      "output_bytes": 0,
+      "reason": null,
+      "exit_code": 0
+    },
+    {
+      "path": ".astra-scratch/pytest-of-gamma/pytest-7/test_real_worker_transports_on1/home_transport/runs/run_b828cb76bb80e4e3/worker-1/process.json",
+      "elapsed_seconds": 31.64000000001397,
+      "sampled_peak_tree_rss_bytes": 1402343424,
+      "sampled_peak_work_bytes": 433813,
+      "output_bytes": 1374,
+      "reason": null,
+      "exit_code": 1
+    },
+    {
+      "path": ".astra-scratch/pytest-of-gamma/pytest-8/test_m3_authored_toy_flow0/home/runs/run_b672e5ae9e5164b2/worker-2/process.json",
+      "elapsed_seconds": 59.0,
+      "sampled_peak_tree_rss_bytes": 1770106880,
+      "sampled_peak_work_bytes": 1454790,
+      "output_bytes": 321,
+      "reason": null,
+      "exit_code": 0
+    }
+  ],
+  "max_sampled_worker_tree_rss_bytes": 1770106880,
+  "max_sampled_worker_work_bytes": 1454790,
+  "scope": "retained worker process.json samples; not an aggregate session peak"
+}

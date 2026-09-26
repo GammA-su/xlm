@@ -749,3 +749,263 @@ research/p35-pilot-readiness, record exact results in a closeout section, fix
 only defects found, and do not prepare real data, train, or launch the pilot."**
 The user then binds the real Mix-01 artifacts, and reads the `recoverability`
 and `input_bytes` review sections before authorizing.
+
+## ASTRA INDEPENDENT REVIEW + LOCAL CUDA CERTIFICATION
+
+2026-09-26, `G:\Project\xlm-p35-readiness-astra`, branch
+`review/p35-readiness-astra`. Starting clean HEAD:
+`176e351b37a84f323b8fe53c10fa2ea87e5251c2`; certified M5 parent
+`8ccb4bc764ae50861e7d6872f71a2efc545484a0`. No new milestone. The historical
+cloud section above is preserved. The repository has no root STATUS.md;
+`docs/implementation/STATUS.md` is the actual status document.
+
+**FINAL VERDICT: SAFE AFTER SPECIFIC FIXES.** The pilot-critical fixes below
+are implemented and locally verified; the receipt-disabled pilot software is
+safe to integrate. The strengthened receipt is **not certified for a formal
+microbatch study**. Real pilot execution remains blocked on its existing input,
+capacity/profile, plan and authorization prerequisites. This review did not
+authorize or launch it.
+
+| Assessment | Verdict |
+|---|---|
+| Scientific design | Recover-or-fail-stop design supported; payload equality concept appropriate but implementation has adversarial gaps |
+| Pure implementation | Pilot boundary repairs VERIFIED; future microbatch receipt BLOCKED pending listed repairs |
+| Local runtime integration | Requested authored Windows/Torch/CUDA selections executed; sole remaining failure is unchanged P17 CRLF golden-byte check |
+| Performance qualification | Bounded real CUDA spot VERIFIED; 50M pilot-sized receipt cost NOT RUN / not established |
+| Pilot readiness | Software integration safe after the implemented fixes, with receipt disabled; real run still NONEXECUTABLE until external gates are satisfied |
+
+### Independent review and repairs
+
+[PRETEST.md](../evidence/P35-READINESS-ASTRA/PRETEST.md) records independent
+answers A–J and the ten-event state machine **before tests and product edits**.
+[REVIEW.md](../evidence/P35-READINESS-ASTRA/REVIEW.md) records the full findings,
+scientific limits and disposition. The pre-test verdict was conditional, not an
+endorsement of the cloud tests.
+
+Four initially failing regressions confirmed the early-input-scan and queue/wall
+defects. Minimal repairs:
+
+1. `science_pilot.run_preflight` now checks stat sizes before order-reader/index
+   verification as well as execution resolution, and stops on a size blocker.
+2. The frozen worker transports `RequiredEvaluationIncompleteError` as a verified
+   FAILED result with `completion: EVALUATION_INCOMPLETE`. The queue records that
+   classification in its terminal result and run record.
+3. The queue refuses a failed worker result or missing/incomplete required
+   evaluation summary before writing SUCCEEDED. This closes the prior discrepancy
+   between a returned failure dictionary and an internally successful ledger job.
+4. Final wall-clock completion refuses a nominal success that arrives after the
+   remaining allowance; it persists expiration instead of marking completed.
+5. Certification tooling: the requested synthetic-flow script now measures Windows
+   peak working set through already-installed psutil rather than importing Unix-only
+   resource. Its historical JSON evidence was not overwritten.
+
+`RecoveryRequiredError` still propagates as a stronger failure. Two actual frozen
+subprocess tests verify typed failure transport, persistent FAILED queue/ledger
+states and completed endpoint checkpoints. The authored pilot queue flow was
+rerun after the repairs and succeeds with its required evaluation summary.
+
+### Recovery, capacity and scientific state
+
+The C0 barrier covers thrown quick/search errors, invalid full metrics, PARTIAL,
+planned-but-not-due events, fail-then-success, three-attempt exhaustion, and deaths
+before scoring or after a failed attempt. Closed barrier means zero updates and
+zero LR rows. Immutable attempt reconciliation prevents resume from refunding
+three exhausted attempts. Live state mutation remains fail-stop.
+
+Natural checkpoints remain 1M→**1,048,576 at update 16** and
+4M→**4,063,232 at update 62**, without optimizer splitting. 8M and 16M
+remain pinned milestones at 8,060,928/123 and 16,056,320/245. The 32M
+endpoint is update 489, including its final 18,432-target partial update.
+Checkpoint due-event/digest binding, exact LM rescore, last-good protection,
+publication-before-retirement, crash adoption and no threshold republication
+are covered by the affected regression selection. Failed/partial/interrupted
+events pin their exact state until canonical completion releases the dependency.
+Endpoint search exhausts live retries and fails; it has no checkpoint-rescore
+route. A native authored LM rescore under the new policy completes successfully.
+
+Independent nominal capacity derivation: t0+t1M+t4M+t8M+t16M = **5P**;
+two retained interrupted terminal states = **2P**; private serialization and
+ArtifactStore staging = **2P**. Peak **9P**, before separate receipts/evidence/
+cache/log/snapshot/margin terms. This does not assume evaluations succeed.
+Repeated deletion failures or extra protected foreign/fork artifacts can exceed
+the nominal retention count; actual storage guards must fail-stop in that case.
+No universal nine-P completion guarantee under arbitrary storage faults is claimed.
+
+Total wall time includes startup, evaluation retries, checkpointing and rescoring.
+Synthetic clocks, real short-allowance worker termination, runner-loss recovery and
+the final success-race regression verify remaining-only continuation. Existing
+approximately-one-heartbeat persistence uncertainty is retained, not presented as
+perfect crash-time accounting. No 60-minute test ran.
+
+### Independent A1–A8 and receipt results
+
+These are isolated authored adversarial scenarios and fault injections, not a claim
+that eight new source mutants were all killed. No syntax/import-error kill is counted.
+
+| Check | Result |
+|---|---|
+| A1 retry reset after resume | VERIFIED: exhausted three-attempt history still closes C0 after reload |
+| A2 completeness before durable endpoint | VERIFIED: assertion at required check verifies the exact completed endpoint artifact |
+| A3 PARTIAL dependency release | VERIFIED: PARTIAL pins recovery checkpoint after later training |
+| A4 one-row shifted provenance | VERIFIED: IPC and receipt digests change; real process producer aligns with direct Torch path |
+| A5 absent attention versus explicit ones | VERIFIED: differing runtime mask cases have differing digests |
+| A6 LR without payload row | VERIFIED: saved LR/chain mismatch refuses; separate commit-failure gap reproduced |
+| A7 chain without committed data C | **SURVIVED / BLOCKED for study:** internally consistent LR/chain can be loaded beyond data C |
+| A8 incomplete evaluation promoted to success | VERIFIED after repair in queue state, run record and actual frozen worker transport |
+
+One authoritative payload regrouped into **1/2/4/8/16/32** gives identical
+digests and chain heads. Input, label, mask, position, attention, segment, source,
+document, lineage, span, offset, packing and global sequence-order mutations change
+the digest. Unicode/empty strings, integer containers, boolean masks, signed offsets,
+absent fields, isolated packing and partial updates are reviewed/tested. Duplicate
+compact aliases expose false inequality and require correction before alternate
+provenance representations are admitted.
+
+Actual synchronous Torch mixture batches and spawned `process_depth1` batches give
+identical receipts and row-aligned provenance, including a partial final update.
+Three genuinely fresh Python processes verify uninterrupted versus K-checkpoint
+resume with dropout 0.2: identical rows/head/LR and final update sizes **16/16/16/5**,
+106 authored targets total. Both ordinary presence mismatches and historical digest
+tampering refuse before model/data restore. Failed forward, nonfinite gradient,
+real CPU GradScaler skip, optimizer error and failed data commit produce no committed
+payload row. Ordinary successful updates have exactly one LR and payload row.
+
+Required pre-study repairs, intentionally not added to pilot code:
+
+- Bind the actual consumed microbatch tensors to pending producer arrays; the
+  current row-count-only check misses a detached replacement tensor.
+- Check chain/LR step and final C against checkpoint metadata and committed data
+  before restoring state; A7 loads inconsistent history today.
+- Poison the boundary if LR/payload receipt commit fails after data commit, and
+  preflight receipt bounds. Today an LR-only history can remain checkpointable.
+- Include payload-chain/staging state in the evaluator guard; live mutation of
+  that new state currently receives a COMPLETE evaluation.
+- Canonicalize duplicate compact table strings by decoded value, or reject the
+  representation explicitly. Stock producer tables are unique.
+- Define/test changed-scientific-policy fork semantics: source inspection shows
+  that path bypasses receipt pre-restore validation. It is not locally certified.
+
+M4 v2 rejects missing/mismatched receipts and preserves the other comparison
+invariants; v1 and old evidence retain their meaning without fabricated fields.
+Final weights are not compared for grouping equality. The v2 static `certified`
+flag is not permission to bypass the above pre-study restriction.
+
+**Recommendation: keep the first 32M B8 pilot receipt disabled.** A diagnostic
+pilot is not automatically a formal comparison arm. A later study needs a frozen,
+matching B8 control after these repairs; enabling now changes plan identity and
+spends some of the 3600-second allowance for evidence that is not yet fully qualified.
+No draft or practical/non-inferiority margin was changed.
+
+### Commands, environment and runtime evidence
+
+[COMMANDS.md](../evidence/P35-READINESS-ASTRA/COMMANDS.md) contains exact selections,
+flags, wrapper environment, artifact names and native exit statuses.
+[summary.json](../evidence/P35-READINESS-ASTRA/summary.json) indexes XML results and
+retained worker resource samples. All fixtures were authored/synthetic; no live
+source compatibility or real benchmark score is asserted.
+
+Windows, Python **3.12.13**, torch **2.14.0+cu126**, CUDA runtime **12.6**, RTX
+4090, driver **596.49**, NumPy **2.5.3**, lm-eval **0.4.13**, pytest **9.1.1**.
+Existing CUDA+eval environment only; uv offline/locked/**no-sync**. nvidia-smi ran
+before CUDA-capable certification and again before receipt timing. One xdist
+controller (8 workers), explicit one-thread settings; no concurrent heavy GPU suites.
+
+| Selection | Exit | Result | Pytest wall seconds |
+|---|---:|---|---:|
+| Primary readiness | 0 | **112 passed**, including all **17** runtime nodes; zero skips | 32.35 |
+| Affected M1–M5 | 0 | **232 passed**, zero skips | 154.57 |
+| M4/M5 evidence + comparison | 1 | **252 passed, 1 failed**, zero skips | 15.98 |
+| Requested serial selection | 0 | **1 passed, 24 deselected** | 148.35 |
+| Public science workflow, repaired code | 0 | **3 passed**, zero skips | 556.88 |
+| Repair + additional adversarial selection | 0 | **87 passed**, zero skips | 387.78 |
+| Serial selection after repairs | 0 | **1 passed, 24 deselected** | 172.97 |
+
+The sole remaining test failure is
+`test_legacy_p17_modules_are_byte_identical_to_certified_m3`: Windows CRLF working
+bytes versus LF golden SHA. All five compared Git blobs are unchanged from certified
+M5 and match after CRLF normalization; see environment.json. The assertion was not
+weakened or skipped. This is **not an all-tests-green claim**.
+
+The first additional run had 27 passes and one authored test expecting RuntimeError
+instead of the actual NonFiniteGradientError; the expectation was corrected to that
+precise class, and its no-row assertions passed in the final group. Initial regression
+and tooling failures are retained as evidence, not hidden by retry-until-green.
+
+### Bounded receipt performance and measured resources
+
+[receipt-spot.json](../evidence/P35-READINESS-ASTRA/receipt-spot.json): RTX 4090
+real Trainer, **6,768 parameters**, B8, context 64/global 2048, fp32/eager/strict,
+synchronous authored token stream. ABBA disabled/enabled/enabled/disabled; four
+warmup updates excluded and 16 measured updates per block. **163,840 total targets**,
+**6.781 s** experiment body, **98,304 bytes** runtime outputs plus small JSON/log.
+Bounds 200k targets / 5 minutes / 1 GiB respected.
+
+- Receipt CPU work: **0.3712 and 0.3829 ms/update**, mean **0.3771 ms**.
+- Mean block throughput: disabled **37,891.52 targets/s**, enabled **37,704.69**;
+  delta **−0.493%**. Block spread is larger than this difference; no precise
+  population overhead estimate or pilot throughput projection is justified.
+- Peak allocated GPU memory **70,657,024 bytes** in each block; delta **0**.
+  Peak reserved **73,400,320 bytes**. Sampled process RSS up to **1,373,851,648 bytes**.
+- Explicit Stream.synchronize calls: **1/update** in both arms; receipt source
+  hashes CPU arrays only. No new explicit synchronization observed. This is not
+  a driver-level profiler trace, and no such trace is claimed.
+
+The standalone synthetic CPU flow passed in **0.982 s**, measured Windows peak
+working set **76.1 MiB**. Retained worker records observed up to **1,770,106,880 bytes**
+process-tree RSS and **1,454,790 bytes** sampled worker work files. At closeout
+inventory, target-local scratch held **137,219,590 logical bytes in 11,099 files**.
+These are scoped measurements, not a reconstructed whole-session peak; pytest
+retains only recent temporary directories. Scratch remains ignored and local.
+Full-size pilot throughput/resource qualification is NOT RUN.
+
+### Static checks, input cap and requirement ledger
+
+Ruff check and format check: exit **0**, **39 Python files**. Scoped mypy:
+exit **0**, **23 source files**, no issues (only an unused lm_eval configuration
+section note). Dependency trio unchanged by both Git-blob and normalized-worktree
+checks; existing CPU/CUDA mutually exclusive installation policy remains in the
+Windows runbook. No dependency operation occurred.
+
+All 25 lazy public export names/order and object identities are preserved; pure
+cadence import no longer imports torch as intended. Eager import side effects and
+module-dictionary population intentionally become lazy; static attribute discovery
+through Any is less precise, a follow-up rather than a runtime API failure.
+
+The **2 GiB cap is unchanged**. Stat blockers now stop before order or hash/index
+resolution. A 64-byte authored file with isolated *lowered* fixture caps demonstrates
+source, observed bytes, shard cap, aggregate bytes and aggregate cap; production
+constants are independently asserted at 2,147,483,648. This is sufficient to identify
+a later binding's size blocker, not to decide license, membership, performance or
+which real sources should be selected.
+
+| Requirement | Status | Evidence / limitation |
+|---|---|---|
+| Independent A–J review before tests/edits | VERIFIED | PRETEST.md |
+| C0 barrier and immutable bounded attempts | IMPLEMENTED, VERIFIED | runtime + A1/C0 adversaries |
+| 1M/4M recovery; 8M/16M milestones; no split | IMPLEMENTED, VERIFIED | cadence/retention/rescore selections |
+| Durable endpoint, search fail-stop, queue FAILED classification | IMPLEMENTED, VERIFIED | runtime + A2 + real worker transport + positive queue rerun |
+| Total wall allowance and late success | IMPLEMENTED, VERIFIED | wall tests, crash/resume, final clock regression |
+| Nominal 9P failure-retention plan | VERIFIED | independent derivation; storage-fault completion not guaranteed |
+| Grouping/mutation/direct-producer receipts on stock paths | VERIFIED | authored 1–32 partitions and real process producer |
+| General strengthened receipt / formal v2 study | BLOCKED | M1–M6 pre-study repairs in REVIEW.md |
+| Ordinary fresh-process receipt resume and tamper refusal | VERIFIED | receipt-resume.json; presence/tamper adversaries |
+| M4 v1/v2 eligibility and old evidence | VERIFIED with documented environmental test failure | comparison XML + Git blob proof |
+| CUDA receipt overhead | VERIFIED, partial diagnostic | tiny authored shape only; 50M cost NOT RUN |
+| Early stat diagnostic and unchanged caps | IMPLEMENTED, VERIFIED | initially failing then passing guard + real small file |
+| Lazy API, dependency invariants, static checks | VERIFIED | environment.json, ruff/format/mypy logs |
+| Full repository acceptance audit | NOT RUN | only requested/affected selections executed |
+| Real Mix-01, real order manifests, pilot, studies/campaign | OUT OF SCOPE, NOT RUN | no live data or research execution |
+| Push, merge, downloads, installation, margin selection | OUT OF SCOPE, NOT RUN | boundaries preserved |
+
+Changes are confined to four experiment modules, the Windows-portable evidence
+script, focused tests, review evidence, science user guide, this report, STATUS,
+and the ignored review-scratch entry. No receipt/model/training algorithm was
+redesigned. The local review commit contains these files; no push or merge.
+
+**Exact next operator step:** review the local ASTRA commit (`git show --stat HEAD`)
+for integration with `training.update_payload_receipt` still absent from the pilot.
+After integration, use a separately authorized binding/preflight task for the real
+tokenizer/shards/exposure, fixed M5 order/membership, evaluation inventories/group
+assignment, storage roots, measured profile/checkpoint size, frozen plan and matching
+authorization ticket. Read recoverability/input_bytes/capacity blockers before any
+launch. Do not launch the pilot or formal microbatch study from this certification.
