@@ -452,9 +452,10 @@ class CheckpointManager:
                 "new experiment explicitly"
             )
         if science is not None and saved_science is not None and not is_fork:
-            # Evaluation plan/evaluator identity, also before any state is restored.
+            # Evaluation and checkpoint plan identity, also before any state is restored.
             try:
                 science._saved_evaluation(saved_science)
+                science._saved_checkpoints(saved_science)
             except ScientificPolicyError as exc:
                 raise IncompatibleCheckpointError(str(exc)) from exc
 
@@ -582,6 +583,7 @@ class CheckpointManager:
         if science is not None and is_fork:
             try:
                 science.rebase_evaluation(meta.committed_valid_targets)
+                science.rebase_checkpoints(meta.committed_valid_targets)
             except ScientificPolicyError as exc:
                 raise IncompatibleCheckpointError(str(exc)) from exc
 

@@ -58,8 +58,13 @@ def value_digest(value: Any) -> str:
 
 def model_state_digest(model: Any) -> str:
     """Identity of a model's persistent state (``state_dict``), device independent."""
+    return state_dict_digest(model.state_dict())
+
+
+def state_dict_digest(state: Mapping[str, Any]) -> str:
+    """The same identity computed from a stored ``state_dict`` (e.g. a checkpoint's model.pt)."""
     digest = hashlib.sha256(MODEL_STATE_DIGEST_VERSION.encode() + b"\0")
-    for name, tensor in sorted(model.state_dict().items()):
+    for name, tensor in sorted(state.items()):
         digest.update(name.encode() + b"\0")
         _update_tensor(digest, tensor)
     return digest.hexdigest()

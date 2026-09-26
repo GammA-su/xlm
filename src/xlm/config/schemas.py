@@ -237,6 +237,39 @@ class ScientificRuntimeConfig(StrictConfigModel):
     bf16_reduced_precision_reduction: Literal["allowed", "disallowed"]
 
 
+class ScienceCheckpointConfig(StrictConfigModel):
+    """Science-v1 absolute checkpoint cadence and bounded retention (P35 M3).
+
+    Thresholds are data: a frozen contract table bound to the run budget, or an
+    ``authored_fixture`` table with explicit non-research thresholds. Every
+    field is required; ``protected_references`` names verified artifact ids
+    (parents/baselines) that retention must never retire, and may be empty.
+    """
+
+    version: Literal["xlm-checkpoint-cadence-v1"]
+    cadence: Literal["pilot_32m", "full_1b", "authored_fixture"]
+    fixture_milestones: list[StrictInt] | None
+    fixture_recovery: list[StrictInt] | None
+    retention: Literal["latest_two_recovery_plus_pinned_v1"]
+    protected_references: list[str] = Field(max_length=64)
+
+    @model_validator(mode="after")
+    def validate_fixture_scope(self) -> ScienceCheckpointConfig:
+        fixture = self.cadence == "authored_fixture"
+        if fixture != (self.fixture_milestones is not None) or fixture != (
+            self.fixture_recovery is not None
+        ):
+            raise ValueError(
+                "fixture_milestones/fixture_recovery are required for, and only for, "
+                "authored_fixture"
+            )
+        for reference in self.protected_references:
+            from xlm.artifacts.manifest import validate_component
+
+            validate_component(reference)
+        return self
+
+
 class TrainingConfig(StrictConfigModel):
     device: Literal["cuda", "cpu"] = "cuda"
     precision: str = "bf16_fp32_master"
@@ -260,10 +293,16 @@ class TrainingConfig(StrictConfigModel):
     ) = None
     training_seed: int | None = Field(default=None, ge=0, lt=2**63)
     runtime: ScientificRuntimeConfig | None = None
+    # P35 M3: absolute checkpoint cadence. When present it replaces the relative
+    # ``checkpoint_every_valid_targets`` cadence, which is then inert.
+    checkpoint_cadence: ScienceCheckpointConfig | None = None
 
     @model_validator(mode="after")
     def validate_scientific_policy(self) -> TrainingConfig:
         from xlm.config.science import STATISTICAL_ATTENTION, ScientificPolicy
+
+        if self.checkpoint_cadence is not None and self.science_version is None:
+            raise ValueError("training.checkpoint_cadence requires training.science_version")
 
         policy = ScientificPolicy.from_training(
             {

@@ -137,6 +137,17 @@ def resolve_execution_config(config: dict[str, Any]) -> tuple[dict[str, Any], di
     components["schedule"] = {"key": entry.key, "serializer": entry.serializer_version}
     if training["budget"]["max_train_seconds"] is None:
         training["budget"]["max_train_seconds"] = 600.0
+    checkpoint_cadence = training.get("checkpoint_cadence")
+    if checkpoint_cadence is not None:
+        # P35 M3: an absolute checkpoint plan must bind to this budget before execution.
+        from xlm.evaluation.cadence import build_checkpoint_plan
+
+        build_checkpoint_plan(
+            str(checkpoint_cadence["cadence"]),
+            int(training["budget"]["max_valid_targets"]),
+            fixture_milestones=checkpoint_cadence["fixture_milestones"],
+            fixture_recovery=checkpoint_cadence["fixture_recovery"],
+        )
     resolved["training"] = training
     evaluation = resolved.get("evaluation")
     if isinstance(evaluation, dict) and evaluation.get("science") is not None:

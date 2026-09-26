@@ -294,8 +294,15 @@ def build_trainer(
     warmup: int = 32,
     horizon: int | None = None,
     run_id: str = "m2_run",
+    checkpoint_plan: Any = None,
+    protected_references: Sequence[str] = (),
+    parent_checkpoint_id: str | None = None,
 ) -> Trainer:
-    """A tiny science-v1 trainer; training RNG is reseeded like a fresh science run."""
+    """A tiny science-v1 trainer; training RNG is reseeded like a fresh science run.
+
+    ``checkpoint_plan`` (P35 M3) attaches an absolute checkpoint cadence instead
+    of the relative ``checkpoint_every`` cadence.
+    """
     paths = ArtifactPaths(root=root)
     manager = CheckpointManager(
         artifact_store=ArtifactStore(paths),
@@ -335,6 +342,15 @@ def build_trainer(
         controller = EvaluationController(plan, evaluators)
         if state is not None:
             controller.attach(state)
+    checkpoints = None
+    if checkpoint_plan is not None:
+        from xlm.training.milestones import CheckpointController
+
+        checkpoints = CheckpointController(
+            checkpoint_plan, protected_references=tuple(protected_references)
+        )
+        if state is not None:
+            checkpoints.attach(state)
     if state is not None:
         state.train_start_rng = reseed_training_rng(10001, device)
     return Trainer(
@@ -350,8 +366,10 @@ def build_trainer(
         device=device,
         max_valid_targets=budget,
         checkpoint_every_valid_targets=checkpoint_every,
+        parent_checkpoint_id=parent_checkpoint_id,
         science=state,
         evaluation=controller,
+        checkpoints=checkpoints,
     )
 
 

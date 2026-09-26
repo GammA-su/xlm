@@ -919,11 +919,14 @@ def execute_plan_run(
         gradient_clip_norm=float(training.get("gradient_clip_norm", 1.0)),
         max_valid_targets=plan.budget_valid_targets,
         max_train_seconds=training.get("budget", {}).get("max_train_seconds"),
-        checkpoint_every_valid_targets=plan.checkpoint_every_valid_targets,
+        checkpoint_every_valid_targets=(
+            None if components.checkpoints is not None else plan.checkpoint_every_valid_targets
+        ),
         activation_checkpointing=bool(training.get("activation_checkpointing", False)),
         compile_model=bool(training.get("compile", False)),
         science=components.science,
         evaluation=components.evaluation,
+        checkpoints=components.checkpoints,
     )
 
     # Resume an interrupted attempt through the existing checkpoint loader. Never
@@ -974,9 +977,12 @@ def execute_plan_run(
         trainer.step = meta.step
         trainer.committed_valid_targets = meta.committed_valid_targets
         trainer.processed_valid_targets = meta.processed_valid_targets
-        trainer.next_checkpoint_target = (
-            meta.committed_valid_targets + plan.checkpoint_every_valid_targets
-        )
+        if trainer.checkpoints is None:
+            # Historical relative cadence; a science cadence is absolute and resumes
+            # from its restored ledger without re-anchoring.
+            trainer.next_checkpoint_target = (
+                meta.committed_valid_targets + plan.checkpoint_every_valid_targets
+            )
 
     steps = 0
     last_loss: float | None = None
@@ -984,7 +990,7 @@ def execute_plan_run(
     while True:
         if should_cancel():
             trainer.batcher.rollback()
-            checkpoint = trainer._save_checkpoint(f"{job.job_id}_cancelled")
+            checkpoint = trainer.save_terminal_checkpoint("cancelled")
             return {
                 "cancelled": True,
                 "reason": "cancel requested",
@@ -992,7 +998,7 @@ def execute_plan_run(
                 "checkpoint": str(checkpoint),
             }
         if time.monotonic() - started >= (plan.budget_max_seconds or 600.0):
-            trainer._save_checkpoint(f"{job.job_id}_time_limit")
+            trainer.save_terminal_checkpoint("time_limit")
             raise QueueError("wall-time limit reached before target budget completion")
         metrics = trainer.train_step()
         if metrics is None:
@@ -1014,6 +1020,10 @@ def execute_plan_run(
         summary["evaluation"] = trainer.evaluation.completeness().to_dict()
     if trainer.committed_valid_targets != plan.budget_valid_targets:
         raise QueueError("training stopped before the exact target budget; refusing success")
-    if not already_final:
+    if trainer.checkpoints is not None:
+        # The exact-budget endpoint milestone is this boundary's checkpoint.
+        summary["checkpoint_id"] = trainer.save_terminal_checkpoint("final").name
+        summary["checkpoints"] = trainer.checkpoints.ledger.summary()
+    elif not already_final:
         trainer._save_checkpoint(str(summary["checkpoint_id"]))
     return summary

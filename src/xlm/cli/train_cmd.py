@@ -263,11 +263,16 @@ def _train_in_process(
             gradient_clip_norm=training_cfg.get("gradient_clip_norm", 1.0),
             max_valid_targets=budget_targets,
             max_train_seconds=budget_seconds,
-            checkpoint_every_valid_targets=training_cfg.get("checkpoint_every_valid_targets"),
+            checkpoint_every_valid_targets=(
+                None
+                if components.checkpoints is not None
+                else training_cfg.get("checkpoint_every_valid_targets")
+            ),
             activation_checkpointing=run_checkpointing,
             compile_model=run_compile,
             science=components.science,
             evaluation=components.evaluation,
+            checkpoints=components.checkpoints,
         )
     except Exception as e:
         typer.echo(f"Error: invalid execution configuration: {e}", err=True)
@@ -447,7 +452,7 @@ def _resume_in_process(
         science=components.science,
     )
     at_budget = not fork and meta.committed_valid_targets == target_budget
-    if at_budget and components.evaluation is None:
+    if at_budget and components.evaluation is None and components.checkpoints is None:
         typer.echo(
             "Resume complete: frozen target budget is already committed; checkpoint preserved."
         )
@@ -486,7 +491,11 @@ def _resume_in_process(
         gradient_clip_norm=training_cfg.get("gradient_clip_norm", 1.0),
         max_valid_targets=target_budget,
         max_train_seconds=training_cfg["budget"].get("max_train_seconds", 600.0),
-        checkpoint_every_valid_targets=training_cfg.get("checkpoint_every_valid_targets"),
+        checkpoint_every_valid_targets=(
+            None
+            if components.checkpoints is not None
+            else training_cfg.get("checkpoint_every_valid_targets")
+        ),
         activation_checkpointing=training_cfg.get("activation_checkpointing", False),
         compile_model=training_cfg.get("compile", False),
         step=meta.step,
@@ -496,11 +505,13 @@ def _resume_in_process(
         parent_plan_id=parent_plan,
         science=components.science,
         evaluation=components.evaluation,
+        checkpoints=components.checkpoints,
     )
-    if at_budget and trainer.evaluation is not None:
-        # The budget is committed; only evaluation events this state still owes run.
+    if at_budget and (trainer.evaluation is not None or trainer.checkpoints is not None):
+        # The budget is committed; only events this state still owes run.
         trainer._evaluate_boundary()
-        typer.echo(f"Evaluation: {json.dumps(trainer.evaluation.completeness().to_dict())}")
+        if trainer.evaluation is not None:
+            typer.echo(f"Evaluation: {json.dumps(trainer.evaluation.completeness().to_dict())}")
         typer.echo(
             "Resume complete: frozen target budget is already committed; checkpoint preserved."
         )

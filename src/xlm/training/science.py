@@ -28,6 +28,7 @@ from xlm.config.science import (
 
 if TYPE_CHECKING:
     from xlm.evaluation.receipts import EvaluationLedger
+    from xlm.training.milestones import CheckpointLedger
 
 SCIENCE_STATE_VERSION = 1
 LR_RECEIPT_COLUMNS = (
@@ -104,6 +105,9 @@ class ScientificState:
         # Science-v1 evaluation events (P35 M2); ``None`` when no cadence is declared,
         # which keeps M1 ``science.json`` files byte-identical.
         self.evaluation: EvaluationLedger | None = None
+        # Science-v1 checkpoint events (P35 M3); ``None`` when no checkpoint cadence
+        # is declared, which keeps M1/M2 ``science.json`` files byte-identical.
+        self.checkpoints: CheckpointLedger | None = None
 
     def record_lr(self, receipt: list[Any]) -> None:
         if len(self.lr_receipts) >= MAX_LR_RECEIPTS:
@@ -125,7 +129,32 @@ class ScientificState:
         }
         if self.evaluation is not None:
             payload["evaluation"] = self.evaluation.to_dict()
+        if self.checkpoints is not None:
+            payload["checkpoints"] = self.checkpoints.to_dict()
         return payload
+
+    def _saved_checkpoints(self, saved: Mapping[str, Any]) -> CheckpointLedger | None:
+        """Parse and check a saved checkpoint-event ledger against this run's plan."""
+        from xlm.evaluation.cadence import CadenceError
+        from xlm.training.milestones import CheckpointLedger, CheckpointLedgerError
+
+        raw = saved.get("checkpoints")
+        if (raw is None) != (self.checkpoints is None):
+            raise ScientificPolicyError(
+                "checkpoint cadence presence differs between checkpoint and run; "
+                "ordinary resume refused"
+            )
+        if raw is None or self.checkpoints is None:
+            return None
+        try:
+            ledger = CheckpointLedger.from_dict(raw)
+        except (CheckpointLedgerError, CadenceError, KeyError, TypeError, ValueError) as exc:
+            raise ScientificPolicyError(f"unreadable checkpoint ledger: {exc}") from exc
+        if ledger.plan.digest() != self.checkpoints.plan.digest():
+            raise ScientificPolicyError("checkpoint plan changed; ordinary resume refused")
+        for reference, reason in self.checkpoints.protected.items():
+            ledger.protected.setdefault(reference, reason)
+        return ledger
 
     def _saved_evaluation(self, saved: Mapping[str, Any]) -> EvaluationLedger | None:
         """Parse and check a saved evaluation ledger against this run's plan."""
@@ -168,6 +197,7 @@ class ScientificState:
         if self.lr_receipts:
             raise ScientificPolicyError("cannot restore into a run that already committed updates")
         ledger = None if fork else self._saved_evaluation(saved)
+        checkpoint_ledger = None if fork else self._saved_checkpoints(saved)
         self.train_start_rng = saved.get("train_start_rng")
         self.lr_receipts = [list(row) for row in receipts["rows"]]
         # Earlier attempts' observations first, then any made by this attempt
@@ -177,6 +207,20 @@ class ScientificState:
         ] + self.runtime_receipts
         if ledger is not None:
             self.evaluation = ledger
+        if checkpoint_ledger is not None:
+            self.checkpoints = checkpoint_ledger
+
+    def rebase_checkpoints(self, origin_committed_targets: int) -> None:
+        """Start a forked run's fresh checkpoint plan at the fork's committed count."""
+        if self.checkpoints is None:
+            return
+        from xlm.evaluation.cadence import CadenceError
+        from xlm.training.milestones import CheckpointLedgerError, rebase_checkpoint_ledger
+
+        try:
+            self.checkpoints = rebase_checkpoint_ledger(self.checkpoints, origin_committed_targets)
+        except (CadenceError, CheckpointLedgerError) as exc:
+            raise ScientificPolicyError(f"fork checkpoint plan: {exc}") from exc
 
     def rebase_evaluation(self, origin_committed_targets: int) -> None:
         """Start a forked run's fresh evaluation plan at the fork's committed count."""

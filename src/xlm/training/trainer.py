@@ -49,6 +49,7 @@ except ImportError:
 
 if TYPE_CHECKING:
     from xlm.training.evaluation import EvaluationController
+    from xlm.training.milestones import CheckpointController
 
 
 class TrainerError(Exception):
@@ -144,6 +145,7 @@ class Trainer:
         max_scaler_skips: int = 50,
         science: ScientificState | None = None,
         evaluation: EvaluationController | None = None,
+        checkpoints: CheckpointController | None = None,
     ) -> None:
         self.model = model
         self.objective = objective
@@ -245,6 +247,18 @@ class Trainer:
             if not self.science.policy.is_science:
                 raise TrainerError("an evaluation cadence requires the xlm-science-v1 policy")
             evaluation.bind_trainer(self)
+        # Science-v1 absolute checkpoint events (P35 M3). They replace the relative
+        # cadence; both at once would publish checkpoints nobody planned.
+        self.checkpoints = checkpoints
+        if checkpoints is not None:
+            if not self.science.policy.is_science:
+                raise TrainerError("a checkpoint cadence requires the xlm-science-v1 policy")
+            if checkpoint_every_valid_targets is not None:
+                raise TrainerError(
+                    "a science checkpoint cadence replaces checkpoint_every_valid_targets; "
+                    "pass None for the relative cadence"
+                )
+            checkpoints.bind_trainer(self)
 
     def _get_autocast_context(self) -> Any:
         """Return precision context manager."""
@@ -345,10 +359,26 @@ class Trainer:
                 f"skipped updates): {reason}"
             )
 
+    @property
+    def _has_boundary_events(self) -> bool:
+        return self.evaluation is not None or self.checkpoints is not None
+
+    def save_terminal_checkpoint(self, reason: str) -> Path:
+        """Final/interrupted/cancelled/time-limit state.
+
+        Legacy runs keep their historical ``{run_id}_{reason}`` ids. With a
+        science checkpoint cadence the state is published through the event
+        ledger, and a boundary that already has a published checkpoint (for
+        example the exact-budget endpoint milestone) is reused, never duplicated.
+        """
+        if self.checkpoints is not None:
+            return self.checkpoints.save_terminal(self, reason)
+        return self._save_checkpoint(f"{self.run_id}_{reason}")
+
     def train_step(self) -> TrainingStepMetrics | None:
         """Rollback failed preparation; never reuse a partially updated optimizer."""
         self._require_committed_boundary()
-        if self.evaluation is not None:
+        if self._has_boundary_events:
             # Initial-state events and events restored as due by a resume.
             self._evaluate_boundary()
         try:
@@ -361,16 +391,25 @@ class Trainer:
                 # A failed producer rollback already closes/poisons its transport.
                 pass
             raise
-        if metrics is not None and self.evaluation is not None:
+        if metrics is not None and self._has_boundary_events:
             self._evaluate_boundary()
         return metrics
 
     def _evaluate_boundary(self) -> None:
-        """Record and evaluate science-v1 events due at the committed state (never mid-update)."""
-        assert self.evaluation is not None
+        """Science-v1 events of the committed state, in the fixed boundary order.
+
+        Evaluation crossings are recorded first, then the boundary's checkpoint
+        is published (so it owes those evaluations), then evaluations run.
+        Never mid-update; each phase is a no-op when already handled.
+        """
+        assert self._has_boundary_events
         self._require_committed_boundary()
-        self.evaluation.record_crossings(self)
-        self.evaluation.run_pending(self)
+        if self.evaluation is not None:
+            self.evaluation.record_crossings(self)
+        if self.checkpoints is not None:
+            self.checkpoints.at_boundary(self)
+        if self.evaluation is not None:
+            self.evaluation.run_pending(self)
 
     def _train_step(self) -> TrainingStepMetrics | None:
         """Execute one update inside the run's scientific runtime scope (legacy: none)."""
@@ -597,8 +636,11 @@ class Trainer:
             lr_next=lr_next,
         )
 
-        # 9. Periodic checkpointing
-        if (
+        # 9. Checkpointing: science-v1 absolute events (first crossing, one
+        # checkpoint per boundary), else the historical relative cadence.
+        if self.checkpoints is not None:
+            self.checkpoints.at_boundary(self)
+        elif (
             self.next_checkpoint_target is not None
             and self.checkpoint_every_valid_targets is not None
         ):
@@ -682,7 +724,7 @@ class Trainer:
         run_start = time.monotonic()
 
         try:
-            if self.evaluation is not None:
+            if self._has_boundary_events:
                 # A resume at the exact budget still owes its endpoint events.
                 self._evaluate_boundary()
             while self.committed_valid_targets < self.max_valid_targets:
@@ -734,8 +776,7 @@ class Trainer:
 
         # Final checkpoint and ledger state update
         if self.termination_reason == "completed":
-            final_chk_id = f"{self.run_id}_final"
-            self._save_checkpoint(final_chk_id)
+            self.save_terminal_checkpoint("final")
             try:
                 self.checkpoint_manager.ledger.transition_run(
                     self.run_id, from_state=RunStatus.RUNNING, to_state=RunStatus.SUCCEEDED
@@ -743,8 +784,7 @@ class Trainer:
             except Exception:
                 pass
         elif self.termination_reason == "interrupted":
-            interrupted_chk_id = f"{self.run_id}_interrupted"
-            self._save_checkpoint(interrupted_chk_id)
+            self.save_terminal_checkpoint("interrupted")
             try:
                 self.checkpoint_manager.ledger.transition_run(
                     self.run_id, from_state=RunStatus.RUNNING, to_state=RunStatus.INTERRUPTED

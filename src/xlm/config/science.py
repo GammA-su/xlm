@@ -131,9 +131,15 @@ class ScientificPolicy:
         )
 
 
+#: Optional science-v1 training blocks that are not part of the policy identity
+#: (P35 M3 checkpoint cadence). Absent keys are dropped exactly like the policy
+#: fields, so configurations without them keep their historical bytes.
+OPTIONAL_SCIENCE_TRAINING_BLOCKS = ("checkpoint_cadence",)
+
+
 def omit_absent_science_fields(training: dict[str, Any]) -> dict[str, Any]:
     """Drop unset science keys so legacy resolution reproduces historical bytes."""
-    for key in SCIENCE_TRAINING_FIELDS:
+    for key in (*SCIENCE_TRAINING_FIELDS, *OPTIONAL_SCIENCE_TRAINING_BLOCKS):
         if training.get(key, ...) is None:
             del training[key]
     return training

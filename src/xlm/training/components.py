@@ -156,6 +156,8 @@ class TrainingComponents:
     science: ScientificState
     # Science-v1 evaluation controller; None unless ``evaluation.science`` is declared.
     evaluation: Any = None
+    # Science-v1 checkpoint controller; None unless ``training.checkpoint_cadence`` is declared.
+    checkpoints: Any = None
 
 
 def construct_training_components(
@@ -240,6 +242,15 @@ def construct_training_components(
             device=device,
         )
         evaluation.attach(science)
+    checkpoints = None
+    checkpoint_cadence = training.get("checkpoint_cadence")
+    if checkpoint_cadence is not None:
+        from xlm.training.milestones import build_checkpoint_controller
+
+        checkpoints = build_checkpoint_controller(
+            checkpoint_cadence, budget=int(training["budget"]["max_valid_targets"])
+        )
+        checkpoints.attach(science)
     if science.policy.is_science and fresh_training_rng:
         assert science.policy.training_seed is not None
         science.train_start_rng = reseed_training_rng(science.policy.training_seed, device)
@@ -255,6 +266,7 @@ def construct_training_components(
         construction,
         science,
         evaluation,
+        checkpoints,
     )
 
 
