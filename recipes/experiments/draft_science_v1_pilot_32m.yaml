@@ -103,7 +103,13 @@
     "status": "draft_nonexecutable",
     "device": "cuda",
     "seed_tuple": "P0",
-    "document_order": "shard_native_within_source_order",
+    "document_order": {
+      "policy": "m5-independent-document-order-v1",
+      "role": "fixed_single_order_not_an_independent_replicate",
+      "manifest": null,
+      "order_manifest_id": null,
+      "canonical_membership_id": null
+    },
     "expected": {
       "parameters": 49883648,
       "budget_valid_targets": 32000000,

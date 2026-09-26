@@ -267,6 +267,8 @@ def authored_pilot_draft(
     arithmetic = update_arithmetic(budget, batch)
     pilot = draft["science_pilot"]
     pilot["contract"] = "authored_fixture"
+    # P35 M5: authored M3 flows keep the shard-native order (allowed for fixtures only).
+    pilot["document_order"] = "shard_native_within_source_order"
     pilot["seed_tuple"] = "authored"
     pilot["expected"] = {
         **pilot["expected"],

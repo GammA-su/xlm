@@ -239,6 +239,23 @@ class PilotResume(StrictConfigModel):
     fresh_process: bool
 
 
+#: P35 M5: the §W pilot trains under ONE supplied frozen order manifest. It is a
+#: fixed order, explicitly not an independent document-order replicate.
+PILOT_ORDER_ROLE = "fixed_single_order_not_an_independent_replicate"
+SHARD_NATIVE_PILOT_ORDER = "shard_native_within_source_order"
+ORDER_PIN_KEYS = ("manifest", "order_manifest_id", "canonical_membership_id")
+
+
+class PilotDocumentOrder(StrictConfigModel):
+    """The pilot's M5 order binding: drafts leave the pins null, bindings supply them."""
+
+    policy: Literal["m5-independent-document-order-v1"]
+    role: Literal["fixed_single_order_not_an_independent_replicate"]
+    manifest: str | None
+    order_manifest_id: str | None
+    canonical_membership_id: str | None
+
+
 class SciencePilotConfig(StrictConfigModel):
     """The ``science_pilot`` section of a pilot draft or of a resolved plan."""
 
@@ -247,7 +264,9 @@ class SciencePilotConfig(StrictConfigModel):
     status: Literal["draft_nonexecutable", "operator_resolved"]
     device: Literal["cuda"]
     seed_tuple: str
-    document_order: Literal["shard_native_within_source_order"]
+    #: ``shard_native_within_source_order`` is accepted for authored fixtures only;
+    #: the §W contract requires a pinned M5 order (``check_document_order``).
+    document_order: Literal["shard_native_within_source_order"] | PilotDocumentOrder
     expected: PilotExpectation
     storage_roots: PilotStorageRoots
     capacity: PilotCapacity
@@ -327,8 +346,30 @@ class BindingCapacity(StrictConfigModel):
     safety_margin_bytes: StrictInt = Field(ge=0)
 
 
+class BindingDocumentOrder(StrictConfigModel):
+    """The frozen M5 order manifest and both identities it must verify to."""
+
+    manifest: str
+    order_manifest_id: str
+    canonical_membership_id: str
+
+    @field_validator("manifest")
+    @classmethod
+    def absolute(cls, value: str) -> str:
+        return _absolute_path(value, "document_order.manifest")
+
+    @field_validator("order_manifest_id", "canonical_membership_id")
+    @classmethod
+    def pinned(cls, value: str) -> str:
+        return _sha256(value, "document_order identity")
+
+
 class PilotBindings(StrictConfigModel):
-    """Operator-supplied local artifacts; every field required, nothing defaulted."""
+    """Operator-supplied local artifacts; every field required, nothing defaulted.
+
+    ``document_order`` (P35 M5) is required whenever the draft declares an M5
+    order; only authored shard-native fixtures may omit it.
+    """
 
     version: Literal["xlm-science-pilot-bindings-v1"]
     data: BindingData
@@ -337,6 +378,7 @@ class PilotBindings(StrictConfigModel):
     profile_artifact: str
     storage_roots: BindingRoots
     capacity: BindingCapacity
+    document_order: BindingDocumentOrder | None = None
 
     @field_validator("profile_artifact")
     @classmethod
@@ -600,6 +642,13 @@ def unresolved_fields(config: Mapping[str, Any], pilot: SciencePilotConfig) -> l
     ]
     if _get(config, "data.sources") is None:
         missing.append("data.sources (one verified shard per mix01 component)")
+    order = pilot.document_order
+    if isinstance(order, PilotDocumentOrder):
+        missing += [
+            f"science_pilot.document_order.{k}" for k in ORDER_PIN_KEYS if getattr(order, k) is None
+        ]
+    elif pilot.contract == P35_PILOT:
+        missing.append("science_pilot.document_order (a pinned M5 order manifest is required)")
     roots = pilot.storage_roots.model_dump()
     missing += [f"science_pilot.storage_roots.{k}" for k, v in roots.items() if v is None]
     capacity = pilot.capacity.model_dump()
@@ -634,6 +683,21 @@ def apply_bindings(
     data["exposure_plan"] = bindings.data.exposure_plan
     data["pool_artifact"] = bindings.data.pool_artifact
     data["tokenizer_artifact"] = bindings.tokenizer.artifact
+    order = pilot.document_order
+    if bindings.document_order is not None:
+        if not isinstance(order, PilotDocumentOrder):
+            raise PilotPlanError(
+                "bindings supply a document order but the draft declares the shard-native order"
+            )
+        if any(getattr(order, k) is not None for k in ORDER_PIN_KEYS):
+            raise PilotPlanError("the draft pre-binds science_pilot.document_order")
+        if data.get("document_order") is not None:
+            raise PilotPlanError("the draft pre-binds data.document_order; bindings supply it")
+        data["document_order"] = bindings.document_order.model_dump(mode="json")
+        merged["science_pilot"]["document_order"] = {
+            **order.model_dump(mode="json"),
+            **bindings.document_order.model_dump(mode="json"),
+        }
     spec = pilot.evaluation
     if spec is None:
         raise PilotPlanError("the draft carries no pilot evaluation specification")
@@ -925,9 +989,74 @@ def check_data(
         components=components,
         per_source=table,
         input_shard_bytes=input_bytes,
-        document_order="shard native within-source order (not an independent order replicate)",
+        document_order=_order_description(pilot),
     )
     return {"components": components}
+
+
+def _order_description(pilot: SciencePilotConfig) -> str:
+    order = pilot.document_order
+    if isinstance(order, PilotDocumentOrder):
+        return (
+            f"frozen M5 order {order.order_manifest_id} over membership "
+            f"{order.canonical_membership_id} ({PILOT_ORDER_ROLE})"
+        )
+    return "shard native within-source order (not an independent order replicate)"
+
+
+def check_document_order(
+    config: Mapping[str, Any], pilot: SciencePilotConfig, findings: Findings
+) -> None:
+    """The pilot's frozen order is pinned, verifies, and orders exactly its shards (M5)."""
+    from xlm.data.ordering import OrderManifestError, resolve_document_order
+    from xlm.data.tokens import TokenShardReader
+
+    before = len(findings.blockers)
+    order = pilot.document_order
+    if not isinstance(order, PilotDocumentOrder):
+        if pilot.contract == P35_PILOT:
+            findings.block(
+                "document_order_unbound",
+                "the §W pilot trains under a supplied frozen M5 order manifest; the "
+                "shard-native order is accepted for authored fixtures only",
+            )
+        findings.section("document_order", before=before, policy="shard_native_offset_order_v1")
+        return
+    pins = {k: getattr(order, k) for k in ORDER_PIN_KEYS}
+    reference = _get(config, "data.document_order")
+    if any(v is None for v in pins.values()) or reference is None:
+        findings.block(
+            "document_order_unresolved",
+            "the frozen order manifest, its order_manifest_id and canonical_membership_id "
+            "must all be bound",
+        )
+        findings.section("document_order", before=before, role=order.role)
+        return
+    if dict(reference) != pins:
+        findings.block(
+            "document_order_pin_mismatch",
+            "data.document_order differs from the science_pilot.document_order pins",
+        )
+    sources = _get(config, "data.sources") or {}
+    try:
+        readers = {sid: TokenShardReader(Path(path)) for sid, path in sources.items()}
+        verified, manifest = resolve_document_order(reference, readers)
+    except OrderManifestError as exc:
+        findings.block(exc.code, str(exc)[:800])
+    except (OSError, ValueError, KeyError) as exc:
+        findings.block("document_order_unverifiable", f"{type(exc).__name__}: {exc}"[:800])
+    else:
+        findings.section(
+            "document_order",
+            before=before,
+            role=order.role,
+            order_manifest_id=verified["order_manifest_id"],
+            canonical_membership_id=verified["canonical_membership_id"],
+            order_seed=manifest["derivation"]["order_seed"],
+            independent_order_replicate=False,
+        )
+        return
+    findings.section("document_order", before=before, role=order.role)
 
 
 def open_mixture(resolved: Mapping[str, Any]) -> Any:
@@ -1461,7 +1590,9 @@ def scientific_identity(config: Mapping[str, Any], pilot: SciencePilotConfig) ->
         "producer_content_verification": "always on for process_depth1 (build_training_batcher)",
         "device": training.get("device"),
         "microbatch_sequences": training.get("microbatch_sequences"),
-        "document_order": pilot.document_order,
+        "document_order": pilot.document_order
+        if isinstance(pilot.document_order, str)
+        else pilot.document_order.model_dump(mode="json"),
         "model": {
             k: config.get("model", {}).get(k)
             for k in (
@@ -1513,6 +1644,7 @@ def run_preflight(
 
     context = PreflightContext()
     check_storage_roots(config, pilot, findings, artifact_home=artifact_home, outputs=outputs)
+    check_document_order(config, pilot, findings)
     before = len(findings.blockers)
     try:
         resolved, exec_bindings = resolve_execution_config(copy.deepcopy(config))
