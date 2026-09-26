@@ -80,12 +80,8 @@
           "weight": 0.05
         },
         {
-          "source_id": "nemotron_organic_high",
-          "weight": 0.15
-        },
-        {
-          "source_id": "nemotron_organic_medium_high",
-          "weight": 0.05
+          "source_id": "ultrax_ultrafineweb",
+          "weight": 0.2
         },
         {
           "source_id": "nemotron_wiki_rewrite",
@@ -137,12 +133,8 @@
             "weight": 0.05
           },
           {
-            "source_id": "nemotron_organic_high",
-            "weight": 0.15
-          },
-          {
-            "source_id": "nemotron_organic_medium_high",
-            "weight": 0.05
+            "source_id": "ultrax_ultrafineweb",
+            "weight": 0.2
           },
           {
             "source_id": "nemotron_wiki_rewrite",

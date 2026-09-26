@@ -196,4 +196,4 @@ def test_mix01_views_registry_still_validates() -> None:
     from xlm.data.sources.mix01 import load_mix01_views
 
     registry = load_mix01_views(RECIPES_ROOT / "mixtures" / "mix01_views.yaml")
-    assert len(registry.views) == 13
+    assert len(registry.views) == 12

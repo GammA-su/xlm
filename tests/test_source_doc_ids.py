@@ -23,6 +23,7 @@ from xlm.data.adapters.mix01_adapters import (
     SimpleStoriesAdapter,
     SynthExplanationsAdapter,
     Txt360WebAdapter,
+    UltraXUltraFineWebAdapter,
     WikiRewriteAdapter,
 )
 from xlm.data.adapters.source_ids import (
@@ -48,6 +49,11 @@ def _records() -> dict[str, dict[str, object]]:
             "metadata": {},
         },
         "nemotron": {"text": "t", "quality_category": "High-Quality"},
+        "ultrax": {
+            "uid": "authored-ultrax-1",
+            "cleaned_content": "t",
+            "source": "commoncrawl",
+        },
         "synth": {
             "synth_id": "authored_s",
             "language": "en",
@@ -83,6 +89,11 @@ def _adapters() -> dict[str, tuple[object, str, str]]:
             NemotronOrganicAdapter("High-Quality"),
             records["nemotron"],
             "nemotron_cc21:High-Quality",
+        ),
+        "ultrax": (
+            UltraXUltraFineWebAdapter(),
+            records["ultrax"],
+            "ultrax_ultrafineweb",
         ),
         "synth": (SynthExplanationsAdapter(), records["synth"], "synth"),
         "wiki_rewrite": (WikiRewriteAdapter(), records["wiki_rewrite"], "wiki_rewrite"),

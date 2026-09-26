@@ -202,17 +202,18 @@ def test_admission_gate_stale_fingerprint_invalidation() -> None:
 
 
 def test_catalog_auditor_all_twenty_candidates_unadmitted(isolated_xlm_home: Path) -> None:
-    """Verify that catalog audit on 20 candidates produces 0 admitted sources and disclaimer."""
+    """Verify that catalog audit on all candidates produces 0 admitted sources and disclaimer."""
     catalog = load_catalog("manifests/datasets.catalog.yaml")
     store = ArtifactStore(ArtifactPaths(root=isolated_xlm_home))
     auditor = CatalogAuditor(catalog=catalog, artifact_store=store)
 
     report = auditor.audit_all()
-    assert report["counts"]["total_candidates"] == 20
+    assert report["counts"]["total_candidates"] == 21
     assert report["counts"]["admitted"] == 0
     assert report["counts"]["blocked"] == 0
-    assert report["counts"]["unadmitted"] == 20
+    assert report["counts"]["unadmitted"] == 21
     assert report["legal_disclaimer"] == LEGAL_DISCLAIMER
+    assert catalog.get_source("ultrax_ultrafineweb") is not None
 
 
 def test_p01_artifact_persistence(isolated_xlm_home: Path) -> None:

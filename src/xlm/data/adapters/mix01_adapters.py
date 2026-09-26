@@ -480,6 +480,127 @@ class NemotronOrganicAdapter:
         )
 
 
+ULTRAX_REPOSITORY_CANDIDATES = ("openbmb/UltraX-Preview", "openbmb/UltraX")
+ULTRAX_CONFIG_NAME = "UltraX-Ultra-FineWeb"
+
+
+class UltraXUltraFineWebAdapter:
+    """UltraX Ultra-FineWeb English web text (config ``UltraX-Ultra-FineWeb`` only).
+
+    Published record shape (dataset card): ``uid`` (string, stable source
+    document identity), ``raw_content`` (string, pre-refinement text, never
+    training input), ``cleaned_content`` (string, refined training text),
+    ``processed_functions`` (string, refinement operations applied), and
+    ``source`` (string, upstream source label). The source is English.
+
+    Mapping:
+
+    - document text is ``cleaned_content`` verbatim, never ``raw_content``;
+    - stable source identity is ``uid`` (preserved in ``source_metadata``;
+      canonical ``doc_id`` stays the centralized file+row scheme so IDs are
+      stable across reruns even before uid uniqueness is proven by the
+      operator probe);
+    - provenance records the exact repository, revision, config, source file,
+      row, ``uid`` and the row ``source`` label;
+    - ``processed_functions`` is optional bounded metadata, preserved
+      verbatim when present.
+
+    ``remove_all`` (empty/whitespace ``cleaned_content``) is an explicit
+    counted policy drop (:class:`RecordRejectedError`); falling back to
+    ``raw_content`` would undo the refinement and is forbidden.
+    ``raw_content`` is never read and never copied into canonical output.
+    Missing ``cleaned_content`` or a wrong type fails closed
+    (:class:`MissingFieldError`); ``uid`` must be a non-empty string and is
+    never coerced or assumed to follow a narrower format than the probe
+    proves.
+    """
+
+    ADAPTER_ID = "ultrax_ultrafineweb"
+    SOURCE_ID = "ultrax_ultrafineweb"
+    REQUIRED_FIELDS = ("uid", "cleaned_content", "source")
+    CONFIG_NAME = ULTRAX_CONFIG_NAME
+
+    def contract(self) -> RowExtractorContract:
+        return RowExtractorContract(
+            adapter_id=self.ADAPTER_ID,
+            text_field="cleaned_content",
+            required_fields=["uid", "cleaned_content", "source"],
+        )
+
+    def adapt(
+        self,
+        record: Mapping[str, Any],
+        *,
+        source_file: str,
+        source_row: int,
+        source_revision: str,
+    ) -> CanonicalDocument:
+        uid = _require(record, "uid", self.ADAPTER_ID)
+        if not isinstance(uid, str) or not uid.strip():
+            raise MissingFieldError(
+                f"adapter '{self.ADAPTER_ID}' requires upstream field 'uid' "
+                "to be a non-empty string; it cannot be coerced or guessed."
+            )
+        if "cleaned_content" not in record or record["cleaned_content"] is None:
+            raise MissingFieldError(
+                f"adapter '{self.ADAPTER_ID}' requires upstream field "
+                "'cleaned_content'; it is absent and cannot be guessed."
+            )
+        cleaned = record["cleaned_content"]
+        if not isinstance(cleaned, str):
+            raise MissingFieldError(
+                f"adapter '{self.ADAPTER_ID}' requires upstream field "
+                "'cleaned_content' to be a string; it cannot be coerced."
+            )
+        if not cleaned.strip():
+            raise RecordRejectedError(
+                f"adapter '{self.ADAPTER_ID}' drops empty cleaned_content "
+                "(remove_all by UltraX); raw_content is never used as fallback."
+            )
+        upstream_source = _require(record, "source", self.ADAPTER_ID)
+        if not isinstance(upstream_source, str) or not upstream_source.strip():
+            raise MissingFieldError(
+                f"adapter '{self.ADAPTER_ID}' requires upstream field 'source' "
+                "to be a non-empty string."
+            )
+        source_metadata: dict[str, Any] = {
+            "mix01_component": "ultrax_ultrafineweb",
+            "config_name": self.CONFIG_NAME,
+            "uid": uid,
+            "upstream_source": upstream_source,
+            "language_provenance": (
+                "UltraX-Ultra-FineWeb treatment is documented as English; "
+                "no row-level language field exists; "
+                "downstream language cleaning still applies"
+            ),
+            "license_provenance": (
+                "Dataset-level license pending operator probe receipt; "
+                "UltraX is derived from source corpora and users must check "
+                "applicable source-dataset licenses."
+            ),
+        }
+        if "processed_functions" in record and record["processed_functions"] is not None:
+            functions = record["processed_functions"]
+            if not isinstance(functions, str):
+                raise MissingFieldError(
+                    f"adapter '{self.ADAPTER_ID}' requires upstream field "
+                    "'processed_functions' to be a string when present."
+                )
+            source_metadata["processed_functions"] = functions
+        return _canonical_doc(
+            doc_id=canonical_source_doc_id("ultrax_ultrafineweb", source_file, source_row),
+            source_id=self.SOURCE_ID,
+            source_revision=source_revision,
+            source_file=source_file,
+            source_row=source_row,
+            text=cleaned,
+            language="en",
+            document_kind="prose",
+            license_reference="unknown",
+            source_metadata=source_metadata,
+        )
+
+
 class SynthExplanationsAdapter:
     """English SYNTH question-answer pairs with required source context.
 
@@ -1346,6 +1467,7 @@ class Txt360WebAdapter:
 ADAPTERS_BY_ID = {
     EssentialWebAdapter.ADAPTER_ID: EssentialWebAdapter,
     NemotronOrganicAdapter.ADAPTER_ID: NemotronOrganicAdapter,
+    UltraXUltraFineWebAdapter.ADAPTER_ID: UltraXUltraFineWebAdapter,
     SynthExplanationsAdapter.ADAPTER_ID: SynthExplanationsAdapter,
     WikiRewriteAdapter.ADAPTER_ID: WikiRewriteAdapter,
     FineWikiAdapter.ADAPTER_ID: FineWikiAdapter,

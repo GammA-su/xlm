@@ -208,6 +208,13 @@ def test_adapter_column_contracts() -> None:
         "text",
         "quality_category",
     )
+    assert columns_for("ultrax_ultrafineweb") == (
+        "uid",
+        "cleaned_content",
+        "source",
+        "processed_functions",
+    )
+    assert "raw_content" not in columns_for("ultrax_ultrafineweb")
     assert columns_for("wiki_rewrite") == ("text", "license", "metadata", "uuid")
     assert columns_for("ifm_general") == ("text", "token_count")
     assert columns_for("common_pile") == ("text",)

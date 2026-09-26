@@ -32,15 +32,16 @@ def test_twenty_source_catalog_parsing_and_integrity() -> None:
     assert catalog.status == "discovery_only"
     assert catalog.silent_fallback_allowed is False
 
-    # Check that shortlist candidate fixture has exactly 20 candidates
-    assert len(catalog.sources) == 20
+    # Check that the shortlist candidate catalog has exactly 21 candidates
+    # (20 historical + ultrax_ultrafineweb).
+    assert len(catalog.sources) == 21
 
     # Ensure all source IDs and candidate numbers are strictly unique
     source_ids = [src.source_id for src in catalog.sources]
     candidate_numbers = [src.candidate_number for src in catalog.sources]
-    assert len(set(source_ids)) == 20
-    assert len(set(candidate_numbers)) == 20
-    assert sorted(candidate_numbers) == list(range(1, 21))
+    assert len(set(source_ids)) == 21
+    assert len(set(candidate_numbers)) == 21
+    assert sorted(candidate_numbers) == list(range(1, 22))
 
     # All production approvals must initially remain False
     for src in catalog.sources:

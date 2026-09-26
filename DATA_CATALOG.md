@@ -32,7 +32,7 @@ The catalog in `manifests/datasets.catalog.yaml` is JSON-compatible YAML for una
 Source-family weights must be decomposed into explicit exclusive views. The initial recipe uses:
 
 - `essential_science`, `essential_practical`, `essential_prose`: selectors mapped to verified Essential-Web taxonomy/quality values; unknown values do not pass silently.
-- `nemotron_organic_high`, `nemotron_organic_medium_high`: the appropriate organic metadata categories, not synthetic/translated siblings.
+- `ultrax_ultrafineweb`: the verified UltraX-Ultra-FineWeb config; training text is `cleaned_content` verbatim, never `raw_content`; empty `cleaned_content` (`remove_all`) is a counted drop.
 - `finepdfs_en`: coherent English extracted educational prose, with broken/context-dependent records filtered.
 - `synth_en_explanations`: exact verified structured rendering with necessary supplied context and final explanation; long-reasoning inclusion is a separate treatment.
 - `nemotron_wiki_rewrite`: only the verified Wikipedia-rewrite component.

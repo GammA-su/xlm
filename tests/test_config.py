@@ -227,7 +227,9 @@ def test_supplied_preset_recipes_validity() -> None:
     mix_data = composer.compose(mix01)
     mix_cfg = MixtureConfig.model_validate(mix_data)
     assert mix_cfg.id == "mix01"
-    assert mix_cfg.weights["nemotron_organic_high"] == 0.15
+    assert mix_cfg.weights["ultrax_ultrafineweb"] == 0.20
+    assert "nemotron_organic_high" not in mix_cfg.weights
+    assert "nemotron_organic_medium_high" not in mix_cfg.weights
 
 
 def test_canonical_hashing_and_granularity() -> None:

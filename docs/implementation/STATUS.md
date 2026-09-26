@@ -1,5 +1,18 @@
 # Implementation status
 
+> **MIX01-ULTRAX-6B (2026-09-26): IMPLEMENTED + FOCUSED-VERIFIED; READY FOR
+> OPERATOR ULTRAX PROBE.** Branch `data/mix01-ultrax-6b` from `d7942ba`.
+> Nemotron-CC organic 20% replaced by `ultrax_ultrafineweb` 20% (11 Mix-01
+> components; preset `mix01` identity `d670bd3a…` → `6e1e4e9a…`, registry
+> `mix01_views_v1` → `v2`); `nemotron_wiki_rewrite` kept. New
+> `UltraXUltraFineWebAdapter` (cleaned-only, remove_all counted drop, no raw
+> fallback), authored fixtures/certification, 6B/6.6B/32M quota file, bounded
+> operator probe/freeze/order scripts, exact PowerShell runbook. Focused
+> offline tests + ruff + scoped mypy green (no network, no real data). NO
+> live acquisition/preparation/tokenizer/pilot/training by the agent. See
+> [MIX01-ULTRAX-6B](reports/MIX01-ULTRAX-6B.md). Next: USER runs the tiny
+> UltraX probe, freezes the exact SHA, and performs first-pass acquisition.
+>
 > Latest local review: **ASTRA INDEPENDENT REVIEW + LOCAL CUDA CERTIFICATION**
 > (2026-09-26), **SAFE AFTER SPECIFIC FIXES**. Pilot-critical repairs implemented
 > and verified; receipt-disabled pilot software is safe to integrate. Formal

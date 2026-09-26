@@ -12,7 +12,7 @@
 # adapter-cert-essential-web01). Nothing here authorizes a production run.
 schema_version: 1
 kind: mix01_view_registry
-registry_id: mix01_views_v1
+registry_id: mix01_views_v2
 views:
   - component_id: essential_science
     source_id: essential_web
@@ -74,56 +74,28 @@ views:
       - "Certified against 3 real pinned rows (offline sample adapter-cert-essential-web01)."
       - "Flat taxonomy/quality_tier fields do not exist upstream and were removed."
 
-  - component_id: nemotron_organic_high
-    source_id: nemotron_cc21
-    repository: nvidia/Nemotron-CC-v2.1
-    observed_revision: ba6f2aaef7ada865bb08fc08640ca292150097db
-    observed_license: other
+  - component_id: ultrax_ultrafineweb
+    source_id: ultrax_ultrafineweb
+    repository: openbmb/UltraX-Preview
+    observed_revision: null
+    observed_license: null
     observed_configs:
-      - High-Quality
-      - Medium-High-Quality
-      - Medium-Quality
-      - High-Quality-Translated-To-English
-      - Medium-High-Quality-Translated-To-English
-      - High-Quality-Synthetic
-      - Medium-High-Quality-Synthetic
-      - High-Quality-DQA
-      - High-Quality-Translated-To-English-Synthetic
-    adapter_id: nemotron_organic
+      - UltraX-Ultra-FineWeb
+    adapter_id: ultrax_ultrafineweb
     upstream_selector:
-      description: "Organic High-Quality config ONLY; synthetic variants excluded."
-      config_name: High-Quality
-      exclude_configs_matching: "*-Synthetic"
+      description: "UltraX-Ultra-FineWeb config ONLY; training text is cleaned_content verbatim, never raw_content."
+      config_name: UltraX-Ultra-FineWeb
+      required_fields:
+        - uid
+        - cleaned_content
+        - source
     english_only: true
     live_verified: false
     notes:
-      - "Repository is GATED (license 'other'); operator terms agreement required."
-      - "Organic/synthetic separation is by exact config name, not by sampling."
-
-  - component_id: nemotron_organic_medium_high
-    source_id: nemotron_cc21
-    repository: nvidia/Nemotron-CC-v2.1
-    observed_revision: ba6f2aaef7ada865bb08fc08640ca292150097db
-    observed_license: other
-    observed_configs:
-      - High-Quality
-      - Medium-High-Quality
-      - Medium-Quality
-      - High-Quality-Translated-To-English
-      - Medium-High-Quality-Translated-To-English
-      - High-Quality-Synthetic
-      - Medium-High-Quality-Synthetic
-      - High-Quality-DQA
-      - High-Quality-Translated-To-English-Synthetic
-    adapter_id: nemotron_organic
-    upstream_selector:
-      description: "Organic Medium-High-Quality config ONLY; synthetic variants excluded."
-      config_name: Medium-High-Quality
-      exclude_configs_matching: "*-Synthetic"
-    english_only: true
-    live_verified: false
-    notes:
-      - "Repository is GATED (license 'other'); operator terms agreement required."
+      - "Probe target is openbmb/UltraX-Preview; the README alias openbmb/UltraX must be resolved explicitly by the operator probe, never silently chosen."
+      - "observed_revision is null until the operator schema probe freezes an exact commit SHA; unpinned revisions never run."
+      - "observed_license is null until the probe receipt records the published license; UltraX is derived from source corpora and users must check applicable source-dataset licenses."
+      - "raw_content is never training input and is never copied into canonical output; empty cleaned_content (remove_all) is a counted policy drop, not a raw_content fallback."
 
   - component_id: finepdfs_en
     source_id: finepdfs_edu

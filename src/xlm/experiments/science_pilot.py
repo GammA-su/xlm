@@ -48,13 +48,12 @@ P35_PILOT = "p35_w_32m_pilot"
 AUTHORED_PILOT = "authored_fixture"
 GIB = 1024**3
 
-#: §M anchor mix01: the 12 admitted M0 components the pilot requires.
+#: §M anchor mix01: the 11 admitted M0 components the pilot requires.
 M0_COMPONENTS = (
     "essential_science",
     "essential_practical",
     "essential_prose",
-    "nemotron_organic_high",
-    "nemotron_organic_medium_high",
+    "ultrax_ultrafineweb",
     "finepdfs_en",
     "synth_en_explanations",
     "nemotron_wiki_rewrite",

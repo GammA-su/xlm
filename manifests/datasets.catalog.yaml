@@ -365,6 +365,25 @@
       "operator_approved": false,
       "live_pilot_verified": false,
       "notes": "Optional pretokenized challenger; review use terms and original tokenization before retokenizing."
+    },
+    {
+      "candidate_number": 21,
+      "source_id": "ultrax_ultrafineweb",
+      "provider": "huggingface",
+      "repository": "openbmb/UltraX-Preview",
+      "revision": null,
+      "subset_hints": [
+        "UltraX-Ultra-FineWeb"
+      ],
+      "actual_split": null,
+      "selected_files": [],
+      "schema_fingerprint": null,
+      "adapter_id": "ultrax_ultrafineweb",
+      "license_review": "pending",
+      "provenance_review": "pending",
+      "operator_approved": false,
+      "live_pilot_verified": false,
+      "notes": "Active Mix-01 20% web component (config UltraX-Ultra-FineWeb). Alias openbmb/UltraX must be resolved explicitly by the operator probe, never silently chosen. Revision null until the bounded schema probe freezes an exact commit SHA. UltraX is derived from source corpora; users must check applicable source-dataset licenses."
     }
   ]
 }

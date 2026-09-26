@@ -34,6 +34,7 @@ from xlm.data.adapters.mix01_adapters import (
     SimpleStoriesAdapter,
     SynthExplanationsAdapter,
     Txt360WebAdapter,
+    UltraXUltraFineWebAdapter,
     WikiRewriteAdapter,
 )
 from xlm.data.adapters.source_ids import canonical_source_doc_id
@@ -87,6 +88,7 @@ def adapt_all() -> list[CanonicalDocument]:
     plans: list[tuple[str, object]] = [
         ("nemotron_organic.jsonl", NemotronOrganicAdapter("High-Quality")),
         ("nemotron_organic.jsonl", NemotronOrganicAdapter("Medium-High-Quality")),
+        ("ultrax_ultrafineweb.jsonl", UltraXUltraFineWebAdapter()),
         ("synth_en.jsonl", SynthExplanationsAdapter()),
         ("wiki_rewrite.jsonl", WikiRewriteAdapter()),
         ("finewiki_en.jsonl", FineWikiAdapter()),
@@ -199,11 +201,10 @@ def test_m0_m5_treatment_diffs_match_pack_intent() -> None:
 
     pdfs = diff_presets(base, load_mixture_preset(PRESET_DIR / "m3_more_pdfs.yaml"))
     assert pdfs.weight_delta("finepdfs_en") == pytest.approx(0.10)
-    assert pdfs.weight_delta("nemotron_organic_high") == pytest.approx(-0.075)
-    assert pdfs.weight_delta("nemotron_organic_medium_high") == pytest.approx(-0.025)
+    assert pdfs.weight_delta("ultrax_ultrafineweb") == pytest.approx(-0.10)
 
     web = diff_presets(base, load_mixture_preset(PRESET_DIR / "m4_txt360_web.yaml"))
-    assert web.removed == {"nemotron_organic_high": 0.15, "nemotron_organic_medium_high": 0.05}
+    assert web.removed == {"ultrax_ultrafineweb": 0.2}
     assert web.added == {"txt360_web": 0.2}
     assert web.changed == {}
 
@@ -249,7 +250,7 @@ def test_unknown_component_blocks_without_fallback() -> None:
 
 def test_registry_loads_and_covers_every_preset_component() -> None:
     registry = load_mix01_views(VIEWS_PATH)
-    assert len(registry.views) == 13
+    assert len(registry.views) == 12
     declared = {v.component_id for v in registry.views}
     for filename in PRESET_FILES:
         preset = load_mixture_preset(PRESET_DIR / filename)
@@ -262,14 +263,11 @@ def test_registry_selectors_use_observed_upstream_names() -> None:
     registry = load_mix01_views(VIEWS_PATH)
     by_id = {v.component_id: v for v in registry.views}
 
-    assert by_id["nemotron_organic_high"].upstream_selector["config_name"] == "High-Quality"
-    assert (
-        by_id["nemotron_organic_medium_high"].upstream_selector["config_name"]
-        == "Medium-High-Quality"
-    )
-    for view_id in ("nemotron_organic_high", "nemotron_organic_medium_high"):
-        assert "High-Quality" in by_id[view_id].observed_configs
-        assert "High-Quality-Synthetic" in by_id[view_id].observed_configs
+    assert by_id["ultrax_ultrafineweb"].upstream_selector["config_name"] == ("UltraX-Ultra-FineWeb")
+    assert "UltraX-Ultra-FineWeb" in by_id["ultrax_ultrafineweb"].observed_configs
+    assert by_id["ultrax_ultrafineweb"].adapter_id == "ultrax_ultrafineweb"
+    assert "nemotron_organic_high" not in by_id
+    assert "nemotron_organic_medium_high" not in by_id
     assert by_id["nemotron_wiki_rewrite"].upstream_selector["config_name"] == (
         "Nemotron-Pretraining-Wiki-Rewrite"
     )
@@ -287,15 +285,17 @@ def test_view_selectors_are_nonempty_over_adapted_fixtures() -> None:
     """Every mix01 selector must match real adapted rows; an empty view blocks the run."""
     registry = load_mix01_views(VIEWS_PATH)
     docs = adapt_all()
-    # 21: the finewiki fixture carries two adaptable rows (live H1 shape plus
+    # 25: the finewiki fixture carries two adaptable rows (live H1 shape plus
     # one legacy no-heading shape), each ifm fixture two (declared
     # token_count plus one bare-text row), the finepdfs fixture two (a
     # valid Docling row plus a mixed-language eng_Latn Docling row that the
     # routing label still accepts), the synth fixture two accepted English
-    # rows (a third German row is policy-rejected), and the essential_web
-    # fixture three real-shaped rows cycled across the three explicit slice
-    # components; every other count is unchanged.
-    assert len(docs) == 21
+    # rows (a third German row is policy-rejected), the ultrax fixture four
+    # accepted rows (keep_all, edited, unicode and very-long; the empty
+    # cleaned_content row is a counted remove_all drop), and the
+    # essential_web fixture three real-shaped rows cycled across the three
+    # explicit slice components; every other count is unchanged.
+    assert len(docs) == 25
 
     membership = resolve_view_membership(docs, build_source_views(registry))
     for view in registry.views:
@@ -678,6 +678,7 @@ def test_adapter_contracts_detect_missing_fields() -> None:
     cases = [
         ("essential_web.jsonl", EssentialWebAdapter("essential_science")),
         ("nemotron_organic.jsonl", NemotronOrganicAdapter("High-Quality")),
+        ("ultrax_ultrafineweb.jsonl", UltraXUltraFineWebAdapter()),
         ("synth_en.jsonl", SynthExplanationsAdapter()),
         ("wiki_rewrite.jsonl", WikiRewriteAdapter()),
         ("finewiki_en.jsonl", FineWikiAdapter()),
@@ -748,7 +749,7 @@ def test_m4_txt360_variant_blocks_until_its_view_is_admitted() -> None:
 def test_status_reports_not_live_verified_without_evidence() -> None:
     registry = load_mix01_views(VIEWS_PATH)
     report = mix01_status(registry)
-    assert len(report) == 13
+    assert len(report) == 12
     for status in report:
         assert status.readiness is ComponentReadiness.NOT_LIVE_VERIFIED
         assert status.reasons

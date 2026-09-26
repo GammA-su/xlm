@@ -43,6 +43,12 @@ ADAPTER_COLUMN_CONTRACTS: dict[tuple[str, str | None], tuple[str, ...]] = {
     ),
     ("nemotron_organic", "High-Quality"): ("text", "quality_category"),
     ("nemotron_organic", "Medium-High-Quality"): ("text", "quality_category"),
+    ("ultrax_ultrafineweb", None): (
+        "uid",
+        "cleaned_content",
+        "source",
+        "processed_functions",
+    ),
     ("synth_en", None): (
         "synth_id",
         "language",

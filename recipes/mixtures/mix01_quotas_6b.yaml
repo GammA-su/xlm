@@ -1,0 +1,62 @@
+# Mix-01 6B availability quotas (data-only; validated by tests/test_mix01_quotas_6b.py).
+#
+# FINAL target = 6,000,000,000 exact XLM valid training tokens, counted by the
+# frozen 32,768-token tokenizer. Per-source FINAL quotas are weight * 6B.
+# FIRST-PASS headroom = 110% of FINAL (estimated usable tokens, NOT exact XLM
+# tokens): acquire first-pass material, canonicalize/clean, freeze the
+# tokenizer fit input, train/freeze the tokenizer, tokenize/count exact XLM
+# tokens, then top up ONLY deficient sources. Never silently renormalize.
+# PILOT view = 32,000,000 exact XLM tokens (weight * 32M) as a separately
+# identified exposure view bound to the pilot, never the full 6B payload.
+# The 2 GiB frozen-input cap is unchanged.
+schema_version: 1
+kind: mix01_token_quotas
+quota_id: mix01_6b_v1
+mixture_preset: mix01
+mixture_registry: mix01_views_v2
+tokenizer_vocab_size: 32768
+final_valid_targets: 6000000000
+first_pass_headroom_ratio: 1.1
+pilot_valid_targets: 32000000
+final_quotas:
+  essential_science: 600000000
+  essential_practical: 600000000
+  essential_prose: 300000000
+  ultrax_ultrafineweb: 1200000000
+  finepdfs_en: 900000000
+  synth_en_explanations: 900000000
+  nemotron_wiki_rewrite: 480000000
+  finewiki_en: 300000000
+  ifm_behaviors_general_planning: 300000000
+  common_pile_prose: 300000000
+  simple_stories: 120000000
+first_pass_headroom_quotas:
+  essential_science: 660000000
+  essential_practical: 660000000
+  essential_prose: 330000000
+  ultrax_ultrafineweb: 1320000000
+  finepdfs_en: 990000000
+  synth_en_explanations: 990000000
+  nemotron_wiki_rewrite: 528000000
+  finewiki_en: 330000000
+  ifm_behaviors_general_planning: 330000000
+  common_pile_prose: 330000000
+  simple_stories: 132000000
+pilot_quotas:
+  essential_science: 3200000
+  essential_practical: 3200000
+  essential_prose: 1600000
+  ultrax_ultrafineweb: 6400000
+  finepdfs_en: 4800000
+  synth_en_explanations: 4800000
+  nemotron_wiki_rewrite: 2560000
+  finewiki_en: 1600000
+  ifm_behaviors_general_planning: 1600000
+  common_pile_prose: 1600000
+  simple_stories: 640000
+notes:
+  - "FINAL quotas are exact XLM valid training tokens under the frozen tokenizer, not publisher estimates and not knowable at RAW acquisition time."
+  - "FIRST-PASS quotas are 110% estimated usable headroom (~6.6B total), not permission to call 6.6B exact XLM tokens."
+  - "Top up ONLY deficient sources after exact counting; a deficient source is never silently renormalized."
+  - "The 32M pilot binds a separately identified 32M token-shard/exposure view with lineage to the same source/pool artifacts, never the 6B payload."
+  - "Frozen-input cap unchanged: 2 GiB per shard and 2 GiB aggregate; the 6B uint16 payload (~12 GB) cannot bind the pilot."

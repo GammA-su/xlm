@@ -3,7 +3,7 @@
   "kind": "mixture_preset",
   "id": "m4_txt360_web",
   "status": "draft_unvalidated",
-  "description": "M4: replace organic Nemotron 20% with verified TxT360 web",
+  "description": "M4: replace UltraX 20% with verified TxT360 web",
   "weight_unit": "valid_target_tokens",
   "weights": {
     "essential_science": 0.1,
