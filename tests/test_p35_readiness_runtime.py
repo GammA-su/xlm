@@ -7,6 +7,7 @@ here measures quality or runs the pilot.
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any
 
@@ -306,3 +307,108 @@ def test_disabled_endpoint_policy_keeps_m3_success_semantics(tmp_path: Path) -> 
     assert summary.termination_reason == "completed"
     assert not trainer.evaluation.completeness().complete
     assert attempts(trainer, f"search_benchmark@{BUDGET}") == [(1, "failed")]
+
+
+# ------------------------------------------------- update payload receipts
+
+
+def payload_trainer(
+    root: Path, *, group: int | None = None, milestones: list[int] | None = None
+) -> Any:
+    from p35_eval_support import default_tokens
+    from xlm.data.sampling.update_payload import UpdatePayloadChain
+    from xlm.evaluation.cadence import build_checkpoint_plan
+    from xlm.training.data import TrainingBatcher
+
+    trainer = build_trainer(
+        root,
+        budget=BUDGET,
+        checkpoint_plan=build_checkpoint_plan(
+            AUTHORED_FIXTURE,
+            BUDGET,
+            fixture_milestones=milestones or [0, 16, BUDGET],
+            fixture_recovery=[],
+        ),  # fmt: skip
+        run_id="pay_run",
+    )
+    if group is not None:
+        trainer.batcher = TrainingBatcher(
+            default_tokens(BUDGET),
+            context_length=8,
+            global_batch_valid_targets=16,
+            microbatch_sequences=group,
+        )
+    trainer.science.update_payloads = UpdatePayloadChain()
+    return trainer
+
+
+def test_committed_updates_and_only_those_enter_the_chain(tmp_path: Path) -> None:
+    trainer = payload_trainer(tmp_path)
+    run_all(trainer)
+    chain = trainer.science.update_payloads
+    assert [r[:3] for r in chain.rows] == [r[:3] for r in trainer.science.lr_receipts]
+    saved = json.loads(
+        (Path(trainer.checkpoints.checkpoint_dir(trainer.checkpoints.ledger.last_good().artifact_id))
+         / "science.json").read_text()
+    )  # fmt: skip
+    assert saved["update_payloads"]["head"] == chain.head
+
+
+def test_a_failed_optimizer_update_never_becomes_payload_evidence(tmp_path: Path) -> None:
+    trainer = payload_trainer(tmp_path)
+    assert trainer.train_step() is not None
+    original = trainer.optimizer.step
+
+    def boom(*args: Any, **kwargs: Any) -> Any:
+        raise RuntimeError("authored optimizer failure")
+
+    trainer.optimizer.step = boom
+    with pytest.raises(RuntimeError, match="authored optimizer failure"):
+        trainer.train_step()
+    trainer.optimizer.step = original
+    chain = trainer.science.update_payloads
+    assert len(chain.rows) == 1 and chain._staged is None
+
+
+def test_resume_restores_the_chain_and_matches_the_uninterrupted_run(tmp_path: Path) -> None:
+    uninterrupted = payload_trainer(tmp_path / "a")
+    run_all(uninterrupted)
+    first = payload_trainer(tmp_path / "b")
+    while first.committed_valid_targets < 16:
+        first.train_step()
+    root = Path(first.checkpoint_manager.store.paths.root) / "checkpoints"
+    [t16] = [p for p in root.iterdir() if "-t16-" in p.name]
+    resumed = payload_trainer(tmp_path / "b")
+    reload(resumed, t16)
+    assert len(resumed.science.update_payloads.rows) == 1
+    run_all(resumed)
+    assert (
+        resumed.science.update_payloads.to_dict() == uninterrupted.science.update_payloads.to_dict()
+    )
+
+
+def test_resume_without_the_receipt_declaration_is_refused(tmp_path: Path) -> None:
+    from xlm.training.checkpoint import IncompatibleCheckpointError
+
+    first = payload_trainer(tmp_path)
+    while first.committed_valid_targets < 16:
+        first.train_step()
+    root = Path(first.checkpoint_manager.store.paths.root) / "checkpoints"
+    [t16] = [p for p in root.iterdir() if "-t16-" in p.name]
+    other = payload_trainer(tmp_path)
+    other.science.update_payloads = None
+    before = {k: v.clone() for k, v in other.model.state_dict().items()}
+    with pytest.raises(IncompatibleCheckpointError, match="update payload receipt presence"):
+        reload(other, t16)
+    assert all(torch.equal(before[k], v) for k, v in other.model.state_dict().items())
+
+
+def test_microbatch_grouping_does_not_change_the_trainer_chain(tmp_path: Path) -> None:
+    heads = set()
+    weights = []
+    for group in (1, 2):
+        trainer = payload_trainer(tmp_path / f"g{group}", group=group)
+        run_all(trainer)
+        heads.add(trainer.science.update_payloads.head)
+        weights.append({k: v.clone() for k, v in trainer.model.state_dict().items()})
+    assert len(heads) == 1

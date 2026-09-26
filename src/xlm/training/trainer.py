@@ -356,6 +356,8 @@ class Trainer:
         burning the budget on skipped updates forever.
         """
         self.batcher.rollback()
+        if self.science.update_payloads is not None:
+            self.science.update_payloads.discard()  # skipped: never committed evidence
         self.optimizer.zero_grad()
         if self.scaler is not None:
             self.scaler.update()
@@ -436,6 +438,9 @@ class Trainer:
         try:
             metrics = self._train_step()
         except BaseException:
+            if self.science.update_payloads is not None:
+                # A failed or in-doubt update never becomes committed payload evidence.
+                self.science.update_payloads.discard()
             try:
                 self.batcher.rollback()
             except Exception:
@@ -507,6 +512,26 @@ class Trainer:
         endpoint_lr: float | None = None
         if self.science.policy.endpoint_lr:
             endpoint_lr = self.schedule.get_lr(committed_before + n_global)
+
+        # Pilot readiness: canonical global-update payload receipt, hashed from the
+        # CPU representation before any device transfer; staged now, committed
+        # only with the data cursor (a failed or in-doubt update never enters it).
+        payloads = self.science.update_payloads
+        if payloads is not None:
+            from xlm.data.sampling.update_payload import canonical_update
+
+            canonical = canonical_update(self.batcher, microbatches)
+            if canonical.valid_targets != n_global:
+                raise TrainerError(
+                    f"update payload binds {canonical.valid_targets} valid targets, the "
+                    f"update has {n_global}"
+                )
+            payloads.stage(
+                step=self.step + 1,
+                committed_before=committed_before,
+                valid_targets=n_global,
+                payload=canonical.digest(),
+            )
 
         # 3. Accumulate gradients across microbatches
         accumulated_loss = 0.0
@@ -670,6 +695,8 @@ class Trainer:
         if receipt is not None:
             # Only a committed update publishes an LR receipt.
             self.science.record_lr(receipt)
+        if payloads is not None:
+            payloads.commit()  # the same committed boundary as the LR receipt
         if self.evaluation is not None:
             # First crossing at this committed C; recorded before any periodic
             # checkpoint so that checkpoint knows the state still owes events.

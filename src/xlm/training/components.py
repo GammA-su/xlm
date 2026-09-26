@@ -227,6 +227,14 @@ def construct_training_components(
     }
     construction["identity"] = identity_digest(construction)
     science = ScientificState(ScientificPolicy.from_training(training))
+    if training.get("update_payload_receipt") is not None:
+        from xlm.data.sampling.update_payload import PAYLOAD_VERSION, UpdatePayloadChain
+
+        if training["update_payload_receipt"] != PAYLOAD_VERSION:
+            raise ValueError(
+                f"unknown update payload receipt {training['update_payload_receipt']!r}"
+            )
+        science.update_payloads = UpdatePayloadChain()
     recoverability = None
     if training.get("evaluation_recoverability") is not None:
         from xlm.evaluation.recoverability import RecoverabilityPolicy

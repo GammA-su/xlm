@@ -458,6 +458,13 @@ class CheckpointManager:
                 science._saved_checkpoints(saved_science)
             except ScientificPolicyError as exc:
                 raise IncompatibleCheckpointError(str(exc)) from exc
+        if science is not None and saved_science is not None and saved_policy == current_policy:
+            # Update payload receipt chain (pilot readiness): presence and every link,
+            # before any state is restored; forks keep the data lineage, so they too.
+            try:
+                science._saved_update_payloads(saved_science)
+            except ScientificPolicyError as exc:
+                raise IncompatibleCheckpointError(str(exc)) from exc
 
         # 2c. Document-order identity (P35 M5), before any state is restored. Forks
         # keep the data lineage, so they require the identical order as well.

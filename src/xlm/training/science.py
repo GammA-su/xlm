@@ -27,6 +27,7 @@ from xlm.config.science import (
 )
 
 if TYPE_CHECKING:
+    from xlm.data.sampling.update_payload import UpdatePayloadChain
     from xlm.evaluation.receipts import EvaluationLedger
     from xlm.training.milestones import CheckpointLedger
 
@@ -108,6 +109,9 @@ class ScientificState:
         # Science-v1 checkpoint events (P35 M3); ``None`` when no checkpoint cadence
         # is declared, which keeps M1/M2 ``science.json`` files byte-identical.
         self.checkpoints: CheckpointLedger | None = None
+        # Pilot readiness: committed global-update payload receipt chain; ``None``
+        # unless ``training.update_payload_receipt`` is declared (M1-M5 bytes unchanged).
+        self.update_payloads: UpdatePayloadChain | None = None
 
     def record_lr(self, receipt: list[Any]) -> None:
         if len(self.lr_receipts) >= MAX_LR_RECEIPTS:
@@ -131,7 +135,33 @@ class ScientificState:
             payload["evaluation"] = self.evaluation.to_dict()
         if self.checkpoints is not None:
             payload["checkpoints"] = self.checkpoints.to_dict()
+        if self.update_payloads is not None:
+            payload["update_payloads"] = self.update_payloads.to_dict()
         return payload
+
+    def _saved_update_payloads(self, saved: Mapping[str, Any]) -> UpdatePayloadChain | None:
+        """Parse and verify a saved update payload chain against this run's declaration."""
+        from xlm.data.sampling.update_payload import PayloadReceiptError, UpdatePayloadChain
+
+        raw = saved.get("update_payloads")
+        if (raw is None) != (self.update_payloads is None):
+            raise ScientificPolicyError(
+                "update payload receipt presence differs between checkpoint and run; a chain "
+                "cannot start mid-run or be dropped: resume refused"
+            )
+        if raw is None:
+            return None
+        try:
+            chain = UpdatePayloadChain.from_dict(raw)
+        except (PayloadReceiptError, KeyError, TypeError, ValueError) as exc:
+            raise ScientificPolicyError(f"unreadable update payload chain: {exc}") from exc
+        receipts = saved["lr_receipts"]["rows"]
+        lr_rows = [[int(r[0]), int(r[1]), int(r[2])] for r in receipts]
+        if [[int(r[0]), int(r[1]), int(r[2])] for r in chain.rows] != lr_rows:
+            raise ScientificPolicyError(
+                "update payload chain does not match the committed LR receipts update by update"
+            )
+        return chain
 
     def _saved_checkpoints(self, saved: Mapping[str, Any]) -> CheckpointLedger | None:
         """Parse and check a saved checkpoint-event ledger against this run's plan."""
@@ -198,6 +228,8 @@ class ScientificState:
             raise ScientificPolicyError("cannot restore into a run that already committed updates")
         ledger = None if fork else self._saved_evaluation(saved)
         checkpoint_ledger = None if fork else self._saved_checkpoints(saved)
+        # The payload chain is data lineage: ordinary resume and forks both adopt it.
+        payload_chain = self._saved_update_payloads(saved)
         self.train_start_rng = saved.get("train_start_rng")
         self.lr_receipts = [list(row) for row in receipts["rows"]]
         # Earlier attempts' observations first, then any made by this attempt
@@ -209,6 +241,8 @@ class ScientificState:
             self.evaluation = ledger
         if checkpoint_ledger is not None:
             self.checkpoints = checkpoint_ledger
+        if payload_chain is not None:
+            self.update_payloads = payload_chain
 
     def rebase_checkpoints(self, origin_committed_targets: int) -> None:
         """Start a forked run's fresh checkpoint plan at the fork's committed count."""
