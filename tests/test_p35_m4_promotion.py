@@ -18,8 +18,10 @@ from p35_m4_support import (
     run,
     superiority_manifest,
 )
+from p35_m5_support import synthetic_orders
 from xlm.comparison.curves import CurveError, fixed_linear_target_area
 from xlm.comparison.science_compare import compare_science
+from xlm.comparison.science_order import build_order_declaration
 from xlm.comparison.science_promotion import (
     CandidateEvidence,
     GuardrailOutcome,
@@ -57,17 +59,19 @@ def _compare(
 
 
 def _with_m5(manifest: dict[str, Any], *, promote: bool) -> dict[str, Any]:
-    """SIMULATED future M5 evidence slot: two independent order manifests (§H)."""
+    """M5 evidence slot from two authored independent order manifests (§H).
+
+    Since P35 M5 the slot is consumed and verified, not trusted: the declaration
+    is built by ``build_order_declaration`` over SYNTHETIC order headers, and
+    the roster carries the allocated order per tuple (C0/C2/C4 A, C1/C3 B).
+    """
     doc = copy.deepcopy(manifest)
-    for i, entry in enumerate(doc["replicate_roster"]):
-        entry["order_manifest_id"] = ORDER_A if i % 2 == 0 else ORDER_B
-    doc["order_robustness"] = {
-        "required": True,
-        "m5_order_evidence": {
-            "kind": "m5_independent_order_manifests_v1",
-            "order_manifest_ids": [ORDER_A, ORDER_B],
-        },
-    }
+    declaration = build_order_declaration(
+        synthetic_orders(), [e["tuple_id"] for e in doc["replicate_roster"]]
+    )
+    for entry in doc["replicate_roster"]:
+        entry["order_manifest_id"] = declaration["allocation"][entry["tuple_id"]]
+    doc["order_robustness"] = {"required": True, "m5_order_evidence": declaration}
     doc["scale_promotion"] = {
         "intent": promote,
         "prerequisite": doc["scale_promotion"]["prerequisite"],

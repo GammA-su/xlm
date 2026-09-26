@@ -26,7 +26,8 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import Any
 
-TRACK_TABLE_VERSION = "xlm-science-tracks-v1"
+#: v2 (P35 M5) adds ``canonical_membership_id`` (MUST_MATCH on every track).
+TRACK_TABLE_VERSION = "xlm-science-tracks-v2"
 
 
 class FieldClass(StrEnum):
@@ -50,6 +51,7 @@ SCIENTIFIC_FIELDS: dict[str, str] = {
     "data_seed": "source scheduling seed",
     "order_manifest_id": "independent within-source document-order manifest (M5)",
     "within_source_order_policy": "within-source document order policy",
+    "canonical_membership_id": "canonical train membership identity (M5; pre-M5 sentinel)",
     # data
     "tokenizer_identity": "tokenizer fingerprint bound at execution",
     "vocab_size": "model vocabulary size",

@@ -188,6 +188,7 @@
     "data_seed",
     "order_manifest_id",
     "within_source_order_policy",
+    "canonical_membership_id",
     "tokenizer_identity",
     "vocab_size",
     "mixture_scheduler",

@@ -154,10 +154,18 @@ def publish_run(
     coverage_complete: bool = True,
     canonical_rule: str = "first_complete_attempt_v1",
     tamper_receipt: bool = False,
+    config_order: dict[str, Any] | None = None,
+    state_order: dict[str, Any] | None = None,
 ) -> Path:
-    """Publish one AUTHORED science-v1-shaped endpoint checkpoint and its eval attempts."""
+    """Publish one AUTHORED science-v1-shaped endpoint checkpoint and its eval attempts.
+
+    ``config_order``/``state_order`` (P35 M5) are the pinned ``data.document_order``
+    and the committed data state's ``document_order`` receipt; ``None`` is pre-M5.
+    """
     store = ArtifactStore(ArtifactPaths(root=root))
     config = _config(seeds, microbatch, science=science)
+    if config_order is not None:
+        config["data"]["document_order"] = dict(config_order)
     code, dep = h("code"), h("lock")
     bindings = {
         "data": {"mixture": h("shards")},
@@ -347,6 +355,8 @@ def publish_run(
             }
         },
     }
+    if state_order is not None:
+        data_state["document_order"] = dict(state_order)
     meta = {
         "checkpoint_id": endpoint_id,
         "run_id": run_id,

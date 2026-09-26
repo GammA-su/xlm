@@ -87,6 +87,8 @@ class CandidateEvidence:
     efficiency_shown: bool | None
     efficiency_reason: str
     order_manifest_ids: Mapping[str, str]
+    #: Per complete tuple, the candidate run's canonical membership receipt (M5).
+    canonical_membership_ids: Mapping[str, str] | None = None
 
 
 @dataclass
@@ -107,15 +109,25 @@ class PromotionOutcome:
         }
 
 
-def order_robustness(manifest: Mapping[str, Any], order_ids: Mapping[str, str]) -> tuple[str, str]:
+def order_robustness(
+    manifest: Mapping[str, Any],
+    order_ids: Mapping[str, str],
+    membership_ids: Mapping[str, str] | None = None,
+) -> tuple[str, str]:
     """``(status, reason)`` of §H independent document-order evidence (the M5 slot).
 
     Satisfied only by M5 evidence of kind ``m5_independent_order_manifests_v1``
-    naming at least two distinct frozen order-manifest identities, **and** every
-    paired tuple actually carrying one of them (never the pre-M5 sentinel).
-    Different ``data_seed`` values only change source-scheduler tie order; they
-    are not independent within-source document orders and cannot satisfy this.
+    that **verifies** (P35 M5, ``science_order.declaration_problems``): >= 2
+    distinct, independently ordered manifest headers over one canonical
+    membership, allocated to the roster by the alternating policy (five 50M
+    tuples: C0/C2/C4 -> A, C1/C3 -> B). Every paired tuple must actually have run
+    under its allocated order (never the pre-M5 sentinel) on the declared
+    membership, per its extracted receipts. Different ``data_seed`` values only
+    change source-scheduler tie order; they are not independent within-source
+    document orders and cannot satisfy this.
     """
+    from xlm.comparison.science_order import declaration_problems, run_binding_problems
+
     slot = manifest["order_robustness"]
     if not slot["required"]:
         return "NOT_REQUIRED", "the manifest declares no order-robustness requirement"
@@ -136,13 +148,23 @@ def order_robustness(manifest: Mapping[str, Any], order_ids: Mapping[str, str]) 
     declared = evidence.get("order_manifest_ids")
     if not (isinstance(declared, list) and len(set(declared)) >= 2):
         return "BLOCKED", "M5 evidence must name at least two distinct order manifests"
+    problems = declaration_problems(evidence, manifest.get("replicate_roster"))
+    if problems:
+        return "BLOCKED", "M5 order evidence does not verify: " + "; ".join(problems)
     used = set(order_ids.values())
     if ORDER_SENTINEL in used or not used <= set(declared) or len(used) < 2:
         return (
             "BLOCKED",
             "the paired runs do not carry at least two declared independent order manifests",
         )
-    return "SATISFIED", f"paired tuples span {len(used)} independent order manifests"
+    problems = run_binding_problems(evidence, order_ids, membership_ids)
+    if problems:
+        return "BLOCKED", "run-to-order binding fails: " + "; ".join(problems)
+    return (
+        "SATISFIED",
+        f"paired tuples span {len(used)} independent within-source document orders over one "
+        "canonical membership",
+    )
 
 
 def evaluate_promotion_v1(
@@ -248,7 +270,9 @@ def evaluate_promotion_v1(
     if scale in ("150m", "300m"):
         requirements["direction_consistency"] = "SATISFIED"
 
-    order_status, order_reason = order_robustness(manifest, candidate.order_manifest_ids)
+    order_status, order_reason = order_robustness(
+        manifest, candidate.order_manifest_ids, candidate.canonical_membership_ids
+    )
     requirements["order_robustness"] = order_status
     if order_status == "BLOCKED":
         outcome.state = PromotionState.PROVISIONAL

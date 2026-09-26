@@ -51,6 +51,8 @@ ENDPOINT_TIERS = ("full_lm", "endpoint_confirmation")
 LM_TIERS = ("quick_lm", "full_lm", "endpoint_confirmation")
 BENCHMARK_TIERS = ("search_benchmark",)
 ORDER_SENTINEL = "shard_native_no_order_manifest"
+#: Pre-M5 runs bind no canonical train membership (P35 M5 evidence field).
+MEMBERSHIP_SENTINEL = "canonical_membership_not_bound_pre_m5"
 
 #: Frozen held-out LM primary metrics (§I). CE requires a fixed tokenizer; BPB is
 #: the designated cross-tokenizer quantity.

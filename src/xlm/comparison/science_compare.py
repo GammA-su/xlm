@@ -39,6 +39,7 @@ from xlm.comparison.curves import (
 from xlm.comparison.science_evidence import (
     EVIDENCE_VERSION,
     EvidenceError,
+    evidence_fields,
     verify_evidence_record,
 )
 from xlm.comparison.science_manifest import (
@@ -148,7 +149,7 @@ def _manifest_checks(
     manifest: Mapping[str, Any], evidence: Mapping[str, Any], arm: Mapping[str, Any]
 ) -> list[dict[str, Any]]:
     """Evidence values that contradict values frozen in the manifest."""
-    fields = evidence["fields"]
+    fields = evidence_fields(evidence)
     schedule = manifest["schedule"]
     schedule_config = (fields.get("schedule") or {}).get("config") or {}
     optimizer_config = (fields.get("optimizer") or {}).get("config") or {}
@@ -233,7 +234,7 @@ def _analyze_run(
             row["state"] = "invalid"
             row["reasons"].append(f"evidence does not verify: {exc}")
             return row
-        fields = evidence["fields"]
+        fields = evidence_fields(evidence)
         row.update(
             run_id=fields.get("run_id"),
             execution_hash=fields.get("execution_hash"),
@@ -738,6 +739,9 @@ def _candidate(
             )
     pair_improvements = stats.improvements if stats is not None else ()
     order_ids = {t: str(c["_fields"].get("order_manifest_id")) for t, c, _ in complete_pairs}
+    membership_ids = {
+        t: str(c["_fields"].get("canonical_membership_id")) for t, c, _ in complete_pairs
+    }
     promotion = evaluate_promotion_v1(
         manifest,
         validation.valid,
@@ -755,6 +759,7 @@ def _candidate(
             efficiency_shown=efficiency_shown,
             efficiency_reason=efficiency_reason,
             order_manifest_ids=order_ids,
+            canonical_membership_ids=membership_ids,
         ),
         prerequisite_state=prerequisite_state,
     )
@@ -870,7 +875,7 @@ def compare_science(
                 evidence_seen[digest] = entry.label
             run_rows.append(row)
             if row["tuple_id"] is not None and row["state"] != "failed":
-                row["_fields"] = entry.evidence["fields"] if entry.evidence else {}
+                row["_fields"] = evidence_fields(entry.evidence) if entry.evidence else {}
                 cells.setdefault((entry.arm_id, row["tuple_id"]), []).append(row)
             elif row["state"] == "invalid":
                 # Unknown arm, unverifiable evidence or an unregistered seed tuple:

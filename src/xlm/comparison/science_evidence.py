@@ -33,10 +33,13 @@ from typing import Any
 
 from xlm.artifacts.manifest import identity_digest
 from xlm.artifacts.store import ArtifactStore, compute_file_sha256
-from xlm.comparison.science_manifest import ORDER_SENTINEL
+from xlm.comparison.science_manifest import MEMBERSHIP_SENTINEL, ORDER_SENTINEL
 from xlm.core.paths import ArtifactPaths
 
-EVIDENCE_VERSION = "xlm-science-run-evidence-v1"
+#: v2 (P35 M5) adds ``canonical_membership_id`` and reads the order identity from
+#: receipts. v1 records (M4) stay verifiable and are read as pre-M5 evidence.
+EVIDENCE_VERSION = "xlm-science-run-evidence-v2"
+LEGACY_EVIDENCE_VERSIONS = ("xlm-science-run-evidence-v1",)
 SCIENCE_VERSION = "xlm-science-v1"
 #: M1/M2/M3 record versions this reader understands (read-only mirrors).
 M1_SCIENCE_STATE_VERSION = 1
@@ -46,9 +49,11 @@ M2_RECEIPT_VERSION = "xlm-eval-receipt-v1"
 M2_CANONICAL_RULE = "first_complete_attempt_v1"
 M2_MAX_ATTEMPT_NUMBER = 64
 M3_CHECKPOINT_LEDGER_VERSION = 1
-#: Before M5 no independent order manifest exists: within-source order is the
-#: prepared shard order, and ``data_seed`` changes only source scheduling.
+#: Without an M5 order manifest, within-source order is the prepared shard order,
+#: and ``data_seed`` changes only source scheduling.
 WITHIN_SOURCE_ORDER_POLICY = "shard_native_offset_order_v1"
+#: The M5 policy, mirrored from ``xlm.data.ordering.ORDER_POLICY`` (AST-checked).
+M5_ORDER_POLICY = "m5_within_source_document_permutation_v1"
 MAX_JSON_BYTES = 64 * 1024**2
 _SLUG = re.compile(r"[^A-Za-z0-9_.-]")
 
@@ -214,6 +219,38 @@ def _checkpoint_records(ledger: Mapping[str, Any]) -> list[Mapping[str, Any]]:
     return list(records)
 
 
+def _order_identity(config_order: Any, state_order: Any) -> tuple[str, str, str]:
+    """``(order_manifest_id, canonical_membership_id, policy)`` from the receipts.
+
+    The frozen envelope's pinned ``data.document_order`` and the committed data
+    state's ``document_order`` must agree. Both absent is a pre-M5 (shard-native)
+    run and yields the sentinels. Any disagreement is refused: an M5 receipt is
+    never silently replaced by the pre-M5 sentinel.
+    """
+    if config_order is None and state_order is None:
+        return ORDER_SENTINEL, MEMBERSHIP_SENTINEL, WITHIN_SOURCE_ORDER_POLICY
+    if not isinstance(config_order, Mapping) or not isinstance(state_order, Mapping):
+        raise EvidenceError(
+            "document order identity is inconsistent between the execution envelope and "
+            "the committed data state; refusing rather than substituting the pre-M5 sentinel"
+        )
+    order_id = state_order.get("order_manifest_id")
+    membership_id = state_order.get("canonical_membership_id")
+    if (
+        state_order.get("within_source_order_policy") != M5_ORDER_POLICY
+        or not isinstance(order_id, str)
+        or not re.fullmatch(r"[0-9a-f]{64}", order_id)
+        or not isinstance(membership_id, str)
+        or not re.fullmatch(r"[0-9a-f]{64}", membership_id)
+        or config_order.get("order_manifest_id") != order_id
+        or config_order.get("canonical_membership_id") != membership_id
+    ):
+        raise EvidenceError(
+            "document order receipt does not match the pinned execution order manifest"
+        )
+    return order_id, membership_id, M5_ORDER_POLICY
+
+
 def _update_boundaries(rows: list[list[Any]], committed: int) -> tuple[str, int]:
     """Digest of every committed update's (committed_before, valid_targets)."""
     position = 0
@@ -303,6 +340,10 @@ def extract_run_evidence(
         exhaustion = "single_source_input"
         packing = data.get("packing_policy") if isinstance(data, dict) else None
         scheduler = "single_source_input"
+    order_id, membership_id, order_policy = _order_identity(
+        data.get("document_order") if isinstance(data, dict) else None,
+        data_state.get("document_order"),
+    )
     counters = (data_state.get("scheduler") or {}).get("counters") or {}
     per_source = {
         source: {
@@ -371,8 +412,9 @@ def extract_run_evidence(
         "init_seed": training.get("init_seed"),
         "training_seed": training.get("training_seed"),
         "data_seed": training.get("data_seed"),
-        "order_manifest_id": ORDER_SENTINEL,
-        "within_source_order_policy": WITHIN_SOURCE_ORDER_POLICY,
+        "order_manifest_id": order_id,
+        "within_source_order_policy": order_policy,
+        "canonical_membership_id": membership_id,
         "tokenizer_identity": bindings.get("tokenizer"),
         "vocab_size": config["model"].get("vocab_size"),
         "data_input_identity": bindings.get("data"),
@@ -447,8 +489,25 @@ def extract_run_evidence(
 
 def verify_evidence_record(record: Mapping[str, Any]) -> None:
     """Refuse an evidence record whose digest or version does not verify."""
-    if record.get("evidence_version") != EVIDENCE_VERSION:
+    version = record.get("evidence_version")
+    if version != EVIDENCE_VERSION and version not in LEGACY_EVIDENCE_VERSIONS:
         raise EvidenceError(f"not a {EVIDENCE_VERSION} record")
     payload = {k: v for k, v in record.items() if k != "evidence_digest"}
     if record.get("evidence_digest") != identity_digest(payload):
         raise EvidenceError("evidence record digest does not verify (altered after extraction)")
+    if version in LEGACY_EVIDENCE_VERSIONS:
+        fields = record.get("fields") or {}
+        if fields.get("order_manifest_id") != ORDER_SENTINEL or "canonical_membership_id" in fields:
+            raise EvidenceError("a v1 (pre-M5) evidence record cannot carry M5 order identity")
+
+
+def evidence_fields(record: Mapping[str, Any]) -> dict[str, Any]:
+    """Scientific fields, read version-aware; the stored record is never rewritten.
+
+    A v1 (M4, pre-M5) record binds no membership: it reads as the pre-M5
+    membership sentinel, exactly as a pre-M5 checkpoint extracts today.
+    """
+    fields = dict(record["fields"])
+    if record.get("evidence_version") in LEGACY_EVIDENCE_VERSIONS:
+        fields.setdefault("canonical_membership_id", MEMBERSHIP_SENTINEL)
+    return fields

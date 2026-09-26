@@ -2,7 +2,8 @@
 
 Every number here is SYNTHETIC: authored to exercise comparison logic, never a
 training, benchmark or timing result. Evidence records use the
-``xlm-science-run-evidence-v1`` shape produced by ``extract_run_evidence``;
+``xlm-science-run-evidence-v2`` shape (M5 adds the membership field) produced by
+``extract_run_evidence``;
 ``tests/test_p35_m4_evidence.py`` separately derives that shape from authored
 checkpoint artifacts published through the real ``ArtifactStore``.
 """
@@ -17,7 +18,7 @@ from typing import Any
 from xlm.artifacts.manifest import identity_digest
 from xlm.comparison.science_compare import RunEntry
 from xlm.comparison.science_evidence import EVIDENCE_VERSION
-from xlm.comparison.science_manifest import ORDER_SENTINEL
+from xlm.comparison.science_manifest import MEMBERSHIP_SENTINEL, ORDER_SENTINEL
 
 SCREEN_BUDGET = 128_000_000
 FULL_BUDGET_50M = 1_000_000_000
@@ -120,6 +121,7 @@ def base_fields(
         "data_seed": seeds[2],
         "order_manifest_id": ORDER_SENTINEL,
         "within_source_order_policy": "shard_native_offset_order_v1",
+        "canonical_membership_id": MEMBERSHIP_SENTINEL,
         "tokenizer_identity": {"fingerprint": h("tokenizer-bpe-32768")},
         "vocab_size": 32768,
         "data_input_identity": {"pool": h("pool-m0")},
@@ -203,12 +205,18 @@ def make_evidence(
     at_budget: bool = True,
     endpoint_complete: bool = True,
     order_manifest_id: str = ORDER_SENTINEL,
+    canonical_membership_id: str | None = None,
 ) -> dict[str, Any]:
     """A SYNTHETIC evidence record in the extractor's shape."""
     fields = base_fields(
         run_id=run_id, seeds=seeds, budget=budget, microbatch=microbatch, components=components
     )
     fields["order_manifest_id"] = order_manifest_id
+    if order_manifest_id != ORDER_SENTINEL:
+        # An M5-ordered run carries its order's membership and the M5 policy.
+        assert canonical_membership_id is not None, "an M5 order needs its membership"
+        fields["canonical_membership_id"] = canonical_membership_id
+        fields["within_source_order_policy"] = "m5_within_source_document_permutation_v1"
     fields.update(copy.deepcopy(dict(overrides or {})))
     committed = fields["committed_targets"] if at_budget else budget // 2
     fields["committed_targets"] = committed
@@ -497,6 +505,15 @@ def superiority_manifest(
     return doc
 
 
+def declared_membership(manifest: Mapping[str, Any]) -> str | None:
+    """The membership an M5 order declaration names (runs under it train on it)."""
+    evidence = (manifest.get("order_robustness") or {}).get("m5_order_evidence")
+    if isinstance(evidence, Mapping):
+        value = evidence.get("canonical_membership_id")
+        return str(value) if value is not None else None
+    return None
+
+
 def mixture_pair_runs(
     manifest: Mapping[str, Any],
     control_values: Mapping[str, float],
@@ -526,6 +543,7 @@ def mixture_pair_runs(
                 endpoint_tier=tier,
                 overrides=overrides,
                 order_manifest_id=entry["order_manifest_id"],
+                canonical_membership_id=declared_membership(manifest),
             )
             runs.append(run(f"{arm}-{t}", arm, evidence))
     return runs
@@ -556,6 +574,7 @@ def microbatch_runs(
                 endpoint_tier=tier,
                 overrides=(overrides or {}).get(arm),
                 order_manifest_id=entry["order_manifest_id"],
+                canonical_membership_id=declared_membership(manifest),
             )
             runs.append(
                 run(
