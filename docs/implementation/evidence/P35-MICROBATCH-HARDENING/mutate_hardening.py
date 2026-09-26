@@ -6,7 +6,7 @@ defense. For each: a fresh ``git archive HEAD`` export, an exact single-anchor
 edit, ``py_compile``, ``xlm`` must import from the export, then the listed
 pytest nodes run with JUnit XML. KILLED only if pytest exits 1, every listed
 node FAILED (a failure element, never an error), and every failure message is a
-scientific assertion (``AssertionError``, ``DID NOT RAISE`` or a
+scientific assertion (``AssertionError``, a pytest-rewritten ``assert``, ``DID NOT RAISE`` or a
 ``pytest.raises`` message mismatch), never an import/syntax/type/name error. An
 unmutated control export must pass the union of all nodes first.
 """
@@ -32,7 +32,10 @@ PY = sys.executable
 H = "tests/test_p35_hardening_payload.py::"
 R = "tests/test_p35_hardening_runtime.py::"
 Y = "tests/test_p35_readiness_payload.py::"
-SCIENTIFIC_FAILURE = re.compile(r"^(AssertionError|Failed: DID NOT RAISE)|Regex pattern did not match")
+#: pytest reports a rewritten plain ``assert`` as "assert ..." (no class prefix).
+SCIENTIFIC_FAILURE = re.compile(
+    r"^(AssertionError|assert |Failed: DID NOT RAISE)|Regex pattern did not match"
+)
 
 MUTANTS = [
     {
@@ -169,7 +172,18 @@ def run_nodes(root: Path, nodes: list[str], tag: str) -> dict:
     ).stdout.strip()
     junit = root / f"junit-{tag}.xml"
     proc = subprocess.run(
-        [PY, "-m", "pytest", *nodes, "-n", "0", "-p", "no:cacheprovider", "-q", f"--junitxml={junit}"],
+        [
+            PY,
+            "-m",
+            "pytest",
+            *nodes,
+            "-n",
+            "0",
+            "-p",
+            "no:cacheprovider",
+            "-q",
+            f"--junitxml={junit}",
+        ],
         cwd=root,
         env=env,
         capture_output=True,

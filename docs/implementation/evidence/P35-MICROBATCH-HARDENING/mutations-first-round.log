@@ -1,0 +1,10 @@
+﻿control {'exit': 0, 'nodes': 27, 'passed': 27, 'xlm_from': 'D:\\Project\\xlm-p35-microbatch-hardening\\.hardening-scratch\\p35_hardening_mut_x3y2ojtz\\control\\src\\xlm\\__init__.py', 'tail': ['27 passed in 90.21s (0:01:30)']}
+1 KILLED 1 ['failed', 'failed', 'failed', 'failed', 'failed', 'failed', 'failed']
+2 KILLED 1 ['failed', 'failed', 'failed', 'failed', 'failed']
+3 SURVIVED 1 ['failed', 'failed']
+4 KILLED 1 ['failed', 'failed', 'failed', 'failed']
+5 KILLED 1 ['failed', 'failed']
+6 KILLED 1 ['failed', 'failed', 'failed']
+7 KILLED 1 ['failed', 'failed']
+8 KILLED 1 ['failed', 'failed']
+killed 7 / 8 in 284.2 s
