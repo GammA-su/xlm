@@ -201,6 +201,11 @@ def test_the_generic_planner_cannot_bypass_pilot_preflight(tmp_path: Path) -> No
         (("data", "exposure_plan"), "/data/*.json", "wildcard"),
         (("profile_artifact",), "latest", "explicit identity"),
         (("storage_roots", "data_root"), "relative/root", "absolute"),
+        # Placeholder strings posing as resolved values are unresolved, not identities.
+        (("tokenizer", "artifact_digest"), "null", "explicit identity"),
+        (("tokenizer", "fit_input_hash"), "TODO", "explicit identity"),
+        (("data", "exposure_plan"), "None", "explicit identity"),
+        (("storage_roots", "output_root"), " tbd ", "explicit identity"),
     ],
 )
 def test_bindings_refuse_latest_wildcards_and_relative_paths(
