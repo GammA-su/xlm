@@ -422,3 +422,67 @@ def test_exploratory_screen_tuples_pair_by_roster() -> None:
     assert candidate["eligible"]
     assert candidate["statistics"]["n_pairs"] == 1
     assert candidate["statistics"]["ci_raw_delta"] is None
+
+
+def test_cross_tokenizer_ce_guard_holds_even_when_a_track_allows_the_tokenizer_to_vary(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A test-only certified track lets the tokenizer vary; CE still cannot pick a winner."""
+    from xlm.comparison import science_tracks
+    from xlm.comparison.science_tracks import ScienceTrack
+
+    probe = ScienceTrack(
+        track_id="tokenizer_probe_test_only",
+        certified=True,
+        varied=frozenset({"tokenizer_identity"}),
+        description="TEST ONLY: isolates the cross-tokenizer metric guard.",
+        consequences={},
+    )
+    monkeypatch.setitem(science_tracks.SCIENCE_TRACKS, probe.track_id, probe)
+    other = {"fingerprint": h("candidate-tokenizer")}
+
+    def manifest_for(metric: str) -> dict[str, Any]:
+        doc = superiority_manifest()
+        doc["track"] = probe.track_id
+        doc["required_invariants"] = probe.must_match()
+        doc["intended_differences"] = ["tokenizer_identity"]
+        doc["control_arm"]["intervention"] = {
+            "tokenizer_identity": {"fingerprint": h("tokenizer-bpe-32768")}
+        }
+        doc["candidate_arms"][0]["intervention"] = {"tokenizer_identity": other}
+        doc["primary_metric"] = {"name": metric, "direction": "lower_is_better"}
+        doc["secondary_metrics"] = []
+        doc["multiplicity"]["guardrail_family_size"] = 0
+        return doc
+
+    for metric, expect_eligible in (
+        ("equal_domain_text_ce_nats_per_token", False),
+        ("equal_domain_text_bpb", True),
+    ):
+        manifest = manifest_for(metric)
+        runs = []
+        for entry in manifest["replicate_roster"]:
+            t = entry["tuple_id"]
+            seeds = (entry["init_seed"], entry["training_seed"], entry["data_seed"])
+            for arm, value, overrides in (
+                ("m0", CTRL[t], None),
+                ("m1", CAND[t], {"tokenizer_identity": other}),
+            ):
+                evidence = make_evidence(
+                    f"run-{arm}-{t}",
+                    seeds,
+                    primary=value,
+                    budget=manifest["training_budget_targets"],
+                    endpoint_tier="endpoint_confirmation",
+                    overrides=overrides,
+                )
+                runs.append(run(f"{arm}-{t}", arm, evidence))
+        candidate = _candidate(compare_science(manifest, runs))
+        assert candidate["eligible"] is expect_eligible, candidate["ineligible_reasons"]
+        if not expect_eligible:
+            assert any(
+                r.startswith("cross_tokenizer_primary_metric")
+                for r in candidate["ineligible_reasons"]
+            )
+            assert candidate["statistics"] is None
+            assert candidate["decision"]["result"] == "INELIGIBLE"
