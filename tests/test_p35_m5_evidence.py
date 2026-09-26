@@ -200,7 +200,8 @@ def test_same_order_twice_is_refused() -> None:
 
 def test_orders_over_different_memberships_are_refused() -> None:
     order_a, _ = synthetic_orders()
-    other = build_order_manifest(synthetic_membership({"alpha": 41, "beta": 30}), order_seed=7)
+    # Same ids, counts and sizes; different document content.
+    other = build_order_manifest(synthetic_membership(content_salt="changed:"), order_seed=7)
     with pytest.raises(OrderEvidenceError, match="different canonical memberships"):
         build_order_declaration([order_a, other], [t[0] for t in C_TUPLES])
     doc = _m5_manifest()

@@ -174,12 +174,18 @@ def target_doc_sequence(batches: list[Any]) -> list[str]:
     return sequence
 
 
-def synthetic_membership(counts: dict[str, int] | None = None) -> CanonicalMembership:
-    """An authored membership with SYNTHETIC member digests (headers-only tests)."""
+def synthetic_membership(
+    counts: dict[str, int] | None = None, *, content_salt: str = ""
+) -> CanonicalMembership:
+    """An authored membership with SYNTHETIC member digests (headers-only tests).
+
+    ``content_salt`` changes every document's content digest while keeping ids,
+    counts and sizes: a different membership that no count/size summary can see.
+    """
     sources = {}
     for source_id, count in sorted((counts or {"alpha": 40, "beta": 30}).items()):
         doc_ids = tuple(f"{source_id}_{i:03d}" for i in range(count))
-        digests = tuple(h(f"member:{source_id}:{d}") for d in doc_ids)
+        digests = tuple(h(f"member:{content_salt}{source_id}:{d}") for d in doc_ids)
         sources[source_id] = SourceMembership(
             source_id=source_id,
             shard={
