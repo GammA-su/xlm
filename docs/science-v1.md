@@ -359,7 +359,8 @@ science-v1, or the reverse, without `--fork` or a new experiment. A fork across
 policies does not adopt the parent's LR/RNG receipt history. A changed
 checkpoint plan also refuses ordinary resume. A fork re-originates the
 checkpoint plan at its committed count and protects its parent checkpoint from
-retention.
+retention. A declared update payload receipt adds its own lineage rule (see
+[the receipt section](#global-update-payload-receipt-p35-pilot-readiness-hardened)).
 
 For a science pilot, resume through the queue. Submit with `--max-retries 1`.
 After an interrupted runner, `xlm queue run` recovers the stale job and resumes
@@ -544,18 +545,17 @@ all data orders, stochastic sampling or IID resampling. See
   membership id (a fixed order, not an independent replicate). Planning blocks
   missing, unpinned, tampered or foreign-membership orders.
 
-## Global-update payload receipt (P35 pilot readiness)
+## Global-update payload receipt (P35 pilot readiness, hardened)
 
-**Local adversarial review limitation:** keep this receipt disabled in the first
-32M B8 pilot. It is not yet qualified for a formal microbatch comparison. The
-review reproduced gaps in the prepared-array/consumed-tensor binding, receipt
-commit failure handling, chain/data-counter validation on checkpoint load, and
-the evaluator state guard. The standard producer and ordinary resume paths pass
-the authored checks, but that does not close these adversarial gaps. Duplicate
-compact string aliases can also create false inequality. Repair and recertify
-these paths before using v2 study evidence; the track's static `certified` flag
-does not supersede this operational restriction. See the ASTRA review appended
-to [P35 pilot readiness](implementation/reports/P35-PILOT-READINESS.md).
+**Keep this receipt disabled in the first 32M B8 pilot.** A diagnostic pilot is
+not a formal comparison arm, and enabling the receipt changes the plan
+identity. The six adversarial gaps from the ASTRA review (consumed-tensor
+binding, chain/data-counter validation, receipt commit failure, evaluator
+guard, compact string aliases, changed-policy forks) are closed by the
+[microbatch evidence hardening](implementation/reports/P35-MICROBATCH-EVIDENCE-HARDENING.md)
+pass. A formal B8/B16/B32 study still needs its own frozen plan, real inputs,
+preregistered practical and non-inferiority margins, a measured receipt cost at
+the real shape, and the user's authorization. None of these exist yet.
 
 For microbatch-grouping studies, declare in `training`:
 
@@ -575,14 +575,54 @@ Changing any value, or the order of sequences, changes it.
 
 - **Where it is hashed.** From the CPU data before device transfer: the P34
   producer's arrays, or the synchronous microbatches. Both give the same digest.
-- **When it is recorded.** Staged before compute and committed only with the
-  data cursor, so a failed, skipped or in-doubt update never enters.
+- **Consumed tensors are bound.** On the producer path the receipt hashes the
+  pending prepared update only after checking that the microbatches actually
+  handed to the trainer are that update. Every model and objective input must
+  equal its prepared slice value for value, microbatch by microbatch. The light
+  metadata and any carried provenance must agree. The prepared update must
+  still match its producer seal. A replaced tensor, a changed token or label, a
+  reordered or regrouped microbatch, or provenance shifted after sealing is
+  refused before any compute. A device tensor is refused without
+  synchronizing. On the synchronous path the microbatches handed to the trainer
+  are hashed directly.
+- **Compact provenance aliases.** A producer string table with a repeated
+  string, or a code outside the table, is refused. It could otherwise encode
+  one decoded provenance two ways. The stock encoder never emits either.
+- **When it is recorded.** Staged before compute, with its bounds checked
+  then. The LR receipt and the payload row commit together, only after the
+  data cursor commits. A failed, skipped or in-doubt update never enters.
+- **Commit failure.** If the receipts cannot commit after the data and
+  optimizer state did, the boundary is poisoned (`ScienceReceiptCommitError`, a
+  `RecoveryRequiredError`). Nothing continues on that trainer: no further
+  update, no checkpoint and no success. Resume from the previous checkpoint.
 - **The chain.** `science.json.update_payloads` chains the rows
   `(step, committed_before, valid_targets, payload_digest)` from a
   run-independent genesis. Runs that differ only in grouping have the same
   head.
-- **Resume and forks.** Both restore and re-verify the chain, which must match
-  the LR receipts. A checkpoint whose receipt presence differs is refused.
-- **Evidence.** Evidence v3 reads the chain; v1/v2 records read "no receipt".
+- **Checkpoint load.** Before any model, optimizer, scaler, schedule or data
+  state is restored, the chain and LR receipts must be one contiguous history.
+  Its update count must equal the checkpoint step, and its final `C` must
+  equal the checkpoint's committed count and the committed data state's.
+  History ahead of the data, and data ahead of the history, are both refused.
+  An incoherent receipt set is also never published.
+- **Lineage.** Receipt presence and version never change within a lineage:
+  not on ordinary resume, not on any fork, and not from a legacy or
+  pre-readiness parent. Enabling, disabling or re-versioning the receipt is a
+  new experiment from initialization. A same-policy fork inherits the chain. A
+  changed-policy fork may not continue a chain; only a fork of the initial
+  C = 0 state starts its own chain at genesis.
+- **Evaluation guard.** The declared chain, its head, its staged receipt and
+  its declaration are guarded like the LR receipts. An evaluator that changes
+  them fails its attempt and requires recovery.
+- **Bounds.** At most 400,000 committed updates and 192 bytes per serialized
+  row. The largest planned run, 300M/6B, has 91,554 updates. The chain stays
+  within the 128 MiB `science.json` read bound, and a larger file is refused
+  at save time.
+- **Evidence.** Evidence v3 reads the chain. Its presence and version must
+  match the envelope's `training.update_payload_receipt`. v1/v2 records read
+  "no receipt".
 
-See [P35 pilot readiness](implementation/reports/P35-PILOT-READINESS.md).
+Runs without the declaration execute none of these paths.
+
+See [P35 pilot readiness](implementation/reports/P35-PILOT-READINESS.md) and
+[microbatch evidence hardening](implementation/reports/P35-MICROBATCH-EVIDENCE-HARDENING.md).

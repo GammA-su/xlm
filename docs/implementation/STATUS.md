@@ -1,5 +1,40 @@
 # Implementation status
 
+> **P35 MICRO-BATCH EVIDENCE HARDENING (2026-09-26; not a new milestone):
+> MICRO-BATCH EVIDENCE CERTIFIED — READY FOR FORMAL STUDY** (the receipt only,
+> local Windows/CUDA, self-certified by the implementing agent). Branch
+> `research/p35-microbatch-evidence-hardening` from the ASTRA-reviewed
+> `d7942ba` (tag `p35-pilot-readiness-certified`).
+>
+> - **ASTRA M1–M6:**
+>   - consumed tensors are bound to the prepared update, value for value, plus
+>     the producer seal;
+>   - LR/chain history is checked against checkpoint step/C and the data
+>     state's C before any restore (A7);
+>   - the LR and payload receipts commit atomically, and a failure poisons the
+>     boundary (`ScienceReceiptCommitError`: no update, checkpoint or success);
+>   - the evaluator guard covers the chain;
+>   - duplicate compact aliases are refused;
+>   - receipt presence and version are fixed per lineage, and a changed-policy
+>     fork may not continue a chain.
+> - **Bounds:** 400,000 rows and 192 B/row; science.json stays within its
+>   128 MiB read bound at save.
+> - **v1:** digests are byte-identical to `d7942ba`.
+> - **Evidence:**
+>   - selections: 213 + 278 + 305/306 + 4 serial + 3 workflow, where the one
+>     failure is the pre-existing P17 CRLF golden-byte test;
+>   - adversaries: 8/8 killed. A first round read 7/8 because of a
+>     message-classifier defect; both rounds are kept;
+>   - static checks clean; dependency files unchanged.
+> - **Cost:** bounded producer-path spot at 0.97 ms/update receipt CPU work,
+>   0 GPU allocation delta; 50M cost NOT RUN.
+> - **Unchanged:** the pilot keeps the receipt disabled. No data, pilot,
+>   B8/B16/B32 or mixture study, margins, push or merge.
+>
+> See [hardening report](reports/P35-MICROBATCH-EVIDENCE-HARDENING.md). Next:
+> integrate. The formal study still needs real inputs, preregistered margins,
+> a measured 50M receipt cost, a frozen plan and user authorization.
+
 > Latest local review: **ASTRA INDEPENDENT REVIEW + LOCAL CUDA CERTIFICATION**
 > (2026-09-26), **SAFE AFTER SPECIFIC FIXES**. Pilot-critical repairs implemented
 > and verified; receipt-disabled pilot software is safe to integrate. Formal

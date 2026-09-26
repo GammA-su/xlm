@@ -1,0 +1,280 @@
+{
+  "control": {
+    "exit": 0,
+    "nodes": 27,
+    "passed": 27,
+    "tail": [
+      "27 passed in 66.49s (0:01:06)"
+    ],
+    "xlm_from": "D:\\Project\\xlm-p35-microbatch-hardening\\.hardening-scratch\\p35_hardening_mut_s2bplurd\\control\\src\\xlm\\__init__.py"
+  },
+  "killed": 8,
+  "mutants": [
+    {
+      "cases": {
+        "tests.test_p35_hardening_payload::test_one_changed_consumed_value_is_refused[input_ids]": {
+          "message": "Failed: DID NOT RAISE PayloadReceiptError",
+          "state": "failed"
+        },
+        "tests.test_p35_hardening_payload::test_one_changed_consumed_value_is_refused[labels]": {
+          "message": "Failed: DID NOT RAISE PayloadReceiptError",
+          "state": "failed"
+        },
+        "tests.test_p35_hardening_payload::test_provenance_shifted_after_sealing_is_refused": {
+          "message": "Failed: DID NOT RAISE PayloadReceiptError",
+          "state": "failed"
+        },
+        "tests.test_p35_hardening_runtime::test_a_detached_replacement_consumed_tensor_is_refused[input_ids]": {
+          "message": "Failed: DID NOT RAISE PayloadReceiptError",
+          "state": "failed"
+        },
+        "tests.test_p35_hardening_runtime::test_a_detached_replacement_consumed_tensor_is_refused[labels]": {
+          "message": "Failed: DID NOT RAISE PayloadReceiptError",
+          "state": "failed"
+        },
+        "tests.test_p35_hardening_runtime::test_provenance_correct_but_tensor_replaced_is_refused": {
+          "message": "Failed: DID NOT RAISE PayloadReceiptError",
+          "state": "failed"
+        },
+        "tests.test_p35_hardening_runtime::test_tensor_correct_but_provenance_row_shifted_is_refused": {
+          "message": "Failed: DID NOT RAISE PayloadReceiptError",
+          "state": "failed"
+        }
+      },
+      "edit": {
+        "new": "        if sum(int(len(mb.input_ids)) for mb in microbatches) != sum(pending.rows):\n            raise PayloadReceiptError(\"microbatches are not the pending prepared update\")\n        return canonical_from_prepared(pending)\n",
+        "old": "        bind_consumed(pending, microbatches)\n        return canonical_from_prepared(pending)\n"
+      },
+      "exit": 1,
+      "file": "src/xlm/data/sampling/update_payload.py",
+      "id": 1,
+      "name": "detached consumed input tensor replacement accepted (row-count-only binding)",
+      "nodes": [
+        "tests/test_p35_hardening_runtime.py::test_a_detached_replacement_consumed_tensor_is_refused[input_ids]",
+        "tests/test_p35_hardening_runtime.py::test_a_detached_replacement_consumed_tensor_is_refused[labels]",
+        "tests/test_p35_hardening_runtime.py::test_provenance_correct_but_tensor_replaced_is_refused",
+        "tests/test_p35_hardening_runtime.py::test_tensor_correct_but_provenance_row_shifted_is_refused",
+        "tests/test_p35_hardening_payload.py::test_one_changed_consumed_value_is_refused[input_ids]",
+        "tests/test_p35_hardening_payload.py::test_one_changed_consumed_value_is_refused[labels]",
+        "tests/test_p35_hardening_payload.py::test_provenance_shifted_after_sealing_is_refused"
+      ],
+      "result": "KILLED",
+      "xlm_from_export": true
+    },
+    {
+      "cases": {
+        "tests.test_p35_hardening_payload::test_history_and_committed_state_must_agree[chain_and_lr_ahead_A7]": {
+          "message": "Failed: DID NOT RAISE ScientificPolicyError",
+          "state": "failed"
+        },
+        "tests.test_p35_hardening_payload::test_history_and_committed_state_must_agree[data_ahead]": {
+          "message": "Failed: DID NOT RAISE ScientificPolicyError",
+          "state": "failed"
+        },
+        "tests.test_p35_hardening_runtime::test_inconsistent_history_is_refused_before_any_restore[data_ahead]": {
+          "message": "Failed: DID NOT RAISE IncompatibleCheckpointError",
+          "state": "failed"
+        },
+        "tests.test_p35_hardening_runtime::test_inconsistent_history_is_refused_before_any_restore[history_ahead_A7]": {
+          "message": "Failed: DID NOT RAISE IncompatibleCheckpointError",
+          "state": "failed"
+        },
+        "tests.test_p35_hardening_runtime::test_inconsistent_history_is_refused_before_any_restore[meta_committed]": {
+          "message": "Failed: DID NOT RAISE IncompatibleCheckpointError",
+          "state": "failed"
+        }
+      },
+      "edit": {
+        "new": "    from xlm.data.sampling.update_payload import PayloadReceiptError, verify_chain\n\n    if True:\n        return\n    raw = saved.get(\"update_payloads\")\n",
+        "old": "    from xlm.data.sampling.update_payload import PayloadReceiptError, verify_chain\n\n    raw = saved.get(\"update_payloads\")\n"
+      },
+      "exit": 1,
+      "file": "src/xlm/training/science.py",
+      "id": 2,
+      "name": "LR/payload chain ahead of committed data accepted (no history-vs-data check)",
+      "nodes": [
+        "tests/test_p35_hardening_runtime.py::test_inconsistent_history_is_refused_before_any_restore[history_ahead_A7]",
+        "tests/test_p35_hardening_runtime.py::test_inconsistent_history_is_refused_before_any_restore[data_ahead]",
+        "tests/test_p35_hardening_runtime.py::test_inconsistent_history_is_refused_before_any_restore[meta_committed]",
+        "tests/test_p35_hardening_payload.py::test_history_and_committed_state_must_agree[chain_and_lr_ahead_A7]",
+        "tests/test_p35_hardening_payload.py::test_history_and_committed_state_must_agree[data_ahead]"
+      ],
+      "result": "KILLED",
+      "xlm_from_export": true
+    },
+    {
+      "cases": {
+        "tests.test_p35_hardening_runtime::test_a_payload_commit_failure_after_data_commit_poisons_the_boundary": {
+          "message": "assert (False)\n +  where False = <xlm.training.trainer.Trainer object at 0x000001F2F0BFFC20>._update_in_doubt",
+          "state": "failed"
+        },
+        "tests.test_p35_hardening_runtime::test_training_never_succeeds_after_a_receipt_commit_failure": {
+          "message": "assert (32 == 32 and False)\n +  where 32 = <xlm.training.trainer.Trainer object at 0x000001F2F0C2FFB0>.committed_valid_targets\n +  and   False = <xlm.training.trainer.Trainer object at 0x000001F2F0C2FFB0>._update_in_doubt",
+          "state": "failed"
+        }
+      },
+      "edit": {
+        "new": "            self._update_in_doubt = False\n            try:\n                self.science.commit_receipted_update(receipt)\n",
+        "old": "            try:\n                self.science.commit_receipted_update(receipt)\n"
+      },
+      "exit": 1,
+      "file": "src/xlm/training/trainer.py",
+      "id": 3,
+      "name": "payload receipt commit failure still allows checkpoint (in-doubt cleared first)",
+      "nodes": [
+        "tests/test_p35_hardening_runtime.py::test_a_payload_commit_failure_after_data_commit_poisons_the_boundary",
+        "tests/test_p35_hardening_runtime.py::test_training_never_succeeds_after_a_receipt_commit_failure"
+      ],
+      "result": "KILLED",
+      "xlm_from_export": true
+    },
+    {
+      "cases": {
+        "tests.test_p35_hardening_runtime::test_an_untouched_receipt_passes_and_is_a_verified_guard_component": {
+          "message": "AssertionError: assert ([] == []\n  \n  Use -v to get more diff and 'update_payload_receipt' in ['counters', 'data_cursor', 'gradients', 'model_attributes', 'model_tensors', 'module_modes', ...])",
+          "state": "failed"
+        },
+        "tests.test_p35_hardening_runtime::test_evaluator_mutation_of_receipt_state_is_caught[add_row]": {
+          "message": "Failed: DID NOT RAISE RecoveryRequiredError",
+          "state": "failed"
+        },
+        "tests.test_p35_hardening_runtime::test_evaluator_mutation_of_receipt_state_is_caught[chain_head]": {
+          "message": "Failed: DID NOT RAISE RecoveryRequiredError",
+          "state": "failed"
+        },
+        "tests.test_p35_hardening_runtime::test_evaluator_mutation_of_receipt_state_is_caught[staged_receipt]": {
+          "message": "Failed: DID NOT RAISE RecoveryRequiredError",
+          "state": "failed"
+        }
+      },
+      "edit": {
+        "new": "",
+        "old": "    if payloads is not None:\n        fingerprint[\"update_payload_receipt\"] = identity_digest(payloads.guard_state())\n"
+      },
+      "exit": 1,
+      "file": "src/xlm/training/evaluation.py",
+      "id": 4,
+      "name": "evaluator mutates the payload chain without guard detection",
+      "nodes": [
+        "tests/test_p35_hardening_runtime.py::test_evaluator_mutation_of_receipt_state_is_caught[chain_head]",
+        "tests/test_p35_hardening_runtime.py::test_evaluator_mutation_of_receipt_state_is_caught[add_row]",
+        "tests/test_p35_hardening_runtime.py::test_evaluator_mutation_of_receipt_state_is_caught[staged_receipt]",
+        "tests/test_p35_hardening_runtime.py::test_an_untouched_receipt_passes_and_is_a_verified_guard_component"
+      ],
+      "result": "KILLED",
+      "xlm_from_export": true
+    },
+    {
+      "cases": {
+        "tests.test_p35_hardening_payload::test_a_duplicate_alias_is_refused_precisely": {
+          "message": "Failed: DID NOT RAISE PayloadReceiptError",
+          "state": "failed"
+        },
+        "tests.test_p35_hardening_payload::test_an_out_of_table_code_is_refused[-1]": {
+          "message": "Failed: DID NOT RAISE PayloadReceiptError",
+          "state": "failed"
+        }
+      },
+      "edit": {
+        "new": "    provenance = update.provenance\n",
+        "old": "    provenance = update.provenance\n    check_compact_table(provenance)\n"
+      },
+      "exit": 1,
+      "file": "src/xlm/data/sampling/update_payload.py",
+      "id": 5,
+      "name": "duplicate compact provenance aliases silently alter equality",
+      "nodes": [
+        "tests/test_p35_hardening_payload.py::test_a_duplicate_alias_is_refused_precisely",
+        "tests/test_p35_hardening_payload.py::test_an_out_of_table_code_is_refused[-1]"
+      ],
+      "result": "KILLED",
+      "xlm_from_export": true
+    },
+    {
+      "cases": {
+        "tests.test_p35_hardening_runtime::test_fork_receipt_semantics_refuse_before_restore[off_to_on_changed_policy]": {
+          "message": "Failed: DID NOT RAISE IncompatibleCheckpointError",
+          "state": "failed"
+        },
+        "tests.test_p35_hardening_runtime::test_fork_receipt_semantics_refuse_before_restore[on_to_off_changed_policy]": {
+          "message": "Failed: DID NOT RAISE IncompatibleCheckpointError",
+          "state": "failed"
+        },
+        "tests.test_p35_hardening_runtime::test_fork_receipt_semantics_refuse_before_restore[on_to_on_changed_policy]": {
+          "message": "Failed: DID NOT RAISE IncompatibleCheckpointError",
+          "state": "failed"
+        }
+      },
+      "edit": {
+        "new": "        if not same_policy:\n            return\n        required = science is not None and science.update_payloads is not None\n        saved = saved_science.get(\"update_payloads\") if saved_science is not None else None\n",
+        "old": "        required = science is not None and science.update_payloads is not None\n        saved = saved_science.get(\"update_payloads\") if saved_science is not None else None\n"
+      },
+      "exit": 1,
+      "file": "src/xlm/training/checkpoint.py",
+      "id": 6,
+      "name": "changed-policy fork silently drops or continues required receipt history",
+      "nodes": [
+        "tests/test_p35_hardening_runtime.py::test_fork_receipt_semantics_refuse_before_restore[on_to_off_changed_policy]",
+        "tests/test_p35_hardening_runtime.py::test_fork_receipt_semantics_refuse_before_restore[off_to_on_changed_policy]",
+        "tests/test_p35_hardening_runtime.py::test_fork_receipt_semantics_refuse_before_restore[on_to_on_changed_policy]"
+      ],
+      "result": "KILLED",
+      "xlm_from_export": true
+    },
+    {
+      "cases": {
+        "tests.test_p35_hardening_runtime::test_resume_cannot_duplicate_or_skip_receipt_rows": {
+          "message": "Failed: DID NOT RAISE PayloadReceiptError",
+          "state": "failed"
+        },
+        "tests.test_p35_readiness_payload::test_replayed_or_skipped_updates_are_never_appended[1-0]": {
+          "message": "Failed: DID NOT RAISE PayloadReceiptError",
+          "state": "failed"
+        }
+      },
+      "edit": {
+        "new": "        if False:\n",
+        "old": "        if (step, committed_before) != self._expected():\n"
+      },
+      "exit": 1,
+      "file": "src/xlm/data/sampling/update_payload.py",
+      "id": 7,
+      "name": "payload row duplicated after resume (stage accepts a replayed update)",
+      "nodes": [
+        "tests/test_p35_hardening_runtime.py::test_resume_cannot_duplicate_or_skip_receipt_rows",
+        "tests/test_p35_readiness_payload.py::test_replayed_or_skipped_updates_are_never_appended[1-0]"
+      ],
+      "result": "KILLED",
+      "xlm_from_export": true
+    },
+    {
+      "cases": {
+        "tests.test_p35_hardening_payload::test_history_and_committed_state_must_agree[partial_off_by_one]": {
+          "message": "Failed: DID NOT RAISE ScientificPolicyError",
+          "state": "failed"
+        },
+        "tests.test_p35_hardening_runtime::test_a_consistent_checkpoint_and_a_final_partial_update_validate_exactly": {
+          "message": "AssertionError: Regex pattern did not match.\n  Expected regex: 'C=40, ahead of the committed data'\n  Actual message: 'checkpoint metadata records C=39, the receipt history and data state C=40'",
+          "state": "failed"
+        }
+      },
+      "edit": {
+        "new": "    if endpoint > data + 1:\n",
+        "old": "    if endpoint > data:\n"
+      },
+      "exit": 1,
+      "file": "src/xlm/training/science.py",
+      "id": 8,
+      "name": "chain final partial C off by one accepted",
+      "nodes": [
+        "tests/test_p35_hardening_payload.py::test_history_and_committed_state_must_agree[partial_off_by_one]",
+        "tests/test_p35_hardening_runtime.py::test_a_consistent_checkpoint_and_a_final_partial_update_validate_exactly"
+      ],
+      "result": "KILLED",
+      "xlm_from_export": true
+    }
+  ],
+  "runner_sha256": "af65ebb57f40d95708312fc00a3329ec132da5e5bf1d324b50732627da47f1b5",
+  "seconds": 246.2,
+  "tested_head": "6b94a9214892ba94e79a1697907d368ecd9e3f94"
+}
