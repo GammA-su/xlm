@@ -1,4 +1,4 @@
-# Science-v1 training semantics and comparisons (P35 Milestones 1–4)
+# Science-v1 training semantics and comparisons (P35 Milestones 1–5)
 
 `xlm-science-v1` is an explicit, versioned training policy defined by the
 [P35 scientific contract](implementation/reports/P35-SCIENTIFIC-CONTRACT.md).
@@ -420,10 +420,10 @@ state. Labels are never trusted.
   | `AMBIGUOUS` | the interval crosses its boundary |
 
   A 150M or 300M confirmation needs the verified prior-scale record.
-- **M5 dependency.** Until M5 exists, every run carries
-  `order_manifest_id = shard_native_no_order_manifest`. Any rule requiring
-  order robustness therefore reports it BLOCKED (NOT RUN); source-seed
-  variation cannot satisfy it.
+- **M5 dependency.** Runs without an order manifest carry
+  `order_manifest_id = shard_native_no_order_manifest`. A rule requiring
+  order robustness is satisfied only by verified M5 order evidence (next
+  section); source-seed variation cannot satisfy it.
 
 ### Outputs
 
@@ -433,3 +433,61 @@ guardrails, declared throughput and VRAM, failures, completeness, decision
 and promotion state. Missing values show as `n/a`, `NOT RUN` or `PARTIAL`,
 never 0. A partial confirmation's cells are prefixed `PROVISIONAL n/N`.
 `report` re-renders a verified record; it refuses an altered or legacy one.
+
+## Independent within-source document order (P35 Milestone 5)
+
+`data_seed` only changes source scheduling. Within a source, documents stream
+in the prepared shard's physical order unless the run binds a frozen **order
+manifest**. M5 establishes *independent within-source document-order evidence*:
+robustness to one declared intervention (whole-document permutation within each
+source over identical training membership). It is not a claim of robustness to
+all data orders, stochastic sampling or IID resampling. See
+[P35-M5](implementation/reports/P35-M5.md).
+
+- **Canonical membership** (`xlm-canonical-train-membership-v1`): computed from
+  the token shards; train split only; binds every document's id, source,
+  lineage, split, index metadata and token bytes; independent of physical order.
+- **Order manifest** (`m5-independent-document-order-v1`): per source, the
+  documents sorted by `SHA-256([algorithm, order_seed, membership_id, source,
+  doc_id])`. It binds the membership, the shard artifacts and every ordered
+  sequence; `order_manifest_id` is the digest of its header. The same seed gives
+  the same order; a seed whose order equals another order's for any source with
+  two or more documents is rejected as not independent.
+- **Selecting an order** (science-v1 only; pins, never `latest`):
+
+  ```yaml
+  data:
+    document_order:
+      manifest: /abs/orders/order_a.json
+      order_manifest_id: <sha256>
+      canonical_membership_id: <sha256>
+  ```
+
+  The shards must recompute to that membership. The stream then reads whole
+  documents in the manifest order from the unchanged payload (no token bytes
+  are copied; about id length + 6 bytes per document per order). Weights,
+  quotas, scheduler, exhaustion and repeat policy are unchanged; each epoch
+  replays the same order; nothing is shuffled at runtime. The P34 producer
+  receives the same order.
+- **Identity and resume**: the reference enters the envelope and the data
+  identity, and committed data state records `document_order`. Ordinary resume
+  and checkpoint forks require the identical order and are refused before any
+  state is restored; order B is a new experiment. Runs without an order are
+  unchanged.
+- **Building manifests** (Python API; no CLI verb yet):
+  `build_order_manifest(build_membership(readers), order_seed=...)`, then
+  `write_order_manifest(...)`; check a pair with `require_independent_orders`.
+- **Comparisons**: evidence v2 reads `order_manifest_id`,
+  `canonical_membership_id` and `within_source_order_policy` from receipts
+  (pre-M5 runs keep the sentinels). The manifest slot
+  `order_robustness.m5_order_evidence` takes
+  `science_order.build_order_declaration([order_a, order_b], roster_tuple_ids)`:
+  verifiable headers, one membership, and allocation
+  `m5_alternating_roster_allocation_v1` (five 50M tuples: C0/C2/C4 → A, C1/C3 →
+  B; three-tuple blocks A/B/A). Robustness is satisfied only when every paired
+  run actually ran under its allocated order on that membership.
+  `build_order_bundle` records the baseline provenance with unique
+  initialization counts per order (same-seed reruns never add).
+- **Pilot**: the 32M draft requires a pinned order manifest, order id and
+  membership id (a fixed order, not an independent replicate). Planning blocks
+  missing, unpinned, tampered or foreign-membership orders.

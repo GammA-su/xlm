@@ -1,5 +1,42 @@
 # Implementation status
 
+> **P35 Milestone 5 (2026-09-26): IMPLEMENTED; VERIFIED at the data/identity/
+> evidence level; NEEDS LOCAL CERTIFICATION.** Branch
+> `research/p35-m5-document-order` from certified M4 `221c4e0`. Linux cloud
+> container, Python 3.12.3, base+dev `uv sync --locked` scratch venv (authorized;
+> no torch, no extras, no data). No acquisition, data preparation, real order
+> manifest, training, pilot, campaign or merge.
+>
+> - **Membership** `xlm-canonical-train-membership-v1`: order-independent,
+>   train-only, content/lineage/source/split-bound identity computed from the
+>   token shards.
+> - **Order manifests** `m5-independent-document-order-v1`: seeded SHA-256-keyed
+>   within-source permutation, header-digest id, re-derivation on verify;
+>   non-independent pairs (same sequence, same seed, other membership) refused.
+> - **Stream/producer**: whole-document ordered index over the unchanged payload
+>   (no token duplication; ≈ id length + 6 bytes/document/order); quotas and
+>   scheduler unchanged; the real P34 producer child serves the same order.
+> - **Identity/resume**: pinned `data.document_order` in the envelope and data
+>   identity; `document_order` in committed data state; cross-order resume and
+>   forks refused before any state restore.
+> - **M4**: evidence v2 reads the real order/membership ids from receipts
+>   (pre-M5 keeps the sentinel); tracks v2 add MUST_MATCH `canonical_membership_id`;
+>   the robustness slot verifies the declaration (C0/C2/C4 → A, C1/C3 → B) and run
+>   binding. Statistics, margins and promotion rules unchanged. New order-evidence
+>   bundle with unique initialization counts per order.
+> - **Pilot**: the 32M draft requires a pinned order (fixed order, not an
+>   independent replicate); planning blocks unbound/unpinned/foreign orders.
+> - **Tests**: see the report's §13 table — 10/10 mutants killed; ruff/format
+>   clean; mypy clean apart from 2 pre-existing torch-absent lines identical on
+>   `221c4e0`. One serial error (`test_reports` torch check) is identical on
+>   `221c4e0`.
+> - **NOT RUN (torch/CUDA)**: Trainer resume A→A, `load_checkpoint` A→B refusal,
+>   trainer-path producer, full pilot planning, updated M3 pilot assertions,
+>   legacy torch regressions, frozen workflow.
+>
+> See [P35-M5](reports/P35-M5.md) and [science-v1](../science-v1.md). Next: run
+> the P35-M5 §15 local certification commands, then the §18 prompt.
+
 > **P35 Milestone 4 LOCAL CUDA CERTIFICATION CLOSEOUT (2026-09-26): M4 CERTIFIED
 > — SAFE TO INTEGRATE** as an opt-in. Worktree `G:\Project\xlm-p35-m4-local`,
 > branch `review/p35-m4-local`, starting HEAD `9e3239f`, clean, certified parent
