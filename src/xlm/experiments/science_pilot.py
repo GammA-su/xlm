@@ -1037,6 +1037,14 @@ def check_document_order(
             "document_order_pin_mismatch",
             "data.document_order differs from the science_pilot.document_order pins",
         )
+    data_root = pilot.storage_roots.data_root
+    if data_root is not None and not _inside(
+        Path(str(reference["manifest"])), [Path(data_root).resolve()]
+    ):
+        findings.block(
+            "document_order_outside_root",
+            "the order manifest must lie inside science_pilot.storage_roots.data_root",
+        )
     sources = _get(config, "data.sources") or {}
     try:
         readers = {sid: TokenShardReader(Path(path)) for sid, path in sources.items()}

@@ -247,3 +247,15 @@ def test_bindings_supply_the_order_into_data_and_pilot_pins(tmp_path: Path) -> N
             SciencePilotConfig.model_validate(native["science_pilot"]),
             _bindings(tmp_path, order),
         )
+
+
+def test_order_manifest_must_lie_inside_the_data_root(tmp_path: Path) -> None:
+    raw, pins, _ = _bound(tmp_path)
+    raw["science_pilot"]["storage_roots"]["data_root"] = str((tmp_path / "shards").resolve())
+    findings = Findings()
+    check_document_order(raw, _pilot_with(copy.deepcopy(raw), pins), findings)
+    assert _codes(findings) == ["document_order_outside_root"]  # orders/ is outside shards/
+    raw["science_pilot"]["storage_roots"]["data_root"] = str(tmp_path.resolve())
+    findings = Findings()
+    check_document_order(raw, _pilot_with(copy.deepcopy(raw), pins), findings)
+    assert findings.blockers == []
