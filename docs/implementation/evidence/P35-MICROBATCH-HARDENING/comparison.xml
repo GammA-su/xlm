@@ -20,7 +20,7 @@
 &gt;           assert hashlib.sha256((REPO / rel).read_bytes()).hexdigest() == digest, rel
 E           AssertionError: src/xlm/comparison/promotion.py
 E           assert '31c22cce117e...72a0a759645b4' == '04e961acb3df...7689713aa8842'
-E             
+E
 E             - 04e961acb3dfe643742fa0777b7e9a98838139d8d34dbd08dda7689713aa8842
 E             + 31c22cce117e2cac30cfccba75b88c752aad99337f3b290fbed72a0a759645b4
 
