@@ -459,6 +459,7 @@ class CheckpointController:
             # record it; the durable artifact is adopted, never republished.
             record.adopted_existing = True
             self._finish(record, adopted_dir)
+            self.apply_retention(trainer, after=artifact_id)
             return adopted_dir
         try:
             path = trainer._save_checkpoint(artifact_id)
@@ -466,6 +467,7 @@ class CheckpointController:
             # anything (retention, evaluation, resume) is allowed to depend on it.
             self._finish(record, Path(path))
         except BaseException as exc:
+            # Nothing was retired: retention only ever follows a verified replacement.
             record.status = PublicationStatus.FAILED.value
             record.failure = _failure(exc)
             self._receipt(record, "failed")
@@ -474,7 +476,122 @@ class CheckpointController:
             raise CheckpointPublicationError(
                 f"checkpoint {artifact_id} for {record.events or reason} was not published: {exc}"
             ) from exc
+        self.apply_retention(trainer, after=artifact_id)
         return Path(path)
+
+    # -------------------------------------------------------------- retention
+
+    def evaluation_dependencies(self, trainer: Any) -> dict[str, list[str]]:
+        """Model-state digest -> unresolved evaluation events that may rescore it."""
+        from xlm.evaluation.receipts import EventStatus
+
+        dependencies: dict[str, list[str]] = {}
+        evaluation = trainer.science.evaluation
+        if evaluation is None:
+            return dependencies
+        for event in evaluation.ordered():
+            if event.due is not None and event.status is not EventStatus.COMPLETE:
+                digest = str(event.due["model_state_digest"])
+                dependencies.setdefault(digest, []).append(event.event_id)
+        return dependencies
+
+    def retention_view(self, trainer: Any) -> tuple[Any, dict[str, Any]]:
+        """The retention decision for the current verified records (nothing is removed)."""
+        from xlm.artifacts.retention import RetentionCandidate, decide_retention
+
+        assert self._manager is not None
+        self.settle()
+        candidates: dict[str, RetentionCandidate] = {}
+        for record in self.ledger.published():
+            if not self.checkpoint_dir(record.artifact_id).is_dir():
+                continue
+            assert record.manifest_sha256 is not None
+            candidates[record.artifact_id] = RetentionCandidate(
+                artifact_id=record.artifact_id,
+                role=record.role,
+                committed=record.actual_committed_targets,
+                step=record.step,
+                attempt=record.attempt,
+                model_state_digest=record.model_state_digest,
+                manifest_sha256=record.manifest_sha256,
+            )
+        for record in list(self.ledger.records.values()):
+            for lost in record.superseded:
+                candidate = self._superseded_candidate(trainer, lost)
+                if candidate is not None and lost not in candidates:
+                    candidates[lost] = candidate
+        decision = decide_retention(
+            list(candidates.values()),
+            protected=self.ledger.protected,
+            evaluation_dependencies=self.evaluation_dependencies(trainer),
+        )
+        return decision, candidates
+
+    def _superseded_candidate(self, trainer: Any, artifact_id: str) -> Any:
+        """A lost-lineage publication, only if it verifies and is owned by this run."""
+        import torch
+
+        from xlm.artifacts.retention import SUPERSEDED, RetentionCandidate
+
+        assert self._manager is not None
+        path = self.checkpoint_dir(artifact_id)
+        if not path.is_dir():
+            return None
+        self._manager.store.verify_artifact(path)
+        meta = json.loads((path / "checkpoint_meta.json").read_text(encoding="utf-8"))
+        if meta.get("run_id") != trainer.run_id or meta.get("plan_id") != trainer.plan_id:
+            return None  # not owned by this run: never a retention candidate
+        state = torch.load(path / "model.pt", map_location="cpu", weights_only=True)
+        return RetentionCandidate(
+            artifact_id=artifact_id,
+            role=SUPERSEDED,
+            committed=int(meta["committed_valid_targets"]),
+            step=int(meta["step"]),
+            attempt=0,
+            model_state_digest=state_dict_digest(state),
+            manifest_sha256=compute_file_sha256(path / "manifest.json"),
+        )
+
+    def apply_retention(self, trainer: Any, *, after: str) -> dict[str, Any]:
+        """Retire what the policy allows, strictly after ``after`` was published and verified."""
+        assert self._manager is not None
+        replacement = self.ledger.records[after]
+        if replacement.status != PublicationStatus.PUBLISHED:
+            raise CheckpointEventError("retention requires a verified replacement checkpoint")
+        decision, candidates = self.retention_view(trainer)
+        retired: list[dict[str, Any]] = []
+        for artifact_id, reason in decision.retire.items():
+            candidate = candidates[artifact_id]
+            path = self.checkpoint_dir(artifact_id)
+            try:
+                manifest_json = self._manager.store.load_manifest(path).model_dump_json()
+                freed = self._manager.store.retire_artifact(
+                    artifact_id,
+                    CHECKPOINT_KIND,
+                    expected_manifest_sha256=candidate.manifest_sha256,
+                )
+            except Exception as exc:  # noqa: BLE001 - recorded; the kept states are unaffected
+                retired.append(
+                    {"artifact_id": artifact_id, "action": "retire_failed", "error": str(exc)[:500]}
+                )
+                continue
+            self._manager.ledger.mark_retired(
+                artifact_id, kind=CHECKPOINT_KIND, path=path, manifest_json=manifest_json
+            )
+            self._manager._published_bytes = max(0, self._manager._published_bytes - freed)
+            entry = {"reason": reason, "freed_bytes": freed, "after": after, "at": _now()}
+            record = self.ledger.records.get(artifact_id)
+            if record is not None:
+                record.status = PublicationStatus.RETIRED.value
+                record.retired = entry
+            else:
+                self.ledger.note({"retired": artifact_id, **entry})
+            retired.append({"artifact_id": artifact_id, "action": "retired", **entry})
+        log = {"after": after, "decision": decision.to_dict(), "actions": retired, "at": _now()}
+        if len(self.ledger.retention_log) >= MAX_HISTORY:
+            raise CheckpointLedgerError("retention log exceeds its bound")
+        self.ledger.retention_log.append(log)
+        return log
 
     def _finish(self, record: CheckpointRecord, path: Path) -> None:
         assert self._manager is not None
@@ -561,9 +678,16 @@ class CheckpointController:
         record without a verifiable artifact is a failed publication.
         """
         for record in list(self.ledger.records.values()):
+            path = self.checkpoint_dir(record.artifact_id)
+            if record.status == PublicationStatus.PUBLISHED and not path.is_dir():
+                # Retired after this ledger was serialized: the run ledger is the proof.
+                row = self._manager.ledger.get_artifact(record.artifact_id)
+                if row is not None and row["status"] == "retired":
+                    record.status = PublicationStatus.RETIRED.value
+                    record.retired = {"reason": "retired after this checkpoint was written"}
+                continue
             if record.status != PublicationStatus.PUBLISHING:
                 continue
-            path = self.checkpoint_dir(record.artifact_id)
             if path.is_dir():
                 self._finish(record, path)
             else:

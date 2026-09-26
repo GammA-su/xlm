@@ -326,6 +326,61 @@ class ArtifactStore:
                         raise ValueError("Private staging escaped its owner")
                     shutil.rmtree(stage_path)
 
+    def retire_artifact(self, artifact_id: str, kind: str, *, expected_manifest_sha256: str) -> int:
+        """Remove one verified artifact that a retention decision selected; return freed bytes.
+
+        This is the store's only deletion of a published artifact. It runs under
+        the artifact's publication lock, re-verifies the complete artifact and
+        requires its manifest bytes to be exactly the ones the decision was made
+        on. The directory then leaves its kind directory in one atomic rename to
+        a private tombstone under ``<root>/.retired`` (never scanned as an
+        artifact), and only the tombstone is deleted. A crash leaves either the
+        intact artifact or an invisible tombstone, never a partial artifact.
+        """
+        dest = self._checked_destination(artifact_id, kind)
+        self.locks_dir.mkdir(parents=True, exist_ok=True)
+        lock_key = hashlib.sha256(artifact_id.casefold().encode()).hexdigest()
+        lock_path = self.locks_dir / f"{lock_key}.lock"
+        ensure_plain_path(lock_path)
+        tombstones = self.paths.root / ".retired"
+        with FileLock(str(lock_path), timeout=10.0):
+            manifest = self.verify_artifact(dest)
+            if manifest.artifact_id != artifact_id or manifest.kind != kind:
+                raise ArtifactConflictError(f"retirement target {artifact_id!r} identity differs")
+            if compute_file_sha256(dest / "manifest.json") != expected_manifest_sha256:
+                raise ArtifactConflictError(
+                    f"artifact {artifact_id!r} changed since its retention decision; not retired"
+                )
+            freed = sum(p.stat().st_size for p in dest.rglob("*") if p.is_file())
+            tombstones.mkdir(parents=True, exist_ok=True)
+            ensure_plain_path(tombstones)
+            tomb = tombstones / f"{kind}__{artifact_id}__{uuid.uuid4().hex}"
+            dest.rename(tomb)
+            sync_directory(dest.parent)
+            sync_directory(tombstones)
+            shutil.rmtree(tomb)
+        self.purge_tombstones()
+        return freed
+
+    def purge_tombstones(self, *, max_entries: int = 1024) -> int:
+        """Delete tombstones left by an interrupted retirement (already invisible)."""
+        tombstones = self.paths.root / ".retired"
+        if not tombstones.is_dir():
+            return 0
+        removed = 0
+        for entry in bounded_children(tombstones):
+            if removed >= max_entries:
+                break
+            ensure_plain_path(entry)
+            if entry.parent.resolve() != tombstones.resolve():
+                raise ValueError("tombstone escaped the retirement directory")
+            if entry.is_dir():
+                shutil.rmtree(entry)
+            else:
+                entry.unlink()
+            removed += 1
+        return removed
+
     @staticmethod
     def _chunks(content: Path | bytes | str) -> Iterator[bytes | memoryview]:
         if isinstance(content, Path):

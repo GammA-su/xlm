@@ -22,6 +22,11 @@ CURRENT_SCHEMA_VERSION = 1
 #: Republish (or a healing audit) restores "completed"; rows are never deleted.
 STATUS_UNVERIFIABLE = "unverifiable"
 
+#: Ledger status of an artifact deliberately removed by an explicit retention
+#: decision (P35 M3). The row and its manifest stay as history; audits report
+#: it as retired, never as a missing or corrupt reference.
+STATUS_RETIRED = "retired"
+
 
 def _declared_payload_bytes(manifest_path: Path) -> int:
     """Sum declared payload bytes from a manifest document (no payload reads)."""
@@ -520,6 +525,12 @@ class RunLedger:
                 truncated, truncated_reason = True, "deadline exceeded"
                 break
             artifact_id = str(row["artifact_id"])
+            if str(row["status"]) == STATUS_RETIRED:
+                examined += 1
+                verdicts.append(
+                    {"artifact_id": artifact_id, "verdict": "retired", "detail": "retention"}
+                )
+                continue
             try:
                 declared = _row_payload_bytes(str(row["manifest_json"]))
             except ValueError:
@@ -576,11 +587,22 @@ class RunLedger:
             "ok": sum(1 for v in verdicts if v["verdict"] == "ok"),
             "healed": sum(1 for v in verdicts if v["verdict"] == "healed"),
             "unusable": sum(1 for v in verdicts if v["verdict"] == "unusable"),
+            "retired": sum(1 for v in verdicts if v["verdict"] == "retired"),
             "verified_bytes": verified_bytes,
             "truncated": truncated,
             "truncated_reason": truncated_reason,
             "verify_seconds": round(verify_seconds, 3),
         }
+
+    def mark_retired(self, artifact_id: str, *, kind: str, path: Path, manifest_json: str) -> None:
+        """Record that retention removed this artifact; the identity row is kept."""
+        self._record_if_missing(
+            artifact_id=artifact_id,
+            kind=kind,
+            path=path,
+            manifest_json=manifest_json,
+            status=STATUS_RETIRED,
+        )
 
     def _mark_unverifiable(self, artifact_id: str) -> None:
         """Flip a reference to unusable without touching its identity columns.
