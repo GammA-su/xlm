@@ -226,7 +226,11 @@ inputs=..., device="cuda")` does the same offline, and
 durable attempts. Only LM tiers have a verified checkpoint route; a failed
 search-benchmark event stays incomplete, and its checkpoint stays retained
 with an explicit reason. Events at boundaries without a planned checkpoint
-cannot be rescored (in the pilot: `quick_lm@1M` and `quick_lm@4M`).
+cannot be rescored (in the pilot: `quick_lm@1M` and `quick_lm@4M`). If one of
+them fails live and training moves past it, the pilot stays
+evaluation-incomplete. Whether to accept that, add 1M/4M recovery checkpoints,
+or require an immediate retry is an open pilot policy decision for the user
+([P35-M3 §17.8](implementation/reports/P35-M3.md#178-real-pilot-readiness)).
 
 ## Science pilot plans
 

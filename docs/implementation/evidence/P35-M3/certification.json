@@ -1,0 +1,2083 @@
+{
+  "evidence_version": "xlm-p35-m3-certification-v1",
+  "scope": "authored/synthetic fixtures only; no network, live data, pilot or research run",
+  "environment": {
+    "wrapper": "docs/implementation/evidence/P35-M3/env.ps1 (uv run --offline --locked --no-sync --extra cuda --extra eval)",
+    "python": "3.12.13",
+    "torch": "2.14.0+cu126",
+    "cuda_available": true,
+    "gpu": "NVIDIA GeForce RTX 4090, driver 596.49; ~8.97 GB held by desktop apps, 2-7% util, no XLM process",
+    "numpy": "2.5.3",
+    "lm_eval": "0.4.13",
+    "xlm_import": "G:\\Project\\xlm-p35-m3\\src\\xlm\\__init__.py"
+  },
+  "m1_m2_workflow": {
+    "prior_session_observation": {
+      "source": "previous session scratch log m3_regress_cuda.log (batch2)",
+      "lines": [
+        "16 passed, 1 skipped, 61 deselected in 48.14s",
+        "batch1 exit=0 sec=50.3982447",
+        "PASSED tests/test_p35_science_workflow.py::test_science_v1_direct_queue_and_resume_share_identity[strict_deterministic_v1]",
+        "PASSED tests/test_p35_science_workflow.py::test_science_v1_direct_queue_and_resume_share_identity[statistical_efficient_v1]",
+        "PASSED tests/test_p35_science_workflow.py::test_science_v1_cadence_through_direct_queue_and_resume",
+        "3 passed in 616.70s (0:10:16)",
+        "batch2 exit=0 sec=618.1638055",
+        "5 failed, 10 passed, 20 errors in 44.36s",
+        "batch3 exit=1 sec=46.0555735"
+      ],
+      "limitation": "started 13:49:30 local, before f548d60 was committed (13:58:33); tree not pinned"
+    },
+    "rerun_on_committed_head": {
+      "head": "f548d60",
+      "command": "R python -m pytest tests/test_p35_science_workflow.py -n 0 -rA",
+      "exit": "EXIT=0 SEC=558.148671",
+      "counts": {
+        "selected": 3,
+        "passed": 3,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "deselected": 0,
+        "pytest_seconds": 556.786
+      },
+      "nodes": {
+        "tests.test_p35_science_workflow::test_science_v1_direct_queue_and_resume_share_identity[strict_deterministic_v1]": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "155.110"
+        },
+        "tests.test_p35_science_workflow::test_science_v1_direct_queue_and_resume_share_identity[statistical_efficient_v1]": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "154.779"
+        },
+        "tests.test_p35_science_workflow::test_science_v1_cadence_through_direct_queue_and_resume": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "244.128"
+        }
+      }
+    }
+  },
+  "queue_and_frozen_execution": {
+    "command": "R python -m pytest tests/test_queue.py tests/test_frozen_execution.py -n 0 -rA",
+    "m3_head_f548d60": {
+      "exit": "EXIT=1 SEC=41.5514021",
+      "counts": {
+        "selected": 35,
+        "passed": 10,
+        "failed": 5,
+        "errors": 20,
+        "skipped": 0,
+        "deselected": 0,
+        "pytest_seconds": 38.971
+      },
+      "nodes": {
+        "tests.test_queue::test_submit_deduplicates_identical_plans": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.329"
+        },
+        "tests.test_queue::test_submit_refuses_blocked_plans_and_missing_snapshots": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.002"
+        },
+        "tests.test_queue::test_submit_refuses_legacy_unfrozen_plan": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.029"
+        },
+        "tests.test_queue::test_submit_allows_explicit_duplicates": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.002"
+        },
+        "tests.test_queue::test_only_one_gpu_lease_can_be_held": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.026"
+        },
+        "tests.test_queue::test_stale_lease_is_reclaimable_and_recorded": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.010"
+        },
+        "tests.test_queue::test_cpu_environment_refuses_cuda_job_without_execution": {
+          "status": "failure",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "6.468"
+        },
+        "tests.test_queue::test_toy_campaign_runs_sequentially_to_success": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.003"
+        },
+        "tests.test_queue::test_changed_live_tree_preserves_frozen_run": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.002"
+        },
+        "tests.test_queue::test_failed_jobs_keep_evidence_and_stay_terminal": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.002"
+        },
+        "tests.test_queue::test_crash_recovery_requeues_once_when_retries_remain": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.003"
+        },
+        "tests.test_queue::test_crash_without_retries_fails_loudly": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.002"
+        },
+        "tests.test_queue::test_cancel_stops_a_queued_job_and_a_running_job": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.002"
+        },
+        "tests.test_queue::test_prep_pool_is_bounded_and_ordered": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.104"
+        },
+        "tests.test_queue::test_status_lists_jobs_with_attempts": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.003"
+        },
+        "tests.test_queue::test_cli_experiment_plan_reports_blockers": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "1.033"
+        },
+        "tests.test_queue::test_cli_campaign_plan_shows_six_mixtures_without_running": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.131"
+        },
+        "tests.test_queue::test_cli_submit_blocks_unauthorized_large_runs": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "1.053"
+        },
+        "tests.test_queue::test_cli_queue_status_and_cancel": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.250"
+        },
+        "tests.test_frozen_execution::test_frozen_seed_copies_are_private": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "4.038"
+        },
+        "tests.test_frozen_execution::test_independent_persisted_bindings_refuse_before_worker": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.001"
+        },
+        "tests.test_frozen_execution::test_authority_and_recomputed_envelope_fields_are_checked": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.001"
+        },
+        "tests.test_frozen_execution::test_actual_environment_mismatch_fails_in_real_worker": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.001"
+        },
+        "tests.test_frozen_execution::test_public_queue_and_diagnostic_receipt_keep_separate_provenance": {
+          "status": "failure",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "4.009"
+        },
+        "tests.test_frozen_execution::test_changed_tokenizer_and_real_shard_are_rejected": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.001"
+        },
+        "tests.test_frozen_execution::test_real_worker_output_bound_and_terminal_failure": {
+          "status": "failure",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "3.939"
+        },
+        "tests.test_frozen_execution::test_worker_rejects_cli_override_outside_frozen_envelope": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.001"
+        },
+        "tests.test_frozen_execution::test_unresolved_checkpoint_is_inspectable_but_not_frozen_resume": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.611"
+        },
+        "tests.test_frozen_execution::test_snapshot_reuse_conflicts_and_paths": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "7.196"
+        },
+        "tests.test_frozen_execution::test_relocated_locked_environment_ignores_editable_hooks_and_bytecode": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.001"
+        },
+        "tests.test_frozen_execution::test_real_frozen_worker_trains_and_publishes": {
+          "status": "failure",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "4.065"
+        },
+        "tests.test_frozen_execution::test_intact_a_executes_after_live_b_and_import_override": {
+          "status": "failure",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "4.084"
+        },
+        "tests.test_frozen_execution::test_snapshot_damage_rejects_before_worker[tamper]": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.001"
+        },
+        "tests.test_frozen_execution::test_snapshot_damage_rejects_before_worker[missing]": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.001"
+        },
+        "tests.test_frozen_execution::test_snapshot_damage_rejects_before_worker[extra]": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.001"
+        }
+      }
+    },
+    "certified_m2_a3e5546_clean_export_same_interpreter": {
+      "exit": "EXIT=1 SEC=43.9391702",
+      "counts": {
+        "selected": 35,
+        "passed": 10,
+        "failed": 5,
+        "errors": 20,
+        "skipped": 0,
+        "deselected": 0,
+        "pytest_seconds": 41.152
+      },
+      "nodes": {
+        "tests.test_queue::test_submit_deduplicates_identical_plans": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.356"
+        },
+        "tests.test_queue::test_submit_refuses_blocked_plans_and_missing_snapshots": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.002"
+        },
+        "tests.test_queue::test_submit_refuses_legacy_unfrozen_plan": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.030"
+        },
+        "tests.test_queue::test_submit_allows_explicit_duplicates": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.002"
+        },
+        "tests.test_queue::test_only_one_gpu_lease_can_be_held": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.028"
+        },
+        "tests.test_queue::test_stale_lease_is_reclaimable_and_recorded": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.011"
+        },
+        "tests.test_queue::test_cpu_environment_refuses_cuda_job_without_execution": {
+          "status": "failure",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "7.411"
+        },
+        "tests.test_queue::test_toy_campaign_runs_sequentially_to_success": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.002"
+        },
+        "tests.test_queue::test_changed_live_tree_preserves_frozen_run": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.003"
+        },
+        "tests.test_queue::test_failed_jobs_keep_evidence_and_stay_terminal": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.002"
+        },
+        "tests.test_queue::test_crash_recovery_requeues_once_when_retries_remain": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.002"
+        },
+        "tests.test_queue::test_crash_without_retries_fails_loudly": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.003"
+        },
+        "tests.test_queue::test_cancel_stops_a_queued_job_and_a_running_job": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.002"
+        },
+        "tests.test_queue::test_prep_pool_is_bounded_and_ordered": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.104"
+        },
+        "tests.test_queue::test_status_lists_jobs_with_attempts": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.003"
+        },
+        "tests.test_queue::test_cli_experiment_plan_reports_blockers": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "1.542"
+        },
+        "tests.test_queue::test_cli_campaign_plan_shows_six_mixtures_without_running": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.129"
+        },
+        "tests.test_queue::test_cli_submit_blocks_unauthorized_large_runs": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "1.473"
+        },
+        "tests.test_queue::test_cli_queue_status_and_cancel": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.271"
+        },
+        "tests.test_frozen_execution::test_frozen_seed_copies_are_private": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "4.073"
+        },
+        "tests.test_frozen_execution::test_independent_persisted_bindings_refuse_before_worker": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.001"
+        },
+        "tests.test_frozen_execution::test_authority_and_recomputed_envelope_fields_are_checked": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.001"
+        },
+        "tests.test_frozen_execution::test_actual_environment_mismatch_fails_in_real_worker": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.001"
+        },
+        "tests.test_frozen_execution::test_public_queue_and_diagnostic_receipt_keep_separate_provenance": {
+          "status": "failure",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "3.943"
+        },
+        "tests.test_frozen_execution::test_changed_tokenizer_and_real_shard_are_rejected": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.001"
+        },
+        "tests.test_frozen_execution::test_real_worker_output_bound_and_terminal_failure": {
+          "status": "failure",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "4.030"
+        },
+        "tests.test_frozen_execution::test_worker_rejects_cli_override_outside_frozen_envelope": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.001"
+        },
+        "tests.test_frozen_execution::test_unresolved_checkpoint_is_inspectable_but_not_frozen_resume": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.653"
+        },
+        "tests.test_frozen_execution::test_snapshot_reuse_conflicts_and_paths": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "7.006"
+        },
+        "tests.test_frozen_execution::test_relocated_locked_environment_ignores_editable_hooks_and_bytecode": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.001"
+        },
+        "tests.test_frozen_execution::test_real_frozen_worker_trains_and_publishes": {
+          "status": "failure",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "4.006"
+        },
+        "tests.test_frozen_execution::test_intact_a_executes_after_live_b_and_import_override": {
+          "status": "failure",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "4.285"
+        },
+        "tests.test_frozen_execution::test_snapshot_damage_rejects_before_worker[tamper]": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.001"
+        },
+        "tests.test_frozen_execution::test_snapshot_damage_rejects_before_worker[missing]": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.001"
+        },
+        "tests.test_frozen_execution::test_snapshot_damage_rejects_before_worker[extra]": {
+          "status": "error",
+          "exception": "E           ValueError: installed torch accelerator does not match selected extras",
+          "seconds": "0.001"
+        }
+      }
+    },
+    "classification": "pre-existing environment/capability: all 25 non-green nodes raise 'installed torch accelerator does not match selected extras' at src/xlm/experiments/environment.py:111 because they require the CPU-extra frozen identity (+cpu torch) and only the locked CUDA environment exists; identical status and exception on certified M2 for all 35 nodes"
+  },
+  "mutation_checks": {
+    "method": "each mutant applied to its own fresh `git archive HEAD` export; edit anchor must match exactly once; mutated file must compile; xlm must import from the export's src; KILLED = pytest exit 1, no import/syntax error, every listed node FAILED; an unmutated control export must pass the union of all listed nodes first",
+    "runner_sha256": "b048e0c7999155ea891604fec45117da6a580c3911f5d7c247ceaae7e109ae8c",
+    "runner_note": "final runner source; after round 2 it gained mutant s1 and a node-id parser fix for parametrization ids containing spaces (no round-2 node id contains a space)",
+    "runner_source": "\"\"\"P35 M3 certification: nine adversarial mutation checks (scratch only, never committed).\n\nEach mutant is applied to its own fresh ``git archive HEAD`` export; the real\nworktree is never modified. Before a run the edit must match exactly once and\nthe mutated file must compile. Import resolution is probed so the export's\n``src`` (not the worktree's) is what the tests exercise. A mutant is KILLED\nonly when pytest exits 1 (test failures, not collection/usage/internal errors),\nno import/syntax error appears, and every node expected to catch it FAILED.\nAn unmutated control export must pass the union of all selected nodes first.\n\"\"\"\n\nfrom __future__ import annotations\n\nimport io\nimport json\nimport os\nimport py_compile\nimport re\nimport shutil\nimport subprocess\nimport sys\nimport tarfile\nimport time\nfrom pathlib import Path\n\nWORKTREE = Path(r\"G:\\Project\\xlm-p35-m3\")\nPYTHON = WORKTREE / \".venv-p35-m3\" / \"Scripts\" / \"python.exe\"\nSCRATCH = Path(__file__).resolve().parent / \"m3_mutants\"\n\nCAD = \"tests/test_p35_checkpoint_cadence.py\"\nRET = \"tests/test_p35_checkpoint_retention.py\"\nRES = \"tests/test_p35_checkpoint_rescore.py\"\nPIL = \"tests/test_p35_science_pilot.py\"\nWAL = \"tests/test_p35_wall_allowance.py\"\n\nMIL = \"src/xlm/training/milestones.py\"\nRTN = \"src/xlm/artifacts/retention.py\"\nRSC = \"src/xlm/evaluation/rescore.py\"\nSPL = \"src/xlm/experiments/science_pilot.py\"\nWBG = \"src/xlm/experiments/wall_budget.py\"\n\nM1_OLD = \"\"\"        self.settle()\n        due = self.plan.due(trainer.committed_valid_targets, handled=self.ledger.handled())\n        if not due:\n            return None\n        return self._publish(trainer, due, reason=\"planned\")\n\"\"\"\nM1_NEW = \"\"\"        self.settle()\n        due = self.plan.due(trainer.committed_valid_targets, handled=self.ledger.handled())\n        # MUTANT 1: a restored ledger re-anchors the remaining cadence at the resumed\n        # committed count: next checkpoint at resumed_C + (threshold - last threshold).\n        if getattr(self, \"_anchor_ledger\", None) is not self.ledger:\n            self._anchor_ledger = self.ledger\n            handled = [self.ledger.plan.event(e).threshold for e in self.ledger.handled()]\n            self._anchor = (\n                (trainer.committed_valid_targets, max(handled))\n                if handled and trainer.committed_valid_targets > 0\n                else None\n            )\n        if self._anchor is not None:\n            anchor_c, anchor_t = self._anchor\n            due = [\n                e\n                for e in due\n                if e.is_endpoint\n                or trainer.committed_valid_targets >= anchor_c + (e.threshold - anchor_t)\n            ]\n        if not due:\n            return None\n        return self._publish(trainer, due, reason=\"planned\")\n\"\"\"\n\nM2_VIEW_OLD = \"\"\"            if not self.checkpoint_dir(record.artifact_id).is_dir():\n                continue\n            assert record.manifest_sha256 is not None\n\"\"\"\nM2_VIEW_NEW = \"\"\"            if not self.checkpoint_dir(record.artifact_id).is_dir() and (\n                record.artifact_id != getattr(self, \"_premature\", None)\n            ):\n                continue\n            assert record.manifest_sha256 is not None\n\"\"\"\nM2_PUB_OLD = \"\"\"        try:\n            path = trainer._save_checkpoint(artifact_id)\n\"\"\"\nM2_PUB_NEW = \"\"\"        try:\n            # MUTANT 2: authority granted and retention run before the replacement exists.\n            record.status = PublicationStatus.PUBLISHED.value\n            record.manifest_sha256 = \"0\" * 64\n            self._premature = artifact_id\n            try:\n                self.apply_retention(trainer, after=artifact_id)\n            finally:\n                self._premature = None\n                record.status = PublicationStatus.PUBLISHING.value\n                record.manifest_sha256 = None\n            path = trainer._save_checkpoint(artifact_id)\n\"\"\"\n\nM3_OLD = \"\"\"    live = [c for c in candidates if c.role in (MILESTONE, RECOVERY)]\n    if live:\n        keep(max(live, key=RetentionCandidate.order_key), \"last_good_state\")\n    recovery = sorted(\n        (c for c in candidates if c.role == RECOVERY),\n        key=RetentionCandidate.order_key,\n        reverse=True,\n    )\n\"\"\"\nM3_NEW = \"\"\"    # MUTANT 3: no last-good protection, and the recovery window keeps the oldest two.\n    recovery = sorted(\n        (c for c in candidates if c.role == RECOVERY),\n        key=RetentionCandidate.order_key,\n        reverse=False,\n    )\n\"\"\"\n\nM4_OLD = \"        events = evaluation_dependencies.get(candidate.model_state_digest)\\n\"\nM4_NEW = \"        events = None  # MUTANT 4: unresolved evaluation dependencies ignored\\n\"\n\nM5_DIGEST_OLD = '    if _stored_state_digest(checkpoint_dir) != due[\"model_state_digest\"]:\\n'\nM5_DIGEST_NEW = \"    if False:  # MUTANT 5: same C/step suffices, weights never compared\\n\"\nM5_SCORE_OLD = '            expected_state_digest=due[\"model_state_digest\"],\\n'\nM5_SCORE_NEW = \"            expected_state_digest=None,  # MUTANT 5\\n\"\n\nM6_DEF_OLD = \"def locate_exact_checkpoint(\"\nM6_DEF_NEW = '''def _mutant_latest(checkpoint_ledger: Any, root: Path) -> Any:\n    \"\"\"MUTANT 6: the latest retained published checkpoint.\"\"\"\n    retained = [\n        r\n        for r in checkpoint_ledger.records.values()\n        if r.status == \"published\" and (root / \"checkpoints\" / r.artifact_id).is_dir()\n    ]\n    return max(retained, key=lambda r: (r.actual_committed_targets, r.step, r.attempt))\n\n\ndef locate_exact_checkpoint('''\nM6_MISSING_OLD = \"\"\"    if not matches:\n        raise RescoreRefused(\n\"\"\"\nM6_MISSING_NEW = \"\"\"    if not matches:\n        return _mutant_latest(checkpoint_ledger, root)  # MUTANT 6\n        raise RescoreRefused(\n\"\"\"\nM6_RETAINED_OLD = \"\"\"    if not retained:\n        raise RescoreRefused(\n\"\"\"\nM6_RETAINED_NEW = \"\"\"    if not retained:\n        return _mutant_latest(checkpoint_ledger, root)  # MUTANT 6\n        raise RescoreRefused(\n\"\"\"\n\nM7_OLD = \"        transient = 2 * size  # serialization directory + store staging copy\\n\"\nM7_NEW = \"        transient = size  # MUTANT 7: staging copy omitted\\n\"\n\nM8_OLD = '        consumed = float(saved[\"consumed_seconds\"])\\n'\nM8_NEW = \"        consumed = 0.0  # MUTANT 8: spent allowance reset on resume\\n\"\n\nM9A_OLD = \"    status = PilotStatus.BLOCKED if findings.blockers else PilotStatus.RESOLVED\\n\"\nM9A_NEW = \"    status = PilotStatus.RESOLVED  # MUTANT 9a: preflight blockers ignored\\n\"\nM9B_OLD = \"\"\"            findings.block(\"ticket_does_not_authorize\", str(exc))\n            status = PilotStatus.BLOCKED\n\"\"\"\nM9B_NEW = \"\"\"            findings.block(\"ticket_does_not_authorize\", str(exc))\n            status = PilotStatus.EXECUTABLE  # MUTANT 9b: authorization failure ignored\n\"\"\"\n\n# name -> (edits [(file, old, new)], nodes that must FAIL)\nMUTANTS: dict[str, tuple[list[tuple[str, str, str]], list[str]]] = {\n    \"m1_resume_cadence_drift\": (\n        [(MIL, M1_OLD, M1_NEW)],\n        [f\"{CAD}::test_resume_does_not_drift_or_duplicate_milestones\"],\n    ),\n    \"m2_retire_before_replacement_authority\": (\n        [(MIL, M2_VIEW_OLD, M2_VIEW_NEW), (MIL, M2_PUB_OLD, M2_PUB_NEW)],\n        [\n            f\"{RET}::test_failed_publication_retires_nothing\",\n            f\"{RET}::test_replacement_is_published_and_verified_before_any_retirement\",\n        ],\n    ),\n    \"m3_delete_last_good_recovery\": (\n        [(RTN, M3_OLD, M3_NEW)],\n        [\n            f\"{RET}::test_policy_keeps_latest_two_recovery_pinned_references_and_dependencies\",\n            f\"{RET}::test_training_retains_latest_two_recovery_and_all_milestones\",\n        ],\n    ),\n    \"m4_ignore_evaluation_dependency\": (\n        [(RTN, M4_OLD, M4_NEW)],\n        [\n            f\"{RET}::test_checkpoint_needed_by_an_unresolved_evaluation_is_kept\",\n            f\"{RET}::test_policy_keeps_latest_two_recovery_pinned_references_and_dependencies\",\n        ],\n    ),\n    \"m5_rescore_without_exact_weights\": (\n        [(RSC, M5_DIGEST_OLD, M5_DIGEST_NEW), (RSC, M5_SCORE_OLD, M5_SCORE_NEW)],\n        [f\"{RES}::test_same_count_and_step_with_different_weights_is_refused\"],\n    ),\n    \"m6_fallback_to_latest_checkpoint\": (\n        [\n            (RSC, M6_DEF_OLD, M6_DEF_NEW),\n            (RSC, M6_MISSING_OLD, M6_MISSING_NEW),\n            (RSC, M6_RETAINED_OLD, M6_RETAINED_NEW),\n        ],\n        [\n            f\"{RES}::test_missing_or_retired_checkpoint_leaves_the_event_incomplete\",\n            f\"{RES}::test_checkpoint_no_longer_retained_is_refused\",\n        ],\n    ),\n    \"m7_underestimate_peak_disk\": (\n        [(SPL, M7_OLD, M7_NEW)],\n        [f\"{PIL}::test_capacity_counts_retained_new_and_staging_bytes\"],\n    ),\n    \"m8_reset_wall_budget_after_resume\": (\n        [(WBG, M8_OLD, M8_NEW)],\n        [\n            f\"{WAL}::test_resume_receives_only_the_remaining_allowance\",\n            f\"{WAL}::test_queue_resume_gets_the_remaining_allowance_and_success_is_recorded\",\n        ],\n    ),\n    \"m9a_blocked_pilot_becomes_executable\": (\n        [(SPL, M9A_OLD, M9A_NEW)],\n        [f\"{PIL}::test_validation_never_authorizes_and_needs_the_operator_ticket\"],\n    ),\n    \"s1_placeholder_strings_accepted\": (\n        [\n            (\n                SPL,\n                '    if not text or text.casefold() in {\"latest\", \"null\", \"none\", \"todo\", \"tbd\"}:\\n',\n                \"    if not text:  # SUPPLEMENTARY MUTANT: placeholders accepted as identities\\n\",\n            )\n        ],\n        [\n            f\"{PIL}::test_bindings_refuse_latest_wildcards_and_relative_paths[path0-latest-explicit identity]\",\n            f\"{PIL}::test_bindings_refuse_latest_wildcards_and_relative_paths[path6-null-explicit identity]\",\n            f\"{PIL}::test_bindings_refuse_latest_wildcards_and_relative_paths[path7-TODO-explicit identity]\",\n            f\"{PIL}::test_bindings_refuse_latest_wildcards_and_relative_paths[path8-None-explicit identity]\",\n            f\"{PIL}::test_bindings_refuse_latest_wildcards_and_relative_paths[path9- tbd -explicit identity]\",\n        ],\n    ),\n    \"m9b_unauthorized_pilot_becomes_executable\": (\n        [(SPL, M9B_OLD, M9B_NEW)],\n        [\n            f\"{PIL}::test_validation_never_authorizes_and_needs_the_operator_ticket\",\n            f\"{PIL}::test_cli_plan_and_validate_expose_states_and_exit_codes\",\n        ],\n    ),\n}\n\nBAD_ERRORS = re.compile(r\"\\b(ImportError|ModuleNotFoundError|SyntaxError|IndentationError)\\b\")\n\n\ndef export(root: Path) -> None:\n    data = subprocess.run(\n        [\"git\", \"-C\", str(WORKTREE), \"archive\", \"--format=tar\", \"HEAD\"],\n        capture_output=True,\n        check=True,\n    ).stdout\n    root.mkdir(parents=True)\n    with tarfile.open(fileobj=io.BytesIO(data)) as archive:\n        archive.extractall(root, filter=\"data\")\n\n\ndef environment(root: Path) -> dict[str, str]:\n    return {\n        **os.environ,\n        \"PYTHONPATH\": f\"{root / 'src'};{root / 'tests'}\",\n        \"PYTHONDONTWRITEBYTECODE\": \"1\",\n        \"OMP_NUM_THREADS\": \"1\",\n        \"MKL_NUM_THREADS\": \"1\",\n        \"OPENBLAS_NUM_THREADS\": \"1\",\n        \"NUMEXPR_NUM_THREADS\": \"1\",\n        \"TOKENIZERS_PARALLELISM\": \"false\",\n        \"HF_HUB_OFFLINE\": \"1\",\n        \"HF_DATASETS_OFFLINE\": \"1\",\n        \"UV_OFFLINE\": \"true\",\n    }\n\n\ndef run(name: str, edits: list[tuple[str, str, str]], nodes: list[str]) -> dict[str, object]:\n    root = SCRATCH / name\n    export(root)\n    for relative, old, new in edits:\n        target = root / relative\n        text = target.read_text(encoding=\"utf-8\")\n        count = text.count(old)\n        if count != 1:\n            raise SystemExit(f\"{name}: edit anchor in {relative} matched {count} times\")\n        target.write_text(text.replace(old, new), encoding=\"utf-8\")\n        py_compile.compile(str(target), doraise=True, cfile=str(root / \"compile_check.pyc\"))\n    env = environment(root)\n    imported = subprocess.run(\n        [str(PYTHON), \"-c\", \"import xlm; print(xlm.__file__)\"],\n        cwd=root, env=env, capture_output=True, text=True, check=True,\n    ).stdout.strip()  # fmt: skip\n    if not Path(imported).is_relative_to(root / \"src\"):\n        raise SystemExit(f\"{name}: xlm resolved outside the export: {imported}\")\n    started = time.monotonic()\n    completed = subprocess.run(\n        [str(PYTHON), \"-m\", \"pytest\", *nodes, \"-n\", \"0\", \"-rA\", \"-p\", \"no:cacheprovider\"],\n        cwd=root, env=env, capture_output=True, text=True,\n    )  # fmt: skip\n    seconds = round(time.monotonic() - started, 1)\n    output = completed.stdout + completed.stderr\n    (SCRATCH / f\"{name}.log\").write_text(output, encoding=\"utf-8\")\n    outcomes = {\n        m.group(2): m.group(1)\n        for m in re.finditer(r\"^(PASSED|FAILED|ERROR|SKIPPED) (.+?)(?: - .*)?$\", output, re.M)\n    }\n    summary = next(\n        (line for line in reversed(output.splitlines()) if re.search(r\"\\d+ (passed|failed)\", line)),\n        \"\",\n    )\n    return {\n        \"name\": name,\n        \"files\": sorted({e[0] for e in edits}),\n        \"imported\": imported,\n        \"nodes\": nodes,\n        \"exit\": completed.returncode,\n        \"outcomes\": outcomes,\n        \"summary\": summary.strip(\"= \"),\n        \"bad_errors\": sorted(set(BAD_ERRORS.findall(output))),\n        \"assertions\": [\n            line for line in output.splitlines() if line.startswith(\"E \")\n        ][:12],\n        \"seconds\": seconds,\n    }\n\n\ndef main() -> int:\n    only = set(sys.argv[1:])\n    SCRATCH.mkdir(exist_ok=True)\n    results: list[dict[str, object]] = []\n    if not only or \"control\" in only:\n        union = sorted({node for _, nodes in MUTANTS.values() for node in nodes})\n        shutil.rmtree(SCRATCH / \"control\", ignore_errors=True)\n        control = run(\"control\", [], union)\n        control[\"verdict\"] = (\n            \"CONTROL_GREEN\"\n            if control[\"exit\"] == 0\n            and all(control[\"outcomes\"].get(n) == \"PASSED\" for n in union)  # type: ignore[union-attr]\n            else \"CONTROL_NOT_GREEN\"\n        )\n        results.append(control)\n        print(json.dumps(control), flush=True)\n        if control[\"verdict\"] != \"CONTROL_GREEN\":\n            (SCRATCH / \"results.json\").write_text(json.dumps(results, indent=2), encoding=\"utf-8\")\n            return 2\n    for name, (edits, nodes) in MUTANTS.items():\n        if only and name not in only:\n            continue\n        shutil.rmtree(SCRATCH / name, ignore_errors=True)\n        result = run(name, edits, nodes)\n        failed_all = all(result[\"outcomes\"].get(n) == \"FAILED\" for n in nodes)  # type: ignore[union-attr]\n        result[\"verdict\"] = (\n            \"KILLED\"\n            if result[\"exit\"] == 1 and failed_all and not result[\"bad_errors\"]\n            else \"SURVIVED_OR_INVALID\"\n        )\n        results.append(result)\n        print(json.dumps(result), flush=True)\n    (SCRATCH / \"results.json\").write_text(json.dumps(results, indent=2), encoding=\"utf-8\")\n    return 0 if all(r[\"verdict\"] in (\"KILLED\", \"CONTROL_GREEN\") for r in results) else 1\n\n\nif __name__ == \"__main__\":\n    sys.exit(main())\n",
+    "edits": {
+      "m1_resume_cadence_drift": [
+        {
+          "file": "src/xlm/training/milestones.py",
+          "old": "        self.settle()\n        due = self.plan.due(trainer.committed_valid_targets, handled=self.ledger.handled())\n        if not due:\n            return None\n        return self._publish(trainer, due, reason=\"planned\")\n",
+          "new": "        self.settle()\n        due = self.plan.due(trainer.committed_valid_targets, handled=self.ledger.handled())\n        # MUTANT 1: a restored ledger re-anchors the remaining cadence at the resumed\n        # committed count: next checkpoint at resumed_C + (threshold - last threshold).\n        if getattr(self, \"_anchor_ledger\", None) is not self.ledger:\n            self._anchor_ledger = self.ledger\n            handled = [self.ledger.plan.event(e).threshold for e in self.ledger.handled()]\n            self._anchor = (\n                (trainer.committed_valid_targets, max(handled))\n                if handled and trainer.committed_valid_targets > 0\n                else None\n            )\n        if self._anchor is not None:\n            anchor_c, anchor_t = self._anchor\n            due = [\n                e\n                for e in due\n                if e.is_endpoint\n                or trainer.committed_valid_targets >= anchor_c + (e.threshold - anchor_t)\n            ]\n        if not due:\n            return None\n        return self._publish(trainer, due, reason=\"planned\")\n"
+        }
+      ],
+      "m2_retire_before_replacement_authority": [
+        {
+          "file": "src/xlm/training/milestones.py",
+          "old": "            if not self.checkpoint_dir(record.artifact_id).is_dir():\n                continue\n            assert record.manifest_sha256 is not None\n",
+          "new": "            if not self.checkpoint_dir(record.artifact_id).is_dir() and (\n                record.artifact_id != getattr(self, \"_premature\", None)\n            ):\n                continue\n            assert record.manifest_sha256 is not None\n"
+        },
+        {
+          "file": "src/xlm/training/milestones.py",
+          "old": "        try:\n            path = trainer._save_checkpoint(artifact_id)\n",
+          "new": "        try:\n            # MUTANT 2: authority granted and retention run before the replacement exists.\n            record.status = PublicationStatus.PUBLISHED.value\n            record.manifest_sha256 = \"0\" * 64\n            self._premature = artifact_id\n            try:\n                self.apply_retention(trainer, after=artifact_id)\n            finally:\n                self._premature = None\n                record.status = PublicationStatus.PUBLISHING.value\n                record.manifest_sha256 = None\n            path = trainer._save_checkpoint(artifact_id)\n"
+        }
+      ],
+      "m3_delete_last_good_recovery": [
+        {
+          "file": "src/xlm/artifacts/retention.py",
+          "old": "    live = [c for c in candidates if c.role in (MILESTONE, RECOVERY)]\n    if live:\n        keep(max(live, key=RetentionCandidate.order_key), \"last_good_state\")\n    recovery = sorted(\n        (c for c in candidates if c.role == RECOVERY),\n        key=RetentionCandidate.order_key,\n        reverse=True,\n    )\n",
+          "new": "    # MUTANT 3: no last-good protection, and the recovery window keeps the oldest two.\n    recovery = sorted(\n        (c for c in candidates if c.role == RECOVERY),\n        key=RetentionCandidate.order_key,\n        reverse=False,\n    )\n"
+        }
+      ],
+      "m4_ignore_evaluation_dependency": [
+        {
+          "file": "src/xlm/artifacts/retention.py",
+          "old": "        events = evaluation_dependencies.get(candidate.model_state_digest)\n",
+          "new": "        events = None  # MUTANT 4: unresolved evaluation dependencies ignored\n"
+        }
+      ],
+      "m5_rescore_without_exact_weights": [
+        {
+          "file": "src/xlm/evaluation/rescore.py",
+          "old": "    if _stored_state_digest(checkpoint_dir) != due[\"model_state_digest\"]:\n",
+          "new": "    if False:  # MUTANT 5: same C/step suffices, weights never compared\n"
+        },
+        {
+          "file": "src/xlm/evaluation/rescore.py",
+          "old": "            expected_state_digest=due[\"model_state_digest\"],\n",
+          "new": "            expected_state_digest=None,  # MUTANT 5\n"
+        }
+      ],
+      "m6_fallback_to_latest_checkpoint": [
+        {
+          "file": "src/xlm/evaluation/rescore.py",
+          "old": "def locate_exact_checkpoint(",
+          "new": "def _mutant_latest(checkpoint_ledger: Any, root: Path) -> Any:\n    \"\"\"MUTANT 6: the latest retained published checkpoint.\"\"\"\n    retained = [\n        r\n        for r in checkpoint_ledger.records.values()\n        if r.status == \"published\" and (root / \"checkpoints\" / r.artifact_id).is_dir()\n    ]\n    return max(retained, key=lambda r: (r.actual_committed_targets, r.step, r.attempt))\n\n\ndef locate_exact_checkpoint("
+        },
+        {
+          "file": "src/xlm/evaluation/rescore.py",
+          "old": "    if not matches:\n        raise RescoreRefused(\n",
+          "new": "    if not matches:\n        return _mutant_latest(checkpoint_ledger, root)  # MUTANT 6\n        raise RescoreRefused(\n"
+        },
+        {
+          "file": "src/xlm/evaluation/rescore.py",
+          "old": "    if not retained:\n        raise RescoreRefused(\n",
+          "new": "    if not retained:\n        return _mutant_latest(checkpoint_ledger, root)  # MUTANT 6\n        raise RescoreRefused(\n"
+        }
+      ],
+      "m7_underestimate_peak_disk": [
+        {
+          "file": "src/xlm/experiments/science_pilot.py",
+          "old": "        transient = 2 * size  # serialization directory + store staging copy\n",
+          "new": "        transient = size  # MUTANT 7: staging copy omitted\n"
+        }
+      ],
+      "m8_reset_wall_budget_after_resume": [
+        {
+          "file": "src/xlm/experiments/wall_budget.py",
+          "old": "        consumed = float(saved[\"consumed_seconds\"])\n",
+          "new": "        consumed = 0.0  # MUTANT 8: spent allowance reset on resume\n"
+        }
+      ],
+      "m9a_blocked_pilot_becomes_executable": [
+        {
+          "file": "src/xlm/experiments/science_pilot.py",
+          "old": "    status = PilotStatus.BLOCKED if findings.blockers else PilotStatus.RESOLVED\n",
+          "new": "    status = PilotStatus.RESOLVED  # MUTANT 9a: preflight blockers ignored\n"
+        }
+      ],
+      "s1_placeholder_strings_accepted": [
+        {
+          "file": "src/xlm/experiments/science_pilot.py",
+          "old": "    if not text or text.casefold() in {\"latest\", \"null\", \"none\", \"todo\", \"tbd\"}:\n",
+          "new": "    if not text:  # SUPPLEMENTARY MUTANT: placeholders accepted as identities\n"
+        }
+      ],
+      "m9b_unauthorized_pilot_becomes_executable": [
+        {
+          "file": "src/xlm/experiments/science_pilot.py",
+          "old": "            findings.block(\"ticket_does_not_authorize\", str(exc))\n            status = PilotStatus.BLOCKED\n",
+          "new": "            findings.block(\"ticket_does_not_authorize\", str(exc))\n            status = PilotStatus.EXECUTABLE  # MUTANT 9b: authorization failure ignored\n"
+        }
+      ]
+    },
+    "round_1_on_f548d60": [
+      {
+        "name": "control",
+        "source_head": "f548d60",
+        "files": [],
+        "imported_from_export": true,
+        "nodes": [
+          "tests/test_p35_checkpoint_cadence.py::test_resume_does_not_drift_or_duplicate_milestones",
+          "tests/test_p35_checkpoint_rescore.py::test_checkpoint_no_longer_retained_is_refused",
+          "tests/test_p35_checkpoint_rescore.py::test_missing_or_retired_checkpoint_leaves_the_event_incomplete",
+          "tests/test_p35_checkpoint_rescore.py::test_same_count_and_step_with_different_weights_is_refused",
+          "tests/test_p35_checkpoint_retention.py::test_checkpoint_needed_by_an_unresolved_evaluation_is_kept",
+          "tests/test_p35_checkpoint_retention.py::test_failed_publication_retires_nothing",
+          "tests/test_p35_checkpoint_retention.py::test_policy_keeps_latest_two_recovery_pinned_references_and_dependencies",
+          "tests/test_p35_checkpoint_retention.py::test_replacement_is_published_and_verified_before_any_retirement",
+          "tests/test_p35_checkpoint_retention.py::test_training_retains_latest_two_recovery_and_all_milestones",
+          "tests/test_p35_science_pilot.py::test_capacity_counts_retained_new_and_staging_bytes",
+          "tests/test_p35_science_pilot.py::test_cli_plan_and_validate_expose_states_and_exit_codes",
+          "tests/test_p35_science_pilot.py::test_validation_never_authorizes_and_needs_the_operator_ticket",
+          "tests/test_p35_wall_allowance.py::test_queue_resume_gets_the_remaining_allowance_and_success_is_recorded",
+          "tests/test_p35_wall_allowance.py::test_resume_receives_only_the_remaining_allowance"
+        ],
+        "exit": 0,
+        "outcomes": {
+          "tests/test_p35_checkpoint_cadence.py::test_resume_does_not_drift_or_duplicate_milestones": "PASSED",
+          "tests/test_p35_checkpoint_rescore.py::test_checkpoint_no_longer_retained_is_refused": "PASSED",
+          "tests/test_p35_checkpoint_rescore.py::test_missing_or_retired_checkpoint_leaves_the_event_incomplete": "PASSED",
+          "tests/test_p35_checkpoint_rescore.py::test_same_count_and_step_with_different_weights_is_refused": "PASSED",
+          "tests/test_p35_checkpoint_retention.py::test_checkpoint_needed_by_an_unresolved_evaluation_is_kept": "PASSED",
+          "tests/test_p35_checkpoint_retention.py::test_failed_publication_retires_nothing": "PASSED",
+          "tests/test_p35_checkpoint_retention.py::test_policy_keeps_latest_two_recovery_pinned_references_and_dependencies": "PASSED",
+          "tests/test_p35_checkpoint_retention.py::test_replacement_is_published_and_verified_before_any_retirement": "PASSED",
+          "tests/test_p35_checkpoint_retention.py::test_training_retains_latest_two_recovery_and_all_milestones": "PASSED",
+          "tests/test_p35_science_pilot.py::test_capacity_counts_retained_new_and_staging_bytes": "PASSED",
+          "tests/test_p35_science_pilot.py::test_cli_plan_and_validate_expose_states_and_exit_codes": "PASSED",
+          "tests/test_p35_science_pilot.py::test_validation_never_authorizes_and_needs_the_operator_ticket": "PASSED",
+          "tests/test_p35_wall_allowance.py::test_queue_resume_gets_the_remaining_allowance_and_success_is_recorded": "PASSED",
+          "tests/test_p35_wall_allowance.py::test_resume_receives_only_the_remaining_allowance": "PASSED"
+        },
+        "summary": "14 passed in 78.04s (0:01:18)",
+        "import_or_syntax_errors": [],
+        "assertion_lines": [],
+        "verdict": "CONTROL_GREEN"
+      },
+      {
+        "name": "m1_resume_cadence_drift",
+        "source_head": "f548d60",
+        "files": [
+          "src/xlm/training/milestones.py"
+        ],
+        "imported_from_export": true,
+        "nodes": [
+          "tests/test_p35_checkpoint_cadence.py::test_resume_does_not_drift_or_duplicate_milestones"
+        ],
+        "exit": 1,
+        "outcomes": {
+          "tests/test_p35_checkpoint_cadence.py::test_resume_does_not_drift_or_duplicate_milestones": "FAILED"
+        },
+        "summary": "1 failed in 10.56s",
+        "import_or_syntax_errors": [],
+        "assertion_lines": [
+          "E       AssertionError: assert {'checkpoint@...point@48': 48} == {'checkpoint@...point@48': 48}",
+          "E         ",
+          "E         Omitting 3 identical items, use -vv to show",
+          "E         Differing items:",
+          "E         {'checkpoint@32': 48} != {'checkpoint@32': 36}",
+          "E         Use -v to get more diff"
+        ],
+        "verdict": "KILLED"
+      },
+      {
+        "name": "m2_retire_before_replacement_authority",
+        "source_head": "f548d60",
+        "files": [
+          "src/xlm/training/milestones.py"
+        ],
+        "imported_from_export": true,
+        "nodes": [
+          "tests/test_p35_checkpoint_retention.py::test_failed_publication_retires_nothing",
+          "tests/test_p35_checkpoint_retention.py::test_replacement_is_published_and_verified_before_any_retirement"
+        ],
+        "exit": 1,
+        "outcomes": {
+          "tests/test_p35_checkpoint_retention.py::test_replacement_is_published_and_verified_before_any_retirement": "PASSED",
+          "tests/test_p35_checkpoint_retention.py::test_failed_publication_retires_nothing": "FAILED"
+        },
+        "summary": "1 failed, 1 passed in 11.06s",
+        "import_or_syntax_errors": [],
+        "assertion_lines": [
+          "E       AssertionError: assert ['m2_run_ckpt-t16-a001'] == ['m2_run_ckpt...ckpt-t8-a001']",
+          "E         ",
+          "E         Right contains one more item: 'm2_run_ckpt-t8-a001'",
+          "E         Use -v to get more diff"
+        ],
+        "verdict": "SURVIVED_OR_INVALID"
+      },
+      {
+        "name": "m3_delete_last_good_recovery",
+        "source_head": "f548d60",
+        "files": [
+          "src/xlm/artifacts/retention.py"
+        ],
+        "imported_from_export": true,
+        "nodes": [
+          "tests/test_p35_checkpoint_retention.py::test_policy_keeps_latest_two_recovery_pinned_references_and_dependencies",
+          "tests/test_p35_checkpoint_retention.py::test_training_retains_latest_two_recovery_and_all_milestones"
+        ],
+        "exit": 1,
+        "outcomes": {
+          "tests/test_p35_checkpoint_retention.py::test_policy_keeps_latest_two_recovery_pinned_references_and_dependencies": "FAILED",
+          "tests/test_p35_checkpoint_retention.py::test_training_retains_latest_two_recovery_and_all_milestones": "FAILED"
+        },
+        "summary": "2 failed in 9.63s",
+        "import_or_syntax_errors": [],
+        "assertion_lines": [
+          "E       AssertionError: assert {'r8': ['late...d_milestone']} == {'r32': ['las...parent'], ...}",
+          "E         ",
+          "E         Omitting 1 identical items, use -vv to show",
+          "E         Differing items:",
+          "E         {'r8': ['latest_recovery_1', 'reference:fork_parent']} != {'r8': ['reference:fork_parent']}",
+          "E         {'r16': ['latest_recovery_2', 'evaluation_dependency:quick_lm@16']} != {'r16': ['evaluation_dependency:quick_lm@16']}",
+          "E         Right contains 2 more items:",
+          "E         {'r24': ['latest_recovery_2'], 'r32': ['last_good_state', 'latest_recovery_1']}",
+          "E         Use -v to get more diff",
+          "E       AssertionError: assert ['m2_run_ckpt...ckpt-t8-a001'] == ['m2_run_ckpt...kpt-t48-a001']",
+          "E         ",
+          "E         At index 1 diff: 'm2_run_ckpt-t16-a001' != 'm2_run_ckpt-t32-a001'"
+        ],
+        "verdict": "KILLED"
+      },
+      {
+        "name": "m4_ignore_evaluation_dependency",
+        "source_head": "f548d60",
+        "files": [
+          "src/xlm/artifacts/retention.py"
+        ],
+        "imported_from_export": true,
+        "nodes": [
+          "tests/test_p35_checkpoint_retention.py::test_checkpoint_needed_by_an_unresolved_evaluation_is_kept",
+          "tests/test_p35_checkpoint_retention.py::test_policy_keeps_latest_two_recovery_pinned_references_and_dependencies"
+        ],
+        "exit": 1,
+        "outcomes": {
+          "tests/test_p35_checkpoint_retention.py::test_checkpoint_needed_by_an_unresolved_evaluation_is_kept": "FAILED",
+          "tests/test_p35_checkpoint_retention.py::test_policy_keeps_latest_two_recovery_pinned_references_and_dependencies": "FAILED"
+        },
+        "summary": "2 failed in 9.87s",
+        "import_or_syntax_errors": [],
+        "assertion_lines": [
+          "E       AssertionError: assert 'm2_run_ckpt-t16-a001' in ['m2_run_ckpt-t0-a001', 'm2_run_ckpt-t32-a001', 'm2_run_ckpt-t40-a001', 'm2_run_ckpt-t48-a001']",
+          "E        +  where ['m2_run_ckpt-t0-a001', 'm2_run_ckpt-t32-a001', 'm2_run_ckpt-t40-a001', 'm2_run_ckpt-t48-a001'] = present(WindowsPath('<tmp>/pytest-of-<user>/pytest-1042/test_checkpoint_needed_by_an_u0'))",
+          "E       AssertionError: assert {'r32': ['las...fork_parent']} == {'r32': ['las...parent'], ...}",
+          "E         ",
+          "E         Omitting 4 identical items, use -vv to show",
+          "E         Right contains 1 more item:",
+          "E         {'r16': ['evaluation_dependency:quick_lm@16']}",
+          "E         Use -v to get more diff"
+        ],
+        "verdict": "KILLED"
+      },
+      {
+        "name": "m5_rescore_without_exact_weights",
+        "source_head": "f548d60",
+        "files": [
+          "src/xlm/evaluation/rescore.py"
+        ],
+        "imported_from_export": true,
+        "nodes": [
+          "tests/test_p35_checkpoint_rescore.py::test_same_count_and_step_with_different_weights_is_refused"
+        ],
+        "exit": 1,
+        "outcomes": {
+          "tests/test_p35_checkpoint_rescore.py::test_same_count_and_step_with_different_weights_is_refused": "FAILED"
+        },
+        "summary": "1 failed in 9.18s",
+        "import_or_syntax_errors": [],
+        "assertion_lines": [
+          "E       Failed: DID NOT RAISE RescoreRefused"
+        ],
+        "verdict": "KILLED"
+      },
+      {
+        "name": "m6_fallback_to_latest_checkpoint",
+        "source_head": "f548d60",
+        "files": [
+          "src/xlm/evaluation/rescore.py"
+        ],
+        "imported_from_export": true,
+        "nodes": [
+          "tests/test_p35_checkpoint_rescore.py::test_missing_or_retired_checkpoint_leaves_the_event_incomplete",
+          "tests/test_p35_checkpoint_rescore.py::test_checkpoint_no_longer_retained_is_refused"
+        ],
+        "exit": 1,
+        "outcomes": {
+          "tests/test_p35_checkpoint_rescore.py::test_missing_or_retired_checkpoint_leaves_the_event_incomplete": "FAILED",
+          "tests/test_p35_checkpoint_rescore.py::test_checkpoint_no_longer_retained_is_refused": "FAILED"
+        },
+        "summary": "2 failed in 9.78s",
+        "import_or_syntax_errors": [],
+        "assertion_lines": [
+          "E       assert [{'event_id':...efused', ...}] == [{'event_id':...efused', ...}]",
+          "E         ",
+          "E         At index 0 diff: {'event_id': 'quick_lm@32', 'actual_committed_targets': 32, 'status_before': 'failed', 'action': 'refused', 'code': 'checkpoint_counters_mismatch', 'reason': \"checkpoint_counters_mismatch: checkpoint C=48 step 3 is not the event's C=32 step 2\"} != {'event_id': 'quick_lm@32', 'actual_committed_targets': 32, 'status_before': 'failed', 'action': 'refused', 'code': 'checkpoint_missing', 'reason': \"checkpoint_counters_mismatch: checkpoint C=48 step 3 is not the event's C=32 step 2\"}",
+          "E         Use -v to get more diff",
+          "E       AssertionError: Regex pattern did not match.",
+          "E         Expected regex: 'checkpoint_not_retained'",
+          "E         Actual message: \"checkpoint_counters_mismatch: checkpoint C=32 step 2 is not the event's C=16 step 1\""
+        ],
+        "verdict": "KILLED"
+      },
+      {
+        "name": "m7_underestimate_peak_disk",
+        "source_head": "f548d60",
+        "files": [
+          "src/xlm/experiments/science_pilot.py"
+        ],
+        "imported_from_export": true,
+        "nodes": [
+          "tests/test_p35_science_pilot.py::test_capacity_counts_retained_new_and_staging_bytes"
+        ],
+        "exit": 1,
+        "outcomes": {
+          "tests/test_p35_science_pilot.py::test_capacity_counts_retained_new_and_staging_bytes": "FAILED"
+        },
+        "summary": "1 failed in 3.03s",
+        "import_or_syntax_errors": [],
+        "assertion_lines": [
+          "E       assert 600000000 == (2 * 600000000)"
+        ],
+        "verdict": "KILLED"
+      },
+      {
+        "name": "m8_reset_wall_budget_after_resume",
+        "source_head": "f548d60",
+        "files": [
+          "src/xlm/experiments/wall_budget.py"
+        ],
+        "imported_from_export": true,
+        "nodes": [
+          "tests/test_p35_wall_allowance.py::test_resume_receives_only_the_remaining_allowance",
+          "tests/test_p35_wall_allowance.py::test_queue_resume_gets_the_remaining_allowance_and_success_is_recorded"
+        ],
+        "exit": 1,
+        "outcomes": {
+          "tests/test_p35_wall_allowance.py::test_resume_receives_only_the_remaining_allowance": "FAILED",
+          "tests/test_p35_wall_allowance.py::test_queue_resume_gets_the_remaining_allowance_and_success_is_recorded": "FAILED"
+        },
+        "summary": "2 failed in 24.57s",
+        "import_or_syntax_errors": [],
+        "assertion_lines": [
+          "E       assert 0.0 == 900 ﾂｱ 9.0e-04",
+          "E         ",
+          "E         comparison failed",
+          "E         Obtained: 0.0",
+          "E         Expected: 900 ﾂｱ 9.0e-04",
+          "E       assert 3600.0 == 2700 ﾂｱ 0.0027",
+          "E         ",
+          "E         comparison failed",
+          "E         Obtained: 3600.0",
+          "E         Expected: 2700 ﾂｱ 0.0027"
+        ],
+        "verdict": "KILLED"
+      },
+      {
+        "name": "m9a_blocked_pilot_becomes_executable",
+        "source_head": "f548d60",
+        "files": [
+          "src/xlm/experiments/science_pilot.py"
+        ],
+        "imported_from_export": true,
+        "nodes": [
+          "tests/test_p35_science_pilot.py::test_validation_never_authorizes_and_needs_the_operator_ticket"
+        ],
+        "exit": 1,
+        "outcomes": {
+          "tests/test_p35_science_pilot.py::test_validation_never_authorizes_and_needs_the_operator_ticket": "FAILED"
+        },
+        "summary": "1 failed in 26.22s",
+        "import_or_syntax_errors": [],
+        "assertion_lines": [
+          "E       AssertionError: assert <PilotStatus.EXECUTABLE: 'EXECUTABLE'> is <PilotStatus.BLOCKED: 'BLOCKED'>",
+          "E        +  where <PilotStatus.EXECUTABLE: 'EXECUTABLE'> = PilotPlanResult(status=<PilotStatus.EXECUTABLE: 'EXECUTABLE'>, review={'review_version': 'xlm-science-pilot-review-v1'...urpose': 'training', 'runtime_policy': {'scientific_runtime': 'trainer_scoped_v1', 'torch_threads': 1}, 'version': 1})).status",
+          "E        +  and   <PilotStatus.BLOCKED: 'BLOCKED'> = PilotStatus.BLOCKED"
+        ],
+        "verdict": "KILLED"
+      },
+      {
+        "name": "m9b_unauthorized_pilot_becomes_executable",
+        "source_head": "f548d60",
+        "files": [
+          "src/xlm/experiments/science_pilot.py"
+        ],
+        "imported_from_export": true,
+        "nodes": [
+          "tests/test_p35_science_pilot.py::test_validation_never_authorizes_and_needs_the_operator_ticket",
+          "tests/test_p35_science_pilot.py::test_cli_plan_and_validate_expose_states_and_exit_codes"
+        ],
+        "exit": 1,
+        "outcomes": {
+          "tests/test_p35_science_pilot.py::test_validation_never_authorizes_and_needs_the_operator_ticket": "FAILED",
+          "tests/test_p35_science_pilot.py::test_cli_plan_and_validate_expose_states_and_exit_codes": "FAILED"
+        },
+        "summary": "2 failed in 42.97s",
+        "import_or_syntax_errors": [],
+        "assertion_lines": [
+          "E       AssertionError: assert (<PilotStatus.EXECUTABLE: 'EXECUTABLE'> is <PilotStatus.BLOCKED: 'BLOCKED'>)",
+          "E        +  where <PilotStatus.EXECUTABLE: 'EXECUTABLE'> = PilotPlanResult(status=<PilotStatus.EXECUTABLE: 'EXECUTABLE'>, review={'review_version': 'xlm-science-pilot-review-v1'...urpose': 'training', 'runtime_policy': {'scientific_runtime': 'trainer_scoped_v1', 'torch_threads': 1}, 'version': 1})).status",
+          "E        +  and   <PilotStatus.BLOCKED: 'BLOCKED'> = PilotStatus.BLOCKED",
+          "E       assert (0 == 1)",
+          "E        +  where 0 = <Result okay>.exit_code"
+        ],
+        "verdict": "KILLED"
+      }
+    ],
+    "round_2_on_e2541ec": [
+      {
+        "name": "control",
+        "source_head": "e2541ec",
+        "files": [],
+        "imported_from_export": true,
+        "nodes": [
+          "tests/test_p35_checkpoint_cadence.py::test_resume_does_not_drift_or_duplicate_milestones",
+          "tests/test_p35_checkpoint_rescore.py::test_checkpoint_no_longer_retained_is_refused",
+          "tests/test_p35_checkpoint_rescore.py::test_missing_or_retired_checkpoint_leaves_the_event_incomplete",
+          "tests/test_p35_checkpoint_rescore.py::test_same_count_and_step_with_different_weights_is_refused",
+          "tests/test_p35_checkpoint_retention.py::test_checkpoint_needed_by_an_unresolved_evaluation_is_kept",
+          "tests/test_p35_checkpoint_retention.py::test_failed_publication_retires_nothing",
+          "tests/test_p35_checkpoint_retention.py::test_policy_keeps_latest_two_recovery_pinned_references_and_dependencies",
+          "tests/test_p35_checkpoint_retention.py::test_replacement_is_published_and_verified_before_any_retirement",
+          "tests/test_p35_checkpoint_retention.py::test_training_retains_latest_two_recovery_and_all_milestones",
+          "tests/test_p35_science_pilot.py::test_capacity_counts_retained_new_and_staging_bytes",
+          "tests/test_p35_science_pilot.py::test_cli_plan_and_validate_expose_states_and_exit_codes",
+          "tests/test_p35_science_pilot.py::test_validation_never_authorizes_and_needs_the_operator_ticket",
+          "tests/test_p35_wall_allowance.py::test_queue_resume_gets_the_remaining_allowance_and_success_is_recorded",
+          "tests/test_p35_wall_allowance.py::test_resume_receives_only_the_remaining_allowance"
+        ],
+        "exit": 0,
+        "outcomes": {
+          "tests/test_p35_checkpoint_cadence.py::test_resume_does_not_drift_or_duplicate_milestones": "PASSED",
+          "tests/test_p35_checkpoint_rescore.py::test_checkpoint_no_longer_retained_is_refused": "PASSED",
+          "tests/test_p35_checkpoint_rescore.py::test_missing_or_retired_checkpoint_leaves_the_event_incomplete": "PASSED",
+          "tests/test_p35_checkpoint_rescore.py::test_same_count_and_step_with_different_weights_is_refused": "PASSED",
+          "tests/test_p35_checkpoint_retention.py::test_checkpoint_needed_by_an_unresolved_evaluation_is_kept": "PASSED",
+          "tests/test_p35_checkpoint_retention.py::test_failed_publication_retires_nothing": "PASSED",
+          "tests/test_p35_checkpoint_retention.py::test_policy_keeps_latest_two_recovery_pinned_references_and_dependencies": "PASSED",
+          "tests/test_p35_checkpoint_retention.py::test_replacement_is_published_and_verified_before_any_retirement": "PASSED",
+          "tests/test_p35_checkpoint_retention.py::test_training_retains_latest_two_recovery_and_all_milestones": "PASSED",
+          "tests/test_p35_science_pilot.py::test_capacity_counts_retained_new_and_staging_bytes": "PASSED",
+          "tests/test_p35_science_pilot.py::test_cli_plan_and_validate_expose_states_and_exit_codes": "PASSED",
+          "tests/test_p35_science_pilot.py::test_validation_never_authorizes_and_needs_the_operator_ticket": "PASSED",
+          "tests/test_p35_wall_allowance.py::test_queue_resume_gets_the_remaining_allowance_and_success_is_recorded": "PASSED",
+          "tests/test_p35_wall_allowance.py::test_resume_receives_only_the_remaining_allowance": "PASSED"
+        },
+        "summary": "14 passed in 75.95s (0:01:15)",
+        "import_or_syntax_errors": [],
+        "assertion_lines": [],
+        "verdict": "CONTROL_GREEN"
+      },
+      {
+        "name": "m1_resume_cadence_drift",
+        "source_head": "e2541ec",
+        "files": [
+          "src/xlm/training/milestones.py"
+        ],
+        "imported_from_export": true,
+        "nodes": [
+          "tests/test_p35_checkpoint_cadence.py::test_resume_does_not_drift_or_duplicate_milestones"
+        ],
+        "exit": 1,
+        "outcomes": {
+          "tests/test_p35_checkpoint_cadence.py::test_resume_does_not_drift_or_duplicate_milestones": "FAILED"
+        },
+        "summary": "1 failed in 9.72s",
+        "import_or_syntax_errors": [],
+        "assertion_lines": [
+          "E       AssertionError: assert {'checkpoint@...point@48': 48} == {'checkpoint@...point@48': 48}",
+          "E         ",
+          "E         Omitting 3 identical items, use -vv to show",
+          "E         Differing items:",
+          "E         {'checkpoint@32': 48} != {'checkpoint@32': 36}",
+          "E         Use -v to get more diff"
+        ],
+        "verdict": "KILLED"
+      },
+      {
+        "name": "m2_retire_before_replacement_authority",
+        "source_head": "e2541ec",
+        "files": [
+          "src/xlm/training/milestones.py"
+        ],
+        "imported_from_export": true,
+        "nodes": [
+          "tests/test_p35_checkpoint_retention.py::test_failed_publication_retires_nothing",
+          "tests/test_p35_checkpoint_retention.py::test_replacement_is_published_and_verified_before_any_retirement"
+        ],
+        "exit": 1,
+        "outcomes": {
+          "tests/test_p35_checkpoint_retention.py::test_failed_publication_retires_nothing": "FAILED",
+          "tests/test_p35_checkpoint_retention.py::test_replacement_is_published_and_verified_before_any_retirement": "FAILED"
+        },
+        "summary": "2 failed in 9.60s",
+        "import_or_syntax_errors": [],
+        "assertion_lines": [
+          "E       AssertionError: assert ['m2_run_ckpt-t16-a001'] == ['m2_run_ckpt...ckpt-t8-a001']",
+          "E         ",
+          "E         Right contains one more item: 'm2_run_ckpt-t8-a001'",
+          "E         Use -v to get more diff",
+          "E       AssertionError: assert ['m2_run_ckpt...kpt-t40-a001'] == []",
+          "E         ",
+          "E         Left contains 3 more items, first extra item: 'm2_run_ckpt-t8-a001 retired before m2_run_ckpt-t24-a001: Artifact directory not found: <tmp>\\\\pytest-of-<user>\\\\pytest-1051\\\\test_replacement_is_published_0\\\\checkpoints\\\\m2_run_ckpt-t24-a001'",
+          "E         Use -v to get more diff"
+        ],
+        "verdict": "KILLED"
+      },
+      {
+        "name": "m3_delete_last_good_recovery",
+        "source_head": "e2541ec",
+        "files": [
+          "src/xlm/artifacts/retention.py"
+        ],
+        "imported_from_export": true,
+        "nodes": [
+          "tests/test_p35_checkpoint_retention.py::test_policy_keeps_latest_two_recovery_pinned_references_and_dependencies",
+          "tests/test_p35_checkpoint_retention.py::test_training_retains_latest_two_recovery_and_all_milestones"
+        ],
+        "exit": 1,
+        "outcomes": {
+          "tests/test_p35_checkpoint_retention.py::test_policy_keeps_latest_two_recovery_pinned_references_and_dependencies": "FAILED",
+          "tests/test_p35_checkpoint_retention.py::test_training_retains_latest_two_recovery_and_all_milestones": "FAILED"
+        },
+        "summary": "2 failed in 9.89s",
+        "import_or_syntax_errors": [],
+        "assertion_lines": [
+          "E       AssertionError: assert {'r8': ['late...d_milestone']} == {'r32': ['las...parent'], ...}",
+          "E         ",
+          "E         Omitting 1 identical items, use -vv to show",
+          "E         Differing items:",
+          "E         {'r8': ['latest_recovery_1', 'reference:fork_parent']} != {'r8': ['reference:fork_parent']}",
+          "E         {'r16': ['latest_recovery_2', 'evaluation_dependency:quick_lm@16']} != {'r16': ['evaluation_dependency:quick_lm@16']}",
+          "E         Right contains 2 more items:",
+          "E         {'r24': ['latest_recovery_2'], 'r32': ['last_good_state', 'latest_recovery_1']}",
+          "E         Use -v to get more diff",
+          "E       AssertionError: assert ['m2_run_ckpt...ckpt-t8-a001'] == ['m2_run_ckpt...kpt-t48-a001']",
+          "E         ",
+          "E         At index 1 diff: 'm2_run_ckpt-t16-a001' != 'm2_run_ckpt-t32-a001'"
+        ],
+        "verdict": "KILLED"
+      },
+      {
+        "name": "m4_ignore_evaluation_dependency",
+        "source_head": "e2541ec",
+        "files": [
+          "src/xlm/artifacts/retention.py"
+        ],
+        "imported_from_export": true,
+        "nodes": [
+          "tests/test_p35_checkpoint_retention.py::test_checkpoint_needed_by_an_unresolved_evaluation_is_kept",
+          "tests/test_p35_checkpoint_retention.py::test_policy_keeps_latest_two_recovery_pinned_references_and_dependencies"
+        ],
+        "exit": 1,
+        "outcomes": {
+          "tests/test_p35_checkpoint_retention.py::test_checkpoint_needed_by_an_unresolved_evaluation_is_kept": "FAILED",
+          "tests/test_p35_checkpoint_retention.py::test_policy_keeps_latest_two_recovery_pinned_references_and_dependencies": "FAILED"
+        },
+        "summary": "2 failed in 9.32s",
+        "import_or_syntax_errors": [],
+        "assertion_lines": [
+          "E       AssertionError: assert 'm2_run_ckpt-t16-a001' in ['m2_run_ckpt-t0-a001', 'm2_run_ckpt-t32-a001', 'm2_run_ckpt-t40-a001', 'm2_run_ckpt-t48-a001']",
+          "E        +  where ['m2_run_ckpt-t0-a001', 'm2_run_ckpt-t32-a001', 'm2_run_ckpt-t40-a001', 'm2_run_ckpt-t48-a001'] = present(WindowsPath('<tmp>/pytest-of-<user>/pytest-1053/test_checkpoint_needed_by_an_u0'))",
+          "E       AssertionError: assert {'r32': ['las...fork_parent']} == {'r32': ['las...parent'], ...}",
+          "E         ",
+          "E         Omitting 4 identical items, use -vv to show",
+          "E         Right contains 1 more item:",
+          "E         {'r16': ['evaluation_dependency:quick_lm@16']}",
+          "E         Use -v to get more diff"
+        ],
+        "verdict": "KILLED"
+      },
+      {
+        "name": "m5_rescore_without_exact_weights",
+        "source_head": "e2541ec",
+        "files": [
+          "src/xlm/evaluation/rescore.py"
+        ],
+        "imported_from_export": true,
+        "nodes": [
+          "tests/test_p35_checkpoint_rescore.py::test_same_count_and_step_with_different_weights_is_refused"
+        ],
+        "exit": 1,
+        "outcomes": {
+          "tests/test_p35_checkpoint_rescore.py::test_same_count_and_step_with_different_weights_is_refused": "FAILED"
+        },
+        "summary": "1 failed in 9.11s",
+        "import_or_syntax_errors": [],
+        "assertion_lines": [
+          "E       Failed: DID NOT RAISE RescoreRefused"
+        ],
+        "verdict": "KILLED"
+      },
+      {
+        "name": "m6_fallback_to_latest_checkpoint",
+        "source_head": "e2541ec",
+        "files": [
+          "src/xlm/evaluation/rescore.py"
+        ],
+        "imported_from_export": true,
+        "nodes": [
+          "tests/test_p35_checkpoint_rescore.py::test_missing_or_retired_checkpoint_leaves_the_event_incomplete",
+          "tests/test_p35_checkpoint_rescore.py::test_checkpoint_no_longer_retained_is_refused"
+        ],
+        "exit": 1,
+        "outcomes": {
+          "tests/test_p35_checkpoint_rescore.py::test_missing_or_retired_checkpoint_leaves_the_event_incomplete": "FAILED",
+          "tests/test_p35_checkpoint_rescore.py::test_checkpoint_no_longer_retained_is_refused": "FAILED"
+        },
+        "summary": "2 failed in 9.57s",
+        "import_or_syntax_errors": [],
+        "assertion_lines": [
+          "E       assert [{'event_id':...efused', ...}] == [{'event_id':...efused', ...}]",
+          "E         ",
+          "E         At index 0 diff: {'event_id': 'quick_lm@32', 'actual_committed_targets': 32, 'status_before': 'failed', 'action': 'refused', 'code': 'checkpoint_counters_mismatch', 'reason': \"checkpoint_counters_mismatch: checkpoint C=48 step 3 is not the event's C=32 step 2\"} != {'event_id': 'quick_lm@32', 'actual_committed_targets': 32, 'status_before': 'failed', 'action': 'refused', 'code': 'checkpoint_missing', 'reason': \"checkpoint_counters_mismatch: checkpoint C=48 step 3 is not the event's C=32 step 2\"}",
+          "E         Use -v to get more diff",
+          "E       AssertionError: Regex pattern did not match.",
+          "E         Expected regex: 'checkpoint_not_retained'",
+          "E         Actual message: \"checkpoint_counters_mismatch: checkpoint C=32 step 2 is not the event's C=16 step 1\""
+        ],
+        "verdict": "KILLED"
+      },
+      {
+        "name": "m7_underestimate_peak_disk",
+        "source_head": "e2541ec",
+        "files": [
+          "src/xlm/experiments/science_pilot.py"
+        ],
+        "imported_from_export": true,
+        "nodes": [
+          "tests/test_p35_science_pilot.py::test_capacity_counts_retained_new_and_staging_bytes"
+        ],
+        "exit": 1,
+        "outcomes": {
+          "tests/test_p35_science_pilot.py::test_capacity_counts_retained_new_and_staging_bytes": "FAILED"
+        },
+        "summary": "1 failed in 2.98s",
+        "import_or_syntax_errors": [],
+        "assertion_lines": [
+          "E       assert 600000000 == (2 * 600000000)"
+        ],
+        "verdict": "KILLED"
+      },
+      {
+        "name": "m8_reset_wall_budget_after_resume",
+        "source_head": "e2541ec",
+        "files": [
+          "src/xlm/experiments/wall_budget.py"
+        ],
+        "imported_from_export": true,
+        "nodes": [
+          "tests/test_p35_wall_allowance.py::test_resume_receives_only_the_remaining_allowance",
+          "tests/test_p35_wall_allowance.py::test_queue_resume_gets_the_remaining_allowance_and_success_is_recorded"
+        ],
+        "exit": 1,
+        "outcomes": {
+          "tests/test_p35_wall_allowance.py::test_resume_receives_only_the_remaining_allowance": "FAILED",
+          "tests/test_p35_wall_allowance.py::test_queue_resume_gets_the_remaining_allowance_and_success_is_recorded": "FAILED"
+        },
+        "summary": "2 failed in 24.16s",
+        "import_or_syntax_errors": [],
+        "assertion_lines": [
+          "E       assert 0.0 == 900 ﾂｱ 9.0e-04",
+          "E         ",
+          "E         comparison failed",
+          "E         Obtained: 0.0",
+          "E         Expected: 900 ﾂｱ 9.0e-04",
+          "E       assert 3600.0 == 2700 ﾂｱ 0.0027",
+          "E         ",
+          "E         comparison failed",
+          "E         Obtained: 3600.0",
+          "E         Expected: 2700 ﾂｱ 0.0027"
+        ],
+        "verdict": "KILLED"
+      },
+      {
+        "name": "m9a_blocked_pilot_becomes_executable",
+        "source_head": "e2541ec",
+        "files": [
+          "src/xlm/experiments/science_pilot.py"
+        ],
+        "imported_from_export": true,
+        "nodes": [
+          "tests/test_p35_science_pilot.py::test_validation_never_authorizes_and_needs_the_operator_ticket"
+        ],
+        "exit": 1,
+        "outcomes": {
+          "tests/test_p35_science_pilot.py::test_validation_never_authorizes_and_needs_the_operator_ticket": "FAILED"
+        },
+        "summary": "1 failed in 26.22s",
+        "import_or_syntax_errors": [],
+        "assertion_lines": [
+          "E       AssertionError: assert <PilotStatus.EXECUTABLE: 'EXECUTABLE'> is <PilotStatus.BLOCKED: 'BLOCKED'>",
+          "E        +  where <PilotStatus.EXECUTABLE: 'EXECUTABLE'> = PilotPlanResult(status=<PilotStatus.EXECUTABLE: 'EXECUTABLE'>, review={'review_version': 'xlm-science-pilot-review-v1'...urpose': 'training', 'runtime_policy': {'scientific_runtime': 'trainer_scoped_v1', 'torch_threads': 1}, 'version': 1})).status",
+          "E        +  and   <PilotStatus.BLOCKED: 'BLOCKED'> = PilotStatus.BLOCKED"
+        ],
+        "verdict": "KILLED"
+      },
+      {
+        "name": "m9b_unauthorized_pilot_becomes_executable",
+        "source_head": "e2541ec",
+        "files": [
+          "src/xlm/experiments/science_pilot.py"
+        ],
+        "imported_from_export": true,
+        "nodes": [
+          "tests/test_p35_science_pilot.py::test_validation_never_authorizes_and_needs_the_operator_ticket",
+          "tests/test_p35_science_pilot.py::test_cli_plan_and_validate_expose_states_and_exit_codes"
+        ],
+        "exit": 1,
+        "outcomes": {
+          "tests/test_p35_science_pilot.py::test_validation_never_authorizes_and_needs_the_operator_ticket": "FAILED",
+          "tests/test_p35_science_pilot.py::test_cli_plan_and_validate_expose_states_and_exit_codes": "FAILED"
+        },
+        "summary": "2 failed in 44.55s",
+        "import_or_syntax_errors": [],
+        "assertion_lines": [
+          "E       AssertionError: assert (<PilotStatus.EXECUTABLE: 'EXECUTABLE'> is <PilotStatus.BLOCKED: 'BLOCKED'>)",
+          "E        +  where <PilotStatus.EXECUTABLE: 'EXECUTABLE'> = PilotPlanResult(status=<PilotStatus.EXECUTABLE: 'EXECUTABLE'>, review={'review_version': 'xlm-science-pilot-review-v1'...urpose': 'training', 'runtime_policy': {'scientific_runtime': 'trainer_scoped_v1', 'torch_threads': 1}, 'version': 1})).status",
+          "E        +  and   <PilotStatus.BLOCKED: 'BLOCKED'> = PilotStatus.BLOCKED",
+          "E       assert (0 == 1)",
+          "E        +  where 0 = <Result okay>.exit_code"
+        ],
+        "verdict": "KILLED"
+      }
+    ],
+    "supplementary_on_bbffc16": [
+      {
+        "name": "control",
+        "source_head": "bbffc16",
+        "files": [],
+        "imported_from_export": true,
+        "nodes": [
+          "tests/test_p35_checkpoint_cadence.py::test_resume_does_not_drift_or_duplicate_milestones",
+          "tests/test_p35_checkpoint_rescore.py::test_checkpoint_no_longer_retained_is_refused",
+          "tests/test_p35_checkpoint_rescore.py::test_missing_or_retired_checkpoint_leaves_the_event_incomplete",
+          "tests/test_p35_checkpoint_rescore.py::test_same_count_and_step_with_different_weights_is_refused",
+          "tests/test_p35_checkpoint_retention.py::test_checkpoint_needed_by_an_unresolved_evaluation_is_kept",
+          "tests/test_p35_checkpoint_retention.py::test_failed_publication_retires_nothing",
+          "tests/test_p35_checkpoint_retention.py::test_policy_keeps_latest_two_recovery_pinned_references_and_dependencies",
+          "tests/test_p35_checkpoint_retention.py::test_replacement_is_published_and_verified_before_any_retirement",
+          "tests/test_p35_checkpoint_retention.py::test_training_retains_latest_two_recovery_and_all_milestones",
+          "tests/test_p35_science_pilot.py::test_bindings_refuse_latest_wildcards_and_relative_paths[path0-latest-explicit identity]",
+          "tests/test_p35_science_pilot.py::test_bindings_refuse_latest_wildcards_and_relative_paths[path6-null-explicit identity]",
+          "tests/test_p35_science_pilot.py::test_bindings_refuse_latest_wildcards_and_relative_paths[path7-TODO-explicit identity]",
+          "tests/test_p35_science_pilot.py::test_bindings_refuse_latest_wildcards_and_relative_paths[path8-None-explicit identity]",
+          "tests/test_p35_science_pilot.py::test_bindings_refuse_latest_wildcards_and_relative_paths[path9- tbd -explicit identity]",
+          "tests/test_p35_science_pilot.py::test_capacity_counts_retained_new_and_staging_bytes",
+          "tests/test_p35_science_pilot.py::test_cli_plan_and_validate_expose_states_and_exit_codes",
+          "tests/test_p35_science_pilot.py::test_validation_never_authorizes_and_needs_the_operator_ticket",
+          "tests/test_p35_wall_allowance.py::test_queue_resume_gets_the_remaining_allowance_and_success_is_recorded",
+          "tests/test_p35_wall_allowance.py::test_resume_receives_only_the_remaining_allowance"
+        ],
+        "exit": 0,
+        "outcomes": {
+          "tests/test_p35_checkpoint_cadence.py::test_resume_does_not_drift_or_duplicate_milestones": "PASSED",
+          "tests/test_p35_checkpoint_rescore.py::test_checkpoint_no_longer_retained_is_refused": "PASSED",
+          "tests/test_p35_checkpoint_rescore.py::test_missing_or_retired_checkpoint_leaves_the_event_incomplete": "PASSED",
+          "tests/test_p35_checkpoint_rescore.py::test_same_count_and_step_with_different_weights_is_refused": "PASSED",
+          "tests/test_p35_checkpoint_retention.py::test_checkpoint_needed_by_an_unresolved_evaluation_is_kept": "PASSED",
+          "tests/test_p35_checkpoint_retention.py::test_failed_publication_retires_nothing": "PASSED",
+          "tests/test_p35_checkpoint_retention.py::test_policy_keeps_latest_two_recovery_pinned_references_and_dependencies": "PASSED",
+          "tests/test_p35_checkpoint_retention.py::test_replacement_is_published_and_verified_before_any_retirement": "PASSED",
+          "tests/test_p35_checkpoint_retention.py::test_training_retains_latest_two_recovery_and_all_milestones": "PASSED",
+          "tests/test_p35_science_pilot.py::test_bindings_refuse_latest_wildcards_and_relative_paths[path0-latest-explicit identity]": "PASSED",
+          "tests/test_p35_science_pilot.py::test_bindings_refuse_latest_wildcards_and_relative_paths[path6-null-explicit identity]": "PASSED",
+          "tests/test_p35_science_pilot.py::test_bindings_refuse_latest_wildcards_and_relative_paths[path7-TODO-explicit identity]": "PASSED",
+          "tests/test_p35_science_pilot.py::test_bindings_refuse_latest_wildcards_and_relative_paths[path8-None-explicit identity]": "PASSED",
+          "tests/test_p35_science_pilot.py::test_bindings_refuse_latest_wildcards_and_relative_paths[path9- tbd -explicit identity]": "PASSED",
+          "tests/test_p35_science_pilot.py::test_capacity_counts_retained_new_and_staging_bytes": "PASSED",
+          "tests/test_p35_science_pilot.py::test_cli_plan_and_validate_expose_states_and_exit_codes": "PASSED",
+          "tests/test_p35_science_pilot.py::test_validation_never_authorizes_and_needs_the_operator_ticket": "PASSED",
+          "tests/test_p35_wall_allowance.py::test_queue_resume_gets_the_remaining_allowance_and_success_is_recorded": "PASSED",
+          "tests/test_p35_wall_allowance.py::test_resume_receives_only_the_remaining_allowance": "PASSED"
+        },
+        "summary": "19 passed in 82.95s (0:01:22)",
+        "import_or_syntax_errors": [],
+        "assertion_lines": [],
+        "verdict": "CONTROL_GREEN"
+      },
+      {
+        "name": "s1_placeholder_strings_accepted",
+        "source_head": "bbffc16",
+        "files": [
+          "src/xlm/experiments/science_pilot.py"
+        ],
+        "imported_from_export": true,
+        "nodes": [
+          "tests/test_p35_science_pilot.py::test_bindings_refuse_latest_wildcards_and_relative_paths[path0-latest-explicit identity]",
+          "tests/test_p35_science_pilot.py::test_bindings_refuse_latest_wildcards_and_relative_paths[path6-null-explicit identity]",
+          "tests/test_p35_science_pilot.py::test_bindings_refuse_latest_wildcards_and_relative_paths[path7-TODO-explicit identity]",
+          "tests/test_p35_science_pilot.py::test_bindings_refuse_latest_wildcards_and_relative_paths[path8-None-explicit identity]",
+          "tests/test_p35_science_pilot.py::test_bindings_refuse_latest_wildcards_and_relative_paths[path9- tbd -explicit identity]"
+        ],
+        "exit": 1,
+        "outcomes": {
+          "tests/test_p35_science_pilot.py::test_bindings_refuse_latest_wildcards_and_relative_paths[path0-latest-explicit identity]": "FAILED",
+          "tests/test_p35_science_pilot.py::test_bindings_refuse_latest_wildcards_and_relative_paths[path6-null-explicit identity]": "FAILED",
+          "tests/test_p35_science_pilot.py::test_bindings_refuse_latest_wildcards_and_relative_paths[path7-TODO-explicit identity]": "FAILED",
+          "tests/test_p35_science_pilot.py::test_bindings_refuse_latest_wildcards_and_relative_paths[path8-None-explicit identity]": "FAILED",
+          "tests/test_p35_science_pilot.py::test_bindings_refuse_latest_wildcards_and_relative_paths[path9- tbd -explicit identity]": "FAILED"
+        },
+        "summary": "5 failed in 3.17s",
+        "import_or_syntax_errors": [],
+        "assertion_lines": [
+          "E       AssertionError: Regex pattern did not match.",
+          "E         Expected regex: 'explicit identity'",
+          "E         Actual message: \"1 validation error for PilotBindings\\ntokenizer.artifact_digest\\n  Value error, tokenizer.artifact_digest must be a lowercase 64-hex SHA-256, got 'latest' [type=value_error, input_value='latest', input_type=str]\\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error\"",
+          "E       AssertionError: Regex pattern did not match.",
+          "E         Expected regex: 'explicit identity'",
+          "E         Actual message: \"1 validation error for PilotBindings\\ntokenizer.artifact_digest\\n  Value error, tokenizer.artifact_digest must be a lowercase 64-hex SHA-256, got 'null' [type=value_error, input_value='null', input_type=str]\\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error\"",
+          "E       Failed: DID NOT RAISE ValueError",
+          "E       AssertionError: Regex pattern did not match.",
+          "E         Expected regex: 'explicit identity'",
+          "E         Actual message: \"1 validation error for PilotBindings\\ndata.exposure_plan\\n  Value error, data.exposure_plan must be an absolute local path, got 'None' [type=value_error, input_value='None', input_type=str]\\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error\"",
+          "E       AssertionError: Regex pattern did not match.",
+          "E         Expected regex: 'explicit identity'"
+        ],
+        "verdict": "KILLED"
+      }
+    ]
+  },
+  "core_files_individually_on_e2541ec": {
+    "cadence": {
+      "exit": "0 (console-observed; not written to the log)",
+      "counts": {
+        "selected": 15,
+        "passed": 15,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "deselected": 0,
+        "pytest_seconds": 16.764
+      },
+      "nodes": {
+        "tests.test_p35_checkpoint_cadence::test_pilot_contract_thresholds_and_exact_32m_arithmetic": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.100"
+        },
+        "tests.test_p35_checkpoint_cadence::test_full_1b_table_and_fail_closed_cadences": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.002"
+        },
+        "tests.test_p35_checkpoint_cadence::test_exact_and_overshoot_crossings_record_planned_and_actual": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "5.248"
+        },
+        "tests.test_p35_checkpoint_cadence::test_several_thresholds_in_one_update_publish_one_checkpoint": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.268"
+        },
+        "tests.test_p35_checkpoint_cadence::test_final_partial_update_endpoint_fires_once_and_final_is_not_duplicated": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.985"
+        },
+        "tests.test_p35_checkpoint_cadence::test_zero_valid_work_never_triggers_a_checkpoint_event": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.019"
+        },
+        "tests.test_p35_checkpoint_cadence::test_checkpoint_owes_the_evaluation_of_its_boundary_and_receipts_stay_separate": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.403"
+        },
+        "tests.test_p35_checkpoint_cadence::test_record_binds_the_full_checkpoint_identity": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.333"
+        },
+        "tests.test_p35_checkpoint_cadence::test_resume_does_not_drift_or_duplicate_milestones": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "2.124"
+        },
+        "tests.test_p35_checkpoint_cadence::test_publication_failure_keeps_the_last_good_state_and_is_recorded": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.756"
+        },
+        "tests.test_p35_checkpoint_cadence::test_crash_after_durable_publication_is_adopted_not_republished": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.911"
+        },
+        "tests.test_p35_checkpoint_cadence::test_divergent_replay_publishes_a_new_attempt_and_records_the_lost_lineage": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "1.272"
+        },
+        "tests.test_p35_checkpoint_cadence::test_changed_checkpoint_plan_refuses_ordinary_resume_and_fork_rebases": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.645"
+        },
+        "tests.test_p35_checkpoint_cadence::test_legacy_and_relative_cadence_are_unchanged": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "1.017"
+        },
+        "tests.test_p35_checkpoint_cadence::test_checkpoint_cadence_configuration_is_science_only": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.003"
+        }
+      }
+    },
+    "retention": {
+      "exit": "0 (console-observed; not written to the log)",
+      "counts": {
+        "selected": 10,
+        "passed": 10,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "deselected": 0,
+        "pytest_seconds": 21.507
+      },
+      "nodes": {
+        "tests.test_p35_checkpoint_retention::test_policy_keeps_latest_two_recovery_pinned_references_and_dependencies": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.100"
+        },
+        "tests.test_p35_checkpoint_retention::test_training_retains_latest_two_recovery_and_all_milestones": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "6.507"
+        },
+        "tests.test_p35_checkpoint_retention::test_protected_reference_is_never_retired": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "1.915"
+        },
+        "tests.test_p35_checkpoint_retention::test_checkpoint_needed_by_an_unresolved_evaluation_is_kept": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "2.025"
+        },
+        "tests.test_p35_checkpoint_retention::test_failed_publication_retires_nothing": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.634"
+        },
+        "tests.test_p35_checkpoint_retention::test_replacement_is_published_and_verified_before_any_retirement": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "2.009"
+        },
+        "tests.test_p35_checkpoint_retention::test_only_owned_verified_artifacts_are_retired": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "1.939"
+        },
+        "tests.test_p35_checkpoint_retention::test_superseded_lost_lineage_is_retired_after_its_replacement": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "1.224"
+        },
+        "tests.test_p35_checkpoint_retention::test_store_refuses_a_changed_or_missing_target_and_hides_tombstones": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.397"
+        },
+        "tests.test_p35_checkpoint_retention::test_resume_after_retention_knows_what_was_retired": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "2.107"
+        }
+      }
+    },
+    "rescore": {
+      "exit": "0 (console-observed; not written to the log)",
+      "counts": {
+        "selected": 10,
+        "passed": 10,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "deselected": 0,
+        "pytest_seconds": 22.09
+      },
+      "nodes": {
+        "tests.test_p35_checkpoint_rescore::test_failed_live_attempt_is_completed_from_the_exact_retained_checkpoint": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "7.013"
+        },
+        "tests.test_p35_checkpoint_rescore::test_recovery_restores_training_rng_and_training_state": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "1.428"
+        },
+        "tests.test_p35_checkpoint_rescore::test_deliberate_rerun_keeps_the_first_complete_receipt_canonical": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "1.734"
+        },
+        "tests.test_p35_checkpoint_rescore::test_offline_rescore_of_a_finished_run_completes_the_event": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "1.750"
+        },
+        "tests.test_p35_checkpoint_rescore::test_wrong_checkpoint_is_refused": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "1.436"
+        },
+        "tests.test_p35_checkpoint_rescore::test_same_count_and_step_with_different_weights_is_refused": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "1.521"
+        },
+        "tests.test_p35_checkpoint_rescore::test_tokenizer_inventory_and_policy_mismatches_are_refused": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "1.633"
+        },
+        "tests.test_p35_checkpoint_rescore::test_missing_or_retired_checkpoint_leaves_the_event_incomplete": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.737"
+        },
+        "tests.test_p35_checkpoint_rescore::test_checkpoint_no_longer_retained_is_refused": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "1.468"
+        },
+        "tests.test_p35_checkpoint_rescore::test_benchmark_tier_is_not_rescored": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.879"
+        }
+      }
+    },
+    "pilot": {
+      "exit": "0 (console-observed; not written to the log)",
+      "counts": {
+        "selected": 28,
+        "passed": 28,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "deselected": 0,
+        "pytest_seconds": 124.513
+      },
+      "nodes": {
+        "tests.test_p35_science_pilot::test_checked_in_draft_is_visibly_nonexecutable": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "4.114"
+        },
+        "tests.test_p35_science_pilot::test_draft_states_the_exact_p35_pilot": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.066"
+        },
+        "tests.test_p35_science_pilot::test_any_deviation_from_the_contract_is_blocked[<lambda>-config_deviation0]": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.069"
+        },
+        "tests.test_p35_science_pilot::test_any_deviation_from_the_contract_is_blocked[<lambda>-config_deviation1]": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.070"
+        },
+        "tests.test_p35_science_pilot::test_any_deviation_from_the_contract_is_blocked[<lambda>-config_deviation2]": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.068"
+        },
+        "tests.test_p35_science_pilot::test_any_deviation_from_the_contract_is_blocked[<lambda>-config_deviation3]": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.079"
+        },
+        "tests.test_p35_science_pilot::test_any_deviation_from_the_contract_is_blocked[<lambda>-config_deviation4]": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.073"
+        },
+        "tests.test_p35_science_pilot::test_any_deviation_from_the_contract_is_blocked[<lambda>-resource_limit_unset]": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.076"
+        },
+        "tests.test_p35_science_pilot::test_any_deviation_from_the_contract_is_blocked[<lambda>-arithmetic_mismatch]": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.075"
+        },
+        "tests.test_p35_science_pilot::test_any_deviation_from_the_contract_is_blocked[<lambda>-contract_deviation0]": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.074"
+        },
+        "tests.test_p35_science_pilot::test_any_deviation_from_the_contract_is_blocked[<lambda>-contract_deviation1]": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.072"
+        },
+        "tests.test_p35_science_pilot::test_the_generic_planner_cannot_bypass_pilot_preflight": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.016"
+        },
+        "tests.test_p35_science_pilot::test_bindings_refuse_latest_wildcards_and_relative_paths[path0-latest-explicit identity]": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.003"
+        },
+        "tests.test_p35_science_pilot::test_bindings_refuse_latest_wildcards_and_relative_paths[path1-ABC-64-hex]": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.003"
+        },
+        "tests.test_p35_science_pilot::test_bindings_refuse_latest_wildcards_and_relative_paths[path2-tokenizers/current-absolute]": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.004"
+        },
+        "tests.test_p35_science_pilot::test_bindings_refuse_latest_wildcards_and_relative_paths[path3-/data/*.json-wildcard]": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.003"
+        },
+        "tests.test_p35_science_pilot::test_bindings_refuse_latest_wildcards_and_relative_paths[path4-latest-explicit identity]": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.003"
+        },
+        "tests.test_p35_science_pilot::test_bindings_refuse_latest_wildcards_and_relative_paths[path5-relative/root-absolute]": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.003"
+        },
+        "tests.test_p35_science_pilot::test_group_half_membership_uses_the_frozen_partition": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.009"
+        },
+        "tests.test_p35_science_pilot::test_capacity_counts_retained_new_and_staging_bytes": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.002"
+        },
+        "tests.test_p35_science_pilot::test_authored_pilot_resolves_to_a_frozen_hash_bound_plan": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "16.275"
+        },
+        "tests.test_p35_science_pilot::test_plan_hash_is_stable_and_follows_scientific_inputs": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "64.180"
+        },
+        "tests.test_p35_science_pilot::test_validation_never_authorizes_and_needs_the_operator_ticket": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "16.690"
+        },
+        "tests.test_p35_science_pilot::test_cli_plan_and_validate_expose_states_and_exit_codes": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "18.131"
+        },
+        "tests.test_p35_science_pilot::test_missing_component_or_bad_pins_block_and_write_no_plan": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.457"
+        },
+        "tests.test_p35_science_pilot::test_every_path_must_stay_inside_its_declared_root": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.268"
+        },
+        "tests.test_p35_science_pilot::test_heldout_document_in_training_membership_blocks": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.394"
+        },
+        "tests.test_p35_science_pilot::test_capacity_shortfall_or_unmeasured_size_blocks": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.552"
+        }
+      }
+    },
+    "wall": {
+      "exit": "0 (console-observed; not written to the log)",
+      "counts": {
+        "selected": 6,
+        "passed": 6,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "deselected": 0,
+        "pytest_seconds": 65.758
+      },
+      "nodes": {
+        "tests.test_p35_wall_allowance::test_resume_receives_only_the_remaining_allowance": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.073"
+        },
+        "tests.test_p35_wall_allowance::test_consumption_is_persisted_while_running_so_a_crash_cannot_refund_it": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.014"
+        },
+        "tests.test_p35_wall_allowance::test_allowance_is_bound_to_its_plan_and_total": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "0.008"
+        },
+        "tests.test_p35_wall_allowance::test_queue_resume_gets_the_remaining_allowance_and_success_is_recorded": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "20.182"
+        },
+        "tests.test_p35_wall_allowance::test_expired_allowance_is_incomplete_never_success": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "19.187"
+        },
+        "tests.test_p35_wall_allowance::test_a_real_frozen_worker_is_stopped_at_the_allowance": {
+          "status": "passed",
+          "exception": "",
+          "seconds": "23.600"
+        }
+      }
+    }
+  },
+  "final_consolidated_group_on_bbffc16": {
+    "exit": "0 (console-observed; not written to the log)",
+    "command": "R python -m pytest tests/test_p35_checkpoint_cadence.py tests/test_p35_checkpoint_retention.py tests/test_p35_checkpoint_rescore.py tests/test_p35_science_pilot.py tests/test_p35_wall_allowance.py -n 0 -rA",
+    "counts": {
+      "selected": 73,
+      "passed": 73,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "deselected": 0,
+      "pytest_seconds": 228.315
+    },
+    "nodes": {
+      "tests.test_p35_checkpoint_cadence::test_pilot_contract_thresholds_and_exact_32m_arithmetic": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.038"
+      },
+      "tests.test_p35_checkpoint_cadence::test_full_1b_table_and_fail_closed_cadences": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.002"
+      },
+      "tests.test_p35_checkpoint_cadence::test_exact_and_overshoot_crossings_record_planned_and_actual": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "5.336"
+      },
+      "tests.test_p35_checkpoint_cadence::test_several_thresholds_in_one_update_publish_one_checkpoint": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.255"
+      },
+      "tests.test_p35_checkpoint_cadence::test_final_partial_update_endpoint_fires_once_and_final_is_not_duplicated": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "1.031"
+      },
+      "tests.test_p35_checkpoint_cadence::test_zero_valid_work_never_triggers_a_checkpoint_event": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.021"
+      },
+      "tests.test_p35_checkpoint_cadence::test_checkpoint_owes_the_evaluation_of_its_boundary_and_receipts_stay_separate": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.409"
+      },
+      "tests.test_p35_checkpoint_cadence::test_record_binds_the_full_checkpoint_identity": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.311"
+      },
+      "tests.test_p35_checkpoint_cadence::test_resume_does_not_drift_or_duplicate_milestones": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "2.226"
+      },
+      "tests.test_p35_checkpoint_cadence::test_publication_failure_keeps_the_last_good_state_and_is_recorded": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.731"
+      },
+      "tests.test_p35_checkpoint_cadence::test_crash_after_durable_publication_is_adopted_not_republished": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.962"
+      },
+      "tests.test_p35_checkpoint_cadence::test_divergent_replay_publishes_a_new_attempt_and_records_the_lost_lineage": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "1.368"
+      },
+      "tests.test_p35_checkpoint_cadence::test_changed_checkpoint_plan_refuses_ordinary_resume_and_fork_rebases": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.699"
+      },
+      "tests.test_p35_checkpoint_cadence::test_legacy_and_relative_cadence_are_unchanged": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "1.116"
+      },
+      "tests.test_p35_checkpoint_cadence::test_checkpoint_cadence_configuration_is_science_only": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.004"
+      },
+      "tests.test_p35_checkpoint_retention::test_policy_keeps_latest_two_recovery_pinned_references_and_dependencies": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.001"
+      },
+      "tests.test_p35_checkpoint_retention::test_training_retains_latest_two_recovery_and_all_milestones": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "2.204"
+      },
+      "tests.test_p35_checkpoint_retention::test_protected_reference_is_never_retired": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "1.921"
+      },
+      "tests.test_p35_checkpoint_retention::test_checkpoint_needed_by_an_unresolved_evaluation_is_kept": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "1.952"
+      },
+      "tests.test_p35_checkpoint_retention::test_failed_publication_retires_nothing": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.646"
+      },
+      "tests.test_p35_checkpoint_retention::test_replacement_is_published_and_verified_before_any_retirement": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "2.021"
+      },
+      "tests.test_p35_checkpoint_retention::test_only_owned_verified_artifacts_are_retired": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "2.112"
+      },
+      "tests.test_p35_checkpoint_retention::test_superseded_lost_lineage_is_retired_after_its_replacement": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "1.356"
+      },
+      "tests.test_p35_checkpoint_retention::test_store_refuses_a_changed_or_missing_target_and_hides_tombstones": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.411"
+      },
+      "tests.test_p35_checkpoint_retention::test_resume_after_retention_knows_what_was_retired": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "2.175"
+      },
+      "tests.test_p35_checkpoint_rescore::test_failed_live_attempt_is_completed_from_the_exact_retained_checkpoint": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "2.937"
+      },
+      "tests.test_p35_checkpoint_rescore::test_recovery_restores_training_rng_and_training_state": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "1.490"
+      },
+      "tests.test_p35_checkpoint_rescore::test_deliberate_rerun_keeps_the_first_complete_receipt_canonical": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "2.004"
+      },
+      "tests.test_p35_checkpoint_rescore::test_offline_rescore_of_a_finished_run_completes_the_event": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "1.838"
+      },
+      "tests.test_p35_checkpoint_rescore::test_wrong_checkpoint_is_refused": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "1.519"
+      },
+      "tests.test_p35_checkpoint_rescore::test_same_count_and_step_with_different_weights_is_refused": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "1.633"
+      },
+      "tests.test_p35_checkpoint_rescore::test_tokenizer_inventory_and_policy_mismatches_are_refused": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "1.632"
+      },
+      "tests.test_p35_checkpoint_rescore::test_missing_or_retired_checkpoint_leaves_the_event_incomplete": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.674"
+      },
+      "tests.test_p35_checkpoint_rescore::test_checkpoint_no_longer_retained_is_refused": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "1.491"
+      },
+      "tests.test_p35_checkpoint_rescore::test_benchmark_tier_is_not_rescored": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.936"
+      },
+      "tests.test_p35_science_pilot::test_checked_in_draft_is_visibly_nonexecutable": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.087"
+      },
+      "tests.test_p35_science_pilot::test_draft_states_the_exact_p35_pilot": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.075"
+      },
+      "tests.test_p35_science_pilot::test_any_deviation_from_the_contract_is_blocked[<lambda>-config_deviation0]": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.070"
+      },
+      "tests.test_p35_science_pilot::test_any_deviation_from_the_contract_is_blocked[<lambda>-config_deviation1]": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.069"
+      },
+      "tests.test_p35_science_pilot::test_any_deviation_from_the_contract_is_blocked[<lambda>-config_deviation2]": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.072"
+      },
+      "tests.test_p35_science_pilot::test_any_deviation_from_the_contract_is_blocked[<lambda>-config_deviation3]": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.067"
+      },
+      "tests.test_p35_science_pilot::test_any_deviation_from_the_contract_is_blocked[<lambda>-config_deviation4]": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.069"
+      },
+      "tests.test_p35_science_pilot::test_any_deviation_from_the_contract_is_blocked[<lambda>-resource_limit_unset]": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.075"
+      },
+      "tests.test_p35_science_pilot::test_any_deviation_from_the_contract_is_blocked[<lambda>-arithmetic_mismatch]": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.075"
+      },
+      "tests.test_p35_science_pilot::test_any_deviation_from_the_contract_is_blocked[<lambda>-contract_deviation0]": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.069"
+      },
+      "tests.test_p35_science_pilot::test_any_deviation_from_the_contract_is_blocked[<lambda>-contract_deviation1]": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.076"
+      },
+      "tests.test_p35_science_pilot::test_the_generic_planner_cannot_bypass_pilot_preflight": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.017"
+      },
+      "tests.test_p35_science_pilot::test_bindings_refuse_latest_wildcards_and_relative_paths[path0-latest-explicit identity]": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.003"
+      },
+      "tests.test_p35_science_pilot::test_bindings_refuse_latest_wildcards_and_relative_paths[path1-ABC-64-hex]": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.004"
+      },
+      "tests.test_p35_science_pilot::test_bindings_refuse_latest_wildcards_and_relative_paths[path2-tokenizers/current-absolute]": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.003"
+      },
+      "tests.test_p35_science_pilot::test_bindings_refuse_latest_wildcards_and_relative_paths[path3-/data/*.json-wildcard]": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.003"
+      },
+      "tests.test_p35_science_pilot::test_bindings_refuse_latest_wildcards_and_relative_paths[path4-latest-explicit identity]": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.003"
+      },
+      "tests.test_p35_science_pilot::test_bindings_refuse_latest_wildcards_and_relative_paths[path5-relative/root-absolute]": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.003"
+      },
+      "tests.test_p35_science_pilot::test_bindings_refuse_latest_wildcards_and_relative_paths[path6-null-explicit identity]": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.004"
+      },
+      "tests.test_p35_science_pilot::test_bindings_refuse_latest_wildcards_and_relative_paths[path7-TODO-explicit identity]": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.003"
+      },
+      "tests.test_p35_science_pilot::test_bindings_refuse_latest_wildcards_and_relative_paths[path8-None-explicit identity]": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.003"
+      },
+      "tests.test_p35_science_pilot::test_bindings_refuse_latest_wildcards_and_relative_paths[path9- tbd -explicit identity]": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.004"
+      },
+      "tests.test_p35_science_pilot::test_group_half_membership_uses_the_frozen_partition": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.009"
+      },
+      "tests.test_p35_science_pilot::test_capacity_counts_retained_new_and_staging_bytes": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.002"
+      },
+      "tests.test_p35_science_pilot::test_authored_pilot_resolves_to_a_frozen_hash_bound_plan": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "16.388"
+      },
+      "tests.test_p35_science_pilot::test_plan_hash_is_stable_and_follows_scientific_inputs": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "64.349"
+      },
+      "tests.test_p35_science_pilot::test_validation_never_authorizes_and_needs_the_operator_ticket": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "17.086"
+      },
+      "tests.test_p35_science_pilot::test_cli_plan_and_validate_expose_states_and_exit_codes": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "17.096"
+      },
+      "tests.test_p35_science_pilot::test_missing_component_or_bad_pins_block_and_write_no_plan": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.473"
+      },
+      "tests.test_p35_science_pilot::test_every_path_must_stay_inside_its_declared_root": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.287"
+      },
+      "tests.test_p35_science_pilot::test_heldout_document_in_training_membership_blocks": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.406"
+      },
+      "tests.test_p35_science_pilot::test_capacity_shortfall_or_unmeasured_size_blocks": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.552"
+      },
+      "tests.test_p35_wall_allowance::test_resume_receives_only_the_remaining_allowance": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.037"
+      },
+      "tests.test_p35_wall_allowance::test_consumption_is_persisted_while_running_so_a_crash_cannot_refund_it": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.015"
+      },
+      "tests.test_p35_wall_allowance::test_allowance_is_bound_to_its_plan_and_total": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "0.008"
+      },
+      "tests.test_p35_wall_allowance::test_queue_resume_gets_the_remaining_allowance_and_success_is_recorded": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "18.909"
+      },
+      "tests.test_p35_wall_allowance::test_expired_allowance_is_incomplete_never_success": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "19.314"
+      },
+      "tests.test_p35_wall_allowance::test_a_real_frozen_worker_is_stopped_at_the_allowance": {
+        "status": "passed",
+        "exception": "",
+        "seconds": "23.839"
+      }
+    }
+  },
+  "toy_flow_post_format": {
+    "method": "file as executed at 2026-09-26T11:45:55Z rebuilt by replaying the prior session's Write, scripted replace and two Edits (no other tool call touched it); compared with the committed file by ast.dump",
+    "ast_identical": false,
+    "ast_identical_after_inlining_live": true,
+    "text_hunks": 3,
+    "only_semantic_change": "`live = components.evaluation.evaluators[EventTier.QUICK_LM]; FailAt(live, {...})` vs the inline argument; `live` is not used elsewhere",
+    "collect_only": "1 test collected, exit 0",
+    "ruff_check": "exit 0",
+    "ruff_format_check": "exit 0"
+  }
+}

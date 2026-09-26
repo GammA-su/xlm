@@ -1,6 +1,51 @@
 # Implementation status
 
-> **P35 Milestone 3 (2026-09-26): IMPLEMENTED/VERIFIED within the
+> **P35 Milestone 3 final certification closeout (2026-09-26): M3 CERTIFIED —
+> SAFE TO INTEGRATE** (opt-in, authored/synthetic scope). **M4 may begin.** The
+> real 32M pilot stays **BLOCKED** on 17 real inputs and the user's
+> authorization. No product code changed; two test-only commits (`e2541ec`,
+> `bbffc16`) strengthen evidence.
+>
+> - **M1/M2 frozen workflow:** 3/3 passed on `f548d60` (556.8 s): direct,
+>   queue and resume; LR, RNG and runtime identity; M2 cadence.
+> - **Queue/frozen:** 35 selected, 10 passed, 5 failed, 20 errors.
+>   - All 25 non-green nodes raise `installed torch accelerator does not match
+>     selected extras` (CPU-extra frozen identity).
+>   - They are identical on a clean certified-M2 `a3e5546` export: a
+>     pre-existing environment limit, not M3.
+>   - The CUDA-relevant M3 queue paths are exercised by the workflow, the
+>     wall-allowance tests and toy phase B.
+> - **Nine adversarial mutations, all KILLED** in isolated exports, each on its
+>   intended assertion, after a green control:
+>   1. resume cadence drift;
+>   2. retirement before replacement authority;
+>   3. deletion of the last good state;
+>   4. ignored evaluation dependency;
+>   5. rescore with same count/step but different weights;
+>   6. fallback to the latest checkpoint;
+>   7. peak-disk underestimate;
+>   8. wall allowance reset on resume;
+>   9. blocked or unauthorized pilot made EXECUTABLE.
+>
+>   One test weakness was found and fixed: the retention-order observer's
+>   exception was swallowed by `apply_retention`.
+> - **Final M3 group** (cadence, retention, rescore, pilot, wall): 73/73
+>   passed. Ruff and format are clean; the mypy profile is unchanged.
+> - **Toy flow** was not rerun. The post-run edit is proven behavior-neutral
+>   by AST comparison.
+> - **Open for the pilot:**
+>   - The 2 GiB aggregate shard-input cap is a POTENTIAL BLOCKER pending real
+>     sizes; M3 is not blocked by it.
+>   - `quick_lm@1M/4M` have no exact checkpoint, which is a **PILOT POLICY
+>     DECISION** for the user.
+>   - Search-benchmark events are not checkpoint-rescorable and affect
+>     completeness only on failure.
+>
+> See [P35-M3 §17](reports/P35-M3.md#17-final-certification-closeout-2026-09-26)
+> and [certification.json](evidence/P35-M3/certification.json). Next: integrate
+> M3, then the M4 prompt in P35-M3 §16.
+
+> **P35 Milestone 3 (2026-09-26), superseded by the closeout above: IMPLEMENTED/VERIFIED within the
 > authored/synthetic scope; safe to integrate as an opt-in. The real 32M pilot
 > is BLOCKED** until the user supplies real artifacts. NOT RUN: the M1/M2 frozen
 > workflow and queue/frozen serial regressions (session ended early); run them before integrating. Branch
