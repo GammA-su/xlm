@@ -30,9 +30,12 @@ schema v1 and keep legacy semantics; none of the drafts is a production default.
 (status `draft_nonexecutable`): every real artifact, root, capacity input, pin
 and the scoring policy stay null until an operator bindings file resolves them
 through `xlm experiment plan <draft> --bindings <file>`; see
-[science-v1](../docs/science-v1.md#science-pilot-plans).
+[science-v1](../docs/science-v1.md#science-pilot-plans). It declares the
+pilot-readiness `training.evaluation_recoverability` policy (C = 0 barrier,
+1M/4M evaluation-recovery checkpoints, endpoint fail-stop).
 `science_comparisons/draft_science_v1_*.yaml` are P35 M4 comparison manifests
-(status `draft_nonexecutable_no_results`) for the future B8/B16/B32 screen and an
+(status `draft_nonexecutable_no_results`) for the future B8/B16/B32 screen (track
+`microbatch_grouping_v2`: runs must declare `training.update_payload_receipt`) and an
 M0/M1 mixture screen. They carry no runs or results, and their margins stay null
 until the user freezes them; see
 [science-v1](../docs/science-v1.md#scientific-comparisons-p35-milestone-4).

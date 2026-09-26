@@ -1,4 +1,4 @@
-# Science-v1 training semantics and comparisons (P35 Milestones 1–5)
+# Science-v1 training semantics and comparisons (P35 Milestones 1–5, pilot readiness)
 
 `xlm-science-v1` is an explicit, versioned training policy defined by the
 [P35 scientific contract](implementation/reports/P35-SCIENTIFIC-CONTRACT.md).
@@ -225,12 +225,54 @@ inputs=..., device="cuda")` does the same offline, and
 `load_run_evaluation_state(<checkpoint>)` reconciles completeness from the
 durable attempts. Only LM tiers have a verified checkpoint route; a failed
 search-benchmark event stays incomplete, and its checkpoint stays retained
-with an explicit reason. Events at boundaries without a planned checkpoint
-cannot be rescored (in the pilot: `quick_lm@1M` and `quick_lm@4M`). If one of
-them fails live and training moves past it, the pilot stays
-evaluation-incomplete. Whether to accept that, add 1M/4M recovery checkpoints,
-or require an immediate retry is an open pilot policy decision for the user
-([P35-M3 §17.8](implementation/reports/P35-M3.md#178-real-pilot-readiness)).
+with an explicit reason. Without a recoverability policy, events at boundaries
+without a planned checkpoint cannot be rescored (in the pilot: `quick_lm@1M` and
+`quick_lm@4M`). The pilot-readiness policy below closes these gaps.
+
+## Evaluation recoverability (P35 pilot readiness)
+
+A required evaluation must never be silently lost. Declare, in `training`
+(requires `checkpoint_cadence` and `evaluation.science`; omitted when absent):
+
+```yaml
+evaluation_recoverability:
+  version: xlm-evaluation-recoverability-v1
+  required_events: all_planned_events_v1
+  initial_barrier: required_initial_evaluation_barrier_v1   # or disabled
+  recovery_checkpoints: evaluation_recovery_checkpoints_v1  # or disabled
+  endpoint: endpoint_live_retry_then_fail_stop_v1           # or disabled
+```
+
+- **C = 0 barrier.** Optimizer update 1 may not begin until every required
+  C = 0 event (pilot: quick, full and search @0) has a canonical COMPLETE
+  receipt. A failure is retried at C = 0 as an ordinary M2 attempt (same
+  lineage, at most 3, `first_complete_attempt_v1`). If the bound is exhausted
+  the run stops at C = 0 with `InitialEvaluationBarrierError`. No update happens.
+  PARTIAL coverage is not accepted.
+- **Evaluation-recovery checkpoints.** A required evaluation threshold that no
+  milestone or rolling recovery checkpoint covers gets a checkpoint of role
+  `evaluation_recovery` at the same threshold. In the pilot these are 1M
+  (C = 1,048,576) and 4M (C = 4,063,232). The same first-crossing rule applies,
+  so no update is split. The state is kept while an evaluation that needs it is
+  unresolved, then released (`evaluation_recovery_released`). A failed
+  evaluation is completed by the exact at-budget rescore. These are recovery
+  states, not scientific milestones.
+- **Endpoint.** At the exact budget, a failed required event is retried on the
+  live endpoint state (same bound). LM endpoint events also keep the offline
+  exact-checkpoint rescore. Any required event still incomplete after the
+  at-budget rescore raises `RequiredEvaluationIncompleteError`
+  (`EVALUATION_INCOMPLETE`): the run or job fails and is never reported as
+  successful.
+- **Plan.** The policy is in the plan hash and in the checkpoint-plan identity,
+  so a changed policy refuses ordinary resume. The review's
+  `schedules.recoverability` lists every event with its threshold, required
+  flag, state retention, retry mechanism, recoverability and blocking policy.
+  The planner blocks any required event whose route is `NONE`
+  (`required_event_unrecoverable`). The §W pilot also requires the exact v1
+  policy, which the checked-in draft declares.
+- **Capacity.** Every evaluation-recovery state counts as pinned, which is the
+  failure worst case. Pilot peak: 9 × the measured checkpoint size (M3: 7×).
+  A measured size is still required.
 
 ## Science pilot plans
 
@@ -278,7 +320,13 @@ The planner verifies:
 - cold coverage: source transitions and first visits within the budget;
 - the measured profile, and peak disk: retained + new checkpoint + staging
   copy + receipts, evidence, caches, logs and margin, from a measured
-  checkpoint size.
+  checkpoint size;
+- evaluation recoverability (see above);
+- frozen input sizes (`input_bytes`). This is a `stat()`-only report per source,
+  made before resolution hashes anything, against the **unchanged** caps: 2 GiB
+  per shard, 2 GiB aggregate, 8 MiB JSON. An excess blocks with
+  `frozen_input_cap_exceeded` and names the sources and bytes. The cap is never
+  raised automatically.
 
 Planning and validation never train, allocate a GPU or authorize anything.
 The generic planner refuses pilot drafts. A RESOLVED review renders the
@@ -375,7 +423,11 @@ state. Labels are never trusted.
   - `microbatch_grouping_v1` varies only `microbatch_sequences`. It requires
     identical global batch, update boundaries, committed per-target trace,
     per-source exposure and initialization. Final weights are *not*
-    compared.
+    compared. This is its historical meaning.
+  - `microbatch_grouping_v2` (pilot readiness; the B8/B16/B32 draft uses it)
+    adds two MUST_MATCH fields: the global-update payload receipt version and
+    an identical chain head (see below). A run without the receipt is unknown,
+    so the pair is INELIGIBLE.
   - `data_mixture_v1` varies the mixture weights, and as their consequences
     the exposure plan, trace and per-source counts. Model, tokenizer,
     optimization, within-source order and evaluation stay fixed.
@@ -491,3 +543,35 @@ all data orders, stochastic sampling or IID resampling. See
 - **Pilot**: the 32M draft requires a pinned order manifest, order id and
   membership id (a fixed order, not an independent replicate). Planning blocks
   missing, unpinned, tampered or foreign-membership orders.
+
+## Global-update payload receipt (P35 pilot readiness)
+
+For microbatch-grouping studies, declare in `training`:
+
+```yaml
+update_payload_receipt: global_update_payload_digest_v1
+```
+
+Each committed update gets a digest of its **global** payload. This covers:
+
+- ordered input ids, labels and loss mask;
+- position ids, segment ids and the attention mask;
+- the packing mode;
+- per-target source, document, lineage, byte-span and token-offset provenance.
+
+The digest is independent of how the update was split into microbatches.
+Changing any value, or the order of sequences, changes it.
+
+- **Where it is hashed.** From the CPU data before device transfer: the P34
+  producer's arrays, or the synchronous microbatches. Both give the same digest.
+- **When it is recorded.** Staged before compute and committed only with the
+  data cursor, so a failed, skipped or in-doubt update never enters.
+- **The chain.** `science.json.update_payloads` chains the rows
+  `(step, committed_before, valid_targets, payload_digest)` from a
+  run-independent genesis. Runs that differ only in grouping have the same
+  head.
+- **Resume and forks.** Both restore and re-verify the chain, which must match
+  the LR receipts. A checkpoint whose receipt presence differs is refused.
+- **Evidence.** Evidence v3 reads the chain; v1/v2 records read "no receipt".
+
+See [P35 pilot readiness](implementation/reports/P35-PILOT-READINESS.md).

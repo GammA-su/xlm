@@ -1,0 +1,279 @@
+{
+  "control": {
+    "exit": 0,
+    "nodes": 21,
+    "passed": 21,
+    "xlm_from": "/tmp/claude-0/-home-user-xlm/3b6eba08-3729-5f00-9932-440657ac5ee4/scratchpad/p35_readiness_mut_jchm_abe/control/src/xlm/__init__.py"
+  },
+  "killed": 10,
+  "mutants": [
+    {
+      "cases": {
+        "tests.test_p35_readiness_recoverability::test_any_failed_c0_event_closes_the_barrier[search_benchmark@0]": {
+          "message": "AssertionError: assert [] == ['search_benchmark@0: failed']\n  \n  Right contains one more item: 'search_benchmark@0: failed'\n  Use -v to get more diff",
+          "state": "failed"
+        },
+        "tests.test_p35_readiness_recoverability::test_partial_interrupted_or_unscored_c0_events_also_block[partial]": {
+          "message": "AssertionError: assert [] == ['search_benc...k@0: partial']\n  \n  Right contains one more item: 'search_benchmark@0: partial'\n  Use -v to get more diff",
+          "state": "failed"
+        },
+        "tests.test_p35_readiness_recoverability::test_uncrossed_c0_events_block_so_skipping_the_boundary_cannot_open_it": {
+          "message": "AssertionError: assert 2 == 3\n +  where 2 = len(['quick_lm@0: planned', 'full_lm@0: planned'])\n +    where ['quick_lm@0: planned', 'full_lm@0: planned'] = barrier_blockers(<xlm.evaluation.receipts.EvaluationLedger object at 0x7fa99402cb00>, RecoverabilityPolicy(required_events='all_planned_events_v1",
+          "state": "failed"
+        }
+      },
+      "edit": {
+        "new": "        if record.event.threshold != 0 or record.event_id not in required or (\n            record.event.tier is EventTier.SEARCH_BENCHMARK\n        ):\n",
+        "old": "        if record.event.threshold != 0 or record.event_id not in required:\n"
+      },
+      "exit": 1,
+      "file": "src/xlm/evaluation/recoverability.py",
+      "id": 1,
+      "name": "search@0 failure still allows update 1 (barrier ignores the search tier)",
+      "nodes": [
+        "tests/test_p35_readiness_recoverability.py::test_any_failed_c0_event_closes_the_barrier[search_benchmark@0]",
+        "tests/test_p35_readiness_recoverability.py::test_partial_interrupted_or_unscored_c0_events_also_block[partial]",
+        "tests/test_p35_readiness_recoverability.py::test_uncrossed_c0_events_block_so_skipping_the_boundary_cannot_open_it"
+      ],
+      "result": "KILLED",
+      "xlm_from_export": true
+    },
+    {
+      "cases": {
+        "tests.test_p35_readiness_planner::test_draft_review_table_has_a_route_for_every_required_event": {
+          "message": "AssertionError: assert [PlanBlocker(...-incomplete')] == []\n  \n  Left contains 2 more items, first extra item: PlanBlocker(code='required_event_unrecoverable', detail='quick_lm@1000000: no retained exact state and no retry/fail-stop route; a clean evaluation failure could leave the pilot permanently",
+          "state": "failed"
+        },
+        "tests.test_p35_readiness_recoverability::test_pilot_recovery_checkpoints_are_exactly_1m_and_4m": {
+          "message": "assert () == (1000000, 4000000)\n  \n  Right contains 2 more items, first extra item: 1000000\n  Use -v to get more diff",
+          "state": "failed"
+        },
+        "tests.test_p35_readiness_recoverability::test_pilot_table_with_the_v1_policy_has_a_route_for_every_required_event": {
+          "message": "AssertionError: assert ['quick_lm@10...k_lm@4000000'] == []\n  \n  Left contains 2 more items, first extra item: 'quick_lm@1000000'\n  Use -v to get more diff",
+          "state": "failed"
+        }
+      },
+      "edit": {
+        "new": "        sorted({e.threshold for e in required_events(plan, policy) if e.threshold not in covered and e.tier is not EventTier.QUICK_LM})",
+        "old": "        sorted({e.threshold for e in required_events(plan, policy) if e.threshold not in covered})"
+      },
+      "exit": 1,
+      "file": "src/xlm/evaluation/recoverability.py",
+      "id": 2,
+      "name": "quick@1M has no recovery checkpoint (quick tier never gets one)",
+      "nodes": [
+        "tests/test_p35_readiness_recoverability.py::test_pilot_recovery_checkpoints_are_exactly_1m_and_4m",
+        "tests/test_p35_readiness_recoverability.py::test_pilot_table_with_the_v1_policy_has_a_route_for_every_required_event",
+        "tests/test_p35_readiness_planner.py::test_draft_review_table_has_a_route_for_every_required_event"
+      ],
+      "result": "KILLED",
+      "xlm_from_export": true
+    },
+    {
+      "cases": {
+        "tests.test_p35_readiness_recoverability::test_recovery_checkpoint_is_pinned_while_its_evaluation_is_unresolved": {
+          "message": "AssertionError: assert 't1m' in {'t8m': ['last_good_state', 'pinned_milestone'], 't0': ['pinned_milestone']}\n +  where {'t8m': ['last_good_state', 'pinned_milestone'], 't0': ['pinned_milestone']} = RetentionDecision(policy='latest_two_recovery_plus_pinned_v1', keep={'t8m': ['last_good_state', 'pinne",
+          "state": "failed"
+        }
+      },
+      "edit": {
+        "new": "        if events and candidate.role != EVALUATION_RECOVERY:\n",
+        "old": "        if events:\n"
+      },
+      "exit": 1,
+      "file": "src/xlm/artifacts/retention.py",
+      "id": 3,
+      "name": "unresolved evaluation-recovery checkpoint is retired",
+      "nodes": [
+        "tests/test_p35_readiness_recoverability.py::test_recovery_checkpoint_is_pinned_while_its_evaluation_is_unresolved"
+      ],
+      "result": "KILLED",
+      "xlm_from_export": true
+    },
+    {
+      "cases": {
+        "tests.test_p35_readiness_planner::test_capacity_counts_worst_case_recovery_states_and_transients": {
+          "message": "assert 3000000000 == (7 * 600000000)",
+          "state": "failed"
+        },
+        "tests.test_p35_readiness_planner::test_insufficient_capacity_blocks_and_the_measured_size_is_mandatory": {
+          "message": "AssertionError: assert 'new_output_exceeds_limit' in []\n +  where [] = codes(Findings(blockers=[], warnings=[], preflight={'capacity': {'status': 'VERIFIED', 'blockers': [], 'checkpoint_bytes': 1... checkpoint size; code-enforced bounds; operator-declared evidence, cache and margin', 'storage_estima",
+          "state": "failed"
+        }
+      },
+      "edit": {
+        "new": "        retained = (pinned + recovery + KEEP_RECOVERY) * size\n",
+        "old": "        retained = (pinned + recovery + evaluation_recovery + KEEP_RECOVERY) * size\n"
+      },
+      "exit": 1,
+      "file": "src/xlm/experiments/science_pilot.py",
+      "id": 4,
+      "name": "capacity omits evaluation-recovery checkpoints",
+      "nodes": [
+        "tests/test_p35_readiness_planner.py::test_capacity_counts_worst_case_recovery_states_and_transients",
+        "tests/test_p35_readiness_planner.py::test_insufficient_capacity_blocks_and_the_measured_size_is_mandatory"
+      ],
+      "result": "KILLED",
+      "xlm_from_export": true
+    },
+    {
+      "cases": {
+        "tests.test_p35_readiness_payload::test_b8_b16_b32_partitions_of_one_global_update_have_one_digest": {
+          "message": "AssertionError: assert 3 == 1\n +  where 3 = len({'0c577bc9f1b143f9a86ad2e8d2d3d7aba644089eaf8db30a0321738d040287a4', '120e1bbe6ab4d7ea29eb26439b00019275f96bd9c0c0ce9ce59ca58d46a02d3c', '342fa790029ddf75435c84218465eae6b9500f1ad40aa2079536ce58d87f12ec'})",
+          "state": "failed"
+        },
+        "tests.test_p35_readiness_payload::test_grouping_invariant_chains_across_updates": {
+          "message": "AssertionError: assert (3 == 1)\n +  where 3 = len({'3178952d184d058a01189f9b35169e08b6fa5920366cb024253f64d7a1619f99', 'aa1c011be50c64b202a3d70737828017f260739efc2cd5fc0bd178c8e6b27d75', 'aa43cdcb469444abe14bfcadd129569efb7750d297a546e7056e43f5c1e2cc3a'})",
+          "state": "failed"
+        },
+        "tests.test_p35_readiness_payload::test_producer_encoding_and_synchronous_batches_have_one_digest": {
+          "message": "AssertionError: assert '0aac90057999...033361cb60aba' == '342fa790029d...6ce58d87f12ec'\n  \n  - 342fa790029ddf75435c84218465eae6b9500f1ad40aa2079536ce58d87f12ec\n  + 0aac900579991698f5f01d9df14043f79b983a1f8922a4697de033361cb60aba",
+          "state": "failed"
+        }
+      },
+      "edit": {
+        "new": "    return _build(sequences, f\"{_packing_mode([mb.metadata for mb in microbatches])}|{[len(mb.input_ids) for mb in microbatches]}\", arrays, strings)",
+        "old": "    return _build(sequences, _packing_mode([mb.metadata for mb in microbatches]), arrays, strings)"
+      },
+      "exit": 1,
+      "file": "src/xlm/data/sampling/update_payload.py",
+      "id": 5,
+      "name": "payload digest includes microbatch boundaries (B8/B16 differ)",
+      "nodes": [
+        "tests/test_p35_readiness_payload.py::test_b8_b16_b32_partitions_of_one_global_update_have_one_digest",
+        "tests/test_p35_readiness_payload.py::test_producer_encoding_and_synchronous_batches_have_one_digest",
+        "tests/test_p35_readiness_payload.py::test_grouping_invariant_chains_across_updates"
+      ],
+      "result": "KILLED",
+      "xlm_from_export": true
+    },
+    {
+      "cases": {
+        "tests.test_p35_readiness_payload::test_one_changed_model_or_provenance_value_changes_the_digest[labels]": {
+          "message": "AssertionError: assert '669c34e24252cc7a1e286d45d09ace2d518502d0291c040f1ccb95c1793d0f13' != '669c34e24252cc7a1e286d45d09ace2d518502d0291c040f1ccb95c1793d0f13'\n +  where '669c34e24252cc7a1e286d45d09ace2d518502d0291c040f1ccb95c1793d0f13' = digest([TrainingBatch(input_ids=[[1, 88, 109, 104, 101, 112, ",
+          "state": "failed"
+        }
+      },
+      "edit": {
+        "new": "        for name in INT_FIELDS:\n            if name not in self.arrays or name == \"labels\":\n                continue\n",
+        "old": "        for name in INT_FIELDS:\n            if name not in self.arrays:\n                continue\n"
+      },
+      "exit": 1,
+      "file": "src/xlm/data/sampling/update_payload.py",
+      "id": 6,
+      "name": "payload digest ignores labels",
+      "nodes": [
+        "tests/test_p35_readiness_payload.py::test_one_changed_model_or_provenance_value_changes_the_digest[labels]"
+      ],
+      "result": "KILLED",
+      "xlm_from_export": true
+    },
+    {
+      "cases": {
+        "tests.test_p35_readiness_payload::test_a_moved_loss_mask_bit_with_the_same_count_changes_the_digest": {
+          "message": "AssertionError: assert '650175f4167cad61be4cd161bcb859153252fb7dc99ef04187a8d4bec729e4cb' != '650175f4167cad61be4cd161bcb859153252fb7dc99ef04187a8d4bec729e4cb'\n +  where '650175f4167cad61be4cd161bcb859153252fb7dc99ef04187a8d4bec729e4cb' = digest([TrainingBatch(input_ids=[[1, 88, 109, 104, 101, 112, ",
+          "state": "failed"
+        },
+        "tests.test_p35_readiness_payload::test_one_changed_model_or_provenance_value_changes_the_digest[attention_mask]": {
+          "message": "AssertionError: assert '650175f4167cad61be4cd161bcb859153252fb7dc99ef04187a8d4bec729e4cb' != '650175f4167cad61be4cd161bcb859153252fb7dc99ef04187a8d4bec729e4cb'\n +  where '650175f4167cad61be4cd161bcb859153252fb7dc99ef04187a8d4bec729e4cb' = digest([TrainingBatch(input_ids=[[1, 88, 109, 104, 101, 112, ",
+          "state": "failed"
+        },
+        "tests.test_p35_readiness_payload::test_one_changed_model_or_provenance_value_changes_the_digest[position_ids]": {
+          "message": "AssertionError: assert '650175f4167cad61be4cd161bcb859153252fb7dc99ef04187a8d4bec729e4cb' != '650175f4167cad61be4cd161bcb859153252fb7dc99ef04187a8d4bec729e4cb'\n +  where '650175f4167cad61be4cd161bcb859153252fb7dc99ef04187a8d4bec729e4cb' = digest([TrainingBatch(input_ids=[[1, 88, 109, 104, 101, 112, ",
+          "state": "failed"
+        }
+      },
+      "edit": {
+        "new": "        for name in INT_FIELDS:\n            if name not in self.arrays or name in (\"loss_mask\", \"attention_mask\", \"position_ids\"):\n                continue\n",
+        "old": "        for name in INT_FIELDS:\n            if name not in self.arrays:\n                continue\n"
+      },
+      "exit": 1,
+      "file": "src/xlm/data/sampling/update_payload.py",
+      "id": 7,
+      "name": "payload digest ignores the loss/attention masks and positions",
+      "nodes": [
+        "tests/test_p35_readiness_payload.py::test_one_changed_model_or_provenance_value_changes_the_digest[position_ids]",
+        "tests/test_p35_readiness_payload.py::test_one_changed_model_or_provenance_value_changes_the_digest[attention_mask]",
+        "tests/test_p35_readiness_payload.py::test_a_moved_loss_mask_bit_with_the_same_count_changes_the_digest"
+      ],
+      "result": "KILLED",
+      "xlm_from_export": true
+    },
+    {
+      "cases": {
+        "tests.test_p35_readiness_payload::test_resume_restores_the_chain_and_continues_exactly": {
+          "message": "AssertionError: assert ([] == [[1, 0, 16, '...faccc22f683']]\n  \n  Right contains 3 more items, first extra item: [1, 0, 16, '0000000000000000000000000000000000000000000000000000000000000000', 'd6c13d1b5441483e4feacf5b9e57cb372cacf8e26c0572e59846617dd592b0c5']\n  Use -v to get more diff)",
+          "state": "failed"
+        }
+      },
+      "edit": {
+        "new": "        chain = cls()\n        return chain\n",
+        "old": "        chain = cls()\n        chain.rows = [list(r) for r in payload[\"rows\"]]\n        return chain\n"
+      },
+      "exit": 1,
+      "file": "src/xlm/data/sampling/update_payload.py",
+      "id": 8,
+      "name": "resume resets the payload chain",
+      "nodes": [
+        "tests/test_p35_readiness_payload.py::test_resume_restores_the_chain_and_continues_exactly"
+      ],
+      "result": "KILLED",
+      "xlm_from_export": true
+    },
+    {
+      "cases": {
+        "tests.test_p35_readiness_m4::test_a_payload_chain_mismatch_is_ineligible_on_v2": {
+          "message": "assert not True",
+          "state": "failed"
+        },
+        "tests.test_p35_readiness_m4::test_a_run_without_the_receipt_is_ineligible_on_v2": {
+          "message": "assert not True",
+          "state": "failed"
+        }
+      },
+      "edit": {
+        "new": "    required=frozenset(),\n",
+        "old": "    required=frozenset({\"update_payload_receipt\", \"update_payload_chain_digest\"}),\n"
+      },
+      "exit": 1,
+      "file": "src/xlm/comparison/science_tracks.py",
+      "id": 9,
+      "name": "microbatch_grouping_v2 ignores a payload-chain mismatch",
+      "nodes": [
+        "tests/test_p35_readiness_m4.py::test_a_payload_chain_mismatch_is_ineligible_on_v2",
+        "tests/test_p35_readiness_m4.py::test_a_run_without_the_receipt_is_ineligible_on_v2"
+      ],
+      "result": "KILLED",
+      "xlm_from_export": true
+    },
+    {
+      "cases": {
+        "tests.test_p35_readiness_planner::test_authored_fixtures_also_fail_closed_on_a_missing_route[recovery_checkpoints-lost1]": {
+          "message": "AssertionError: assert [] == ['quick_lm@10...k_lm@4000000']\n  \n  Right contains 2 more items, first extra item: 'quick_lm@1000000'\n  Use -v to get more diff",
+          "state": "failed"
+        },
+        "tests.test_p35_readiness_planner::test_missing_policy_blocks_the_research_pilot_with_every_lost_event": {
+          "message": "AssertionError: assert [] == ['quick_lm@10...ark@32000000']\n  \n  Right contains 4 more items, first extra item: 'quick_lm@1000000'\n  Use -v to get more diff",
+          "state": "failed"
+        }
+      },
+      "edit": {
+        "new": "    for event in unrecoverable_required(rows)[:0]:\n",
+        "old": "    for event in unrecoverable_required(rows):\n"
+      },
+      "exit": 1,
+      "file": "src/xlm/experiments/science_pilot.py",
+      "id": 10,
+      "name": "required event without a route still yields a resolvable plan",
+      "nodes": [
+        "tests/test_p35_readiness_planner.py::test_missing_policy_blocks_the_research_pilot_with_every_lost_event",
+        "tests/test_p35_readiness_planner.py::test_authored_fixtures_also_fail_closed_on_a_missing_route[recovery_checkpoints-lost1]"
+      ],
+      "result": "KILLED",
+      "xlm_from_export": true
+    }
+  ],
+  "runner_sha256": "8fa3a0d782b526e4823caaf6be80900cfd54bcbad7c7faf94d6dbcc069a9588c",
+  "seconds": 27.7,
+  "tested_head": "8b7e6ac3816c10a07ba4522377776da59a5cac75"
+}

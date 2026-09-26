@@ -1,5 +1,50 @@
 # Implementation status
 
+> **P35 PILOT-READINESS HARDENING (2026-09-26; not Milestone 6): IMPLEMENTED;
+> pure decisions VERIFIED; NEEDS LOCAL CERTIFICATION.** Branch
+> `research/p35-pilot-readiness` from certified M5 `8ccb4bc` (tag
+> `p35-m5-certified`). Linux cloud, Python 3.12.3, authorized base+dev scratch
+> venv (no torch, no extras, no data). No acquisition, Mix-01, order manifests,
+> training, pilot, B8/B16/B32 run, margins, push to certified branches or merge.
+>
+> - **Audit:** traced matrix. Pre-change, a clean failure could be permanently
+>   lost for `search@0` (training starts anyway), `quick@1M`/`@4M` (no retained
+>   state) and `search@32M` (no reachable retry: the CLI is capped at 200k, the
+>   queue never re-runs, there is no benchmark checkpoint scorer). No path
+>   stopped an evaluation-incomplete pilot.
+> - **`xlm-evaluation-recoverability-v1`**, in the plan hash and the
+>   checkpoint-plan identity:
+>   - **C = 0 barrier:** bounded M2 retries at C = 0; no update 1 until
+>     quick/full/search@0 are COMPLETE; fail-stop at C = 0.
+>   - **`evaluation_recovery` checkpoints** at 1M (C = 1,048,576) and 4M
+>     (C = 4,063,232) by first crossing, with no split update; pinned only while
+>     unresolved.
+>   - **Endpoint:** live retry, then `EVALUATION_INCOMPLETE` fail-stop.
+>   - The §W draft declares the policy and stays DRAFT.
+> - **Plan:** a recoverability table with a digest; the planner blocks any
+>   required event with route `NONE`. **Capacity:** worst case 9P (was 7P).
+>   **Input cap:** unchanged 2 GiB, plus a stat-only per-source diagnostic
+>   before hashing.
+> - **Fairness:** `global_update_payload_digest_v1` and the committed chain
+>   `xlm-update-payload-chain-v1`, opt-in via `training.update_payload_receipt`.
+>   - B8/B16/B32 and the P34 producer give an identical digest; each of 12
+>     fields, a moved mask bit and the sequence order change it.
+>   - Only committed updates are recorded; resume is exact.
+>   - Tracks v3 and evidence v3; `microbatch_grouping_v2` requires the chain,
+>     while v1 keeps its historical meaning. The B8/B16/B32 draft uses v2 and
+>     its margins stay unset.
+> - **Evidence:** 95 new pure tests pass. Focused regression (35 files): no
+>   HEAD-only failure versus the base export. **Mutations: 10/10 killed.**
+>   ruff clean. mypy: 5 torch-absent notices, identical on base. Synthetic flow
+>   0.8 s.
+> - **NOT RUN (torch):** `tests/test_p35_readiness_runtime.py` (17 nodes),
+>   updated M3 pilot assertions, and the frozen/queue/toy flows that now inherit
+>   the policy.
+>
+> See [P35 pilot readiness](reports/P35-PILOT-READINESS.md). Next: local CUDA
+> certification (§16 commands), then bind real Mix-01 artifacts and read the
+> `recoverability` and `input_bytes` review sections. DO NOT START M6 here.
+
 > **P35 Milestone 5 LOCAL WINDOWS/CUDA CERTIFICATION CLOSEOUT (2026-09-26): M5
 > CERTIFIED — SAFE TO INTEGRATE** as an opt-in. Worktree
 > `G:\Project\xlm-p35-m5-local`, branch `review/p35-m5-local`, starting HEAD
