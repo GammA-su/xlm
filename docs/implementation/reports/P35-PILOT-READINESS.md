@@ -734,7 +734,14 @@ Commits:
 5. `bedb591` microbatch v2;
 6. `286db1e` synthetic flow;
 7. `8b7e6ac` mutation runner;
-8. this report/docs/evidence commit.
+8. `d1e6f87` report, docs and evidence;
+9. `0f5876e` CRLF line-ending restoration;
+10. this closing record.
+
+Final cloud confirmation on the final HEAD: the 5 readiness files, the M4/M5
+pure suites, `test_recipes.py` and `test_comparison.py`, run with
+`-n 8 --dist=worksteal`, exit 0: **410 passed, 1 skipped** (the torch-only
+runtime module).
 
 Next prompt, after local certification: **"Certify the P35 pilot-readiness pass
 locally on the CUDA environment: run PILOT-READINESS §16 on branch
