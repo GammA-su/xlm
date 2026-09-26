@@ -16,6 +16,8 @@ from xlm.data.tokens import TokenShardReader
 class MixtureInput:
     recipe: Any
     readers: dict[str, TokenShardReader]
+    #: P35 M5: the verified frozen within-source order manifest, if one is bound.
+    document_order: dict[str, Any] | None = None
 
 
 def _shard(path: Path) -> TokenShardReader:
@@ -79,6 +81,9 @@ def normalize_training_data(data: dict[str, Any], training: dict[str, Any]) -> N
     from xlm.data.sampling import MixtureComponent, MixtureRecipe, PackingPolicy
     from xlm.data.sources.mix01 import MixturePreset, validate_preset_weights_exact
 
+    if data.get("document_order") is not None and training.get("science_version") is None:
+        # P35 M5 order manifests are a science-v1 capability; legacy runs keep shard order.
+        raise ValueError("data.document_order requires training.science_version")
     details = data.get("mixture_details")
     if data.get("mixture_preset") and not details:
         raise ValueError("mixture_preset must be composed with its declared mixture_details")
@@ -203,6 +208,7 @@ def resolve_training_input(data: dict[str, Any], paths: ArtifactPaths) -> tuple[
         "sources",
         "exposure_plan",
         "tokenizer",
+        "document_order",
     }
     if unsupported:
         raise ValueError(f"unsupported training data fields: {sorted(unsupported)}; no fallback")
@@ -287,11 +293,27 @@ def resolve_training_input(data: dict[str, Any], paths: ArtifactPaths) -> tuple[
                 or exposure.get("data_seed") != recipe.data_seed
             ):
                 raise ValueError("exposure plan differs from the declared mixture/seed")
-        return MixtureInput(recipe, readers), identity_digest(
-            {"sources": identities, "mixture": recipe.model_dump(mode="json"), "exposure": exposure}
-        )
-    if data.get("sources") or data.get("exposure_plan"):
-        raise ValueError("sources/exposure_plan require an explicit mixture")
+        identity: dict[str, Any] = {
+            "sources": identities,
+            "mixture": recipe.model_dump(mode="json"),
+            "exposure": exposure,
+        }
+        order_manifest = None
+        if data.get("document_order") is not None:
+            from xlm.data.ordering import resolve_document_order
+
+            # Verified against these exact shards: pins, derivation and membership.
+            data["document_order"], order_manifest = resolve_document_order(
+                data["document_order"], readers
+            )
+            # Only ordered inputs add the key, so shard-native identities keep their bytes.
+            identity["document_order"] = {
+                k: data["document_order"][k]
+                for k in ("order_manifest_id", "canonical_membership_id")
+            }
+        return MixtureInput(recipe, readers, order_manifest), identity_digest(identity)
+    if data.get("sources") or data.get("exposure_plan") or data.get("document_order"):
+        raise ValueError("sources/exposure_plan/document_order require an explicit mixture")
     tokens = data.get("synthetic_tokens")
     shard = data.get("pool_artifact")
     if tokens is not None:
@@ -393,6 +415,7 @@ def build_training_batcher(
             source.readers,
             emit_tensors=True,
             exposure_plan=data.get("exposure_plan"),
+            document_order=source.document_order,
             **kwargs,
         )
         if mode == "process_depth1":

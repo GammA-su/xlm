@@ -18,6 +18,14 @@ from pathlib import Path
 from typing import Any
 
 from xlm.core.contracts import TrainingBatch
+from xlm.data.ordering import (
+    OrderedSourceIndex,
+    OrderManifestError,
+    order_state,
+    shard_identity,
+    state_order,
+    verify_order_manifest,
+)
 from xlm.data.sampling.mixture import MixtureRecipe, SourceAvailability
 from xlm.data.sampling.packing import CausalStreamPacker, PackedWindow, build_packer
 from xlm.data.sampling.scheduler import (
@@ -52,6 +60,7 @@ class MixtureBatcher:
         emit_tensors: bool = False,
         exposure_plan: dict[str, Any] | None = None,
         max_open_shards: int = 0,
+        document_order: dict[str, Any] | None = None,
     ) -> None:
         if context_length <= 0:
             raise ValueError(f"context_length must be positive, got {context_length}")
@@ -106,6 +115,12 @@ class MixtureBatcher:
             )
 
         self.availability = availability
+        # P35 M5: an optional frozen within-source document order. It is an index
+        # over the unchanged shard payload; quotas, scheduler and packing are untouched.
+        self.document_order = copy.deepcopy(document_order)
+        self._orders: dict[str, OrderedSourceIndex] = {}
+        if document_order is not None:
+            self._orders = self._open_orders(self.document_order)
         self.scheduler = QuotaScheduler(recipe, availability)
         self.packer = build_packer(recipe.packing.mode, context_length, pad_token_id, bos_token_id)
 
@@ -117,6 +132,29 @@ class MixtureBatcher:
             raise ValueError("max_open_shards cannot be negative")
         self.max_open_shards = max_open_shards
         self._token_maps = TokenMapCache(max_open_shards) if max_open_shards else None
+
+    def _open_orders(self, manifest: Any) -> dict[str, OrderedSourceIndex]:
+        """Verify the frozen order against these exact shards and index it."""
+        try:
+            verify_order_manifest(manifest)
+            if set(manifest["sources"]) != set(self.readers):
+                raise OrderManifestError("order manifest sources differ from the mixture sources")
+            orders = {}
+            for source_id, reader in self.readers.items():
+                entry = manifest["sources"][source_id]
+                if entry["shard"] != shard_identity(reader):
+                    raise OrderManifestError(
+                        f"order manifest shard for '{source_id}' differs from the bound shard"
+                    )
+                orders[source_id] = OrderedSourceIndex(reader, entry["ordered_doc_ids"])
+        except (OrderManifestError, KeyError, TypeError) as exc:
+            raise MixtureStreamError(f"document order refused: {exc}") from exc
+        return orders
+
+    @property
+    def document_order_identity(self) -> dict[str, str] | None:
+        """Order identity bound into committed state (``None``: shard-native order)."""
+        return order_state(self.document_order)
 
     def close(self) -> None:
         """Release mapped shard handles; call when this stream is no longer needed."""
@@ -132,7 +170,7 @@ class MixtureBatcher:
     def _initial_state(self) -> dict[str, Any]:
         from xlm.artifacts.manifest import identity_digest
 
-        return {
+        state: dict[str, Any] = {
             "version": STREAM_STATE_VERSION,
             "mixture_identity": self.recipe.identity(),
             "exposure_identity": identity_digest(self.exposure_plan),
@@ -147,6 +185,10 @@ class MixtureBatcher:
             "last_step_trace_truncated": False,
             "byte_coverage_complete": True,
         }
+        if self.document_order is not None:
+            # Only ordered streams carry the key, so shard-native states keep their bytes.
+            state["document_order"] = self.document_order_identity
+        return state
 
     # ------------------------------------------------------------------ protocol
 
@@ -171,6 +213,12 @@ class MixtureBatcher:
                 f"'{recorded}' but this stream is '{self.recipe.identity()}'. "
                 "A changed mixture is a new data lineage, not a resumable run."
             )
+        if state_order(state_dict) != self.document_order_identity:
+            raise MixtureStreamError(
+                "refusing to resume: document order identity differs "
+                f"({state_order(state_dict)} != {self.document_order_identity}); a different "
+                "order is a new experiment, not a resumable run"
+            )
         self._committed = copy.deepcopy(state_dict)
         self._uncommitted = copy.deepcopy(state_dict)
         self.scheduler.load_state(self._committed["scheduler"])
@@ -192,12 +240,21 @@ class MixtureBatcher:
     def _read(self, source_id: str, start: int, count: int) -> list[int]:
         """Read a bounded token window from one source shard."""
         reader = self.readers[source_id]
+        order = self._orders.get(source_id)
+        if order is not None:
+            return order.read(lambda s, c: self._read_physical(reader, s, c), start, count)
+        return self._read_physical(reader, start, count)
+
+    def _read_physical(self, reader: TokenShardReader, start: int, count: int) -> list[int]:
         if self._token_maps is not None:
             return self._token_maps.read(reader, start, count)
         return reader.read_tokens_mmap(start=start, count=count)
 
     def _document_at(self, source_id: str, position: int) -> dict[str, Any]:
         """Locate a real document with a bounded streaming index, never an eager corpus list."""
+        order = self._orders.get(source_id)
+        if order is not None:
+            return order.document_at(position)
         cached = self._document_cache.get(source_id)
         previous = self._previous_document.get(source_id)
         if (
@@ -389,9 +446,13 @@ class MixtureBatcher:
                 self._uncommitted["carry_token"][source_id] = packed.labels[last_kept]
                 # A speculative window can span more than two short documents.
                 # Anchor index lookup at the last consumed record, not its suffix.
-                kept_record = self._window_records[last_kept + 1]
-                self._document_cache[source_id] = (kept_record, kept_record["_xlm_index_after"])
-                self._previous_document.pop(source_id, None)
+                if source_id not in self._orders:
+                    kept_record = self._window_records[last_kept + 1]
+                    self._document_cache[source_id] = (
+                        kept_record,
+                        kept_record["_xlm_index_after"],
+                    )
+                    self._previous_document.pop(source_id, None)
                 valid = packed.valid_targets
 
             eos_targets = sum(

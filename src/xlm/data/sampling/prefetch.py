@@ -102,6 +102,8 @@ class ProducerSpec:
     eos_token_id: int
     exposure_plan: dict[str, Any] | None = None
     max_open_shards: int = 0
+    # P35 M5: the frozen order manifest; the child verifies and indexes the same order.
+    document_order: dict[str, Any] | None = None
     # A module-level callable, pickled by reference. Tests inject failures here.
     factory: Callable[[ProducerSpec], MixtureBatcher] | None = None
 
@@ -119,6 +121,7 @@ class ProducerSpec:
             eos_token_id=batcher.eos_token_id,
             exposure_plan=copy.deepcopy(batcher.exposure_plan),
             max_open_shards=batcher.max_open_shards,
+            document_order=copy.deepcopy(batcher.document_order),
         )
 
     def build(self) -> MixtureBatcher:
@@ -144,6 +147,7 @@ class ProducerSpec:
             emit_tensors=False,
             exposure_plan=copy.deepcopy(self.exposure_plan),
             max_open_shards=self.max_open_shards,
+            document_order=copy.deepcopy(self.document_order),
         )
 
 

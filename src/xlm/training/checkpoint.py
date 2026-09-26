@@ -459,6 +459,21 @@ class CheckpointManager:
             except ScientificPolicyError as exc:
                 raise IncompatibleCheckpointError(str(exc)) from exc
 
+        # 2c. Document-order identity (P35 M5), before any state is restored. Forks
+        # keep the data lineage, so they require the identical order as well.
+        if batcher is not None:
+            from xlm.data.ordering import OrderManifestError, check_order_resume
+
+            data_path = checkpoint_dir / "data_state.json"
+            if not data_path.is_file():
+                raise CorruptCheckpointError(f"Missing data_state.json at {checkpoint_dir}")
+            try:
+                check_order_resume(
+                    json.loads(data_path.read_text(encoding="utf-8")), batcher.get_state()
+                )
+            except OrderManifestError as exc:
+                raise IncompatibleCheckpointError(str(exc)) from exc
+
         # 3. Restore model weights & validate tied weights
         if model is not None:
             model_pt_path = checkpoint_dir / "model.pt"
