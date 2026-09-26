@@ -1,5 +1,34 @@
 # Implementation status
 
+> **P35 Milestone 3 (2026-09-26): IMPLEMENTED/VERIFIED within the
+> authored/synthetic scope; safe to integrate as an opt-in. The real 32M pilot
+> is BLOCKED** until the user supplies real artifacts. NOT RUN: the M1/M2 frozen
+> workflow and queue/frozen serial regressions (session ended early); run them before integrating. Branch
+> `research/p35-m3-pilot-retention` from certified M2 `a3e5546`.
+>
+> - **Checkpoint cadence.** Absolute committed-target checkpoint events share
+>   the M2 first-crossing planner, with a fixed boundary order: crossing →
+>   one checkpoint → evaluations. Pilot 0/8M/16M/32M land at C = 0,
+>   8,060,928, 16,056,320 and 32,000,000 (488 full updates + 18,432). Planned
+>   and actual counts are recorded. Resume never drifts or republishes, and
+>   failed publications are recorded.
+> - **Retention.** Bounded latest-two-recovery + pinned retention over
+>   verified records. Milestones, references and evaluation-needed states are
+>   protected, and a failed publication retires nothing.
+> - **Rescoring.** FAILED M2 events are rescored only from the retained
+>   checkpoint of exactly their state (digest-verified weights and evaluator,
+>   device and runtime identity) as a new immutable attempt.
+> - **Pilot planning.** Non-executable `draft_science_v1_pilot_32m`,
+>   `xlm experiment plan --bindings` and the new `xlm experiment validate`
+>   (DRAFT/BLOCKED/RESOLVED/EXECUTABLE), with measured peak-disk planning.
+> - **Wall allowance.** The persisted 3,600 s total allowance gives a resumed
+>   attempt only the remainder; expiry → INCOMPLETE.
+> - **Toy flow.** One bounded authored toy flow on CUDA: 174.7 s, 13 MB,
+>   ≤147,456 targets. It covered a failed eval → exact rescore, a killed
+>   runner → resume with 500.7 s of 540 s, and plan → EXECUTABLE → queue.
+>
+> See [P35-M3](reports/P35-M3.md) and [science-v1](../science-v1.md).
+
 > **P35 Milestone 2 certification closeout (2026-09-26): M2 CERTIFIED — SAFE TO
 > INTEGRATE** (opt-in, authored/synthetic scope). No product change; one new test
 > (`92e5eba`). A new CUDA frozen workflow runs an authored cadence through CLI

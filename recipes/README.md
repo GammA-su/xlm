@@ -26,6 +26,11 @@ uv run --locked --extra cuda xlm train plan.json --device cuda --max-targets 128
 [xlm-science-v1](../docs/science-v1.md): an explicit endpoint LR policy,
 `training_seed` and runtime block. The historical `baseline_*` drafts stay
 schema v1 and keep legacy semantics; none of the drafts is a production default.
+`experiments/draft_science_v1_pilot_32m.yaml` is the P35 §W 32M pilot draft
+(status `draft_nonexecutable`): every real artifact, root, capacity input, pin
+and the scoring policy stay null until an operator bindings file resolves them
+through `xlm experiment plan <draft> --bindings <file>`; see
+[science-v1](../docs/science-v1.md#science-pilot-plans).
 `xlm train` takes the plan path positionally; training authorization is checked
 at `xlm experiment submit` time via `--ticket`, not at `xlm train` time.
 The offline commands above are executed verbatim by the P22 runbook tests;

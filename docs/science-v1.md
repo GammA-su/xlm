@@ -1,4 +1,4 @@
-# Science-v1 training semantics (P35 Milestone 1)
+# Science-v1 training semantics (P35 Milestones 1–3)
 
 `xlm-science-v1` is an explicit, versioned training policy defined by the
 [P35 scientific contract](implementation/reports/P35-SCIENTIFIC-CONTRACT.md).
@@ -149,6 +149,154 @@ evaluation:
   Evaluation that changes live training state stops the run until it is resumed
   from a checkpoint.
 
+## Checkpoint cadence and bounded retention (P35 Milestone 3)
+
+Science-v1 runs may declare an absolute checkpoint cadence. It replaces the
+relative `checkpoint_every_valid_targets` cadence, which is then inert (a
+trainer given both refuses to start):
+
+```yaml
+training:
+  checkpoint_cadence:
+    version: xlm-checkpoint-cadence-v1
+    cadence: pilot_32m          # full_1b | authored_fixture
+    fixture_milestones: null    # explicit ints, authored_fixture only
+    fixture_recovery: null      # explicit ints, authored_fixture only
+    retention: latest_two_recovery_plus_pinned_v1
+    protected_references: []    # verified artifact ids never to retire
+```
+
+- **Thresholds.** `pilot_32m` = milestones 0 (initialized weights/identity),
+  8M, 16M and the exact 32M endpoint (§W). `full_1b` = milestones 0/128M/256M/
+  512M/1000M plus recovery every 64M (§L). Checkpoints use the M2 planner's
+  first-crossing rule: a threshold is satisfied at the first committed boundary
+  at or above it, and updates are never split. At 65,536 targets per update the
+  8M checkpoint lands at C = 8,060,928 (update 123) and 16M at C = 16,056,320
+  (update 245); both the planned threshold and the actual count are recorded.
+  The 32M endpoint is reached exactly by the masked 489th update.
+- **One boundary, fixed order.** Evaluation crossings are recorded, then one
+  checkpoint is published for every checkpoint event first crossed there (it
+  therefore owes that boundary's evaluations), then evaluations run. The final,
+  interrupted, cancelled and time-limit states reuse an already published
+  checkpoint of the same state instead of publishing a duplicate. The
+  exact-budget endpoint checkpoint consequently shows its endpoint evaluations
+  as owed; their completion is the durable attempt artifacts (see below).
+- **Identity.** Each publication record binds run/plan, event identities,
+  planned thresholds and actual C, step, model-state digest, committed
+  data-cursor digest, scientific identity, artifact id
+  `{run}_ckpt-t{threshold}-a{attempt}`, verified manifest SHA-256/content hash
+  and creation attempt. Records live in `science.json`; immutable receipts
+  (kind `checkpoint_events`) record every published or failed attempt.
+- **Resume.** The ledger is restored, never recomputed from the resumed count,
+  so cadence does not drift and a completed milestone is never republished. A
+  replay that reaches an already published boundary adopts that artifact only
+  if run, counters, data cursor and weights digest are identical; otherwise it
+  publishes the next attempt and records the earlier one as a lost lineage. A
+  failed publication is recorded, receipted and stops training.
+- **Retention** (`latest_two_recovery_plus_pinned_v1`) runs only after the new
+  checkpoint is published and verified. It keeps every pinned milestone, the
+  two newest recovery states, the last good state, every protected reference
+  (including a fork parent) and every state an unresolved evaluation event may
+  need (matched by model-state digest). Every decision is logged with reasons.
+  Retirement re-verifies the artifact and its decided manifest hash under the
+  store lock, renames it atomically into `<root>/.retired`, deletes only that
+  tombstone and marks the run-ledger row `retired`. Nothing is deleted by
+  filename, and a failed publication retires nothing.
+
+## Rescoring a failed evaluation from its exact checkpoint
+
+An unresolved event (failed, interrupted, partial or due) whose live boundary
+state is gone can be completed only from the retained checkpoint of exactly
+that state. The checkpoint is located by model-state digest, C and step, never
+"the latest". Its stored weights must hash to the event's digest, and the
+rebuilt evaluator, device and scientific runtime must reproduce the crossing's
+computation identity. That means the same tokenizer, inventory, scoring
+policy, scorer source, device and runtime. Otherwise the request is refused and
+nothing is published. The rescore is a new immutable attempt (route
+`retained_exact_checkpoint_rescore_v1`) joined to the event's lineage; earlier
+attempts stay visible and the canonical receipt is still the first complete
+attempt.
+
+It runs automatically at the exact budget (train, queue and at-budget resume)
+under the training-state guard, bounded by the M2 per-lineage attempt limit,
+and retention runs again afterwards. For a finished run,
+`xlm.evaluation.rescore.rescore_from_run_checkpoint(<run checkpoint>, <event>,
+inputs=..., device="cuda")` does the same offline, and
+`load_run_evaluation_state(<checkpoint>)` reconciles completeness from the
+durable attempts. Only LM tiers have a verified checkpoint route; a failed
+search-benchmark event stays incomplete, and its checkpoint stays retained
+with an explicit reason. Events at boundaries without a planned checkpoint
+cannot be rescored (in the pilot: `quick_lm@1M` and `quick_lm@4M`).
+
+## Science pilot plans
+
+[`recipes/experiments/draft_science_v1_pilot_32m.yaml`](../recipes/experiments/draft_science_v1_pilot_32m.yaml)
+is the non-executable 32M pilot draft. It states every §W scientific value:
+
+- model and seeds;
+- LR, precision, runtime and producer;
+- checkpoint and evaluation cadence;
+- the 12 mix01 components;
+- limits: 3,600 s total wall time, ≤20 GiB GPU, ≤16 GiB process-tree RSS,
+  ≤8 GiB new output.
+
+It leaves every real artifact, root, capacity input, pin and the frozen scoring
+policy null. States:
+
+| State | Meaning |
+|---|---|
+| DRAFT | No bindings; lists every unresolved field; never launchable. |
+| BLOCKED | Bindings supplied, but something is missing, invalid, unpinned or unverifiable. No plan file is written. |
+| RESOLVED | Every preflight passed; a frozen `ExecutablePlan` with a concrete `plan_hash` is written. Not authorized. |
+| EXECUTABLE | `xlm experiment validate` re-verified it and an operator ticket covers exactly that hash, with new output ≤ the §W limit. |
+
+```powershell
+uv run --offline --locked --extra cuda --extra eval xlm experiment plan recipes/experiments/draft_science_v1_pilot_32m.yaml `
+  --bindings <bindings.json> --profile <profile.json> --output <plan.json> --review <review.json> --snapshot-dir <snapshot>
+uv run --offline --locked --extra cuda --extra eval xlm experiment validate <plan.json> [--ticket <ticket.json>]
+```
+
+Bindings (`xlm-science-pilot-bindings-v1`) take absolute local paths and
+pinned identities only. `latest`, wildcards and relative paths are refused.
+The planner verifies:
+
+- the contract values exactly, and the 488 + 18,432 = 32,000,000 arithmetic;
+- that every input and output lies inside its declared root, and that the
+  queue's `XLM_HOME/runs` lies inside the checkpoint and temp roots;
+- the tokenizer: artifact digest, fit-input hash, 32,768 vocabulary, distinct
+  special tokens;
+- every mix01 component, the frozen exposure plan and per-source exposure
+  without repetition;
+- the pinned inventories: nesting, domains covering the mixture, frozen scope;
+- search inputs: tier firewall, BLiMP universe, ≤100 items per task, and the
+  HellaSwag/PIQA group halves against an operator item→group mapping;
+- that no validation document is in training membership;
+- cold coverage: source transitions and first visits within the budget;
+- the measured profile, and peak disk: retained + new checkpoint + staging
+  copy + receipts, evidence, caches, logs and margin, from a measured
+  checkpoint size.
+
+Planning and validation never train, allocate a GPU or authorize anything.
+The generic planner refuses pilot drafts. A RESOLVED review renders the
+existing user-only `authorize`, `submit` and `queue run` commands. A BLOCKED
+one renders only `LAUNCH BLOCKED` and its reasons.
+
+## Total wall allowance and resource ceilings
+
+`resources.total_wall_seconds` bounds the whole queue job across attempts:
+startup, training, checkpoints, evaluation and recovery. It is not the
+trainer's per-attempt `max_train_seconds`. The queue persists consumed time in
+`<job>/wall_allowance.json` about once a second while the worker runs, so a
+crashed runner under-records at most about a second. A resumed attempt gets
+only the remaining time as its kill limit. When the allowance runs out before
+the exact budget, the job is `FAILED` with completion `INCOMPLETE`, never a
+success, and a spent allowance refuses any further launch.
+
+`resources.max_process_tree_rss_gib` is enforced by the launcher's sampling.
+`resources.max_gpu_allocated_gib` is checked against free device memory
+(desktop headroom) at worker start and caps the CUDA caching allocator. Both
+are enforced only when declared.
+
 ## Resume and forks
 
 Ordinary resume requires an identical policy (version, LR policy, RNG policy,
@@ -156,4 +304,12 @@ training seed and runtime block). The frozen envelope check already enforces
 this. The domain API also compares `science.json`, whose absence means legacy,
 before restoring any state. A legacy checkpoint cannot be resumed as
 science-v1, or the reverse, without `--fork` or a new experiment. A fork across
-policies does not adopt the parent's LR/RNG receipt history.
+policies does not adopt the parent's LR/RNG receipt history. A changed
+checkpoint plan also refuses ordinary resume. A fork re-originates the
+checkpoint plan at its committed count and protects its parent checkpoint from
+retention.
+
+For a science pilot, resume through the queue. Submit with `--max-retries 1`.
+After an interrupted runner, `xlm queue run` recovers the stale job and resumes
+from the newest verified checkpoint with the remaining wall allowance. The CLI
+`xlm resume` keeps its C13 200,000-target smoke cap.

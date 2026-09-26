@@ -1,0 +1,310 @@
+{
+  "bounds": {
+    "committed_targets": 81920,
+    "limits": {
+      "bytes": 2147483648,
+      "seconds": 600.0,
+      "targets": 200000
+    },
+    "produced_bytes": 13047326,
+    "training_targets_upper_bound": 147456,
+    "wall_seconds": 174.7029999999795
+  },
+  "label": "P35 M3 authored/synthetic toy flow (not the 32M pilot)",
+  "phase_a": {
+    "checkpoints": [
+      {
+        "actual_committed_targets": 0,
+        "artifact_id": "m3_toy_a_ckpt-t0-a001",
+        "events": [
+          "checkpoint@0"
+        ],
+        "planned_thresholds": [
+          0
+        ],
+        "retired_reason": null,
+        "role": "milestone",
+        "status": "published",
+        "step": 0
+      },
+      {
+        "actual_committed_targets": 2048,
+        "artifact_id": "m3_toy_a_ckpt-t2048-a001",
+        "events": [
+          "checkpoint@2048"
+        ],
+        "planned_thresholds": [
+          2048
+        ],
+        "retired_reason": "rolling_recovery_beyond_latest_two",
+        "role": "recovery",
+        "status": "retired",
+        "step": 8
+      },
+      {
+        "actual_committed_targets": 4096,
+        "artifact_id": "m3_toy_a_ckpt-t4096-a001",
+        "events": [
+          "checkpoint@4096"
+        ],
+        "planned_thresholds": [
+          4096
+        ],
+        "retired_reason": "rolling_recovery_beyond_latest_two",
+        "role": "recovery",
+        "status": "retired",
+        "step": 16
+      },
+      {
+        "actual_committed_targets": 6144,
+        "artifact_id": "m3_toy_a_ckpt-t6144-a001",
+        "events": [
+          "checkpoint@6144"
+        ],
+        "planned_thresholds": [
+          6144
+        ],
+        "retired_reason": "rolling_recovery_beyond_latest_two",
+        "role": "recovery",
+        "status": "retired",
+        "step": 24
+      },
+      {
+        "actual_committed_targets": 8192,
+        "artifact_id": "m3_toy_a_ckpt-t8192-a001",
+        "events": [
+          "checkpoint@8192"
+        ],
+        "planned_thresholds": [
+          8192
+        ],
+        "retired_reason": null,
+        "role": "milestone",
+        "status": "published",
+        "step": 32
+      },
+      {
+        "actual_committed_targets": 10240,
+        "artifact_id": "m3_toy_a_ckpt-t10240-a001",
+        "events": [
+          "checkpoint@10240"
+        ],
+        "planned_thresholds": [
+          10240
+        ],
+        "retired_reason": "rolling_recovery_beyond_latest_two",
+        "role": "recovery",
+        "status": "retired",
+        "step": 40
+      },
+      {
+        "actual_committed_targets": 12288,
+        "artifact_id": "m3_toy_a_ckpt-t12288-a001",
+        "events": [
+          "checkpoint@12288"
+        ],
+        "planned_thresholds": [
+          12288
+        ],
+        "retired_reason": null,
+        "role": "recovery",
+        "status": "published",
+        "step": 48
+      },
+      {
+        "actual_committed_targets": 14336,
+        "artifact_id": "m3_toy_a_ckpt-t14336-a001",
+        "events": [
+          "checkpoint@14336"
+        ],
+        "planned_thresholds": [
+          14336
+        ],
+        "retired_reason": null,
+        "role": "recovery",
+        "status": "published",
+        "step": 56
+      },
+      {
+        "actual_committed_targets": 16384,
+        "artifact_id": "m3_toy_a_ckpt-t16384-a001",
+        "events": [
+          "checkpoint@16384"
+        ],
+        "planned_thresholds": [
+          16384
+        ],
+        "retired_reason": null,
+        "role": "milestone",
+        "status": "published",
+        "step": 64
+      }
+    ],
+    "committed_targets": 16384,
+    "evaluation_complete": true,
+    "first_lr_receipt": [
+      1,
+      0,
+      256,
+      256,
+      [
+        0.010000000000000002,
+        0.010000000000000002
+      ]
+    ],
+    "inputs_vocab": 260,
+    "rescore_histories": {
+      "quick_lm@4096": [
+        [
+          1,
+          "failed",
+          null
+        ],
+        [
+          2,
+          "complete",
+          "retained_exact_checkpoint_rescore_v1"
+        ]
+      ],
+      "quick_lm@8192": [
+        [
+          1,
+          "failed",
+          null
+        ],
+        [
+          2,
+          "complete",
+          "retained_exact_checkpoint_rescore_v1"
+        ]
+      ]
+    },
+    "retention_decisions": 10,
+    "runtime_observed_ops": [
+      "aten::_efficient_attention_backward",
+      "aten::_efficient_attention_forward",
+      "aten::_scaled_dot_product_efficient_attention",
+      "aten::_scaled_dot_product_efficient_attention_backward",
+      "aten::scaled_dot_product_attention"
+    ],
+    "seconds": 11.483999999938533,
+    "size_source": "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-1031\\test_m3_authored_toy_flow0\\home\\phase_a\\checkpoints\\m3_toy_a_ckpt-t16384-a001",
+    "train_start_rng": {
+      "generators": [
+        "python",
+        "numpy",
+        "torch_cpu",
+        "torch_cuda_all"
+      ],
+      "policy": "training_seed_after_construction_v1",
+      "state_digest": "d7884d2eaa7f7c0e9192ce1ef37d729e4cb3acdea87e282953ee56d49c0ee68d",
+      "training_seed": 10001
+    },
+    "updates": 64
+  },
+  "phase_b": {
+    "checkpoint_events": {
+      "checkpoint@0": {
+        "due": {
+          "actual_committed_targets": 0,
+          "record": "run_81800ce97c302a27_ckpt-t0-a001",
+          "step": 0
+        },
+        "status": "published"
+      },
+      "checkpoint@16384": {
+        "due": {
+          "actual_committed_targets": 16384,
+          "record": "run_81800ce97c302a27_ckpt-t16384-a001",
+          "step": 64
+        },
+        "status": "published"
+      },
+      "checkpoint@32768": {
+        "due": {
+          "actual_committed_targets": 32768,
+          "record": "run_81800ce97c302a27_ckpt-t32768-a001",
+          "step": 128
+        },
+        "status": "published"
+      },
+      "checkpoint@49152": {
+        "due": {
+          "actual_committed_targets": 49152,
+          "record": "run_81800ce97c302a27_ckpt-t49152-a001",
+          "step": 192
+        },
+        "status": "published"
+      },
+      "checkpoint@65536": {
+        "due": {
+          "actual_committed_targets": 65536,
+          "record": "run_81800ce97c302a27_ckpt-t65536-a001",
+          "step": 256
+        },
+        "status": "publishing"
+      }
+    },
+    "endpoint_checkpoint_owes": [
+      "full_lm@65536",
+      "quick_lm@65536"
+    ],
+    "evaluation_completeness_reconciled": {
+      "complete": true,
+      "counts": {
+        "complete": 8
+      },
+      "reasons": []
+    },
+    "evaluation_completeness_run_result": {
+      "complete": true,
+      "counts": {
+        "complete": 8
+      },
+      "reasons": []
+    },
+    "killed_after_checkpoints": {
+      "run_81800ce97c302a27_ckpt-t0-a001": 0,
+      "run_81800ce97c302a27_ckpt-t16384-a001": 16384
+    },
+    "plan_hash": "81800ce97c302a274abf8d1d9ede585d92d17ac350ca96f3661fab4f0bfca6ef",
+    "published_checkpoints": {
+      "run_81800ce97c302a27_ckpt-t0-a001": 0,
+      "run_81800ce97c302a27_ckpt-t16384-a001": 16384,
+      "run_81800ce97c302a27_ckpt-t32768-a001": 32768,
+      "run_81800ce97c302a27_ckpt-t49152-a001": 49152,
+      "run_81800ce97c302a27_ckpt-t65536-a001": 65536
+    },
+    "resumed_from": "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-1031\\test_m3_authored_toy_flow0\\home\\runs\\run_81800ce97c302a27\\artifacts\\checkpoints\\run_81800ce97c302a27_ckpt-t16384-a001",
+    "retention_log_entries": 3,
+    "review_status": "RESOLVED",
+    "updates": 256,
+    "validate": "RESOLVED",
+    "validate_with_ticket": "EXECUTABLE",
+    "wall_allowance": {
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "interrupted_runner_lost",
+          "remaining_at_start": 540.0,
+          "seconds": 39.31299999996554,
+          "started_at": "2026-09-26T11:47:16.629869+00:00"
+        },
+        {
+          "attempt": 2,
+          "ended_at": "2026-09-26T11:48:57.840099+00:00",
+          "outcome": "succeeded",
+          "remaining_at_start": 500.68700000003446,
+          "seconds": 57.96799999999348,
+          "started_at": "2026-09-26T11:47:59.859786+00:00"
+        }
+      ],
+      "consumed_seconds": 97.28099999995902,
+      "plan_hash": "81800ce97c302a274abf8d1d9ede585d92d17ac350ca96f3661fab4f0bfca6ef",
+      "remaining_seconds": 442.719000000041,
+      "status": "completed",
+      "total_seconds": 540.0,
+      "version": "xlm-wall-allowance-v1"
+    }
+  }
+}
