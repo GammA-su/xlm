@@ -133,8 +133,12 @@ def test_draft_states_the_exact_p35_pilot(tmp_path: Path) -> None:
         (c["planned_threshold"], c["projected_committed_targets"], c["projected_step"], c["role"])
         for c in schedules["checkpoints"]
     ]
+    # Pilot readiness: 1M/4M evaluation-recovery checkpoints at their natural
+    # first-crossing boundaries (never a split update); the milestones are unchanged.
     assert checkpoints == [
         (0, 0, 0, "milestone"),
+        (1_000_000, 1_048_576, 16, "evaluation_recovery"),
+        (4_000_000, 4_063_232, 62, "evaluation_recovery"),
         (8_000_000, 8_060_928, 123, "milestone"),
         (16_000_000, 16_056_320, 245, "milestone"),
         (32_000_000, 32_000_000, 489, "milestone"),
@@ -145,10 +149,14 @@ def test_draft_states_the_exact_p35_pilot(tmp_path: Path) -> None:
         + ["full_lm@0", "full_lm@32000000", "search_benchmark@0", "search_benchmark@32000000"]
     )
     assert evaluations["quick_lm@1000000"]["projected_committed_targets"] == 1_048_576
-    # Only events at a planned checkpoint boundary can be rescored from an exact state.
-    assert not evaluations["quick_lm@1000000"]["rescorable_from_planned_checkpoint"]
-    assert not evaluations["quick_lm@4000000"]["rescorable_from_planned_checkpoint"]
+    # Only events at a planned checkpoint boundary can be rescored from an exact state;
+    # pilot readiness retains 1M/4M in evaluation-recovery checkpoints.
+    assert evaluations["quick_lm@1000000"]["rescorable_from_planned_checkpoint"]
+    assert evaluations["quick_lm@4000000"]["rescorable_from_planned_checkpoint"]
     assert evaluations["quick_lm@8000000"]["rescorable_from_planned_checkpoint"]
+    table = {r["event"]: r for r in schedules["recoverability"]["table"]}
+    assert not [e for e, r in table.items() if r["recoverability"] == "NONE"]
+    assert review["preflight"]["recoverability"]["status"] == "VERIFIED"
     assert schedules["boundary_order"] == [
         "evaluation_crossing",
         "checkpoint",
@@ -284,17 +292,19 @@ def test_capacity_counts_retained_new_and_staging_bytes() -> None:
     size = 600 * 1000**2
     report = capacity_plan(raw, pilot, checkpoint_bytes=size, snapshot_bytes=0)
     steps = {s["event"]: s for s in report["publication_steps"]}
-    # Before the exact-32M publication: 3 pinned milestones + 2 unplanned recovery
-    # states retained, plus the new checkpoint and its staging copy.
-    assert steps["checkpoint@32000000"]["retained_before_bytes"] == 5 * size
+    # Before the exact-32M publication: 3 pinned milestones + the 1M/4M evaluation-
+    # recovery states (worst case: both evaluations failed and wait for the at-budget
+    # rescore) + 2 unplanned recovery states retained, plus the new checkpoint and
+    # its staging copy.
+    assert steps["checkpoint@32000000"]["retained_before_bytes"] == 7 * size
     assert steps["checkpoint@32000000"]["transient_bytes"] == 2 * size
-    assert report["peak_checkpoint_bytes"] == 7 * size
-    assert report["job_directory_peak_bytes"] > 7 * size + 64 * 1024**2
+    assert report["peak_checkpoint_bytes"] == 9 * size
+    assert report["job_directory_peak_bytes"] > 9 * size + 64 * 1024**2
     findings = Findings()
     raw["science_pilot"]["capacity"]["checkpoint_bytes"] = size
     pilot = SciencePilotConfig.model_validate(raw["science_pilot"])
     assert check_capacity(raw, pilot, findings, snapshot_bytes=0) is not None
-    assert not findings.blockers  # 4.2 GB fits the 8 GiB pilot new-output limit
+    assert not findings.blockers  # 5.4 GB fits the 8 GiB pilot new-output limit
     raw["science_pilot"]["capacity"]["checkpoint_bytes"] = 2 * 1024**3
     findings = Findings()
     check_capacity(raw, SciencePilotConfig.model_validate(raw["science_pilot"]), findings,
@@ -372,6 +382,8 @@ def test_authored_pilot_resolves_to_a_frozen_hash_bound_plan(authored: dict[str,
         "tokenizer": "VERIFIED",
         "data": "VERIFIED",
         "document_order": "VERIFIED",
+        "recoverability": "VERIFIED",
+        "input_bytes": "VERIFIED",
         "evaluation": "VERIFIED",
         "heldout_membership": "VERIFIED",
         "cold_data": "VERIFIED",

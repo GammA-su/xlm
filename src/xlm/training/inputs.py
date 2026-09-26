@@ -9,6 +9,13 @@ from pathlib import Path
 from typing import Any
 
 from xlm.core.paths import ArtifactPaths
+from xlm.data.input_limits import (
+    AGGREGATE_INPUT_FILES,
+    MAX_AGGREGATE_FROZEN_INPUT_BYTES,
+    MAX_FROZEN_SHARD_INPUT_BYTES,
+    MAX_SHARD_JSON_BYTES,
+    SHARD_INPUT_FILES,
+)
 from xlm.data.tokens import TokenShardReader
 
 
@@ -24,19 +31,13 @@ def _shard(path: Path) -> TokenShardReader:
     from xlm.artifacts.manifest import ensure_plain_path
 
     total = 0
-    for name in (
-        "shard_manifest.json",
-        "manifest.json",
-        "tokens.bin",
-        "offsets.jsonl",
-        "shard_counters.json",
-    ):
+    for name in SHARD_INPUT_FILES:
         item = path / name
         ensure_plain_path(item)
         if item.is_file():
             total += item.stat().st_size
-            if total > 2 * 1024**3 or (
-                name.endswith(".json") and item.stat().st_size > 8 * 1024**2
+            if total > MAX_FROZEN_SHARD_INPUT_BYTES or (
+                name.endswith(".json") and item.stat().st_size > MAX_SHARD_JSON_BYTES
             ):
                 raise ValueError("frozen shard input exceeds byte limit")
     reader = TokenShardReader(path)
@@ -248,15 +249,10 @@ def resolve_training_input(data: dict[str, Any], paths: ArtifactPaths) -> tuple[
             _validate_training_index(reader)
             input_bytes += sum(
                 (path / name).stat().st_size
-                for name in (
-                    "tokens.bin",
-                    "offsets.jsonl",
-                    "shard_manifest.json",
-                    "shard_counters.json",
-                )
+                for name in AGGREGATE_INPUT_FILES
                 if (path / name).is_file()
             )
-            if input_bytes > 2 * 1024**3:
+            if input_bytes > MAX_AGGREGATE_FROZEN_INPUT_BYTES:
                 raise ValueError("aggregate frozen shard inputs exceed 2 GiB")
             if reader.manifest.source_id != component.source_id:
                 raise ValueError("shard source identity differs from declared mixture source")

@@ -1329,6 +1329,193 @@ def _check_search_benchmark(
 # ----------------------------------------------------------------- capacity
 
 
+# ------------------------------------------------ recoverability (readiness)
+
+#: The only recoverability policy the §W research pilot accepts (P35 pilot readiness).
+P35_RECOVERABILITY = {
+    "version": "xlm-evaluation-recoverability-v1",
+    "required_events": "all_planned_events_v1",
+    "initial_barrier": "required_initial_evaluation_barrier_v1",
+    "recovery_checkpoints": "evaluation_recovery_checkpoints_v1",
+    "endpoint": "endpoint_live_retry_then_fail_stop_v1",
+}
+
+
+def pilot_run_plans(config: Mapping[str, Any], pilot: SciencePilotConfig) -> tuple[Any, Any, Any]:
+    """Evaluation plan, checkpoint plan (with evaluation-recovery events) and policy.
+
+    The same derivation the trainer's components use, so the review, the
+    capacity bound and the runtime agree. A draft states its evaluation plan in
+    ``science_pilot.evaluation``; a resolved plan in ``evaluation.science``.
+    """
+    from xlm.evaluation.cadence import build_plan
+    from xlm.evaluation.recoverability import RecoverabilityPolicy, checkpoint_plan_with_recovery
+
+    ex = pilot.expected
+    budget = ex.budget_valid_targets
+    spec = _get(config, "evaluation.science") or (
+        pilot.evaluation.model_dump(mode="json") if pilot.evaluation is not None else {}
+    )
+    evaluation = build_plan(
+        str(spec.get("cadence", ex.evaluation_cadence)),
+        budget,
+        confirmation_registered=False,
+        fixture_thresholds=spec.get("fixture_thresholds"),
+    )
+    raw = _get(config, "training.evaluation_recoverability")
+    policy = RecoverabilityPolicy.from_config(raw) if raw is not None else None
+    cadence = _get(config, "training.checkpoint_cadence") or {"cadence": ex.checkpoint_cadence}
+    checkpoints = checkpoint_plan_with_recovery(
+        {
+            "cadence": cadence.get("cadence", ex.checkpoint_cadence),
+            "fixture_milestones": cadence.get("fixture_milestones"),
+            "fixture_recovery": cadence.get("fixture_recovery"),
+        },
+        budget,
+        evaluation_plan=evaluation,
+        policy=policy,
+    )
+    return evaluation, checkpoints, policy
+
+
+def check_recoverability(
+    config: Mapping[str, Any], pilot: SciencePilotConfig, findings: Findings
+) -> list[dict[str, Any]]:
+    """Every required evaluation event has a recovery or fail-stop route (fail closed)."""
+    from xlm.evaluation.recoverability import (
+        RecoverabilityError,
+        recoverability_table,
+        table_digest,
+        unrecoverable_required,
+    )
+
+    before = len(findings.blockers)
+    raw = _get(config, "training.evaluation_recoverability")
+    if pilot.contract == P35_PILOT and raw != P35_RECOVERABILITY:
+        findings.block(
+            "recoverability_policy_required",
+            f"training.evaluation_recoverability is {raw!r}; the §W pilot requires "
+            f"{P35_RECOVERABILITY!r}",
+        )
+    try:
+        evaluation, checkpoints, policy = pilot_run_plans(config, pilot)
+    except (RecoverabilityError, ValueError) as exc:
+        findings.block("recoverability_unresolvable", str(exc)[:800])
+        findings.section("recoverability", before=before)
+        return []
+    rows = recoverability_table(evaluation, checkpoints, policy)
+    for event in unrecoverable_required(rows):
+        findings.block(
+            "required_event_unrecoverable",
+            f"{event}: no retained exact state and no retry/fail-stop route; a clean "
+            "evaluation failure could leave the pilot permanently evaluation-incomplete",
+        )
+    findings.section(
+        "recoverability",
+        before=before,
+        policy=policy.identity() if policy is not None else None,
+        table=rows,
+        table_digest=table_digest(rows, policy),
+        evaluation_recovery_checkpoints=[
+            e.event_id for e in checkpoints.events if e.role.value == "evaluation_recovery"
+        ],
+    )
+    return rows
+
+
+def frozen_input_sizes(sources: Mapping[str, str]) -> dict[str, dict[str, int]]:
+    """Observed shard file sizes by ``stat`` only: nothing is opened, read or hashed."""
+    from xlm.data.input_limits import SHARD_INPUT_FILES
+
+    sizes: dict[str, dict[str, int]] = {}
+    for source, path in sorted(sources.items()):
+        files: dict[str, int] = {}
+        for name in SHARD_INPUT_FILES:
+            item = Path(path) / name
+            if item.is_file():
+                files[name] = item.stat().st_size
+        sizes[source] = files
+    return sizes
+
+
+def frozen_input_report(sizes: Mapping[str, Mapping[str, int]]) -> dict[str, Any]:
+    """Observed bytes against the unchanged frozen-input caps; which sources exceed them."""
+    from xlm.data.input_limits import (
+        AGGREGATE_INPUT_FILES,
+        MAX_AGGREGATE_FROZEN_INPUT_BYTES,
+        MAX_FROZEN_SHARD_INPUT_BYTES,
+        MAX_SHARD_JSON_BYTES,
+    )
+
+    per_source: dict[str, Any] = {}
+    aggregate = 0
+    for source, files in sorted(sizes.items()):
+        shard_total = sum(int(v) for v in files.values())
+        counted = sum(int(files.get(name, 0)) for name in AGGREGATE_INPUT_FILES)
+        aggregate += counted
+        oversized_json = sorted(
+            n for n, v in files.items() if n.endswith(".json") and int(v) > MAX_SHARD_JSON_BYTES
+        )
+        per_source[source] = {
+            "files": dict(sorted((k, int(v)) for k, v in files.items())),
+            "shard_bytes": shard_total,
+            "aggregate_counted_bytes": counted,
+            "exceeds_shard_cap": shard_total > MAX_FROZEN_SHARD_INPUT_BYTES,
+            "oversized_json": oversized_json,
+        }
+    return {
+        "basis": "stat() of the bound shard files before any hashing or index scan",
+        "caps": {
+            "per_shard_bytes": MAX_FROZEN_SHARD_INPUT_BYTES,
+            "aggregate_bytes": MAX_AGGREGATE_FROZEN_INPUT_BYTES,
+            "json_file_bytes": MAX_SHARD_JSON_BYTES,
+        },
+        "per_source": per_source,
+        "aggregate_bytes": aggregate,
+        "exceeds_aggregate_cap": aggregate > MAX_AGGREGATE_FROZEN_INPUT_BYTES,
+        "aggregate_excess_bytes": max(0, aggregate - MAX_AGGREGATE_FROZEN_INPUT_BYTES),
+        "sources_exceeding_shard_cap": sorted(
+            s for s, r in per_source.items() if r["exceeds_shard_cap"] or r["oversized_json"]
+        ),
+    }
+
+
+def check_input_bytes(config: Mapping[str, Any], findings: Findings) -> dict[str, Any] | None:
+    """Report frozen input sizes against the unchanged caps before resolution hashes anything.
+
+    The caps are not relaxed: an excess is a blocker naming the source(s) and
+    bytes, so the operator can tell immediately whether the cap is the blocker.
+    """
+    before = len(findings.blockers)
+    sources = _get(config, "data.sources")
+    if not isinstance(sources, Mapping) or not sources:
+        findings.section("input_bytes", before=before, status="NOT_RUN", note="no bound sources")
+        return None
+    report = frozen_input_report(frozen_input_sizes({str(k): str(v) for k, v in sources.items()}))
+    for source in report["sources_exceeding_shard_cap"]:
+        row = report["per_source"][source]
+        findings.block(
+            "frozen_input_cap_exceeded",
+            f"source '{source}' shard files total {row['shard_bytes']:,} bytes (cap "
+            f"{report['caps']['per_shard_bytes']:,}); oversized JSON {row['oversized_json']}",
+        )
+    if report["exceeds_aggregate_cap"]:
+        findings.block(
+            "frozen_input_cap_exceeded",
+            f"aggregate frozen shard inputs {report['aggregate_bytes']:,} bytes exceed the "
+            f"unchanged {report['caps']['aggregate_bytes']:,}-byte cap by "
+            f"{report['aggregate_excess_bytes']:,}; largest sources: "
+            + ", ".join(
+                f"{s}={r['aggregate_counted_bytes']:,}"
+                for s, r in sorted(
+                    report["per_source"].items(), key=lambda kv: -kv[1]["aggregate_counted_bytes"]
+                )[:3]
+            ),
+        )
+    findings.section("input_bytes", before=before, **report)
+    return report
+
+
 def checkpoint_size_from_source(
     source: CheckpointSizeSource,
     resolved: Mapping[str, Any],
@@ -1382,36 +1569,43 @@ def capacity_plan(
 ) -> dict[str, Any]:
     """Peak new bytes: retained + new + staging copies over the planned publications."""
     from xlm.artifacts.retention import KEEP_RECOVERY
-    from xlm.evaluation.cadence import CheckpointRole, build_checkpoint_plan
+    from xlm.evaluation.cadence import CheckpointRole
 
-    cadence = config["training"]["checkpoint_cadence"]
-    plan = build_checkpoint_plan(
-        str(cadence["cadence"]),
-        int(config["training"]["budget"]["max_valid_targets"]),
-        fixture_milestones=cadence.get("fixture_milestones"),
-        fixture_recovery=cadence.get("fixture_recovery"),
-    )
+    _, plan, _ = pilot_run_plans(config, pilot)
     size = checkpoint_bytes
     pinned = 0
     recovery = 0
+    evaluation_recovery = 0
     steps: list[dict[str, Any]] = []
     peak = 0
     for event in plan.events:
         # Up to KEEP_RECOVERY unplanned recovery states (interrupted/cancelled/
         # time-limit) may coexist; every recovery point may be held by an
         # unresolved evaluation. Both are counted: an upper bound, not a guess.
-        retained = (pinned + recovery + KEEP_RECOVERY) * size
+        # Evaluation-recovery states are released once their evaluation completes,
+        # but a failed evaluation pins its state until the at-budget rescore, so
+        # the worst case (every one of them failed) keeps them all: counted too.
+        retained = (pinned + recovery + evaluation_recovery + KEEP_RECOVERY) * size
         transient = 2 * size  # serialization directory + store staging copy
         peak = max(peak, retained + transient)
         steps.append(
             {
                 "event": event.event_id,
+                "role": event.role.value,
                 "retained_before_bytes": retained,
+                "retained_before_states": {
+                    "milestones": pinned,
+                    "rolling_recovery": recovery,
+                    "evaluation_recovery_worst_case": evaluation_recovery,
+                    "unplanned_recovery_bound": KEEP_RECOVERY,
+                },
                 "transient_bytes": transient,
             }
         )
         if event.role is CheckpointRole.MILESTONE:
             pinned += 1
+        elif event.role is CheckpointRole.EVALUATION_RECOVERY:
+            evaluation_recovery += 1
         else:
             recovery += 1
     capacity = pilot.capacity
@@ -1429,6 +1623,10 @@ def capacity_plan(
     return {
         "checkpoint_bytes": size,
         "publications": len(plan.events),
+        "evaluation_recovery_publications": evaluation_recovery,
+        "worst_case": "every evaluation-recovery state stays pinned by a failed evaluation "
+        "until the at-budget rescore; two unplanned terminal recovery states coexist; each "
+        "publication adds a serialization copy and a store staging copy",
         "publication_steps": steps,
         "peak_checkpoint_bytes": peak,
         "checkpoint_receipt_bound_bytes": receipts,
@@ -1511,30 +1709,28 @@ def schedules(config: Mapping[str, Any], pilot: SciencePilotConfig) -> dict[str,
     from xlm.artifacts.retention import KEEP_RECOVERY, POLICY
     from xlm.evaluation.cadence import (
         BOUNDARY_PHASES,
-        build_checkpoint_plan,
-        build_plan,
         projected_first_crossings,
         update_arithmetic,
+    )
+    from xlm.evaluation.recoverability import (
+        RecoverabilityError,
+        recoverability_table,
+        table_digest,
     )
 
     ex = pilot.expected
     budget, batch = ex.budget_valid_targets, ex.global_batch_valid_targets
-    cadence = _get(config, "training.checkpoint_cadence") or {}
-    checkpoints = build_checkpoint_plan(
-        str(cadence.get("cadence", ex.checkpoint_cadence)),
-        budget,
-        fixture_milestones=cadence.get("fixture_milestones"),
-        fixture_recovery=cadence.get("fixture_recovery"),
-    )
-    spec = _get(config, "evaluation.science") or (
-        pilot.evaluation.model_dump(mode="json") if pilot.evaluation is not None else {}
-    )
-    evaluation = build_plan(
-        str(spec.get("cadence", ex.evaluation_cadence)),
-        budget,
-        confirmation_registered=False,
-        fixture_thresholds=spec.get("fixture_thresholds"),
-    )
+    try:
+        evaluation, checkpoints, policy = pilot_run_plans(config, pilot)
+    except RecoverabilityError:
+        # The recoverability preflight blocks such a plan; schedules still show M3 rows.
+        evaluation, checkpoints, policy = pilot_run_plans(
+            {
+                **config,
+                "training": {**config.get("training", {}), "evaluation_recoverability": None},
+            },
+            pilot,
+        )
     project = {
         **projected_first_crossings(
             [e.threshold for e in checkpoints.events],
@@ -1563,15 +1759,24 @@ def schedules(config: Mapping[str, Any], pilot: SciencePilotConfig) -> dict[str,
         }
         for event in evaluation.events
     ]
+    table = recoverability_table(evaluation, checkpoints, policy)
     return {
         "arithmetic": update_arithmetic(budget, batch),
         "checkpoints": checkpoint_rows,
         "evaluations": evaluation_rows,
+        "recoverability": {
+            "policy": policy.identity() if policy is not None else None,
+            "table": table,
+            "table_digest": table_digest(table, policy),
+        },
         "boundary_order": list(BOUNDARY_PHASES),
         "retention": {
             "policy": POLICY,
             "keep_recovery": KEEP_RECOVERY,
             "pinned": [r["event_id"] for r in checkpoint_rows if r["role"] == "milestone"],
+            "evaluation_recovery": [
+                r["event_id"] for r in checkpoint_rows if r["role"] == "evaluation_recovery"
+            ],
             "also_kept": [
                 "last good state",
                 "declared/fork-parent references",
@@ -1653,6 +1858,9 @@ def run_preflight(
     context = PreflightContext()
     check_storage_roots(config, pilot, findings, artifact_home=artifact_home, outputs=outputs)
     check_document_order(config, pilot, findings)
+    check_recoverability(config, pilot, findings)
+    # Stat-only size report against the unchanged caps, before resolution hashes inputs.
+    check_input_bytes(config, findings)
     before = len(findings.blockers)
     try:
         resolved, exec_bindings = resolve_execution_config(copy.deepcopy(config))
@@ -1831,6 +2039,7 @@ def plan_science_pilot(
         if pilot.status != "draft_nonexecutable":
             findings.block("draft_status", "a checked-in pilot draft must be draft_nonexecutable")
         check_config(composed, pilot, findings)
+        check_recoverability(composed, pilot, findings)
         for item in unresolved_fields(composed, pilot):
             findings.block("unresolved", item)
         review.update(

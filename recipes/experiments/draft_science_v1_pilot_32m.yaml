@@ -76,6 +76,13 @@
       "fixture_recovery": null,
       "retention": "latest_two_recovery_plus_pinned_v1",
       "protected_references": []
+    },
+    "evaluation_recoverability": {
+      "version": "xlm-evaluation-recoverability-v1",
+      "required_events": "all_planned_events_v1",
+      "initial_barrier": "required_initial_evaluation_barrier_v1",
+      "recovery_checkpoints": "evaluation_recovery_checkpoints_v1",
+      "endpoint": "endpoint_live_retry_then_fail_stop_v1"
     }
   },
   "evaluation": {
