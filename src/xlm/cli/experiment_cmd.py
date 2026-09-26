@@ -247,6 +247,89 @@ def experiment_validate_cmd(
         raise typer.Exit(code=1)
 
 
+def _echo_comparison(record: dict[str, object], paths: dict[str, Path]) -> None:
+    from xlm.comparison.science_compare import summary_state
+
+    typer.echo("============================================================")
+    typer.echo(f"Comparison:      {record.get('manifest_hash')}")
+    typer.echo(f"State:           {summary_state(record)}")
+    candidates = record.get("candidates") or []
+    assert isinstance(candidates, list)
+    for candidate in candidates:
+        decision = candidate.get("decision") or {}
+        typer.echo(
+            f"  {candidate['arm_id']}: eligible={candidate['eligible']} "
+            f"decision={decision.get('result')} promotion={candidate['promotion']['state']}"
+        )
+        for reason in candidate["ineligible_reasons"][:20]:
+            typer.echo(f"    ! {reason}")
+    validation = record.get("manifest_validation") or {}
+    assert isinstance(validation, dict)
+    for problem in validation.get("problems", [])[:40]:
+        typer.echo(f"  ! manifest {problem['field']}: {problem['problem']}")
+    if record.get("synthetic_evidence"):
+        typer.echo("Evidence:        SYNTHETIC (authored values, not results)")
+    for kind, path in paths.items():
+        typer.echo(f"{kind.upper():<16} {path}")
+    typer.echo("Nothing was trained, scheduled or authorized.")
+    typer.echo("============================================================")
+
+
+@experiment_app.command("compare")
+def experiment_compare_cmd(
+    comparison: Annotated[
+        Path, typer.Option("--comparison", help="Science-v1 comparison manifest JSON.")
+    ],
+    runs: Annotated[
+        Path, typer.Option("--runs", help="Run roster JSON naming frozen checkpoints/attempts.")
+    ],
+    output: Annotated[Path, typer.Option("--output", "-o", help="Report directory.")],
+    prerequisite: Annotated[
+        list[Path] | None,
+        typer.Option("--prerequisite", help="Prior-scale comparison.json (150M/300M entry)."),
+    ] = None,
+) -> None:
+    """Validate a comparison manifest against immutable run evidence; never trains.
+
+    Writes comparison.json (hashed record), report.md and summary.csv. Exit 1 when
+    the manifest is invalid or any candidate is ineligible (the record is still written).
+    """
+    from xlm.comparison.science_compare import ComparisonError
+    from xlm.comparison.science_io import run_comparison
+
+    try:
+        record, paths = run_comparison(
+            comparison, runs, output, prerequisite_paths=list(prerequisite or [])
+        )
+    except (ComparisonError, OSError, ValueError, KeyError, TypeError) as exc:
+        typer.echo(f"Error: comparison refused: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    _echo_comparison(record, paths)
+    candidates = record.get("candidates") or []
+    valid = bool((record.get("manifest_validation") or {}).get("valid"))
+    if not valid or not all(c["eligible"] for c in candidates):
+        raise typer.Exit(code=1)
+
+
+@experiment_app.command("report")
+def experiment_report_cmd(
+    record: Annotated[
+        Path, typer.Option("--record", help="comparison.json written by 'experiment compare'.")
+    ],
+    output: Annotated[Path, typer.Option("--output", "-o", help="Report directory.")],
+) -> None:
+    """Re-render an existing, hash-verified comparison record. Never changes the decision."""
+    from xlm.comparison.science_compare import ComparisonError
+    from xlm.comparison.science_io import render_record
+
+    try:
+        loaded, paths = render_record(record, output)
+    except (ComparisonError, OSError, ValueError, KeyError, TypeError) as exc:
+        typer.echo(f"Error: report refused: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    _echo_comparison(loaded, paths)
+
+
 @experiment_app.command("authorize")
 def experiment_authorize_cmd(
     plan_hash: Annotated[str, typer.Option("--plan-hash", help="Plan hash to authorize.")],
