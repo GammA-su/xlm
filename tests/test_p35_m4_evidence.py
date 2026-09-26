@@ -431,9 +431,13 @@ def test_failed_only_attempts_leave_the_event_incomplete(tmp_path: Path) -> None
 
 def test_incomplete_coverage_or_altered_receipt_is_not_complete(tmp_path: Path) -> None:
     partial = _extract(publish_run(tmp_path / "a", "r", (1, 2, 3), coverage_complete=False))
-    assert "coverage is not complete" in partial["evaluations"]["full_lm@64"]["reasons"][0]
+    event = partial["evaluations"]["full_lm@64"]
+    assert event["complete"] is False and event["coverage_complete"] is False
+    assert "canonical coverage is not complete" in event["reasons"]
     tampered = _extract(publish_run(tmp_path / "b", "r", (1, 2, 3), tamper_receipt=True))
-    assert "receipt identity does not verify" in tampered["evaluations"]["full_lm@64"]["reasons"][0]
+    event = tampered["evaluations"]["full_lm@64"]
+    assert event["complete"] is False
+    assert "canonical receipt identity does not verify" in event["reasons"]
 
 
 def test_legacy_and_unverifiable_checkpoints_are_refused(tmp_path: Path) -> None:
