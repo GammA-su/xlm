@@ -13,7 +13,10 @@ MUST_MATCH or INTENTIONALLY_VARIED field make a pair ineligible: null means
 unknown, never equal.
 
 Only the microbatch-grouping and data-mixture tracks carry certified
-eligibility semantics in M4. The architecture, objective, optimizer and
+eligibility semantics in M4. P35 pilot readiness adds ``microbatch_grouping_v2``,
+which additionally requires an identical committed global-update payload
+receipt chain; ``microbatch_grouping_v1`` keeps its historical meaning and only
+records the new receipt fields. The architecture, objective, optimizer and
 tokenizer tracks declare their intended-difference allowlists so a future
 milestone can certify them without replacing this framework; any comparison
 under them is INELIGIBLE today.
@@ -27,7 +30,9 @@ from enum import StrEnum
 from typing import Any
 
 #: v2 (P35 M5) adds ``canonical_membership_id`` (MUST_MATCH on every track).
-TRACK_TABLE_VERSION = "xlm-science-tracks-v2"
+#: v3 (pilot readiness) adds the update payload receipt fields: recorded on every
+#: track unless a track requires them (``microbatch_grouping_v2``).
+TRACK_TABLE_VERSION = "xlm-science-tracks-v3"
 
 
 class FieldClass(StrEnum):
@@ -70,6 +75,11 @@ SCIENTIFIC_FIELDS: dict[str, str] = {
     "budget_targets": "hard declared target budget",
     "committed_targets": "actually committed valid targets",
     "update_boundaries_digest": "digest of every update's (committed_before, valid_targets)",
+    "update_payload_receipt": "global-update payload receipt version (pilot readiness)",
+    "update_payload_chain_digest": (
+        "head of the committed per-update global payload chain (inputs, labels, masks, "
+        "positions, segments, attention mask, source/doc/lineage/byte/offset provenance)"
+    ),
     # optimization
     "optimizer": "resolved optimizer config (type, LR, betas, eps, decay flags)",
     "gradient_clip_norm": "global gradient clip norm",
@@ -113,6 +123,10 @@ _ALWAYS_RECORDED = frozenset(
     }
 )
 
+#: Fields that did not exist when a track was certified: recorded, never a
+#: comparability condition, unless the track explicitly requires them.
+_RECORDED_UNLESS_REQUIRED = frozenset({"update_payload_receipt", "update_payload_chain_digest"})
+
 #: Pairing fields; they must match within a pair on every track.
 PAIRING_FIELDS = ("init_seed", "training_seed", "data_seed", "order_manifest_id")
 
@@ -127,13 +141,17 @@ class ScienceTrack:
     description: str
     #: Consequential fields that may only be declared together with a cause.
     consequences: Mapping[str, frozenset[str]]
+    #: Fields this track requires beyond its original certification.
+    required: frozenset[str] = frozenset()
 
     def classify(self, name: str) -> FieldClass:
         if name not in SCIENTIFIC_FIELDS:
             raise KeyError(f"unknown scientific field '{name}'")
         if name in self.varied:
             return FieldClass.INTENTIONALLY_VARIED
-        if name in _ALWAYS_RECORDED:
+        if name in self.required:
+            return FieldClass.MUST_MATCH
+        if name in _ALWAYS_RECORDED or name in _RECORDED_UNLESS_REQUIRED:
             return FieldClass.RECORDED_MAY_DIFFER
         return FieldClass.MUST_MATCH
 
@@ -151,6 +169,7 @@ class ScienceTrack:
             "description": self.description,
             "classification": self.table(),
             "consequences": {k: sorted(v) for k, v in sorted(self.consequences.items())},
+            "required": sorted(self.required),
         }
 
 
@@ -168,6 +187,26 @@ MICROBATCH_TRACK = ScienceTrack(
         "Parameter hashes are not compared. No microbatch winner is selected in M4."
     ),
     consequences={},
+)
+
+MICROBATCH_TRACK_V2 = ScienceTrack(
+    track_id="microbatch_grouping_v2",
+    certified=True,
+    varied=frozenset({"microbatch_sequences"}),
+    description=(
+        "Pilot-readiness strengthening of microbatch_grouping_v1 for the B8/B16/B32 "
+        "study. Only the accumulation grouping may differ. In addition to every v1 "
+        "invariant (global valid-target batch, update boundaries, committed per-target "
+        "trace, per-source exposure, M5 order identity and canonical membership, model, "
+        "initialization, optimizer/LR, precision/runtime and evaluation contract), both "
+        "runs must carry the global_update_payload_digest_v1 receipt and an identical "
+        "committed global-update payload chain: every update's ordered inputs, labels, "
+        "loss/attention masks, positions, segments and source/document/lineage provenance, "
+        "independent of how the update was split into microbatches. A run without the "
+        "receipt is unknown, never equal. Final weights are recorded, not compared."
+    ),
+    consequences={},
+    required=frozenset({"update_payload_receipt", "update_payload_chain_digest"}),
 )
 
 MIXTURE_TRACK = ScienceTrack(
@@ -247,7 +286,7 @@ FUTURE_TRACKS = (
 )
 
 SCIENCE_TRACKS: dict[str, ScienceTrack] = {
-    t.track_id: t for t in (MICROBATCH_TRACK, MIXTURE_TRACK, *FUTURE_TRACKS)
+    t.track_id: t for t in (MICROBATCH_TRACK, MICROBATCH_TRACK_V2, MIXTURE_TRACK, *FUTURE_TRACKS)
 }
 
 

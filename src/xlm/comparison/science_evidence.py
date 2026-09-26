@@ -38,8 +38,11 @@ from xlm.core.paths import ArtifactPaths
 
 #: v2 (P35 M5) adds ``canonical_membership_id`` and reads the order identity from
 #: receipts. v1 records (M4) stay verifiable and are read as pre-M5 evidence.
-EVIDENCE_VERSION = "xlm-science-run-evidence-v2"
-LEGACY_EVIDENCE_VERSIONS = ("xlm-science-run-evidence-v1",)
+#: v3 (pilot readiness) adds the verified update payload receipt chain; v1/v2
+#: records stay verifiable and read as "no receipt" (unknown, never equal).
+EVIDENCE_VERSION = "xlm-science-run-evidence-v3"
+LEGACY_EVIDENCE_VERSIONS = ("xlm-science-run-evidence-v1", "xlm-science-run-evidence-v2")
+PAYLOAD_FIELDS = ("update_payload_receipt", "update_payload_chain_digest")
 SCIENCE_VERSION = "xlm-science-v1"
 #: M1/M2/M3 record versions this reader understands (read-only mirrors).
 M1_SCIENCE_STATE_VERSION = 1
@@ -268,6 +271,30 @@ def _update_boundaries(rows: list[list[Any]], committed: int) -> tuple[str, int]
     return identity_digest(boundaries), len(boundaries)
 
 
+def _update_payload_receipt(
+    science: Mapping[str, Any], lr_rows: list[list[Any]]
+) -> tuple[Any, Any]:
+    """``(receipt version, chain head)`` from ``science.json``; ``(None, None)`` if absent.
+
+    The chain is re-derived from its genesis and must match the LR receipts
+    update by update (step, committed_before, valid targets). A present but
+    inconsistent chain is refused, never replaced by "unknown".
+    """
+    from xlm.data.sampling.update_payload import PayloadReceiptError, verify_chain
+
+    raw = science.get("update_payloads")
+    if raw is None:
+        return None, None
+    try:
+        head = verify_chain(raw)
+    except (PayloadReceiptError, KeyError, TypeError, ValueError) as exc:
+        raise EvidenceError(f"update payload chain does not verify: {exc}") from exc
+    chain_rows = [[int(r[0]), int(r[1]), int(r[2])] for r in raw["rows"]]
+    if chain_rows != [[int(r[0]), int(r[1]), int(r[2])] for r in lr_rows]:
+        raise EvidenceError("update payload chain and LR receipts disagree on committed updates")
+    return str(raw["version"]), head
+
+
 def extract_run_evidence(
     checkpoint_dir: Path,
     *,
@@ -320,6 +347,7 @@ def extract_run_evidence(
     boundaries_digest, updates = _update_boundaries(lr["rows"], committed)
     if updates != int(meta["step"]):
         raise EvidenceError("LR receipts and checkpoint step disagree")
+    payload_receipt, payload_chain = _update_payload_receipt(science, lr["rows"])
 
     bindings = envelope["bindings"]
     components = bindings["components"]
@@ -431,6 +459,8 @@ def extract_run_evidence(
         "budget_targets": training["budget"]["max_valid_targets"],
         "committed_targets": committed,
         "update_boundaries_digest": boundaries_digest,
+        "update_payload_receipt": payload_receipt,
+        "update_payload_chain_digest": payload_chain,
         "optimizer": {"config": config.get("optimizer"), "component": components.get("optimizer")},
         "gradient_clip_norm": training.get("gradient_clip_norm"),
         "schedule": {"config": training.get("schedule"), "component": components.get("schedule")},
@@ -495,10 +525,14 @@ def verify_evidence_record(record: Mapping[str, Any]) -> None:
     payload = {k: v for k, v in record.items() if k != "evidence_digest"}
     if record.get("evidence_digest") != identity_digest(payload):
         raise EvidenceError("evidence record digest does not verify (altered after extraction)")
-    if version in LEGACY_EVIDENCE_VERSIONS:
+    if version == "xlm-science-run-evidence-v1":
         fields = record.get("fields") or {}
         if fields.get("order_manifest_id") != ORDER_SENTINEL or "canonical_membership_id" in fields:
             raise EvidenceError("a v1 (pre-M5) evidence record cannot carry M5 order identity")
+    if version in LEGACY_EVIDENCE_VERSIONS:
+        fields = record.get("fields") or {}
+        if any(name in fields for name in PAYLOAD_FIELDS):
+            raise EvidenceError("a pre-readiness evidence record cannot carry payload receipts")
 
 
 def evidence_fields(record: Mapping[str, Any]) -> dict[str, Any]:
@@ -508,6 +542,10 @@ def evidence_fields(record: Mapping[str, Any]) -> dict[str, Any]:
     membership sentinel, exactly as a pre-M5 checkpoint extracts today.
     """
     fields = dict(record["fields"])
-    if record.get("evidence_version") in LEGACY_EVIDENCE_VERSIONS:
+    if record.get("evidence_version") == "xlm-science-run-evidence-v1":
         fields.setdefault("canonical_membership_id", MEMBERSHIP_SENTINEL)
+    if record.get("evidence_version") in LEGACY_EVIDENCE_VERSIONS:
+        # Pre-readiness runs bound no payload receipt: unknown, never equal.
+        for name in PAYLOAD_FIELDS:
+            fields.setdefault(name, None)
     return fields

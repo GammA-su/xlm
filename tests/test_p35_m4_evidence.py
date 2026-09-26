@@ -156,6 +156,7 @@ def publish_run(
     tamper_receipt: bool = False,
     config_order: dict[str, Any] | None = None,
     state_order: dict[str, Any] | None = None,
+    update_payloads: dict[str, Any] | None = None,
 ) -> Path:
     """Publish one AUTHORED science-v1-shaped endpoint checkpoint and its eval attempts.
 
@@ -331,6 +332,8 @@ def publish_run(
         "evaluation": evaluation,
         "checkpoints": checkpoints,
     }
+    if update_payloads is not None:  # pilot readiness: authored payload receipt chain
+        science_json["update_payloads"] = update_payloads
     data_state = {
         "version": 1,
         "mixture_identity": h("mixture"),

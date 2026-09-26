@@ -97,7 +97,9 @@ def test_extractor_reads_the_real_order_identity(tmp_path: Path) -> None:
         publish_run(tmp_path, "run-a", SEEDS, config_order=config, state_order=state)
     )
     fields = evidence["fields"]
-    assert evidence["evidence_version"] == "xlm-science-run-evidence-v2"
+    # Pilot readiness bumped the reader to v3 (payload receipt fields); M5 order
+    # identity is read exactly as before.
+    assert evidence["evidence_version"] == "xlm-science-run-evidence-v3"
     assert fields["order_manifest_id"] == order_a["order_manifest_id"] != ORDER_SENTINEL
     assert evidence["replicate"]["order_manifest_id"] == order_a["order_manifest_id"]
     assert fields["canonical_membership_id"] == order_a["canonical_membership_id"]
