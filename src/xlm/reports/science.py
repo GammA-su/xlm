@@ -165,15 +165,19 @@ def summary_rows(record: Mapping[str, Any]) -> list[dict[str, Any]]:
                 row[key] = "NOT RUN"
             row["seed_ci"] = "NOT RUN"
         else:
+            partial = pairing["n_complete"] < pairing["n_required"]
+            tag = (
+                f"PROVISIONAL {pairing['n_complete']}/{pairing['n_required']}: " if partial else ""
+            )
             row["primary_control"] = _num(_mean([p["control"] for p in stats["pairs"]]))
             row["primary_candidate"] = _num(_mean([p["candidate"] for p in stats["pairs"]]))
             row["paired_delta"] = (
-                f"{_num(stats['mean_raw_delta'])} (candidate-control; improvement "
+                f"{tag}{_num(stats['mean_raw_delta'])} (candidate-control; improvement "
                 f"{_num(stats['mean_improvement'])}, {stats['direction']})"
             )
             row["seed_sd"] = _num(stats["sd"]) if stats["sd"] is not None else "n/a (n=1)"
             row["seed_ci"] = (
-                f"[{_num(stats['ci_raw_delta'][0])}, {_num(stats['ci_raw_delta'][1])}] "
+                f"{tag}[{_num(stats['ci_raw_delta'][0])}, {_num(stats['ci_raw_delta'][1])}] "
                 f"t(df={stats['df']})={_num(stats['t_critical'])}"
                 if stats["ci_raw_delta"] is not None
                 else "none (n<2: no seed CI)"

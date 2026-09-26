@@ -868,3 +868,19 @@ def test_m4_reader_mirrors_the_frozen_m1_m2_m3_constants() -> None:
         _constant(src / "training" / "milestones.py", "CHECKPOINT_LEDGER_VERSION")
         == science_evidence.M3_CHECKPOINT_LEDGER_VERSION
     )
+
+
+def test_partial_confirmation_row_is_labelled_provisional() -> None:
+    from p35_m4_support import mixture_pair_runs, superiority_manifest
+    from xlm.reports.science import summary_rows
+
+    manifest = superiority_manifest()
+    control = {"C0": 3.0, "C1": 3.1, "C2": 3.2, "C3": 3.05, "C4": 3.15}
+    candidate = {"C0": 2.98, "C1": 3.07, "C2": 3.19}
+    (row,) = summary_rows(
+        compare_science(manifest, mixture_pair_runs(manifest, control, candidate))
+    )
+    assert row["seed_ci"].startswith("PROVISIONAL 3/5: [")
+    assert row["paired_delta"].startswith("PROVISIONAL 3/5: ")
+    assert row["completeness"] == "INCOMPLETE 3/5 (missing: C3, C4)"
+    assert row["decision"] == "INCOMPLETE" and row["promotion_state"] == "PROVISIONAL"
