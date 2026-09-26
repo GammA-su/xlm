@@ -1,0 +1,74 @@
+{
+  "label": "SYNTHETIC authored comparisons; no training, no real results",
+  "scenarios": {
+    "1_one_pair_screen": {
+      "ci_raw_delta": null,
+      "decision": "NO_SEED_INTERVAL",
+      "manifest_hash": "4c744316b107a643262d9383001ca061860790359b2a94b4be35ca68a0d00aa5",
+      "n_complete": 1,
+      "n_required": 1,
+      "record_hash": "bca1b2bafdec3139284f3d5c7b4ce9ebe28df0d4d7c5f02e1e796e8559a5b861",
+      "state": "SCREEN_ONLY"
+    },
+    "2_two_pair_replication": {
+      "ci_raw_delta": [
+        -0.10853102368087202,
+        0.018531023680872158
+      ],
+      "decision": "AMBIGUOUS",
+      "manifest_hash": "f744f23f89b968e7523a9968f4fd980bd78eaf227ab573bc1fab17806a16f696",
+      "n_complete": 2,
+      "n_required": 2,
+      "record_hash": "d1cad49130b3946b77fe7b7b3361460357ce4e98c2b1e2597869e00d5ca7212b",
+      "state": "SCREEN_ONLY"
+    },
+    "3_five_pair_50m_confirmation": {
+      "ci_raw_delta": [
+        -0.03510578042079105,
+        -0.012894219579208992
+      ],
+      "decision": "CLEAR_WIN",
+      "manifest_hash": "ee8ff4af11415c61e4a7efa90e131de2f9f36fd3f9eff8eaadf0aa2b7314138f",
+      "n_complete": 5,
+      "n_required": 5,
+      "record_hash": "6b9edde57f035ee18c9324aaebcb58177d4201edcd70f6316c4b71d2bdae51ce",
+      "state": "CONFIRMED_50M"
+    },
+    "4_ambiguous": {
+      "ci_raw_delta": [
+        -0.03510578042079105,
+        -0.012894219579208992
+      ],
+      "decision": "AMBIGUOUS",
+      "manifest_hash": "f622723ded538ad672584dbef02bf8dc3f8e8078177a2d31feca71413f35ee2a",
+      "n_complete": 5,
+      "n_required": 5,
+      "record_hash": "8c3c69f8ebbfc632c02773256dbe70bed339c3209d3149797fb64ddf1b866f10",
+      "state": "AMBIGUOUS"
+    },
+    "5_noninferiority_b16": {
+      "ci_raw_delta": [
+        0.0007611493663163486,
+        0.0028388506336832547
+      ],
+      "decision": "NON_INFERIOR",
+      "manifest_hash": "3a6449f8be7c4a58a97dea0546baf10ee2f38baddf91bf2e306feec5caa92efb",
+      "n_complete": 5,
+      "n_required": 5,
+      "record_hash": "ac3ca279a1107dc0cae5dfade65cc14868fa1c37b6bd24ec040bac5af7a0b22c",
+      "state": "CONFIRMED_50M"
+    },
+    "6_incomplete_failed": {
+      "ci_raw_delta": [
+        -0.03773480180828806,
+        -0.007265198191712095
+      ],
+      "decision": "INCOMPLETE",
+      "manifest_hash": "ee8ff4af11415c61e4a7efa90e131de2f9f36fd3f9eff8eaadf0aa2b7314138f",
+      "n_complete": 4,
+      "n_required": 5,
+      "record_hash": "943c17d07898818dbde7e772827aaa3147d02ded5efc64802f26f7f7f2218cc1",
+      "state": "PROVISIONAL"
+    }
+  }
+}
