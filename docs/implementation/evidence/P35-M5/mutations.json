@@ -1,0 +1,336 @@
+{
+ "label": "P35 M5 scratch mutation run (mutant code never committed)",
+ "tested_head": "90a78ac111d18f517c4d4e8572176a455933dd49",
+ "runner_sha256": "68fc5b90b75eeaf14b9b1cb7e8be12a7af7670bc39e2db3915549f5b884eec5a",
+ "runner_source": "\"\"\"P35 M5 scratch mutation runner (never committed as product code).\n\nEach mutant: fresh `git archive HEAD` export, exact-once anchor edits, py_compile,\nimport-origin check, then the listed pytest nodes. KILLED only if pytest exits 1,\nevery listed node FAILED, no collection/import/syntax error occurred, and the\nfailures are assertion failures (assert / pytest.raises DID NOT RAISE).\n\"\"\"\n\nfrom __future__ import annotations\n\nimport hashlib\nimport json\nimport os\nimport py_compile\nimport re\nimport shutil\nimport subprocess\nimport sys\nimport tarfile\nimport time\nfrom pathlib import Path\n\nREPO = Path(\"/home/user/xlm\")\nSCRATCH = Path(__file__).resolve().parent\nPY = SCRATCH / \"venv\" / \"bin\" / \"python\"\nWORK = SCRATCH / \"mutants\"\n\nMUTANTS = [\n    {\n        \"id\": 1,\n        \"label\": \"membership equality compares only document counts\",\n        \"edits\": [\n            {\n                \"file\": \"src/xlm/data/ordering/manifest.py\",\n                \"anchor\": '    if a[\"canonical_membership_id\"] != b[\"canonical_membership_id\"] or (\\n'\n                '        a[\"canonical_membership\"] != b[\"canonical_membership\"]\\n    ):\\n',\n                \"replacement\": '    if {s: v[\"document_count\"] for s, v in a[\"canonical_membership\"][\"sources\"].items()}'\n                ' != {s: v[\"document_count\"] for s, v in b[\"canonical_membership\"][\"sources\"].items()}:\\n',\n            }\n        ],\n        \"nodes\": [\n            \"tests/test_p35_m5_order.py::test_orders_over_different_memberships_are_not_independent_orders\",\n            \"tests/test_p35_m5_evidence.py::test_orders_over_different_memberships_are_refused\",\n        ],\n    },\n    {\n        \"id\": 2,\n        \"label\": \"order hash ignores the ordered sequence (digest of the sorted set)\",\n        \"edits\": [\n            {\n                \"file\": \"src/xlm/data/ordering/manifest.py\",\n                \"anchor\": \"    for doc_id in doc_ids:\\n        digest.update(\",\n                \"replacement\": \"    for doc_id in sorted(doc_ids):\\n        digest.update(\",\n            }\n        ],\n        \"nodes\": [\n            \"tests/test_p35_m5_order.py::test_different_seeds_give_genuinely_different_orders\",\n        ],\n    },\n    {\n        \"id\": 3,\n        \"label\": \"a different order is allowed on ordinary resume\",\n        \"edits\": [\n            {\n                \"file\": \"src/xlm/data/sampling/stream.py\",\n                \"anchor\": \"        if state_order(state_dict) != self.document_order_identity:\\n\",\n                \"replacement\": \"        if False:\\n\",\n            },\n            {\n                \"file\": \"src/xlm/data/ordering/binding.py\",\n                \"anchor\": \"    if saved != current:\\n\",\n                \"replacement\": \"    if False:\\n\",\n            },\n        ],\n        \"nodes\": [\n            \"tests/test_p35_m5_stream.py::test_ordinary_resume_across_orders_is_refused\",\n        ],\n    },\n    {\n        \"id\": 4,\n        \"label\": \"a changed-content document keeps the same membership id\",\n        \"edits\": [\n            {\n                \"file\": \"src/xlm/data/ordering/membership.py\",\n                \"anchor\": '                \"token_sha256\": hashlib.sha256(token_bytes).hexdigest(),\\n',\n                \"replacement\": '                \"token_sha256\": \"\",\\n',\n            }\n        ],\n        \"nodes\": [\n            \"tests/test_p35_m5_order.py::test_membership_changes_with_any_document_change[same_length_content]\",\n            \"tests/test_p35_m5_order.py::test_membership_is_not_a_count_or_byte_summary\",\n        ],\n    },\n    {\n        \"id\": 5,\n        \"label\": \"a held-out document is admitted into the train order\",\n        \"edits\": [\n            {\n                \"file\": \"src/xlm/data/ordering/membership.py\",\n                \"anchor\": '            if record.get(\"split\") != TRAIN_SPLIT:\\n',\n                \"replacement\": \"            if False:\\n\",\n            },\n            {\n                \"file\": \"src/xlm/data/ordering/index.py\",\n                \"anchor\": '                if record.get(\"split\") != TRAIN_SPLIT:\\n',\n                \"replacement\": \"                if False:\\n\",\n            },\n        ],\n        \"nodes\": [\n            \"tests/test_p35_m5_order.py::test_split_firewall_refuses_heldout_documents\",\n            \"tests/test_p35_m5_order.py::test_changed_split_cannot_masquerade_as_the_same_membership\",\n        ],\n    },\n    {\n        \"id\": 6,\n        \"label\": \"the same sequence under a different seed is treated as independent\",\n        \"edits\": [\n            {\n                \"file\": \"src/xlm/data/ordering/manifest.py\",\n                \"anchor\": \"            count >= 2\\n\",\n                \"replacement\": \"            False\\n\",\n            }\n        ],\n        \"nodes\": [\n            \"tests/test_p35_m5_order.py::test_same_sequence_under_a_different_seed_label_is_not_independent\",\n            \"tests/test_p35_m5_order.py::test_tiny_membership_seed_collision_is_rejected\",\n        ],\n    },\n    {\n        \"id\": 7,\n        \"label\": \"M4 order robustness accepts runs/ids from a different membership\",\n        \"edits\": [\n            {\n                \"file\": \"src/xlm/comparison/science_order.py\",\n                \"anchor\": '            if membership != declaration[\"canonical_membership_id\"]:\\n',\n                \"replacement\": \"            if False:\\n\",\n            },\n            {\n                \"file\": \"src/xlm/comparison/science_order.py\",\n                \"anchor\": '        if header[\"canonical_membership_id\"] != membership:\\n',\n                \"replacement\": \"        if False:\\n\",\n            },\n        ],\n        \"nodes\": [\n            \"tests/test_p35_m5_evidence.py::test_runs_on_another_membership_block_robustness\",\n        ],\n    },\n    {\n        \"id\": 8,\n        \"label\": \"five confirmation pairs all on order A satisfy robustness\",\n        \"edits\": [\n            {\n                \"file\": \"src/xlm/comparison/science_promotion.py\",\n                \"anchor\": \"    if ORDER_SENTINEL in used or not used <= set(declared) or len(used) < 2:\\n\",\n                \"replacement\": \"    if ORDER_SENTINEL in used or not used <= set(declared):\\n\",\n            },\n            {\n                \"file\": \"src/xlm/comparison/science_order.py\",\n                \"anchor\": \"    if len(set(order_ids.values())) < 2:\\n\",\n                \"replacement\": \"    if False:\\n\",\n            },\n            {\n                \"file\": \"src/xlm/comparison/science_order.py\",\n                \"anchor\": \"    elif dict(allocation) != alternating_allocation(tuple_ids, ids):\\n\",\n                \"replacement\": \"    elif False:\\n\",\n            },\n        ],\n        \"nodes\": [\n            \"tests/test_p35_m5_evidence.py::test_all_five_pairs_on_order_a_is_not_robust\",\n        ],\n    },\n    {\n        \"id\": 9,\n        \"label\": \"same-seed retries inflate per-order initialization counts\",\n        \"edits\": [\n            {\n                \"file\": \"src/xlm/comparison/science_order.py\",\n                \"anchor\": '            by_arm[arm] = len({r[\"replicate_identity\"] for r in rows if r[\"arm_id\"] == arm})\\n',\n                \"replacement\": '            by_arm[arm] = len([r for r in rows if r[\"arm_id\"] == arm])\\n',\n            },\n            {\n                \"file\": \"src/xlm/comparison/science_order.py\",\n                \"anchor\": '            \"unique_replicate_identities\": len(identities),\\n',\n                \"replacement\": '            \"unique_replicate_identities\": max(by_arm.values(), default=0),\\n',\n            },\n        ],\n        \"nodes\": [\n            \"tests/test_p35_m5_evidence.py::test_same_seed_retries_do_not_inflate_initialization_counts\",\n        ],\n    },\n    {\n        \"id\": 10,\n        \"label\": \"M4 extractor silently substitutes the sentinel despite an M5 receipt\",\n        \"edits\": [\n            {\n                \"file\": \"src/xlm/comparison/science_evidence.py\",\n                \"anchor\": \"    if config_order is None and state_order is None:\\n\",\n                \"replacement\": \"    if True:\\n\",\n            }\n        ],\n        \"nodes\": [\n            \"tests/test_p35_m5_evidence.py::test_extractor_reads_the_real_order_identity\",\n            \"tests/test_p35_m5_evidence.py::test_inconsistent_order_receipts_are_refused_not_sentinelled[config_only]\",\n        ],\n    },\n]\n\nENV = {\n    **os.environ,\n    \"OMP_NUM_THREADS\": \"1\",\n    \"MKL_NUM_THREADS\": \"1\",\n    \"OPENBLAS_NUM_THREADS\": \"1\",\n    \"NUMEXPR_NUM_THREADS\": \"1\",\n    \"TOKENIZERS_PARALLELISM\": \"false\",\n    \"PYTHONDONTWRITEBYTECODE\": \"1\",\n}\n\n\ndef export(name: str) -> Path:\n    target = WORK / name\n    if target.exists():\n        shutil.rmtree(target)\n    target.mkdir(parents=True)\n    archive = WORK / f\"{name}.tar\"\n    subprocess.run([\"git\", \"-C\", str(REPO), \"archive\", \"-o\", str(archive), \"HEAD\"], check=True)\n    with tarfile.open(archive) as tar:\n        tar.extractall(target, filter=\"data\")\n    archive.unlink()\n    return target\n\n\ndef apply(root: Path, edits: list[dict[str, str]]) -> None:\n    for edit in edits:\n        path = root / edit[\"file\"]\n        raw = path.read_bytes().decode(\"utf-8\")\n        crlf = \"\\r\\n\" in raw\n        anchor, replacement = edit[\"anchor\"], edit[\"replacement\"]\n        if crlf:\n            anchor, replacement = anchor.replace(\"\\n\", \"\\r\\n\"), replacement.replace(\"\\n\", \"\\r\\n\")\n        count = raw.count(anchor)\n        if count != 1:\n            raise SystemExit(f\"anchor matched {count} times in {edit['file']}: {edit['anchor']!r}\")\n        path.write_bytes(raw.replace(anchor, replacement).encode(\"utf-8\"))\n        py_compile.compile(str(path), doraise=True)\n\n\ndef run_nodes(root: Path, nodes: list[str]) -> tuple[int, str, dict[str, str]]:\n    env = {**ENV, \"PYTHONPATH\": f\"{root / 'src'}:{root / 'tests'}\"}\n    origin = subprocess.run(\n        [str(PY), \"-c\", \"import xlm; print(xlm.__file__)\"],\n        cwd=root, env=env, capture_output=True, text=True, check=True,\n    ).stdout.strip()\n    if not origin.startswith(str(root)):\n        raise SystemExit(f\"xlm imported from {origin}, not the export\")\n    proc = subprocess.run(\n        [str(PY), \"-m\", \"pytest\", *nodes, \"-n\", \"0\", \"-p\", \"no:cacheprovider\", \"-rfE\",\n         \"--junitxml\", str(root / \"junit.xml\")],\n        cwd=root, env=env, capture_output=True, text=True, timeout=900,\n    )\n    import xml.etree.ElementTree as ET\n\n    outcomes: dict[str, str] = {}\n    for case in ET.parse(root / \"junit.xml\").iter(\"testcase\"):\n        name = case.get(\"classname\", \"\").replace(\".\", \"/\") + \".py::\" + case.get(\"name\", \"\")\n        failure = case.find(\"failure\")\n        error = case.find(\"error\")\n        if error is not None:\n            outcomes[name] = \"ERROR: \" + (error.get(\"message\") or \"\")[:200]\n        elif failure is not None:\n            outcomes[name] = \"FAILURE: \" + (failure.get(\"message\") or \"\")[:200]\n        else:\n            outcomes[name] = \"passed\"\n    return proc.returncode, proc.stdout + proc.stderr, outcomes\n\n\ndef main() -> None:\n    started = time.time()\n    WORK.mkdir(parents=True, exist_ok=True)\n    head = subprocess.run(\n        [\"git\", \"-C\", str(REPO), \"rev-parse\", \"HEAD\"], capture_output=True, text=True, check=True\n    ).stdout.strip()\n    all_nodes = sorted({n for m in MUTANTS for n in m[\"nodes\"]})\n    control_root = export(\"control\")\n    code, out, _ = run_nodes(control_root, all_nodes)\n    control = {\"exit\": code, \"summary\": out.strip().splitlines()[-1], \"nodes\": len(all_nodes)}\n    if code != 0:\n        print(out)\n        raise SystemExit(\"unmutated control is not green\")\n    results = []\n    for mutant in MUTANTS:\n        root = export(f\"m{mutant['id']}\")\n        apply(root, mutant[\"edits\"])\n        code, out, outcomes = run_nodes(root, mutant[\"nodes\"])\n        failed = sorted(set(re.findall(r\"^FAILED (\\S+)\", out, flags=re.M)))\n        broken = bool(re.search(r\"(ImportError|ModuleNotFoundError|SyntaxError|ERROR collecting|^ERROR )\", out, flags=re.M))\n        assertions = [line for line in out.splitlines() if line.startswith(\"E \") and (\"assert\" in line or \"DID NOT RAISE\" in line or \"Error\" in line)]\n        failures = [v for v in outcomes.values() if v != \"passed\"]\n        asserted = len(failures) == len(mutant[\"nodes\"]) and all(\n            v.startswith(\"FAILURE: \") and (\"assert\" in v or \"DID NOT RAISE\" in v) for v in failures\n        )\n        killed = code == 1 and failed == sorted(mutant[\"nodes\"]) and not broken and asserted\n        results.append(\n            {\n                \"id\": mutant[\"id\"],\n                \"label\": mutant[\"label\"],\n                \"edits\": mutant[\"edits\"],\n                \"nodes\": mutant[\"nodes\"],\n                \"exit\": code,\n                \"failed_nodes\": failed,\n                \"assertion_failures\": asserted,\n                \"import_or_syntax_error\": broken,\n                \"assertions\": assertions[:6],\n                \"junit_outcomes\": outcomes,\n                \"result\": \"KILLED\" if killed else \"SURVIVED_OR_INVALID\",\n            }\n        )\n        print(f\"mutant {mutant['id']}: {'KILLED' if killed else 'NOT KILLED'} exit={code} failed={failed}\")\n        if not killed:\n            print(out[-4000:])\n        shutil.rmtree(root)\n    shutil.rmtree(control_root)\n    source = Path(__file__).read_bytes()\n    record = {\n        \"label\": \"P35 M5 scratch mutation run (mutant code never committed)\",\n        \"tested_head\": head,\n        \"runner_sha256\": hashlib.sha256(source).hexdigest(),\n        \"runner_source\": source.decode(\"utf-8\"),\n        \"environment\": f\"Linux cloud container, Python {sys.version.split()[0]}, base+dev lock, no torch\",\n        \"kill_rule\": \"pytest exit 1; exactly the listed nodes FAILED; each on an assertion or \"\n        \"pytest.raises DID NOT RAISE; no import/syntax/collection error; anchors matched exactly once; \"\n        \"py_compile passed; xlm imported from the export\",\n        \"control\": control,\n        \"mutants\": results,\n        \"seconds\": round(time.time() - started, 1),\n    }\n    out_path = Path(sys.argv[1])\n    out_path.parent.mkdir(parents=True, exist_ok=True)\n    out_path.write_text(json.dumps(record, indent=1) + \"\\n\", encoding=\"utf-8\")\n    print(f\"control {control}; {sum(r['result'] == 'KILLED' for r in results)}/{len(results)} killed; {record['seconds']}s\")\n\n\nif __name__ == \"__main__\":\n    main()\n",
+ "environment": "Linux cloud container, Python 3.12.3, base+dev lock, no torch",
+ "kill_rule": "pytest exit 1; exactly the listed nodes FAILED; each on an assertion or pytest.raises DID NOT RAISE; no import/syntax/collection error; anchors matched exactly once; py_compile passed; xlm imported from the export",
+ "control": {
+  "exit": 0,
+  "summary": "============================== 15 passed in 1.32s ==============================",
+  "nodes": 15
+ },
+ "mutants": [
+  {
+   "id": 1,
+   "label": "membership equality compares only document counts",
+   "edits": [
+    {
+     "file": "src/xlm/data/ordering/manifest.py",
+     "anchor": "    if a[\"canonical_membership_id\"] != b[\"canonical_membership_id\"] or (\n        a[\"canonical_membership\"] != b[\"canonical_membership\"]\n    ):\n",
+     "replacement": "    if {s: v[\"document_count\"] for s, v in a[\"canonical_membership\"][\"sources\"].items()} != {s: v[\"document_count\"] for s, v in b[\"canonical_membership\"][\"sources\"].items()}:\n"
+    }
+   ],
+   "nodes": [
+    "tests/test_p35_m5_order.py::test_orders_over_different_memberships_are_not_independent_orders",
+    "tests/test_p35_m5_evidence.py::test_orders_over_different_memberships_are_refused"
+   ],
+   "exit": 1,
+   "failed_nodes": [
+    "tests/test_p35_m5_evidence.py::test_orders_over_different_memberships_are_refused",
+    "tests/test_p35_m5_order.py::test_orders_over_different_memberships_are_not_independent_orders"
+   ],
+   "assertion_failures": true,
+   "import_or_syntax_error": false,
+   "assertions": [
+    "E       assert False",
+    "E       Failed: DID NOT RAISE OrderEvidenceError"
+   ],
+   "junit_outcomes": {
+    "tests/test_p35_m5_order.py::test_orders_over_different_memberships_are_not_independent_orders": "FAILURE: assert False\n +  where False = any(<generator object test_orders_over_different_memberships_are_not_independent_orders.<locals>.<genexpr> at 0x7fc6717a0fb0>)",
+    "tests/test_p35_m5_evidence.py::test_orders_over_different_memberships_are_refused": "FAILURE: Failed: DID NOT RAISE OrderEvidenceError"
+   },
+   "result": "KILLED"
+  },
+  {
+   "id": 2,
+   "label": "order hash ignores the ordered sequence (digest of the sorted set)",
+   "edits": [
+    {
+     "file": "src/xlm/data/ordering/manifest.py",
+     "anchor": "    for doc_id in doc_ids:\n        digest.update(",
+     "replacement": "    for doc_id in sorted(doc_ids):\n        digest.update("
+    }
+   ],
+   "nodes": [
+    "tests/test_p35_m5_order.py::test_different_seeds_give_genuinely_different_orders"
+   ],
+   "exit": 1,
+   "failed_nodes": [
+    "tests/test_p35_m5_order.py::test_different_seeds_give_genuinely_different_orders"
+   ],
+   "assertion_failures": true,
+   "import_or_syntax_error": false,
+   "assertions": [
+    "E           AssertionError: assert '8701d6352082ce27df803ab20a4ba8cf9455c301f7ed1d0d8a10efffd2bb8a28' != '8701d6352082ce27df803ab20a4ba8cf9455c301f7ed1d0d8a10efffd2bb8a28'"
+   ],
+   "junit_outcomes": {
+    "tests/test_p35_m5_order.py::test_different_seeds_give_genuinely_different_orders": "FAILURE: AssertionError: assert '8701d6352082ce27df803ab20a4ba8cf9455c301f7ed1d0d8a10efffd2bb8a28' != '8701d6352082ce27df803ab20a4ba8cf9455c301f7ed1d0d8a10efffd2bb8a28'"
+   },
+   "result": "KILLED"
+  },
+  {
+   "id": 3,
+   "label": "a different order is allowed on ordinary resume",
+   "edits": [
+    {
+     "file": "src/xlm/data/sampling/stream.py",
+     "anchor": "        if state_order(state_dict) != self.document_order_identity:\n",
+     "replacement": "        if False:\n"
+    },
+    {
+     "file": "src/xlm/data/ordering/binding.py",
+     "anchor": "    if saved != current:\n",
+     "replacement": "    if False:\n"
+    }
+   ],
+   "nodes": [
+    "tests/test_p35_m5_stream.py::test_ordinary_resume_across_orders_is_refused"
+   ],
+   "exit": 1,
+   "failed_nodes": [
+    "tests/test_p35_m5_stream.py::test_ordinary_resume_across_orders_is_refused"
+   ],
+   "assertion_failures": true,
+   "import_or_syntax_error": false,
+   "assertions": [
+    "E           Failed: DID NOT RAISE MixtureStreamError"
+   ],
+   "junit_outcomes": {
+    "tests/test_p35_m5_stream.py::test_ordinary_resume_across_orders_is_refused": "FAILURE: Failed: DID NOT RAISE MixtureStreamError"
+   },
+   "result": "KILLED"
+  },
+  {
+   "id": 4,
+   "label": "a changed-content document keeps the same membership id",
+   "edits": [
+    {
+     "file": "src/xlm/data/ordering/membership.py",
+     "anchor": "                \"token_sha256\": hashlib.sha256(token_bytes).hexdigest(),\n",
+     "replacement": "                \"token_sha256\": \"\",\n"
+    }
+   ],
+   "nodes": [
+    "tests/test_p35_m5_order.py::test_membership_changes_with_any_document_change[same_length_content]",
+    "tests/test_p35_m5_order.py::test_membership_is_not_a_count_or_byte_summary"
+   ],
+   "exit": 1,
+   "failed_nodes": [
+    "tests/test_p35_m5_order.py::test_membership_changes_with_any_document_change[same_length_content]",
+    "tests/test_p35_m5_order.py::test_membership_is_not_a_count_or_byte_summary"
+   ],
+   "assertion_failures": true,
+   "import_or_syntax_error": false,
+   "assertions": [
+    "E       AssertionError: assert 'e451083af091281b889bfc3cb41dc16e5ed7d062a6399ddcc78480f45d922f20' != 'e451083af091281b889bfc3cb41dc16e5ed7d062a6399ddcc78480f45d922f20'",
+    "E       AssertionError: assert 'e451083af091281b889bfc3cb41dc16e5ed7d062a6399ddcc78480f45d922f20' != 'e451083af091281b889bfc3cb41dc16e5ed7d062a6399ddcc78480f45d922f20'"
+   ],
+   "junit_outcomes": {
+    "tests/test_p35_m5_order.py::test_membership_changes_with_any_document_change[same_length_content]": "FAILURE: AssertionError: assert 'e451083af091281b889bfc3cb41dc16e5ed7d062a6399ddcc78480f45d922f20' != 'e451083af091281b889bfc3cb41dc16e5ed7d062a6399ddcc78480f45d922f20'",
+    "tests/test_p35_m5_order.py::test_membership_is_not_a_count_or_byte_summary": "FAILURE: AssertionError: assert 'e451083af091281b889bfc3cb41dc16e5ed7d062a6399ddcc78480f45d922f20' != 'e451083af091281b889bfc3cb41dc16e5ed7d062a6399ddcc78480f45d922f20'\n +  where 'e451083af091281b889bfc3cb41dc"
+   },
+   "result": "KILLED"
+  },
+  {
+   "id": 5,
+   "label": "a held-out document is admitted into the train order",
+   "edits": [
+    {
+     "file": "src/xlm/data/ordering/membership.py",
+     "anchor": "            if record.get(\"split\") != TRAIN_SPLIT:\n",
+     "replacement": "            if False:\n"
+    },
+    {
+     "file": "src/xlm/data/ordering/index.py",
+     "anchor": "                if record.get(\"split\") != TRAIN_SPLIT:\n",
+     "replacement": "                if False:\n"
+    }
+   ],
+   "nodes": [
+    "tests/test_p35_m5_order.py::test_split_firewall_refuses_heldout_documents",
+    "tests/test_p35_m5_order.py::test_changed_split_cannot_masquerade_as_the_same_membership"
+   ],
+   "exit": 1,
+   "failed_nodes": [
+    "tests/test_p35_m5_order.py::test_changed_split_cannot_masquerade_as_the_same_membership",
+    "tests/test_p35_m5_order.py::test_split_firewall_refuses_heldout_documents"
+   ],
+   "assertion_failures": true,
+   "import_or_syntax_error": false,
+   "assertions": [
+    "E       Failed: DID NOT RAISE MembershipError",
+    "E       Failed: DID NOT RAISE MembershipError"
+   ],
+   "junit_outcomes": {
+    "tests/test_p35_m5_order.py::test_split_firewall_refuses_heldout_documents": "FAILURE: Failed: DID NOT RAISE MembershipError",
+    "tests/test_p35_m5_order.py::test_changed_split_cannot_masquerade_as_the_same_membership": "FAILURE: Failed: DID NOT RAISE MembershipError"
+   },
+   "result": "KILLED"
+  },
+  {
+   "id": 6,
+   "label": "the same sequence under a different seed is treated as independent",
+   "edits": [
+    {
+     "file": "src/xlm/data/ordering/manifest.py",
+     "anchor": "            count >= 2\n",
+     "replacement": "            False\n"
+    }
+   ],
+   "nodes": [
+    "tests/test_p35_m5_order.py::test_same_sequence_under_a_different_seed_label_is_not_independent",
+    "tests/test_p35_m5_order.py::test_tiny_membership_seed_collision_is_rejected"
+   ],
+   "exit": 1,
+   "failed_nodes": [
+    "tests/test_p35_m5_order.py::test_same_sequence_under_a_different_seed_label_is_not_independent",
+    "tests/test_p35_m5_order.py::test_tiny_membership_seed_collision_is_rejected"
+   ],
+   "assertion_failures": true,
+   "import_or_syntax_error": false,
+   "assertions": [
+    "E       assert False",
+    "E       assert False"
+   ],
+   "junit_outcomes": {
+    "tests/test_p35_m5_order.py::test_same_sequence_under_a_different_seed_label_is_not_independent": "FAILURE: assert False\n +  where False = any(<generator object test_same_sequence_under_a_different_seed_label_is_not_independent.<locals>.<genexpr> at 0x7fdfd75f1970>)",
+    "tests/test_p35_m5_order.py::test_tiny_membership_seed_collision_is_rejected": "FAILURE: assert False\n +  where False = any(<generator object test_tiny_membership_seed_collision_is_rejected.<locals>.<genexpr> at 0x7fdfd75f3d30>)"
+   },
+   "result": "KILLED"
+  },
+  {
+   "id": 7,
+   "label": "M4 order robustness accepts runs/ids from a different membership",
+   "edits": [
+    {
+     "file": "src/xlm/comparison/science_order.py",
+     "anchor": "            if membership != declaration[\"canonical_membership_id\"]:\n",
+     "replacement": "            if False:\n"
+    },
+    {
+     "file": "src/xlm/comparison/science_order.py",
+     "anchor": "        if header[\"canonical_membership_id\"] != membership:\n",
+     "replacement": "        if False:\n"
+    }
+   ],
+   "nodes": [
+    "tests/test_p35_m5_evidence.py::test_runs_on_another_membership_block_robustness"
+   ],
+   "exit": 1,
+   "failed_nodes": [
+    "tests/test_p35_m5_evidence.py::test_runs_on_another_membership_block_robustness"
+   ],
+   "assertion_failures": true,
+   "import_or_syntax_error": false,
+   "assertions": [
+    "E       AssertionError: assert 'SATISFIED' == 'BLOCKED'"
+   ],
+   "junit_outcomes": {
+    "tests/test_p35_m5_evidence.py::test_runs_on_another_membership_block_robustness": "FAILURE: AssertionError: assert 'SATISFIED' == 'BLOCKED'\n  \n  - BLOCKED\n  + SATISFIED"
+   },
+   "result": "KILLED"
+  },
+  {
+   "id": 8,
+   "label": "five confirmation pairs all on order A satisfy robustness",
+   "edits": [
+    {
+     "file": "src/xlm/comparison/science_promotion.py",
+     "anchor": "    if ORDER_SENTINEL in used or not used <= set(declared) or len(used) < 2:\n",
+     "replacement": "    if ORDER_SENTINEL in used or not used <= set(declared):\n"
+    },
+    {
+     "file": "src/xlm/comparison/science_order.py",
+     "anchor": "    if len(set(order_ids.values())) < 2:\n",
+     "replacement": "    if False:\n"
+    },
+    {
+     "file": "src/xlm/comparison/science_order.py",
+     "anchor": "    elif dict(allocation) != alternating_allocation(tuple_ids, ids):\n",
+     "replacement": "    elif False:\n"
+    }
+   ],
+   "nodes": [
+    "tests/test_p35_m5_evidence.py::test_all_five_pairs_on_order_a_is_not_robust"
+   ],
+   "exit": 1,
+   "failed_nodes": [
+    "tests/test_p35_m5_evidence.py::test_all_five_pairs_on_order_a_is_not_robust"
+   ],
+   "assertion_failures": true,
+   "import_or_syntax_error": false,
+   "assertions": [
+    "E       assert False"
+   ],
+   "junit_outcomes": {
+    "tests/test_p35_m5_evidence.py::test_all_five_pairs_on_order_a_is_not_robust": "FAILURE: assert False\n +  where False = any(<generator object test_all_five_pairs_on_order_a_is_not_robust.<locals>.<genexpr> at 0x7fe0989fa810>)"
+   },
+   "result": "KILLED"
+  },
+  {
+   "id": 9,
+   "label": "same-seed retries inflate per-order initialization counts",
+   "edits": [
+    {
+     "file": "src/xlm/comparison/science_order.py",
+     "anchor": "            by_arm[arm] = len({r[\"replicate_identity\"] for r in rows if r[\"arm_id\"] == arm})\n",
+     "replacement": "            by_arm[arm] = len([r for r in rows if r[\"arm_id\"] == arm])\n"
+    },
+    {
+     "file": "src/xlm/comparison/science_order.py",
+     "anchor": "            \"unique_replicate_identities\": len(identities),\n",
+     "replacement": "            \"unique_replicate_identities\": max(by_arm.values(), default=0),\n"
+    }
+   ],
+   "nodes": [
+    "tests/test_p35_m5_evidence.py::test_same_seed_retries_do_not_inflate_initialization_counts"
+   ],
+   "exit": 1,
+   "failed_nodes": [
+    "tests/test_p35_m5_evidence.py::test_same_seed_retries_do_not_inflate_initialization_counts"
+   ],
+   "assertion_failures": true,
+   "import_or_syntax_error": false,
+   "assertions": [
+    "E       assert 4 == 3"
+   ],
+   "junit_outcomes": {
+    "tests/test_p35_m5_evidence.py::test_same_seed_retries_do_not_inflate_initialization_counts": "FAILURE: assert 4 == 3"
+   },
+   "result": "KILLED"
+  },
+  {
+   "id": 10,
+   "label": "M4 extractor silently substitutes the sentinel despite an M5 receipt",
+   "edits": [
+    {
+     "file": "src/xlm/comparison/science_evidence.py",
+     "anchor": "    if config_order is None and state_order is None:\n",
+     "replacement": "    if True:\n"
+    }
+   ],
+   "nodes": [
+    "tests/test_p35_m5_evidence.py::test_extractor_reads_the_real_order_identity",
+    "tests/test_p35_m5_evidence.py::test_inconsistent_order_receipts_are_refused_not_sentinelled[config_only]"
+   ],
+   "exit": 1,
+   "failed_nodes": [
+    "tests/test_p35_m5_evidence.py::test_extractor_reads_the_real_order_identity",
+    "tests/test_p35_m5_evidence.py::test_inconsistent_order_receipts_are_refused_not_sentinelled[config_only]"
+   ],
+   "assertion_failures": true,
+   "import_or_syntax_error": false,
+   "assertions": [
+    "E       AssertionError: assert 'shard_native...rder_manifest' == '9cc4cdb9191e...37d6ab2da69b2'",
+    "E       Failed: DID NOT RAISE EvidenceError"
+   ],
+   "junit_outcomes": {
+    "tests/test_p35_m5_evidence.py::test_extractor_reads_the_real_order_identity": "FAILURE: AssertionError: assert 'shard_native...rder_manifest' == '9cc4cdb9191e...37d6ab2da69b2'\n  \n  - 9cc4cdb9191ea8a868648d19c6947e4cbf193e22bd547c7382037d6ab2da69b2\n  + shard_native_no_order_manifest",
+    "tests/test_p35_m5_evidence.py::test_inconsistent_order_receipts_are_refused_not_sentinelled[config_only]": "FAILURE: Failed: DID NOT RAISE EvidenceError"
+   },
+   "result": "KILLED"
+  }
+ ],
+ "seconds": 41.6
+}

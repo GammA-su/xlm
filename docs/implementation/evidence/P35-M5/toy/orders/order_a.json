@@ -1,0 +1,85 @@
+{
+ "canonical_membership": {
+  "membership_version": "xlm-canonical-train-membership-v1",
+  "sources": {
+   "alpha": {
+    "byte_count": 325,
+    "document_count": 6,
+    "membership_digest": "4ce69886ab15992cf5732ff26383fa5b6b5aeb7905cb94dadb348f6017c5fa2e",
+    "token_count": 337
+   },
+   "beta": {
+    "byte_count": 204,
+    "document_count": 5,
+    "membership_digest": "52a98141906612b8a34677bf8dc1ee58394f05d827b4cc5b91110258ea0452b1",
+    "token_count": 214
+   }
+  },
+  "split": "train",
+  "tokenizer_hash": "26c025ff1b43fe4d6bf76184d2031e6763c436b07547906f7a681027e3ab1c75"
+ },
+ "canonical_membership_id": "7738790b792b6d1c222c16f8e44cb3d0d3b69979b2e39a47110357e2a0bf4ab2",
+ "derivation": {
+  "algorithm": "sha256_keyed_sort_permutation_v1",
+  "order_seed": 35051
+ },
+ "invariants": {
+  "document_content": "unchanged: token bytes, internal token order, byte spans, lineage, source, split and index metadata are read from the same shard payload",
+  "epochs": "every epoch replays the same frozen order (no reshuffle)",
+  "granularity": "whole_document",
+  "mixture": "unchanged: component weights, quotas, scheduler and exhaustion policy",
+  "runtime_shuffle": "none: the order is frozen before training",
+  "scope": "within_source_only",
+  "split": "train"
+ },
+ "manifest_version": "m5-independent-document-order-v1",
+ "order_manifest_id": "3ae0f85fe6d0abb62a9989eb55a5973651df1578f66cc903a43abe591032a48f",
+ "sources": {
+  "alpha": {
+   "document_count": 6,
+   "ordered_doc_ids": [
+    "alpha_0",
+    "alpha_3",
+    "alpha_4",
+    "alpha_1",
+    "alpha_2",
+    "alpha_5"
+   ],
+   "ordered_doc_ids_digest": "dbd79bc280a59c6d091f4af70cfdf9929d82abf8b60d2c19268adb3c309ec1ac",
+   "shard": {
+    "checksum_sha256": "914ce7ba236a2a28c05e97291afadb8236cf9570c9b2445cf59b93045f0a1173",
+    "num_documents": 6,
+    "num_tokens": 337,
+    "offsets_checksum_sha256": "73f80f1fc8400210814d63eaba60b7e163d051eb688aff2314a8bccaa0c3375f",
+    "shard_id": "shard_alpha",
+    "source_id": "alpha",
+    "token_dtype": "uint16",
+    "tokenizer_hash": "26c025ff1b43fe4d6bf76184d2031e6763c436b07547906f7a681027e3ab1c75"
+   },
+   "token_count": 337
+  },
+  "beta": {
+   "document_count": 5,
+   "ordered_doc_ids": [
+    "beta_0",
+    "beta_1",
+    "beta_3",
+    "beta_4",
+    "beta_2"
+   ],
+   "ordered_doc_ids_digest": "342d23104aedf520cb56d6c3195a995c93ce4195b3f51458f86d9e09bc337812",
+   "shard": {
+    "checksum_sha256": "6c3e54791e2a44ffca396131e403cc7193faa0f2e5e714af9cd10ac87e6d6a24",
+    "num_documents": 5,
+    "num_tokens": 214,
+    "offsets_checksum_sha256": "7b3bc6cfc1c3712bfe99ab3e2bfcee199f5cc86c50eb8a290cbea1538b557b63",
+    "shard_id": "shard_beta",
+    "source_id": "beta",
+    "token_dtype": "uint16",
+    "tokenizer_hash": "26c025ff1b43fe4d6bf76184d2031e6763c436b07547906f7a681027e3ab1c75"
+   },
+   "token_count": 214
+  }
+ },
+ "within_source_order_policy": "m5_within_source_document_permutation_v1"
+}

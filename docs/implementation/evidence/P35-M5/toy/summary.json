@@ -1,0 +1,182 @@
+{
+ "bundle_hash": "1f5e2f3e3c86eb20b30172a76185afd1571fbc0a18daa27dfb536d17aa3a96fc",
+ "bundle_problems": [],
+ "canonical_membership_id": "7738790b792b6d1c222c16f8e44cb3d0d3b69979b2e39a47110357e2a0bf4ab2",
+ "cross_order_resume": "REFUSED: refusing to resume: document order identity differs ({'order_manifest_id': '3ae0f85fe6d0abb62a9989eb55a5973651df1578f66cc903a43abe591032a48f', 'canonical_membership_id': '7738790b792b6d1c222c16f8e44cb3d0d3b69979b2e39a47110357e2a0bf4ab2', 'within_source_order_policy': 'm5_within_source_document_permutation_v1'} != {'order_manifest_id': 'd92fde7f7744651d8e4ce7c5ac1ef83a98c939c325469b4dbe531dd844df3d0e', 'canonical_membership_id': '7738790b792b6d1c222c16f8e44cb3d0d3b69979b2e39a47110357e2a0bf4ab2', 'within_source_order_policy': 'm5_within_source_document_permutation_v1'}); a different order is a new experiment, not a resumable run",
+ "documents": {
+  "alpha": 6,
+  "beta": 5
+ },
+ "independence_problems": [],
+ "initialization_counts": {
+  "3ae0f85fe6d0abb62a9989eb55a5973651df1578f66cc903a43abe591032a48f": {
+   "repeat_attempts_not_counted": 1,
+   "run_attempts": 7,
+   "unique_init_seeds": 3,
+   "unique_replicate_identities": 3,
+   "unique_replicate_identities_by_arm": {
+    "m0": 3,
+    "m1": 3
+   }
+  },
+  "d92fde7f7744651d8e4ce7c5ac1ef83a98c939c325469b4dbe531dd844df3d0e": {
+   "repeat_attempts_not_counted": 0,
+   "run_attempts": 4,
+   "unique_init_seeds": 2,
+   "unique_replicate_identities": 2,
+   "unique_replicate_identities_by_arm": {
+    "m0": 2,
+    "m1": 2
+   }
+  }
+ },
+ "label": "P35 M5 SYNTHETIC toy order flow (authored shards; no model, no training)",
+ "m4_extracted": {
+  "order_a": {
+   "canonical_membership_id": "7738790b792b6d1c222c16f8e44cb3d0d3b69979b2e39a47110357e2a0bf4ab2",
+   "order_manifest_id": "3ae0f85fe6d0abb62a9989eb55a5973651df1578f66cc903a43abe591032a48f",
+   "within_source_order_policy": "m5_within_source_document_permutation_v1"
+  },
+  "order_b": {
+   "canonical_membership_id": "7738790b792b6d1c222c16f8e44cb3d0d3b69979b2e39a47110357e2a0bf4ab2",
+   "order_manifest_id": "d92fde7f7744651d8e4ce7c5ac1ef83a98c939c325469b4dbe531dd844df3d0e",
+   "within_source_order_policy": "m5_within_source_document_permutation_v1"
+  },
+  "pre_m5": {
+   "canonical_membership_id": "canonical_membership_not_bound_pre_m5",
+   "order_manifest_id": "shard_native_no_order_manifest",
+   "within_source_order_policy": "shard_native_offset_order_v1"
+  }
+ },
+ "m4_order_robustness": "SATISFIED",
+ "m4_promotion_state": "PROMOTE_TO_150M",
+ "membership_equal": true,
+ "order_a": {
+  "order_manifest_id": "3ae0f85fe6d0abb62a9989eb55a5973651df1578f66cc903a43abe591032a48f",
+  "seed": 35051
+ },
+ "order_b": {
+  "order_manifest_id": "d92fde7f7744651d8e4ce7c5ac1ef83a98c939c325469b4dbe531dd844df3d0e",
+  "seed": 35052
+ },
+ "ordered_doc_ids": {
+  "alpha": {
+   "order_a": [
+    "alpha_0",
+    "alpha_3",
+    "alpha_4",
+    "alpha_1",
+    "alpha_2",
+    "alpha_5"
+   ],
+   "order_b": [
+    "alpha_5",
+    "alpha_1",
+    "alpha_3",
+    "alpha_2",
+    "alpha_0",
+    "alpha_4"
+   ]
+  },
+  "beta": {
+   "order_a": [
+    "beta_0",
+    "beta_1",
+    "beta_3",
+    "beta_4",
+    "beta_2"
+   ],
+   "order_b": [
+    "beta_4",
+    "beta_3",
+    "beta_2",
+    "beta_0",
+    "beta_1"
+   ]
+  }
+ },
+ "overhead": {
+  "duplicated_token_bytes": 0,
+  "order_manifest_bytes": {
+   "order_a": 2912,
+   "order_b": 2912
+  },
+  "token_payload_bytes": 1102,
+  "token_plus_index_bytes": 9875
+ },
+ "producer_spec_rebuild_identical": true,
+ "resources": {
+  "peak_rss_mib": 72.7,
+  "wall_seconds": 0.38
+ },
+ "same_order_resume_exact": true,
+ "streams": {
+  "order_a": {
+   "committed_valid_targets": 384,
+   "document_order": {
+    "canonical_membership_id": "7738790b792b6d1c222c16f8e44cb3d0d3b69979b2e39a47110357e2a0bf4ab2",
+    "order_manifest_id": "3ae0f85fe6d0abb62a9989eb55a5973651df1578f66cc903a43abe591032a48f",
+    "within_source_order_policy": "m5_within_source_document_permutation_v1"
+   },
+   "first_documents": {
+    "alpha": [
+     "alpha_0",
+     "alpha_3",
+     "alpha_4",
+     "alpha_1"
+    ],
+    "beta": [
+     "beta_0",
+     "beta_1",
+     "beta_3",
+     "beta_4",
+     "beta_2"
+    ]
+   },
+   "trace_digest": "aa134de9cf301ee8756694977cacacf4232b07a3c92bf1ddf2d707d1cdb2b638"
+  },
+  "order_b": {
+   "committed_valid_targets": 384,
+   "document_order": {
+    "canonical_membership_id": "7738790b792b6d1c222c16f8e44cb3d0d3b69979b2e39a47110357e2a0bf4ab2",
+    "order_manifest_id": "d92fde7f7744651d8e4ce7c5ac1ef83a98c939c325469b4dbe531dd844df3d0e",
+    "within_source_order_policy": "m5_within_source_document_permutation_v1"
+   },
+   "first_documents": {
+    "alpha": [
+     "alpha_5",
+     "alpha_1",
+     "alpha_3",
+     "alpha_2"
+    ],
+    "beta": [
+     "beta_4",
+     "beta_3",
+     "beta_2",
+     "beta_0"
+    ]
+   },
+   "trace_digest": "e98d9267794af8fbe84ba6ccb526283b3f913fa346f5583098e66a81e2081c49"
+  },
+  "shard_native": {
+   "committed_valid_targets": 384,
+   "document_order": null,
+   "first_documents": {
+    "alpha": [
+     "alpha_0",
+     "alpha_1",
+     "alpha_2",
+     "alpha_3"
+    ],
+    "beta": [
+     "beta_0",
+     "beta_1",
+     "beta_2",
+     "beta_3"
+    ]
+   },
+   "trace_digest": "7abd02342a02a915483b428127606fed777441893b14ffdc3b9c98ddc246b619"
+  }
+ },
+ "whole_document_content_identical": true
+}
