@@ -1,4 +1,4 @@
-# Science-v1 training semantics (P35 Milestones 1–3)
+# Science-v1 training semantics and comparisons (P35 Milestones 1–4)
 
 `xlm-science-v1` is an explicit, versioned training policy defined by the
 [P35 scientific contract](implementation/reports/P35-SCIENTIFIC-CONTRACT.md).
@@ -317,3 +317,119 @@ For a science pilot, resume through the queue. Submit with `--max-retries 1`.
 After an interrupted runner, `xlm queue run` recovers the stale job and resumes
 from the newest verified checkpoint with the remaining wall allowance. The CLI
 `xlm resume` keeps its C13 200,000-target smoke cap.
+
+## Scientific comparisons (P35 Milestone 4)
+
+A science-v1 comparison answers a single question: are these runs
+scientifically comparable, and if so, what is the paired effect? It computes
+from immutable evidence. It never trains, schedules or authorizes anything.
+The legacy `xlm compare` / `xlm promote` (P17: suite index, two seeds) are
+unchanged and keep their historical meaning; their outputs are never
+re-evaluated under P35. See [P35-M4](implementation/reports/P35-M4.md) for the
+full rules.
+
+```powershell
+uv run --offline --locked --extra cuda --extra eval xlm experiment compare --comparison <manifest.json> --runs <runs.json> --output <dir> [--prerequisite <prior comparison.json>]
+uv run --offline --locked --extra cuda --extra eval xlm experiment report --record <dir>/comparison.json --output <dir2>
+```
+
+### The manifest
+
+The manifest (`xlm-science-comparison-v1`) is a preregistration with 36
+required keys. Nothing has a default, and an unknown key is refused. It
+freezes:
+
+- the question and track;
+- the control and candidate arms with their declared intervention;
+- the paired replicate roster (init, training and data seed, plus order
+  manifest);
+- the intended differences and required invariants, plus `fixed_values`;
+- the budget and LR schedule;
+- the primary endpoint (the exact budget) and primary metric with its
+  verified direction;
+- guardrail and descriptive metrics, and the curve metric;
+- practical and NI margins with a rationale, and an efficiency threshold;
+- the Bonferroni family id and size, and `ci_level` 0.95;
+- the stopping, failure, final-checkpoint and promotion-rule versions;
+- the M5 order-evidence slot and the scale-promotion intent.
+
+Its hash is `identity_digest(manifest)`. Changing a margin, family size or
+roster makes a new manifest. Examples, which carry no runs or results:
+`recipes/science_comparisons/`.
+
+### The runs file
+
+`xlm-science-comparison-runs-v1` lists every attempt:
+
+`{label, arm_id, status, failure, checkpoint (absolute | null), measurements {name: {value, source}}, synthetic}`
+
+Failed attempts stay listed. Evidence comes from each checkpoint's receipts:
+the frozen envelope, M1 LR and runtime receipts, M2 attempts under
+`first_complete_attempt_v1`, the M3 checkpoint ledger and the committed data
+state. Labels are never trusted.
+
+### Rules
+
+- **Eligibility.** Each track classifies every field as `MUST_MATCH`,
+  `INTENTIONALLY_VARIED` (only if declared) or `RECORDED_MAY_DIFFER`.
+  - `microbatch_grouping_v1` varies only `microbatch_sequences`. It requires
+    identical global batch, update boundaries, committed per-target trace,
+    per-source exposure and initialization. Final weights are *not*
+    compared.
+  - `data_mixture_v1` varies the mixture weights, and as their consequences
+    the exposure plan, trace and per-source counts. Model, tokenizer,
+    optimization, within-source order and evaluation stay fixed.
+  - Any undeclared or unknown material difference is **INELIGIBLE**, with a
+    field-level diff (field, control, candidate, class, reason) and no
+    effect estimate.
+  - CE across different tokenizers is always refused.
+- **Pairing.** Pairs are keyed by the replicate identity (seeds plus order
+  manifest), never by position, time or name. More than one at-budget
+  attempt of the same replicate is a duplicate, not a replicate. Missing or
+  incomplete pairs make the comparison INCOMPLETE.
+- **Statistics.**
+  - The raw delta is `d_i = candidate − control`.
+  - The improvement is oriented so that positive means candidate better.
+  - The interval is the mean ± `t_{1−α/(2m), n−1}·s/√n`, with
+    `α = 1 − ci_level` and `m` the frozen family size.
+  - With one pair there is no seed CI.
+  - Zero variance never decides.
+  - Item-level (benchmark bootstrap) uncertainty is reported separately and
+    never decides.
+- **Decisions.** In improvement terms with interval `[L, U]`:
+
+  | Question | Result | Condition |
+  |---|---|---|
+  | Superiority | CLEAR_WIN | `L > δ_practical` |
+  | Superiority | CLEAR_LOSS | `U < −δ_practical` |
+  | Non-inferiority | NON_INFERIOR | `L > −δ_NI` |
+  | Either | AMBIGUOUS | otherwise |
+
+  A nonsignificant difference is not non-inferiority. A missing margin gives
+  no decision.
+- **Promotion (`xlm-p35-promotion-v1`)** has these states:
+
+  | State | Meaning |
+  |---|---|
+  | `NOT_ELIGIBLE` | ineligible, or a required margin missing |
+  | `SCREEN_ONLY` | screen or replication evidence |
+  | `INCOMPLETE` / `PROVISIONAL` | partial confirmation, e.g. 3 of 5 pairs, or missing order robustness |
+  | `CONFIRMED_50M` / `150M` / `300M` | 5, 3 and 3 fresh full-budget pairs |
+  | `PROMOTE_TO_150M` / `300M` | confirmed, plus order robustness and a declared resource plan and ablations |
+  | `REJECT` | clear loss or guardrail regression |
+  | `AMBIGUOUS` | the interval crosses its boundary |
+
+  A 150M or 300M confirmation needs the verified prior-scale record.
+- **M5 dependency.** Until M5 exists, every run carries
+  `order_manifest_id = shard_native_no_order_manifest`. Any rule requiring
+  order robustness therefore reports it BLOCKED (NOT RUN); source-seed
+  variation cannot satisfy it.
+
+### Outputs
+
+`comparison.json` (hashed record), `report.md` and `summary.csv` hold the §U
+columns: eligibility, pairs, delta, SD, CI, multiplicity, curve area,
+guardrails, declared throughput and VRAM, failures, completeness, decision
+and promotion state. Missing values show as `n/a`, `NOT RUN` or `PARTIAL`,
+never 0. A partial confirmation's cells are prefixed `PROVISIONAL n/N`.
+`report` re-renders a verified record; it refuses an altered or legacy one.

@@ -31,6 +31,11 @@ schema v1 and keep legacy semantics; none of the drafts is a production default.
 and the scoring policy stay null until an operator bindings file resolves them
 through `xlm experiment plan <draft> --bindings <file>`; see
 [science-v1](../docs/science-v1.md#science-pilot-plans).
+`science_comparisons/draft_science_v1_*.yaml` are P35 M4 comparison manifests
+(status `draft_nonexecutable_no_results`) for the future B8/B16/B32 screen and an
+M0/M1 mixture screen. They carry no runs or results, and their margins stay null
+until the user freezes them; see
+[science-v1](../docs/science-v1.md#scientific-comparisons-p35-milestone-4).
 `xlm train` takes the plan path positionally; training authorization is checked
 at `xlm experiment submit` time via `--ticket`, not at `xlm train` time.
 The offline commands above are executed verbatim by the P22 runbook tests;

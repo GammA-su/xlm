@@ -1,5 +1,45 @@
 # Implementation status
 
+> **P35 Milestone 4 (2026-09-26): IMPLEMENTED and VERIFIED within the
+> authored/synthetic scope; SAFE TO INTEGRATE as an opt-in.** Branch
+> `research/p35-m4-comparisons` from certified M3 `9f57869`. No training,
+> evaluation campaign, pilot, acquisition or data download.
+>
+> - **Environment.** The only network use was the user-authorized
+>   `uv sync --locked` of base + dev wheels into a scratch venv (no torch or
+>   extras). This is a Linux cloud container on Python 3.12.3, which differs
+>   from the primary 3.12.13; it makes no CUDA claims.
+> - **Manifest.** Versioned `xlm-science-comparison-v1` with 36 required keys,
+>   field-level problems and `identity_digest` hash. Margins, family size and
+>   roster are frozen inputs.
+> - **Tracks and eligibility.** Three-way field classification; certified
+>   `microbatch_grouping_v1` and `data_mixture_v1`. Any undeclared or unknown
+>   difference is INELIGIBLE with a field diff and no effect estimate.
+>   Cross-tokenizer CE is refused.
+> - **Evidence.** Extracted from verified frozen science-v1 checkpoints (M1–M3
+>   receipts, M2 `first_complete_attempt_v1`). Pairing uses explicit replicate
+>   identity; same-seed reruns are repeats, not replicates.
+> - **Statistics.** Paired Student-t (stdlib, verified against closed forms and
+>   tables), Bonferroni from the manifest, oriented improvement plus raw deltas.
+>   One pair gives no CI.
+> - **Decisions.** `xlm-p35-decision-v1`: win/loss/ambiguous/NI against frozen
+>   margins; nonsignificant ≠ NI.
+> - **Promotion.** `xlm-p35-promotion-v1`: 5/3/3 fresh pairs; first 3 of 5 →
+>   PROVISIONAL. Order robustness stays BLOCKED until M5 evidence exists.
+> - **Reports and CLI.** §U JSON/Markdown/CSV; `xlm experiment compare` /
+>   `xlm experiment report`.
+> - **Tests.** 180 M4 tests pass (serial and `-n 4`).
+>   - The 11 high-risk mutants are all KILLED.
+>   - ruff, format and source mypy are clean.
+>   - Related legacy tests: 31 passed. The one error is pre-existing (torch
+>     missing), identical on `9f57869`.
+> - **NOT RUN (torch absent):** `tests/test_comparison.py` (legacy P17, code
+>   byte-identical) and evidence extraction from a real trainer checkpoint.
+>
+> See [P35-M4](reports/P35-M4.md), [science-v1](../science-v1.md#scientific-comparisons-p35-milestone-4)
+> and [mutations.json](evidence/P35-M4/mutations.json). Next: integrate M4, run
+> the two NOT RUN items on the CUDA environment, then the M5 prompt in P35-M4 §24.
+
 > **P35 Milestone 3 final certification closeout (2026-09-26): M3 CERTIFIED —
 > SAFE TO INTEGRATE** (opt-in, authored/synthetic scope). **M4 may begin.** The
 > real 32M pilot stays **BLOCKED** on 17 real inputs and the user's

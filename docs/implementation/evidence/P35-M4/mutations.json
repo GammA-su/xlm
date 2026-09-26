@@ -1,0 +1,414 @@
+{
+  "control": {
+    "exit": 0,
+    "nodes": 18,
+    "passed": 18
+  },
+  "environment": "Linux cloud container, Python 3.12.3, locked base+dev deps, no torch",
+  "kill_rule": "pytest exit 1, every listed node FAILED on an assertion, no import/syntax error, xlm imported from the mutant export",
+  "label": "P35 M4 scratch mutation round (mutant source never committed; edits recorded as data)",
+  "mutants": [
+    {
+      "assertions": [
+        "E       assert not True",
+        "E       assert False",
+        "E        +  where False = any(<generator object test_roster_refuses_same_seed_tuple_twice.<locals>.<genexpr> at 0x7f997f4c97d0>)"
+      ],
+      "edits": [
+        {
+          "anchor": "    if len(set(identities)) != len(identities):\n",
+          "file": "src/xlm/comparison/science_manifest.py",
+          "replacement": "    if False and len(set(identities)) != len(identities):\n"
+        },
+        {
+          "anchor": "    tuple_entry = roster.get(identity)\n",
+          "file": "src/xlm/comparison/science_compare.py",
+          "replacement": "    _pool = [e for e in manifest[\"replicate_roster\"] if replicate_identity(e[\"init_seed\"], e[\"training_seed\"], e[\"data_seed\"], e[\"order_manifest_id\"]) == identity]\n    _used = _USED.setdefault(entry.arm_id, set())\n    tuple_entry = next((e for e in _pool if e[\"tuple_id\"] not in _used), None)\n    if tuple_entry is not None:\n        _used.add(tuple_entry[\"tuple_id\"])\n"
+        },
+        {
+          "anchor": "RUN_STATUSES = (",
+          "file": "src/xlm/comparison/science_compare.py",
+          "replacement": "_USED: dict = {}\nRUN_STATUSES = ("
+        },
+        {
+          "anchor": "        stray: list[dict[str, Any]] = []\n",
+          "file": "src/xlm/comparison/science_compare.py",
+          "replacement": "        stray: list[dict[str, Any]] = []\n        _USED.clear()\n"
+        }
+      ],
+      "exit": 1,
+      "failed_nodes": [
+        "tests/test_p35_m4_eligibility.py::test_five_reruns_of_one_seed_cannot_satisfy_a_five_pair_confirmation",
+        "tests/test_p35_m4_manifest.py::test_roster_refuses_same_seed_tuple_twice"
+      ],
+      "files": [
+        "src/xlm/comparison/science_manifest.py",
+        "src/xlm/comparison/science_compare.py",
+        "src/xlm/comparison/science_compare.py",
+        "src/xlm/comparison/science_compare.py"
+      ],
+      "id": "1",
+      "import_or_syntax_errors": [],
+      "killed": true,
+      "name": "same-seed reruns counted as independent replicates",
+      "nodes": [
+        "tests/test_p35_m4_eligibility.py::test_five_reruns_of_one_seed_cannot_satisfy_a_five_pair_confirmation",
+        "tests/test_p35_m4_manifest.py::test_roster_refuses_same_seed_tuple_twice"
+      ],
+      "summary": [
+        "FAILED tests/test_p35_m4_eligibility.py::test_five_reruns_of_one_seed_cannot_satisfy_a_five_pair_confirmation",
+        "FAILED tests/test_p35_m4_manifest.py::test_roster_refuses_same_seed_tuple_twice"
+      ]
+    },
+    {
+      "assertions": [
+        "E       assert not True",
+        "E       assert not True",
+        "E       assert (not True)"
+      ],
+      "edits": [
+        {
+          "anchor": "bad = [d for d in diff if d[\"status\"] in (\"VIOLATION\", \"UNKNOWN\")]",
+          "file": "src/xlm/comparison/science_compare.py",
+          "replacement": "bad = [d for d in diff if d[\"status\"] in (\"UNKNOWN\",)]"
+        }
+      ],
+      "exit": 1,
+      "failed_nodes": [
+        "tests/test_p35_m4_eligibility.py::test_undeclared_material_difference_is_ineligible_with_the_field[overrides6-mixture_exhaustion_policy]",
+        "tests/test_p35_m4_eligibility.py::test_undeclared_material_difference_is_ineligible_with_the_field[overrides0-model_architecture]",
+        "tests/test_p35_m4_eligibility.py::test_microbatch_track_requires_identical_data_exposure[overrides0-data_trace_digest]"
+      ],
+      "files": [
+        "src/xlm/comparison/science_compare.py"
+      ],
+      "id": "2",
+      "import_or_syntax_errors": [],
+      "killed": true,
+      "name": "undeclared scientific field mismatch ignored",
+      "nodes": [
+        "tests/test_p35_m4_eligibility.py::test_undeclared_material_difference_is_ineligible_with_the_field[overrides6-mixture_exhaustion_policy]",
+        "tests/test_p35_m4_eligibility.py::test_undeclared_material_difference_is_ineligible_with_the_field[overrides0-model_architecture]",
+        "tests/test_p35_m4_eligibility.py::test_microbatch_track_requires_identical_data_exposure[overrides0-data_trace_digest]"
+      ],
+      "summary": [
+        "FAILED tests/test_p35_m4_eligibility.py::test_undeclared_material_difference_is_ineligible_with_the_field[overrides6-mixture_exhaustion_policy]",
+        "FAILED tests/test_p35_m4_eligibility.py::test_undeclared_material_difference_is_ineligible_with_the_field[overrides0-model_architecture]",
+        "FAILED tests/test_p35_m4_eligibility.py::test_microbatch_track_requires_identical_data_exposure[overrides0-data_trace_digest]"
+      ]
+    },
+    {
+      "assertions": [
+        "E       assert -0.02400000000000002 == 0.024 \u00b1 1.0e-15",
+        "E",
+        "E         comparison failed",
+        "E         Obtained: -0.02400000000000002",
+        "E         Expected: 0.024 \u00b1 1.0e-15",
+        "E       assert (-0.15000000000000013 == -0.15 \u00b1 1.5e-07"
+      ],
+      "edits": [
+        {
+          "anchor": "    if direction is MetricDirection.LOWER_IS_BETTER:\n        return control - candidate\n",
+          "file": "src/xlm/comparison/science_stats.py",
+          "replacement": "    if direction is MetricDirection.LOWER_IS_BETTER:\n        return candidate - control\n"
+        }
+      ],
+      "exit": 1,
+      "failed_nodes": [
+        "tests/test_p35_m4_stats.py::test_known_hand_computed_mean_sd_and_t_interval",
+        "tests/test_p35_m4_stats.py::test_lower_and_higher_is_better_orientation",
+        "tests/test_p35_m4_eligibility.py::test_identical_arms_except_declared_intervention_are_eligible"
+      ],
+      "files": [
+        "src/xlm/comparison/science_stats.py"
+      ],
+      "id": "3",
+      "import_or_syntax_errors": [],
+      "killed": true,
+      "name": "lower-is-better direction reversed",
+      "nodes": [
+        "tests/test_p35_m4_stats.py::test_known_hand_computed_mean_sd_and_t_interval",
+        "tests/test_p35_m4_stats.py::test_lower_and_higher_is_better_orientation",
+        "tests/test_p35_m4_eligibility.py::test_identical_arms_except_declared_intervention_are_eligible"
+      ],
+      "summary": [
+        "FAILED tests/test_p35_m4_stats.py::test_known_hand_computed_mean_sd_and_t_interval",
+        "FAILED tests/test_p35_m4_stats.py::test_lower_and_higher_is_better_orientation",
+        "FAILED tests/test_p35_m4_eligibility.py::test_identical_arms_except_declared_intervention_are_eligible"
+      ]
+    },
+    {
+      "assertions": [
+        "E       AssertionError: assert (1.9599639845400536 is not None and 4.440892098500626e-16 > 0.8)",
+        "E        +  where 1.9599639845400536 = PairedSeedStatistics(metric='ce', direction=<MetricDirection.LOWER_IS_BETTER: 'lower_is_better'>, n_pairs=5, pairs=(Pa...1': 0.022499999999999964, 'C2': 0.02749999999999997, 'C3': 0.022500000000000075, 'C4': 0.022500000000000075}, notes=()).t_critical",
+        "E        +  and   4.440892098500626e-16 = abs((1.9599639845400536 - 1.959963984540054))",
+        "E        +    where 1.9599639845400536 = PairedSeedStatistics(metric='ce', direction=<MetricDirection.LOWER_IS_BETTER: 'lower_is_better'>, n_pairs=5, pairs=(Pa...1': 0.022499999999999964, 'C2': 0.02749999999999997, 'C3': 0.022500000000000075, 'C4': 0.022500000000000075}, notes=()).t_critical",
+        "E       assert 1.9599639845400536 == 2.776445105197793 \u00b1 2.8e-12",
+        "E"
+      ],
+      "edits": [
+        {
+          "anchor": "    crit = student_t_critical(alpha / 2.0, df)\n",
+          "file": "src/xlm/comparison/science_stats.py",
+          "replacement": "    crit = __import__(\"statistics\").NormalDist().inv_cdf(1.0 - alpha / 2.0)\n"
+        }
+      ],
+      "exit": 1,
+      "failed_nodes": [
+        "tests/test_p35_m4_stats.py::test_seed_interval_uses_student_t_never_z",
+        "tests/test_p35_m4_stats.py::test_known_hand_computed_mean_sd_and_t_interval"
+      ],
+      "files": [
+        "src/xlm/comparison/science_stats.py"
+      ],
+      "id": "4",
+      "import_or_syntax_errors": [],
+      "killed": true,
+      "name": "seed CI uses a normal z critical value",
+      "nodes": [
+        "tests/test_p35_m4_stats.py::test_seed_interval_uses_student_t_never_z",
+        "tests/test_p35_m4_stats.py::test_known_hand_computed_mean_sd_and_t_interval"
+      ],
+      "summary": [
+        "FAILED tests/test_p35_m4_stats.py::test_seed_interval_uses_student_t_never_z",
+        "FAILED tests/test_p35_m4_stats.py::test_known_hand_computed_mean_sd_and_t_interval"
+      ]
+    },
+    {
+      "assertions": [
+        "E           assert 0.95 == 0.975 \u00b1 9.7e-07",
+        "E",
+        "E             comparison failed",
+        "E             Obtained: 0.95",
+        "E             Expected: 0.975 \u00b1 9.7e-07"
+      ],
+      "edits": [
+        {
+          "anchor": "    alpha = bonferroni_test_alpha(family_ci_level, family_size)\n",
+          "file": "src/xlm/comparison/science_stats.py",
+          "replacement": "    alpha = bonferroni_test_alpha(family_ci_level, 1)\n"
+        }
+      ],
+      "exit": 1,
+      "failed_nodes": [
+        "tests/test_p35_m4_stats.py::test_bonferroni_family_size_widens_interval_and_raises_threshold"
+      ],
+      "files": [
+        "src/xlm/comparison/science_stats.py"
+      ],
+      "id": "5",
+      "import_or_syntax_errors": [],
+      "killed": true,
+      "name": "Bonferroni family size ignored",
+      "nodes": [
+        "tests/test_p35_m4_stats.py::test_bonferroni_family_size_widens_interval_and_raises_threshold"
+      ],
+      "summary": [
+        "FAILED tests/test_p35_m4_stats.py::test_bonferroni_family_size_widens_interval_and_raises_threshold"
+      ]
+    },
+    {
+      "assertions": [
+        "E       AssertionError: assert <DecisionResult.NON_INFERIOR: 'NON_INFERIOR'> is <DecisionResult.AMBIGUOUS: 'AMBIGUOUS'>",
+        "E        +  where <DecisionResult.NON_INFERIOR: 'NON_INFERIOR'> = Decision(result=<DecisionResult.NON_INFERIOR: 'NON_INFERIOR'>, question=<QuestionType.NONINFERIORITY: 'noninferiority'>, margin=0.02, reasons=('lower improvement bound -0.073544 lies above minus the NI margin -0.02',), qualifier=None).result",
+        "E        +  and   <DecisionResult.AMBIGUOUS: 'AMBIGUOUS'> = DecisionResult.AMBIGUOUS",
+        "E       AssertionError: assert 'NON_INFERIOR' == 'AMBIGUOUS'",
+        "E",
+        "E         - AMBIGUOUS"
+      ],
+      "edits": [
+        {
+          "anchor": "    if strictly_greater(low, -margin):\n        return Decision(\n            DecisionResult.NON_INFERIOR,",
+          "file": "src/xlm/comparison/science_stats.py",
+          "replacement": "    if low <= 0.0 <= high or strictly_greater(low, -margin):\n        return Decision(\n            DecisionResult.NON_INFERIOR,"
+        }
+      ],
+      "exit": 1,
+      "failed_nodes": [
+        "tests/test_p35_m4_stats.py::test_nonsignificant_difference_is_not_noninferiority",
+        "tests/test_p35_m4_promotion.py::test_nonsignificant_quality_difference_is_not_noninferiority"
+      ],
+      "files": [
+        "src/xlm/comparison/science_stats.py"
+      ],
+      "id": "6",
+      "import_or_syntax_errors": [],
+      "killed": true,
+      "name": "nonsignificant difference treated as non-inferiority",
+      "nodes": [
+        "tests/test_p35_m4_stats.py::test_nonsignificant_difference_is_not_noninferiority",
+        "tests/test_p35_m4_promotion.py::test_nonsignificant_quality_difference_is_not_noninferiority"
+      ],
+      "summary": [
+        "FAILED tests/test_p35_m4_stats.py::test_nonsignificant_difference_is_not_noninferiority",
+        "FAILED tests/test_p35_m4_promotion.py::test_nonsignificant_quality_difference_is_not_noninferiority"
+      ]
+    },
+    {
+      "assertions": [
+        "E       assert (True is False)"
+      ],
+      "edits": [
+        {
+          "anchor": "def _coverage_complete(coverage: Any) -> bool:\n",
+          "file": "src/xlm/comparison/science_evidence.py",
+          "replacement": "def _coverage_complete(coverage: Any) -> bool:\n    return True\n"
+        }
+      ],
+      "exit": 1,
+      "failed_nodes": [
+        "tests/test_p35_m4_evidence.py::test_incomplete_coverage_or_altered_receipt_is_not_complete"
+      ],
+      "files": [
+        "src/xlm/comparison/science_evidence.py"
+      ],
+      "id": "7a",
+      "import_or_syntax_errors": [],
+      "killed": true,
+      "name": "missing/partial evaluation coverage treated as success",
+      "nodes": [
+        "tests/test_p35_m4_evidence.py::test_incomplete_coverage_or_altered_receipt_is_not_complete"
+      ],
+      "summary": [
+        "FAILED tests/test_p35_m4_evidence.py::test_incomplete_coverage_or_altered_receipt_is_not_complete"
+      ]
+    },
+    {
+      "assertions": [
+        "E       assert 5 == 4"
+      ],
+      "edits": [
+        {
+          "anchor": "    elif not event.get(\"complete\"):\n",
+          "file": "src/xlm/comparison/science_compare.py",
+          "replacement": "    elif not event.get(\"complete\") and False:\n"
+        },
+        {
+          "anchor": "        row[\"primary\"] = _metric_at(event.get(\"metrics\"), [metric])\n",
+          "file": "src/xlm/comparison/science_compare.py",
+          "replacement": "        row[\"primary\"] = _metric_at(event.get(\"metrics\"), [metric]) or 0.0\n"
+        }
+      ],
+      "exit": 1,
+      "failed_nodes": [
+        "tests/test_p35_m4_eligibility.py::test_incomplete_evaluation_is_incomplete_never_a_score"
+      ],
+      "files": [
+        "src/xlm/comparison/science_compare.py",
+        "src/xlm/comparison/science_compare.py"
+      ],
+      "id": "7b",
+      "import_or_syntax_errors": [],
+      "killed": true,
+      "name": "incomplete primary evaluation scored as zero",
+      "nodes": [
+        "tests/test_p35_m4_eligibility.py::test_incomplete_evaluation_is_incomplete_never_a_score"
+      ],
+      "summary": [
+        "FAILED tests/test_p35_m4_eligibility.py::test_incomplete_evaluation_is_incomplete_never_a_score"
+      ]
+    },
+    {
+      "assertions": [
+        "E       AssertionError: assert 'CONFIRMED_50M' == 'PROVISIONAL'",
+        "E",
+        "E         - PROVISIONAL",
+        "E         + CONFIRMED_50M"
+      ],
+      "edits": [
+        {
+          "anchor": "    if candidate.n_complete_pairs < required:\n",
+          "file": "src/xlm/comparison/science_promotion.py",
+          "replacement": "    if candidate.n_complete_pairs < min(required, 3):\n"
+        }
+      ],
+      "exit": 1,
+      "failed_nodes": [
+        "tests/test_p35_m4_promotion.py::test_first_three_of_five_is_provisional_even_with_a_strong_signal"
+      ],
+      "files": [
+        "src/xlm/comparison/science_promotion.py"
+      ],
+      "id": "8",
+      "import_or_syntax_errors": [],
+      "killed": true,
+      "name": "first three of a five-pair confirmation promotes",
+      "nodes": [
+        "tests/test_p35_m4_promotion.py::test_first_three_of_five_is_provisional_even_with_a_strong_signal"
+      ],
+      "summary": [
+        "FAILED tests/test_p35_m4_promotion.py::test_first_three_of_five_is_provisional_even_with_a_strong_signal"
+      ]
+    },
+    {
+      "assertions": [
+        "E           AssertionError: []",
+        "E           assert True is False",
+        "E       assert False",
+        "E        +  where False = any(<generator object test_tokenizer_mismatch_is_ineligible_and_ce_cannot_cross_tokenizers.<locals>.<genexpr> at 0x7fba1ac5e0c0>)"
+      ],
+      "edits": [
+        {
+          "anchor": "    if tokenizer_mismatch and metric in TOKENIZER_DEPENDENT_METRICS:\n",
+          "file": "src/xlm/comparison/science_compare.py",
+          "replacement": "    if False and tokenizer_mismatch and metric in TOKENIZER_DEPENDENT_METRICS:\n"
+        }
+      ],
+      "exit": 1,
+      "failed_nodes": [
+        "tests/test_p35_m4_eligibility.py::test_cross_tokenizer_ce_guard_holds_even_when_a_track_allows_the_tokenizer_to_vary",
+        "tests/test_p35_m4_eligibility.py::test_tokenizer_mismatch_is_ineligible_and_ce_cannot_cross_tokenizers"
+      ],
+      "files": [
+        "src/xlm/comparison/science_compare.py"
+      ],
+      "id": "9",
+      "import_or_syntax_errors": [],
+      "killed": true,
+      "name": "different-tokenizer CE allowed to declare a winner",
+      "nodes": [
+        "tests/test_p35_m4_eligibility.py::test_cross_tokenizer_ce_guard_holds_even_when_a_track_allows_the_tokenizer_to_vary",
+        "tests/test_p35_m4_eligibility.py::test_tokenizer_mismatch_is_ineligible_and_ce_cannot_cross_tokenizers"
+      ],
+      "summary": [
+        "FAILED tests/test_p35_m4_eligibility.py::test_cross_tokenizer_ce_guard_holds_even_when_a_track_allows_the_tokenizer_to_vary",
+        "FAILED tests/test_p35_m4_eligibility.py::test_tokenizer_mismatch_is_ineligible_and_ce_cannot_cross_tokenizers"
+      ]
+    },
+    {
+      "assertions": [
+        "E       AssertionError: assert 'PROMOTE_TO_150M' == 'PROVISIONAL'",
+        "E",
+        "E         - PROVISIONAL",
+        "E         + PROMOTE_TO_150M"
+      ],
+      "edits": [
+        {
+          "anchor": "    if evidence is None:\n        return (\n            \"BLOCKED\",",
+          "file": "src/xlm/comparison/science_promotion.py",
+          "replacement": "    if evidence is None:\n        return (\n            \"SATISFIED\","
+        }
+      ],
+      "exit": 1,
+      "failed_nodes": [
+        "tests/test_p35_m4_promotion.py::test_missing_m5_order_evidence_blocks_robust_promotion"
+      ],
+      "files": [
+        "src/xlm/comparison/science_promotion.py"
+      ],
+      "id": "10",
+      "import_or_syntax_errors": [],
+      "killed": true,
+      "name": "missing M5 order evidence treated as order-robust",
+      "nodes": [
+        "tests/test_p35_m4_promotion.py::test_missing_m5_order_evidence_blocks_robust_promotion"
+      ],
+      "summary": [
+        "FAILED tests/test_p35_m4_promotion.py::test_missing_m5_order_evidence_blocks_robust_promotion"
+      ]
+    }
+  ],
+  "runner_sha256": "2a55c958b62a40d4ef2d31e26be8a28f087ebe23af121c7e947b1496b7d74b8b",
+  "runner_source": "\"\"\"P35 M4 scratch mutation runner. Each mutant: fresh `git archive HEAD` export,\nexact-once anchored edits, py_compile, import-origin check, targeted pytest.\nKILLED only if pytest exits 1, every listed node FAILED, and no import/syntax\nerror appears. The real worktree is never modified; mutant source is never committed.\"\"\"\n\nfrom __future__ import annotations\n\nimport json\nimport os\nimport py_compile\nimport re\nimport shutil\nimport subprocess\nimport sys\nimport tarfile\nimport io\nfrom pathlib import Path\n\nREPO = Path(\"/home/user/xlm\")\nSCRATCH = Path(__file__).resolve().parent / \"mutants\"\nPY = str(Path(__file__).resolve().parent / \"venv\" / \"bin\" / \"python\")\nENV = {\n    **os.environ,\n    \"OMP_NUM_THREADS\": \"1\",\n    \"MKL_NUM_THREADS\": \"1\",\n    \"OPENBLAS_NUM_THREADS\": \"1\",\n    \"NUMEXPR_NUM_THREADS\": \"1\",\n    \"TOKENIZERS_PARALLELISM\": \"false\",\n}\n\nE = \"tests/test_p35_m4_eligibility.py\"\nS = \"tests/test_p35_m4_stats.py\"\nP = \"tests/test_p35_m4_promotion.py\"\nM = \"tests/test_p35_m4_manifest.py\"\nV = \"tests/test_p35_m4_evidence.py\"\n\nMUTANTS: list[dict] = [\n    {\n        \"id\": \"1\",\n        \"name\": \"same-seed reruns counted as independent replicates\",\n        \"edits\": [\n            (\"src/xlm/comparison/science_manifest.py\",\n             '    if len(set(identities)) != len(identities):\\n',\n             '    if False and len(set(identities)) != len(identities):\\n'),\n            (\"src/xlm/comparison/science_compare.py\",\n             '    tuple_entry = roster.get(identity)\\n',\n             '    _pool = [e for e in manifest[\"replicate_roster\"] if replicate_identity('\n             'e[\"init_seed\"], e[\"training_seed\"], e[\"data_seed\"], e[\"order_manifest_id\"]) == identity]\\n'\n             '    _used = _USED.setdefault(entry.arm_id, set())\\n'\n             '    tuple_entry = next((e for e in _pool if e[\"tuple_id\"] not in _used), None)\\n'\n             '    if tuple_entry is not None:\\n'\n             '        _used.add(tuple_entry[\"tuple_id\"])\\n'),\n            (\"src/xlm/comparison/science_compare.py\",\n             'RUN_STATUSES = (',\n             '_USED: dict = {}\\nRUN_STATUSES = ('),\n            (\"src/xlm/comparison/science_compare.py\",\n             '        stray: list[dict[str, Any]] = []\\n',\n             '        stray: list[dict[str, Any]] = []\\n        _USED.clear()\\n'),\n        ],\n        \"nodes\": [\n            f\"{E}::test_five_reruns_of_one_seed_cannot_satisfy_a_five_pair_confirmation\",\n            f\"{M}::test_roster_refuses_same_seed_tuple_twice\",\n        ],\n    },\n    {\n        \"id\": \"2\",\n        \"name\": \"undeclared scientific field mismatch ignored\",\n        \"edits\": [(\"src/xlm/comparison/science_compare.py\",\n                   'bad = [d for d in diff if d[\"status\"] in (\"VIOLATION\", \"UNKNOWN\")]',\n                   'bad = [d for d in diff if d[\"status\"] in (\"UNKNOWN\",)]')],\n        \"nodes\": [\n            f\"{E}::test_undeclared_material_difference_is_ineligible_with_the_field[overrides6-mixture_exhaustion_policy]\",\n            f\"{E}::test_undeclared_material_difference_is_ineligible_with_the_field[overrides0-model_architecture]\",\n            f\"{E}::test_microbatch_track_requires_identical_data_exposure[overrides0-data_trace_digest]\",\n        ],\n    },\n    {\n        \"id\": \"3\",\n        \"name\": \"lower-is-better direction reversed\",\n        \"edits\": [(\"src/xlm/comparison/science_stats.py\",\n                   '    if direction is MetricDirection.LOWER_IS_BETTER:\\n        return control - candidate\\n',\n                   '    if direction is MetricDirection.LOWER_IS_BETTER:\\n        return candidate - control\\n')],\n        \"nodes\": [\n            f\"{S}::test_known_hand_computed_mean_sd_and_t_interval\",\n            f\"{S}::test_lower_and_higher_is_better_orientation\",\n            f\"{E}::test_identical_arms_except_declared_intervention_are_eligible\",\n        ],\n    },\n    {\n        \"id\": \"4\",\n        \"name\": \"seed CI uses a normal z critical value\",\n        \"edits\": [(\"src/xlm/comparison/science_stats.py\",\n                   '    crit = student_t_critical(alpha / 2.0, df)\\n',\n                   '    crit = __import__(\"statistics\").NormalDist().inv_cdf(1.0 - alpha / 2.0)\\n')],\n        \"nodes\": [\n            f\"{S}::test_seed_interval_uses_student_t_never_z\",\n            f\"{S}::test_known_hand_computed_mean_sd_and_t_interval\",\n        ],\n    },\n    {\n        \"id\": \"5\",\n        \"name\": \"Bonferroni family size ignored\",\n        \"edits\": [(\"src/xlm/comparison/science_stats.py\",\n                   '    alpha = bonferroni_test_alpha(family_ci_level, family_size)\\n',\n                   '    alpha = bonferroni_test_alpha(family_ci_level, 1)\\n')],\n        \"nodes\": [f\"{S}::test_bonferroni_family_size_widens_interval_and_raises_threshold\"],\n    },\n    {\n        \"id\": \"6\",\n        \"name\": \"nonsignificant difference treated as non-inferiority\",\n        \"edits\": [(\"src/xlm/comparison/science_stats.py\",\n                   '    if strictly_greater(low, -margin):\\n        return Decision(\\n            DecisionResult.NON_INFERIOR,',\n                   '    if low <= 0.0 <= high or strictly_greater(low, -margin):\\n        return Decision(\\n            DecisionResult.NON_INFERIOR,')],\n        \"nodes\": [\n            f\"{S}::test_nonsignificant_difference_is_not_noninferiority\",\n            f\"{P}::test_nonsignificant_quality_difference_is_not_noninferiority\",\n        ],\n    },\n    {\n        \"id\": \"7a\",\n        \"name\": \"missing/partial evaluation coverage treated as success\",\n        \"edits\": [(\"src/xlm/comparison/science_evidence.py\",\n                   'def _coverage_complete(coverage: Any) -> bool:\\n',\n                   'def _coverage_complete(coverage: Any) -> bool:\\n    return True\\n')],\n        \"nodes\": [f\"{V}::test_incomplete_coverage_or_altered_receipt_is_not_complete\"],\n    },\n    {\n        \"id\": \"7b\",\n        \"name\": \"incomplete primary evaluation scored as zero\",\n        \"edits\": [\n            (\"src/xlm/comparison/science_compare.py\",\n             '    elif not event.get(\"complete\"):\\n',\n             '    elif not event.get(\"complete\") and False:\\n'),\n            (\"src/xlm/comparison/science_compare.py\",\n             '        row[\"primary\"] = _metric_at(event.get(\"metrics\"), [metric])\\n',\n             '        row[\"primary\"] = _metric_at(event.get(\"metrics\"), [metric]) or 0.0\\n'),\n        ],\n        \"nodes\": [f\"{E}::test_incomplete_evaluation_is_incomplete_never_a_score\"],\n    },\n    {\n        \"id\": \"8\",\n        \"name\": \"first three of a five-pair confirmation promotes\",\n        \"edits\": [(\"src/xlm/comparison/science_promotion.py\",\n                   '    if candidate.n_complete_pairs < required:\\n',\n                   '    if candidate.n_complete_pairs < min(required, 3):\\n')],\n        \"nodes\": [f\"{P}::test_first_three_of_five_is_provisional_even_with_a_strong_signal\"],\n    },\n    {\n        \"id\": \"9\",\n        \"name\": \"different-tokenizer CE allowed to declare a winner\",\n        \"edits\": [(\"src/xlm/comparison/science_compare.py\",\n                   '    if tokenizer_mismatch and metric in TOKENIZER_DEPENDENT_METRICS:\\n',\n                   '    if False and tokenizer_mismatch and metric in TOKENIZER_DEPENDENT_METRICS:\\n')],\n        \"nodes\": [\n            f\"{E}::test_cross_tokenizer_ce_guard_holds_even_when_a_track_allows_the_tokenizer_to_vary\",\n            f\"{E}::test_tokenizer_mismatch_is_ineligible_and_ce_cannot_cross_tokenizers\",\n        ],\n    },\n    {\n        \"id\": \"10\",\n        \"name\": \"missing M5 order evidence treated as order-robust\",\n        \"edits\": [(\"src/xlm/comparison/science_promotion.py\",\n                   '    if evidence is None:\\n        return (\\n            \"BLOCKED\",',\n                   '    if evidence is None:\\n        return (\\n            \"SATISFIED\",')],\n        \"nodes\": [f\"{P}::test_missing_m5_order_evidence_blocks_robust_promotion\"],\n    },\n]\n\nIMPORT_TROUBLE = re.compile(r\"ImportError|ModuleNotFoundError|SyntaxError|IndentationError|NameError: name '_USED'\")\n\n\ndef export(dest: Path) -> None:\n    if dest.exists():\n        shutil.rmtree(dest)\n    dest.mkdir(parents=True)\n    raw = subprocess.run([\"git\", \"-C\", str(REPO), \"archive\", \"HEAD\"], check=True, capture_output=True).stdout\n    with tarfile.open(fileobj=io.BytesIO(raw)) as tar:\n        tar.extractall(dest, filter=\"data\")\n\n\ndef run_nodes(root: Path, nodes: list[str]) -> tuple[int, str]:\n    env = {**ENV, \"PYTHONPATH\": f\"{root / 'src'}:{root / 'tests'}\"}\n    proc = subprocess.run(\n        [PY, \"-m\", \"pytest\", *nodes, \"-n\", \"0\", \"-p\", \"no:cacheprovider\", \"-rA\", \"-q\"],\n        cwd=root, env=env, capture_output=True, text=True, timeout=600,\n    )\n    return proc.returncode, proc.stdout + proc.stderr\n\n\ndef origin(root: Path) -> str:\n    env = {**ENV, \"PYTHONPATH\": f\"{root / 'src'}\"}\n    return subprocess.run([PY, \"-c\", \"import xlm.comparison.science_compare as m; print(m.__file__)\"],\n                          cwd=root, env=env, capture_output=True, text=True).stdout.strip()\n\n\ndef main() -> int:\n    head = subprocess.run([\"git\", \"-C\", str(REPO), \"rev-parse\", \"HEAD\"], capture_output=True, text=True).stdout.strip()\n    results: dict = {\"head\": head, \"control\": None, \"mutants\": []}\n    control_root = SCRATCH / \"control\"\n    export(control_root)\n    union = sorted({n for m in MUTANTS for n in m[\"nodes\"]})\n    code, out = run_nodes(control_root, union)\n    passed = len(re.findall(r\"^PASSED \", out, re.M))\n    results[\"control\"] = {\"exit\": code, \"nodes\": len(union), \"passed\": passed,\n                          \"origin\": origin(control_root)}\n    print(f\"control: exit {code}, {passed}/{len(union)} passed\")\n    if code != 0 or passed != len(union):\n        print(out[-4000:])\n        return 1\n    for mutant in MUTANTS:\n        root = SCRATCH / f\"m{mutant['id']}\"\n        export(root)\n        applied = []\n        for rel, anchor, replacement in mutant[\"edits\"]:\n            path = root / rel\n            text = path.read_text(encoding=\"utf-8\")\n            count = text.count(anchor)\n            if count != 1:\n                raise SystemExit(f\"mutant {mutant['id']}: anchor matched {count} times in {rel}\")\n            path.write_text(text.replace(anchor, replacement), encoding=\"utf-8\")\n            py_compile.compile(str(path), doraise=True)\n            applied.append(rel)\n        where = origin(root)\n        assert where.startswith(str(root)), where\n        code, out = run_nodes(root, mutant[\"nodes\"])\n        failed = [n for n in mutant[\"nodes\"] if re.search(rf\"^FAILED {re.escape(n)}\", out, re.M)]\n        trouble = IMPORT_TROUBLE.findall(out)\n        killed = code == 1 and len(failed) == len(mutant[\"nodes\"]) and not trouble\n        assertions = [line.strip() for line in out.splitlines() if line.startswith(\"E  \")][:6]\n        summary = [line for line in out.splitlines() if line.startswith(\"FAILED\")]\n        results[\"mutants\"].append({\n            \"id\": mutant[\"id\"], \"name\": mutant[\"name\"], \"files\": applied, \"exit\": code,\n            \"nodes\": mutant[\"nodes\"], \"failed_nodes\": failed, \"import_or_syntax_errors\": trouble,\n            \"killed\": killed, \"assertions\": assertions, \"summary\": summary, \"origin\": where,\n        })\n        print(f\"mutant {mutant['id']} ({mutant['name']}): exit {code}, failed {len(failed)}/{len(mutant['nodes'])}, \"\n              f\"{'KILLED' if killed else 'SURVIVED'}\")\n        for line in assertions[:3]:\n            print(\"   \", line[:220])\n    (SCRATCH / \"results.json\").write_text(json.dumps(results, indent=2), encoding=\"utf-8\")\n    return 0 if all(m[\"killed\"] for m in results[\"mutants\"]) else 1\n\n\nif __name__ == \"__main__\":\n    sys.exit(main())\n",
+  "tested_head": "4a853a272dee15a9e06f29ebb05a443d2df117ac"
+}
