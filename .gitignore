@@ -21,6 +21,7 @@ build/
 .ruff_cache/
 .mypy_cache/
 .astra-scratch/
+.hardening-scratch/
 .coverage
 htmlcov/
 
