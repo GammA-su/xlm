@@ -320,3 +320,59 @@ adapter + license approved + benchmark review) and plan-bound authorization.
 
 Verdict: **READY FOR OPERATOR ULTRAX PROBE** (code + authored evidence done;
 no live step executed by this agent).
+
+## 15. Track A repair: probe/certification path (2026-09-27, datasets 5.0.1)
+
+The real bounded probe (30 rows, `openbmb/UltraX-Preview` @
+`a88527587389fd4ab352e9ad1273f4c0a234d8df`, config `UltraX-Ultra-FineWeb`,
+split `train`, license `apache-2.0`, `Ultra-FineWeb` 30/30) exposed five
+probe-path defects; all are fixed in-tree (commit on
+`data/mix01-ultrax-6b`, no push):
+
+1. **datasets 5.0.1 API**: the operator's manual removal of
+   `trust_remote_code` from `get_dataset_config_names` /
+   `load_dataset_builder` / `load_dataset` is retained permanently (UltraX
+   is parquet-backed; no remote code). Regression:
+   `tests/test_ultrax_probe_compat.py` stubs the 5.0.1 signatures and
+   fails on any reintroduced kwarg.
+2. **Revision race**: every post-resolution datasets call now takes
+   `revision=revision_sha` (configs, features, streaming sample), so the
+   receipt can never claim revision A while reading HEAD. Proven by
+   stub-call assertions in the same compat test.
+3. **Cert locator**: the operator's provisional
+   `hf-stream://{repo}@{rev}/{config}/{split}` is kept as the deterministic
+   truthful virtual locator (`cert_source_file()`; no parquet filename is
+   fabricated); `_cert_source_row` stays separate and live certification
+   asserts `_cert_revision == receipt revision`.
+4. **UTF-8 BOM**: the manual PowerShell rewrite left a BOM + CRLF in the
+   operator sample. The reader is NOT weakened: BOM input fails closed
+   with an explicit regeneration message. The probe writer emits UTF-8, no
+   BOM, LF (asserted byte-level in the compat test). The current
+   `D:\Project\xlm-operator-ultrax\adapter-cert-ultrax01\real-records.jsonl`
+   is NOT authoritative evidence and must be regenerated.
+5. **Live-cert contract**: `tests/test_ultrax_live_certification.py` now
+   checks pin + repository/config/schema + per-row locator + revision
+   equality + verbatim `cleaned_content` + identity/determinism + no-raw
+   fallback + missing-field refusal, plus an offline authored-fixture test
+   of the same logic. UID rule UNCHANGED (`uid` = non-empty string; the
+   observed 32-hex shape is receipt diagnostic only).
+
+Frozen state preserved: `openbmb/UltraX-Preview` @ `a88527…d8df`,
+`UltraX-Ultra-FineWeb`, license `apache-2.0` in both `mix01_views.yaml`
+and the catalog (surgical 3-line pin; formatting restored). The freeze
+script is now line-level and idempotent (same SHA = byte-identical no-op;
+different SHA / `main` = refusal, exit 1).
+
+Operator re-probe (ONE bounded command; network enabled for this call
+only, `UV_OFFLINE=1` stays on):
+
+`$env:HF_HUB_OFFLINE="0"; $env:HF_DATASETS_OFFLINE="0"`
+`uv run --locked --extra cpu --extra eval python scripts/ultrax_schema_probe.py --probe-aliases --config UltraX-Ultra-FineWeb --split train --max-rows 30 --timeout-seconds 300 --output D:\Project\xlm-operator-ultrax\ultrax_probe_receipt.json --save-sample D:\Project\xlm-operator-ultrax\adapter-cert-ultrax01\real-records.jsonl`
+`$env:HF_HUB_OFFLINE="1"; $env:HF_DATASETS_OFFLINE="1"`
+
+Live certification after the probe (offline; `XLM_ULTRAX_CERT_DIR` defaults
+to the path above):
+
+`uv run --offline --locked --extra cpu --extra eval python -m pytest tests/test_ultrax_live_certification.py -n 0`
+
+Verdict after repair: **READY FOR OPERATOR RE-PROBE**.

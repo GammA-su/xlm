@@ -43,10 +43,15 @@ def test_twenty_source_catalog_parsing_and_integrity() -> None:
     assert len(set(candidate_numbers)) == 21
     assert sorted(candidate_numbers) == list(range(1, 22))
 
-    # All production approvals must initially remain False
+    # All production approvals must initially remain False. The UltraX probe
+    # revision is the single exception: it is pinned by the operator freeze
+    # (exact 40-hex SHA, never main/latest) while approval stays pending.
     for src in catalog.sources:
         assert src.operator_approved is False, f"Source '{src.source_id}' was prematurely approved!"
-        assert src.revision is None, f"Source '{src.source_id}' has premature immutable revision."
+        if src.source_id == "ultrax_ultrafineweb":
+            assert src.revision == "a88527587389fd4ab352e9ad1273f4c0a234d8df"
+        else:
+            assert src.revision is None, f"Source '{src.source_id}' has premature revision."
         assert src.schema_fingerprint is None
         assert src.live_pilot_verified is False
 

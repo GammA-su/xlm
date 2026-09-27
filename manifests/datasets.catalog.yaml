@@ -371,7 +371,7 @@
       "source_id": "ultrax_ultrafineweb",
       "provider": "huggingface",
       "repository": "openbmb/UltraX-Preview",
-      "revision": null,
+      "revision": "a88527587389fd4ab352e9ad1273f4c0a234d8df",
       "subset_hints": [
         "UltraX-Ultra-FineWeb"
       ],

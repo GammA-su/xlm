@@ -13,6 +13,13 @@ operator enables it for exactly this call (see the runbook) and disables it
 immediately afterward. All bounds are explicit: ``--max-rows``,
 ``--timeout-seconds`` and the streaming iterator. Nothing here acquires the
 corpus, prepares data, trains a tokenizer or launches a pilot.
+
+Provenance rule: once the exact repository SHA is resolved, EVERY
+subsequent dataset operation (config listing, feature description,
+streaming sample) is bound to that exact SHA, so the receipt can never
+claim revision A while reading rows from a later HEAD. UltraX is a normal
+parquet-backed dataset; no remote Python code is required and no
+``trust_remote_code`` argument is passed (datasets 5.x removed it).
 """
 
 from __future__ import annotations
@@ -87,7 +94,8 @@ def _resolve_aliases(
     return accessible[0], outcomes
 
 
-def _verify_config(repo: str, config: str) -> list[str]:
+def _verify_config(repo: str, config: str, *, revision: str) -> list[str]:
+    """List configs at the exact pinned revision (never HEAD)."""
     try:
         from datasets import get_dataset_config_names
     except ImportError as exc:
@@ -95,7 +103,8 @@ def _verify_config(repo: str, config: str) -> list[str]:
             "datasets is required for the operator probe "
             "(sync the eval extra first); refusing to guess without it"
         ) from exc
-    names = list(get_dataset_config_names(repo, trust_remote_code=False))
+    # No trust_remote_code: removed in datasets 5.x; UltraX needs no remote code.
+    names = list(get_dataset_config_names(repo, revision=revision))
     if config not in names:
         raise ValueError(
             f"config '{config}' not found in repository '{repo}'; "
@@ -104,12 +113,14 @@ def _verify_config(repo: str, config: str) -> list[str]:
     return sorted(names)
 
 
-def _describe_features(repo: str, config: str) -> dict[str, str]:
+def _describe_features(repo: str, config: str, *, revision: str) -> dict[str, str]:
+    """Describe features at the exact pinned revision (never HEAD)."""
     try:
         from datasets import load_dataset_builder
     except ImportError as exc:
         raise RuntimeError("datasets is required for the operator probe") from exc
-    builder = load_dataset_builder(repo, config, trust_remote_code=False)
+    # No trust_remote_code: removed in datasets 5.x; UltraX needs no remote code.
+    builder = load_dataset_builder(repo, config, revision=revision)
     features = builder.info.features or {}
     return {name: str(features[name])[:200] for name in features}
 
@@ -120,13 +131,17 @@ def _sample_rows(
     split: str,
     max_rows: int,
     timeout_seconds: float,
+    *,
+    revision: str,
 ) -> tuple[list[dict[str, Any]], float]:
+    """Stream a bounded sample at the exact pinned revision (never HEAD)."""
     try:
         from datasets import load_dataset
     except ImportError as exc:
         raise RuntimeError("datasets is required for the operator probe") from exc
     started = time.monotonic()
-    dataset = load_dataset(repo, config, split=split, streaming=True, trust_remote_code=False)
+    # No trust_remote_code: removed in datasets 5.x; UltraX needs no remote code.
+    dataset = load_dataset(repo, config, split=split, streaming=True, revision=revision)
     rows: list[dict[str, Any]] = []
     for row in dataset:
         rows.append({k: row.get(k) for k in row})
@@ -152,6 +167,27 @@ def _uid_format(uids: list[str]) -> dict[str, Any]:
         "charset_sample": charset,
         "sorted_sample_sha256": digest,
     }
+
+
+def cert_source_file(repository: str, revision_sha: str, config: str, split: str) -> str:
+    """Deterministic truthful virtual stream locator for certification rows.
+
+    Hugging Face streaming does not expose a proven physical parquet filename
+    per returned row in this probe, so no parquet filename is fabricated.
+    The ``hf-stream://`` URI binds repository, exact revision, config and
+    split; the row index travels separately in ``_cert_source_row`` and the
+    revision is duplicated in ``_cert_revision`` for equality checks.
+    """
+    for name, value in (
+        ("repository", repository),
+        ("config", config),
+        ("split", split),
+    ):
+        if not isinstance(value, str) or not value.strip() or any(ch in value for ch in " \t\n\r@"):
+            raise ValueError(f"cert locator {name} must be a non-empty token without @/space")
+    if not SHA_RE.fullmatch(revision_sha):
+        raise ValueError("cert locator revision must be an exact 40-hex commit SHA")
+    return f"hf-stream://{repository}@{revision_sha}/{config}/{split}"
 
 
 def build_receipt(
@@ -293,11 +329,17 @@ def main(argv: list[str] | None = None) -> int:
             f"(got {revision_sha!r}); refusing main/latest/unpinned"
         )
     try:
-        configs_observed = _verify_config(repository, args.config)
-        features = _describe_features(repository, args.config)
+        configs_observed = _verify_config(repository, args.config, revision=revision_sha)
+        features = _describe_features(repository, args.config, revision=revision_sha)
         rows, sample_seconds = _sample_rows(
-            repository, args.config, args.split, args.max_rows, args.timeout_seconds
+            repository,
+            args.config,
+            args.split,
+            args.max_rows,
+            args.timeout_seconds,
+            revision=revision_sha,
         )
+        cert_locator = cert_source_file(repository, revision_sha, args.config, args.split)
     except Exception as exc:  # noqa: BLE001 - operator-facing refusal
         return _fail(str(exc))
 
@@ -320,12 +362,20 @@ def main(argv: list[str] | None = None) -> int:
     tmp.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     tmp.replace(args.output)
     if args.save_sample is not None:
+        # Deterministic bytes: UTF-8 WITHOUT BOM, LF newlines (Python-owned;
+        # never a PowerShell rewrite). The live-certification reader refuses
+        # BOM input fail-closed, so this writer is the evidence authority.
         args.save_sample.parent.mkdir(parents=True, exist_ok=True)
         with args.save_sample.open("w", encoding="utf-8", newline="\n") as handle:
             for index, row in enumerate(rows):
                 handle.write(
                     json.dumps(
-                        {**row, "_cert_source_row": index, "_cert_revision": revision_sha},
+                        {
+                            **row,
+                            "_cert_source_file": cert_locator,
+                            "_cert_source_row": index,
+                            "_cert_revision": revision_sha,
+                        },
                         ensure_ascii=False,
                     )
                     + "\n"

@@ -77,8 +77,8 @@ views:
   - component_id: ultrax_ultrafineweb
     source_id: ultrax_ultrafineweb
     repository: openbmb/UltraX-Preview
-    observed_revision: null
-    observed_license: null
+    observed_revision: a88527587389fd4ab352e9ad1273f4c0a234d8df
+    observed_license: apache-2.0
     observed_configs:
       - UltraX-Ultra-FineWeb
     adapter_id: ultrax_ultrafineweb

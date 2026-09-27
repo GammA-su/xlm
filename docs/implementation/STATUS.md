@@ -13,6 +13,16 @@
 > [MIX01-ULTRAX-6B](reports/MIX01-ULTRAX-6B.md). Next: USER runs the tiny
 > UltraX probe, freezes the exact SHA, and performs first-pass acquisition.
 >
+> **TRACK A REPAIR (2026-09-27): probe/cert path fixed, READY FOR OPERATOR
+> RE-PROBE.** Real 30-row probe done (`openbmb/UltraX-Preview` @
+> `a88527…d8df`, `apache-2.0`, frozen in views + catalog, formatting
+> restored). Fixed: datasets-5.0.1 `trust_remote_code` removal (permanent),
+> exact-SHA forwarding to all datasets calls, `hf-stream://` virtual cert
+> locator, no-BOM writer (current BOM'd sample is NOT authoritative),
+> strengthened live-cert contract (UID rule unchanged: non-empty string).
+> Surgical idempotent freeze; focused offline tests + ruff + scoped mypy
+> green. No push. See [MIX01-ULTRAX-6B §15](reports/MIX01-ULTRAX-6B.md).
+>
 > Latest local review: **ASTRA INDEPENDENT REVIEW + LOCAL CUDA CERTIFICATION**
 > (2026-09-26), **SAFE AFTER SPECIFIC FIXES**. Pilot-critical repairs implemented
 > and verified; receipt-disabled pilot software is safe to integrate. Formal
