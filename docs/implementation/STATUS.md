@@ -22,6 +22,15 @@
 > honest evidence source, strengthened live-cert contract (UID rule
 > unchanged: non-empty string). Operator evidence: clean 30-row sample
 > present, receipt predates the schema-evidence format — re-probe required.
+>
+> **TRACK A CLOSED (2026-09-27).** Operator re-probe + live certification:
+> ALL 5 PASSED, 0 failed, 0 skipped (`openbmb/UltraX-Preview` @
+> `a88527…d8df`, `UltraX-Ultra-FineWeb`, schema_match true via
+> `streaming_features`, five string fields, `apache-2.0`, 30 rows).
+> Runbook probe `--output` fixed to
+> `adapter-cert-ultrax01/probe_receipt.json` (no manual copy). Frozen SHA
+> and adapter semantics untouched. See
+> [MIX01-ULTRAX-6B §16](reports/MIX01-ULTRAX-6B.md).
 > Surgical idempotent freeze; focused offline tests + ruff + scoped mypy
 > green. No push. See [MIX01-ULTRAX-6B §15](reports/MIX01-ULTRAX-6B.md).
 >

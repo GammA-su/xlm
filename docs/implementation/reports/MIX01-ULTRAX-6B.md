@@ -267,10 +267,10 @@ only (the repository's existing mechanism from `P23-OPERATOR-PILOT` /
 `uv run --offline --locked --extra cpu xlm mixture preset-validate --preset recipes/mixtures/mix01.yaml --views recipes/mixtures/mix01_views.yaml`
 `uv run --offline --locked --extra cpu xlm data mix01-status --preset recipes/mixtures/mix01.yaml`
 `$env:HF_HUB_OFFLINE="0"; $env:HF_DATASETS_OFFLINE="0"`
-`uv run --locked --extra cpu --extra eval python scripts/ultrax_schema_probe.py --probe-aliases --config UltraX-Ultra-FineWeb --split train --max-rows 30 --timeout-seconds 300 --output <HOME>/ultrax_probe_receipt.json --save-sample <HOME>/adapter-cert-ultrax01/real-records.jsonl`
-`Get-Content <HOME>/ultrax_probe_receipt.json`
+`uv run --locked --extra cpu --extra eval python scripts/ultrax_schema_probe.py --probe-aliases --config UltraX-Ultra-FineWeb --split train --max-rows 30 --timeout-seconds 300 --output <HOME>/adapter-cert-ultrax01/probe_receipt.json --save-sample <HOME>/adapter-cert-ultrax01/real-records.jsonl`
+`Get-Content <HOME>/adapter-cert-ultrax01/probe_receipt.json`
 `$env:HF_HUB_OFFLINE="1"; $env:HF_DATASETS_OFFLINE="1"`
-`uv run --offline --locked --extra cpu python scripts/ultrax_freeze_revision.py --receipt <HOME>/ultrax_probe_receipt.json --views recipes/mixtures/mix01_views.yaml --catalog manifests/datasets.catalog.yaml`
+`uv run --offline --locked --extra cpu python scripts/ultrax_freeze_revision.py --receipt <HOME>/adapter-cert-ultrax01/probe_receipt.json --views recipes/mixtures/mix01_views.yaml --catalog manifests/datasets.catalog.yaml`
 `uv run --offline --locked --extra cpu xlm mixture preset-validate --preset recipes/mixtures/mix01.yaml --views recipes/mixtures/mix01_views.yaml`
 `$env:HF_HUB_OFFLINE="0"; $env:HF_DATASETS_OFFLINE="0"`
 `uv run --locked --extra cpu xlm data probe --catalog manifests/datasets.catalog.yaml --source ultrax_ultrafineweb --view UltraX-Ultra-FineWeb --live --budget-mib 16 --probe-id ultrax01 --json`
@@ -374,7 +374,7 @@ Operator re-probe (ONE bounded command; network enabled for this call
 only, `UV_OFFLINE=1` stays on):
 
 `$env:HF_HUB_OFFLINE="0"; $env:HF_DATASETS_OFFLINE="0"`
-`uv run --locked --extra cpu --extra eval python scripts/ultrax_schema_probe.py --probe-aliases --config UltraX-Ultra-FineWeb --split train --max-rows 30 --timeout-seconds 300 --output D:\Project\xlm-operator-ultrax\ultrax_probe_receipt.json --save-sample D:\Project\xlm-operator-ultrax\adapter-cert-ultrax01\real-records.jsonl`
+`uv run --locked --extra cpu --extra eval python scripts/ultrax_schema_probe.py --probe-aliases --config UltraX-Ultra-FineWeb --split train --max-rows 30 --timeout-seconds 300 --output D:\Project\xlm-operator-ultrax\adapter-cert-ultrax01\probe_receipt.json --save-sample D:\Project\xlm-operator-ultrax\adapter-cert-ultrax01\real-records.jsonl`
 `$env:HF_HUB_OFFLINE="1"; $env:HF_DATASETS_OFFLINE="1"`
 
 Live certification after the probe (offline; `XLM_ULTRAX_CERT_DIR` defaults
@@ -390,3 +390,36 @@ until the re-probe below regenerates it. No operator file was written by
 the agent.
 
 Verdict after repair: **READY FOR OPERATOR RE-PROBE**.
+
+## 16. Track A closeout: successful probe + live certification (2026-09-27)
+
+The operator reran the pinned 30-row probe and then
+`tests/test_ultrax_live_certification.py`: **ALL 5 PASSED, 0 failed,
+0 skipped** (verified in-tree against the regenerated evidence; no agent
+network involved).
+
+Final real source evidence
+(`D:\Project\xlm-operator-ultrax\adapter-cert-ultrax01\`,
+`probe_receipt.json` 4,581 bytes + `real-records.jsonl` 131,854 bytes,
+both 2026-09-27):
+
+- repository: `openbmb/UltraX-Preview` (alias `openbmb/UltraX` recorded
+  inaccessible; never selected)
+- revision: `a88527587389fd4ab352e9ad1273f4c0a234d8df` (frozen, unchanged)
+- config: `UltraX-Ultra-FineWeb`, verified
+- schema_match: true, evidence source `streaming_features` (pinned parquet
+  Arrow-schema footer — the declared-metadata level working as designed)
+- fields: uid, raw_content, cleaned_content, processed_functions, source —
+  all `Value('string')`
+- declared_license: `apache-2.0` (+ derived-corpora caveat recorded)
+- rows_sampled: 30
+
+Runbook fix in this closeout: the probe `--output` now writes
+`<HOME>/adapter-cert-ultrax01/probe_receipt.json` next to the sample, so
+receipt and rows are produced atomically by the one probe command with no
+manual `Copy-Item`. Adapter/source semantics and the frozen SHA are
+untouched.
+
+**Track A source certification is CLOSED.** Remaining Track B+ work
+(production admission, 6B acquisition, tokenizer, pilot) is out of scope
+for this closeout.
