@@ -377,11 +377,6 @@ def cmd_record(args: argparse.Namespace) -> int:
             return _fail("calibration file must carry a 'sources' mapping")
     else:
         payload = {"sources": {}}
-    if args.source in payload["sources"] and not args.replace:
-        return _fail(
-            f"source '{args.source}' already recorded; re-run with --replace "
-            "to overwrite explicitly"
-        )
     entry: dict[str, Any] = {
         "records_sampled": sampled,
         "accepted_records": accepted,
@@ -392,6 +387,14 @@ def cmd_record(args: argparse.Namespace) -> int:
     }
     if avg_file is not None:
         entry["avg_file_bytes"] = avg_file
+    if args.source in payload["sources"] and not args.replace:
+        if args.adopt and payload["sources"][args.source] == entry:
+            print(f"source: {args.source} existing identical entry reused")
+            return 0
+        return _fail(
+            f"source '{args.source}' already recorded; re-run with --replace "
+            "to overwrite explicitly"
+        )
     payload["sources"][args.source] = entry
     try:
         _atomic_write_json(args.calibration, payload)
@@ -493,6 +496,11 @@ def build_parser() -> argparse.ArgumentParser:
     record.add_argument("--avg-file-bytes", type=int, default=None, dest="avg_file")
     record.add_argument("--extra-survival", type=float, default=1.0, dest="survival")
     record.add_argument("--replace", action="store_true")
+    record.add_argument(
+        "--adopt",
+        action="store_true",
+        help="Reuse an identical existing entry instead of failing on it.",
+    )
     record.add_argument(
         "--combine-sources",
         default=None,

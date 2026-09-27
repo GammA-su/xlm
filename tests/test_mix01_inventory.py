@@ -247,6 +247,39 @@ def test_record_creates_and_feeds_estimate(tmp_path: Path) -> None:
     assert estimate["sources"]["ultrax_ultrafineweb"]["status"] == "ESTIMATED"
 
 
+def _record_argv(calib: Path, extra: list[str] | None = None) -> list[str]:
+    return [
+        "record",
+        "--calibration",
+        str(calib),
+        "--source",
+        "ultrax_ultrafineweb",
+        "--records-sampled",
+        "1000",
+        "--accepted",
+        "994",
+        "--rejected",
+        "6",
+        "--transferred-bytes",
+        "3326258",
+        "--canonical-bytes",
+        "3845430",
+    ] + (extra or [])
+
+
+def test_record_adopt_reuses_identical(tmp_path: Path) -> None:
+    calib = tmp_path / "calibration.json"
+    assert _tool.main(_record_argv(calib)) == 0
+    before = calib.read_bytes()
+    assert _tool.main(_record_argv(calib, ["--adopt"])) == 0
+    assert calib.read_bytes() == before
+    assert _tool.main(_record_argv(calib)) == 1
+    changed = _record_argv(calib, ["--adopt"])
+    changed[changed.index("--accepted") + 1] = "900"
+    assert _tool.main(changed) == 1
+    assert calib.read_bytes() == before
+
+
 def test_record_refusals_and_replace(tmp_path: Path) -> None:
     calib = tmp_path / "calibration.json"
     assert _record(tmp_path, calib)[0] == 0

@@ -55,9 +55,26 @@ non-zero exit, network ON only inside the three bounded live calls,
 `--offline --locked --no-sync` throughout, one root per unit
 (`X:\XLM\calib\<unit>\{scratch,raw,canonical}`, plan/rows/evidence/logs
 alongside), pilot caps only, never `admit`/production/tokenizer/train.
-Record refuses overwrites, except the convergent essential triple (shared
-deterministic inputs → identical numbers, `--replace`; keep `-Files`
-identical across the three essential runs).
+Native execution is exit-code-only (`Invoke-NativeCapture`: file-redirected
+streams, so harmless native stderr can never abort a run; §7b).
+
+Restart-safe adoption (`scripts/calibration_adopt.py`, offline; exit 0 =
+run, 2 = reuse, 1 = fail closed) is checked before every mutating stage,
+reusing only existing repository semantics: probe evidence loads via
+`load_probe_evidence` and must match source/view/revision/repository,
+real-observed type and discovery outcome (same-payload republication would
+conflict, so compatible evidence prints "existing compatible probe
+evidence reused" and the live call is skipped); row ranges and plans must
+match parameters byte-for-byte with recomputed hashes (plan reruns are
+otherwise same-hash no-ops by CLI design); adapted outputs must bind the
+current plan hash (adapt refuses overwrite by CLI design); verified
+publications must verify and bind current outputs (re-verify runs with
+`--no-publish` instead of republishing, since receipts embed fresh
+timestamps); fetch journals resume natively. Anything incompatible,
+corrupt, or incomplete fails closed — never deleted, overwritten, or
+bypassed with a fresh identity. Record uses `--adopt` (identical
+re-records are no-ops, including the convergent essential triple — keep
+`-Files` identical across its three runs; divergent ones fail).
 
 `powershell -NoProfile -ExecutionPolicy Bypass -File G:\Project\xlm-data-ultrax\scripts\operator_calibrate_remaining.ps1 -Unit simple_stories -Stage All`
 `powershell -NoProfile -ExecutionPolicy Bypass -File G:\Project\xlm-data-ultrax\scripts\operator_calibrate_remaining.ps1 -Unit finepdfs_en -Stage All`
@@ -165,9 +182,13 @@ and bad-command paths); the old pattern was verified to throw
 `NativeCommandError` on the same stub. The interrupted probe's evidence
 (`X:\XLM\xlm-home\probe_evidence\probe_simple_stories_default`) is valid
 (correct source/view/revision `e63b8adc…`, `real_observed`, `_COMPLETED`)
-and is REUSED, not deleted; `X:\XLM\calib\simple_stories\` holds only logs,
-so rerunning `-Unit simple_stories -Stage All` is safe (probe re-runs
-idempotently under the same probe-id, downstream stages run fresh).
+and is REUSED, not deleted; `X:\XLM\calib\simple_stories\` holds only logs.
+Follow-up: rerunning the probe against that evidence hit the (correct)
+store conflict, so every mutating stage now adopts instead of republishing
+(see §2 adoption paragraph and `scripts/calibration_adopt.py` with its
+8-case regression suite `tests/test_calibration_adopt.py`). Rerunning
+`-Unit simple_stories -Stage All` reuses the probe evidence and runs only
+the stages with no compatible output yet.
 
 ## 8. Verdict
 
