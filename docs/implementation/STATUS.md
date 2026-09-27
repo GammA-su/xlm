@@ -31,6 +31,15 @@
 > `adapter-cert-ultrax01/probe_receipt.json` (no manual copy). Frozen SHA
 > and adapter semantics untouched. See
 > [MIX01-ULTRAX-6B §16](reports/MIX01-ULTRAX-6B.md).
+>
+> **6B PRODUCTION ACQUISITION PLAN (2026-09-27, planning only).** 6B exact /
+> 6.6B headroom quotas stand; all 11 sources UNADMITTED (no recorded
+> decisions; common_pile license blocked). Calibration tranche (bounded,
+> pilot-capped, production code path), deterministic inventory + headroom
+> helper (`scripts/mix01_inventory.py`, tested), per-source plan-hash flow
+> with STOPs, ≤2-way fetch parallelism. Plan at
+> [MIX01-6B-ACQUISITION-PLAN](reports/MIX01-6B-ACQUISITION-PLAN.md). Verdict:
+> READY FOR CALIBRATION ACQUISITION (bulk NOT authorized). No live run.
 > Surgical idempotent freeze; focused offline tests + ruff + scoped mypy
 > green. No push. See [MIX01-ULTRAX-6B §15](reports/MIX01-ULTRAX-6B.md).
 >
