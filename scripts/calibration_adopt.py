@@ -356,6 +356,21 @@ def cmd_verify(args: argparse.Namespace) -> int:
     return REUSE
 
 
+def cmd_plan_identity(args: argparse.Namespace) -> int:
+    """Print plan_id, plan_hash and revision for a stored plan (Path API)."""
+    from xlm.data.acquisition.plan import load_acquisition_plan
+
+    try:
+        plan = load_acquisition_plan(Path(args.plan))
+    except Exception as exc:
+        print(f"calibration_adopt: error: cannot load plan: {exc}", file=sys.stderr)
+        return REFUSE
+    print(plan.plan_id)
+    print(plan.compute_behavioral_hash())
+    print(plan.revision)
+    return RUN
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Calibration rerun adoption checks (offline).")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -399,6 +414,10 @@ def build_parser() -> argparse.ArgumentParser:
     verify.add_argument("--plan", type=Path, required=True)
     verify.add_argument("--output-dir", type=Path, required=True)
     verify.set_defaults(func=cmd_verify)
+
+    identity = sub.add_parser("plan-identity", help="Print plan_id, plan_hash and revision.")
+    identity.add_argument("--plan", type=Path, required=True)
+    identity.set_defaults(func=cmd_plan_identity)
     return parser
 
 

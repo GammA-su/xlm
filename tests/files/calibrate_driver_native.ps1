@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
   Offline regression harness for the calibration driver's native wrapper.
@@ -82,6 +82,47 @@ try {
     $threw = ("$_" -match "failed with exit")
 }
 Check "step-nonzero-failstops" $threw
+
+# C7: quoting unit rules for ConvertTo-NativeArgument.
+Check "quote-plain" ((ConvertTo-NativeArgument "plain") -eq "plain")
+Check "quote-empty" ((ConvertTo-NativeArgument "") -eq '""')
+Check "quote-space" ((ConvertTo-NativeArgument "has space") -eq '"has space"')
+Check "quote-semicolon-preserved" ((ConvertTo-NativeArgument "a;b") -eq "a;b")
+Check "quote-quote-escaped" ((ConvertTo-NativeArgument 'say "hi"') -eq '"say \"hi\""')
+Check "quote-trailing-backslash" ((ConvertTo-NativeArgument 'trail\') -eq 'trail\')
+
+# C8: end-to-end argv round-trip through the real wrapper chain
+# (powershell -> Start-Process -> uv -> python), including a -c-shaped
+# payload, spaced paths, backslashes and Unicode, each as ONE argv item.
+$nasty = @(
+    "plain",
+    "has space",
+    "semi;colon",
+    'quote"inside',
+    "back\slash",
+    "trail\",
+    "C:\Path With\Spaces\file.json",
+    "unicode-日本語-🌊",
+    "mix'ed`"all; together\",
+    'from x import y; print("hi; ok")'
+)
+$echoArgs = $UvBase + @("python", "tests/files/echo_argv.py") + $nasty
+$echoBase = Join-Path $tmp "echo"
+$echoCap = Invoke-NativeCapture -FilePath "uv" -ArgumentList $echoArgs `
+    -LogBase $echoBase -WorkingDirectory $WorkDir
+Check "argv-roundtrip-exit" ($echoCap.ExitCode -eq 0) ("exit=" + $echoCap.ExitCode)
+# NOTE: exactness is decided by digest, not by decoding the JSON line:
+# PS 5.1 ConvertFrom-Json mangles \u escapes inconsistently AND wraps
+# piped top-level arrays (both proven), so neither form is trustworthy here.
+$echoLines = $echoCap.Stdout -split "`r?`n"
+$countLine = ($echoLines | Where-Object { $_ -match '^COUNT:\d+\s*$' } | Select-Object -Last 1)
+Check "argv-roundtrip-count" ($countLine -eq ("COUNT:" + $nasty.Count)) ("got '" + $countLine + "'")
+$digestLine = ($echoLines | Where-Object { $_ -match '^SHA256:[0-9a-f]{64}\s*$' } | Select-Object -Last 1)
+$utf8 = [System.Text.Encoding]::UTF8
+$hasher = [System.Security.Cryptography.SHA256]::Create()
+$expectedDigest = ([BitConverter]::ToString(
+    $hasher.ComputeHash($utf8.GetBytes(($nasty -join "`0"))))).Replace("-", "").ToLower()
+Check "argv-roundtrip-digest" ($digestLine -eq ("SHA256:" + $expectedDigest)) ("got '" + $digestLine + "'")
 
 if ($state.Failed) { exit 1 }
 "ALL NATIVE WRAPPER CASES PASSED" | Out-Host

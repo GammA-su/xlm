@@ -34,7 +34,14 @@
     harmless native stderr can never raise NativeCommandError under
     $ErrorActionPreference='Stop'. Failure is determined SOLELY by the
     native exit code (0 = success even with stderr; nonzero = fail-stop).
-    $ErrorActionPreference itself is never weakened.
+    $ErrorActionPreference itself is never weakened. Argv is joined into
+    ONE pre-quoted command line (ConvertTo-NativeArgument,
+    CommandLineToArgvW rules) because Start-Process does not quote array
+    elements: spaces, semicolons, quotes, backslashes, Unicode and spaced
+    paths survive verbatim.
+  - No `python -c` anywhere: helper work goes through tested script files
+    (`calibration_adopt.py plan-identity`, `mix01_inventory.py
+    canonical-bytes`, `mix01_inventory.py record`) with ordinary argv.
   - Dot-sourcing this file under '.' loads functions only (main guarded);
     see tests/files/calibrate_driver_native.ps1.
 
@@ -102,6 +109,29 @@ function Write-Command([string[]]$Argv) {
     "COMMAND: uv " + ($Argv -join " ") | Out-Host
 }
 
+function ConvertTo-NativeArgument([string]$Value) {
+    # CommandLineToArgvW-compatible quoting for ONE argv item. Start-Process
+    # does not quote array elements itself, so a single pre-quoted command
+    # line is built instead: spaces, semicolons, quotes, backslashes,
+    # Unicode and spaced paths all survive verbatim. Empty becomes "".
+    if ($Value -eq "") { return '""' }
+    $needsQuotes = $false
+    foreach ($ch in $Value.ToCharArray()) {
+        if ([char]::IsWhiteSpace($ch) -or $ch -eq '"') { $needsQuotes = $true; break }
+    }
+    if (-not $needsQuotes) { return $Value }
+    $out = '"'
+    $slashes = 0
+    foreach ($ch in $Value.ToCharArray()) {
+        if ($ch -eq '\') { $slashes++ ; continue }
+        if ($ch -eq '"') { $out += ('\' * (2 * $slashes + 1)) + '"' ; $slashes = 0 ; continue }
+        if ($slashes -gt 0) { $out += ('\' * $slashes) ; $slashes = 0 }
+        $out += $ch
+    }
+    $out += ('\' * (2 * $slashes)) + '"'
+    return $out
+}
+
 function Invoke-NativeCapture(
     [Parameter(Mandatory = $true)][string]$FilePath,
     [Parameter(Mandatory = $true)][string[]]$ArgumentList,
@@ -113,15 +143,21 @@ function Invoke-NativeCapture(
     # surface as a terminating NativeCommandError under
     # $ErrorActionPreference='Stop'. Failure is determined SOLELY by the
     # native process exit code. Ordinary cmdlet error handling is untouched.
+    # Argv is joined into ONE pre-quoted command line (ConvertTo-NativeArgument)
+    # because Start-Process does not quote array elements; this preserves
+    # arbitrary single arguments (spaces, semicolons, quotes, backslashes).
     $parent = Split-Path -Parent $LogBase
     if ($parent -ne "" -and !(Test-Path -LiteralPath $parent)) {
         New-Item -ItemType Directory -Path $parent -Force | Out-Null
     }
     $stdoutFile = "$LogBase.stdout.txt"
     $stderrFile = "$LogBase.stderr.txt"
+    # NOTE: FilePath itself is NOT joined here; .NET already places the
+    # executable as argv[0] and appends this string verbatim after it.
+    $commandLine = ($ArgumentList | ForEach-Object { ConvertTo-NativeArgument $_ }) -join " "
     $startArgs = @{
         FilePath = $FilePath
-        ArgumentList = $ArgumentList
+        ArgumentList = $commandLine
         NoNewWindow = $true
         Wait = $true
         PassThru = $true
@@ -188,21 +224,33 @@ function Invoke-Adopt([string[]]$AdoptArgs) {
     return $cap.ExitCode
 }
 
-function Invoke-Python([string]$Code) {
-    $full = $UvBase + @("python", "-c", $Code)
-    Write-Command $full
+function Invoke-Uv([string]$Name, [string[]]$UvArgs, [bool]$Live) {
+    # Generic uv runner with the same safety contract as Invoke-Step but no
+    # xlm subcommand prepended (for python helper scripts). No `python -c`
+    # payloads: callers pass script files plus ordinary argv tokens only.
     $ts = Get-Date -Format "yyyyMMdd-HHmmssfff"
     if (!(Test-Path -LiteralPath $LogDir)) {
         New-Item -ItemType Directory -Path $LogDir -Force | Out-Null
     }
-    $cap = Invoke-NativeCapture -FilePath "uv" -ArgumentList $full `
-        -LogBase (Join-Path $LogDir "python-$ts") -WorkingDirectory $Repo
-    if ($cap.ExitCode -ne 0) {
+    $logBase = Join-Path $LogDir ("{0}-{1}" -f $Name, $ts)
+    $savedHub = $env:HF_HUB_OFFLINE
+    $savedDs = $env:HF_DATASETS_OFFLINE
+    if ($Live) { $env:HF_HUB_OFFLINE = "0"; $env:HF_DATASETS_OFFLINE = "0" }
+    try {
+        Write-Command $UvArgs
+        $cap = Invoke-NativeCapture -FilePath "uv" -ArgumentList $UvArgs `
+            -LogBase $logBase -WorkingDirectory $Repo
+        $combined = ("=== STDOUT ===`n" + $cap.Stdout + "`n=== STDERR ===`n" `
+            + $cap.Stderr + "`n=== EXIT: " + $cap.ExitCode + " ===`n")
+        [System.IO.File]::WriteAllText("$logBase.log", $combined, [System.Text.UTF8Encoding]::new($false))
         if ($cap.Stdout -ne "") { $cap.Stdout | Out-Host }
         if ($cap.Stderr -ne "") { $cap.Stderr | Out-Host }
-        throw "python helper failed with exit $($cap.ExitCode)"
+        if ($cap.ExitCode -ne 0) { throw "$Name failed with exit $($cap.ExitCode) (log: $logBase.log)" }
+        return $cap.Stdout
+    } finally {
+        $env:HF_HUB_OFFLINE = $savedHub
+        $env:HF_DATASETS_OFFLINE = $savedDs
     }
-    return $cap.Stdout
 }
 
 if ($MyInvocation.InvocationName -ne '.') {
@@ -274,9 +322,8 @@ switch ($Stage) {
                 "--pilot-approved", "--output", $PlanPath) $false | Out-Null
         }
         else { throw "plan adoption refused; use a new reviewed plan path to redo it" }
-        Invoke-Python ("from xlm.data.acquisition.plan import load_acquisition_plan; " +
-            "p=load_acquisition_plan(r'" + $PlanPath + "'); " +
-            "print(p.plan_id, p.plan_hash, p.revision)") | Out-Host
+        Invoke-Uv "plan-identity" ($UvBase + @("python", "scripts/calibration_adopt.py",
+            "plan-identity", "--plan", $PlanPath)) $false | Out-Null
     }
     { $_ -in "All", "Fetch" } {
         Invoke-Step "fetch" @("data", "fetch", "--plan", $PlanPath,
@@ -322,9 +369,8 @@ switch ($Stage) {
         $jsonOnly = $statusText.Substring($statusText.IndexOf("{"))
         $st = $jsonOnly | ConvertFrom-Json
         $summary = Get-Content -LiteralPath (Join-Path $Canonical "adaptation_summary.json") -Raw -Encoding utf8 | ConvertFrom-Json
-        $canonOut = Invoke-Python ("import json; d=[json.loads(l) for l in open(r'" +
-            (Join-Path $Canonical "documents.jsonl") + "',encoding='utf-8') if l.strip()]; " +
-            "print(sum(x.get('utf8_byte_count',0) for x in d))")
+        $canonOut = Invoke-Uv "canonical-bytes" ($UvBase + @("python", "scripts/mix01_inventory.py",
+            "canonical-bytes", "--input", (Join-Path $Canonical "documents.jsonl"))) $false
         $canonBytes = ($canonOut -split "`n" | Where-Object { $_ -match '^\d+$' } | Select-Object -Last 1)
         if ([string]::IsNullOrWhiteSpace($canonBytes)) { throw "could not parse canonical byte count" }
         foreach ($key in $U.RecordAs) {

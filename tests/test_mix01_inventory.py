@@ -348,6 +348,26 @@ def _record_entry(
     )
 
 
+def test_canonical_bytes_sums_and_refuses(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    docs = tmp_path / "documents.jsonl"
+    docs.write_text(
+        '{"doc_id": "a", "utf8_byte_count": 10}\n\n{"doc_id": "b", "utf8_byte_count": 25}\n',
+        encoding="utf-8",
+    )
+    assert _tool.main(["canonical-bytes", "--input", str(docs)]) == 0
+    assert capsys.readouterr().out.strip() == "35"
+    missing = tmp_path / "absent.jsonl"
+    assert _tool.main(["canonical-bytes", "--input", str(missing)]) == 1
+    broken = tmp_path / "broken.jsonl"
+    broken.write_text('{"doc_id": "a", "utf8_byte_count": 10}\nnope\n', encoding="utf-8")
+    assert _tool.main(["canonical-bytes", "--input", str(broken)]) == 1
+    bad_count = tmp_path / "bad.jsonl"
+    bad_count.write_text('{"doc_id": "a", "utf8_byte_count": "lots"}\n', encoding="utf-8")
+    assert _tool.main(["canonical-bytes", "--input", str(bad_count)]) == 1
+
+
 def test_record_combine_views(tmp_path: Path) -> None:
     calib = tmp_path / "calibration.json"
     assert _record_entry(tmp_path, calib, "ifm_general", 1000, 900, 100) == 0

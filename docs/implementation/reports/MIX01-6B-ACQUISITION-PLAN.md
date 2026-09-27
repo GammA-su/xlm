@@ -168,7 +168,7 @@ records `data admit` → fetch (gate re-verifies evidence+decision bound to
 the exact revision). Show-hash command (reads the CLI-written plan JSON
 through the real loader):
 
-`uv run --offline --locked --extra cpu python -c "from xlm.data.acquisition.plan import load_acquisition_plan; p=load_acquisition_plan('<plan>.json'); print(p.plan_id, p.plan_hash, p.revision)"`
+`uv run --offline --locked --extra cpu python scripts/calibration_adopt.py plan-identity --plan <plan>.json`
 
 Journal identity: `<scratch>\journals\<plan_id>.progress.json`, bound to
 the behavioral hash; resume = re-run the IDENTICAL fetch; never mint a
@@ -233,12 +233,12 @@ from Phase D/E artifacts named in steps 9–11/21.
 `$env:HF_HUB_OFFLINE="1"; $env:HF_DATASETS_OFFLINE="1"`
 `uv run --offline --locked --extra cpu xlm data adapt --plan <DATA>\calib\ultrax_plan.json --adapter ultrax_ultrafineweb --input <DATA>\calib\ultrax\raw\selected_records.jsonl --output-dir <DATA>\calib\ultrax\canonical --on-reject record`
 `Get-Content <DATA>\calib\ultrax\canonical\adaptation_summary.json`
-`uv run --offline --locked --extra cpu python -c "import json; d=[json.loads(l) for l in open(r'<DATA>\calib\ultrax\canonical\documents.jsonl',encoding='utf-8') if l.strip()]; print('docs:', len(d), 'canonical_bytes:', sum(x.get('utf8_byte_count',0) for x in d))"`
+`uv run --offline --locked --extra cpu python scripts/mix01_inventory.py canonical-bytes --input <DATA>\calib\ultrax\canonical\documents.jsonl`
 `uv run --offline --locked --extra cpu xlm data performance --plan <DATA>\calib\ultrax_plan.json --scratch-dir <DATA>\calib\ultrax\scratch`
 `uv run --offline --locked --extra cpu python scripts/mix01_inventory.py freeze --source ultrax_ultrafineweb --repo openbmb/UltraX-Preview --revision a88527587389fd4ab352e9ad1273f4c0a234d8df --seed 20260918 --files <DATA>\inventories\ultrax_candidates.txt --output <DATA>\inventories\ultrax.inventory.json`
 `uv run --offline --locked --extra cpu python scripts/mix01_inventory.py estimate --quotas recipes/mixtures/mix01_quotas_6b.yaml --calibration <DATA>\calib\calibration.json --output <DATA>\calib\headroom_estimate.json`
 `uv run --offline --locked --extra cpu xlm data plan --source ultrax_ultrafineweb --view UltraX-Ultra-FineWeb --catalog manifests/datasets.catalog.yaml --files <ORDERED_PREFIX_CSV> --mode selected_records --row-ranges <DATA>\inventories\ultrax_rows.json --adapter-spec ultrax_ultrafineweb --seed 20260918 --max-bytes <BYTES> --max-records <RECORDS> --max-output-disk <BYTES> --output <DATA>\plans\ultrax_prod.json`
-`uv run --offline --locked --extra cpu python -c "from xlm.data.acquisition.plan import load_acquisition_plan; p=load_acquisition_plan(r'<DATA>\plans\ultrax_prod.json'); print(p.plan_id, p.plan_hash, p.revision)"`
+`uv run --offline --locked --extra cpu python scripts/calibration_adopt.py plan-identity --plan <DATA>\plans\ultrax_prod.json`
 `uv run --offline --locked --extra cpu xlm data admit --source ultrax_ultrafineweb --view UltraX-Ultra-FineWeb --adapter ultrax_ultrafineweb --notes "<operator review notes>" --decision approve --license-review approved --benchmark-risk clean`
 `$env:HF_HUB_OFFLINE="0"; $env:HF_DATASETS_OFFLINE="0"`
 `uv run --locked --extra cpu xlm data fetch --plan <DATA>\plans\ultrax_prod.json --output-dir <DATA>\acq-raw\ultrax --scratch-dir <DATA>\acq-scratch\ultrax`

@@ -200,6 +200,122 @@ def test_7_restart_after_probe_proceeds(tmp_path: Path) -> None:
     )
 
 
+def _saved_plan(tmp_path: Path):
+    from xlm.data.acquisition.plan import (
+        AcquisitionLimits,
+        AcquisitionMode,
+        AcquisitionPlan,
+        SamplingFrame,
+        save_acquisition_plan,
+    )
+
+    plan = AcquisitionPlan(
+        plan_id="plan_simple_stories_default_hf",
+        source_id="simple_stories",
+        view_id="default",
+        provider="huggingface",
+        repository="SimpleStories/SimpleStories",
+        revision=REVISION,
+        mode=AcquisitionMode.SELECTED_RECORDS,
+        selected_files=["a.parquet"],
+        row_ranges={"a.parquet": (0, 100)},
+        sampling_frame=SamplingFrame(selection_seed=20260918),
+        limits=AcquisitionLimits(),
+        output_artifact_id="raw_simple_stories_default",
+        is_pilot=True,
+    )
+    plan_path = tmp_path / "plan.json"
+    save_acquisition_plan(plan, plan_path)
+    rows = tmp_path / "rows.json"
+    rows.write_text(json.dumps({"a.parquet": [0, 100]}), encoding="utf-8")
+    return plan, plan_path, rows
+
+
+def test_plan_identity_loads_path_and_prints(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """plan-identity uses the Path API and prints id/hash/revision."""
+    plan, plan_path, _ = _saved_plan(tmp_path)
+    assert _adopt.main(["plan-identity", "--plan", str(plan_path)]) == 0
+    out = capsys.readouterr().out.splitlines()
+    assert out[0] == plan.plan_id
+    assert out[1] == plan.compute_behavioral_hash()
+    assert out[2] == REVISION
+    spaced = tmp_path / "dir with spaces"
+    spaced.mkdir()
+    moved = spaced / "plan.json"
+    moved.write_bytes(plan_path.read_bytes())
+    assert _adopt.main(["plan-identity", "--plan", str(moved)]) == 0
+    assert capsys.readouterr().out.splitlines()[0] == plan.plan_id
+
+
+def test_plan_identity_refuses_garbage(tmp_path: Path) -> None:
+    bad = tmp_path / "plan.json"
+    bad.write_text("not json{{{", encoding="utf-8")
+    assert _adopt.main(["plan-identity", "--plan", str(bad)]) == 1
+
+
+def test_restart_reuses_plan_without_regeneration(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Compatible plan: adopt skips regeneration, identity display proceeds."""
+    plan, plan_path, rows = _saved_plan(tmp_path)
+    before = plan_path.read_bytes()
+    base = [
+        "--plan",
+        str(plan_path),
+        "--rows",
+        str(rows),
+        "--source",
+        "simple_stories",
+        "--view",
+        "default",
+        "--revision",
+        REVISION,
+        "--seed",
+        "20260918",
+        "--files-csv",
+        "a.parquet",
+        "--mode",
+        "selected_records",
+    ]
+    assert _adopt.main(["plan"] + base) == 2
+    assert _adopt.main(["plan-identity", "--plan", str(plan_path)]) == 0
+    lines = capsys.readouterr().out.splitlines()
+    assert lines[-3:] == [plan.plan_id, plan.compute_behavioral_hash(), REVISION]
+    assert plan_path.read_bytes() == before
+
+
+def test_adopt_plan_mismatch_fails_closed(tmp_path: Path) -> None:
+    plan, plan_path, rows = _saved_plan(tmp_path)
+    base = [
+        "--plan",
+        str(plan_path),
+        "--rows",
+        str(rows),
+        "--source",
+        "simple_stories",
+        "--view",
+        "default",
+        "--revision",
+        REVISION,
+        "--seed",
+        "20260918",
+        "--files-csv",
+        "a.parquet",
+        "--mode",
+        "selected_records",
+    ]
+    assert _adopt.main(["plan"] + base) == 2
+    before = plan_path.read_bytes()
+    rows.write_text(json.dumps({"a.parquet": [0, 50]}), encoding="utf-8")
+    assert _adopt.main(["plan"] + base) == 1
+    assert plan_path.read_bytes() == before
+    bad_plan = tmp_path / "bad.json"
+    bad_plan.write_text("garbage", encoding="utf-8")
+    assert _adopt.main(["plan", "--plan", str(bad_plan)] + base[2:]) == 1
+
+
 def test_8_no_republish_of_completed_outputs(tmp_path: Path) -> None:
     from xlm.data.acquisition.plan import (
         AcquisitionLimits,

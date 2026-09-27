@@ -459,6 +459,37 @@ def cmd_record_combine(args: argparse.Namespace) -> int:
     return cmd_record(combined)
 
 
+def cmd_canonical_bytes(args: argparse.Namespace) -> int:
+    """Print the summed utf8_byte_count over a canonical documents.jsonl."""
+    total = 0
+    try:
+        with args.input.open("r", encoding="utf-8") as handle:
+            for line_number, line in enumerate(handle, start=1):
+                if not line.strip():
+                    continue
+                try:
+                    record = json.loads(line)
+                except Exception as exc:
+                    print(
+                        f"mix01_inventory: error: line {line_number} is not JSON: {exc}",
+                        file=sys.stderr,
+                    )
+                    return 1
+                count = record.get("utf8_byte_count", 0)
+                if isinstance(count, bool) or not isinstance(count, int) or count < 0:
+                    print(
+                        f"mix01_inventory: error: line {line_number} has a bad utf8_byte_count",
+                        file=sys.stderr,
+                    )
+                    return 1
+                total += count
+    except OSError as exc:
+        print(f"mix01_inventory: error: cannot read input: {exc}", file=sys.stderr)
+        return 1
+    print(total)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Mix-01 acquisition planning helper (offline).")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -501,6 +532,9 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Reuse an identical existing entry instead of failing on it.",
     )
+    canonical = sub.add_parser("canonical-bytes", help="Sum utf8_byte_count over documents.jsonl.")
+    canonical.add_argument("--input", type=Path, required=True)
+    canonical.set_defaults(func=cmd_canonical_bytes)
     record.add_argument(
         "--combine-sources",
         default=None,

@@ -106,7 +106,7 @@ review requires it. `-DataRoot` overrides `X:\XLM` (re-measure first).
 `uv run --offline --locked --no-sync --extra cpu --extra eval xlm data sample-blocks --source simple_stories --view default --revision e63b8adc3b1a1bdc7cac5b500d150b71346b0628 --files data/train-00003-of-00007.parquet --seed 20260918 --mode rowgroup --target-records 1000 --output X:\XLM\calib\simple_stories\rows.json --report X:\XLM\calib\simple_stories\rows.evidence.json`
 `$env:HF_HUB_OFFLINE="1"; $env:HF_DATASETS_OFFLINE="1"`
 `uv run --offline --locked --no-sync --extra cpu --extra eval xlm data plan --source simple_stories --view default --catalog manifests/datasets.catalog.yaml --files data/train-00003-of-00007.parquet --mode selected_records --row-ranges X:\XLM\calib\simple_stories\rows.json --adapter-spec simple_stories --seed 20260918 --attempt 1 --pilot-approved --output X:\XLM\calib\simple_stories\plan.json`
-`uv run --offline --locked --no-sync --extra cpu --extra eval python -c "from xlm.data.acquisition.plan import load_acquisition_plan; p=load_acquisition_plan(r'X:\XLM\calib\simple_stories\plan.json'); print(p.plan_id, p.plan_hash, p.revision)"`
+`uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/calibration_adopt.py plan-identity --plan X:\XLM\calib\simple_stories\plan.json`
 `$env:HF_HUB_OFFLINE="0"; $env:HF_DATASETS_OFFLINE="0"`
 `uv run --offline --locked --no-sync --extra cpu --extra eval xlm data fetch --plan X:\XLM\calib\simple_stories\plan.json --output-dir X:\XLM\calib\simple_stories\raw --scratch-dir X:\XLM\calib\simple_stories\scratch --pilot-approved`
 `uv run --offline --locked --no-sync --extra cpu --extra eval xlm data status --plan X:\XLM\calib\simple_stories\plan.json --scratch-dir X:\XLM\calib\simple_stories\scratch`
@@ -189,6 +189,20 @@ store conflict, so every mutating stage now adopts instead of republishing
 8-case regression suite `tests/test_calibration_adopt.py`). Rerunning
 `-Unit simple_stories -Stage All` reuses the probe evidence and runs only
 the stages with no compatible output yet.
+
+Follow-up 2 (argv preservation): the repaired run then failed displaying
+the plan identity — `Start-Process -ArgumentList <array>` does not quote
+elements, so the `python -c "..."` payload split and Python saw only
+`from`. Fixed two ways: (a) argv is now joined into ONE pre-quoted command
+line (`ConvertTo-NativeArgument`, CommandLineToArgvW rules — spaces,
+semicolons, quotes, backslashes, Unicode and spaced paths verified by
+round-trip); (b) `python -c` is ELIMINATED from the driver entirely — plan
+identity via `calibration_adopt.py plan-identity` (which also fixes a
+latent `load_acquisition_plan(str)` vs `Path` defect) and canonical bytes
+via `mix01_inventory.py canonical-bytes`. The existing SimpleStories plan
+(`plan_simple_stories_default_huggingface_4a55bdec…`, hash
+`a2d45d5d…9624f`) validates through the new path unchanged and is adopted
+on rerun, which then proceeds to the unexecuted Fetch.
 
 ## 8. Verdict
 
