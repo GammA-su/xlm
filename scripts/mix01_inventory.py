@@ -17,6 +17,11 @@ Subcommands (all offline, deterministic, UTF-8 no-BOM LF output):
 - ``sufficiency``: compare acquired canonical bytes against an estimate
   document and report per-source SUFFICIENT / TOP_UP / UNKNOWN plus the
   deficit in files-equivalent. Never edits plans or budgets.
+- ``measure``: derive one unit's calibration measurements from its
+  artifacts (plan, fetch journal, adaptation summary, canonical documents),
+  cross-check every binding, and write them as a deterministic JSON result
+  file. ``record --measurement`` consumes that file, so operator drivers
+  pass paths only and never scrape numbers from human-readable stdout.
 
 Nothing here downloads, probes, admits, tokenizes, trains, or authorizes.
 """
@@ -35,7 +40,17 @@ from typing import Any
 INVENTORY_VERSION = 1
 ESTIMATE_VERSION = 1
 SUFFICIENCY_VERSION = 1
+MEASUREMENT_VERSION = 1
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
+MAX_JOURNAL_BYTES = 8 * 1024**2
+MAX_SUMMARY_BYTES = 1024**2
+MEASURED_FIELDS = (
+    "records_sampled",
+    "accepted_records",
+    "rejected_records",
+    "transferred_bytes",
+    "canonical_bytes",
+)
 
 
 def _fail(message: str) -> int:
@@ -339,12 +354,49 @@ def _strict_int(value: Any, name: str, minimum: int = 0) -> int:
     return value
 
 
+def _load_measurement(path: Path) -> dict[str, Any]:
+    """Read a ``measure`` result file; every recorded value comes from it."""
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        raise ValueError(f"cannot read measurement '{path}': {exc}") from exc
+    if not isinstance(payload, dict) or payload.get("measurement_version") != MEASUREMENT_VERSION:
+        raise ValueError(f"measurement '{path}' is not a version {MEASUREMENT_VERSION} result")
+    for key in MEASURED_FIELDS:
+        _strict_int(payload.get(key), key)
+    survival = payload.get("extra_survival")
+    if isinstance(survival, bool) or not isinstance(survival, (int, float)):
+        raise ValueError("measurement 'extra_survival' must be a number")
+    return payload
+
+
 def cmd_record(args: argparse.Namespace) -> int:
     """Append one unit's calibration measurements without manual JSON editing."""
+    explicit = [args.sampled, args.accepted, args.rejected, args.transferred, args.canonical]
     if args.combine_sources is not None:
-        if float(args.survival) != 1.0:
+        if args.survival is not None or args.measurement is not None:
             return _fail("survival comes from the combined entries, not --extra-survival")
         return cmd_record_combine(args)
+    if args.measurement is not None:
+        if any(value is not None for value in explicit) or args.survival is not None:
+            return _fail("--measurement supplies every value; do not also pass explicit counts")
+        try:
+            measured = _load_measurement(args.measurement)
+        except ValueError as exc:
+            return _fail(str(exc))
+        args.sampled = measured["records_sampled"]
+        args.accepted = measured["accepted_records"]
+        args.rejected = measured["rejected_records"]
+        args.transferred = measured["transferred_bytes"]
+        args.canonical = measured["canonical_bytes"]
+        args.survival = measured["extra_survival"]
+    elif any(value is None for value in explicit):
+        return _fail(
+            "pass --measurement, or all of --records-sampled/--accepted/--rejected/"
+            "--transferred-bytes/--canonical-bytes"
+        )
+    if args.survival is None:
+        args.survival = 1.0
     try:
         sampled = _strict_int(args.sampled, "records-sampled", 1)
         accepted = _strict_int(args.accepted, "accepted")
@@ -454,39 +506,212 @@ def cmd_record_combine(args: argparse.Namespace) -> int:
         avg_file=args.avg_file,
         survival=next(iter(survivals)),
         replace=args.replace,
+        adopt=args.adopt,
+        measurement=None,
         combine_sources=None,
     )
     return cmd_record(combined)
 
 
-def cmd_canonical_bytes(args: argparse.Namespace) -> int:
-    """Print the summed utf8_byte_count over a canonical documents.jsonl."""
-    total = 0
+def scan_canonical(path: Path, *, require_text: bool) -> tuple[int, int, str]:
+    """Return (documents, summed utf8_byte_count, file sha256); strict per line.
+
+    Every non-blank line must be a JSON object with an integer
+    ``utf8_byte_count``; where ``text`` is present (always, with
+    ``require_text``) the count must equal its UTF-8 length, matching the
+    canonical document contract. Any deviation raises ValueError.
+    """
+    digest = hashlib.sha256()
+    documents = total = 0
     try:
-        with args.input.open("r", encoding="utf-8") as handle:
-            for line_number, line in enumerate(handle, start=1):
-                if not line.strip():
+        with path.open("rb") as handle:
+            for line_number, raw in enumerate(handle, start=1):
+                digest.update(raw)
+                if not raw.strip():
                     continue
                 try:
-                    record = json.loads(line)
+                    record = json.loads(raw.decode("utf-8"))
                 except Exception as exc:
-                    print(
-                        f"mix01_inventory: error: line {line_number} is not JSON: {exc}",
-                        file=sys.stderr,
-                    )
-                    return 1
-                count = record.get("utf8_byte_count", 0)
+                    raise ValueError(f"line {line_number} is not JSON: {exc}") from exc
+                if not isinstance(record, dict):
+                    raise ValueError(f"line {line_number} is not a JSON object")
+                count = record.get("utf8_byte_count")
                 if isinstance(count, bool) or not isinstance(count, int) or count < 0:
-                    print(
-                        f"mix01_inventory: error: line {line_number} has a bad utf8_byte_count",
-                        file=sys.stderr,
-                    )
-                    return 1
+                    raise ValueError(f"line {line_number} has a bad utf8_byte_count")
+                text = record.get("text")
+                if text is None and require_text:
+                    raise ValueError(f"line {line_number} has no text")
+                if text is not None:
+                    if not isinstance(text, str):
+                        raise ValueError(f"line {line_number} text is not a string")
+                    if len(text.encode("utf-8")) != count:
+                        raise ValueError(
+                            f"line {line_number} utf8_byte_count {count} differs from "
+                            f"its text length {len(text.encode('utf-8'))}"
+                        )
+                documents += 1
                 total += count
     except OSError as exc:
-        print(f"mix01_inventory: error: cannot read input: {exc}", file=sys.stderr)
-        return 1
+        raise ValueError(f"cannot read '{path}': {exc}") from exc
+    return documents, total, digest.hexdigest()
+
+
+def cmd_canonical_bytes(args: argparse.Namespace) -> int:
+    """Print the summed utf8_byte_count over a canonical documents.jsonl (display only)."""
+    try:
+        _, total, _ = scan_canonical(args.input, require_text=False)
+    except ValueError as exc:
+        return _fail(str(exc))
     print(total)
+    return 0
+
+
+def _read_bounded_json(path: Path, limit: int, what: str) -> Any:
+    try:
+        size = path.stat().st_size
+    except OSError as exc:
+        raise ValueError(f"{what} '{path}' is missing: {exc}") from exc
+    if size > limit:
+        raise ValueError(f"{what} '{path}' exceeds {limit} bytes")
+    try:
+        return json.loads(path.read_bytes().decode("utf-8"))
+    except Exception as exc:
+        raise ValueError(f"{what} '{path}' is unreadable: {exc}") from exc
+
+
+def _expect(actual: Any, expected: Any, what: str) -> None:
+    if actual != expected:
+        raise ValueError(f"{what} is {actual!r}, expected {expected!r}")
+
+
+def measure_unit(
+    *,
+    plan_path: Path,
+    scratch_dir: Path,
+    canonical_dir: Path,
+    source: str,
+    view: str,
+    revision: str,
+) -> dict[str, Any]:
+    """Derive calibration measurements from one unit's artifacts, fail-closed.
+
+    Binds plan -> fetch journal -> adaptation summary -> canonical documents
+    by plan id/hash, source and revision; requires a COMPLETED fetch; checks
+    the documents digest/count against the summary and every per-document
+    byte count against its text. Reads only; writes nothing.
+    """
+    from xlm.data.acquisition.plan import load_acquisition_plan
+    from xlm.data.acquisition.progress import AcquisitionState
+
+    try:
+        plan = load_acquisition_plan(plan_path)
+    except Exception as exc:
+        raise ValueError(f"plan '{plan_path}' failed validation: {exc}") from exc
+    plan_hash = plan.compute_behavioral_hash()
+    _expect(plan.plan_hash, plan_hash, "stored plan_hash (recomputed hash differs)")
+    _expect(plan.source_id, source, "plan source_id")
+    _expect(plan.view_id, view, "plan view_id")
+    _expect(plan.revision, revision, "plan revision")
+
+    journal_path = scratch_dir / "journals" / f"{plan.plan_id}.progress.json"
+    try:
+        size = journal_path.stat().st_size
+    except OSError as exc:
+        raise ValueError(f"fetch journal '{journal_path}' is missing: {exc}") from exc
+    if size > MAX_JOURNAL_BYTES:
+        raise ValueError(f"fetch journal '{journal_path}' exceeds {MAX_JOURNAL_BYTES} bytes")
+    try:
+        state = AcquisitionState.model_validate_json(journal_path.read_bytes())
+    except Exception as exc:
+        raise ValueError(f"fetch journal '{journal_path}' is invalid: {exc}") from exc
+    _expect(state.plan_id, plan.plan_id, "journal plan_id")
+    _expect(state.plan_hash, plan_hash, "journal plan_hash")
+    _expect(state.status, "COMPLETED", "journal status")
+    transferred = _strict_int(state.transferred_bytes, "journal transferred_bytes", 1)
+
+    summary = _read_bounded_json(
+        canonical_dir / "adaptation_summary.json", MAX_SUMMARY_BYTES, "adaptation summary"
+    )
+    if not isinstance(summary, dict):
+        raise ValueError("adaptation summary is not a JSON object")
+    _expect(summary.get("adaptation_summary_version"), 1, "adaptation_summary_version")
+    _expect(summary.get("plan_id"), plan.plan_id, "adaptation summary plan_id")
+    _expect(summary.get("plan_hash"), plan_hash, "adaptation summary plan_hash")
+    _expect(summary.get("source_id"), source, "adaptation summary source_id")
+    _expect(summary.get("source_revision"), revision, "adaptation summary source_revision")
+    if "manifest" in summary or "shards" in summary:
+        raise ValueError("sharded canonical output is not a calibration output")
+    total_input = _strict_int(summary.get("total_input_records"), "total_input_records", 1)
+    accepted = _strict_int(summary.get("accepted_records"), "accepted_records")
+    rejected = _strict_int(summary.get("rejected_records"), "rejected_records")
+    if accepted + rejected != total_input:
+        raise ValueError(
+            f"adaptation summary accepted ({accepted}) + rejected ({rejected}) != "
+            f"total_input_records ({total_input})"
+        )
+    _expect(total_input, state.records_acquired, "adaptation total_input_records vs fetched")
+    documents = summary.get("documents")
+    if not isinstance(documents, dict):
+        raise ValueError("adaptation summary lacks its documents binding")
+    _expect(documents.get("file"), "documents.jsonl", "adaptation summary documents.file")
+    _expect(documents.get("count"), accepted, "adaptation summary documents.count")
+
+    count, canonical, digest = scan_canonical(canonical_dir / "documents.jsonl", require_text=True)
+    _expect(digest, documents.get("sha256"), "documents.jsonl sha256")
+    _expect(count, accepted, "documents.jsonl document count")
+    _strict_int(canonical, "canonical_bytes", 1)
+    return {
+        "measurement_version": MEASUREMENT_VERSION,
+        "source_id": source,
+        "view_id": view,
+        "revision": revision,
+        "plan_id": plan.plan_id,
+        "plan_hash": plan_hash,
+        "fetch_status": state.status,
+        "records_sampled": total_input,
+        "accepted_records": accepted,
+        "rejected_records": rejected,
+        "transferred_bytes": transferred,
+        "canonical_bytes": canonical,
+        "canonical_documents": count,
+        "documents_sha256": digest,
+        "extra_survival": 1.0,
+    }
+
+
+def cmd_measure(args: argparse.Namespace) -> int:
+    """Write the unit's measurement result file (idempotent; never overwrites a divergent one)."""
+    try:
+        payload = measure_unit(
+            plan_path=args.plan,
+            scratch_dir=args.scratch_dir,
+            canonical_dir=args.canonical_dir,
+            source=args.source,
+            view=args.view,
+            revision=args.revision,
+        )
+    except ValueError as exc:
+        return _fail(f"measurement refused: {exc}")
+    rendered = (json.dumps(payload, indent=2, sort_keys=True) + "\n").encode("utf-8")
+    if args.output.exists():
+        try:
+            existing = args.output.read_bytes()
+        except OSError as exc:
+            return _fail(f"cannot read existing measurement: {exc}")
+        if existing != rendered:
+            return _fail(
+                f"existing measurement '{args.output}' differs from the artifacts; "
+                "refusing to overwrite it"
+            )
+        action = "existing identical measurement reused"
+    else:
+        _atomic_write_json(args.output, payload)
+        action = "measurement written"
+    print(
+        f"{action}: {args.output} accepted {payload['accepted_records']}/"
+        f"{payload['records_sampled']} transferred {payload['transferred_bytes']} "
+        f"canonical {payload['canonical_bytes']}"
+    )
     return 0
 
 
@@ -519,13 +744,21 @@ def build_parser() -> argparse.ArgumentParser:
     record = sub.add_parser("record", help="Append one unit's calibration measurements.")
     record.add_argument("--calibration", type=Path, required=True)
     record.add_argument("--source", required=True)
-    record.add_argument("--records-sampled", type=int, required=True, dest="sampled")
-    record.add_argument("--accepted", type=int, required=True)
-    record.add_argument("--rejected", type=int, required=True)
-    record.add_argument("--transferred-bytes", type=int, required=True, dest="transferred")
-    record.add_argument("--canonical-bytes", type=int, required=True, dest="canonical")
+    record.add_argument("--records-sampled", type=int, default=None, dest="sampled")
+    record.add_argument("--accepted", type=int, default=None)
+    record.add_argument("--rejected", type=int, default=None)
+    record.add_argument("--transferred-bytes", type=int, default=None, dest="transferred")
+    record.add_argument("--canonical-bytes", type=int, default=None, dest="canonical")
     record.add_argument("--avg-file-bytes", type=int, default=None, dest="avg_file")
-    record.add_argument("--extra-survival", type=float, default=1.0, dest="survival")
+    record.add_argument(
+        "--extra-survival", type=float, default=None, dest="survival", help="Default 1.0."
+    )
+    record.add_argument(
+        "--measurement",
+        type=Path,
+        default=None,
+        help="Record every value from a 'measure' result file (no explicit counts).",
+    )
     record.add_argument("--replace", action="store_true")
     record.add_argument(
         "--adopt",
@@ -535,6 +768,15 @@ def build_parser() -> argparse.ArgumentParser:
     canonical = sub.add_parser("canonical-bytes", help="Sum utf8_byte_count over documents.jsonl.")
     canonical.add_argument("--input", type=Path, required=True)
     canonical.set_defaults(func=cmd_canonical_bytes)
+    measure = sub.add_parser("measure", help="Write one unit's calibration measurement file.")
+    measure.add_argument("--plan", type=Path, required=True)
+    measure.add_argument("--scratch-dir", type=Path, required=True)
+    measure.add_argument("--canonical-dir", type=Path, required=True)
+    measure.add_argument("--source", required=True)
+    measure.add_argument("--view", required=True)
+    measure.add_argument("--revision", required=True)
+    measure.add_argument("--output", type=Path, required=True)
+    measure.set_defaults(func=cmd_measure)
     record.add_argument(
         "--combine-sources",
         default=None,

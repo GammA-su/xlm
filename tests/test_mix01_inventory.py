@@ -497,3 +497,154 @@ def test_sufficiency_statuses(tmp_path: Path) -> None:
     report = json.loads(out.read_text(encoding="utf-8"))["sources"]
     assert report["ultrax_ultrafineweb"]["status"] == "TOP_UP"
     assert report["ultrax_ultrafineweb"]["deficit_canonical_bytes"] == pytest.approx(10)
+
+
+def _measured_unit(tmp_path: Path) -> Any:
+    from calibration_fixture import adapt_in_process, build_unit
+
+    unit = build_unit(tmp_path / "data")
+    adapt_in_process(unit)
+    return unit
+
+
+def _measure(unit: Any, **overrides: str) -> int:
+    from calibration_fixture import REVISION, SOURCE, VIEW
+
+    args = {
+        "--plan": str(unit.plan_path),
+        "--scratch-dir": str(unit.scratch),
+        "--canonical-dir": str(unit.canonical),
+        "--source": SOURCE,
+        "--view": VIEW,
+        "--revision": REVISION,
+        "--output": str(unit.measurement),
+    }
+    args.update(overrides)
+    return int(_tool.main(["measure"] + [item for pair in args.items() for item in pair]))
+
+
+def test_measure_derives_values_and_record_consumes_them(tmp_path: Path) -> None:
+    from calibration_fixture import ULTRAX_ENTRY, expected_entry, render_json
+
+    unit = _measured_unit(tmp_path)
+    assert _measure(unit) == 0
+    raw = unit.measurement.read_bytes()
+    assert not raw.startswith(b"\xef\xbb\xbf") and b"\r" not in raw
+    measured = json.loads(raw)
+    assert {key: measured[key] for key in expected_entry()} == expected_entry()
+    assert measured["plan_hash"] == unit.plan_hash
+    assert measured["canonical_documents"] == 4
+    assert _measure(unit) == 0  # identical rerun is a no-op
+    assert unit.measurement.read_bytes() == raw
+
+    ultrax_bytes = unit.calibration.read_bytes()
+    argv = [
+        "record",
+        "--calibration",
+        str(unit.calibration),
+        "--source",
+        "simple_stories",
+        "--measurement",
+        str(unit.measurement),
+        "--adopt",
+    ]
+    assert _tool.main(argv) == 0
+    payload = json.loads(unit.calibration.read_text(encoding="utf-8"))
+    assert payload["sources"]["simple_stories"] == expected_entry()
+    assert payload["sources"]["ultrax_ultrafineweb"] == ULTRAX_ENTRY
+    assert ultrax_bytes == render_json({"sources": {"ultrax_ultrafineweb": ULTRAX_ENTRY}})
+    after = unit.calibration.read_bytes()
+    assert _tool.main(argv) == 0  # --adopt: identical re-record is a no-op
+    assert unit.calibration.read_bytes() == after
+
+
+def test_record_measurement_is_exclusive_with_explicit_counts(tmp_path: Path) -> None:
+    unit = _measured_unit(tmp_path)
+    assert _measure(unit) == 0
+    calib = tmp_path / "calibration.json"
+    base = ["record", "--calibration", str(calib), "--source", "simple_stories"]
+    assert _tool.main(base + ["--measurement", str(unit.measurement), "--accepted", "4"]) == 1
+    assert _tool.main(base + ["--measurement", str(unit.measurement), "--extra-survival", "1"]) == 1
+    assert _tool.main(base + ["--accepted", "4"]) == 1  # partial explicit counts
+    stale = tmp_path / "stale.json"
+    stale.write_text(json.dumps({"measurement_version": 1, "records_sampled": "4"}), "utf-8")
+    assert _tool.main(base + ["--measurement", str(stale)]) == 1
+    assert not calib.exists()
+
+
+def _rewrite_json(path: Path, **fields: Any) -> None:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload.update(fields)
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        "metric-off-by-one",
+        "metric-string",
+        "metric-missing",
+        "docs-tampered",
+        "docs-missing",
+        "summary-missing",
+        "summary-plan-hash",
+        "summary-revision",
+        "summary-counts",
+        "summary-vs-fetched",
+        "journal-missing",
+        "journal-not-completed",
+        "journal-plan-hash",
+        "arg-revision",
+        "arg-view",
+        "divergent-existing-output",
+    ],
+)
+def test_measure_fails_closed(tmp_path: Path, mutation: str) -> None:
+    from calibration_fixture import rebind_documents_digest
+
+    unit = _measured_unit(tmp_path)
+    docs = unit.canonical / "documents.jsonl"
+    summary = unit.canonical / "adaptation_summary.json"
+    overrides: dict[str, str] = {}
+    if mutation.startswith("metric-"):
+        lines = docs.read_text(encoding="utf-8").splitlines()
+        record = json.loads(lines[1])
+        if mutation == "metric-off-by-one":
+            record["utf8_byte_count"] += 1
+        elif mutation == "metric-string":
+            record["utf8_byte_count"] = str(record["utf8_byte_count"])
+        else:
+            del record["utf8_byte_count"]
+        lines[1] = json.dumps(record, ensure_ascii=False)
+        docs.write_bytes(("\n".join(lines) + "\n").encode("utf-8"))
+        rebind_documents_digest(unit)
+    elif mutation == "docs-tampered":
+        docs.write_bytes(docs.read_bytes() + b"\n")
+    elif mutation == "docs-missing":
+        docs.unlink()
+    elif mutation == "summary-missing":
+        summary.unlink()
+    elif mutation == "summary-plan-hash":
+        _rewrite_json(summary, plan_hash="0" * 64)
+    elif mutation == "summary-revision":
+        _rewrite_json(summary, source_revision="f" * 40)
+    elif mutation == "summary-counts":
+        _rewrite_json(summary, rejected_records=1)
+    elif mutation == "summary-vs-fetched":
+        _rewrite_json(unit.journal, records_acquired=5)
+    elif mutation == "journal-missing":
+        unit.journal.unlink()
+    elif mutation == "journal-not-completed":
+        _rewrite_json(unit.journal, status="INTERRUPTED")
+    elif mutation == "journal-plan-hash":
+        _rewrite_json(unit.journal, plan_hash="0" * 64)
+    elif mutation == "arg-revision":
+        overrides["--revision"] = "f" * 40
+    elif mutation == "arg-view":
+        overrides["--view"] = "other"
+    else:
+        unit.measurement.write_text('{"measurement_version": 1}\n', encoding="utf-8")
+    existing = unit.measurement.read_bytes() if unit.measurement.exists() else None
+    assert _measure(unit, **overrides) == 1
+    after = unit.measurement.read_bytes() if unit.measurement.exists() else None
+    assert after == existing

@@ -221,8 +221,11 @@ class StagedAdaptation:
         ordered = [DOCUMENTS_FILENAME] + (
             [REJECTIONS_FILENAME, SUMMARY_FILENAME] if self._with_ledger else []
         )
+        # Streamed JSONL files get a (possibly empty) writer; the summary is
+        # staged separately below, so it must not open a second, leaked temp.
         for filename in ordered:
-            self._writer(filename)
+            if filename != SUMMARY_FILENAME:
+                self._writer(filename)
         if self._with_ledger:
             if summary is None:
                 raise ValueError("record mode requires a summary to publish")

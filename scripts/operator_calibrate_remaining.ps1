@@ -25,10 +25,22 @@
     verified publications are REUSED with an explicit message; absent
     outputs run normally; incompatible, corrupt or incomplete outputs FAIL
     CLOSED (never deleted, overwritten, or bypassed with a fresh identity).
-    Fetch journals resume natively; sample-blocks/plan reruns are
-    same-hash no-ops. Record uses --adopt: identical re-records are
-    no-ops (this covers the convergent essential triple; keep -Files
-    identical across the three essential runs), divergent ones fail.
+    A COMPLETED fetch journal whose outputs still hash to their journaled
+    digests is adopted without calling fetch; absent or unfinished
+    journals run fetch, which resumes natively. Record uses --adopt:
+    identical re-records are no-ops (this covers the convergent essential
+    triple; keep -Files identical across the three essential runs),
+    divergent ones fail.
+  - Machine-value contract: native stdout/stderr are HUMAN-ONLY (shown and
+    logged, never returned or parsed). Machine values travel only through
+    (a) helper exit codes (calibration_adopt.py: 0 run / 2 reuse / else
+    refuse) and (b) deterministic JSON result files: the Record stage runs
+    `mix01_inventory.py measure`, which derives every recorded value from
+    the artifacts (plan, fetch journal, adaptation summary, canonical
+    documents), cross-checks their bindings and writes
+    <unit>\record_inputs.json; `record --measurement` reads that file.
+    (Scraping stdout failed once already: Python writes CRLF on Windows and
+    '^\d+$' never matches "1269186`r".)
   - Native execution contract (Invoke-NativeCapture): stdout/stderr go to
     FILES via Start-Process redirection, never the PowerShell stream, so
     harmless native stderr can never raise NativeCommandError under
@@ -40,10 +52,12 @@
     elements: spaces, semicolons, quotes, backslashes, Unicode and spaced
     paths survive verbatim.
   - No `python -c` anywhere: helper work goes through tested script files
-    (`calibration_adopt.py plan-identity`, `mix01_inventory.py
-    canonical-bytes`, `mix01_inventory.py record`) with ordinary argv.
+    (`calibration_adopt.py`, `mix01_inventory.py measure|record`) with
+    ordinary argv.
   - Dot-sourcing this file under '.' loads functions only (main guarded);
-    see tests/files/calibrate_driver_native.ps1.
+    see tests/files/calibrate_driver_native.ps1 (wrapper/argv contract)
+    and tests/files/calibrate_driver_stages.ps1 (Invoke-Stage over an
+    authored offline unit).
 
   The three essential slices share one raw fetch each (the slice stamp is
   adapt-time metadata over identical rows); the script runs independent
@@ -101,6 +115,7 @@ $PlanPath = Join-Path $UnitRoot "plan.json"
 $RowsPath = Join-Path $UnitRoot "rows.json"
 $ReportPath = Join-Path $UnitRoot "rows.evidence.json"
 $LogDir = Join-Path $UnitRoot "logs"
+$MeasurePath = Join-Path $UnitRoot "record_inputs.json"
 $CalibJson = Join-Path $DataRoot "calib\calibration.json"
 
 $UvBase = @("run", "--offline", "--locked", "--no-sync", "--extra", "cpu", "--extra", "eval")
@@ -134,7 +149,8 @@ function ConvertTo-NativeArgument([string]$Value) {
 
 function Invoke-NativeCapture(
     [Parameter(Mandatory = $true)][string]$FilePath,
-    [Parameter(Mandatory = $true)][string[]]$ArgumentList,
+    # AllowEmptyString: a Mandatory array otherwise rejects "" items at bind time.
+    [Parameter(Mandatory = $true)][AllowEmptyString()][string[]]$ArgumentList,
     [Parameter(Mandatory = $true)][string]$LogBase,
     [string]$WorkingDirectory = ""
 ) {
@@ -166,6 +182,8 @@ function Invoke-NativeCapture(
     }
     if ($WorkingDirectory -ne "") { $startArgs["WorkingDirectory"] = $WorkingDirectory }
     $proc = Start-Process @startArgs
+    $proc.WaitForExit()
+    if ($null -eq $proc.ExitCode) { throw "native command '$FilePath' reported no exit code" }
     $stdout = ""
     $stderr = ""
     if (Test-Path -LiteralPath $stdoutFile) {
@@ -179,8 +197,13 @@ function Invoke-NativeCapture(
     return @{ ExitCode = $proc.ExitCode; Stdout = $stdout; Stderr = $stderr }
 }
 
-function Invoke-Step([string]$Name, [string[]]$CliArgs, [bool]$Live) {
-    $ts = Get-Date -Format "yyyyMMdd-HHmmss"
+function Invoke-Uv([string]$Name, [string[]]$UvArgs, [bool]$Live) {
+    # Logged uv runner. HUMAN-ONLY output contract: stdout/stderr are shown
+    # and logged, never returned, so no caller can scrape machine values
+    # from them (see the machine-value contract in the header). Fails solely
+    # on a nonzero exit. No `python -c` payloads: callers pass script files
+    # plus ordinary argv tokens only.
+    $ts = Get-Date -Format "yyyyMMdd-HHmmssfff"
     if (!(Test-Path -LiteralPath $LogDir)) {
         New-Item -ItemType Directory -Path $LogDir -Force | Out-Null
     }
@@ -189,9 +212,8 @@ function Invoke-Step([string]$Name, [string[]]$CliArgs, [bool]$Live) {
     $savedDs = $env:HF_DATASETS_OFFLINE
     if ($Live) { $env:HF_HUB_OFFLINE = "0"; $env:HF_DATASETS_OFFLINE = "0" }
     try {
-        $full = $UvBase + @("xlm") + $CliArgs
-        Write-Command $full
-        $cap = Invoke-NativeCapture -FilePath "uv" -ArgumentList $full `
+        Write-Command $UvArgs
+        $cap = Invoke-NativeCapture -FilePath "uv" -ArgumentList $UvArgs `
             -LogBase $logBase -WorkingDirectory $Repo
         $combined = ("=== STDOUT ===`n" + $cap.Stdout + "`n=== STDERR ===`n" `
             + $cap.Stderr + "`n=== EXIT: " + $cap.ExitCode + " ===`n")
@@ -199,11 +221,14 @@ function Invoke-Step([string]$Name, [string[]]$CliArgs, [bool]$Live) {
         if ($cap.Stdout -ne "") { $cap.Stdout | Out-Host }
         if ($cap.Stderr -ne "") { $cap.Stderr | Out-Host }
         if ($cap.ExitCode -ne 0) { throw "$Name failed with exit $($cap.ExitCode) (log: $logBase.log)" }
-        return $cap.Stdout
     } finally {
         $env:HF_HUB_OFFLINE = $savedHub
         $env:HF_DATASETS_OFFLINE = $savedDs
     }
+}
+
+function Invoke-Step([string]$Name, [string[]]$CliArgs, [bool]$Live) {
+    Invoke-Uv $Name ($UvBase + @("xlm") + $CliArgs) $Live
 }
 
 function Invoke-Adopt([string[]]$AdoptArgs) {
@@ -224,32 +249,124 @@ function Invoke-Adopt([string[]]$AdoptArgs) {
     return $cap.ExitCode
 }
 
-function Invoke-Uv([string]$Name, [string[]]$UvArgs, [bool]$Live) {
-    # Generic uv runner with the same safety contract as Invoke-Step but no
-    # xlm subcommand prepended (for python helper scripts). No `python -c`
-    # payloads: callers pass script files plus ordinary argv tokens only.
-    $ts = Get-Date -Format "yyyyMMdd-HHmmssfff"
-    if (!(Test-Path -LiteralPath $LogDir)) {
-        New-Item -ItemType Directory -Path $LogDir -Force | Out-Null
-    }
-    $logBase = Join-Path $LogDir ("{0}-{1}" -f $Name, $ts)
-    $savedHub = $env:HF_HUB_OFFLINE
-    $savedDs = $env:HF_DATASETS_OFFLINE
-    if ($Live) { $env:HF_HUB_OFFLINE = "0"; $env:HF_DATASETS_OFFLINE = "0" }
-    try {
-        Write-Command $UvArgs
-        $cap = Invoke-NativeCapture -FilePath "uv" -ArgumentList $UvArgs `
-            -LogBase $logBase -WorkingDirectory $Repo
-        $combined = ("=== STDOUT ===`n" + $cap.Stdout + "`n=== STDERR ===`n" `
-            + $cap.Stderr + "`n=== EXIT: " + $cap.ExitCode + " ===`n")
-        [System.IO.File]::WriteAllText("$logBase.log", $combined, [System.Text.UTF8Encoding]::new($false))
-        if ($cap.Stdout -ne "") { $cap.Stdout | Out-Host }
-        if ($cap.Stderr -ne "") { $cap.Stderr | Out-Host }
-        if ($cap.ExitCode -ne 0) { throw "$Name failed with exit $($cap.ExitCode) (log: $logBase.log)" }
-        return $cap.Stdout
-    } finally {
-        $env:HF_HUB_OFFLINE = $savedHub
-        $env:HF_DATASETS_OFFLINE = $savedDs
+$StageOrder = @("Env", "Probe", "SampleBlocks", "Plan", "Fetch", "Status", "Verify", "Adapt",
+    "Summary", "Record")
+
+function Invoke-Stage([string]$Name) {
+    # One stage of the chain; -Stage All runs every entry of $StageOrder in
+    # order through this same function (tests exercise it after dot-sourcing).
+    $xlmHome = $env:XLM_HOME
+    if ([string]::IsNullOrWhiteSpace($xlmHome)) { throw "XLM_HOME is unset; refusing to guess a store" }
+    switch ($Name) {
+        "Env" {
+            Invoke-Uv "env" @("sync", "--offline", "--locked", "--extra", "cpu", "--extra", "eval") $false
+            "Env OK: $Repo" | Out-Host
+        }
+        "Probe" {
+            $decision = Invoke-Adopt @("probe", "--store", $xlmHome, "--source", $U.Source,
+                "--view", $U.View, "--revision", $U.Revision, "--repository", $U.Repository)
+            if ($decision -eq 2) { "existing compatible probe evidence reused" | Out-Host }
+            elseif ($decision -eq 0) {
+                Invoke-Step "probe" @("data", "probe", "--catalog", "manifests/datasets.catalog.yaml",
+                    "--source", $U.Source, "--view", $U.View, "--live", "--budget-mib", "16",
+                    "--probe-id", "cal01", "--json") $true
+            }
+            else { throw "probe adoption refused; no evidence deleted, no fresh identity minted" }
+        }
+        "SampleBlocks" {
+            $decision = Invoke-Adopt @("sample-blocks", "--rows", $RowsPath, "--report", $ReportPath,
+                "--source", $U.Source, "--view", $U.View, "--revision", $U.Revision,
+                "--seed", "20260918", "--files-csv", $FileList)
+            if ($decision -eq 2) { "existing compatible row ranges reused" | Out-Host }
+            elseif ($decision -eq 0) {
+                Invoke-Step "sample-blocks" @("data", "sample-blocks", "--source", $U.Source,
+                    "--view", $U.View, "--revision", $U.Revision, "--files", $FileList,
+                    "--seed", "20260918", "--mode", "rowgroup", "--target-records", "1000",
+                    "--output", $RowsPath, "--report", $ReportPath) $true
+            }
+            else { throw "sample-blocks adoption refused; remove the outputs explicitly to redo them" }
+        }
+        "Plan" {
+            $decision = Invoke-Adopt @("plan", "--plan", $PlanPath, "--rows", $RowsPath,
+                "--source", $U.Source, "--view", $U.View, "--revision", $U.Revision,
+                "--seed", "20260918", "--files-csv", $FileList, "--mode", "selected_records")
+            if ($decision -eq 2) { "existing compatible plan reused" | Out-Host }
+            elseif ($decision -eq 0) {
+                Invoke-Step "plan" @("data", "plan", "--source", $U.Source, "--view", $U.View,
+                    "--catalog", "manifests/datasets.catalog.yaml", "--files", $FileList,
+                    "--mode", "selected_records", "--row-ranges", $RowsPath,
+                    "--adapter-spec", $U.AdapterSpec, "--seed", "20260918", "--attempt", "1",
+                    "--pilot-approved", "--output", $PlanPath) $false
+            }
+            else { throw "plan adoption refused; use a new reviewed plan path to redo it" }
+            # Display only (human review of plan id/hash/revision); never parsed.
+            Invoke-Uv "plan-identity" ($UvBase + @("python", "scripts/calibration_adopt.py",
+                "plan-identity", "--plan", $PlanPath)) $false
+        }
+        "Fetch" {
+            $decision = Invoke-Adopt @("fetch", "--plan", $PlanPath, "--scratch-dir", $Scratch,
+                "--output-dir", $Raw)
+            if ($decision -eq 2) { "existing completed fetch reused; no fetch executed" | Out-Host }
+            elseif ($decision -eq 0) {
+                Invoke-Step "fetch" @("data", "fetch", "--plan", $PlanPath,
+                    "--output-dir", $Raw, "--scratch-dir", $Scratch, "--pilot-approved") $true
+            }
+            else { throw "fetch adoption refused; journal/outputs are foreign or drifted" }
+        }
+        "Status" {
+            Invoke-Step "status" @("data", "status", "--plan", $PlanPath,
+                "--scratch-dir", $Scratch) $false
+        }
+        "Verify" {
+            $decision = Invoke-Adopt @("verify", "--store", $xlmHome, "--plan", $PlanPath,
+                "--output-dir", $Raw)
+            if ($decision -eq 2) {
+                "existing verified publication reused; re-confirming without republishing" | Out-Host
+                Invoke-Step "verify" @("data", "verify", "--plan", $PlanPath,
+                    "--output-dir", $Raw, "--scratch-dir", $Scratch, "--json",
+                    "--no-publish") $false
+            }
+            elseif ($decision -eq 0) {
+                Invoke-Step "verify" @("data", "verify", "--plan", $PlanPath,
+                    "--output-dir", $Raw, "--scratch-dir", $Scratch, "--json") $false
+            }
+            else { throw "verify adoption refused; outputs do not match the published artifact" }
+        }
+        "Adapt" {
+            $decision = Invoke-Adopt @("adapt", "--output-dir", $Canonical, "--plan", $PlanPath)
+            if ($decision -eq 2) { "existing compatible adapted outputs reused" | Out-Host }
+            elseif ($decision -eq 0) {
+                $adaptArgs = @("data", "adapt", "--plan", $PlanPath, "--adapter", $U.Adapter,
+                    "--input", (Join-Path $Raw "selected_records.jsonl"),
+                    "--output-dir", $Canonical, "--on-reject", "record")
+                if ($U.AdapterConfig -ne "") { $adaptArgs += @("--adapter-config", $U.AdapterConfig) }
+                Invoke-Step "adapt" $adaptArgs $false
+            }
+            else { throw "adapt adoption refused; use a fresh output dir to redo it" }
+        }
+        "Summary" {
+            Get-Content -LiteralPath (Join-Path $Canonical "adaptation_summary.json") -Raw -Encoding utf8 | Out-Host
+        }
+        "Record" {
+            # Every recorded value is derived and cross-checked from the
+            # artifacts into a JSON result file; record reads that file. The
+            # driver parses no numbers (see the machine-value contract).
+            Invoke-Uv "measure" ($UvBase + @("python", "scripts/mix01_inventory.py", "measure",
+                "--plan", $PlanPath, "--scratch-dir", $Scratch, "--canonical-dir", $Canonical,
+                "--source", $U.Source, "--view", $U.View, "--revision", $U.Revision,
+                "--output", $MeasurePath)) $false
+            foreach ($key in $U.RecordAs) {
+                Invoke-Uv "record-$key" ($UvBase + @("python", "scripts/mix01_inventory.py", "record",
+                    "--calibration", $CalibJson, "--source", $key,
+                    "--measurement", $MeasurePath, "--adopt")) $false
+            }
+            "Record OK: $($U.RecordAs -join ', ') -> $CalibJson (from $MeasurePath)" | Out-Host
+            if ($Unit -like "ifm_*") {
+                "NOTE: ifm_general + ifm_planning are recorded separately; combine them into" | Out-Host
+                "ifm_behaviors_general_planning with the report one-liner before estimate." | Out-Host
+            }
+        }
+        default { throw "unknown stage '$Name'" }
     }
 }
 
@@ -258,148 +375,15 @@ if ($MyInvocation.InvocationName -ne '.') {
 Set-Location -LiteralPath $Repo
 
 # ArtifactStore reads XLM_HOME; default it deterministically so the CLI and
-# the adoption checks below resolve the identical store. An explicitly set
+# the adoption checks resolve the identical store. An explicitly set
 # operator value is always respected.
 if ([string]::IsNullOrWhiteSpace($env:XLM_HOME)) {
     $env:XLM_HOME = Join-Path $DataRoot "xlm-home"
     "XLM_HOME defaulted to $env:XLM_HOME (was unset)" | Out-Host
 }
-$XlmHome = $env:XLM_HOME
 
-switch ($Stage) {
-    { $_ -in "All", "Env" } {
-        $syncArgs = @("sync", "--offline", "--locked", "--extra", "cpu", "--extra", "eval")
-        Write-Command $syncArgs
-        if (!(Test-Path -LiteralPath $LogDir)) {
-            New-Item -ItemType Directory -Path $LogDir -Force | Out-Null
-        }
-        $ts = Get-Date -Format "yyyyMMdd-HHmmss"
-        $syncBase = Join-Path $LogDir "env-$ts"
-        $cap = Invoke-NativeCapture -FilePath "uv" -ArgumentList $syncArgs `
-            -LogBase $syncBase -WorkingDirectory $Repo
-        if ($cap.Stdout -ne "") { $cap.Stdout | Out-Host }
-        if ($cap.Stderr -ne "") { $cap.Stderr | Out-Host }
-        if ($cap.ExitCode -ne 0) { throw "Env sync failed with exit $($cap.ExitCode) (log: $syncBase.log)" }
-        $combined = ("=== STDOUT ===`n" + $cap.Stdout + "`n=== STDERR ===`n" `
-            + $cap.Stderr + "`n=== EXIT: " + $cap.ExitCode + " ===`n")
-        [System.IO.File]::WriteAllText("$syncBase.log", $combined, [System.Text.UTF8Encoding]::new($false))
-        "Env OK: $Repo" | Out-Host
-    }
-    { $_ -in "All", "Probe" } {
-        $decision = Invoke-Adopt @("probe", "--store", $XlmHome, "--source", $U.Source,
-            "--view", $U.View, "--revision", $U.Revision, "--repository", $U.Repository)
-        if ($decision -eq 2) { "existing compatible probe evidence reused" | Out-Host }
-        elseif ($decision -eq 0) {
-            Invoke-Step "probe" @("data", "probe", "--catalog", "manifests/datasets.catalog.yaml",
-                "--source", $U.Source, "--view", $U.View, "--live", "--budget-mib", "16",
-                "--probe-id", "cal01", "--json") $true | Out-Null
-        }
-        else { throw "probe adoption refused; no evidence deleted, no fresh identity minted" }
-    }
-    { $_ -in "All", "SampleBlocks" } {
-        $decision = Invoke-Adopt @("sample-blocks", "--rows", $RowsPath, "--report", $ReportPath,
-            "--source", $U.Source, "--view", $U.View, "--revision", $U.Revision,
-            "--seed", "20260918", "--files-csv", $FileList)
-        if ($decision -eq 2) { "existing compatible row ranges reused" | Out-Host }
-        elseif ($decision -eq 0) {
-            Invoke-Step "sample-blocks" @("data", "sample-blocks", "--source", $U.Source,
-                "--view", $U.View, "--revision", $U.Revision, "--files", $FileList,
-                "--seed", "20260918", "--mode", "rowgroup", "--target-records", "1000",
-                "--output", $RowsPath, "--report", $ReportPath) $true | Out-Null
-        }
-        else { throw "sample-blocks adoption refused; remove the outputs explicitly to redo them" }
-    }
-    { $_ -in "All", "Plan" } {
-        $decision = Invoke-Adopt @("plan", "--plan", $PlanPath, "--rows", $RowsPath,
-            "--source", $U.Source, "--view", $U.View, "--revision", $U.Revision,
-            "--seed", "20260918", "--files-csv", $FileList, "--mode", "selected_records")
-        if ($decision -eq 2) { "existing compatible plan reused" | Out-Host }
-        elseif ($decision -eq 0) {
-            Invoke-Step "plan" @("data", "plan", "--source", $U.Source, "--view", $U.View,
-                "--catalog", "manifests/datasets.catalog.yaml", "--files", $FileList,
-                "--mode", "selected_records", "--row-ranges", $RowsPath,
-                "--adapter-spec", $U.AdapterSpec, "--seed", "20260918", "--attempt", "1",
-                "--pilot-approved", "--output", $PlanPath) $false | Out-Null
-        }
-        else { throw "plan adoption refused; use a new reviewed plan path to redo it" }
-        Invoke-Uv "plan-identity" ($UvBase + @("python", "scripts/calibration_adopt.py",
-            "plan-identity", "--plan", $PlanPath)) $false | Out-Null
-    }
-    { $_ -in "All", "Fetch" } {
-        Invoke-Step "fetch" @("data", "fetch", "--plan", $PlanPath,
-            "--output-dir", $Raw, "--scratch-dir", $Scratch, "--pilot-approved") $true | Out-Null
-    }
-    { $_ -in "All", "Status" } {
-        Invoke-Step "status" @("data", "status", "--plan", $PlanPath,
-            "--scratch-dir", $Scratch) $false | Out-Null
-    }
-    { $_ -in "All", "Verify" } {
-        $decision = Invoke-Adopt @("verify", "--store", $XlmHome, "--plan", $PlanPath,
-            "--output-dir", $Raw)
-        if ($decision -eq 2) {
-            "existing verified publication reused; re-confirming without republishing" | Out-Host
-            Invoke-Step "verify" @("data", "verify", "--plan", $PlanPath,
-                "--output-dir", $Raw, "--scratch-dir", $Scratch, "--json",
-                "--no-publish") $false | Out-Null
-        }
-        elseif ($decision -eq 0) {
-            Invoke-Step "verify" @("data", "verify", "--plan", $PlanPath,
-                "--output-dir", $Raw, "--scratch-dir", $Scratch, "--json") $false | Out-Null
-        }
-        else { throw "verify adoption refused; outputs do not match the published artifact" }
-    }
-    { $_ -in "All", "Adapt" } {
-        $decision = Invoke-Adopt @("adapt", "--output-dir", $Canonical, "--plan", $PlanPath)
-        if ($decision -eq 2) { "existing compatible adapted outputs reused" | Out-Host }
-        elseif ($decision -eq 0) {
-            $adaptArgs = @("data", "adapt", "--plan", $PlanPath, "--adapter", $U.Adapter,
-                "--input", (Join-Path $Raw "selected_records.jsonl"),
-                "--output-dir", $Canonical, "--on-reject", "record")
-            if ($U.AdapterConfig -ne "") { $adaptArgs += @("--adapter-config", $U.AdapterConfig) }
-            Invoke-Step "adapt" $adaptArgs $false | Out-Null
-        }
-        else { throw "adapt adoption refused; use a fresh output dir to redo it" }
-    }
-    { $_ -in "All", "Summary" } {
-        Get-Content -LiteralPath (Join-Path $Canonical "adaptation_summary.json") -Raw -Encoding utf8 | Out-Host
-    }
-    { $_ -in "All", "Record" } {
-        $statusText = Invoke-Step "status-json" @("data", "status", "--plan", $PlanPath,
-            "--scratch-dir", $Scratch, "--json") $false
-        $jsonOnly = $statusText.Substring($statusText.IndexOf("{"))
-        $st = $jsonOnly | ConvertFrom-Json
-        $summary = Get-Content -LiteralPath (Join-Path $Canonical "adaptation_summary.json") -Raw -Encoding utf8 | ConvertFrom-Json
-        $canonOut = Invoke-Uv "canonical-bytes" ($UvBase + @("python", "scripts/mix01_inventory.py",
-            "canonical-bytes", "--input", (Join-Path $Canonical "documents.jsonl"))) $false
-        $canonBytes = ($canonOut -split "`n" | Where-Object { $_ -match '^\d+$' } | Select-Object -Last 1)
-        if ([string]::IsNullOrWhiteSpace($canonBytes)) { throw "could not parse canonical byte count" }
-        foreach ($key in $U.RecordAs) {
-            $recordArgs = $UvBase + @("python", "scripts/mix01_inventory.py", "record",
-                "--calibration", $CalibJson, "--source", $key,
-                "--records-sampled", "$($summary.total_input_records)",
-                "--accepted", "$($summary.accepted_records)",
-                "--rejected", "$($summary.rejected_records)",
-                "--transferred-bytes", "$($st.transferred_bytes)",
-                "--canonical-bytes", "$canonBytes",
-                "--adopt")
-            Write-Command $recordArgs
-            $ts = Get-Date -Format "yyyyMMdd-HHmmssfff"
-            $recBase = Join-Path $LogDir ("record-{0}-{1}" -f $key, $ts)
-            $cap = Invoke-NativeCapture -FilePath "uv" -ArgumentList $recordArgs `
-                -LogBase $recBase -WorkingDirectory $Repo
-            $combined = ("=== STDOUT ===`n" + $cap.Stdout + "`n=== STDERR ===`n" `
-                + $cap.Stderr + "`n=== EXIT: " + $cap.ExitCode + " ===`n")
-            [System.IO.File]::WriteAllText("$recBase.log", $combined, [System.Text.UTF8Encoding]::new($false))
-            if ($cap.Stdout -ne "") { $cap.Stdout | Out-Host }
-            if ($cap.Stderr -ne "") { $cap.Stderr | Out-Host }
-            if ($cap.ExitCode -ne 0) { throw "record ($key) failed with exit $($cap.ExitCode) (log: $recBase.log)" }
-        }
-        "Record OK: $($U.RecordAs -join ', ') -> $CalibJson" | Out-Host
-        if ($Unit -like "ifm_*") {
-            "NOTE: ifm_general + ifm_planning are recorded separately; combine them into" | Out-Host
-            "ifm_behaviors_general_planning with the report one-liner before estimate." | Out-Host
-        }
-    }
+foreach ($name in $StageOrder) {
+    if ($Stage -eq "All" -or $Stage -eq $name) { Invoke-Stage $name }
 }
 
 "Done: unit $Unit stage $Stage" | Out-Host

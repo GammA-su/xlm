@@ -4,11 +4,13 @@
   Offline regression harness for the calibration driver's native wrapper.
 .DESCRIPTION
   Dot-sources operator_calibrate_remaining.ps1 for FUNCTIONS ONLY (its main
-  body is guarded and never executes under '.') with a dummy unit, then
-  asserts the exit-code contract with stub native commands. No network, no
-  acquisition, no uv sync: cmd.exe cases are pure local processes; the two
-  Invoke-Step cases run the already-synced repo env with --offline
-  --no-sync flags. Exits 0 when every case passes, 1 otherwise.
+  body is guarded and never executes under '.') with a dummy unit and a
+  temporary -DataRoot, then asserts the exit-code contract with stub native
+  commands, the human-only output contract (runners return nothing), and
+  exact argv round trips (empty, quotes, backslashes, newlines, Unicode).
+  No network, no acquisition, no uv sync: cmd.exe cases are pure local
+  processes; the Invoke-Step cases run the already-synced repo env with
+  --offline --no-sync flags. Exits 0 when every case passes, 1 otherwise.
 #>
 [CmdletBinding()]
 param(
@@ -18,7 +20,11 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-. "$DriverPath" -Unit simple_stories
+# A temporary -DataRoot makes every driver-derived path (unit root, logs,
+# calibration.json) temporary, so no case can reach operator artifacts.
+$tmp = Join-Path ([System.IO.Path]::GetTempPath()) ("nativecap-" + [guid]::NewGuid().ToString("N"))
+New-Item -ItemType Directory -Path $tmp -Force | Out-Null
+. "$DriverPath" -Unit simple_stories -Repo $WorkDir -DataRoot $tmp
 
 $state = @{ Failed = $false }
 
@@ -34,9 +40,7 @@ function Check([string]$Name, [bool]$Condition, [string]$Detail = "") {
 # C0: sourcing the driver must not weaken error handling.
 Check "error-action-stays-stop" ($ErrorActionPreference -eq "Stop")
 
-$tmp = Join-Path ([System.IO.Path]::GetTempPath()) ("nativecap-" + [guid]::NewGuid().ToString("N"))
-New-Item -ItemType Directory -Path $tmp -Force | Out-Null
-$global:LogDir = Join-Path $tmp "logs"
+Check "driver-paths-temporary" ($LogDir.StartsWith($tmp) -and $CalibJson.StartsWith($tmp))
 Set-Location -LiteralPath $WorkDir
 
 function Invoke-CmdCase([string]$Base, [string]$Chain) {
@@ -67,11 +71,16 @@ $r4 = Invoke-CmdCase "c4" "echo out-here & exit 4"
 Check "nonzero-stdout-reported" ($r4.ExitCode -eq 4) ("exit=" + $r4.ExitCode)
 
 # C5: end-to-end success through Invoke-Step (real offline xlm --help).
+# Human-only output contract: runners emit NOTHING into the pipeline (no
+# caller can scrape stdout); the output lands in the step log instead.
 try {
-    $helpOut = Invoke-Step "help-probe" @("--help") $false
-    Check "step-success-returns" (-not [string]::IsNullOrWhiteSpace($helpOut))
+    $helpOut = @(Invoke-Step "help-probe" @("--help") $false)
+    Check "step-returns-nothing" ($helpOut.Count -eq 0) ("emitted " + $helpOut.Count + " item(s)")
+    $helpLog = Get-ChildItem -LiteralPath $LogDir -Filter "help-probe-*.log" | Select-Object -First 1
+    Check "step-output-logged" ($null -ne $helpLog -and
+        (Get-Content -LiteralPath $helpLog.FullName -Raw) -match "Usage")
 } catch {
-    Check "step-success-returns" $false ("threw: " + $_)
+    Check "step-success" $false ("threw: " + $_)
 }
 
 # C6: end-to-end fail-stop through Invoke-Step (real nonzero exit).
@@ -96,13 +105,26 @@ Check "quote-trailing-backslash" ((ConvertTo-NativeArgument 'trail\') -eq 'trail
 # payload, spaced paths, backslashes and Unicode, each as ONE argv item.
 $nasty = @(
     "plain",
+    "",
     "has space",
     "semi;colon",
+    "single'quote",
     'quote"inside',
+    '"',
     "back\slash",
     "trail\",
+    "trail with space\",
+    "double-trail\\",
+    'slash-before-quote\"x',
+    'two-slashes-before-quote\\"x',
     "C:\Path With\Spaces\file.json",
+    "C:\Path With\Spaces\",
     "unicode-日本語-🌊",
+    "line1`nline2",
+    "tab`there",
+    " leading and trailing ",
+    "--key=value",
+    "--key=value with space",
     "mix'ed`"all; together\",
     'from x import y; print("hi; ok")'
 )

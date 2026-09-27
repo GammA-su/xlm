@@ -8,6 +8,7 @@ fail closed without deletion, overwrite, or fresh-identity bypass.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -177,6 +178,9 @@ def test_7_restart_after_probe_proceeds(tmp_path: Path) -> None:
     assert _probe_main(tmp_path) == 2
     rows, report = _blocks_paths(tmp_path)
     assert _blocks_main(tmp_path, rows, report) == 2
+    report_before = report.read_bytes()
+    # Report without rows is INCOMPLETE: refuse (sample-blocks would silently
+    # overwrite the surviving report) instead of rerunning.
     assert (
         _adopt.main(
             ["sample-blocks"]
@@ -196,8 +200,12 @@ def test_7_restart_after_probe_proceeds(tmp_path: Path) -> None:
                 "a.parquet",
             ]
         )
-        == 0
+        == 1
     )
+    assert report.read_bytes() == report_before
+    rows.unlink()
+    report.unlink()
+    assert _blocks_main(tmp_path, rows, report) == 0  # both absent: run
 
 
 def _saved_plan(tmp_path: Path):
@@ -374,6 +382,11 @@ def test_8_no_republish_of_completed_outputs(tmp_path: Path) -> None:
         "total_input_records": 100,
         "accepted_records": 99,
         "rejected_records": 1,
+        "documents": {
+            "file": "documents.jsonl",
+            "count": 1,
+            "sha256": hashlib.sha256((out / "documents.jsonl").read_bytes()).hexdigest(),
+        },
     }
     (out / "adaptation_summary.json").write_text(json.dumps(summary), encoding="utf-8")
     assert _adopt.main(["adapt", "--output-dir", str(out), "--plan", str(plan_path)]) == 2
@@ -415,3 +428,136 @@ def test_8_no_republish_of_completed_outputs(tmp_path: Path) -> None:
         )
         == 1
     )
+
+
+def _fetch_main(unit: Any) -> int:
+    return _adopt.main(
+        [
+            "fetch",
+            "--plan",
+            str(unit.plan_path),
+            "--scratch-dir",
+            str(unit.scratch),
+            "--output-dir",
+            str(unit.raw),
+        ]
+    )
+
+
+def _edit_journal(unit: Any, **fields: Any) -> None:
+    state = json.loads(unit.journal.read_text(encoding="utf-8"))
+    state.update(fields)
+    unit.journal.write_text(json.dumps(state), encoding="utf-8")
+
+
+def test_fetch_adoption_reuses_only_a_bound_completed_journal(tmp_path: Path) -> None:
+    from calibration_fixture import build_unit
+
+    unit = build_unit(tmp_path / "data")
+    journal_before = unit.journal.read_bytes()
+    assert _fetch_main(unit) == 2
+    assert unit.journal.read_bytes() == journal_before  # adoption never rewrites it
+    for status in ("IN_PROGRESS", "INTERRUPTED", "FAILED"):
+        _edit_journal(unit, status=status)
+        assert _fetch_main(unit) == 0  # unfinished: native resume runs fetch
+    _edit_journal(unit, status="COMPLETED")
+    assert _fetch_main(unit) == 2
+    unit.journal.unlink()
+    assert _fetch_main(unit) == 0
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    ["foreign-hash", "foreign-roots", "corrupt", "drifted-output", "missing-output", "untracked"],
+)
+def test_fetch_adoption_refuses_foreign_or_drifted_state(tmp_path: Path, mutation: str) -> None:
+    from calibration_fixture import build_unit
+
+    unit = build_unit(tmp_path / "data")
+    selected = unit.raw / "selected_records.jsonl"
+    if mutation == "foreign-hash":
+        _edit_journal(unit, plan_hash="0" * 64)
+    elif mutation == "foreign-roots":
+        _edit_journal(unit, storage_roots={"scratch": str(unit.scratch), "output": str(tmp_path)})
+    elif mutation == "corrupt":
+        unit.journal.write_text("{not json", encoding="utf-8")
+    elif mutation == "drifted-output":
+        selected.write_bytes(selected.read_bytes().replace(b"kite", b"kits"))
+    elif mutation == "missing-output":
+        selected.unlink()
+    else:
+        state = json.loads(unit.journal.read_text(encoding="utf-8"))
+        state["file_progress"]["extra.jsonl"] = {"file_path": "extra.jsonl"}
+        unit.journal.write_text(json.dumps(state), encoding="utf-8")
+    assert _fetch_main(unit) == 1
+
+
+def test_partial_outputs_fail_closed_instead_of_rerunning(tmp_path: Path) -> None:
+    from calibration_fixture import (
+        REVISION as FIXTURE_REVISION,
+    )
+    from calibration_fixture import (
+        SOURCE_FILE,
+        adapt_in_process,
+        build_unit,
+    )
+
+    unit = build_unit(tmp_path / "data")
+    blocks = [
+        "sample-blocks",
+        "--rows",
+        str(unit.rows),
+        "--report",
+        str(unit.report),
+        "--source",
+        SOURCE,
+        "--view",
+        VIEW,
+        "--revision",
+        FIXTURE_REVISION,
+        "--seed",
+        "20260918",
+        "--files-csv",
+        SOURCE_FILE,
+    ]
+    assert _adopt.main(blocks) == 2
+    unit.report.unlink()
+    assert _adopt.main(blocks) == 1  # rows without report: incomplete, never rerun
+    assert unit.rows.is_file()
+
+    adapt = ["adapt", "--output-dir", str(unit.canonical), "--plan", str(unit.plan_path)]
+    adapt_in_process(unit)
+    assert _adopt.main(adapt) == 2
+    docs = unit.canonical / "documents.jsonl"
+    original = docs.read_bytes()
+    docs.write_bytes(original[:-10] + b"tampered\n")
+    assert _adopt.main(adapt) == 1  # digest no longer matches the summary binding
+    docs.unlink()
+    assert _adopt.main(adapt) == 1  # summary without documents: incomplete
+    assert (unit.canonical / "adaptation_summary.json").is_file()
+
+
+def test_verify_adoption_refuses_unpublished_extra_outputs(tmp_path: Path) -> None:
+    plan, plan_path, _ = _saved_plan(tmp_path)
+    raw = tmp_path / "raw"
+    raw.mkdir()
+    payload_file = raw / "selected_records.jsonl"
+    payload_file.write_text('{"row": 1}\n', encoding="utf-8")
+    _store(tmp_path).publish_artifact(
+        artifact_id=plan.output_artifact_id,
+        kind="raw_dataset",
+        files={"selected_records.jsonl": payload_file},
+        producer_code_hash="p" * 16,
+        dependency_hash="d" * 16,
+        resolved_config_hash="r" * 16,
+        metadata={
+            "plan_hash": plan.compute_behavioral_hash(),
+            "source_id": "simple_stories",
+            "view_id": "default",
+            "revision": REVISION,
+        },
+    )
+    argv = ["verify", "--store", str(tmp_path), "--plan", str(plan_path), "--output-dir", str(raw)]
+    assert _adopt.main(argv) == 2
+    (raw / "stray.jsonl").write_text("{}\n", encoding="utf-8")
+    assert _adopt.main(argv) == 1

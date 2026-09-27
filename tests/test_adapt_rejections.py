@@ -187,6 +187,13 @@ def test_record_mode_all_accepted(tmp_path: Path) -> None:
     summary = json.loads((out_dir / "adaptation_summary.json").read_text(encoding="utf-8"))
     assert (summary["accepted_records"], summary["rejected_records"]) == (2, 0)
     assert summary["rejection_counts_by_code"] == {}
+    # No staging temp survives publication (a summary writer used to leak an
+    # empty adaptation_summary.json.<uuid>.tmp beside the published triple).
+    assert sorted(p.name for p in out_dir.iterdir()) == [
+        "adaptation_rejections.jsonl",
+        "adaptation_summary.json",
+        "documents.jsonl",
+    ]
 
 
 def test_record_mode_all_rejected(tmp_path: Path) -> None:

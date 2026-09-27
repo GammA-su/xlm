@@ -52,6 +52,21 @@
 > license. See
 > [MIX01-CALIBRATION-REMAINING](reports/MIX01-CALIBRATION-REMAINING.md).
 > Verdict: READY FOR REMAINING CALIBRATION. No live run.
+>
+> **CALIBRATION DRIVER MACHINE-OUTPUT REPAIR (2026-09-27, offline).**
+> SimpleStories stopped in Record after fetch/verify/adapt succeeded:
+> `canonical-bytes` printed `1269186\r\n` and the driver's `'^\d+$'` never
+> matches before `\r` (proven under PS 5.1). The driver no longer parses
+> any subprocess stdout: Record runs `mix01_inventory.py measure`
+> (artifact-derived, cross-checked JSON `<unit>\record_inputs.json`) then
+> `record --measurement`; a bound COMPLETED fetch is adopted without a
+> fetch call; empty-argv and partial-output adoption gaps and an adapt
+> temp-file leak fixed. Real SimpleStories state audited read-only (all six
+> adoption checks REUSE; measured 1000/1000/0, 2,424,514 B → 1,269,186 B).
+> Next: `powershell -NoProfile -ExecutionPolicy Bypass -File
+> G:\Project\xlm-data-ultrax\scripts\operator_calibrate_remaining.ps1
+> -Unit simple_stories -Stage All`. Verdict: READY FOR SIMPLESTORIES FINAL
+> CANARY. See [MIX01-CALIBRATION-REMAINING §7b](reports/MIX01-CALIBRATION-REMAINING.md).
 > Surgical idempotent freeze; focused offline tests + ruff + scoped mypy
 > green. No push. See [MIX01-ULTRAX-6B §15](reports/MIX01-ULTRAX-6B.md).
 >

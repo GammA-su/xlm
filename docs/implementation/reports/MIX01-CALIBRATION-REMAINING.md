@@ -70,11 +70,23 @@ otherwise same-hash no-ops by CLI design); adapted outputs must bind the
 current plan hash (adapt refuses overwrite by CLI design); verified
 publications must verify and bind current outputs (re-verify runs with
 `--no-publish` instead of republishing, since receipts embed fresh
-timestamps); fetch journals resume natively. Anything incompatible,
-corrupt, or incomplete fails closed — never deleted, overwritten, or
-bypassed with a fresh identity. Record uses `--adopt` (identical
-re-records are no-ops, including the convergent essential triple — keep
-`-Files` identical across its three runs; divergent ones fail).
+timestamps); a COMPLETED fetch journal bound to this plan and unit roots
+whose outputs still hash to their journaled digests is adopted WITHOUT
+calling fetch (absent/unfinished journals run fetch, which resumes
+natively). Anything incompatible, corrupt, or incomplete (including only
+one of rows/report or of documents/summary) fails closed — never deleted,
+overwritten, or bypassed with a fresh identity. Record first runs
+`mix01_inventory.py measure`, which derives every value from the artifacts
+(plan → COMPLETED journal → adaptation summary → canonical documents,
+cross-checked by plan id/hash, source, revision, document digest/count and
+per-document byte counts) into `<unit>\record_inputs.json`, then
+`record --measurement <that file> --adopt` (identical re-records are
+no-ops, including the convergent essential triple — keep `-Files`
+identical across its three runs; divergent ones fail).
+
+Machine-value contract: native stdout/stderr are human-only (displayed
+and logged, never returned or parsed). Machine values travel only through
+helper exit codes and deterministic JSON result files (§7b follow-up 3).
 
 `powershell -NoProfile -ExecutionPolicy Bypass -File G:\Project\xlm-data-ultrax\scripts\operator_calibrate_remaining.ps1 -Unit simple_stories -Stage All`
 `powershell -NoProfile -ExecutionPolicy Bypass -File G:\Project\xlm-data-ultrax\scripts\operator_calibrate_remaining.ps1 -Unit finepdfs_en -Stage All`
@@ -115,7 +127,12 @@ review requires it. `-DataRoot` overrides `X:\XLM` (re-measure first).
 `$env:HF_HUB_OFFLINE="1"; $env:HF_DATASETS_OFFLINE="1"`
 `uv run --offline --locked --no-sync --extra cpu --extra eval xlm data adapt --plan X:\XLM\calib\simple_stories\plan.json --adapter simple_stories --input X:\XLM\calib\simple_stories\raw\selected_records.jsonl --output-dir X:\XLM\calib\simple_stories\canonical --on-reject record`
 `Get-Content X:\XLM\calib\simple_stories\canonical\adaptation_summary.json`
-`uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/mix01_inventory.py record --calibration X:\XLM\calib\calibration.json --source simple_stories --records-sampled <T> --accepted <A> --rejected <R> --transferred-bytes <B> --canonical-bytes <C>`
+`uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/mix01_inventory.py measure --plan X:\XLM\calib\simple_stories\plan.json --scratch-dir X:\XLM\calib\simple_stories\scratch --canonical-dir X:\XLM\calib\simple_stories\canonical --source simple_stories --view default --revision e63b8adc3b1a1bdc7cac5b500d150b71346b0628 --output X:\XLM\calib\simple_stories\record_inputs.json`
+`uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/mix01_inventory.py record --calibration X:\XLM\calib\calibration.json --source simple_stories --measurement X:\XLM\calib\simple_stories\record_inputs.json --adopt`
+
+(The explicit `--records-sampled/--accepted/--rejected/--transferred-bytes
+/--canonical-bytes` form still exists for reference entries such as §5;
+never type those numbers from console output.)
 
 Essential adapts add `--adapter-config <slice>`; all other units adapt
 without it. STOPs: after each plan hash (no authorization given here),
@@ -203,6 +220,88 @@ via `mix01_inventory.py canonical-bytes`. The existing SimpleStories plan
 (`plan_simple_stories_default_huggingface_4a55bdec…`, hash
 `a2d45d5d…9624f`) validates through the new path unchanged and is adopted
 on rerun, which then proceeds to the unexecuted Fetch.
+
+Follow-up 3 (machine output must not depend on human output): the next
+SimpleStories run completed fetch (COMPLETED, 2,424,514 B, 1000 records),
+verify (published `raw_simple_stories_default_4a55bdec…`) and adapt
+(1000/0), then aborted in Record with `could not parse canonical byte
+count` although `canonical-bytes` visibly printed `1269186`. Root cause,
+proven under Windows PowerShell 5.1.26100 with a synthetic command
+printing exactly that integer (and byte-identical to the real
+`canonical-bytes-…stdout.txt`, `31 32 36 39 31 38 36 0D 0A`): Python's
+text-mode stdout on Windows writes `\r\n`; the driver split on `` `n ``
+only, leaving `"1269186\r"`, and .NET's `$` (no Multiline) matches only at
+end-of-string or before a final `\n`, never before `\r`, so `'^\d+$'`
+rejected every line and the filter yielded `$null`. The helper and the
+canonical data were correct. Rather than patch one parse site, every
+subprocess-stdout consumer was audited and removed:
+
+| Site | Class | Before | Now |
+|---|---|---|---|
+| Invoke-Step / Invoke-Uv return value | — | returned raw stdout | return nothing (human-only; logged) |
+| Invoke-Adopt | MACHINE (exit code) | exit code | unchanged |
+| plan-identity | HUMAN | displayed, discarded | displayed only (identity is in the measurement) |
+| Record: `data status --json` | MACHINE | `Substring(IndexOf("{"))` + ConvertFrom-Json; no COMPLETED check; crashed on a missing journal | removed; `measure` reads the journal file, requires COMPLETED + plan binding |
+| Record: adaptation summary | MACHINE | ConvertFrom-Json of the file, unchecked | `measure` validates plan id/hash/source/revision/counts |
+| Record: `canonical-bytes` | MACHINE | last `^\d+$` line of stdout (the bug) | `measure` sums strictly (count must equal UTF-8 length of `text`; digest/count must match the summary) |
+| Record: `record` values | MACHINE | five numbers interpolated from the above | `record --measurement <file>` |
+| Fetch rerun | — | re-ran fetch (journal IN_PROGRESS→COMPLETED, perf sidecar overwritten, network flag on) | `calibration_adopt.py fetch` adopts a bound COMPLETED journal; no fetch call |
+| Probe/SampleBlocks/Plan/Verify/Adapt/Status/Summary/Env stdout | HUMAN | discarded/displayed | unchanged |
+
+Further defects found by the audit and fixed: `Invoke-NativeCapture`
+rejected empty argv items (a Mandatory `[string[]]` refuses `""` at bind
+time; now `[AllowEmptyString()]`) and now fails on a missing exit code;
+`calibration_adopt.py` ran (and would silently overwrite) when only one of
+rows/report existed, reused adapted outputs without checking the documents
+digest, and reused a publication while the raw dir held unbound extra
+files — all now refuse; record-mode `data adapt` leaked an empty
+`adaptation_summary.json.<uuid>.tmp` beside every published triple
+(`StagedAdaptation.finish` opened a writer for the summary and then staged
+the summary in a second temp). The existing orphan
+`X:\XLM\calib\simple_stories\canonical\adaptation_summary.json.644f936de856436a971fa7e1523db724.tmp`
+(0 bytes) is harmless and was left untouched; the operator may delete it.
+Argv quoting (`ConvertTo-NativeArgument`) was reviewed and kept: .NET
+Framework (PS 5.1) has no `ProcessStartInfo.ArgumentList`, and the MSVC
+rules are implemented correctly; a 23-item digest round trip (empty, `"`,
+`'`, `;`, trailing/double-trailing backslash, backslash-before-quote,
+spaced paths, Unicode/emoji, newline, tab, `--key=value`, a Python code
+payload) passes byte-exact through PowerShell → Start-Process → uv →
+Python.
+
+Read-only real-state audit (no mutation; before/after snapshots equal):
+plan `plan_simple_stories_default_huggingface_4a55bdec3254c7738c30`, hash
+`a2d45d5d220a2d18209abdd047cd99c91e9fea766b0ebaa8529bbe2cc8a9624f`,
+revision `e63b8adc3b1a1bdc7cac5b500d150b71346b0628`, journal COMPLETED,
+transferred 2,424,514 B, 1000 records, adaptation 1000 accepted / 0
+rejected, canonical 1,269,186 B over 1000 documents (digest `a54d9b3d…`).
+All six adoption checks (probe, sample-blocks, plan, fetch, verify, adapt)
+return REUSE. `measure` against the real artifacts (output to a temp file)
+and `record --measurement` into a temporary COPY of `calibration.json`
+produced exactly: records_sampled 1000, accepted 1000, rejected 0,
+transferred 2424514, canonical 1269186, extra_survival 1.0, with the
+UltraX entry unchanged; a second record was an identical no-op.
+
+Next `-Unit simple_stories -Stage All`: Env (offline `uv sync`) runs;
+Probe, SampleBlocks, Plan (+identity display), Fetch, Verify (re-confirm
+with `--no-publish`), Adapt are REUSED; Status and Summary display; Record
+executes `measure` (writes `record_inputs.json`) and `record` (adds
+`simple_stories` to `calibration.json`). No download, no republication,
+no canonical overwrite, no plan/rows/probe regeneration.
+
+Requirement ledger (follow-up 3):
+
+| Requirement | Status |
+|---|---|
+| Root cause reproduced + explained (PS 5.1, synthetic) | VERIFIED |
+| No driver machine value from stdout | IMPLEMENTED, VERIFIED (static audit + stage harness) |
+| Record values derived from artifacts, cross-checked | IMPLEMENTED, VERIFIED (synthetic + real read-only) |
+| Completed fetch adopted without a fetch call | IMPLEMENTED, VERIFIED (synthetic + real read-only decision) |
+| Synthetic Stage All (all stages but Env) + restart no-op | VERIFIED (`tests/test_operator_driver_stages.py`) |
+| Fail-closed mutations (13 driver-level, 16 measure-level) | VERIFIED |
+| Argv round trip incl. empty/newline | VERIFIED (after the AllowEmptyString fix) |
+| Env stage inside the synthetic harness | NOT RUN (would mutate the shared venv; covered by operator runs) |
+| Real Record into `X:\XLM\calib\calibration.json` | NOT RUN (operator action) |
+| Delete the stray real 0-byte tmp | OUT OF SCOPE (no real-data mutation) |
 
 ## 8. Verdict
 

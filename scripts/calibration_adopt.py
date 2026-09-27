@@ -14,7 +14,12 @@ stage must RUN — using only existing repository adoption/resume semantics:
 - acquisition plans: ``save_acquisition_plan`` is same-hash idempotent, so
   rerunning the CLI is safe; reuse additionally verifies the stored plan
   against current parameters and its own hash.
-- fetch journals: natively resumable; nothing to decide here.
+- fetch journals: an absent or unfinished journal RUNS (native resume is
+  the repository's recovery path). A COMPLETED journal bound to this plan
+  and these storage roots whose completed outputs still hash to their
+  journaled digests is REUSED without calling fetch (a rerun would flip the
+  journal to IN_PROGRESS and overwrite the performance sidecar for a
+  no-op). A foreign/corrupt journal or drifted completed output REFUSES.
 - verify publications: republication embeds fresh timestamps, so it
   CONFLICTS; reuse requires the published artifact to verify and bind to
   the current plan and outputs (then the driver re-confirms with
@@ -31,6 +36,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -38,6 +44,7 @@ from typing import Any
 RUN = 0
 REFUSE = 1
 REUSE = 2
+MAX_JOURNAL_BYTES = 8 * 1024**2
 
 
 class AdoptionRefused(ValueError):
@@ -167,9 +174,15 @@ def check_sample_blocks(
 
 def cmd_sample_blocks(args: argparse.Namespace) -> int:
     files = [name.strip() for name in args.files_csv.split(",") if name.strip()]
-    if not Path(args.rows).is_file() or not Path(args.report).is_file():
+    rows_exist, report_exists = Path(args.rows).is_file(), Path(args.report).is_file()
+    if not rows_exist and not report_exists:
         print("no sampled row ranges; run sample-blocks")
         return RUN
+    if not (rows_exist and report_exists):
+        return _fail(
+            "only one of the row ranges / sampling report exists (incomplete); "
+            "remove the outputs explicitly to redo them"
+        )
     try:
         rows = _read_json(Path(args.rows), "row ranges")
         report = _read_json(Path(args.report), "sampling report")
@@ -248,8 +261,10 @@ def cmd_plan(args: argparse.Namespace) -> int:
     return REUSE
 
 
-def check_adapt(summary: Any, *, plan_id: str, plan_hash: str) -> None:
-    """Verify adapted outputs belong to this exact plan."""
+def check_adapt(
+    summary: Any, *, plan_id: str, plan_hash: str, documents: tuple[int, str] | None = None
+) -> None:
+    """Verify adapted outputs belong to this exact plan (and match their digest)."""
     if not isinstance(summary, dict):
         raise AdoptionRefused("adaptation summary is not a mapping")
     if summary.get("plan_id") != plan_id or summary.get("plan_hash") != plan_hash:
@@ -257,27 +272,140 @@ def check_adapt(summary: Any, *, plan_id: str, plan_hash: str) -> None:
     total = summary.get("total_input_records", 0)
     if not isinstance(total, int) or total < 1:
         raise AdoptionRefused("adaptation summary reports no adapted records")
+    if documents is not None:
+        bound = summary.get("documents")
+        if not isinstance(bound, dict) or bound.get("file") != "documents.jsonl":
+            raise AdoptionRefused("adaptation summary lacks its documents.jsonl binding")
+        size, digest = documents
+        if bound.get("sha256") != digest:
+            raise AdoptionRefused(
+                f"documents.jsonl ({size} bytes) differs from the digest its summary binds"
+            )
 
 
 def cmd_adapt(args: argparse.Namespace) -> int:
+    from xlm.artifacts.store import compute_file_sha256
     from xlm.data.acquisition.plan import load_acquisition_plan
 
     out = Path(args.output_dir)
     docs = out / "documents.jsonl"
     summary_path = out / "adaptation_summary.json"
-    if not docs.is_file() or not summary_path.is_file():
+    if not docs.is_file() and not summary_path.is_file():
         print("no adapted outputs; run data adapt")
         return RUN
+    if not (docs.is_file() and summary_path.is_file()):
+        return _fail(
+            "only one of documents.jsonl / adaptation_summary.json exists "
+            "(incomplete); use a fresh output dir to redo it"
+        )
     try:
         try:
             plan = load_acquisition_plan(Path(args.plan))
         except Exception as exc:
             raise AdoptionRefused(f"plan file failed validation: {exc}") from exc
         summary = _read_json(summary_path, "adaptation summary")
-        check_adapt(summary, plan_id=plan.plan_id, plan_hash=plan.compute_behavioral_hash())
+        size = docs.stat().st_size
+        check_adapt(
+            summary,
+            plan_id=plan.plan_id,
+            plan_hash=plan.compute_behavioral_hash(),
+            documents=(size, compute_file_sha256(docs, max_bytes=size)),
+        )
     except AdoptionRefused as exc:
         return _fail(f"{exc}; use a fresh output dir to redo it")
     print("existing compatible adapted outputs reused")
+    return REUSE
+
+
+def _same_path(left: str | Path, right: str | Path) -> bool:
+    return os.path.normcase(str(Path(left).resolve())) == os.path.normcase(
+        str(Path(right).resolve())
+    )
+
+
+def check_fetch(
+    state: Any,
+    *,
+    plan_id: str,
+    plan_hash: str,
+    expected_files: set[str],
+    scratch_dir: Path,
+    output_dir: Path,
+) -> dict[str, tuple[int, str]]:
+    """Verify a COMPLETED journal binds this plan/roots; return completed file facts."""
+    if state.plan_id != plan_id or state.plan_hash != plan_hash:
+        raise AdoptionRefused("fetch journal binds a different plan identity")
+    if state.status != "COMPLETED":
+        raise AdoptionRefused(f"fetch journal status {state.status!r} is not COMPLETED")
+    roots = state.storage_roots
+    if not _same_path(roots.get("output", ""), output_dir) or not _same_path(
+        roots.get("scratch", ""), scratch_dir
+    ):
+        raise AdoptionRefused(f"fetch journal storage roots {roots} differ from this unit's")
+    if set(state.file_progress) != expected_files:
+        raise AdoptionRefused(
+            f"fetch journal tracks {sorted(state.file_progress)} "
+            f"instead of {sorted(expected_files)}"
+        )
+    completed: dict[str, tuple[int, str]] = {}
+    for name, progress in sorted(state.file_progress.items()):
+        if progress.status != "completed" or not progress.content_sha256:
+            raise AdoptionRefused(f"journaled output '{name}' is not completed with a digest")
+        completed[name] = (progress.bytes_downloaded, progress.content_sha256)
+    return completed
+
+
+def cmd_fetch(args: argparse.Namespace) -> int:
+    from xlm.artifacts.store import compute_file_sha256
+    from xlm.data.acquisition.plan import load_acquisition_plan
+    from xlm.data.acquisition.progress import AcquisitionState
+
+    try:
+        plan = load_acquisition_plan(Path(args.plan))
+    except Exception as exc:
+        return _fail(f"plan file failed validation: {exc}")
+    journal = Path(args.scratch_dir) / "journals" / f"{plan.plan_id}.progress.json"
+    if not journal.exists():
+        print("no fetch journal; run data fetch")
+        return RUN
+    try:
+        if journal.stat().st_size > MAX_JOURNAL_BYTES:
+            raise AdoptionRefused(f"fetch journal exceeds {MAX_JOURNAL_BYTES} bytes")
+        try:
+            state = AcquisitionState.model_validate_json(journal.read_bytes())
+        except Exception as exc:
+            raise AdoptionRefused(f"fetch journal is corrupt: {exc}") from exc
+        plan_hash = plan.compute_behavioral_hash()
+        if state.plan_id != plan.plan_id or state.plan_hash != plan_hash:
+            raise AdoptionRefused("fetch journal binds a different plan identity")
+        if state.status != "COMPLETED":
+            print(f"fetch journal status {state.status}; native resume runs data fetch")
+            return RUN
+        expected = (
+            {"selected_records.jsonl"}
+            if plan.mode.value == "selected_records"
+            else set(plan.selected_files)
+        )
+        completed = check_fetch(
+            state,
+            plan_id=plan.plan_id,
+            plan_hash=plan_hash,
+            expected_files=expected,
+            scratch_dir=Path(args.scratch_dir),
+            output_dir=Path(args.output_dir),
+        )
+        for name, (size, digest) in completed.items():
+            path = Path(args.output_dir) / name
+            if not path.is_file() or path.stat().st_size != size:
+                raise AdoptionRefused(f"completed output '{name}' is missing or resized")
+            if compute_file_sha256(path, max_bytes=size) != digest:
+                raise AdoptionRefused(f"completed output '{name}' differs from its journal digest")
+    except AdoptionRefused as exc:
+        return _fail(f"{exc}; refusing to refetch over or beside it")
+    print(
+        f"existing completed fetch reused: {plan.plan_id} transferred "
+        f"{state.transferred_bytes} bytes, {state.records_acquired} records"
+    )
     return REUSE
 
 
@@ -310,6 +438,9 @@ def check_verify(
     missing = sorted(set(stored) - set(current))
     if missing:
         raise AdoptionRefused(f"published files missing from outputs: {missing}")
+    extra = sorted(set(current) - set(stored))
+    if extra:
+        raise AdoptionRefused(f"outputs carry files the publication never bound: {extra}")
     for path, entry in sorted(stored.items()):
         size, digest = current[path]
         if size != entry.size_bytes or digest != entry.sha256:
@@ -323,8 +454,7 @@ def cmd_verify(args: argparse.Namespace) -> int:
     try:
         plan = load_acquisition_plan(Path(args.plan))
     except Exception as exc:
-        print(f"plan file failed validation: {exc}")
-        return REFUSE
+        return _fail(f"plan file failed validation: {exc}")
     store = _store(args.store)
     artifact_dir = args.store / "raw_dataset" / plan.output_artifact_id
     if not artifact_dir.is_dir() or not (artifact_dir / "_COMPLETED").is_file():
@@ -408,6 +538,12 @@ def build_parser() -> argparse.ArgumentParser:
     adapt.add_argument("--output-dir", type=Path, required=True)
     adapt.add_argument("--plan", type=Path, required=True)
     adapt.set_defaults(func=cmd_adapt)
+
+    fetch = sub.add_parser("fetch", help="Adopt a completed fetch journal or run.")
+    fetch.add_argument("--plan", type=Path, required=True)
+    fetch.add_argument("--scratch-dir", type=Path, required=True)
+    fetch.add_argument("--output-dir", type=Path, required=True)
+    fetch.set_defaults(func=cmd_fetch)
 
     verify = sub.add_parser("verify", help="Adopt a verified publication or run.")
     verify.add_argument("--store", type=Path, required=True)
