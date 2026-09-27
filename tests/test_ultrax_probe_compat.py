@@ -62,16 +62,40 @@ STUB_ROWS = [
 
 
 class _StubInfo:
-    def __init__(self, features: dict[str, str]) -> None:
+    def __init__(self, features: Any) -> None:
         self.features = features
 
 
 class _StubBuilder:
-    def __init__(self, features: dict[str, str]) -> None:
+    def __init__(self, features: Any) -> None:
         self.info = _StubInfo(features)
 
 
-def _install_stubs(monkeypatch: pytest.MonkeyPatch, calls: dict[str, Any]) -> None:
+class _StubStream:
+    """Pinned streaming dataset double: iterable rows plus declared .features."""
+
+    def __init__(self, rows: list[dict[str, Any]], features: Any) -> None:
+        self._rows = rows
+        self.features = features
+
+    def __iter__(self) -> Any:
+        return iter([dict(row) for row in self._rows])
+
+
+def _install_stubs(
+    monkeypatch: pytest.MonkeyPatch,
+    calls: dict[str, Any],
+    *,
+    builder_features: Any = "default",
+    stream_features: Any = "default",
+    rows: list[dict[str, Any]] | None = None,
+) -> None:
+    """Stub datasets 5.0.1 with scenario knobs ('default' keeps the happy path)."""
+    scenario_rows = list(STUB_ROWS) if rows is None else rows
+    if builder_features == "default":
+        builder_features = {field: "Value('string')" for field in STUB_ROWS[0]}
+    if stream_features == "default":
+        stream_features = {field: "Value('string')" for field in STUB_ROWS[0]}
     datasets_stub = types.ModuleType("datasets")
 
     def get_dataset_config_names(path: str, revision: str | None = None) -> list[str]:
@@ -82,7 +106,7 @@ def _install_stubs(monkeypatch: pytest.MonkeyPatch, calls: dict[str, Any]) -> No
         path: str, name: str | None = None, revision: str | None = None
     ) -> Any:
         calls["builder"] = {"path": path, "name": name, "revision": revision}
-        return _StubBuilder({field: f"string:{field}" for field in STUB_ROWS[0]})
+        return _StubBuilder(builder_features)
 
     def load_dataset(
         path: str,
@@ -98,7 +122,7 @@ def _install_stubs(monkeypatch: pytest.MonkeyPatch, calls: dict[str, Any]) -> No
             "streaming": streaming,
             "revision": revision,
         }
-        return iter(list(STUB_ROWS))
+        return _StubStream(scenario_rows, stream_features)
 
     datasets_stub.get_dataset_config_names = get_dataset_config_names  # type: ignore[attr-defined]
     datasets_stub.load_dataset_builder = load_dataset_builder  # type: ignore[attr-defined]
@@ -131,8 +155,9 @@ def test_helpers_forward_exact_revision_without_remote_code(
     features = _describe_features(REPO, CONFIG, revision=RESOLVED_SHA)
     assert sorted(features) == sorted(STUB_ROWS[0])
     assert calls["builder"] == {"path": REPO, "name": CONFIG, "revision": RESOLVED_SHA}
-    rows, _ = _sample_rows(REPO, CONFIG, "train", 3, 60.0, revision=RESOLVED_SHA)
+    rows, _, stream_fields = _sample_rows(REPO, CONFIG, "train", 3, 60.0, revision=RESOLVED_SHA)
     assert len(rows) == 3
+    assert sorted(stream_fields) == sorted(STUB_ROWS[0])
     assert calls["load"] == {
         "path": REPO,
         "name": CONFIG,
@@ -177,6 +202,9 @@ def test_probe_main_receipt_and_sample_are_revision_bound(
     assert receipt["repository"] == REPO
     assert receipt["revision_sha"] == RESOLVED_SHA
     assert receipt["config_verified"] is True
+    assert receipt["schema_evidence"] == {"source": "builder_info", "rows": 0}
+    assert receipt["schema_match"] is True
+    assert sorted(receipt["field_names"]) == sorted(STUB_ROWS[0])
     raw = sample_path.read_bytes()
     assert raw[:1] == b"{"
     assert b"\r" not in raw
@@ -187,6 +215,112 @@ def test_probe_main_receipt_and_sample_are_revision_bound(
         assert row["_cert_source_file"] == expected_locator
         assert row["_cert_source_row"] == index
         assert row["_cert_revision"] == RESOLVED_SHA
+
+
+def _run_probe(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    calls: dict[str, Any],
+    **stub_kwargs: Any,
+) -> dict[str, Any]:
+    """Run the stubbed probe end-to-end; return the parsed receipt."""
+    _install_stubs(monkeypatch, calls, **stub_kwargs)
+    receipt_path = tmp_path / "receipt.json"
+    sample_path = tmp_path / "sample.jsonl"
+    assert (
+        probe_main(
+            [
+                "--probe-aliases",
+                "--config",
+                CONFIG,
+                "--split",
+                "train",
+                "--max-rows",
+                "30",
+                "--timeout-seconds",
+                "60",
+                "--output",
+                str(receipt_path),
+                "--save-sample",
+                str(sample_path),
+            ]
+        )
+        == 0
+    )
+    return json.loads(receipt_path.read_text(encoding="utf-8"))
+
+
+def test_schema_builder_info_populated(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """A: declared builder metadata wins and is labeled honestly."""
+    calls: dict[str, Any] = {}
+    receipt = _run_probe(monkeypatch, tmp_path, calls)
+    assert receipt["schema_evidence"] == {"source": "builder_info", "rows": 0}
+    assert receipt["schema_match"] is True
+    assert receipt["declared_field_types"]
+    for key in ("config_names", "builder", "load"):
+        assert calls[key]["revision"] == RESOLVED_SHA, key
+
+
+def test_schema_streaming_features_fallback(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """B: empty builder info falls through to pinned streaming features."""
+    calls: dict[str, Any] = {}
+    receipt = _run_probe(monkeypatch, tmp_path, calls, builder_features=None)
+    assert receipt["schema_evidence"] == {"source": "streaming_features", "rows": 0}
+    assert receipt["schema_match"] is True
+    assert receipt["declared_field_types"] == {}
+    assert sorted(receipt["stream_field_types"]) == sorted(STUB_ROWS[0])
+
+
+def test_schema_observed_rows_fallback(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """C: no declared metadata anywhere derives honestly from bounded rows."""
+    calls: dict[str, Any] = {}
+    receipt = _run_probe(monkeypatch, tmp_path, calls, builder_features=None, stream_features=None)
+    assert receipt["schema_evidence"] == {"source": "observed_rows", "rows": 3}
+    assert receipt["schema_match"] is True
+    assert receipt["declared_field_types"] == {}
+    assert receipt["stream_field_types"] == {}
+    assert receipt["observed_field_types"] == {
+        "cleaned_content": "string",
+        "processed_functions": "string",
+        "raw_content": "string",
+        "source": "string",
+        "uid": "string",
+    }
+
+
+def test_schema_missing_field_fails_closed(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """D: a row missing one expected field refuses certification."""
+    calls: dict[str, Any] = {}
+    rows = [dict(row) for row in STUB_ROWS]
+    del rows[1]["source"]
+    receipt = _run_probe(
+        monkeypatch, tmp_path, calls, builder_features=None, stream_features=None, rows=rows
+    )
+    assert receipt["schema_evidence"]["source"] == "observed_rows"
+    assert receipt["schema_match"] is False
+
+
+def test_schema_wrong_type_fails_closed(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """E: a wrongly typed field refuses certification."""
+    calls: dict[str, Any] = {}
+    rows = [dict(row) for row in STUB_ROWS]
+    rows[0]["uid"] = 42
+    receipt = _run_probe(
+        monkeypatch, tmp_path, calls, builder_features=None, stream_features=None, rows=rows
+    )
+    assert receipt["schema_match"] is False
+    assert receipt["observed_field_types"]["uid"] == "mixed:int64,string"
+
+
+def test_no_unpinned_operation_occurs(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """F+H: the exact SHA reaches every network/schema/data call; nothing is unpinned."""
+    calls: dict[str, Any] = {}
+    _run_probe(monkeypatch, tmp_path, calls, builder_features=None, stream_features=None)
+    for key in ("config_names", "builder", "load"):
+        assert calls[key]["revision"] == RESOLVED_SHA, key
+    assert calls["load"]["streaming"] is True
 
 
 def test_cert_source_file_design() -> None:

@@ -18,8 +18,10 @@
 > `a88527…d8df`, `apache-2.0`, frozen in views + catalog, formatting
 > restored). Fixed: datasets-5.0.1 `trust_remote_code` removal (permanent),
 > exact-SHA forwarding to all datasets calls, `hf-stream://` virtual cert
-> locator, no-BOM writer (current BOM'd sample is NOT authoritative),
-> strengthened live-cert contract (UID rule unchanged: non-empty string).
+> locator, no-BOM writer, declared/streaming/observed schema fallback with
+> honest evidence source, strengthened live-cert contract (UID rule
+> unchanged: non-empty string). Operator evidence: clean 30-row sample
+> present, receipt predates the schema-evidence format — re-probe required.
 > Surgical idempotent freeze; focused offline tests + ruff + scoped mypy
 > green. No push. See [MIX01-ULTRAX-6B §15](reports/MIX01-ULTRAX-6B.md).
 >

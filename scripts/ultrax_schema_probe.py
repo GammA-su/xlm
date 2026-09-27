@@ -113,16 +113,41 @@ def _verify_config(repo: str, config: str, *, revision: str) -> list[str]:
     return sorted(names)
 
 
+def _features_to_strings(features: Any) -> dict[str, str]:
+    """Render a datasets Features mapping (or None) as bounded name->type strings."""
+    if not features:
+        return {}
+    try:
+        names = list(features)
+    except TypeError:
+        return {}
+    rendered: dict[str, str] = {}
+    for name in names:
+        try:
+            rendered[str(name)] = str(features[name])[:200]
+        except (KeyError, TypeError):
+            return {}
+    return rendered
+
+
 def _describe_features(repo: str, config: str, *, revision: str) -> dict[str, str]:
-    """Describe features at the exact pinned revision (never HEAD)."""
+    """Declared config schema at the exact pinned revision (never HEAD).
+
+    For plain parquet-backed repositories without card-declared
+    ``dataset_info.features`` this is empty BY DESIGN (datasets 5.x
+    ``Parquet._info`` only echoes ``config.features``; Arrow-schema
+    inference happens in ``_split_generators``). Empty here is not a
+    refusal: the caller falls through to the streaming and observed
+    evidence levels.
+    """
     try:
         from datasets import load_dataset_builder
     except ImportError as exc:
         raise RuntimeError("datasets is required for the operator probe") from exc
     # No trust_remote_code: removed in datasets 5.x; UltraX needs no remote code.
     builder = load_dataset_builder(repo, config, revision=revision)
-    features = builder.info.features or {}
-    return {name: str(features[name])[:200] for name in features}
+    info = getattr(builder, "info", None)
+    return _features_to_strings(getattr(info, "features", None))
 
 
 def _sample_rows(
@@ -133,7 +158,7 @@ def _sample_rows(
     timeout_seconds: float,
     *,
     revision: str,
-) -> tuple[list[dict[str, Any]], float]:
+) -> tuple[list[dict[str, Any]], float, dict[str, str]]:
     """Stream a bounded sample at the exact pinned revision (never HEAD)."""
     try:
         from datasets import load_dataset
@@ -142,6 +167,9 @@ def _sample_rows(
     started = time.monotonic()
     # No trust_remote_code: removed in datasets 5.x; UltraX needs no remote code.
     dataset = load_dataset(repo, config, split=split, streaming=True, revision=revision)
+    # Streaming construction runs _split_generators, which infers features
+    # from the pinned parquet Arrow-schema footer: bounded metadata, no rows.
+    stream_fields = _features_to_strings(getattr(dataset, "features", None))
     rows: list[dict[str, Any]] = []
     for row in dataset:
         rows.append({k: row.get(k) for k in row})
@@ -149,7 +177,7 @@ def _sample_rows(
             break
         if time.monotonic() - started > timeout_seconds:
             raise TimeoutError("bounded sample exceeded --timeout-seconds")
-    return rows, time.monotonic() - started
+    return rows, time.monotonic() - started, stream_fields
 
 
 def _uid_format(uids: list[str]) -> dict[str, Any]:
@@ -190,6 +218,112 @@ def cert_source_file(repository: str, revision_sha: str, config: str, split: str
     return f"hf-stream://{repository}@{revision_sha}/{config}/{split}"
 
 
+def _scalar_kind(value: Any) -> str:
+    """Coarse observed type name for one sampled value (bool before int)."""
+    if value is None:
+        return "null"
+    if isinstance(value, bool):
+        return "bool"
+    if isinstance(value, str):
+        return "string"
+    if isinstance(value, int):
+        return "int64"
+    if isinstance(value, float):
+        return "float64"
+    if isinstance(value, bytes):
+        return "binary"
+    if isinstance(value, list):
+        return "list"
+    if isinstance(value, dict):
+        return "struct"
+    return type(value).__name__
+
+
+def _observed_field_types(rows: list[dict[str, Any]]) -> tuple[dict[str, str], dict[str, int]]:
+    """Field names, coarse types and per-field presence counts from sampled rows only."""
+    kinds: dict[str, set[str]] = {}
+    presence: dict[str, int] = {}
+    for row in rows:
+        for key, value in row.items():
+            name = str(key)
+            kinds.setdefault(name, set()).add(_scalar_kind(value))
+            presence[name] = presence.get(name, 0) + 1
+    observed: dict[str, str] = {}
+    for key in sorted(kinds):
+        non_null = sorted(kinds[key] - {"null"})
+        if not non_null:
+            observed[key] = "null"
+        elif len(non_null) == 1:
+            observed[key] = non_null[0]
+        else:
+            observed[key] = "mixed:" + ",".join(non_null)
+    return observed, presence
+
+
+def _is_string_valued(type_name: Any) -> bool:
+    """True for observed 'string' and datasets 5.x \"Value('string')\" spellings."""
+    return isinstance(type_name, str) and (
+        type_name == "string" or type_name.startswith("Value('string'")
+    )
+
+
+def _expected_fields_ok(
+    field_types: dict[str, Any], presence: dict[str, int] | None, row_count: int
+) -> bool:
+    """Fail-closed check: every expected field present and string-valued.
+
+    For row-derived evidence ``presence`` must show the field in EVERY
+    sampled row (a ragged corpus fails even when the field union looks
+    complete). Declared metadata carries no presence map and is checked on
+    declaration alone; the sampled rows are always checked separately.
+    """
+    for field in EXPECTED_FIELDS:
+        if field not in field_types or not _is_string_valued(field_types[field]):
+            return False
+        if presence is not None and presence.get(field, 0) != row_count:
+            return False
+    return True
+
+
+def _resolve_schema(
+    declared: dict[str, str],
+    stream: dict[str, str],
+    rows: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Select the strongest available schema evidence, honestly labeled.
+
+    Precedence: declared builder metadata, then pinned streaming
+    Arrow-schema features, then types derived from the bounded sampled
+    rows. The returned bundle always carries the evidence source and the
+    row count behind an observed derivation, so the receipt never pretends
+    builder metadata exists when it does not.
+    """
+    if declared:
+        return {
+            "field_types": declared,
+            "source": "builder_info",
+            "rows": 0,
+            "declared": declared,
+            "stream": stream,
+        }
+    if stream:
+        return {
+            "field_types": stream,
+            "source": "streaming_features",
+            "rows": 0,
+            "declared": declared,
+            "stream": stream,
+        }
+    observed, _ = _observed_field_types(rows)
+    return {
+        "field_types": observed,
+        "source": "observed_rows",
+        "rows": len(rows),
+        "declared": declared,
+        "stream": stream,
+    }
+
+
 def build_receipt(
     *,
     repository: str,
@@ -198,6 +332,9 @@ def build_receipt(
     split: str,
     configs_observed: list[str],
     features: dict[str, str],
+    schema_evidence: dict[str, Any],
+    declared_field_types: dict[str, str],
+    stream_field_types: dict[str, str],
     rows: list[dict[str, Any]],
     declared_license: Any,
     alias_outcomes: dict[str, dict[str, Any]],
@@ -206,7 +343,15 @@ def build_receipt(
     timeout_seconds: float,
 ) -> dict[str, Any]:
     field_names = sorted(features)
-    schema_match = sorted(field_names) == sorted(EXPECTED_FIELDS)
+    observed_types, observed_presence = _observed_field_types(rows)
+    extra_fields = sorted(set(observed_types) - set(EXPECTED_FIELDS))
+    # Fail closed on BOTH levels: the selected evidence must show the five
+    # string fields, AND the sampled rows themselves must prove them in
+    # every row. Extra observed fields follow adapter policy (recorded,
+    # ignored, never fatal).
+    schema_match = _expected_fields_ok(features, None, len(rows)) and _expected_fields_ok(
+        observed_types, observed_presence, len(rows)
+    )
     uids = [r.get("uid") for r in rows if isinstance(r.get("uid"), str)]
     sources = collections.Counter(
         r.get("source") if isinstance(r.get("source"), str) else "<non-string>" for r in rows
@@ -256,6 +401,12 @@ def build_receipt(
         "field_types": features,
         "expected_fields": list(EXPECTED_FIELDS),
         "schema_match": schema_match,
+        "schema_evidence": schema_evidence,
+        "declared_field_types": declared_field_types,
+        "stream_field_types": stream_field_types,
+        "observed_field_types": observed_types,
+        "observed_field_presence": observed_presence,
+        "extra_fields": extra_fields,
         "rows_sampled": len(rows),
         "max_rows": max_rows,
         "uid_format": _uid_format(uids),
@@ -330,8 +481,8 @@ def main(argv: list[str] | None = None) -> int:
         )
     try:
         configs_observed = _verify_config(repository, args.config, revision=revision_sha)
-        features = _describe_features(repository, args.config, revision=revision_sha)
-        rows, sample_seconds = _sample_rows(
+        declared_fields = _describe_features(repository, args.config, revision=revision_sha)
+        rows, sample_seconds, stream_fields = _sample_rows(
             repository,
             args.config,
             args.split,
@@ -339,6 +490,7 @@ def main(argv: list[str] | None = None) -> int:
             args.timeout_seconds,
             revision=revision_sha,
         )
+        schema = _resolve_schema(declared_fields, stream_fields, rows)
         cert_locator = cert_source_file(repository, revision_sha, args.config, args.split)
     except Exception as exc:  # noqa: BLE001 - operator-facing refusal
         return _fail(str(exc))
@@ -349,7 +501,10 @@ def main(argv: list[str] | None = None) -> int:
         config=args.config,
         split=args.split,
         configs_observed=configs_observed,
-        features=features,
+        features=schema["field_types"],
+        schema_evidence={"source": schema["source"], "rows": schema["rows"]},
+        declared_field_types=declared_fields,
+        stream_field_types=stream_fields,
         rows=rows,
         declared_license=alias_outcomes[repository].get("license"),
         alias_outcomes=alias_outcomes,
@@ -384,6 +539,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"revision_sha: {revision_sha}")
     print(f"config_verified: {receipt['config_verified']}")
     print(f"schema_match: {receipt['schema_match']} fields={receipt['field_names']}")
+    print(f"schema_evidence: {receipt['schema_evidence']}")
     print(f"rows_sampled: {receipt['rows_sampled']}")
     print(f"receipt: {args.output}")
     return 0

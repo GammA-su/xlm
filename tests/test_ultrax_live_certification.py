@@ -92,6 +92,13 @@ def _check_receipt(receipt: dict[str, Any]) -> str:
     assert sorted(receipt["field_names"]) == sorted(EXPECTED_FIELDS)
     assert isinstance(receipt.get("declared_license"), str) and receipt["declared_license"].strip()
     assert receipt["rows_sampled"] >= 1
+    evidence = receipt.get("schema_evidence")
+    assert isinstance(evidence, dict) and evidence.get("source") in (
+        "builder_info",
+        "streaming_features",
+        "observed_rows",
+    ), "receipt must honestly label its schema evidence source"
+    assert receipt.get("schema_match") is True
     return revision
 
 
@@ -192,6 +199,8 @@ def _authored_cert_fixture(directory: Path) -> tuple[dict[str, Any], list[dict[s
         "field_names": list(EXPECTED_FIELDS),
         "declared_license": "apache-2.0",
         "rows_sampled": 3,
+        "schema_evidence": {"source": "observed_rows", "rows": 3},
+        "schema_match": True,
     }
     locator = f"hf-stream://{EXPECTED_REPOSITORY}@{revision}/{EXPECTED_CONFIG}/train"
     rows = [

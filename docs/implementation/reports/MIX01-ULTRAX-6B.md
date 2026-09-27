@@ -347,9 +347,16 @@ probe-path defects; all are fixed in-tree (commit on
 4. **UTF-8 BOM**: the manual PowerShell rewrite left a BOM + CRLF in the
    operator sample. The reader is NOT weakened: BOM input fails closed
    with an explicit regeneration message. The probe writer emits UTF-8, no
-   BOM, LF (asserted byte-level in the compat test). The current
-   `D:\Project\xlm-operator-ultrax\adapter-cert-ultrax01\real-records.jsonl`
-   is NOT authoritative evidence and must be regenerated.
+   BOM, LF (asserted byte-level in the compat test).
+5. **Schema discovery under pinning (datasets 5.0.1)**: `Parquet._info`
+   only echoes card-declared `config.features`, so
+   `load_dataset_builder(..., revision=SHA).info.features` is empty BY
+   DESIGN for this card-less parquet config. The probe now falls through
+   builder metadata → pinned streaming Arrow-schema `.features` → types
+   observed from the bounded rows, recording
+   `schema_evidence: {source, rows}` honestly and requiring the five
+   string fields on BOTH the selected evidence and every sampled row
+   (ragged/mistyped rows fail). Covered by scenario tests A–H.
 5. **Live-cert contract**: `tests/test_ultrax_live_certification.py` now
    checks pin + repository/config/schema + per-row locator + revision
    equality + verbatim `cleaned_content` + identity/determinism + no-raw
@@ -374,5 +381,12 @@ Live certification after the probe (offline; `XLM_ULTRAX_CERT_DIR` defaults
 to the path above):
 
 `uv run --offline --locked --extra cpu --extra eval python -m pytest tests/test_ultrax_live_certification.py -n 0`
+
+Evidence state at repair time: clean 30-row sample present
+(`adapter-cert-ultrax01/real-records.jsonl`, LF/no-BOM — 4/5 live nodes
+already pass verbatim/identity checks against it); the on-disk receipt
+predates the `schema_evidence` format, so the receipt gate refuses it
+until the re-probe below regenerates it. No operator file was written by
+the agent.
 
 Verdict after repair: **READY FOR OPERATOR RE-PROBE**.
