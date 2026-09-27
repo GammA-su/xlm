@@ -514,7 +514,8 @@ network latency. They are not production-fetch throughput.
 
 ## 21. Commit
 
-The commit follows this report on `data/mix01-ultrax-6b`. It is not
+Implementation commit `b662208` on `data/mix01-ultrax-6b`, parent
+`60a14e4`. This SHA was recorded by a follow-up docs-only commit. Not
 pushed.
 
 ## 22. Exact USER retry command
