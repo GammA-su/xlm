@@ -35,7 +35,14 @@ from pathlib import Path
 from typing import Any
 
 TOOL_ID = "essential-web-selector-sweep"
-TOOL_VERSION = "1"
+TOOL_VERSION = "2"
+# Report-output schema version, recorded in crosstabs.json and
+# diagnostics.json. Bumped to 2 for the corrected reporting pass:
+# primary-path FDC level labels, publisher metadata word-count
+# distributions, within-component genre-share denominators, and the
+# endpoint-RSS rename. Selector assignment logic is unchanged.
+REPORT_SCHEMA_VERSION = 2
+WORDS_PATH = "quality_signals.red_pajama_v2.rps_doc_word_count"
 POLICIES = ("A", "B", "C", "D")
 TIERS = ("normal", "strict")
 FINAL_COMPONENTS = (
@@ -592,6 +599,34 @@ def _english_summary(values: Sequence[float]) -> dict[str, Any]:
     }
 
 
+def _words_summary(values: Sequence[float], missing: int) -> dict[str, Any]:
+    """Bounded publisher-metadata word-count summary (words, never tokens).
+
+    Nearest-rank percentiles, same rank rule as `_nearest_percentiles`;
+    the sum runs over the sorted values so float summation order is
+    canonical. Cells with no numeric values report `unavailable` rather
+    than failing the sweep.
+    """
+    if not values:
+        return {
+            "status": "unavailable",
+            "reason": f"no numeric {WORDS_PATH} values in this cell",
+            "n": 0,
+            "missing_or_nonnumeric": missing,
+        }
+    dist = _nearest_percentiles(values)
+    ordered = sorted(values)
+    return {
+        "n": len(values),
+        "missing_or_nonnumeric": missing,
+        "min": round(ordered[0], 6),
+        **dist,
+        "max": round(ordered[-1], 6),
+        "sum": round(math.fsum(ordered), 6),
+        "unit": "metadata_words_not_tokens",
+    }
+
+
 def _top_counts(counter: Counter[str], top: int) -> dict[str, Any]:
     items = counter.most_common(top)
     return {
@@ -621,6 +656,10 @@ class Sweep:
         self.transfer: dict[tuple[str, str, str], Counter[str]] = {}
         self.english: dict[tuple[str, str, str, str], list[float]] = {}
         self.english_input: dict[str, list[float]] = {s: [] for s in self.scopes}
+        self.words: dict[tuple[str, str, str, str], list[float]] = {}
+        self.words_missing: dict[tuple[str, str, str, str], int] = {}
+        self.words_input: dict[str, list[float]] = {s: [] for s in self.scopes}
+        self.words_missing_input: dict[str, int] = dict.fromkeys(self.scopes, 0)
         self.comp: dict[tuple[str, str, str, str], Counter[str]] = {}
         self.fdc: dict[tuple[str, str, str, str], Counter[str]] = {}
         self.full_codes: dict[tuple[str, str], Counter[str]] = {}
@@ -656,6 +695,11 @@ class Sweep:
         if "e" in fields:
             for scope in scopes:
                 self.english_input[scope].append(fields["e"])
+        for scope in scopes:
+            if optional.get("words") is None:
+                self.words_missing_input[scope] = self.words_missing_input.get(scope, 0) + 1
+            else:
+                self.words_input[scope].append(optional["words"])
         base = {
             "S5": predicate_s5(fields, self.spec),
             "S61": predicate_s61(fields, self.spec),
@@ -723,6 +767,7 @@ class Sweep:
                             ] += 1
                 self._cell(self.final, combo, scope)[final] += 1
                 self._cell_english(combo, scope, final, fields)
+                self._cell_words(combo, scope, final, optional.get("words"))
                 self._cell_comp(combo, scope, final, fields)
                 self._cell_fdc(combo, scope, final, fields)
                 self._cell_detail(combo, scope, final, fields, base, p_branch)
@@ -759,6 +804,16 @@ class Sweep:
     ) -> None:
         key = (combo[0], combo[1], scope, final)
         self.english.setdefault(key, []).append(fields["e"])
+
+    def _cell_words(
+        self, combo: tuple[str, str], scope: str, final: str, words: float | None
+    ) -> None:
+        """Accumulate one optional publisher word count; missing stays counted."""
+        key = (combo[0], combo[1], scope, final)
+        if words is None:
+            self.words_missing[key] = self.words_missing.get(key, 0) + 1
+        else:
+            self.words.setdefault(key, []).append(words)
 
     def _cell_comp(
         self, combo: tuple[str, str], scope: str, final: str, fields: Mapping[str, Any]
@@ -828,10 +883,10 @@ class Sweep:
                 self.crosstab_prose[scope][
                     f"{fields['d']}|{fields['prefix3']}|{fields['k']}|{fields['a']}|{fields['m']}"
                 ] += 1
-            self.crosstab_levels[scope][f"{fields['prefix3']}|{levels[0]}|{levels[1]}"] += 1
+            self.crosstab_levels[scope][f"{fields['prefix3']}|{levels[1]}|{levels[2]}"] += 1
             digit = fields["digit1"]
             if digit in _LEVEL1_BY_DIGIT:
-                got = levels[2]
+                got = levels[0]
                 if got == "__missing__":
                     self.level1_check[scope]["absent"] += 1
                 elif got == _LEVEL1_BY_DIGIT[digit]:
@@ -847,8 +902,12 @@ class Sweep:
 
         Bloom cognitive-process label and FDC level labels are read when
         present as non-empty strings, else recorded as None (rendered
-        __missing__). Absence here never fails validation; the
-        required-field contract is unchanged.
+        __missing__). FDC labels come from the projected primary path
+        `eai_taxonomy.free_decimal_correspondence.primary.labels.*`
+        only; sibling/non-primary `labels` mappings are never consulted.
+        The publisher metadata word count at WORDS_PATH is read when it
+        is a finite non-boolean number, else None. Absence here never
+        fails validation; the required-field contract is unchanged.
         """
 
         def _opt_str(path: str) -> str | None:
@@ -857,13 +916,23 @@ class Sweep:
                 return None
             return value.strip()
 
+        def _opt_words() -> float | None:
+            status, value = get_path(record, WORDS_PATH)
+            if status != "ok" or isinstance(value, bool):
+                return None
+            if not isinstance(value, (int, float)) or not math.isfinite(value):
+                return None
+            return float(value)
+
         levels = tuple(
-            _opt_str(f"eai_taxonomy.free_decimal_correspondence.labels.{depth}") or "__missing__"
+            _opt_str(f"eai_taxonomy.free_decimal_correspondence.primary.labels.{depth}")
+            or "__missing__"
             for depth in ("level_1", "level_2", "level_3")
         )
         return {
             "cognitive": _opt_str("eai_taxonomy.bloom_cognitive_process.primary.label"),
             "levels": levels,
+            "words": _opt_words(),
         }
 
     def record_waterfall(
@@ -899,6 +968,7 @@ class Sweep:
         fields: Mapping[str, Any],
         reasons: Sequence[str],
         unknowns: Mapping[str, str],
+        words: float | None = None,
     ) -> None:
         """Accumulate a validity-rejected row (partial validated values kept)."""
         scopes = ("all", crawl)
@@ -907,6 +977,10 @@ class Sweep:
             self.invalid_n[scope] += 1
             if "e" in fields:
                 self.english_input[scope].append(fields["e"])
+            if words is None:
+                self.words_missing_input[scope] = self.words_missing_input.get(scope, 0) + 1
+            else:
+                self.words_input[scope].append(words)
             for reason in reasons:
                 self.validity[scope][reason] += 1
             for classifier, value in unknowns.items():
@@ -922,6 +996,7 @@ class Sweep:
                     self.english.setdefault((combo[0], combo[1], scope, "rejected"), []).append(
                         fields["e"]
                     )
+                self._cell_words(combo, scope, "rejected", words)
                 for classifier, key in (("d", "D"), ("a", "A"), ("m", "M"), ("t", "T"), ("k", "K")):
                     if classifier in fields:
                         self.comp.setdefault((combo[0], combo[1], scope, "rejected"), Counter())[
@@ -1310,10 +1385,27 @@ def build_crosstabs(sweep: Sweep) -> dict[str, Any]:
             for genre in sweep.spec["predicates"]["prose_genres"]
         }
     out["prose_genres"] = prose
-    out["word_counts"] = {
-        "status": "unavailable",
-        "reason": "no word-count field in the eai_taxonomy/quality_signals projection",
+    words: dict[str, Any] = {
+        "field": WORDS_PATH,
+        "unit_note": (
+            "publisher metadata word count per row; not verified cleaned-text "
+            "words and not XLM tokenizer tokens"
+        ),
+        "input": _words_summary(sweep.words_input["all"], sweep.words_missing_input.get("all", 0)),
+        "input_by_crawl": {
+            crawl: _words_summary(sweep.words_input[crawl], sweep.words_missing_input.get(crawl, 0))
+            for crawl in sweep.crawls
+        },
     }
+    for combo in COMBOS:
+        policy_name, tier = combo
+        for final in FINAL_COMPONENTS:
+            key = (combo[0], combo[1], "all", final)
+            words[f"{_combo_key(policy_name, tier)}/{final}"] = _words_summary(
+                sweep.words.get(key, []), sweep.words_missing.get(key, 0)
+            )
+    out["word_count_distributions"] = words
+    out["report_schema_version"] = REPORT_SCHEMA_VERSION
     return out
 
 
@@ -1390,29 +1482,45 @@ def build_diagnostics(
     genre_spreads: dict[str, Any] = {}
     for combo in COMBOS:
         policy_name, tier = combo
-        assigned: dict[str, Counter[str]] = {}
-        for crawl in sweep.crawls:
-            for comp_final in ("essential_science", "essential_practical", "essential_prose"):
+        for comp_final in ("essential_science", "essential_practical", "essential_prose"):
+            per_crawl: dict[str, Counter[str]] = {}
+            totals: dict[str, int] = {}
+            for crawl in sweep.crawls:
                 bucket = sweep.comp.get((combo[0], combo[1], crawl, comp_final), Counter())
-                for key, count in bucket.items():
-                    if key.startswith("D="):
-                        assigned.setdefault(key[2:], Counter())[crawl] += count
-        flagged: dict[str, float] = {}
-        for label, per_crawl in assigned.items():
-            totals = {c: sweep.input_n[c] for c in sweep.crawls}
-            shares = [
-                float(per_crawl.get(c) or 0) / totals[c] for c in sweep.crawls if totals[c] > 0
-            ]
-            spread = (max(shares) - min(shares)) if shares else 0.0
-            if spread * 100 >= float(flags["pp_threshold"]):
-                flagged[label] = round(spread * 100, 3)
-        genre_spreads[_combo_key(policy_name, tier)] = flagged
+                counts = Counter(
+                    {key[2:]: count for key, count in bucket.items() if key.startswith("D=")}
+                )
+                per_crawl[crawl] = counts
+                totals[crawl] = sum(counts.values())
+            eligible = [c for c in sweep.crawls if totals[c] >= min_cell]
+            flagged: dict[str, Any] = {}
+            if len(eligible) >= 2:
+                genres = sorted({genre for c in eligible for genre in per_crawl[c]})
+                for genre in genres:
+                    shares = {c: per_crawl[c].get(genre, 0) / totals[c] for c in eligible}
+                    spread = max(shares.values()) - min(shares.values())
+                    if spread * 100 >= float(flags["pp_threshold"]):
+                        flagged[genre] = {
+                            "spread_pp": round(spread * 100, 3),
+                            "shares": {c: round(share, 6) for c, share in shares.items()},
+                            "counts": {c: per_crawl[c].get(genre, 0) for c in eligible},
+                            "denominators": {c: totals[c] for c in eligible},
+                        }
+            genre_spreads[f"{_combo_key(policy_name, tier)}/{comp_final}"] = {
+                "denominator": "selected_rows_in_component_per_crawl",
+                "min_component_rows": min_cell,
+                "eligible_crawls": eligible,
+                "flags": flagged,
+            }
+    for entry in temporal.values():
+        entry["retention_denominator"] = "input_rows_per_crawl"
     return {
+        "report_schema_version": REPORT_SCHEMA_VERSION,
         "sensitivity_joint_pass_counts": sensitivity,
         "sensitivity_note": "diagnostic-only variants of one gate condition; never policies",
         "temporal_cells": temporal,
         "conditional_gate_spreads_pp": gate_spreads,
-        "genre_share_spreads_pp": genre_spreads,
+        "component_genre_share_spreads_pp": genre_spreads,
         "fdc_anomaly": {
             "count": anomaly_total,
             "locators": [list(loc) for loc in anomaly_locs],
@@ -1494,7 +1602,13 @@ def _check_deadline(start: float, limit_seconds: float) -> None:
         raise SweepError(f"sweep exceeded the {limit_seconds:g}s runtime cap")
 
 
-def _peak_rss_bytes() -> int | None:
+def _endpoint_rss_bytes() -> int | None:
+    """One end-of-run RSS sample; not a measured process peak.
+
+    No peak sampler (e.g. a polling max-RSS thread or platform-only
+    peak_wset, which has no Linux equivalent) is used, so the value
+    must never be labeled peak.
+    """
     try:
         import psutil
     except ImportError:
@@ -1575,14 +1689,16 @@ def run_sweep(
             sweep.rowinfo.append(
                 (part["crawl"], str(source_file), row_index, dict(fields) if not reasons else None)
             )
+            optional = Sweep.extract_optional(record)
             if reasons:
                 if "invalid_fdc_syntax" in reasons:
                     anomaly_total += 1
                     if len(anomaly_locs) < 50:
                         anomaly_locs.append([str(source_file), row_index])
-                sweep.process_invalid(part["crawl"], fields, reasons, unknowns)
+                sweep.process_invalid(
+                    part["crawl"], fields, reasons, unknowns, optional.get("words")
+                )
             else:
-                optional = Sweep.extract_optional(record)
                 sweep.process_valid(part["crawl"], fields, optional)
             n_rows += 1
     if binding["bundle"].get("combined_sha256") != payload_hash.hexdigest():
@@ -1620,7 +1736,7 @@ def run_sweep(
             "records": n_rows,
             "input_bytes": total_size,
             "wall_seconds": round(elapsed, 3),
-            "peak_rss_bytes": _peak_rss_bytes(),
+            "endpoint_rss_bytes": _endpoint_rss_bytes(),
             "scratch_bytes": 0,
         },
     }
@@ -1771,7 +1887,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         end="",
     )
     print(
-        f"wall_seconds={stats['wall_seconds']} peak_rss_bytes={stats['peak_rss_bytes']} "
+        f"wall_seconds={stats['wall_seconds']} endpoint_rss_bytes={stats['endpoint_rss_bytes']} "
         f"input_bytes={stats['input_bytes']} scratch_bytes={stats['scratch_bytes']}",
     )
     return 0

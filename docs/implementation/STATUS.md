@@ -1,5 +1,66 @@
 # Implementation status
 
+> **ESSENTIAL-WEB SWEEP REPORTING FIX (2026-09-27, offline): FOUR
+> DIAGNOSTIC DEFECTS REPAIRED; ASSIGNMENTS UNCHANGED; READY TO
+> REGENERATE.** Patched exactly Astra's four real-run reporting
+> findings in `scripts/essential_web_selector_sweep.py` (+ focused
+> tests): primary-path FDC level labels with corrected level-1/finer
+> positions and no non-primary fallback; bounded publisher metadata
+> word-count distributions (never tokens; absent cells unavailable);
+> within-component genre-share denominator made explicit per
+> policy/tier/component; end-of-run RSS renamed
+> `peak_rss_bytes` -> `endpoint_rss_bytes`. Policy YAML byte-identical,
+> digest `f4357f61…07`, gates/predicates/precedence/assignments
+> untouched; `TOOL_VERSION`/`REPORT_SCHEMA_VERSION` 2 (v1 outputs not
+> semantically identical). 60 focused synthetic tests pass; ruff/mypy
+> clean. Astra's review docs preserved. Old v1 sweep outputs
+> (`G:\Project\xlm-selector-sweeps\essential-web-v1`) NOT touched; user
+> decides on regeneration into a fresh dir per
+> [ESSENTIAL-WEB-SELECTOR-SWEEP](reports/ESSENTIAL-WEB-SELECTOR-SWEEP.md)
+> §9. No network/fetch/X: access/real execution/training/push.
+
+> **REAL ESSENTIAL-WEB SWEEP REVIEW (2026-09-27, offline): NEED BOTH
+> METADATA + TEXT EVIDENCE; NO SELECTOR FREEZE.** Audited all nine user
+> outputs; eight non-manifest artifacts reproduce byte-for-byte from the
+> existing read-only metadata bundle. Combined/eight-part hashes verify;
+> 32,768 independent row-policy assignments match the frozen evaluator.
+> Conservation, precedence, subsets and B/D identities reconcile; the
+> malformed FDC row is quarantined. B-normal science is only 29 rows
+> (0-10 per crawl); D adds 544 assignments whose Irrelevant Content quality
+> is unreviewed. Found diagnostic defects: wrong FDC label paths/indexes,
+> false word-count unavailability, genre-spread denominator, and endpoint
+> RSS mislabeled as peak. No code repaired or policy changed. Proposed,
+> not authorized: eight new metadata windows plus a 118-row blinded text
+> review. No network/fetch/text inspection/X: writes/training/admission.
+> See [scientific review](reports/ESSENTIAL-WEB-SELECTOR-SWEEP-REVIEW.md)
+> for exact evidence, limits, ledger, and next planning prompt.
+
+> **ESSENTIAL-WEB SELECTOR SWEEP (2026-09-27, offline): EXPERIMENT
+> IMPLEMENTED, READY FOR USER OFFLINE SWEEP; NO FINAL APPROVAL.** Bounded
+> streaming sweep for frozen policies A-D x normal/strict over the
+> authorized 4096-row bundle (input-hash bound, fail-closed, no text).
+> Frozen spec `recipes/selectors/essential_web_selector_sweep_v1.yaml`
+> with canonical digest; 9 deterministic artifacts; sensitivity and
+> temporal-flag diagnostics included. 39 focused synthetic tests pass;
+> ruff/mypy clean. Real X: sweep NOT RUN (user-owned). No production
+> selectors, adapter changes, admission, quota changes, or push. Next: the
+> user command in
+> [ESSENTIAL-WEB-SELECTOR-SWEEP](reports/ESSENTIAL-WEB-SELECTOR-SWEEP.md).
+
+> **ESSENTIAL-WEB POLICY REVIEW (2026-09-27, offline): READY FOR OFFLINE
+> SELECTOR SWEEP; NO FINAL POLICY APPROVAL.** Direct audit of the four
+> authorized real reconnaissance artifacts reconciled aggregate counts,
+> cross-tab margins, and bundle/execution receipt digests. One reported
+> FDC code, `320.973/0207`, fails strict decimal syntax: path presence is
+> not full code validity. Four documented candidate policies specify
+> gates, science/practical/prose predicates, deterministic precedence,
+> normal/stricter tiers, and per-crawl diagnostics. Recommend testing B
+> (genre-based practical/prose; 5xx plus explicitly selected 61x science)
+> against A/C/D. No selector executed or implemented; no text, network,
+> fetch, X: writes, tokenizer, training, admission, quota change, or push.
+> Tests NOT RUN (policy/documentation only). Next: the bounded offline
+> sweep prompt in [ESSENTIAL-WEB-SELECTOR-POLICY-REVIEW](reports/ESSENTIAL-WEB-SELECTOR-POLICY-REVIEW.md).
+
 > **MIX01-ULTRAX-6B (2026-09-26): IMPLEMENTED + FOCUSED-VERIFIED; READY FOR
 > OPERATOR ULTRAX PROBE.** Branch `data/mix01-ultrax-6b` from `d7942ba`.
 > Nemotron-CC organic 20% replaced by `ultrax_ultrafineweb` 20% (11 Mix-01

@@ -59,8 +59,9 @@ def _tax(
     a: str = "No Artifacts",
     m: str = "No missing content",
     t: str = "Highly Correct",
+    labels: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    return {
+    tax = {
         "free_decimal_correspondence": {"primary": {"code": f}},
         "document_type_v2": {"primary": {"label": d}},
         "bloom_knowledge_domain": {"primary": {"label": k}},
@@ -68,6 +69,9 @@ def _tax(
         "missing_content": {"primary": {"label": m}},
         "technical_correctness": {"primary": {"label": t}},
     }
+    if labels is not None:
+        tax["free_decimal_correspondence"]["primary"]["labels"] = labels
+    return tax
 
 
 def _row(
@@ -79,12 +83,19 @@ def _row(
     t: str = "Highly Correct",
     e: float = 0.95,
     text: str | None = None,
+    labels: dict[str, Any] | None = None,
+    nonprimary_labels: dict[str, Any] | None = None,
+    words: Any = None,
     **extra: Any,
 ) -> dict[str, Any]:
     record: dict[str, Any] = {
-        "eai_taxonomy": _tax(f, d, k, a, m, t),
+        "eai_taxonomy": _tax(f, d, k, a, m, t, labels),
         "quality_signals": {"fasttext": {"english": e}},
     }
+    if nonprimary_labels is not None:
+        record["eai_taxonomy"]["free_decimal_correspondence"]["labels"] = nonprimary_labels
+    if words is not None:
+        record["quality_signals"]["red_pajama_v2"] = {"rps_doc_word_count": words}
     if text is not None:
         record["text"] = text
     record.update(extra)
@@ -795,7 +806,12 @@ def test_english_compositions_wordcount_extra(tmp_path: Path) -> None:
     assert labels["D=Academic Writing"] == 512
     assert labels["D=Tutorial"] == 512
     assert labels["D=Knowledge Article"] == 512
-    assert crosstabs["word_counts"]["status"] == "unavailable"
+    words = crosstabs["word_count_distributions"]
+    assert words["field"] == "quality_signals.red_pajama_v2.rps_doc_word_count"
+    assert words["input"]["status"] == "unavailable"
+    assert words["input"]["n"] == 0
+    assert crosstabs["report_schema_version"] == 2
+    assert crosstabs["level1_consistency"]["all"] == {"absent": 384 * 8, "unmapped": 64 * 8}
     fdk = crosstabs["fdc3_x_doctype_x_knowledge"]["all"]
     assert fdk["510|Academic Writing|Conceptual"] == 512
     assert fdk["613|Knowledge Article|Conceptual"] == 512
@@ -1081,4 +1097,313 @@ def test_spec_caps_frozen(spec: dict[str, Any]) -> None:
         "max_output_bytes": 67108864,
         "max_scratch_bytes": 67108864,
         "max_runtime_seconds": 120,
+    }
+
+
+# --------------------------------------------------------------------------
+# Reporting fix, Defect 1: FDC level labels use the primary path only.
+# --------------------------------------------------------------------------
+
+
+def test_fdc_labels_use_primary_path_positions() -> None:
+    opt = sweep.Sweep.extract_optional(
+        _row(labels={"level_1": "L1", "level_2": "L2", "level_3": "L3"})
+    )
+    assert opt["levels"] == ("L1", "L2", "L3")
+
+
+def test_fdc_labels_missing_levels_are_missing() -> None:
+    assert sweep.Sweep.extract_optional(_row(labels={"level_1": "L1"}))["levels"] == (
+        "L1",
+        "__missing__",
+        "__missing__",
+    )
+    assert sweep.Sweep.extract_optional(_row())["levels"] == (
+        "__missing__",
+        "__missing__",
+        "__missing__",
+    )
+    assert sweep.Sweep.extract_optional(
+        _row(labels={"level_1": "  ", "level_2": "", "level_3": "L3"})
+    )["levels"] == ("__missing__", "__missing__", "L3")
+
+
+def test_fdc_labels_never_fall_back_to_nonprimary() -> None:
+    record = _row(nonprimary_labels={"level_1": "WRONG", "level_2": "WRONG", "level_3": "WRONG"})
+    assert sweep.Sweep.extract_optional(record)["levels"] == (
+        "__missing__",
+        "__missing__",
+        "__missing__",
+    )
+
+
+_LABEL_WORD_TEMPLATES = [
+    {
+        "labels": {
+            "level_1": "Science and Natural history",
+            "level_2": "Nat",
+            "level_3": "Bio",
+        },
+        "words": 100,
+    },
+    {
+        "labels": {
+            "level_1": "Arts",
+            "level_2": "X",
+            "level_3": "Science and Natural history",
+        },
+        "words": 200,
+    },
+    {"labels": {"level_1": "Science and Natural history"}},
+    {"words": True},
+    {
+        "nonprimary_labels": {
+            "level_1": "WRONG",
+            "level_2": "WRONG",
+            "level_3": "WRONG",
+        },
+        "words": "lots",
+    },
+    {
+        "f": "005.4",
+        "d": "Documentation",
+        "labels": {"level_1": "Zero", "level_2": "L2U", "level_3": "L3U"},
+        "words": 300.5,
+    },
+    {"words": 400},
+    {"f": "320.973/0207", "d": "News Article", "k": "Factual", "e": 0.9, "words": 50},
+]
+# Binding requires 512-record parts, so each template fills one crawl.
+_LABEL_WORD_POOLS = [[template] * 64 for template in _LABEL_WORD_TEMPLATES]
+
+
+def test_fdc_level1_uses_level_1_not_level_3(tmp_path: Path) -> None:
+    """Row 2 carries the mapped name at level_3 but a wrong level_1.
+
+    The old index (levels[2]) would call it consistent; the corrected
+    level-1 read (levels[0]) reports it inconsistent.
+    """
+    code, out = _run_world(tmp_path, pools=_LABEL_WORD_POOLS)
+    assert code == 0
+    crosstabs = json.loads((out / "crosstabs.json").read_text(encoding="utf-8"))
+    assert crosstabs["level1_consistency"]["all"] == {
+        "absent": 1536,
+        "consistent": 1024,
+        "inconsistent": 512,
+        "unmapped": 512,
+    }
+
+
+def test_fdc_finer_table_uses_level_2_and_level_3(tmp_path: Path) -> None:
+    code, out = _run_world(tmp_path, pools=_LABEL_WORD_POOLS)
+    assert code == 0
+    crosstabs = json.loads((out / "crosstabs.json").read_text(encoding="utf-8"))
+    table = crosstabs["fdc_prefix_x_level_labels"]["all"]
+    assert table["510|Nat|Bio"] == 512
+    assert table["510|X|Science and Natural history"] == 512
+    assert table["510|__missing__|__missing__"] == 2048
+    assert table["005|L2U|L3U"] == 512
+
+
+# --------------------------------------------------------------------------
+# Reporting fix, Defect 2: publisher metadata word-count summaries.
+# --------------------------------------------------------------------------
+
+
+def test_words_optional_read_rules() -> None:
+    assert sweep.Sweep.extract_optional(_row(words=1500))["words"] == 1500.0
+    assert sweep.Sweep.extract_optional(_row(words=12.5))["words"] == 12.5
+    assert sweep.Sweep.extract_optional(_row(words=True))["words"] is None
+    assert sweep.Sweep.extract_optional(_row(words=False))["words"] is None
+    assert sweep.Sweep.extract_optional(_row(words="1500"))["words"] is None
+    assert sweep.Sweep.extract_optional(_row(words=float("nan")))["words"] is None
+    assert sweep.Sweep.extract_optional(_row(words=float("inf")))["words"] is None
+    assert sweep.Sweep.extract_optional(_row())["words"] is None
+
+
+def test_words_summary_exact_and_deterministic() -> None:
+    first = sweep._words_summary([3.0, 1.0, 2.0], 5)
+    assert first == {
+        "n": 3,
+        "missing_or_nonnumeric": 5,
+        "min": 1.0,
+        "p10": 1.0,
+        "p25": 1.0,
+        "p50": 2.0,
+        "p75": 3.0,
+        "p90": 3.0,
+        "max": 3.0,
+        "sum": 6.0,
+        "unit": "metadata_words_not_tokens",
+    }
+    assert sweep._words_summary([1.0, 2.0, 3.0], 5) == first
+    assert "token" not in first["unit"].replace("not_tokens", "")
+
+
+def test_words_absent_cell_is_unavailable() -> None:
+    cell = sweep._words_summary([], 7)
+    assert cell["status"] == "unavailable"
+    assert cell["n"] == 0 and cell["missing_or_nonnumeric"] == 7
+
+
+def test_words_input_aggregate_covers_all_rows(tmp_path: Path) -> None:
+    """2560 numeric of 4096 rows (bool/string/absent are missing, not fatal).
+
+    The quarantined anomaly row contributes its count to the input
+    aggregate even though it never reaches a policy cell.
+    """
+    code, out = _run_world(tmp_path, pools=_LABEL_WORD_POOLS)
+    assert code == 0
+    crosstabs = json.loads((out / "crosstabs.json").read_text(encoding="utf-8"))
+    words = crosstabs["word_count_distributions"]
+    assert words["field"] == "quality_signals.red_pajama_v2.rps_doc_word_count"
+    assert words["input"] == {
+        "n": 2560,
+        "missing_or_nonnumeric": 1536,
+        "min": 50.0,
+        "p10": 50.0,
+        "p25": 100.0,
+        "p50": 200.0,
+        "p75": 300.5,
+        "p90": 400.0,
+        "max": 400.0,
+        "sum": 537856.0,
+        "unit": "metadata_words_not_tokens",
+    }
+    assert set(words["input_by_crawl"]) == {f"crawl-{i}" for i in range(8)}
+    assert words["input_by_crawl"]["crawl-0"]["n"] == 512
+    assert words["input_by_crawl"]["crawl-2"]["status"] == "unavailable"
+
+
+def test_words_per_component_cells(tmp_path: Path) -> None:
+    code, out = _run_world(tmp_path, pools=_LABEL_WORD_POOLS)
+    assert code == 0
+    crosstabs = json.loads((out / "crosstabs.json").read_text(encoding="utf-8"))
+    words = crosstabs["word_count_distributions"]
+    science = words["B-normal/essential_science"]
+    assert science["n"] == 1536 and science["missing_or_nonnumeric"] == 1536
+    assert science["sum"] == 358400.0
+    practical = words["B-normal/essential_practical"]
+    assert practical["n"] == 512 and practical["missing_or_nonnumeric"] == 0
+    assert practical["min"] == practical["max"] == 300.5
+    assert practical["sum"] == 153856.0
+    rejected = words["B-normal/rejected"]
+    assert rejected["n"] == 512 and rejected["sum"] == 25600.0
+    assert words["B-normal/essential_prose"]["status"] == "unavailable"
+
+
+# --------------------------------------------------------------------------
+# Reporting fix, Defect 3: within-component genre-share denominator.
+# --------------------------------------------------------------------------
+
+
+def _asymmetric_prose_pools() -> list[list[dict[str, Any]]]:
+    news = {"f": "800.1", "d": "News Article", "k": "Factual", "e": 0.95}
+    blog = {"f": "940.0", "d": "Personal Blog", "k": "Factual", "e": 0.95}
+    rej = {"f": "420.0", "d": "Academic Writing", "k": "Factual", "e": 0.5}
+    pool_a = [news] * 7 + [blog] + [rej] * 120
+    pool_b = [news] + [blog] * 7 + [rej] * 120
+    return [pool_a, pool_b] + [[rej]] * 6
+
+
+def test_component_genre_shares_use_component_denominator(tmp_path: Path) -> None:
+    """crawl-0 prose is 28/32 News, crawl-1 prose 4/32: a 75pp shift.
+
+    Over 512 input rows that same contrast is only 4.69pp, so the old
+    denominator misses it while the corrected one flags it.
+    """
+    assert abs(28 / 512 - 4 / 512) * 100 < 10.0
+    code, out = _run_world(tmp_path, pools=_asymmetric_prose_pools())
+    assert code == 0
+    diagnostics = json.loads((out / "diagnostics.json").read_text(encoding="utf-8"))
+    entry = diagnostics["component_genre_share_spreads_pp"]["B-normal/essential_prose"]
+    assert entry["denominator"] == "selected_rows_in_component_per_crawl"
+    assert entry["eligible_crawls"] == ["crawl-0", "crawl-1"]
+    news = entry["flags"]["News Article"]
+    assert news["spread_pp"] == 75.0
+    assert news["counts"] == {"crawl-0": 28, "crawl-1": 4}
+    assert news["denominators"] == {"crawl-0": 32, "crawl-1": 32}
+    assert news["shares"] == {"crawl-0": 0.875, "crawl-1": 0.125}
+    blog = entry["flags"]["Personal Blog"]
+    assert blog["spread_pp"] == 75.0
+    assert blog["counts"] == {"crawl-0": 4, "crawl-1": 28}
+
+
+def test_component_genre_empty_without_support(tmp_path: Path) -> None:
+    code, out = _run_world(tmp_path, pools=_asymmetric_prose_pools())
+    assert code == 0
+    diagnostics = json.loads((out / "diagnostics.json").read_text(encoding="utf-8"))
+    spreads = diagnostics["component_genre_share_spreads_pp"]
+    science = spreads["B-normal/essential_science"]
+    assert science["eligible_crawls"] == [] and science["flags"] == {}
+    assert "genre_share_spreads_pp" not in diagnostics
+    temporal = diagnostics["temporal_cells"]["B-normal/essential_prose"]
+    assert temporal["retention_denominator"] == "input_rows_per_crawl"
+
+
+# --------------------------------------------------------------------------
+# Reporting fix, Defect 4: endpoint RSS, never peak.
+# --------------------------------------------------------------------------
+
+
+def test_stats_report_endpoint_not_peak_rss(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    code, out = _run_world(tmp_path)
+    assert code == 0
+    printed = capsys.readouterr().out
+    assert "endpoint_rss_bytes=" in printed
+    assert "peak_rss" not in printed
+    assert not hasattr(sweep, "_peak_rss_bytes")
+    sampled = sweep._endpoint_rss_bytes()
+    assert sampled is None or isinstance(sampled, int)
+    for name in (
+        "summary.json",
+        "per_crawl.json",
+        "attrition.json",
+        "overlaps.json",
+        "crosstabs.json",
+        "diagnostics.json",
+        "policy_spec.json",
+        "summary.md",
+        "sweep_manifest.json",
+    ):
+        assert "peak_rss" not in (out / name).read_text(encoding="utf-8"), name
+
+
+# --------------------------------------------------------------------------
+# Reporting fix: frozen policy identity and assignment stability.
+# --------------------------------------------------------------------------
+
+
+def test_policy_digest_exact_frozen(spec: dict[str, Any]) -> None:
+    assert sweep.policy_digest_of(spec) == (
+        "f4357f61f434d5105d823266153dac6372e122f12767187631e8796b4899dd07"
+    )
+    assert spec["policy_spec_version"] == "essential-web-selector-sweep-v1"
+
+
+def test_report_schema_versioned_assignments_stable(tmp_path: Path) -> None:
+    code, out = _run_world(tmp_path)
+    assert code == 0
+    assert sweep.TOOL_VERSION == "2"
+    assert sweep.REPORT_SCHEMA_VERSION == 2
+    manifest = json.loads((out / "sweep_manifest.json").read_text(encoding="utf-8"))
+    assert manifest["tool_version"] == "2"
+    assert manifest["policy_digest"] == (
+        "f4357f61f434d5105d823266153dac6372e122f12767187631e8796b4899dd07"
+    )
+    diagnostics = json.loads((out / "diagnostics.json").read_text(encoding="utf-8"))
+    assert diagnostics["report_schema_version"] == 2
+    crosstabs = json.loads((out / "crosstabs.json").read_text(encoding="utf-8"))
+    assert crosstabs["report_schema_version"] == 2
+    assert "word_counts" not in crosstabs
+    summary = _summary(out)
+    assert summary["combos"]["B-normal"]["final"] == _expected_b_normal()
+    assert summary["combos"]["A-normal"]["final"] == {
+        "essential_science": 128 * 8,
+        "essential_practical": 128 * 8,
+        "essential_prose": 128 * 8,
+        "unassigned": 0,
+        "rejected": 128 * 8,
     }

@@ -1,5 +1,18 @@
 # Essential-Web selector sweep (bounded offline experiment)
 
+**Real-run scientific review (2026-09-27): NEED BOTH METADATA + TEXT
+EVIDENCE.** The USER completed the real sweep. A subsequent read-only audit
+verified its input/artifact hashes, byte-identical replay and independent
+rowwise policy assignments. No selector is ready to freeze. Reporting
+defects were found in FDC label access/indexing, word-count availability,
+within-component genre-spread diagnostics, and RSS labeling; the frozen
+selection counts reproduce exactly. See
+[ESSENTIAL-WEB-SELECTOR-SWEEP-REVIEW](ESSENTIAL-WEB-SELECTOR-SWEEP-REVIEW.md)
+for corrected interpretations, exact commands/evidence, and the bounded
+next-evidence proposal. No fixes or new acquisitions were executed in
+that review. The NOT RUN statements below describe the original
+implementation session, not the later USER run or scientific audit.
+
 Date: 2026-09-27. Branch: `data/mix01-ultrax-6b`. Starting HEAD: `b817b11`
 (dirty only with Astra's preserved review docs). Agent work is offline
 only: no network, fetch, X: reads, corpus-text inspection, tokenizer,
@@ -22,12 +35,17 @@ nothing below reinterprets it.
 ## 1. Policy specification and versioning
 
 - Spec file: `recipes/selectors/essential_web_selector_sweep_v1.yaml`
-  (`policy_spec_version: essential-web-selector-sweep-v1`, schema 1).
+  (`policy_spec_version: essential-web-selector-sweep-v1`, schema 1 —
+  the frozen policy schema is unchanged by the reporting fix in §9).
 - Digest: SHA-256 over canonical JSON of the parsed spec (sorted keys,
   compact separators, raw UTF-8 — the same scheme as recon manifests), so
   formatting/whitespace changes do not alter it but any semantic change
   does. Computed by `load_policy_spec` / `policy_digest_of`.
-- Tool: `scripts/essential_web_selector_sweep.py` (`TOOL_VERSION 1`).
+- Tool: `scripts/essential_web_selector_sweep.py` (`TOOL_VERSION 2`;
+  report-output schema `REPORT_SCHEMA_VERSION 2`, recorded in
+  `crosstabs.json` and `diagnostics.json`; see §9 for the
+  diagnostics-only correction history. `TOOL_VERSION 1` outputs are
+  not semantically identical to `TOOL_VERSION 2` outputs.)
 - Semantics (from the review, frozen verbatim): F/D/K/A/M/T/E field paths;
   FDC stays a string (`[0-9]{3}(?:[.][0-9]+)?`, anomaly `320.973/0207`
   quarantined as `invalid_fdc_syntax`); E numeric/finite/non-bool in
@@ -70,9 +88,10 @@ max_records 5000, max_input_bytes 32 MiB, max JSON line 1 MiB, max output
 64 MiB total, scratch 64 MiB (no scratch files are written; reported 0),
 max runtime 120 s (deadline checked every 512 rows and before output).
 The real ~15 MiB bundle fits comfortably. Streaming read; bounded
-in-memory counters only. Wall time, peak RSS (psutil), input/output
-bytes go to STDOUT, never into artifacts, so identical inputs stay
-byte-identical (regression-tested).
+in-memory counters only. Wall time, endpoint RSS sample (psutil,
+single end-of-run read — labeled `endpoint_rss_bytes`, never peak),
+input/output bytes go to STDOUT, never into artifacts, so identical
+inputs stay byte-identical (regression-tested).
 
 ## 4. Report structure
 
@@ -86,14 +105,24 @@ gate/predicate/final counts, retention per crawl), `attrition.json`
 (fixed-order waterfalls + validity reasons; reason sums may overlap),
 `overlaps.json` (predicate pairs, component matches, precedence
 transfers, all A/B/C/D × normal/strict transitions),
-`crosstabs.json` (English distributions, label/FDC compositions, science
-balance, practical branches/domains, prose genres, bounded cross-tabs;
-word counts `unavailable` — no such field in the projection),
+`crosstabs.json` (English distributions, publisher metadata word-count
+distributions for `quality_signals.red_pajama_v2.rps_doc_word_count`
+(input aggregate, per-crawl input, per policy/tier/final cell; labeled
+metadata words, never tokenizer tokens; cells without numeric values
+report `unavailable`), label/FDC compositions, science balance,
+practical branches/domains, prose genres, bounded cross-tabs; FDC level
+labels read from `free_decimal_correspondence.primary.labels.*`,
+level-1 consistency checked against `level_1`, finer table keyed by
+prefix × `level_2` × `level_3`),
 `diagnostics.json` (one-condition sensitivity for E 0.65/0.80/0.90/0.95,
 artifact and missing-content options — diagnostic only, never policies;
-temporal review flags with documented thresholds; anomaly/unknown-value
-detail). Cross-tab cardinality is bounded by sparse exact cells plus
-top-25 full FDC codes; totals are always present so nothing is lost.
+temporal review flags with documented thresholds; within-component
+genre-share spreads keyed per policy/tier/component with the explicit
+denominator `selected_rows_in_component_per_crawl` (input-retention
+flags keep the separate `input_rows_per_crawl` denominator);
+anomaly/unknown-value detail). Cross-tab cardinality is bounded by
+sparse exact cells plus top-25 full FDC codes; totals are always
+present so nothing is lost.
 
 ## 5. Expected USER command
 
@@ -132,7 +161,7 @@ selector freezing, adapter changes, calibration, admission, or quotas.
 
 ## 8. Verification performed by the agent (offline, synthetic only)
 
-39 focused tests pass (this file's suite): exact A/B/C/D × normal/strict
+60 focused tests pass (this file's suite): exact A/B/C/D × normal/strict
 semantics, gates, predicates, precedence, overlaps/transfers, zero final
 overlap, exact conservation, B==D and subset invariants, anomaly
 quarantine (`320.973/0207` invalid, never 3xx), leading-zero `005.4` as
@@ -141,10 +170,78 @@ independence, byte-identical reruns, spec-digest sensitivity, all input
 binding refusals, duplicate-locator/foreign-row/corrupt-line refusals,
 input/line/output/runtime caps, sensitivity monotonicity, temporal-flag
 mechanics, distribution/composition shapes, CLI exit codes, socket-blocked
-no-network fixture. `ruff check`, `ruff format --check`, and scoped
-`mypy` are clean. No real X: data was read or executed.
+no-network fixture — plus the §9 reporting-correction regressions:
+primary-path FDC label positions with no non-primary fallback,
+word-count numeric/absent/non-numeric/bool/deterministic-quantile cases,
+within-component genre denominator discrimination (75 pp composition
+shift invisible at 4.69 pp under the input denominator), endpoint-RSS
+naming across stdout and all artifacts, exact frozen digest
+`f4357f61…`, and report-schema versioning with assignment stability.
+`ruff check`, `ruff format --check`, and scoped `mypy` are clean.
+No real X: data was read or executed.
 
 Requirement ledger: experiment IMPLEMENTED + VERIFIED on synthetic
 fixtures; real 4096-row execution NOT RUN (user-owned); production
 selectors, adapter changes, admission, tokenizer, training OUT OF SCOPE.
 A skip was never counted as a pass; no benchmark numbers were fabricated.
+
+## 9. Reporting-only correction (2026-09-27, offline, no policy change)
+
+Astra's independent real-run review
+([ESSENTIAL-WEB-SELECTOR-SWEEP-REVIEW](ESSENTIAL-WEB-SELECTOR-SWEEP-REVIEW.md))
+replayed all 32,768 row-policy-tier assignments and verified them
+correct, then identified four diagnostic/reporting defects. This §9
+records their reporting-only repair; selector policy YAML, policy
+digest, gate semantics, component predicates, precedence, assignment
+behavior, Mix-01 weights, and production adapter semantics are
+untouched:
+
+1. FDC label path: diagnostics read
+   `free_decimal_correspondence.labels.*` and mixed tuple positions
+   (level-1 check used `levels[2]`, finer table used `levels[0:2]`).
+   Now `extract_optional` reads
+   `free_decimal_correspondence.primary.labels.level_1/2/3` only
+   (never non-primary siblings), the consistency check uses
+   `level_1`, and the finer table is keyed prefix × `level_2` ×
+   `level_3`. FDC predicate parsing is unchanged.
+2. Word counts: the hardcoded `unavailable` is replaced by bounded
+   numeric summaries of
+   `quality_signals.red_pajama_v2.rps_doc_word_count` (finite
+   non-boolean numbers; bool/non-numeric/missing counted, never
+   fatal): n, missing/non-numeric, min, p10/p25/p50/p75/p90
+   (nearest-rank, same rule as English), max, sum — for the input
+   aggregate, per-crawl input, and every policy/tier/final cell.
+   Labeled metadata words, never tokenizer tokens. Absent cells
+   report `unavailable`.
+3. Genre drift: `genre_share_spreads_pp` (genre counts over 512 input
+   rows) is replaced by `component_genre_share_spreads_pp`, keyed per
+   policy/tier/component with the explicit denominator
+   `selected_rows_in_component_per_crawl`, ≥20-row crawl support, and
+   10 pp flagging with per-crawl counts/denominators/shares.
+   Input-retention flags keep the separate `input_rows_per_crawl`
+   denominator, now labeled on every temporal entry.
+4. RSS: the single end-of-run `memory_info().rss` sample is renamed
+   `peak_rss_bytes` → `endpoint_rss_bytes` (stats/stdout only, never
+   an artifact). No peak sampler was introduced: a polling max-RSS
+   thread was rejected as new machinery, and `peak_wset` is
+   Windows-only with no Linux equivalent, so it cannot back a
+   cross-platform `peak` label.
+
+Tool/report schema: `TOOL_VERSION 1` → `2`, `REPORT_SCHEMA_VERSION 2`
+recorded in `crosstabs.json` and `diagnostics.json`. Old (v1) and
+corrected (v2) outputs are not semantically identical. Assignment
+payloads (`summary.json`, `per_crawl.json`, `attrition.json`,
+`overlaps.json`) are structurally unchanged and pinned by golden
+tests; the frozen digest remains
+`f4357f61f434d5105d823266153dac6372e122f12767187631e8796b4899dd07`.
+
+Regeneration decision (USER-owned): the existing v1 artifacts under
+`G:\Project\xlm-selector-sweeps\essential-web-v1` were untouched by
+this patch and remain valid for assignments, bindings, and counts,
+but their FDC-label tables, word-count section, genre-spread flags,
+and RSS label are superseded. To regenerate corrected reports, rerun
+the §5 command pair into a FRESH output directory (never overwrite
+the v1 dir in place), then compare manifests: `policy_digest` and
+all assignment vectors must match v1 exactly; only `crosstabs.json`,
+`diagnostics.json`, `tool_version`, and stdout change. The user
+decides whether to regenerate; no X: access was used here.
