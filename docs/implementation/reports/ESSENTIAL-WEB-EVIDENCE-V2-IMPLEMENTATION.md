@@ -1,0 +1,206 @@
+# Essential-Web evidence-v2.0: offline implementation report
+
+Date: 2026-09-27. Branch: `data/mix01-ultrax-6b`. Starting HEAD: `a23cd7e`
+(dirty only with preserved prior user/Astra docs). This implements ONLY
+`essential-web-evidence-v2.0` from the normative
+[protocol](ESSENTIAL-WEB-EVIDENCE-V2-PROTOCOL.md), bound by
+`../evidence/ESSENTIAL-WEB-EVIDENCE-V2/freeze.json`. No experiment was
+designed here: seeds, files, windows, policies, strata, rubric, limits,
+and the decision matrix are frozen and reproduced verbatim as data.
+
+Agent work is offline only unless a command says otherwise: no live
+footer inspection, fetch, source-text inspection, X: writes, tokenizer,
+training, production admission, or push. The single authorized exception
+is the read-only derivation of the Arm-T locator selection from the
+already-existing metadata-only development bundle, sealed into the
+designated G: root. Every input record was asserted text-free.
+
+## 1. Frozen verification (all recomputed, exit 0)
+
+- Freeze digest recomputed `fe2157799a86fe777e45c220716563f8a73245a12593c40909222555bf1b8248`
+  (expected value, match); all four bound artifacts match bytes + SHA-256
+  + descriptor digests.
+- `inventory-freeze.json` self-digest `466ece976bfadfbd024c7fb66ff0076f1d86f36ce7d362331d85f1fee36c018f`
+  (match); policy digest `f4357f61…07` recomputed from the repo YAML (match,
+  YAML equality).
+- All eight original listing hashes reproduce from sequential templates;
+  eligible digests, ranking hashes, and winners reproduce; selected files
+  are distinct and disjoint from development files; 23,200 eligible paths;
+  complete inventory digest `d2b3eac5…0927d5` (match). No STOP condition.
+
+Eight frozen new files (`data/crawl=CC-MAIN-*/train-*-of-*.parquet`):
+2014-15/01860, 2015-32/01682, 2016-50/02156, 2018-05/03378, 2019-09/00153,
+2021-04/00179, 2021-49/00408, 2024-26/01127.
+
+## 2. What was implemented
+
+New package `src/xlm/data/evidence_v2/` (typed, bounded, no dynamic
+execution of data files):
+
+- `canonical.py` — `C(x)`/`H(x)` per §2 (Python 3.12 `json.dumps`,
+  `sort_keys`, compact separators, `ensure_ascii=False`,
+  `allow_nan=False`, UTF-8, no BOM/newline); strict parsing rejects
+  duplicate keys, non-finite numbers, BOM, bad UTF-8; unknown-field
+  rejection; self-digests; file bindings; atomic writes.
+- `frozen.py` — data-only frozen constants (versions, seeds 20260927 /
+  20260928, digests, repo/revision, strata, exact Arm-M/Arm-T ceilings,
+  hosts, retry rules, text-strata precedence, forbidden package fields).
+- `inventory.py` — offline listing expansion, listing/eligible/rank
+  verification, lowest-digest winner with UTF-8 tie-break, full
+  freeze/inventory verification. No next-rank API: an unavailable winner
+  is a STOP.
+- `windows.py` — exact §4 index construction delegating to the existing
+  tested `sampling._det_index` with the frozen string seed (asserted
+  equal to the literal protocol formula); group/start choice;
+  `K != 512` refusal with no rerank; absolute + group-relative freezing;
+  pinned single-file request builder; dry arm plan with explicitly
+  unresolved physicals (`executable: False`).
+- `budgets.py` — shared `ArmLedger` per arm with the exact §4/§7
+  ceilings: one request counter shared by footer+execution (retries,
+  redirects, failures charged), per-file/arm transfer and decompressed
+  bounds, scan bounds, disk scratch/final/combined with reserve/release
+  (partials/caches included), deadlines, memory checks, decode
+  preflight refusal. No reset API; resume reuses the ledger.
+- `text_select.py` — read-only bundle verification against frozen
+  digests (bundle/execution/combined/payload/projection/revision,
+  text refused per record), frozen-evaluator import by path with
+  code-hash binding, exact §6 census/ranking/precedence/ownership
+  selection, per-cell requested/eligible/conflicts/selected/shortfall,
+  `<=118` assertion, manifest + canonical digest.
+- `sparse.py` — file/group decode planning, 256-row batches covering
+  the greatest wanted row, membership filtering (gaps decoded but never
+  emitted), the four acquisition statuses with the 65536-byte no-excerpt
+  rule, unique-text budget, exact-text alias consolidation that never
+  alters membership.
+- `blinding.py` — 32-byte custodian secret, SHA-256 commitment,
+  HMAC-SHA256 `ew2-` review IDs with collision STOP, deterministic
+  per-reviewer orders from seed 20260928, packages with a leak assertion
+  against the frozen forbidden set, sealed mapping split.
+- `rubric.py` — all 18 dimensions transcribed with anchors; `uncertain`
+  everywhere (reason required); `not_applicable` only on dimensions
+  2/12/14/15/16; `not_reviewed` all-or-nothing; acceptable_as_is
+  consistency rule; disagreement/adjudication schemas.
+- `receipts.py` — provenance binding (protocol/freeze/policy digests,
+  code hashes, Python 3.12.13, `.python-version`, `uv.lock` hash,
+  command, exit, caps, parents), atomic no-overwrite publication,
+  aggregate completeness check.
+- `scripts/evidence_v2.py` — `verify-freeze`, `expand-inventory`,
+  `dry-m-plan`, `select-text`, `dry-t-plan` (offline); `plan-footers`
+  and `plan-text-costs` default to dry-run and otherwise refuse without
+  the explicit `--authorize-network` flag (exit 2, nothing written).
+  Live transport was not exercised.
+
+Reuse (not reimplementation): `sampling._det_index` /
+`plan_sample_windows` semantics for window identities,
+`EssentialWebAdapter` `contract(text_field="text")` for the upstream
+field, existing `TransportBudget`/journal/capacity and atomic-writer
+machinery remain the live-transport substrate. New: shared arm ledger,
+sparse membership layer, blinding, rubric, canonical/provenance layer.
+
+## 3. Real Arm-T locator selection (authorized metadata-only step)
+
+Command: `uv run --offline --locked --no-sync --extra cpu --extra eval
+python scripts/evidence_v2.py select-text` (exit 0). Read
+`X:\XLM\recon\essential_web/{raw/selected_records.jsonl,bundle.json,execution.json}`
+read-only; all frozen identities verified inside the run; every record
+asserted text-free; evaluator hash `5a63e785…f9c` equals the freeze
+session's recorded sweep source hash (evaluator byte-identical).
+
+Sealed: `G:\Project\xlm-evidence-v2\essential-web\text_selection_manifest.json`
+(23,807 bytes, SHA-256 `8424f9668fef6952a558ead0dae27a705545a7f4a4d302713707d3ec6bb1af27`,
+manifest digest `975ba3dee4af0598e665ea05c69bbe49336c3e3a35fca777a863073190b78474`).
+
+Results: census exactly 29 B-normal science and 25 D-normal-only
+science (STOP gates passed); all ranked cells filled with zero
+shortfalls and zero conflicts; total **118/118**, unique.
+
+| Stratum | Per-crawl eligible | Selected |
+|---|---|---|
+| B_science_census | 29 total | 29 |
+| D_only_science_census | 25 total | 25 |
+| B_practical_survivor | 6,2,4,7,14,7,15,7 | 1 × 8 |
+| B_practical_loss | 4,6,2,4,3,13,5,9 | 1 × 8 |
+| D_only_practical | 29,20,34,22,17,16,16,16 | 2 × 8 |
+| B_prose_survivor | 20,31,38,51,44,49,57,39 | 1 × 8 |
+| B_prose_loss | 6,1,5,5,7,6,6,6 | 1 × 8 |
+| D_only_prose | 82,50,34,53,31,43,24,31 | 2 × 8 |
+
+Tightest cell: B-prose-loss in 2015-32 had exactly 1 eligible row (filled,
+no borrowing). A dry Arm-T cost plan over this manifest covers 8
+development files with all group/physical costs explicitly unresolved
+(dry plan digest `78162c13…6d9841`, stdout only, not sealed to G:).
+
+## 4. Verification (synthetic/offline only)
+
+- `tests/test_evidence_v2_core.py` + `tests/test_evidence_v2_text.py`:
+  **54 passed** (`-n 0`, sockets blocked, thread env pinned). Covers
+  file selection incl. ties/digest-mismatch/unavailable-winner,
+  window-v2 identities incl. literal-formula equality and 512-refusal,
+  shared budgets incl. retry/redirect/failure charging and no-reset,
+  census 29/25 + mismatch/STOP paths, deterministic ranking +
+  precedence/conflicts/shortfalls, sparse membership/gaps/statuses/
+  aliases, blinding determinism/orders/leak-freedom/collisions, rubric
+  exactness + malformed-form refusal, digests/drift/byte hashes,
+  CLI offline surface + live refusal.
+- `ruff check` clean, `ruff format --check` clean (14 files),
+  scoped `mypy` clean (11 source files).
+- Environment: Python 3.12.13, torch 2.14.0+cpu, CUDA unavailable
+  (CPU-only build; CUDA tests not run, not claimed).
+- Full acceptance/live/CUDA suites: NOT RUN (per task boundary).
+
+## 5. Requirement ledger
+
+| Requirement | Status |
+|---|---|
+| Freeze/protocol/inventory/policy/8-file verification | VERIFIED offline, digests match |
+| Arm-M replicate mechanisms (inventory, ranking, windows, dry plans, budgets) | IMPLEMENTED + focused-tested |
+| Arm-T locator selection 29/25 census, ≤118, sealed manifest | IMPLEMENTED; real manifest produced (118, digest above) |
+| Sparse exact-locator retention layer | IMPLEMENTED + focused-tested |
+| Shared budget enforcement M + T | IMPLEMENTED + focused-tested |
+| Blinding/review-package mechanisms (no labeling) | IMPLEMENTED + focused-tested |
+| Rubric 18 dimensions + validation | IMPLEMENTED + focused-tested |
+| Canonical digest/provenance machinery | IMPLEMENTED + focused-tested |
+| Footer/window/cost evidence, text acquisition, labeling | NOT RUN (not authorized) |
+| Live transport, full acceptance, CUDA | NOT RUN / OUT OF SCOPE |
+| Selector/policy/adapter changes | OUT OF SCOPE (none made) |
+
+New source hashes (SHA-256): canonical `2a2f80d6…`, frozen
+`80a19463…`, inventory `6731622d…`, windows `9fdfca91…`, budgets
+`d1a30db3…`, text_select `42618125…`, sparse `1ded3fa3…`, blinding
+`0916a5e2…`, rubric `47bbcbb3…`, receipts `2749a339…`,
+`scripts/evidence_v2.py` `99b71f5b…`.
+
+## 6. Physical costs remaining unknown
+
+All of them: footer bytes/layouts, row-group maps, chunk lengths,
+codecs, decoder workspaces, request/range counts, text sizes, reviewer
+agreement. Caps are ceilings, not estimates; insufficient evidence
+means refusal, never assumed zero.
+
+## 7. Exact next operator commands (footer/cost planning ONLY)
+
+These fetch explicitly authorized planning/footer evidence and never
+corpus rows/text. Do NOT run until the USER separately enables network.
+
+```powershell
+$V=@("run","--offline","--locked","--no-sync","--extra","cpu","--extra","eval")
+uv @V python scripts/evidence_v2.py verify-freeze
+uv @V python scripts/evidence_v2.py dry-m-plan --out G:\Project\xlm-evidence-v2\essential-web\dry_arm_m_plan.json
+# Separately authorized footer inspection for the 8 frozen files (≤80 requests, ≤32 MiB):
+uv @V python scripts/evidence_v2.py plan-footers --no-dry-run --authorize-network --out G:\Project\xlm-evidence-v2\essential-web\footer_evidence.json
+# Text file/group cost evidence for the sealed 118-locator selection (≤800 requests):
+uv @V python scripts/evidence_v2.py plan-text-costs --authorize-network
+```
+
+Without `--authorize-network` both planning commands exit 2 and write
+nothing. Live transport paths are implemented as gated stubs and were
+NOT exercised; the authorized run must record actual requests, bytes,
+rows, runtime, disk high water, and memory methodology.
+
+## 8. Stop point
+
+STOP after this report and commit. No footer inspection, acquisition,
+labeling, or freeze was performed or authorized here. No X: writes, no
+G: writes beyond the single authorized selection manifest, no push.
+**READY FOR BOUNDED FOOTER/COST PLANNING** (pending separate user
+network authorization), not ready to acquire.

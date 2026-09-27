@@ -1,5 +1,44 @@
 # Implementation status
 
+> **ESSENTIAL-WEB EVIDENCE V2 IMPLEMENTATION (2026-09-27, offline):
+> MECHANISMS DONE; 118/118 LOCATORS SEALED; READY FOR BOUNDED
+> FOOTER/COST PLANNING.** Implemented `essential-web-evidence-v2.0`
+> mechanisms only (`src/xlm/data/evidence_v2/`, `scripts/evidence_v2.py`):
+> canonical/digest layer, offline inventory/ranking, window-v2 identities,
+> shared Arm-M/Arm-T budget ledgers, sparse exact-locator retention,
+> HMAC blinding + rubric validation, provenance receipts. Freeze digest
+> `fe215779…`, policy `f4357f61…`, 23,200-path inventory, and all eight
+> file identities recomputed offline (match; no STOP). Real metadata-only
+> Arm-T selection sealed to
+> `G:\Project\xlm-evidence-v2\essential-web\text_selection_manifest.json`
+> (census exactly 29/25, zero shortfalls/conflicts, total 118, digest
+> `975ba3de…`). 54 focused synthetic tests pass; ruff/mypy clean. No
+> network/fetch/text/X: writes/training/admission/push. Next: separately
+> authorized footer/cost planning per
+> [ESSENTIAL-WEB-EVIDENCE-V2-IMPLEMENTATION](reports/ESSENTIAL-WEB-EVIDENCE-V2-IMPLEMENTATION.md)
+> §7. Prior user/Astra working-tree docs preserved.
+
+> **ESSENTIAL-WEB EVIDENCE V2 PROTOCOL (2026-09-27, offline): READY TO
+> IMPLEMENT EVIDENCE V2; NO ACQUISITION AUTHORIZED.** Frozen protocol
+> `essential-web-evidence-v2.0`, metadata seed 20260927, review-order seed
+> 20260928. All nine corrected v2 artifacts read and integrity checked;
+> the request's 63-character manifest file hash is corrected explicitly
+> to its measured 64-character value. Eight complete path inventories
+> reconstruct to the original discovery hashes, allowing eight NEW file
+> choices to be frozen before footer inspection (23,200 eligible paths).
+> Unchanged selector digest/window-v2; eight separate 512-row plans;
+> deterministic <=118 development-text locators, physical-work caps,
+> 18-dimension blinded rubric, two independent reviewers and adjudication,
+> qualitative decisions and exact Muse handoff specified. Full text field
+> `text` established from offline pinned-source repository contracts.
+> New windows/locator manifests/physical feasibility/acquisition/labels
+> NOT RUN; no network, text inspection, X: writes, code/selector changes,
+> training, admission or push. Tests NOT RUN (documentation only).
+> Current protocol and next prompt:
+> [ESSENTIAL-WEB-EVIDENCE-V2-PROTOCOL](reports/ESSENTIAL-WEB-EVIDENCE-V2-PROTOCOL.md).
+> Earlier statuses below retain their historical context; corrected v2
+> artifacts are now present and verified. No A/B/C/D selector is frozen.
+
 > **ESSENTIAL-WEB SWEEP REPORTING FIX (2026-09-27, offline): FOUR
 > DIAGNOSTIC DEFECTS REPAIRED; ASSIGNMENTS UNCHANGED; READY TO
 > REGENERATE.** Patched exactly Astra's four real-run reporting
