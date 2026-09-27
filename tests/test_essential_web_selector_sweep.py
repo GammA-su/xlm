@@ -7,6 +7,7 @@ blocked) or the real X: bundle. Real execution evidence stays separate.
 
 from __future__ import annotations
 
+import copy
 import hashlib
 import importlib.util
 import json
@@ -16,6 +17,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+import yaml
 
 _PATH = Path(__file__).resolve().parents[1] / "scripts" / "essential_web_selector_sweep.py"
 _SPEC = importlib.util.spec_from_file_location("essential_web_selector_sweep", _PATH)
@@ -900,9 +902,169 @@ def test_english_distribution_shape(tmp_path: Path) -> None:
     assert glob["count"] == 4096
 
 
-def test_policy_digest_changes_with_spec(spec: dict[str, Any]) -> None:
-    import copy
+_GATE_POOL = [
+    {"f": "510.2", "d": "Academic Writing", "k": "Conceptual", "e": 0.95},
+    {"f": "613.5", "d": "Knowledge Article", "k": "Conceptual", "t": "Mostly Correct", "e": 0.92},
+    {"f": "510.2", "d": "Tutorial", "k": "Procedural", "e": 0.95},
+    {
+        "f": "720.0",
+        "d": "Tutorial",
+        "k": "Factual",
+        "a": "Irrelevant Content",
+        "t": "Mostly Correct",
+        "e": 0.85,
+    },
+    {
+        "f": "650.1",
+        "d": "Q&A Forum",
+        "k": "Procedural",
+        "m": "Missing Images or Figures",
+        "e": 0.85,
+    },
+    {
+        "f": "810.2",
+        "d": "Creative Writing",
+        "k": "Factual",
+        "t": "Not Applicable/Indeterminate",
+        "e": 0.87,
+    },
+    {"f": "420.0", "d": "Academic Writing", "k": "Factual", "e": 0.5},
+    {"f": "320.973/0207", "d": "News Article", "k": "Factual", "e": 0.9},
+]
 
+
+def _gate_vectors(spec: dict[str, Any]):
+    """Hand-fed Sweep over GD-distinguishing rows: Irrelevant must not break B⊆D."""
+    rows = [
+        {
+            "f": "510.2",
+            "d": "Tutorial",
+            "k": "Factual",
+            "a": "No Artifacts",
+            "m": "No missing content",
+            "t": "Mostly Correct",
+            "e": 0.95,
+            "prefix3": "510",
+            "digit1": "5",
+            "digit2": "51",
+        },
+        {
+            "f": "720.0",
+            "d": "Tutorial",
+            "k": "Factual",
+            "a": "Irrelevant Content",
+            "m": "No missing content",
+            "t": "Mostly Correct",
+            "e": 0.85,
+            "prefix3": "720",
+            "digit1": "7",
+            "digit2": "72",
+        },
+        {
+            "f": "650.1",
+            "d": "Documentation",
+            "k": "Procedural",
+            "a": "No Artifacts",
+            "m": "No missing content",
+            "t": "Highly Correct",
+            "e": 0.5,
+            "prefix3": "650",
+            "digit1": "6",
+            "digit2": "65",
+        },
+    ]
+    sweep_obj = sweep.Sweep(spec, ["c0"])
+    for index, fields in enumerate(rows):
+        sweep_obj.rowinfo.append(("c0", "f0.parquet", index, dict(fields)))
+        sweep_obj.process_valid("c0", fields, {})
+    return sweep_obj
+
+
+def test_gate_direction_with_irrelevant_rows(spec: dict[str, Any]) -> None:
+    """The real failure shape: GD-only rows must not trip the B⊆D invariant.
+
+    Row 2 passes GD (Irrelevant Content) but fails GN: the OLD reversed check
+    counted exactly such rows and fired. The fixed check counts B-only rows.
+    """
+    sweep_obj = _gate_vectors(spec)
+    b_gate = sweep_obj.gatepass[("B", "normal")]
+    d_gate = sweep_obj.gatepass[("D", "normal")]
+    b_only = sum(1 for b, d in zip(b_gate, d_gate, strict=True) if b and not d)
+    d_only = sum(1 for b, d in zip(b_gate, d_gate, strict=True) if d and not b)
+    assert b_only == 0
+    assert d_only == 1
+    identities = sweep._check_identities(sweep_obj, 3)
+    assert identities["d_gate_superset_b_gate_normal"] == 0
+    assert identities["b_final_preserved_in_d_final_essential_practical_normal"] == 0
+
+
+def test_final_assignment_preserved_across_gate_expansion(spec: dict[str, Any]) -> None:
+    sweep_obj = _gate_vectors(spec)
+    for component in ("essential_science", "essential_practical", "essential_prose"):
+        for tier in ("normal", "strict"):
+            key = f"b_final_preserved_in_d_final_{component}_{tier}"
+            assert key in sweep._check_identities(sweep_obj, 3)
+
+
+def test_gate_evaluations_share_no_state(spec: dict[str, Any]) -> None:
+    fields = _features(spec)
+    first = sweep.gate_gn(fields, spec)
+    second = sweep.gate_gn(fields, spec)
+    assert first == second == []
+    assert first is not second
+    other = sweep.gate_gd(fields, spec)
+    assert other == []
+    first.append("injected")
+    assert sweep.gate_gn(fields, spec) == []
+    left = sweep.evaluate_policy(dict(fields), "B", "normal", spec)
+    right = sweep.evaluate_policy(dict(fields), "B", "normal", spec)
+    assert left == right and left is not right
+    assert left["matches"] is not right["matches"]
+
+
+def test_gate_world_full_run(tmp_path: Path) -> None:
+    code, out = _run_world(tmp_path, pools=[_GATE_POOL] * 8)
+    assert code == 0
+    summary = _summary(out)
+    assert summary["combos"]["B-normal"]["final"]["essential_practical"] == 64 * 8
+    assert summary["combos"]["D-normal"]["final"]["essential_practical"] == 128 * 8
+    assert summary["identity_invariants"]["d_gate_superset_b_gate_normal"] == 0
+
+
+def test_gd_requiring_irrelevant_fails_closed_and_writes_nothing(tmp_path: Path) -> None:
+    spec = _mutated_spec(tmp_path, ["Irrelevant Content"])
+    world = _write_world(tmp_path / "w")
+    out = tmp_path / "w" / "out"
+    argv = _run_args(world, out) + ["--policy-spec", str(spec)]
+    code = sweep.main(argv)
+    assert code == 1
+    assert not out.exists()
+
+
+def _mutated_spec(tmp_path: Path, artifacts: list[str]) -> Path:
+    loaded, _ = sweep.load_policy_spec(SPEC_PATH)
+    altered = copy.deepcopy(loaded)
+    altered["gates"]["GD"]["artifacts"] = artifacts
+    path = tmp_path / "mutated_spec.yaml"
+    path.write_text(yaml.safe_dump(dict(altered)), encoding="utf-8")
+    return path
+
+
+def test_gate_diagnostic_content(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    spec = _mutated_spec(tmp_path, ["Irrelevant Content"])
+    world = _write_world(tmp_path / "w")
+    out = tmp_path / "w" / "out"
+    argv = _run_args(world, out) + ["--policy-spec", str(spec)]
+    assert sweep.main(argv) == 1
+    err = capsys.readouterr().err
+    assert "GN pass" in err and "GD pass" in err
+    assert "|GN-GD|" in err and "|GD-GN|" in err
+    assert err.count("row crawl-") <= 20
+    assert "F=510.2" in err and "A=No Artifacts" in err
+    assert "GN_reasons" in err and "GD_reasons" in err
+
+
+def test_policy_digest_changes_with_spec(spec: dict[str, Any]) -> None:
     before = sweep.policy_digest_of(spec)
     assert before == sweep.load_policy_spec(SPEC_PATH)[1]
     altered = copy.deepcopy(spec)

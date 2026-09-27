@@ -279,6 +279,29 @@ def gate_gd(features: Mapping[str, Any], spec: Mapping[str, Any]) -> list[str]:
     return _gate(features, spec["gates"]["GD"], spec)
 
 
+_REASON_FOR_COND = {
+    "english": "gate_english",
+    "artifacts": "gate_artifacts",
+    "missing": "gate_missing_content",
+    "correctness": "gate_correctness",
+    "doctype": "gate_doctype",
+}
+
+
+def _gate_conditions(
+    spec: Mapping[str, Any], gate_name: str, fields: Mapping[str, Any]
+) -> dict[str, bool]:
+    """Per-condition gate results (shared by attrition and diagnostics)."""
+    gate = spec["gates"][gate_name]
+    return {
+        "english": bool(fields["e"] >= gate["english_min"]),
+        "artifacts": bool(fields["a"] in gate["artifacts"]),
+        "missing": bool(fields["m"] in gate["missing"]),
+        "correctness": bool(fields["t"] in spec["correctness_allowed"]),
+        "doctype": bool(fields["d"] in spec["doctype_union"]),
+    }
+
+
 _GATES = {"GN": gate_gn, "GS": gate_gs, "GD": gate_gd}
 
 
@@ -616,6 +639,7 @@ class Sweep:
         self.unknown_values: dict[str, Counter[str]] = {}
         self.finals: dict[tuple[str, str], list[str]] = {c: [] for c in COMBOS}
         self.gatepass: dict[tuple[str, str], list[bool]] = {c: [] for c in COMBOS}
+        self.rowinfo: list[tuple[str, str, int, dict[str, Any] | None]] = []
         self.waterfall: dict[tuple[str, str, str], Counter[str]] = {}
         self.multi_final = 0
 
@@ -728,18 +752,7 @@ class Sweep:
         # Per-condition pass, independent of the joint outcome (attrition needs
         # each condition's marginal retention).
         gate_name: str = self.spec["policies"][policy_name][tier]
-        gate = self.spec["gates"][gate_name]
-        if cond == "english":
-            return bool(fields["e"] >= gate["english_min"])
-        if cond == "artifacts":
-            return bool(fields["a"] in gate["artifacts"])
-        if cond == "missing":
-            return bool(fields["m"] in gate["missing"])
-        if cond == "correctness":
-            return bool(fields["t"] in self.spec["correctness_allowed"])
-        if cond == "doctype":
-            return bool(fields["d"] in self.spec["doctype_union"])
-        raise SweepError(f"unknown gate condition '{cond}'")
+        return _gate_conditions(self.spec, gate_name, fields)[cond]
 
     def _cell_english(
         self, combo: tuple[str, str], scope: str, final: str, fields: Mapping[str, Any]
@@ -930,6 +943,8 @@ class Sweep:
 
 
 def _check_conservation(sweep: Sweep, n_rows: int) -> None:
+    if len(sweep.rowinfo) != n_rows:
+        raise SweepError(f"{len(sweep.rowinfo)} rowinfo entries for {n_rows} rows")
     for combo in COMBOS:
         if len(sweep.finals[combo]) != n_rows:
             raise SweepError(f"{combo}: {len(sweep.finals[combo])} finals for {n_rows} rows")
@@ -944,8 +959,14 @@ def _check_conservation(sweep: Sweep, n_rows: int) -> None:
 
 
 def _check_identities(sweep: Sweep, n_rows: int) -> dict[str, int]:
-    """B-strict == D-strict, B-science == C-science, subset invariants."""
+    """B-strict == D-strict, B-science == C-science, subset invariants.
+
+    Cross-policy B/D relations report first: a gate-definition defect
+    surfaces as the gate diagnostic (with offending locators) rather than
+    as a downstream subset mismatch.
+    """
     out: dict[str, int] = {}
+    out.update(_check_bd_relations(sweep, n_rows))
     agree = sum(
         1
         for a, b in zip(sweep.finals[("B", "strict")], sweep.finals[("D", "strict")], strict=True)
@@ -989,14 +1010,88 @@ def _check_identities(sweep: Sweep, n_rows: int) -> dict[str, int]:
     out["b_c_science_agreement_normal"] = agree
     if agree != n_rows:
         raise SweepError("B-science vs C-science differ")
+    return out
+
+
+def _check_bd_relations(sweep: Sweep, n_rows: int) -> dict[str, int]:
+    """Gate-set subset (GN pass ⊆ GD pass) and final-assignment preservation.
+
+    B and D share predicates and precedence, so every B-normal gate-pass
+    row must pass D-normal, and every B-assigned row must keep its
+    component under D (GD-only rows may add D assignments). Violations
+    raise with counts plus at most 20 bounded offender locators; no text.
+    """
+    _ = n_rows
+    out: dict[str, int] = {}
     for tier in TIERS:
         b_gate = sweep.gatepass[("B", tier)]
         d_gate = sweep.gatepass[("D", tier)]
-        bad = sum(1 for b, d in zip(b_gate, d_gate, strict=True) if d and not b)
-        out[f"d_gate_superset_b_gate_{tier}"] = bad
-        if bad:
-            raise SweepError(f"D-normal gate is not a B-normal superset ({tier})")
+        offenders = [i for i, (b, d) in enumerate(zip(b_gate, d_gate, strict=True)) if b and not d]
+        gn_pass = sum(1 for b in b_gate if b)
+        gd_pass = sum(1 for d in d_gate if d)
+        d_only = sum(1 for b, d in zip(b_gate, d_gate, strict=True) if d and not b)
+        out[f"d_gate_superset_b_gate_{tier}"] = len(offenders)
+        if offenders:
+            raise SweepError(
+                f"B-{tier} gate pass is not a subset of D-{tier} gate pass: "
+                f"GN pass {gn_pass} GD pass {gd_pass} "
+                f"|GN-GD| {len(offenders)} |GD-GN| {d_only}; "
+                f"first {min(20, len(offenders))} offending locators: "
+                + "; ".join(_format_gate_offender(sweep, i) for i in offenders[:20])
+            )
+    for tier in TIERS:
+        b_final = sweep.finals[("B", tier)]
+        d_final = sweep.finals[("D", tier)]
+        for component in ("essential_science", "essential_practical", "essential_prose"):
+            bad_idx = [
+                i
+                for i, (b, v) in enumerate(zip(b_final, d_final, strict=True))
+                if b == component and v != component
+            ]
+            out[f"b_final_preserved_in_d_final_{component}_{tier}"] = len(bad_idx)
+            if bad_idx:
+                shown = "; ".join(
+                    _format_final_offender(sweep, i, b_final[i], d_final[i]) for i in bad_idx[:20]
+                )
+                raise SweepError(
+                    f"B-{tier} {component} is not preserved under D-{tier}: "
+                    f"{len(bad_idx)} rows differ; first {min(20, len(bad_idx))}: {shown}"
+                )
     return out
+
+
+def _format_gate_offender(sweep: Sweep, index: int) -> str:
+    """One bounded diagnostic line: locator, fields, GN/GD conditions, reasons."""
+    crawl, source_file, row_index, fields = sweep.rowinfo[index]
+    assert fields is not None
+    spec = sweep.spec
+    gn = _gate_conditions(spec, "GN", fields)
+    gd = _gate_conditions(spec, "GD", fields)
+
+    def _conds(conds: Mapping[str, bool]) -> str:
+        order = ("english", "artifacts", "missing", "correctness", "doctype")
+        return "".join("Y" if conds[c] else "n" for c in order)
+
+    def _reasons(conds: Mapping[str, bool]) -> str:
+        missing = sorted(_REASON_FOR_COND[c] for c, ok in conds.items() if not ok)
+        return ",".join(missing) if missing else "-"
+
+    return (
+        f"row {crawl} {source_file} {row_index} "
+        f"F={fields['f']} D={fields['d']} K={fields['k']} A={fields['a']} "
+        f"M={fields['m']} T={fields['t']} E={fields['e']:.4f} "
+        f"GN={_conds(gn)} GD={_conds(gd)} "
+        f"GN_reasons=[{_reasons(gn)}] GD_reasons=[{_reasons(gd)}]"
+    )
+
+
+def _format_final_offender(sweep: Sweep, index: int, before: str, after: str) -> str:
+    """One bounded diagnostic line: locator plus B vs D finals."""
+    crawl, source_file, row_index, fields = sweep.rowinfo[index]
+    detail = f"row {crawl} {source_file} {row_index} B={before} D={after}"
+    if fields is not None:
+        detail += f" F={fields['f']} D={fields['d']}"
+    return detail
 
 
 # --------------------------------------------------------------------------
@@ -1477,6 +1572,9 @@ def run_sweep(
             seen.add(key)
             record.pop("text", None)
             fields, reasons, unknowns = validate_row(record, spec)
+            sweep.rowinfo.append(
+                (part["crawl"], str(source_file), row_index, dict(fields) if not reasons else None)
+            )
             if reasons:
                 if "invalid_fdc_syntax" in reasons:
                     anomaly_total += 1
@@ -1627,10 +1725,6 @@ def cmd_run(args: argparse.Namespace) -> int:
         result["diagnostics"],
     )
     texts["policy_spec.json"] = _dumps(spec)
-    try:
-        sizes = write_artifacts(args.output_dir, texts, spec["caps"])
-    except SweepError as exc:
-        return _fail(str(exc))
     manifest = {
         "kind": "essential_web_selector_sweep_manifest",
         "tool": TOOL_ID,
@@ -1647,13 +1741,20 @@ def cmd_run(args: argparse.Namespace) -> int:
         },
         "caps": spec["caps"],
         "artifacts": {
-            name: {"bytes": sizes[name], "sha256": _sha256_text(text)}
+            name: {
+                "bytes": len(text.encode("utf-8")),
+                "sha256": _sha256_text(text),
+            }
             for name, text in sorted(texts.items())
         },
     }
     manifest["digest"] = _manifest_digest(manifest)
+    texts["sweep_manifest.json"] = _dumps(manifest)
+    # Single atomic batch: a failed invariant above never reaches this call,
+    # so no partial sweep output can exist; a failed write leaves at most
+    # complete files plus no manifest, and rerun refuses a non-empty dir.
     try:
-        write_artifacts(args.output_dir, {"sweep_manifest.json": _dumps(manifest)}, spec["caps"])
+        sizes = write_artifacts(args.output_dir, texts, spec["caps"])
     except SweepError as exc:
         return _fail(str(exc))
     stats = result["stats"]
