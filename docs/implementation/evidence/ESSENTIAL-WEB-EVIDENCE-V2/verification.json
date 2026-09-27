@@ -1,0 +1,60 @@
+{
+  "artifact_hashes": {
+    "attrition.json": {
+      "bytes": 22144,
+      "sha256": "7ed63a682bd8a918fa3c5b4410ae1c8ffafbf7d62f968f764d1590970f98d7ad"
+    },
+    "crosstabs.json": {
+      "bytes": 690521,
+      "sha256": "5fa6d0ac84adb75e0b1ea7ea6bdb0a440ac0d66363043125eeb376b58e4e1720"
+    },
+    "diagnostics.json": {
+      "bytes": 82797,
+      "sha256": "01fa05e3a0859cafb74c47d8e16b06267dca15a5a89def64ffb4ab551ea68f1a"
+    },
+    "overlaps.json": {
+      "bytes": 23200,
+      "sha256": "edc367578fea52c42cb6d3fe21ed7cfa9efce052b981670be5ad70be7e7a4be1"
+    },
+    "per_crawl.json": {
+      "bytes": 28845,
+      "sha256": "b5171045d684be812dd242fbfb60e110045e6a0ad510ede706ef642e969198a2"
+    },
+    "policy_spec.json": {
+      "bytes": 5346,
+      "sha256": "04005393158b01b5cc6433994142fa61f4d0679eda565b425ac82084acf3035b"
+    },
+    "summary.json": {
+      "bytes": 3439,
+      "sha256": "0925c3708461feaa399a3f9c19e28d69cd338d7dd72d9e8837da115e4e9a60ed"
+    },
+    "summary.md": {
+      "bytes": 6496,
+      "sha256": "71396004a981c75afa699569a491b02098c89f66e441f3eb144cc627cf1f8096"
+    }
+  },
+  "combined_metadata_bytes_hashed": 15135064,
+  "complete_eligible_inventory_digest": "d2b3eac5dca002336a97654564a13c93e8e4696e6a1624a6fdf3c012fd0927d5",
+  "corpus_text_inspection": false,
+  "elapsed_seconds": 0.243022,
+  "eligible_files": 23200,
+  "endpoint_rss_bytes": 31244288,
+  "inventory_digest": "466ece976bfadfbd024c7fb66ff0076f1d86f36ce7d362331d85f1fee36c018f",
+  "network": false,
+  "new_footer_inspection": false,
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.12.13",
+  "source_hashes": {
+    "scripts/essential_web_selector_sweep.py": "5a63e78560ea9e12b0ec03b5e7e63204b5c75554bee02192c12bb4ab0853bf9c",
+    "src/xlm/data/acquisition/plan.py": "82a07e1269b4360b9c8acc6cb22065464f393a4dd3277d6291bb472b50ce99f0",
+    "src/xlm/data/acquisition/sampling.py": "be5048836a0cc667f495de3631d8b37b3cbbdcfd59b6403ce88921c57e6f12f3",
+    "src/xlm/data/acquisition/selection.py": "6db5efb8556477896db75da631fe94d43ab47e6aacb4f1b7157c9bd0f22aa813",
+    "src/xlm/data/adapters/columns.py": "c0ffc90cab3f481a71a929f2fca94b6e6e7be9f3be50d62364fb853214209c9c",
+    "src/xlm/data/adapters/mix01_adapters.py": "beefc8ca4b96f508c8614c974eb3a45f1f46613cd291ca8ad019b6d7b55e5602"
+  },
+  "starting_head": "dabf8e7c6a2838062a4d427d35a489ea7e694482",
+  "status": "VERIFIED",
+  "sweep_bytes_read": 864832,
+  "sweep_manifest_canonical_digest": "e13c9c98efdf07fcc7c1375c4c8b62d918d77aa39c158171aa090c8695ac4087",
+  "sweep_manifest_file_sha256": "0d550a2d871f737c8bc46f82a8de38fd817b50bb1bffee46f2c3c07a129e26bc"
+}

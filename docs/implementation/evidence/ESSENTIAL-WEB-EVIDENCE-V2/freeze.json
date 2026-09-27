@@ -1,0 +1,44 @@
+{
+  "artifacts": [
+    {
+      "bytes": 48628,
+      "descriptor_digest": "abfdb717b3a803bca04565e14eccceeb0f92c41e5dc1da844ba139b4620cb960",
+      "media_type": "text/markdown",
+      "relative_path": "docs/implementation/reports/ESSENTIAL-WEB-EVIDENCE-V2-PROTOCOL.md",
+      "sha256": "c32dff47dc6faeb3733a391a79744ba7a887e26ade157c399e806f0f47a99618"
+    },
+    {
+      "bytes": 6784,
+      "descriptor_digest": "ef54565793d2e8266c6944f0dbc68b814f6d3d95b3f8d05c2b071bb6a1fbf9fe",
+      "media_type": "application/json",
+      "relative_path": "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V2/inventory-freeze.json",
+      "sha256": "46906d6dea9d7b790bc6cb4b01ce59db292fefef498b57d4eca80987d9407341"
+    },
+    {
+      "bytes": 2622,
+      "descriptor_digest": "a89502ec179aafc5ce279f9f78adac6ef2f612a8d72750a2738cdd6c0dac9f26",
+      "media_type": "application/json",
+      "relative_path": "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V2/verification.json",
+      "sha256": "aabab4645f8a786a365e81e56e2f96dfd70731316d9c38a7fdc13ea2d014b445"
+    },
+    {
+      "bytes": 14011,
+      "descriptor_digest": "826ed13aa18dd9dd6b2484b8cac5c7ba162ad0a8494a8b03483edbee3a5d969e",
+      "media_type": "text/markdown",
+      "relative_path": "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V2/COMMANDS.md",
+      "sha256": "eabbc35e2271ddd440ed2b35c0e4e8bae5d889c6492fb0d7b94bceead301e5ce"
+    }
+  ],
+  "canonical_scheme": "UTF-8 json.dumps(sort_keys=True,separators=(',',':'),ensure_ascii=False,allow_nan=False), no BOM/newline; self-digest excludes only top-level digest",
+  "complete_eligible_inventory_digest": "d2b3eac5dca002336a97654564a13c93e8e4696e6a1624a6fdf3c012fd0927d5",
+  "digest": "fe2157799a86fe777e45c220716563f8a73245a12593c40909222555bf1b8248",
+  "kind": "essential_web_evidence_protocol_freeze",
+  "metadata_seed": 20260927,
+  "policy_digest": "f4357f61f434d5105d823266153dac6372e122f12767187631e8796b4899dd07",
+  "protocol_version": "essential-web-evidence-v2.0",
+  "repository": "EssentialAI/essential-web-v1.0",
+  "review_order_seed": 20260928,
+  "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+  "scope": "PROTOCOL_ONLY_NOT_ACQUISITION_AUTHORIZATION",
+  "text_selection_seed": 20260927
+}
