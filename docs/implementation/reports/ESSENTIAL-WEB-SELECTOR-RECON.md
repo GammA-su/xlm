@@ -7,7 +7,8 @@ writes under `X:\XLM`. The 3 real certified rows at
 `D:\Project\xlm-operator-pilot\adapter-cert-essential-web01` were read locally
 to confirm field paths. Nothing was written there.
 
-**Verdict: READY FOR ESSENTIAL LIVE RECON.**
+**Verdict (update): READY FOR ESSENTIAL 8-UNIT RECON FETCH** (see §10–§12).
+Original verdict: READY FOR ESSENTIAL LIVE RECON.
 
 ## 1. The semantic problem
 
@@ -238,7 +239,7 @@ accounted path is `ok`, and 10 classifiers are observed.
 - `docs/implementation/reports/ESSENTIAL-WEB-SELECTOR-RECON.md` (new)
 - `docs/implementation/STATUS.md`
 
-## 10. Exact USER commands
+## 10a. Original USER commands (superseded by §11)
 
 Run these in PowerShell from `G:\Project\xlm-data-ultrax`, in order:
 
@@ -278,7 +279,7 @@ uv @UV python scripts/essential_web_recon.py analyze --manifest "$R\discovery.js
 
 On any of these, send the output back. Do not retry with wider bounds.
 
-## 11. STOP point
+## 10b. Original STOP point (superseded by §12)
 
 **STOP after `analysis.json` and `analysis.md` exist.** Return both, and
 `footer\rows.evidence.json`, for review.
@@ -288,7 +289,255 @@ changes the adapter and view semantics, then runs three text-bearing
 calibrations. None of that is authorized here. Do not run the
 `essential_*` calibration units in the meantime.
 
-## 12. Limitations
+## 10. Real execution findings and execution-v2 (update, same date)
+
+### What ran live
+
+**Discovery succeeded.**
+
+- Digest: `c8d448fafb10b524496e6fd51bcde23f87c19c95b68dffe02f293d96be7530a7`.
+- Revision `ce4eccc…3113d`, seed 20260918, 8 strata.
+- Crawls chosen: 2014-15, 2015-32, 2016-50, 2018-05, 2019-09, 2021-04,
+  2021-49 and 2024-26.
+
+**The generic probe for `selector_recon` hit its body limit.**
+
+- Outcome: `budget_exhausted`, 1 request, 0 body bytes, "response exceeds
+  its allocated body limit".
+- The repository-API metadata response is larger than the probe's
+  per-response snapshot-info ceiling (512 KiB).
+- The production probe is **not** changed.
+- To bind the revision to plans, the operator made
+  `X:\XLM\recon\essential_web\recon_catalog.yaml`, pinned to the revision
+  discovery had already found. This is a **recon-only research binding**,
+  not production evidence or admission.
+
+**The first design refused at the footer stage.**
+
+- Design: the 5-field projection (`eai_taxonomy, quality_signals, id, pid,
+  metadata`) in one 8-file, 4,096-row plan.
+- Footer planning estimated about **104 requests per file**.
+- `PILOT_MAX_REQUESTS` is 100 **per acquisition plan**, so it refused.
+- This is a physical-leaf/request limit, not a transfer-size limit. The
+  bound is not raised.
+
+**The reduced 2-field projection passed on all 8 files.**
+
+- Projection: `eai_taxonomy, quality_signals`, with 81 physical leaves.
+- Footer-only sampling was run for each file independently, into
+  `split\NN`.
+- Window v2: scan ≤ 16,384 rows, buffer 4 MiB, batches of 256 rows.
+
+| Unit | Crawl | Rows | Scanned | Transfer ≤ (bytes) | Requests |
+|---|---|---|---:|---:|---:|
+| 00 | 2014-15 | [55285,55797) | 5888 | 1,637,117 | 85 |
+| 01 | 2015-32 | [80616,81128) | 1280 | 1,651,844 | 85 |
+| 02 | 2016-50 | [50907,51419) | 1536 | 1,636,909 | 85 |
+| 03 | 2018-05 | [64350,64862) | 4864 | 1,646,437 | 85 |
+| 04 | 2019-09 | [67774,68286) | 8448 | 1,642,273 | 85 |
+| 05 | 2021-04 | [44839,45351) | 5376 | 1,644,318 | 85 |
+| 06 | 2021-49 | [16495,17007) | 7168 | 1,658,707 | 85 |
+| 07 | 2024-26 | [13163,13675) | 3840 | 1,651,131 | 85 |
+
+Totals: 4,096 retained rows, 38,400 scanned rows, and about 13,168,736 B
+of upper-bound transfer.
+
+### The corrected shape: execution-v2
+
+The corrected shape is **8 independent 512-row pilot plans**, one per
+file. It is never one 8-file plan.
+
+**`discovery.json` is kept as written.** Its 5-field projection records
+the original proposed recon. The new `execution` subcommand writes a
+separate `execution.json`, version `essential-recon-execution-v2`. It
+never fetches data. It binds:
+
+- `parent_discovery_digest`, which must equal the digest passed in
+  `--expect-discovery-digest`;
+- the repository, revision and seed (both must be the pinned values);
+- the 8 strata, with each unit's stratum and crawl identity;
+- `projection = ["eai_taxonomy", "quality_signals"]`;
+- 512 records per unit, 4,096 in total;
+- the window-v2 policy: scan 16,384, buffer 4,194,304, batch 256;
+- `plan_shape` of one independent plan per file;
+- `pilot_max_requests_per_plan = 100`, read from code;
+- the narrowing rationale (104 → 85 requests, split into 8 plans) and the
+  probe limitation.
+
+**Per unit, it records:**
+
+- the file;
+- the adopted `row_range`;
+- the row group, scan rows, requests and transfer upper bound;
+- `rows_sha256` and `evidence_sha256`;
+- relative paths: `split/NN/rows.json`, `split/NN/rows.evidence.json`,
+  `units/NN/plan.json`, `units/NN/raw` and `units/NN/scratch`.
+
+The manifest has its own SHA-256 digest. Built in memory from the real
+artifacts, it is `5065bcf6001ee38b63ca783f20a625af0256f2788ce9a0034edfba34c125bc23`.
+
+**Footer adoption.** Each `split/NN` pair must match exactly:
+
+- source, view, revision and seed;
+- `mode` is `window`;
+- `selected_files == [file]`;
+- the logical projection is the 2 fields;
+- `planned_records` is 512;
+- `row_ranges` equals `rows.json`, and that equals the window's
+  `start_row`/`stop_row`, with `stop - start = 512`;
+- the policy is v2 with the same scan, buffer and batch;
+- estimated requests ≤ 100.
+
+Anything else refuses, and nothing is rewritten. When `execution.json`
+already exists, identical bytes are adopted and anything different
+refuses.
+
+**Distinct plan identities.** All units share
+`plan_id = plan_essential_web_selector_recon_huggingface`, but each has
+its own scratch/journal directory. Their behavioral `plan_hash` values
+differ because `selected_files` and `row_ranges` differ. Combine refuses
+a duplicate plan hash.
+
+### Combine (offline)
+
+For every unit, in stratum order, combine checks:
+
+**The plan.**
+
+- `load_acquisition_plan` passes, which re-verifies the hash.
+- source, view, repository and revision match.
+- `mode` is `selected_records`.
+- `selected_files == [file]`.
+- `row_ranges == {file: range}`.
+- `projected_fields == [eai_taxonomy, quality_signals]`.
+- `is_pilot` is set.
+- The window is v2 with the exact scan, buffer and batch values.
+- `max_records ≤ 512` and `max_requests ≤ 100`.
+- The hash is not a duplicate of another unit's.
+
+**The journal**, `scratch/journals/<plan_id>.progress.json`.
+
+- It binds the same plan id and hash.
+- Its status is `COMPLETED`.
+- It tracks only `selected_records.jsonl`, which is completed.
+- `records_acquired` is 512.
+
+**The part.**
+
+- The output size and SHA-256 equal the journal's.
+- It has exactly 512 lines of strict JSON.
+- The fields are exactly the projection plus the locator.
+- The locator's `source_file` is the unit's file, and its revision and
+  repository match.
+- `row_index` lies in `[start, stop)`.
+- `(file, row_index)` is unique across all units.
+
+**Refusals** cover: a missing or duplicate part, the wrong file, revision,
+plan hash, projection, window version or row range, a count other than
+512, corrupt JSONL, a digest that drifted from the journal, and a
+duplicate locator.
+
+**Outputs.** Parts are concatenated byte for byte in stratum order into
+`raw\selected_records.jsonl`. `bundle.json` records:
+
+- the execution and discovery digests;
+- per part: plan hash, byte count and SHA-256;
+- 8 parts and 4,096 records;
+- the combined SHA-256, and the receipt's own digest.
+
+Existing identical outputs are adopted, and anything different refuses.
+
+### Analyzer
+
+Analysis needs only `eai_taxonomy` and `quality_signals`.
+
+- `id`, `pid` and `metadata.*` are no longer accounted paths.
+- Crawl and file identity come from the acquisition locator.
+- `text` is never read.
+- The distributions, cross-tabs, percentiles, quality observations,
+  candidate coverage and overlap are unchanged.
+- Nothing is approved.
+- `analyze --manifest discovery.json` still works, because the file set is
+  identical.
+
+### Tests
+
+`tests/test_essential_web_recon_execution.py` has 23 tests. Plans come
+from the real offline `xlm data plan` CLI. Journals and parts are authored
+in the fetcher's own models, and sockets are blocked. They cover:
+
+- discovery left unchanged, and the parent digest bound;
+- the 2-field projection;
+- 8 units, 8 × 512 = 4,096, one plan per unit, and stratum identity;
+- a restart-safe execution write;
+- 4 incompatible-footer refusals, plus a rows mismatch and a missing
+  footer;
+- combine byte order and the 4,096 total;
+- combine CLI write, adopt and tamper refusal;
+- refusals for the wrong plan file, a record from another file, the wrong
+  revision, plan hash, projection, window version or row range, a row
+  outside the range, a count of 511, a duplicate locator, a corrupt or
+  drifted part, and a missing or duplicate part;
+- bundle analysis without id, pid, metadata or text, with nothing
+  approved.
+
+**Commands run.** Focused run:
+`uv run --offline --locked --no-sync --extra cpu --extra eval python -m
+pytest tests/test_essential_web_recon.py
+tests/test_essential_web_recon_execution.py
+tests/test_parquet_window_nested.py -n 0 -q` → **59 passed**, exit 0.
+`ruff check`, `ruff format --check` and scoped mypy are clean.
+
+**Not run.** The fast and full suites, and anything live.
+
+## 11. Exact USER commands (current real state)
+
+Run these in PowerShell from `G:\Project\xlm-data-ultrax`. Only the fetch
+step uses the network.
+
+```powershell
+$env:XLM_HOME="X:\XLM\xlm-home"; $env:HF_HOME="X:\XLM\hf-cache"; $env:HF_DATASETS_CACHE="X:\XLM\hf-cache\datasets"
+$R="X:\XLM\recon\essential_web"; $Cat="$R\recon_catalog.yaml"; $F="eai_taxonomy,quality_signals"; $UV=@("run","--offline","--locked","--no-sync","--extra","cpu","--extra","eval")
+# 1. execution manifest (offline; adopts the 8 real split\NN footers, refuses any mismatch)
+uv @UV python scripts/essential_web_recon.py execution --discovery "$R\discovery.json" --expect-discovery-digest c8d448fafb10b524496e6fd51bcde23f87c19c95b68dffe02f293d96be7530a7 --root $R --output "$R\execution.json"
+$E = Get-Content -Raw "$R\execution.json" | ConvertFrom-Json
+# 2. eight independent plans (offline; existing plans are kept)
+foreach ($u in $E.units) { $p = Join-Path $R $u.paths.plan; if (Test-Path $p) { continue }; New-Item -ItemType Directory -Force (Split-Path $p) | Out-Null; uv @UV xlm data plan --source essential_web --view selector_recon --catalog $Cat --files $u.file --mode selected_records --row-ranges (Join-Path $R $u.paths.rows) --project-fields $F --seed 20260918 --attempt 1 --parquet-window-scan-rows 16384 --parquet-window-buffer-bytes 4194304 --parquet-window-batch-rows 256 --parquet-window-policy-version 2 --max-records 512 --pilot-approved --output $p; if ($LASTEXITCODE -ne 0) { throw "plan $($u.unit) failed" } }
+# 3. display identities (8 distinct plan_hash values expected)
+foreach ($u in $E.units) { "unit $($u.unit) $($u.crawl)"; uv @UV python scripts/calibration_adopt.py plan-identity --plan (Join-Path $R $u.paths.plan) }
+# 4. sequential bounded fetch (network); a completed unit is adopted, never refetched
+$env:HF_HUB_OFFLINE="0"; $env:HF_DATASETS_OFFLINE="0"
+foreach ($u in $E.units) { $p = Join-Path $R $u.paths.plan; $o = Join-Path $R $u.paths.raw; $s = Join-Path $R $u.paths.scratch; uv @UV python scripts/calibration_adopt.py fetch --plan $p --scratch-dir $s --output-dir $o; if ($LASTEXITCODE -eq 2) { continue } elseif ($LASTEXITCODE -ne 0) { throw "fetch adoption refused $($u.unit)" }; uv @UV xlm data fetch --plan $p --output-dir $o --scratch-dir $s --pilot-approved; if ($LASTEXITCODE -ne 0) { throw "fetch $($u.unit) failed" } }
+$env:HF_HUB_OFFLINE="1"; $env:HF_DATASETS_OFFLINE="1"
+# 5. sequential verify (offline, not published)
+foreach ($u in $E.units) { uv @UV xlm data verify --plan (Join-Path $R $u.paths.plan) --output-dir (Join-Path $R $u.paths.raw) --scratch-dir (Join-Path $R $u.paths.scratch) --json --no-publish; if ($LASTEXITCODE -ne 0) { throw "verify $($u.unit) failed" } }
+# 6. combine (offline)
+uv @UV python scripts/essential_web_recon.py combine --execution "$R\execution.json" --root $R --output "$R\raw\selected_records.jsonl" --receipt "$R\bundle.json"
+# 7. analyze (offline)
+uv @UV python scripts/essential_web_recon.py analyze --manifest "$R\discovery.json" --records "$R\raw\selected_records.jsonl" --output-json "$R\analysis.json" --output-md "$R\analysis.md"
+```
+
+**Expected results.**
+
+- Step 1 prints digest `5065bcf6…bc23` and 4,096 records.
+- Step 6 prints 4,096 records and writes `bundle.json`.
+
+**STOP conditions.** Stop and send back the output if any of these
+happen. Do not widen any bound.
+
+- A refusal (exit 2) from `execution` or `combine`.
+- A `throw` from any loop.
+- A plan-identity listing that shows repeated plan hashes.
+
+## 12. STOP point
+
+**STOP after `analysis.json` and `analysis.md` exist.** Return them,
+together with `bundle.json` and `execution.json`.
+
+- Selector freezing is still a separate, reviewed task.
+- The `essential_*` calibration units must not run.
+
+## 13. Limitations
 
 - Window samples are clustered, one contiguous window per file. The
   shares are partial diagnostic observations, not corpus estimates.
@@ -298,3 +547,8 @@ calibrations. None of that is authorized here. Do not run the
 - The discover pagination and HF tree field names (`type`, `path`,
   `size`, `oid`, `lfs.oid`) are exercised only against a fake lister.
   The first live run is the compatibility check.
+- Combine is tested against journals and parts authored in the fetcher's
+  own Pydantic models, not against a real fetch. The first live 8-unit run
+  is the check that it works with real fetch output.
+- The 8 units share `plan_id` but not `plan_hash`. The unit-specific
+  scratch directories keep their journals apart.

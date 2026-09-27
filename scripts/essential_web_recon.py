@@ -300,7 +300,9 @@ class HubTreeLister:
 
 MISSING, NULL, MALFORMED = "__missing__", "__null__", "__malformed__"
 
-#: Paths read by EssentialWebAdapter / declared in mix01_views.yaml.
+#: Selector-relevant paths (all under the execution-v2 two-field projection).
+#: id/pid/metadata are NOT required: crawl/file/row identity comes from the
+#: acquisition locator, never from optional upstream fields.
 ACCOUNTED_PATHS = (
     "eai_taxonomy.free_decimal_correspondence.primary.code",
     "eai_taxonomy.free_decimal_correspondence.primary.labels.level_1",
@@ -308,10 +310,6 @@ ACCOUNTED_PATHS = (
     "eai_taxonomy.bloom_knowledge_domain.primary.label",
     "eai_taxonomy.bloom_cognitive_process.primary.label",
     "quality_signals.fasttext.english",
-    "metadata.snapshot_id",
-    "metadata.source_domain",
-    "id",
-    "pid",
 )
 
 #: Candidate probes over OBSERVED fields. FDC codes are Dewey-compatible
@@ -737,6 +735,337 @@ def render_markdown(result: Mapping[str, Any]) -> str:
     return "\n".join(lines)
 
 
+# ---------------------------------------------------------------- execution v2
+
+EXECUTION_KIND = "essential_web_selector_recon_execution"
+EXECUTION_VERSION = "essential-recon-execution-v2"
+BUNDLE_KIND = "essential_web_selector_recon_bundle"
+EXECUTION_PROJECTION = ("eai_taxonomy", "quality_signals")
+UNIT_RECORDS = 512
+EXECUTION_WINDOW = {
+    "policy_version": 2,
+    "max_window_scan_rows": 16384,
+    "stream_buffer_bytes": 4 * 1024 * 1024,
+    "batch_rows": 256,
+}
+MAX_PART_BYTES = 64 * 1024 * 1024
+MAX_JOURNAL_BYTES = 4 * 1024 * 1024
+MAX_FOOTER_BYTES = 1024 * 1024
+NARROWING_RATIONALE = (
+    "The discovery (v1) 5-field projection [eai_taxonomy, quality_signals, id, pid, "
+    "metadata] needed ~104 estimated requests per file, above the per-plan pilot "
+    "ceiling of 100, and footer planning refused. The 2-field selector-analysis "
+    "projection [eai_taxonomy, quality_signals] passed at 85 requests per file on all "
+    "8 files. The ceiling is per acquisition plan, so execution is split into 8 "
+    "independent 512-row pilot plans (one per selected file), never one 8-file plan."
+)
+PROBE_LIMITATION = (
+    "The generic 'xlm data probe' for selector_recon hit 'response exceeds its "
+    "allocated body limit' (0 body bytes, 1 request): the repository API metadata "
+    "response exceeds the probe's per-response ceiling. The production probe is "
+    "unchanged. Plans bind the revision through an operator recon-only catalog "
+    "pinned to the independently discovered exact revision; that is a research "
+    "binding, NOT production evidence or admission."
+)
+
+
+def unit_paths(unit: str) -> dict[str, str]:
+    """Paths relative to the recon root; footers use the observed split/NN layout."""
+    return {
+        "rows": f"split/{unit}/rows.json",
+        "evidence": f"split/{unit}/rows.evidence.json",
+        "plan": f"units/{unit}/plan.json",
+        "raw": f"units/{unit}/raw",
+        "scratch": f"units/{unit}/scratch",
+    }
+
+
+def _read_json(path: Path, limit: int) -> Any:
+    if not path.is_file():
+        raise ReconError(f"missing required artifact {path}")
+    if path.stat().st_size > limit:
+        raise ReconError(f"{path} exceeds {limit} bytes")
+    return json.loads(path.read_bytes())
+
+
+def check_footer(
+    rows: Any, evidence: Any, selection: Mapping[str, Any], manifest: Mapping[str, Any]
+) -> tuple[int, int]:
+    """Adopt one footer unit only if it matches the execution identity exactly."""
+    file = selection["file"]
+    if not isinstance(rows, dict) or list(rows) != [file]:
+        raise ReconError(f"rows.json must hold exactly [{file}], got {list(rows)[:3]}")
+    bound = rows[file]
+    if not (isinstance(bound, list) and len(bound) == 2 and all(type(v) is int for v in bound)):
+        raise ReconError(f"rows.json range for {file} is malformed")
+    start, stop = bound
+    if not isinstance(evidence, dict):
+        raise ReconError("rows.evidence.json must be an object")
+    expected = {
+        "source_id": SOURCE_ID,
+        "view_id": RECON_VIEW,
+        "revision": manifest["revision"],
+        "seed": manifest["seed"],
+        "mode": "window",
+        "selected_files": [file],
+        "projected_logical_fields": list(EXECUTION_PROJECTION),
+        "planned_records": UNIT_RECORDS,
+        "row_ranges": {file: [start, stop]},
+    }
+    for key, value in expected.items():
+        if evidence.get(key) != value:
+            raise ReconError(f"footer evidence {key}={evidence.get(key)!r}, expected {value!r}")
+    if sorted(evidence.get("projected_fields") or []) != sorted(EXECUTION_PROJECTION):
+        raise ReconError(f"footer projection {evidence.get('projected_fields')} is not 2-field")
+    policy = evidence.get("window_policy") or {}
+    for key, value in EXECUTION_WINDOW.items():
+        if policy.get(key) != value:
+            raise ReconError(f"footer window_policy.{key}={policy.get(key)!r}, expected {value}")
+    windows = evidence.get("windows") or []
+    if len(windows) != 1 or windows[0].get("file") != file:
+        raise ReconError("footer evidence must hold exactly one window for its file")
+    window = windows[0]
+    if (window.get("start_row"), window.get("stop_row")) != (start, stop):
+        raise ReconError("footer window rows disagree with rows.json")
+    if stop - start != UNIT_RECORDS:
+        raise ReconError(f"row range [{start},{stop}) is not {UNIT_RECORDS} rows")
+    from xlm.data.acquisition.plan import PILOT_MAX_REQUESTS
+
+    if int(window.get("estimated_requests", PILOT_MAX_REQUESTS + 1)) > PILOT_MAX_REQUESTS:
+        raise ReconError(f"unit estimated requests exceed the pilot ceiling {PILOT_MAX_REQUESTS}")
+    return start, stop
+
+
+def build_execution(manifest: Mapping[str, Any], root: Path, expect_digest: str) -> dict[str, Any]:
+    """Execution-v2 identity over the frozen discovery manifest (never rewritten)."""
+    from xlm.data.acquisition.plan import PILOT_MAX_REQUESTS
+
+    if manifest["digest"] != expect_digest:
+        raise ReconError(f"discovery digest {manifest['digest']} != expected {expect_digest}")
+    if manifest["revision"] != PINNED_REVISION or manifest["seed"] != DEFAULT_SEED:
+        raise ReconError("discovery revision/seed differ from the pinned recon identity")
+    selections = manifest["selections"]
+    if [s["stratum"] for s in selections] != list(range(manifest["strata"])):
+        raise ReconError("discovery selections are not one per stratum in order")
+    if [s["file"] for s in selections] != manifest["files"]:
+        raise ReconError("discovery files disagree with its selections")
+    units: list[dict[str, Any]] = []
+    for selection in selections:
+        unit = f"{selection['stratum']:02d}"
+        paths = unit_paths(unit)
+        rows = _read_json(root / paths["rows"], MAX_FOOTER_BYTES)
+        evidence = _read_json(root / paths["evidence"], 16 * MAX_FOOTER_BYTES)
+        start, stop = check_footer(rows, evidence, selection, manifest)
+        window = evidence["windows"][0]
+        units.append(
+            {
+                "unit": unit,
+                "stratum": selection["stratum"],
+                "stratum_first": selection["stratum_first"],
+                "stratum_last": selection["stratum_last"],
+                "crawl": selection["crawl"],
+                "file": selection["file"],
+                "row_range": [start, stop],
+                "records": UNIT_RECORDS,
+                "row_group": window.get("row_group"),
+                "expected_scan_rows": window.get("expected_scan_rows"),
+                "estimated_requests": window.get("estimated_requests"),
+                "estimated_transfer_upper_bytes": window.get("estimated_transfer_upper_bytes"),
+                "rows_sha256": hashlib.sha256((root / paths["rows"]).read_bytes()).hexdigest(),
+                "evidence_sha256": hashlib.sha256(
+                    (root / paths["evidence"]).read_bytes()
+                ).hexdigest(),
+                "paths": paths,
+            }
+        )
+    body: dict[str, Any] = {
+        "kind": EXECUTION_KIND,
+        "execution_version": EXECUTION_VERSION,
+        "status": "RECONNAISSANCE_ONLY",
+        "parent_discovery_digest": manifest["digest"],
+        "parent_discovery_projection": list(manifest["projection"]),
+        "repository": manifest["repository"],
+        "revision": manifest["revision"],
+        "source_id": SOURCE_ID,
+        "view_id": RECON_VIEW,
+        "seed": manifest["seed"],
+        "strata": manifest["strata"],
+        "projection": list(EXECUTION_PROJECTION),
+        "records_per_unit": UNIT_RECORDS,
+        "total_target_records": UNIT_RECORDS * len(units),
+        "window_policy": dict(EXECUTION_WINDOW),
+        "plan_shape": "one independent selected_records pilot plan per selected file",
+        "pilot_max_requests_per_plan": PILOT_MAX_REQUESTS,
+        "narrowing_rationale": NARROWING_RATIONALE,
+        "probe_limitation": PROBE_LIMITATION,
+        "units": units,
+    }
+    body["digest"] = manifest_digest(body)
+    return body
+
+
+def _write_or_adopt(path: Path, text: str) -> str:
+    """Restart-safe: identical existing bytes are adopted; anything else refuses."""
+    if path.exists():
+        if path.read_bytes() == text.encode("utf-8"):
+            return "adopted"
+        raise ReconError(f"{path} exists with different content; refusing to overwrite")
+    _atomic_write(path, text)
+    return "written"
+
+
+def load_execution(path: Path) -> dict[str, Any]:
+    data = _read_json(path, 4 * MAX_FOOTER_BYTES)
+    if (
+        not isinstance(data, dict)
+        or data.get("kind") != EXECUTION_KIND
+        or data.get("execution_version") != EXECUTION_VERSION
+        or data.get("digest") != manifest_digest(data)
+    ):
+        raise ReconError(f"{path}: not an execution-v2 manifest or digest mismatch")
+    return data
+
+
+def _check_plan(plan: Any, unit: Mapping[str, Any], execution: Mapping[str, Any]) -> None:
+    from xlm.data.acquisition.plan import PILOT_MAX_REQUESTS
+
+    file, (start, stop) = unit["file"], unit["row_range"]
+    facts = {
+        "source_id": (plan.source_id, SOURCE_ID),
+        "view_id": (plan.view_id, RECON_VIEW),
+        "repository": (plan.repository, execution["repository"]),
+        "revision": (plan.revision, execution["revision"]),
+        "mode": (plan.mode.value, "selected_records"),
+        "selected_files": (list(plan.selected_files), [file]),
+        "row_ranges": (
+            {k: list(v) for k, v in (plan.row_ranges or {}).items()},
+            {file: [start, stop]},
+        ),
+        "projected_fields": (list(plan.projected_fields or []), list(EXECUTION_PROJECTION)),
+        "is_pilot": (plan.is_pilot, True),
+    }
+    for key, (actual, expected) in facts.items():
+        if actual != expected:
+            raise ReconError(f"unit {unit['unit']}: plan {key}={actual!r}, expected {expected!r}")
+    window = plan.parquet_window
+    if window is None or any(getattr(window, k) != v for k, v in EXECUTION_WINDOW.items()):
+        raise ReconError(f"unit {unit['unit']}: plan window policy is not execution-v2")
+    if plan.limits.max_records > UNIT_RECORDS or plan.limits.max_requests > PILOT_MAX_REQUESTS:
+        raise ReconError(f"unit {unit['unit']}: plan limits exceed the unit/pilot bounds")
+    if not plan.plan_hash or plan.plan_hash != plan.compute_behavioral_hash():
+        raise ReconError(f"unit {unit['unit']}: plan hash missing or mismatched")
+
+
+def _check_part(
+    data: bytes, unit: Mapping[str, Any], execution: Mapping[str, Any], seen: set[tuple[str, int]]
+) -> None:
+    from xlm.data.acquisition.records import LOCATOR_FIELD
+
+    lines = data.split(b"\n")
+    if lines[-1] != b"":
+        raise ReconError(f"unit {unit['unit']}: output does not end with a newline")
+    lines = lines[:-1]
+    if len(lines) != UNIT_RECORDS:
+        raise ReconError(f"unit {unit['unit']}: {len(lines)} records, expected {UNIT_RECORDS}")
+    start, stop = unit["row_range"]
+    allowed = {*EXECUTION_PROJECTION, LOCATOR_FIELD}
+    for number, line in enumerate(lines, start=1):
+        try:
+            record = json.loads(line)
+        except ValueError as error:
+            raise ReconError(f"unit {unit['unit']} line {number}: corrupt JSONL") from error
+        if not isinstance(record, dict) or set(record) != allowed:
+            keys = sorted(record) if isinstance(record, dict) else type(record).__name__
+            raise ReconError(f"unit {unit['unit']} line {number}: fields {keys} != projection")
+        loc = record[LOCATOR_FIELD]
+        if not isinstance(loc, dict) or loc.get("source_file") != unit["file"]:
+            raise ReconError(f"unit {unit['unit']} line {number}: wrong source file")
+        if loc.get("revision") != execution["revision"] or (
+            loc.get("repository") != execution["repository"]
+        ):
+            raise ReconError(f"unit {unit['unit']} line {number}: wrong revision/repository")
+        row = loc.get("row_index")
+        if type(row) is not int or not start <= row < stop:
+            raise ReconError(f"unit {unit['unit']} line {number}: row {row!r} outside range")
+        key = (unit["file"], row)
+        if key in seen:
+            raise ReconError(f"duplicate locator {key}")
+        seen.add(key)
+
+
+def combine(execution: Mapping[str, Any], root: Path) -> tuple[bytes, dict[str, Any]]:
+    """Validate every unit, then concatenate parts byte-for-byte in stratum order."""
+    from xlm.data.acquisition.plan import load_acquisition_plan
+    from xlm.data.acquisition.progress import AcquisitionState
+
+    units = execution["units"]
+    if [u["stratum"] for u in units] != list(range(execution["strata"])):
+        raise ReconError("execution units are not one per stratum in order")
+    seen: set[tuple[str, int]] = set()
+    hashes: set[str] = set()
+    parts: list[bytes] = []
+    receipts: list[dict[str, Any]] = []
+    for unit in units:
+        paths = unit["paths"]
+        try:
+            plan = load_acquisition_plan(root / paths["plan"])
+        except (OSError, ValueError) as error:
+            raise ReconError(f"unit {unit['unit']}: plan invalid: {error}") from error
+        _check_plan(plan, unit, execution)
+        if plan.plan_hash in hashes:
+            raise ReconError(f"unit {unit['unit']}: duplicate plan identity")
+        hashes.add(plan.plan_hash)
+        journal = root / paths["scratch"] / "journals" / f"{plan.plan_id}.progress.json"
+        if not journal.is_file() or journal.stat().st_size > MAX_JOURNAL_BYTES:
+            raise ReconError(f"unit {unit['unit']}: fetch journal missing or oversized")
+        state = AcquisitionState.model_validate_json(journal.read_bytes())
+        if state.plan_id != plan.plan_id or state.plan_hash != plan.plan_hash:
+            raise ReconError(f"unit {unit['unit']}: journal binds a different plan")
+        if state.status != "COMPLETED" or set(state.file_progress) != {"selected_records.jsonl"}:
+            raise ReconError(f"unit {unit['unit']}: fetch journal is not COMPLETED")
+        progress = state.file_progress["selected_records.jsonl"]
+        if state.records_acquired != UNIT_RECORDS or progress.status != "completed":
+            raise ReconError(f"unit {unit['unit']}: {state.records_acquired} records acquired")
+        output = root / paths["raw"] / "selected_records.jsonl"
+        if not output.is_file() or output.stat().st_size > MAX_PART_BYTES:
+            raise ReconError(f"unit {unit['unit']}: output missing or oversized")
+        data = output.read_bytes()
+        digest = hashlib.sha256(data).hexdigest()
+        if progress.content_sha256 != digest or progress.bytes_downloaded != len(data):
+            raise ReconError(f"unit {unit['unit']}: output differs from its journal digest")
+        _check_part(data, unit, execution, seen)
+        parts.append(data)
+        receipts.append(
+            {
+                "unit": unit["unit"],
+                "stratum": unit["stratum"],
+                "crawl": unit["crawl"],
+                "file": unit["file"],
+                "row_range": unit["row_range"],
+                "plan_hash": plan.plan_hash,
+                "records": UNIT_RECORDS,
+                "bytes": len(data),
+                "sha256": digest,
+            }
+        )
+    combined = b"".join(parts)
+    receipt: dict[str, Any] = {
+        "kind": BUNDLE_KIND,
+        "execution_digest": execution["digest"],
+        "parent_discovery_digest": execution["parent_discovery_digest"],
+        "revision": execution["revision"],
+        "projection": list(EXECUTION_PROJECTION),
+        "order": "stratum",
+        "parts": receipts,
+        "part_count": len(parts),
+        "total_records": UNIT_RECORDS * len(parts),
+        "combined_bytes": len(combined),
+        "combined_sha256": hashlib.sha256(combined).hexdigest(),
+    }
+    receipt["digest"] = manifest_digest(receipt)
+    return combined, receipt
+
+
 # ---------------------------------------------------------------- CLI
 
 
@@ -777,6 +1106,57 @@ def _analyze(args: argparse.Namespace) -> int:
     return 0
 
 
+def _execution(args: argparse.Namespace) -> int:
+    manifest = load_manifest(args.discovery)
+    execution = build_execution(manifest, args.root, args.expect_discovery_digest)
+    text = json.dumps(execution, indent=2, sort_keys=True) + "\n"
+    action = _write_or_adopt(args.output, text)
+    print(
+        json.dumps(
+            {
+                "execution": action,
+                "digest": execution["digest"],
+                "units": [u["unit"] for u in execution["units"]],
+                "total_target_records": execution["total_target_records"],
+            }
+        )
+    )
+    return 0
+
+
+def _combine(args: argparse.Namespace) -> int:
+    execution = load_execution(args.execution)
+    combined, receipt = combine(execution, args.root)
+    if args.receipt.exists() and not args.output.exists():
+        raise ReconError(f"{args.receipt} exists without its bundle; refusing")
+    output = args.output
+    if output.exists():
+        if hashlib.sha256(output.read_bytes()).hexdigest() != receipt["combined_sha256"]:
+            raise ReconError(f"{output} exists with different content; refusing to overwrite")
+        action = "adopted"
+    else:
+        output.parent.mkdir(parents=True, exist_ok=True)
+        temp = output.with_name(output.name + ".tmp")
+        with temp.open("wb") as stream:
+            stream.write(combined)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temp, output)
+        action = "written"
+    _write_or_adopt(args.receipt, json.dumps(receipt, indent=2, sort_keys=True) + "\n")
+    print(
+        json.dumps(
+            {
+                "bundle": action,
+                "records": receipt["total_records"],
+                "sha256": receipt["combined_sha256"],
+                "receipt": receipt["digest"],
+            }
+        )
+    )
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0] if __doc__ else None)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -794,13 +1174,27 @@ def main(argv: list[str] | None = None) -> int:
     a.add_argument("--candidates", type=Path, default=None)
     a.add_argument("--output-json", type=Path, required=True)
     a.add_argument("--output-md", type=Path, required=True)
-    sub.add_parser("projection", help="print the metadata-only projection (offline)")
+    e = sub.add_parser("execution", help="offline: bind discovery + footers -> execution-v2")
+    e.add_argument("--discovery", type=Path, required=True)
+    e.add_argument("--expect-discovery-digest", required=True)
+    e.add_argument("--root", type=Path, required=True)
+    e.add_argument("--output", type=Path, required=True)
+    c = sub.add_parser("combine", help="offline: validate 8 fetched units -> one bundle")
+    c.add_argument("--execution", type=Path, required=True)
+    c.add_argument("--root", type=Path, required=True)
+    c.add_argument("--output", type=Path, required=True)
+    c.add_argument("--receipt", type=Path, required=True)
+    sub.add_parser("projection", help="print the discovery-v1 projection (offline)")
     args = parser.parse_args(argv)
     try:
         if args.command == "discover":
             return _discover(args)
         if args.command == "analyze":
             return _analyze(args)
+        if args.command == "execution":
+            return _execution(args)
+        if args.command == "combine":
+            return _combine(args)
         print(",".join(recon_projection()))
         return 0
     except (ReconError, OSError, ValueError) as error:

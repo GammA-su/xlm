@@ -134,6 +134,27 @@
 > 14 new tests pass along with 22 nested-window regressions; ruff and
 > mypy are clean. Selectors, the adapter, weights and quotas are
 > unchanged. See [ESSENTIAL-WEB-SELECTOR-RECON](reports/ESSENTIAL-WEB-SELECTOR-RECON.md) §10.
+>
+> **ESSENTIAL RECON EXECUTION-V2 (2026-09-27): READY FOR ESSENTIAL 8-UNIT
+> RECON FETCH.** Discovery succeeded (digest `c8d448fa…30a7`). The first
+> design refused at the footer stage:
+> - The 5-field projection needed about 104 requests per file, above the
+>   pilot limit of 100 per plan.
+> - The 2-field projection (`eai_taxonomy`, `quality_signals`) passed on
+>   all 8 files at 85 requests each.
+>
+> New subcommands:
+> - `execution` writes a separate execution-v2 manifest (`5065bcf6…`).
+>   `discovery.json` is kept unchanged. The 8 footers are adopted only when
+>   they match exactly, and the result is one independent 512-row plan per
+>   file.
+> - `combine` validates every unit and concatenates them, byte-preserved,
+>   into 4,096 rows plus a receipt.
+>
+> The analyzer no longer needs id, pid or metadata. The generic probe hit
+> its body limit; it is documented and unchanged, and plans bind the
+> revision through a recon-only catalog. 59 focused tests pass; ruff and
+> mypy are clean. See [ESSENTIAL-WEB-SELECTOR-RECON](reports/ESSENTIAL-WEB-SELECTOR-RECON.md) §10–§12.
 > Surgical idempotent freeze; focused offline tests + ruff + scoped mypy
 > green. No push. See [MIX01-ULTRAX-6B §15](reports/MIX01-ULTRAX-6B.md).
 >
