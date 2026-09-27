@@ -387,16 +387,20 @@ class _StubResponse:
         total: int | None = None,
         etag: str | None = "e",
         url: str = "https://huggingface.co/x",
+        headers: dict[str, str] | None = None,
     ) -> None:
         self._body = body
         self.status = status
-        self.headers = {
-            "Content-Range": f"bytes 0-{len(body) - 1}/{total if total is not None else len(body)}",
-            "Content-Length": str(len(body)),
-            "ETag": etag,
-        }
-        if etag is None:
-            del self.headers["ETag"]
+        if headers is None:
+            total = total if total is not None else len(body)
+            headers = {
+                "Content-Range": f"bytes 0-{len(body) - 1}/{total}",
+                "Content-Length": str(len(body)),
+                "ETag": etag,
+            }
+            if etag is None:
+                del headers["ETag"]
+        self.headers = headers
         self._url = url
 
     def read(self, n: int = -1) -> bytes:
@@ -503,6 +507,98 @@ def test_redirect_evil_target_refused() -> None:
     fp = _StubResponse(b"")
     with pytest.raises(HostNotAllowlistedError, match="not in the allowlist"):
         handler.redirect_request(request, fp, 302, "m", {}, "https://evil.example/z")
+
+
+class _ChainOpener:
+    """Stub opener that follows 3xx chains through the REAL hop handler.
+
+    Routes map URL -> list of responder callables; each responder takes the
+    request and returns (status, headers, body) or raises. Redirects are
+    followed exactly like urllib: handler.redirect_request, then open the
+    new URL. Every opened URL is logged.
+    """
+
+    def __init__(
+        self,
+        handler: footer.HopCountingRedirectHandler,
+        routes: dict[str, list[Any]],
+    ) -> None:
+        self.handler = handler
+        self.routes = {url: list(actions) for url, actions in routes.items()}
+        self.log: list[str] = []
+
+    def open(self, request: Any, timeout: float | None = None) -> Any:
+        current = request
+        while True:
+            url = current.full_url
+            self.log.append(url)
+            actions = self.routes.get(url)
+            assert actions, f"unexpected URL opened: {url}"
+            action = actions.pop(0)
+            if isinstance(action, BaseException):
+                raise action
+            status, headers, body = action(current)
+            if status in (301, 302, 303, 307, 308) and "Location" in headers:
+                fp = _StubResponse(b"", headers={})
+                current = self.handler.redirect_request(
+                    current, fp, status, "msg", headers, headers["Location"]
+                )
+                continue
+            return _StubResponse(body, status=status, headers=headers, url=url)
+
+
+def _chain_transport(
+    routes: dict[str, list[Any]],
+) -> tuple[footer.LiveFooterTransport, _ChainOpener]:
+    from xlm.data.sources.transport import TransportBudget as _Budget
+
+    budget = _Budget(max_bytes=33554432, max_requests=80)
+    holder: dict[str, _ChainOpener] = {}
+
+    def factory(handler: Any) -> _ChainOpener:
+        holder["opener"] = _ChainOpener(handler, routes)
+        return holder["opener"]
+
+    transport = footer.LiveFooterTransport(budget, sleep=lambda _: None, opener_factory=factory)
+    return transport, holder["opener"]
+
+
+def _respond_final(body: bytes, total: int) -> Any:
+    def respond(request: Any) -> tuple[int, dict[str, str], bytes]:
+        text = request.get_header("Range") or ""
+        start, end = text.replace("bytes=", "").split("-")
+        return (
+            206,
+            {
+                "Content-Range": f"bytes {start}-{end}/{total}",
+                "Content-Length": str(len(body)),
+                "ETag": "chain-etag",
+            },
+            body,
+        )
+
+    return respond
+
+
+def _respond_redirect(url: str, code: int = 302) -> Any:
+    def respond(request: Any) -> tuple[int, dict[str, str], bytes]:
+        return (code, {"Location": url}, b"")
+
+    return respond
+
+
+def _chain_urls(base: str, n: int) -> list[str]:
+    return [f"{base}/r{i}?sig=SECRET{i}" for i in range(1, n + 1)]
+
+
+def _chain_routes(initial: str, hops: list[str], body: bytes, total: int) -> dict[str, list[Any]]:
+    routes: dict[str, list[Any]] = {}
+    previous = initial
+    for hop in hops:
+        routes.setdefault(previous, []).append(_respond_redirect(hop))
+        previous = hop
+    routes.setdefault(previous, []).append(_respond_final(body, total))
+    return routes
 
 
 def test_host_allowlist_exact() -> None:
@@ -650,3 +746,184 @@ def test_fixture_content_hash_stable() -> None:
         hashlib.sha256(first).hexdigest()
         == hashlib.sha256(_parquet_bytes([_table(600), _table(600)])).hexdigest()
     )
+
+
+# --------------------------------------------------------------------------
+# Redirect accounting: per-resolution-chain semantics (protocol <=3 hops).
+# --------------------------------------------------------------------------
+
+
+def _chain_base() -> str:
+    return "https://cas-bridge.xethub.hf.co/x"
+
+
+@pytest.mark.parametrize("hops", [0, 1, 2, 3])
+def test_redirect_chains_up_to_3_accepted(hops: int) -> None:
+    transport, _ = _live([])
+    initial = transport.canonical_url(WINNERS[0])
+    chain = _chain_urls(_chain_base(), hops)
+    transport, opener = _chain_transport(_chain_routes(initial, chain, b"PAR1", 100))
+    evidence = transport.fetch_range(WINNERS[0], 0, 3)
+    assert evidence.body == b"PAR1"
+    assert evidence.redirect_hops == hops
+    assert [entry["hop"] for entry in evidence.redirect_chain] == list(range(1, hops + 1))
+    assert opener.log == [initial, *chain]
+
+
+def test_redirect_4_refused_before_r4() -> None:
+    transport, _ = _live([])
+    initial = transport.canonical_url(WINNERS[0])
+    chain = _chain_urls(_chain_base(), 4)
+    transport, opener = _chain_transport(_chain_routes(initial, chain, b"PAR1", 100))
+    with pytest.raises(footer.FooterError, match="hop 4 exceeds"):
+        transport.fetch_range(WINNERS[0], 0, 3)
+    assert opener.log == [initial, *chain[:3]]
+    assert chain[3] not in opener.log
+
+
+def test_refusal_carries_reconstructable_chain() -> None:
+    transport, _ = _live([])
+    initial = transport.canonical_url(WINNERS[0])
+    chain = _chain_urls(_chain_base(), 4)
+    transport, _ = _chain_transport(_chain_routes(initial, chain, b"PAR1", 100))
+    try:
+        transport.fetch_range(WINNERS[0], 0, 3)
+        raise AssertionError("expected hop-4 refusal")
+    except footer.FooterError as exc:
+        diagnostics = exc.diagnostics
+    assert diagnostics["transitions"] == 4
+    assert diagnostics["attempt"] == 0
+    entries = diagnostics["redirect_chain"]
+    assert len(entries) == 4
+    assert [e["status"] for e in entries] == [302, 302, 302, 302]
+    assert {e["dest_host"] for e in entries} == {"cas-bridge.xethub.hf.co"}
+    assert entries[0]["source_host"] == "huggingface.co"
+    assert all(e["allowlist_ok"] for e in entries)
+    assert entries[-1]["refused"] == "redirect hop 4 exceeds the 3-hop ceiling"
+    import json as _json
+
+    dumped = _json.dumps(diagnostics)
+    assert "SECRET" not in dumped
+    assert "sig" not in dumped
+
+
+def test_retry_after_timeout_does_not_add_hops() -> None:
+    transport, opener = _live([TimeoutError("t"), _StubResponse(b"PAR1", total=100)])
+    evidence = transport.fetch_range(WINNERS[0], 0, 3)
+    assert evidence.redirect_hops == 0
+    assert evidence.redirect_chain == ()
+    assert transport.budget.requests_made == 2
+    assert len(opener.urls) == 2
+
+
+def test_redirect_after_retry_counts_correctly() -> None:
+    transport, _ = _live([])
+    initial = transport.canonical_url(WINNERS[0])
+    first, second = _chain_urls(_chain_base(), 1)[0], _chain_base() + "/r1b?sig=SECRET9"
+    routes = {
+        initial: [_respond_redirect(first), _respond_redirect(second)],
+        first: [TimeoutError("timeout on resolved target")],
+        second: [_respond_final(b"PAR1", 100)],
+    }
+    transport, opener = _chain_transport(routes)
+    evidence = transport.fetch_range(WINNERS[0], 0, 3)
+    # Attempt 1 followed one redirect then timed out; the retry re-resolved
+    # with a fresh hop budget and followed one redirect: counted, not doubled.
+    assert evidence.redirect_hops == 1
+    assert transport.budget.requests_made == 4
+    assert opener.log == [initial, first, initial, second]
+
+
+def test_chains_reset_per_logical_request_not_per_arm() -> None:
+    # Mirrors the real failure shape: two sequential ranges each following
+    # two redirects must both succeed; the pre-fix arm-scoped counter
+    # refused the second range at "hop 4".
+    transport, _ = _live([])
+    initial = transport.canonical_url(WINNERS[2])
+    routes = _chain_routes(initial, _chain_urls(_chain_base(), 2), b"PAR1", 100)
+    second = _chain_urls(_chain_base() + "/b", 2)
+    for hop_routes in _chain_routes(initial, second, b"PAQ2", 100).items():
+        routes.setdefault(hop_routes[0], []).extend(hop_routes[1])
+    transport, _ = _chain_transport(routes)
+    first = transport.fetch_range(WINNERS[2], 0, 3)
+    second = transport.fetch_range(WINNERS[2], 0, 3)
+    assert (first.redirect_hops, second.redirect_hops) == (2, 2)
+    assert first.body == b"PAR1" and second.body == b"PAQ2"
+
+
+def test_redirect_host_validated_before_following() -> None:
+    transport, _ = _live([])
+    initial = transport.canonical_url(WINNERS[0])
+    routes = {initial: [_respond_redirect("https://evil.example/z?sig=SECRETX")]}
+    transport, opener = _chain_transport(routes)
+    with pytest.raises(footer.FooterError):
+        transport.fetch_range(WINNERS[0], 0, 3)
+    assert opener.log == [initial]
+    assert not any("evil.example" in url for url in opener.log[1:])
+
+
+def test_evil_redirect_chain_marks_allowlist_failure() -> None:
+    transport, _ = _live([])
+    initial = transport.canonical_url(WINNERS[0])
+    routes = {initial: [_respond_redirect("https://evil.example/z?sig=SECRETX")]}
+    transport, _ = _chain_transport(routes)
+    try:
+        transport.fetch_range(WINNERS[0], 0, 3)
+        raise AssertionError("expected allowlist refusal")
+    except footer.FooterError as exc:
+        entries = exc.diagnostics["redirect_chain"]
+    assert len(entries) == 1
+    assert entries[0]["allowlist_ok"] is False
+    assert entries[0]["dest_host"] == "evil.example"
+    assert entries[0]["dest_path"] == "/z"
+    import json as _json
+
+    assert "SECRETX" not in _json.dumps(entries)
+
+
+def test_ledger_charges_redirects_as_footer_requests() -> None:
+    images = _images(WINNERS)
+    images[WINNERS[0]] = footer.FakeImage(images[WINNERS[0]].content, redirect_hops=2)
+    transport = footer.FakeFooterTransport(images)
+    ledger = budgets.new_arm_m()
+    unit = footer.plan_one_file(WINNERS[0], transport=transport, ledger=ledger, winners=WINNERS)
+    ranges = unit["footer_ranges"]
+    assert ranges and all(r["hops"] == 2 for r in ranges)
+    assert ledger.snapshot()["requests"] == 3 * len(ranges)
+    assert ledger.snapshot()["kind_requests"]["footer"] == 3 * len(ranges)
+
+
+def test_incomplete_receipt_embeds_redirect_diagnostics(tmp_path: Path) -> None:
+    probe, _ = _live([])
+    initial = probe.canonical_url(WINNERS[0])
+    routes = _chain_routes(initial, _chain_urls(_chain_base(), 4), b"PAR1", 100)
+    live, _ = _chain_transport(routes)
+    images = _images(WINNERS)
+
+    class _ChainedFake(footer.FakeFooterTransport):
+        def fetch_range(self, source_file: str, start: int, end: int) -> Any:
+            if source_file == WINNERS[0]:
+                return live.fetch_range(source_file, start, end)
+            return super().fetch_range(source_file, start, end)
+
+    fake = _ChainedFake(images)
+    ledger = budgets.new_arm_m()
+    try:
+        footer.plan_arm_m(fake, ledger, WINNERS)
+        raise AssertionError("expected ArmIncomplete")
+    except footer.ArmIncomplete as exc:
+        receipt = receipts.seal(footer.incomplete_receipt(exc, command="plan-footers"))
+    assert receipt["failed_file"] == WINNERS[0]
+    assert receipt["completed_units"] == []
+    diagnostics = receipt["redirect_diagnostics"]
+    assert diagnostics["transitions"] == 4
+    assert len(diagnostics["redirect_chain"]) == 4
+    assert diagnostics["file"] == WINNERS[0]
+    assert "resource" in diagnostics and "sig" not in diagnostics["resource"]
+    target = tmp_path / "footer_evidence.incomplete.json"
+    receipts.publish_manifest(target, receipt)
+    assert not (tmp_path / "footer_evidence.json").exists()
+    import json as _json
+
+    assert "SECRET" not in target.read_text(encoding="utf-8")
+    assert _json.loads(target.read_bytes())["digest"] == receipt["digest"]

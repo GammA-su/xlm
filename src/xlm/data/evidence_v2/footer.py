@@ -48,11 +48,31 @@ from xlm.data.sources.transport import (
 
 
 class FooterError(ValueError):
-    """Any transport, identity, schema, budget, or feasibility refusal."""
+    """Any transport, identity, schema, budget, or feasibility refusal.
+
+    Carries bounded diagnostics: ``attempt_redirects`` (Location
+    transitions followed while resolving the failed issued request) and
+    ``redirect_chain`` (per-hop status/host records, credentials redacted).
+    """
+
+    def __init__(self, message: str, *, diagnostics: dict[str, Any] | None = None) -> None:
+        super().__init__(message)
+        self.diagnostics: dict[str, Any] = dict(diagnostics) if diagnostics else {}
+        self.attempt_redirects: int = int(self.diagnostics.get("transitions", 0))
 
 
 RETRYABLE_HTTP = frozenset(frozen.RETRYABLE_HTTP)
 RETRY_DELAYS = (1.0, 2.0)
+
+
+def _sanitize_url(url: str) -> dict[str, str]:
+    """Host + path only: never userinfo, query (signed credentials), or fragment."""
+    parsed = urllib.parse.urlparse(url)
+    return {
+        "host": (parsed.hostname or "").lower(),
+        "scheme": parsed.scheme,
+        "path": parsed.path,
+    }
 
 
 @dataclass
@@ -62,14 +82,55 @@ class RangeEvidence:
     body: bytes
     total_length: int
     etag: str | None = None
+    redirect_hops: int = 0
+    redirect_chain: tuple[dict[str, Any], ...] = ()
 
 
 class HopCountingRedirectHandler(SafeRedirectHandler):
-    """Allowlisted redirects with the frozen <=3 hop ceiling enforced."""
+    """Allowlisted redirects with the frozen <=3 hop ceiling enforced.
+
+    Counting semantics (protocol: at most THREE actual Location transitions
+    after the original request): ``hops`` counts transitions followed while
+    resolving ONE issued request (one ``opener.open`` call). The original
+    request is hop 0 and is never counted. The counter resets for every
+    issued request — including retries, which re-resolve independently —
+    via :meth:`reset_chain`. It is never arm-scoped: chains reset per
+    logical request, not per whole arm. Request *budget* still charges
+    every attempt plus every redirect through the transport budget.
+    """
 
     def __init__(self, budget: TransportBudget | None = None) -> None:
         super().__init__(budget)
         self.hops = 0
+        self.chain: list[dict[str, Any]] = []
+
+    def reset_chain(self) -> None:
+        """Start a new resolution chain for the next issued request."""
+        self.hops = 0
+        self.chain = []
+
+    def _record(
+        self,
+        *,
+        code: int,
+        source_url: str,
+        dest_url: str,
+        allowlist_ok: bool,
+        refused: str | None = None,
+    ) -> None:
+        source = _sanitize_url(source_url)
+        dest = _sanitize_url(dest_url)
+        self.chain.append(
+            {
+                "hop": self.hops,
+                "status": code,
+                "source_host": source["host"],
+                "dest_host": dest["host"],
+                "dest_path": dest["path"],
+                "allowlist_ok": allowlist_ok,
+                "refused": refused,
+            }
+        )
 
     def redirect_request(
         self,
@@ -80,10 +141,37 @@ class HopCountingRedirectHandler(SafeRedirectHandler):
         headers: Any,
         newurl: str,
     ) -> urllib.request.Request | None:
+        source_url = req.get_full_url() if hasattr(req, "get_full_url") else ""
+        try:
+            validate_host(newurl)
+        except HostNotAllowlistedError:
+            self._record(
+                code=code,
+                source_url=source_url,
+                dest_url=newurl,
+                allowlist_ok=False,
+                refused="destination host failed allowlist validation",
+            )
+            raise
         self.hops += 1
         if self.hops > frozen.MAX_REDIRECT_HOPS:
-            raise FooterError(f"redirect hop {self.hops} exceeds the 3-hop ceiling")
-        return super().redirect_request(req, fp, code, msg, headers, newurl)
+            self._record(
+                code=code,
+                source_url=source_url,
+                dest_url=newurl,
+                allowlist_ok=True,
+                refused=f"redirect hop {self.hops} exceeds the 3-hop ceiling",
+            )
+            raise FooterError(
+                f"redirect hop {self.hops} exceeds the 3-hop ceiling",
+                diagnostics={
+                    "transitions": self.hops,
+                    "redirect_chain": list(self.chain),
+                },
+            )
+        result = super().redirect_request(req, fp, code, msg, headers, newurl)
+        self._record(code=code, source_url=source_url, dest_url=newurl, allowlist_ok=True)
+        return result
 
 
 def _retryable(exc: BaseException) -> bool:
@@ -122,8 +210,28 @@ class LiveFooterTransport:
         validate_host(url)
         return url
 
+    def _attempt_diagnostics(self, attempt: int) -> dict[str, Any]:
+        """Bounded per-attempt redirect evidence for failure receipts."""
+        return {
+            "attempt": attempt,
+            "transitions": self.handler.hops,
+            "redirect_chain": list(self.handler.chain),
+        }
+
+    @staticmethod
+    def _with_diagnostics(exc: FooterError, diagnostics: dict[str, Any]) -> FooterError:
+        for key, value in diagnostics.items():
+            exc.diagnostics.setdefault(key, value)
+        exc.attempt_redirects = int(exc.diagnostics.get("transitions", 0))
+        return exc
+
     def fetch_range(self, source_file: str, start: int, end: int) -> RangeEvidence:
-        """One footer range with protocol retry semantics; attempts charged."""
+        """One footer range with protocol retry semantics; attempts charged.
+
+        The redirect chain resets for every issued request (every retry
+        attempt re-resolves independently): the 3-hop ceiling bounds one
+        resolution chain, never the arm. Retries add attempts, never hops.
+        """
         if not 0 <= start <= end:
             raise FooterError(f"invalid footer range [{start}, {end}]")
         if end - start + 1 > frozen.ARM_M_LIMITS["response_body_bytes_max"]:
@@ -131,6 +239,7 @@ class LiveFooterTransport:
         url = self.canonical_url(source_file)
         last: BaseException | None = None
         for attempt in range(frozen.MAX_RETRIES + 1):
+            self.handler.reset_chain()
             self.budget.record_request()
             request = urllib.request.Request(
                 url,
@@ -142,19 +251,29 @@ class LiveFooterTransport:
             )
             try:
                 with self.opener.open(request, timeout=self.timeout_seconds) as response:
-                    return self._read_response(response, source_file, start, end)
-            except FooterError:
+                    evidence = self._read_response(response, source_file, start, end)
+                    evidence.redirect_hops = self.handler.hops
+                    evidence.redirect_chain = tuple(self.handler.chain)
+                    return evidence
+            except FooterError as exc:
+                self._with_diagnostics(exc, self._attempt_diagnostics(attempt))
                 raise
             except (BudgetExhaustedError, DeadlineExceededError, HostNotAllowlistedError) as exc:
-                raise FooterError(f"footer range for {source_file} refused: {exc}") from exc
+                raise self._with_diagnostics(
+                    FooterError(f"footer range for {source_file} refused: {exc}"),
+                    self._attempt_diagnostics(attempt),
+                ) from exc
             except BaseException as exc:  # noqa: BLE001 - classified below
                 last = exc
                 if attempt >= frozen.MAX_RETRIES or not _retryable(exc):
                     break
                 self.sleep(RETRY_DELAYS[attempt] if attempt < len(RETRY_DELAYS) else 2.0)
-        raise FooterError(
-            f"footer range for {source_file} failed after {attempt + 1} "
-            f"attempt(s): {type(last).__name__ if last else 'unknown'}"
+        raise self._with_diagnostics(
+            FooterError(
+                f"footer range for {source_file} failed after {attempt + 1} "
+                f"attempt(s): {type(last).__name__ if last else 'unknown'}"
+            ),
+            self._attempt_diagnostics(attempt),
         )
 
     def _read_response(
@@ -185,6 +304,7 @@ class FakeImage:
     drift_etag_on_call: int = 0
     fail_on_calls: dict[int, BaseException] = field(default_factory=dict)
     evil_redirect_on_call: int = 0
+    redirect_hops: int = 0
 
 
 class FakeFooterTransport:
@@ -217,7 +337,13 @@ class FakeFooterTransport:
         etag = image.etag
         if call == image.drift_etag_on_call:
             etag = "changed-etag"
-        return RangeEvidence(body=image.content[start : end + 1], total_length=total, etag=etag)
+        return RangeEvidence(
+            body=image.content[start : end + 1],
+            total_length=total,
+            etag=etag,
+            redirect_hops=image.redirect_hops,
+            redirect_chain=(),
+        )
 
 
 def _charging_closure(
@@ -226,16 +352,41 @@ def _charging_closure(
     source_file: str,
     state: dict[str, Any],
 ) -> Any:
-    """RangeFetch for footer discovery: charges the shared ArmLedger."""
+    """RangeFetch for footer discovery: charges the shared ArmLedger.
+
+    The attempt itself plus every redirect transition it follows are each
+    one footer request in the arm budget ("all redirect requests count").
+    Per-range hop counts accumulate boundedly in ``state["ranges"]``.
+    """
+
+    def _charge_redirects(count: int) -> None:
+        for _ in range(count):
+            ledger.charge_file_request(source_file, kind="footer")
 
     def fetch(start: int, end: int) -> tuple[bytes, int]:
         ledger.charge_file_request(source_file, kind="footer")
         try:
             evidence = transport.fetch_range(source_file, start, end)
+        except FooterError as exc:
+            ledger.note_failed_attempt()
+            _charge_redirects(int(getattr(exc, "attempt_redirects", 0) or 0))
+            exc.diagnostics.setdefault("file", source_file)
+            exc.diagnostics.setdefault("range", [start, end])
+            exc.diagnostics.setdefault("resource", transport.canonical_url(source_file))
+            raise
         except Exception:
             ledger.note_failed_attempt()
             raise
+        _charge_redirects(evidence.redirect_hops)
         ledger.charge_transfer(source_file, len(evidence.body), kind="footer")
+        state.setdefault("ranges", []).append(
+            {
+                "start": start,
+                "end": end,
+                "bytes": len(evidence.body),
+                "hops": evidence.redirect_hops,
+            }
+        )
         if state.get("total") is None:
             state["total"] = evidence.total_length
             state["etag"] = evidence.etag
@@ -247,6 +398,28 @@ def _charging_closure(
         return evidence.body, evidence.total_length
 
     return fetch
+
+
+def _reraise_discovery(source_file: str, exc: SamplingRefusal) -> BaseException:
+    """Preserve redirect/budget diagnostics through the layout wrapper.
+
+    ``discover_layout_over_ranges`` wraps non-refusal failures in
+    ``SamplingRefusal``; unwrap the cause chain so hop chains and budget
+    refusals reach the failure receipt with their evidence intact.
+    """
+    cause: BaseException | None = exc.__cause__
+    while cause is not None:
+        if isinstance(cause, budgets.BudgetRefusal):
+            return cause
+        if isinstance(cause, FooterError) and cause.diagnostics:
+            rebuilt = FooterError(
+                f"footer discovery refused for {source_file}: {exc}",
+                diagnostics=dict(cause.diagnostics),
+            )
+            rebuilt.diagnostics.setdefault("file", source_file)
+            return rebuilt
+        cause = cause.__cause__
+    return FooterError(f"footer discovery refused for {source_file}: {exc}")
 
 
 def frozen_request(source_file: str) -> SamplingRequest:
@@ -350,7 +523,7 @@ def plan_one_file(
             max_decompression_ratio=15.0,
         )
     except SamplingRefusal as exc:
-        raise FooterError(f"footer discovery refused for {source_file}: {exc}") from exc
+        raise _reraise_discovery(source_file, exc) from exc
     if layout.schema_refusal is not None:
         raise FooterError(f"schema refused for {source_file}: {layout.schema_refusal}")
     request = frozen_request(source_file)
@@ -411,6 +584,7 @@ def plan_one_file(
         "future_plan_feasibility": feasibility,
         "footer_requests_used": after["requests"] - before["requests"],
         "footer_bytes_used": after["response_body_bytes"] - before["response_body_bytes"],
+        "footer_ranges": list(state.get("ranges", [])),
     }
     if not feasibility["feasible"]:
         raise FooterError(f"future data plan cannot fit {source_file}: {feasibility['reasons']}")
@@ -461,19 +635,27 @@ class ArmIncomplete(FooterError):
         failed_file: str,
         reason: str,
         budget: dict[str, Any],
+        *,
+        diagnostics: dict[str, Any] | None = None,
     ) -> None:
         super().__init__(f"Arm M INCOMPLETE at {failed_file}: {reason}")
         self.units = units
         self.failed_file = failed_file
         self.reason = reason
         self.budget = budget
+        self.diagnostics: dict[str, Any] = dict(diagnostics) if diagnostics else {}
 
 
 def incomplete_receipt(
     error: ArmIncomplete, *, command: str, exit_status: int = 1
 ) -> dict[str, Any]:
-    """Bounded failure receipt: completed work is descriptive, never success."""
-    return {
+    """Bounded failure receipt: completed work is descriptive, never success.
+
+    When the failure carries redirect diagnostics (logical request id,
+    frozen resource identity, per-hop status/hosts, hop totals, retry
+    attempt), they are embedded credential-free for chain reconstruction.
+    """
+    receipt: dict[str, Any] = {
         "kind": "essential_web_evidence_v2_footer_evidence_incomplete",
         "protocol_version": frozen.PROTOCOL_VERSION,
         "freeze_digest": frozen.FREEZE_DIGEST,
@@ -483,11 +665,13 @@ def incomplete_receipt(
         "completed_units": error.units,
         "failed_file": error.failed_file,
         "reason": error.reason,
+        "redirect_diagnostics": error.diagnostics,
         "budget": error.budget,
         "command": command,
         "exit_status": exit_status,
         "status": "INCOMPLETE",
     }
+    return receipt
 
 
 def plan_arm_m(
@@ -507,7 +691,13 @@ def plan_arm_m(
                 plan_one_file(source_file, transport=transport, ledger=ledger, winners=winners)
             )
         except (FooterError, budgets.BudgetRefusal) as exc:
-            raise ArmIncomplete(units, source_file, str(exc), ledger.snapshot()) from exc
+            raise ArmIncomplete(
+                units,
+                source_file,
+                str(exc),
+                ledger.snapshot(),
+                diagnostics=dict(getattr(exc, "diagnostics", {})),
+            ) from exc
     return {
         "kind": "essential_web_evidence_v2_footer_evidence",
         "protocol_version": frozen.PROTOCOL_VERSION,

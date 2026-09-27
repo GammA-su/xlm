@@ -269,3 +269,47 @@ Frozen identities unchanged: freeze `fe215779…`, policy `f4357f61…`,
 23200-path inventory, 8 winners; locator manifest digest recomputed
 `975ba3dee4af0598e665ea05c69bbe49336c3e3a35fca777a863073190b78474`
 (118 rows, unchanged).
+
+## 10. Redirect accounting audit + fix (2026-09-27, offline agent)
+
+The authorized run stopped at the second file with "redirect hop 4
+exceeds the 3-hop ceiling" after zero retries and 4 arm requests, with
+file 1 complete (3 requests). Audit verdict: implementation counting
+bug (B), not a genuine fourth redirect (A).
+
+Pre-patch semantics: `HopCountingRedirectHandler.hops` lived on the
+transport (one per arm run) and incremented on every redirect_request
+call — across all ranges, retry attempts, and files — with no reset.
+File 1's ranges consumed hops 1–3; file 2's first range followed its
+first redirect as hop 4 and refused. Any single chain with exactly 3
+transitions could never produce "hop 4" by itself.
+
+Fix (cap unchanged at 3, no protocol edit): the chain resets for every
+issued request — `handler.reset_chain()` before each `opener.open`,
+including retries, which re-resolve independently. Precise definitions
+now documented in code: initial request count = top-level `open` calls;
+redirect transition count = Location follows resolving one issued
+request (the original is hop 0, never counted); retry count = repeat
+opens (attempts, never hops); logical request count = issued requests;
+physical HTTP attempt count = attempts + followed redirects, all
+charged to the ArmLedger as footer requests. Retries therefore add
+attempts but never hops; a post-retry chain is counted from zero.
+
+Receipt diagnostics (future failures only; the user's existing receipt
+is untouched): refusals now carry file, range, frozen resource URL,
+retry attempt number, transition total, and a per-hop chain (status,
+source/dest hosts, sanitized path, allowlist verdict) with query
+strings, fragments, and userinfo stripped before recording — signed
+credentials can never reach a receipt. `RangeEvidence` carries hops +
+chain; per-file units log per-range hops; `ArmIncomplete` propagates
+the chain into `redirect_diagnostics` in the incomplete receipt.
+
+Verification: 13 new mocked-HTTP tests prove 0/1/2/3-redirect chains
+pass, a 4th transition refuses before R4 is fetched, the original
+request is not hop 1, timeout retries add no hops, post-retry chains
+count from zero, chains reset per logical request (the two-sequential-
+2-hop test fails on the pre-fix code), every attempt + redirect
+charges the ledger, evil targets refuse before following, and
+credentials are redacted from diagnostics and receipts. 101
+evidence-v2 tests pass; ruff/format/mypy clean. Cap, freeze, policy,
+and 118-manifest identities unchanged.

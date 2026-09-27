@@ -1,5 +1,19 @@
 # Implementation status
 
+> **ESSENTIAL-WEB EVIDENCE V2 REDIRECT FIX (2026-09-27, offline): COUNTING
+> BUG, NOT A FOURTH REDIRECT; READY TO RETRY.** The user's "hop 4" stop
+> (file 2, zero retries, 4 arm requests, file 1 complete) was the
+> arm-scoped hop counter with no per-request reset — file 1's ranges
+> consumed hops 1–3, file 2's first redirect became hop 4. A genuine
+> 3-transition chain can never produce it. Fixed: chains reset per
+> issued request (retries re-resolve independently), cap stays 3, plus
+> credential-free redirect-chain diagnostics in refusals and per-redirect
+> ledger charging. 101 focused tests pass (13 new mocked-HTTP chain
+> tests); ruff/mypy clean. Freeze/policy/118-manifest unchanged; user's
+> existing receipt untouched. Next: retry the exact footer command in
+> [ESSENTIAL-WEB-EVIDENCE-V2-IMPLEMENTATION](reports/ESSENTIAL-WEB-EVIDENCE-V2-IMPLEMENTATION.md)
+> §7. Prior user/Astra docs preserved.
+
 > **ESSENTIAL-WEB EVIDENCE V2 FOOTER TRANSPORT (2026-09-27, offline):
 > PREMATURE VERDICT CORRECTED; LIVE PLANNING IMPLEMENTED, NOT RUN.**
 > The earlier READY claim was wrong: `plan-footers --no-dry-run
