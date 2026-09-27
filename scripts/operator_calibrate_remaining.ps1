@@ -93,7 +93,7 @@ $Units = @{
     essential_science   = @{ Source = "essential_web"; Repository = "EssentialAI/essential-web-v1.0"; View = "essential_science"; Revision = "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d"; Adapter = "essential_web"; AdapterConfig = "essential_science"; AdapterSpec = "essential_web:essential_science"; DefaultFiles = "data/v1/train/00001.parquet"; RecordAs = @("essential_science", "essential_practical", "essential_prose") }
     essential_practical = @{ Source = "essential_web"; Repository = "EssentialAI/essential-web-v1.0"; View = "essential_practical"; Revision = "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d"; Adapter = "essential_web"; AdapterConfig = "essential_practical"; AdapterSpec = "essential_web:essential_practical"; DefaultFiles = "data/v1/train/00001.parquet"; RecordAs = @("essential_science", "essential_practical", "essential_prose") }
     essential_prose     = @{ Source = "essential_web"; Repository = "EssentialAI/essential-web-v1.0"; View = "essential_prose"; Revision = "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d"; Adapter = "essential_web"; AdapterConfig = "essential_prose"; AdapterSpec = "essential_web:essential_prose"; DefaultFiles = "data/v1/train/00001.parquet"; RecordAs = @("essential_science", "essential_practical", "essential_prose") }
-    synth_en_explanations = @{ Source = "synth"; Repository = "PleIAs/SYNTH"; View = "default"; Revision = "0d6813a2966662c39f22f0b9af28a0c1c9f7a437"; Adapter = "synth_en"; AdapterConfig = ""; AdapterSpec = "synth_en"; DefaultFiles = "synth_001.parquet"; RecordAs = @("synth_en_explanations") }
+    synth_en_explanations = @{ Source = "synth"; Repository = "PleIAs/SYNTH"; View = "default"; Revision = "0d6813a2966662c39f22f0b9af28a0c1c9f7a437"; Adapter = "synth_en"; AdapterConfig = ""; AdapterSpec = "synth_en"; DefaultFiles = "synth_001.parquet"; RecordAs = @("synth_en_explanations"); Window = @{ ScanRows = "16384"; BufferBytes = "4194304"; BatchRows = "256" } }
     nemotron_wiki_rewrite = @{ Source = "nemotron_specialized"; Repository = "nvidia/Nemotron-Pretraining-Specialized-v1"; View = "Nemotron-Pretraining-Wiki-Rewrite"; Revision = "9ed3718b5f2ae29074c5e34e64115432b7c4320f"; Adapter = "wiki_rewrite"; AdapterConfig = ""; AdapterSpec = "wiki_rewrite"; DefaultFiles = "Nemotron-Pretraining-Wiki-Rewrite/part_000003.parquet"; RecordAs = @("nemotron_wiki_rewrite") }
     simple_stories      = @{ Source = "simple_stories"; Repository = "SimpleStories/SimpleStories"; View = "default"; Revision = "e63b8adc3b1a1bdc7cac5b500d150b71346b0628"; Adapter = "simple_stories"; AdapterConfig = ""; AdapterSpec = "simple_stories"; DefaultFiles = "data/train-00003-of-00007.parquet"; RecordAs = @("simple_stories") }
     finepdfs_en         = @{ Source = "finepdfs_edu"; Repository = "HuggingFaceFW/finepdfs-edu"; View = "eng_Latn"; Revision = "9cfabe2127faca99b3d5c4dc6d1fcb397399ebde"; Adapter = "finepdfs_en"; AdapterConfig = ""; AdapterSpec = "finepdfs_en"; DefaultFiles = "data/eng_Latn/train/000_00083.parquet"; RecordAs = @("finepdfs_en") }
@@ -103,6 +103,28 @@ $Units = @{
 }
 
 $U = $Units[$Unit]
+# Sampling/plan shape. Every unit keeps whole-row-group sampling EXCEPT a
+# unit that declares a Window policy (SYNTH: one ~155k-row, ~800 MB row
+# group per shard). It samples one scan-bounded sub-row-group window and
+# binds the identical policy into its plan and both adoption checks; see
+# docs/implementation/reports/SYNTH-LARGE-ROWGROUP-CALIBRATION.md.
+$SampleShape = @("--mode", "rowgroup")
+$SampleAdopt = @()
+$PlanShape = @()
+$PlanAdopt = @()
+if ($U.ContainsKey("Window")) {
+    $W = $U.Window
+    $SampleShape = @("--mode", "window", "--adapter-spec", $U.AdapterSpec,
+        "--window-max-scan-rows", $W.ScanRows, "--window-buffer-bytes", $W.BufferBytes,
+        "--window-batch-rows", $W.BatchRows)
+    $windowAdopt = @("--window-scan-rows", $W.ScanRows, "--window-buffer-bytes", $W.BufferBytes,
+        "--window-batch-rows", $W.BatchRows)
+    $SampleAdopt = @("--sample-mode", "window", "--adapter-spec", $U.AdapterSpec) + $windowAdopt
+    $PlanShape = @("--parquet-window-scan-rows", $W.ScanRows,
+        "--parquet-window-buffer-bytes", $W.BufferBytes,
+        "--parquet-window-batch-rows", $W.BatchRows)
+    $PlanAdopt = $windowAdopt
+}
 $FileList = if ($Files -ne "") { $Files } else { $U.DefaultFiles }
 if ([string]::IsNullOrWhiteSpace($FileList)) {
     throw "No remote file list for unit '$Unit': pass -Files from probe review (never invented)."
@@ -274,29 +296,29 @@ function Invoke-Stage([string]$Name) {
             else { throw "probe adoption refused; no evidence deleted, no fresh identity minted" }
         }
         "SampleBlocks" {
-            $decision = Invoke-Adopt @("sample-blocks", "--rows", $RowsPath, "--report", $ReportPath,
+            $decision = Invoke-Adopt (@("sample-blocks", "--rows", $RowsPath, "--report", $ReportPath,
                 "--source", $U.Source, "--view", $U.View, "--revision", $U.Revision,
-                "--seed", "20260918", "--files-csv", $FileList)
+                "--seed", "20260918", "--files-csv", $FileList) + $SampleAdopt)
             if ($decision -eq 2) { "existing compatible row ranges reused" | Out-Host }
             elseif ($decision -eq 0) {
-                Invoke-Step "sample-blocks" @("data", "sample-blocks", "--source", $U.Source,
+                Invoke-Step "sample-blocks" (@("data", "sample-blocks", "--source", $U.Source,
                     "--view", $U.View, "--revision", $U.Revision, "--files", $FileList,
-                    "--seed", "20260918", "--mode", "rowgroup", "--target-records", "1000",
-                    "--output", $RowsPath, "--report", $ReportPath) $true
+                    "--seed", "20260918") + $SampleShape + @("--target-records", "1000",
+                    "--output", $RowsPath, "--report", $ReportPath)) $true
             }
             else { throw "sample-blocks adoption refused; remove the outputs explicitly to redo them" }
         }
         "Plan" {
-            $decision = Invoke-Adopt @("plan", "--plan", $PlanPath, "--rows", $RowsPath,
+            $decision = Invoke-Adopt (@("plan", "--plan", $PlanPath, "--rows", $RowsPath,
                 "--source", $U.Source, "--view", $U.View, "--revision", $U.Revision,
-                "--seed", "20260918", "--files-csv", $FileList, "--mode", "selected_records")
+                "--seed", "20260918", "--files-csv", $FileList, "--mode", "selected_records") + $PlanAdopt)
             if ($decision -eq 2) { "existing compatible plan reused" | Out-Host }
             elseif ($decision -eq 0) {
-                Invoke-Step "plan" @("data", "plan", "--source", $U.Source, "--view", $U.View,
+                Invoke-Step "plan" (@("data", "plan", "--source", $U.Source, "--view", $U.View,
                     "--catalog", "manifests/datasets.catalog.yaml", "--files", $FileList,
                     "--mode", "selected_records", "--row-ranges", $RowsPath,
                     "--adapter-spec", $U.AdapterSpec, "--seed", "20260918", "--attempt", "1",
-                    "--pilot-approved", "--output", $PlanPath) $false
+                    "--pilot-approved", "--output", $PlanPath) + $PlanShape) $false
             }
             else { throw "plan adoption refused; use a new reviewed plan path to redo it" }
             # Display only (human review of plan id/hash/revision); never parsed.

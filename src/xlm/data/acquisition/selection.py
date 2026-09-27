@@ -18,11 +18,13 @@ import pyarrow.parquet as pq
 from xlm.artifacts.manifest import ensure_plain_path
 from xlm.artifacts.store import compute_file_sha256
 from xlm.data.acquisition.disk import CapacityLease, StorageCapacityManager
+from xlm.data.acquisition.plan import ParquetWindowDecode
 from xlm.data.acquisition.progress import ProgressCorruptionError
 from xlm.data.acquisition.records import (
     RecordLimitError,
     StreamingJsonlWriter,
     check_row_group,
+    check_window_group,
     encode_record,
     selected_record,
 )
@@ -312,12 +314,17 @@ def _selection_iterator(
     columns: list[str] | None = None,
     coalesce_bytes: int | None = None,
     scanned_counter: Callable[[], None] | None = None,
+    window: ParquetWindowDecode | None = None,
 ) -> Any:
     """Dispatch selected-record iteration by file kind (JSONL, GZ, Parquet)."""
     if source.endswith(".jsonl"):
         return _jsonl_selection(fetcher, source, start, stop, scanned_counter)
     if source.endswith(".jsonl.gz"):
         return _gz_jsonl_selection(fetcher, source, start, stop, scanned_counter)
+    if window is not None:
+        return _parquet_selection_window(
+            fetcher, source, start, stop, columns, window, scanned_counter
+        )
     return _parquet_selection(
         fetcher,
         source,
@@ -680,6 +687,118 @@ def _parquet_selection_projected(
             base = end
 
 
+def _parquet_selection_window(
+    fetcher: BoundedFetcher,
+    name: str,
+    start: int,
+    stop: int,
+    columns: list[str] | None,
+    window: ParquetWindowDecode,
+    scanned_counter: Callable[[], None] | None = None,
+) -> Any:
+    """Streamed sub-row-group window: projected chunks read lazily, early stop.
+
+    The footer is read through exact bounded ranges exactly as elsewhere.
+    Column chunks are then read through Arrow's buffered stream, so each
+    projected chunk is fetched sequentially in ``stream_buffer_bytes``
+    ranges only as far as decoding needs; unprojected chunks are never
+    requested and nothing past the window's final batch is decoded. Every
+    decoded row (including rows before the window start) is charged as
+    scanned; every decoded batch is charged as decompressed bytes. Records
+    and locators are identical to the whole-group projected decode.
+    """
+    limits = fetcher.plan.limits
+    with (
+        RangeReader(fetcher, name) as stream,
+        closing(CapacityLease(fetcher.capacity_mgr, "decompressed")) as decompressed,
+    ):
+        with fetcher.perf.timed("metadata", file=name):
+            parquet = pq.ParquetFile(
+                stream,
+                pre_buffer=False,
+                buffer_size=window.stream_buffer_bytes,
+                thrift_string_size_limit=limits.max_parser_bytes,
+                thrift_container_size_limit=limits.max_parser_bytes,
+            )
+        if stop > parquet.metadata.num_rows:
+            raise ValueError("selected row range extends beyond Parquet corpus")
+        projected_names, col_indices = _resolve_projection(parquet, name, columns)
+        base, group = 0, -1
+        for index in range(parquet.num_row_groups):
+            end = base + parquet.metadata.row_group(index).num_rows
+            if base <= start < end:
+                if stop > end:
+                    raise RecordLimitError(
+                        f"parquet window [{start},{stop}) crosses row group {index} "
+                        f"boundary [{base},{end}); windows must lie in one row group"
+                    )
+                group = index
+                break
+            base = end
+        if group < 0:
+            raise ValueError("selected row range extends beyond Parquet corpus")
+        start_in_group, stop_in_group = start - base, stop - base
+        with fetcher.perf.timed("metadata", file=name):
+            check_window_group(parquet, group, col_indices, limits, window, stop_in_group)
+        fetcher.perf.record_parquet_group()
+        fetcher.perf.record_column_chunks(len(col_indices))
+        batches = parquet.iter_batches(
+            batch_size=window.batch_rows,
+            row_groups=[group],
+            columns=projected_names,
+            use_threads=False,
+        )
+        local = 0
+        try:
+            while local < stop_in_group:
+                fetcher._check_deadline()
+                with fetcher.perf.timed("decode", file=name):
+                    batch = next(batches, None)
+                if batch is None:
+                    raise ValueError("Parquet row group ended before the selected window")
+                decoded = int(batch.nbytes)
+                decompressed.consume(decoded)
+                fetcher.perf.record_decompressed(decoded)
+                for _ in range(batch.num_rows):
+                    if scanned_counter is not None:
+                        scanned_counter()
+                    else:
+                        fetcher.capacity_mgr.record_units(
+                            "records_scanned", 1, limits.max_scanned_records
+                        )
+                fetcher.perf.record_scanned(batch.num_rows, file=name)
+                low = max(0, start_in_group - local)
+                high = min(batch.num_rows, stop_in_group - local)
+                if low < high:
+                    with fetcher.perf.timed("decode", file=name):
+                        rows = batch.slice(low, high - low).to_pylist()
+                    for offset, record in enumerate(rows, start=low):
+                        with fetcher.perf.timed("decode", file=name):
+                            raw = encode_record(record)
+                        if len(raw) > limits.max_record_bytes:
+                            raise RecordLimitError("Parquet record byte bound exceeded")
+                        fetcher.perf.record_retained(1, file=name)
+                        yield (
+                            record,
+                            raw,
+                            {
+                                "row_index": base + local + offset,
+                                "row_group": group,
+                                "row_in_group": local + offset,
+                                "format": "parquet",
+                                "etag": stream.etag,
+                                "original_record_hash_convention": (
+                                    "canonical JSON serialization, not compressed bytes"
+                                ),
+                            },
+                        )
+                local += batch.num_rows
+        finally:
+            close = getattr(batches, "close", None)
+            if close is not None:
+                close()
+
+
 class _BatchCommitter:
     """Scanned counts and staging bytes on durable pre-reserved leases.
 
@@ -761,6 +880,7 @@ def _select_one_source_to_chunk(
                     columns=columns,
                     coalesce_bytes=coalesce_bytes,
                     scanned_counter=batcher.scanned,
+                    window=plan.parquet_window,
                 )
                 for record, raw, locator in iterator:
                     if stop_event.is_set():
@@ -826,6 +946,7 @@ def _acquire_selection_serial(
                         columns=columns,
                         coalesce_bytes=coalesce_bytes,
                         scanned_counter=batcher.scanned,
+                        window=plan.parquet_window,
                     )
                     for record, raw, locator in iterator:
                         with fetcher.perf.timed("serialize", file=source):

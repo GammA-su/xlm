@@ -67,6 +67,37 @@
 > G:\Project\xlm-data-ultrax\scripts\operator_calibrate_remaining.ps1
 > -Unit simple_stories -Stage All`. Verdict: READY FOR SIMPLESTORIES FINAL
 > CANARY. See [MIX01-CALIBRATION-REMAINING §7b](reports/MIX01-CALIBRATION-REMAINING.md).
+>
+> **SYNTH LARGE-ROW-GROUP CALIBRATION (2026-09-27, offline): IMPLEMENTED +
+> FOCUSED-VERIFIED; READY FOR SYNTH CALIBRATION RETRY.**
+>
+> - **Root cause.** Whole-group sampling compared each SYNTH shard's
+>   single ~155k-row row group (`total_byte_size` ≈ 795 MB, all 14
+>   columns) against the 32 MiB parser bound. It was not a driver bug.
+> - **Fix.** New versioned `parquet_window` v1 (`sample-blocks --mode
+>   window`, `plan --parquet-window-*`). It takes one deterministic
+>   SHA-256 window per file inside one row group, streams only the
+>   projected chunks in ≤4 MiB ranges, and stops decoding at the window
+>   stop.
+> - **Honest accounting.** Every decoded row is charged as scanned. The
+>   real retry is predicted to take `synth_001` rows [8737,9737) and
+>   decode 9,984 of them. Physical work is gated at the pilot ceilings for
+>   window plans.
+> - **Unchanged.** Legacy paths and hashes (pinned).
+> - **Calibration yield.** It is recorded with the raw transfer disclosed
+>   and sized by the retained-row share.
+> - **Evidence.**
+>   - New/related focused tests: 297 + 4 serial pass, 0 skipped. Full
+>     suite NOT RUN.
+>   - 14/14 mutations killed.
+>   - Real-scale authored benchmark (797 MB group): ≤59.2 MB transferred,
+>     ≤23 requests, ≤139 MB peak RSS.
+> - **Next.** `powershell -NoProfile -ExecutionPolicy Bypass -File
+>   G:\Project\xlm-data-ultrax\scripts\operator_calibrate_remaining.ps1
+>   -Unit synth_en_explanations -Stage SampleBlocks`, review
+>   `rows.evidence.json`, then `-Stage All`.
+>
+> See [SYNTH-LARGE-ROWGROUP-CALIBRATION](reports/SYNTH-LARGE-ROWGROUP-CALIBRATION.md).
 > Surgical idempotent freeze; focused offline tests + ruff + scoped mypy
 > green. No push. See [MIX01-ULTRAX-6B §15](reports/MIX01-ULTRAX-6B.md).
 >

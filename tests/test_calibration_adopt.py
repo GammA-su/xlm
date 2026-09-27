@@ -561,3 +561,134 @@ def test_verify_adoption_refuses_unpublished_extra_outputs(tmp_path: Path) -> No
     assert _adopt.main(argv) == 2
     (raw / "stray.jsonl").write_text("{}\n", encoding="utf-8")
     assert _adopt.main(argv) == 1
+
+
+def _window_saved_plan(tmp_path: Path, scan_rows: int = 16384) -> tuple[Path, Path]:
+    from xlm.data.acquisition.plan import (
+        AcquisitionMode,
+        AcquisitionPlan,
+        ParquetWindowDecode,
+        SamplingFrame,
+        save_acquisition_plan,
+    )
+
+    plan = AcquisitionPlan(
+        plan_id="plan_synth_default_hf",
+        source_id="synth",
+        view_id="default",
+        provider="huggingface",
+        repository="PleIAs/SYNTH",
+        revision=REVISION,
+        mode=AcquisitionMode.SELECTED_RECORDS,
+        selected_files=["a.parquet"],
+        row_ranges={"a.parquet": (100, 1100)},
+        sampling_frame=SamplingFrame(selection_seed=20260918),
+        output_artifact_id="raw_synth_default",
+        projected_fields=["synth_id"],
+        parquet_window=ParquetWindowDecode(
+            stream_buffer_bytes=4194304, max_window_scan_rows=scan_rows, batch_rows=256
+        ),
+    )
+    plan_path = tmp_path / "window-plan.json"
+    save_acquisition_plan(plan, plan_path)
+    rows = tmp_path / "window-rows.json"
+    rows.write_text(json.dumps({"a.parquet": [100, 1100]}), encoding="utf-8")
+    return plan_path, rows
+
+
+WINDOW_ADOPT = [
+    "--window-scan-rows",
+    "16384",
+    "--window-buffer-bytes",
+    "4194304",
+    "--window-batch-rows",
+    "256",
+]
+
+
+def _plan_base(plan_path: Path, rows: Path, source: str) -> list[str]:
+    return [
+        "plan",
+        "--plan",
+        str(plan_path),
+        "--rows",
+        str(rows),
+        "--source",
+        source,
+        "--view",
+        "default",
+        "--revision",
+        REVISION,
+        "--seed",
+        "20260918",
+        "--files-csv",
+        "a.parquet",
+    ]
+
+
+def test_plan_adoption_binds_window_policy(tmp_path: Path) -> None:
+    plan_path, rows = _window_saved_plan(tmp_path)
+    base = _plan_base(plan_path, rows, "synth")
+    assert _adopt.main(base + WINDOW_ADOPT) == 2
+    # A legacy (window-less) request never adopts a window plan.
+    assert _adopt.main(base) == 1
+    changed = list(WINDOW_ADOPT)
+    changed[1] = "20000"
+    assert _adopt.main(base + changed) == 1
+    assert _adopt.main(base + WINDOW_ADOPT[:2]) == 1
+    # And a window request never adopts a legacy plan.
+    _, legacy_path, legacy_rows = _saved_plan(tmp_path)
+    assert _adopt.main(_plan_base(legacy_path, legacy_rows, "simple_stories") + WINDOW_ADOPT) == 1
+    assert _adopt.main(_plan_base(legacy_path, legacy_rows, "simple_stories")) == 2
+
+
+def test_sample_blocks_adoption_binds_mode_window_and_projection(tmp_path: Path) -> None:
+    from xlm.data.adapters.columns import columns_for
+
+    rows = tmp_path / "rows.json"
+    report = tmp_path / "rows.evidence.json"
+    rows.write_text(json.dumps({"a.parquet": [100, 1100]}), encoding="utf-8")
+    evidence = {
+        "source_id": "synth",
+        "view_id": "default",
+        "revision": REVISION,
+        "seed": 20260918,
+        "mode": "window",
+        "projected_fields": sorted(columns_for("synth_en")),
+        "window_policy": {
+            "policy_version": 1,
+            "max_window_scan_rows": 16384,
+            "stream_buffer_bytes": 4194304,
+            "batch_rows": 256,
+        },
+    }
+    report.write_text(json.dumps(evidence), encoding="utf-8")
+    base = [
+        "sample-blocks",
+        "--rows",
+        str(rows),
+        "--report",
+        str(report),
+        "--source",
+        "synth",
+        "--view",
+        "default",
+        "--revision",
+        REVISION,
+        "--seed",
+        "20260918",
+        "--files-csv",
+        "a.parquet",
+    ]
+    window = ["--sample-mode", "window", "--adapter-spec", "synth_en", *WINDOW_ADOPT]
+    assert _adopt.main(base + window) == 2
+    assert _adopt.main(base) == 2  # legacy callers keep their original checks
+    assert _adopt.main(base + ["--sample-mode", "rowgroup"]) == 1
+    changed = list(window)
+    changed[changed.index("--window-buffer-bytes") + 1] = "65536"
+    assert _adopt.main(base + changed) == 1
+    assert _adopt.main(base + ["--adapter-spec", "simple_stories"]) == 1
+    before = rows.read_bytes()
+    report.write_text(json.dumps({**evidence, "mode": "rowgroup"}), encoding="utf-8")
+    assert _adopt.main(base + window) == 1
+    assert rows.read_bytes() == before

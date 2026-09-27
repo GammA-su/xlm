@@ -7,6 +7,7 @@ import json
 import math
 import os
 import uuid
+from collections.abc import Iterable
 from enum import StrEnum
 from pathlib import Path
 from typing import Any
@@ -54,6 +55,100 @@ class AcquisitionLimits(BaseModel):
         if self.max_record_bytes > self.max_parser_bytes:
             raise ValueError("record byte bound exceeds parser byte bound")
         return self
+
+
+#: Pilot ceilings (C13) for physical work. The legacy gate binds only
+#: transfer/records/output; window-decode plans additionally bind these.
+PILOT_MAX_TRANSFERRED_BYTES = 256 * 1024 * 1024
+PILOT_MAX_RECORDS = 25_000
+PILOT_MAX_OUTPUT_DISK_BYTES = 2 * 1024 * 1024 * 1024
+PILOT_MAX_DECOMPRESSED_BYTES = 512 * 1024 * 1024
+PILOT_MAX_SCANNED_RECORDS = 100_000
+PILOT_MAX_REQUESTS = 100
+PILOT_MAX_WINDOW_BUFFER_BYTES = 8 * 1024 * 1024
+PILOT_MAX_RATIO_EXEMPT_BYTES = 16 * 1024 * 1024
+
+PARQUET_WINDOW_POLICY_VERSION = 1
+
+
+class ParquetWindowDecode(BaseModel):
+    """Streaming sub-row-group decode for one bounded window per Parquet file.
+
+    Physical semantics (policy version 1): the selected row range of every
+    file lies inside ONE row group. Only projected column chunks are read,
+    sequentially through a buffered stream of ``stream_buffer_bytes`` per
+    column (each HTTP range <= that size, never a whole chunk), and decoding
+    stops at the first batch reaching the window stop. Rows from the row
+    group start up to the window stop are decoded and charged as scanned;
+    there is no page skipping (PyArrow exposes no page-index row seeking).
+
+    Bound into the behavioral hash only when set, so legacy plans keep
+    their identity. Excluded from the selection hash: records and locators
+    are byte-identical to the whole-group projected decode of the same rows.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    policy_version: int = PARQUET_WINDOW_POLICY_VERSION
+    stream_buffer_bytes: int = Field(ge=64 * 1024)
+    max_window_scan_rows: int = Field(ge=1)
+    batch_rows: int = Field(default=256, ge=1, le=65536)
+    ratio_exempt_bytes: int = Field(
+        default=16 * 1024 * 1024,
+        ge=0,
+        description=(
+            "A projected column chunk whose TOTAL uncompressed size is at most this "
+            "is exempt from the per-column ratio rule: its absolute expansion is "
+            "bounded by this size (low-entropy ids/labels compress far beyond the "
+            "ratio yet cannot amplify). Larger chunks and the projected aggregate "
+            "stay ratio-bound; decoded bytes stay charged against the hard limit."
+        ),
+    )
+
+    @model_validator(mode="after")
+    def supported_version(self) -> ParquetWindowDecode:
+        if self.policy_version != PARQUET_WINDOW_POLICY_VERSION:
+            raise ValueError(f"unsupported parquet window policy_version {self.policy_version}")
+        return self
+
+    def ratio_refusal(
+        self, columns: Iterable[tuple[str, int, int]], max_ratio: float
+    ) -> str | None:
+        """Decompression-ratio refusal over PROJECTED ``(path, compressed, uncompressed)``.
+
+        Single rule shared by sampling eligibility and fetch-time checks so
+        they cannot disagree. Unprojected chunks are never read and never
+        passed here.
+        """
+        total_compressed = total_uncompressed = 0
+        for path, compressed, uncompressed in columns:
+            total_compressed += compressed
+            total_uncompressed += uncompressed
+            if uncompressed > self.ratio_exempt_bytes and uncompressed > max_ratio * max(
+                1, compressed
+            ):
+                return (
+                    f"projected column '{path}' exceeds decompression ratio bound: "
+                    f"uncompressed={uncompressed} against max_decompression_ratio="
+                    f"{max_ratio} * compressed={compressed} "
+                    f"(ratio_exempt_bytes={self.ratio_exempt_bytes})"
+                )
+        if total_uncompressed > self.ratio_exempt_bytes and total_uncompressed > max_ratio * max(
+            1, total_compressed
+        ):
+            return (
+                f"projected columns exceed aggregate decompression ratio bound: "
+                f"uncompressed={total_uncompressed} against max_decompression_ratio="
+                f"{max_ratio} * compressed={total_compressed}"
+            )
+        return None
+
+    def expected_scan_rows(self, group_rows: int, stop_in_group: int) -> int:
+        """Rows decoded for a window ending at ``stop_in_group`` (whole batches)."""
+        if not 0 < stop_in_group <= group_rows:
+            raise ValueError("window stop must lie inside its row group")
+        batches = -(-stop_in_group // self.batch_rows)
+        return min(group_rows, batches * self.batch_rows)
 
 
 class SamplingFrame(BaseModel):
@@ -113,6 +208,13 @@ class AcquisitionPlan(BaseModel):
         description=(
             "Optional explicit gap threshold for coalescing adjacent Parquet "
             "column-chunk ranges. None preserves legacy exact-range behavior."
+        ),
+    )
+    parquet_window: ParquetWindowDecode | None = Field(
+        default=None,
+        description=(
+            "Optional streaming sub-row-group window decode for selected_records. "
+            "None preserves legacy whole-row-group decode with identical identity."
         ),
     )
     sampling_frame: SamplingFrame = Field(default_factory=SamplingFrame)
@@ -176,7 +278,30 @@ class AcquisitionPlan(BaseModel):
             self.projected_fields is not None or self.range_coalesce_bytes is not None
         ):
             raise ValueError("whole-file mode cannot declare projection/coalescing options")
+        if self.parquet_window is not None:
+            self._validate_parquet_window(self.parquet_window)
         return self
+
+    def _validate_parquet_window(self, window: ParquetWindowDecode) -> None:
+        if self.mode != AcquisitionMode.SELECTED_RECORDS:
+            raise ValueError("parquet window decode requires selected_records mode")
+        if self.projected_fields is None:
+            raise ValueError("parquet window decode requires an explicit column projection")
+        if self.range_coalesce_bytes is not None:
+            raise ValueError("parquet window decode streams chunks; coalescing is not applicable")
+        if any(not name.endswith(".parquet") for name in self.selected_files):
+            raise ValueError("parquet window decode requires Parquet files only")
+        if window.stream_buffer_bytes > self.limits.max_parser_bytes:
+            raise ValueError("window stream buffer exceeds the per-range byte bound")
+        if window.max_window_scan_rows > self.limits.max_scanned_records:
+            raise ValueError("window scan rows exceed the cumulative scanned-record bound")
+        if window.batch_rows > window.max_window_scan_rows:
+            raise ValueError("window batch rows exceed the window scan bound")
+        if window.ratio_exempt_bytes > self.limits.max_decompressed_bytes:
+            raise ValueError("window ratio exemption exceeds the decompressed byte bound")
+        for start, stop in (self.row_ranges or {}).values():
+            if stop - start > window.max_window_scan_rows:
+                raise ValueError("selected window exceeds the window scan bound")
 
     def compute_behavioral_hash(self) -> str:
         """Compute SHA-256 digest over behavioral fields.
@@ -215,6 +340,10 @@ class AcquisitionPlan(BaseModel):
             behavioral_dict["projected_fields"] = sorted(self.projected_fields)
         if self.range_coalesce_bytes is not None:
             behavioral_dict["range_coalesce_bytes"] = self.range_coalesce_bytes
+        # Physical decode policy changes transfer/scan behavior, so it binds
+        # execution identity (and authorization) when set; None is legacy.
+        if self.parquet_window is not None:
+            behavioral_dict["parquet_window"] = self.parquet_window.model_dump()
         canonical_json = json.dumps(behavioral_dict, sort_keys=True, separators=(",", ":"))
         return hashlib.sha256(canonical_json.encode("utf-8")).hexdigest()
 
@@ -237,6 +366,7 @@ class AcquisitionPlan(BaseModel):
         - ``attempt`` number, ``plan_id``/``plan_hash``, ``authorization``
           (hash/timestamp), ``output_artifact_id`` (derived output naming),
           ``range_coalesce_bytes`` (transport framing only; records identical),
+          ``parquet_window`` (physical decode policy; records identical),
           runtime deadlines, observational telemetry.
         Execution identity stays in :meth:`compute_behavioral_hash`,
         journals, receipts, and authorizations; only the per-record
@@ -315,12 +445,28 @@ def plan_requires_production_admission(plan: AcquisitionPlan) -> bool:
 
     Single source of truth for the pilot/production boundary; the validator
     and the fetch command both use it so they cannot disagree.
+
+    Window-decode plans also bind physical work (decompression, scanned
+    records, requests, window scan rows, stream buffer) to pilot ceilings,
+    so a small retained count can never carry an oversized physical scan
+    onto the pilot path. Legacy plans keep the original three checks.
     """
-    return (
-        plan.limits.max_transferred_bytes > 256 * 1024 * 1024
-        or plan.limits.max_records > 25_000
-        or plan.limits.max_output_disk_bytes > 2 * 1024 * 1024 * 1024
+    limits = plan.limits
+    if (
+        limits.max_transferred_bytes > PILOT_MAX_TRANSFERRED_BYTES
+        or limits.max_records > PILOT_MAX_RECORDS
+        or limits.max_output_disk_bytes > PILOT_MAX_OUTPUT_DISK_BYTES
         or not plan.is_pilot
+    ):
+        return True
+    window = plan.parquet_window
+    return window is not None and (
+        limits.max_decompressed_bytes > PILOT_MAX_DECOMPRESSED_BYTES
+        or limits.max_scanned_records > PILOT_MAX_SCANNED_RECORDS
+        or limits.max_requests > PILOT_MAX_REQUESTS
+        or window.max_window_scan_rows > PILOT_MAX_SCANNED_RECORDS
+        or window.stream_buffer_bytes > PILOT_MAX_WINDOW_BUFFER_BYTES
+        or window.ratio_exempt_bytes > PILOT_MAX_RATIO_EXEMPT_BYTES
     )
 
 

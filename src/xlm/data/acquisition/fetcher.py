@@ -784,6 +784,16 @@ class BoundedFetcher:
                         doc["cpu_process_seconds"] = max(0.0, time.process_time() - cpu_start)
                     except Exception:
                         pass
+                if self.plan.parquet_window is not None:
+                    # Additive: legacy sidecars carry no window keys at all.
+                    doc["parquet_window"] = self.plan.parquet_window.model_dump()
+                    doc["measurement_class"] = "calibration_window"
+                    doc["notes"] = [
+                        *doc.get("notes", []),
+                        "CALIBRATION-ONLY: window decode reads projected chunks only up "
+                        "to the window stop and decodes rows before the window start; "
+                        "transfer/yield rates are not production-fetch throughput.",
+                    ]
                 self.perf.write_sidecar(
                     self.scratch_dir, self.plan.plan_id, doc, journal=self.journal
                 )

@@ -693,6 +693,11 @@ def compare_perf_docs(docs: list[dict[str, Any]]) -> dict[str, Any]:
                     f"document {index} ({doc.get('plan_id')}): projected fields differ "
                     "(different acquired artifacts are never ranked together)"
                 )
+            if doc.get("parquet_window") != first.get("parquet_window"):
+                refusals.append(
+                    f"document {index} ({doc.get('plan_id')}): parquet window decode "
+                    "differs (calibration-window runs are never ranked against others)"
+                )
         limit_keys = (
             "max_transferred_bytes",
             "max_decompressed_bytes",

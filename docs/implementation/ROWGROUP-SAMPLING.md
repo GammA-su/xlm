@@ -125,3 +125,55 @@ for identical ranges).
 - Whole-file policy is unchanged in this commit.
 - Bias warning (always emitted): block sampling is NOT uniform record
   sampling; screened statistics must not be read as unbiased corpus estimates.
+
+## 6. Window mode for large row groups (`--mode window`, policy window-v1)
+
+Some sources store a whole shard in one very large row group. SYNTH has
+about 155k rows and ~800 MB logical size per shard. Whole-group sampling
+refuses these by design, and raising `--max-parser-bytes` is not the
+fix. Window mode takes one deterministic sub-row-group window per file
+instead:
+
+```bash
+# 1. Footer-only sampling, projection-aware (certified adapter columns).
+uv run --offline --locked --extra cpu --extra eval xlm data sample-blocks \
+  --source synth --view default --revision <sha> --files synth_001.parquet \
+  --seed 20260918 --mode window --adapter-spec synth_en \
+  --window-max-scan-rows 16384 --window-buffer-bytes 4194304 --window-batch-rows 256 \
+  --target-records 1000 --output rows.json --report rows.evidence.json
+
+# 2. Plan with the SAME window policy (identity-bound; pilot-gated).
+uv run --offline --locked --extra cpu --extra eval xlm data plan \
+  --source synth --view default --files synth_001.parquet --mode selected_records \
+  --row-ranges rows.json --adapter-spec synth_en --seed 20260918 \
+  --parquet-window-scan-rows 16384 --parquet-window-buffer-bytes 4194304 \
+  --parquet-window-batch-rows 256 --pilot-approved --output plan.json
+```
+
+- **Selection.** Each file contributes at most one window, inside one
+  row group. The start is a versioned SHA-256 choice. It is restricted
+  to the first whole batches inside `--window-max-scan-rows`.
+- **What fetch reads and decodes.**
+  - Only projected column chunks are read, sequentially, in ranges no
+    larger than the buffer. Unprojected chunks are never requested.
+  - Decoding starts at the start of the row group and stops at the batch
+    that reaches the window stop.
+  - Every decoded row is charged as scanned, including the rows before
+    the window start. The evidence reports this as
+    `expected_scan_rows`.
+- **Ratio rule.** It applies to projected columns only. A column is
+  exempt when its total decoded size is ≤ 16 MiB; the projected
+  aggregate is always checked.
+- **Eligibility.** It is judged on the worst admissible window, against
+  the pilot bounds.
+- **Evidence.** It adds the per-column projected sizes, the largest
+  selected chunk, the physical-transfer ceiling and the estimates. It
+  also adds a clustered/nonuniform bias warning.
+- **Unchanged.** `rowgroup` and `contiguous` modes and their reports are
+  unchanged.
+- **Calibration-only.** Window runs are marked CALIBRATION-ONLY in perf
+  sidecars. `mix01_inventory.py measure` sizes calibration with the
+  retained-row share of the raw transfer, and records both figures.
+
+Details, bounds and measurements are in
+[SYNTH-LARGE-ROWGROUP-CALIBRATION](reports/SYNTH-LARGE-ROWGROUP-CALIBRATION.md).

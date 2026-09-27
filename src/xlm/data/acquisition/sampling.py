@@ -23,7 +23,27 @@ from typing import Any, Protocol
 
 import pyarrow.parquet as pq
 
+from xlm.data.acquisition.plan import (
+    PILOT_MAX_DECOMPRESSED_BYTES,
+    PILOT_MAX_REQUESTS,
+    PILOT_MAX_SCANNED_RECORDS,
+    PILOT_MAX_TRANSFERRED_BYTES,
+    ParquetWindowDecode,
+)
+
 SAMPLING_PLAN_VERSION = 1
+
+WINDOW_WARNING = (
+    "Window sampling is clustered, nonuniform sampling: each selected file "
+    "contributes ONE contiguous window of rows from ONE row group, and the "
+    "window start is restricted to the first scan-bounded rows of that group. "
+    "Rows before the window start are physically decoded (scanned) but not "
+    "retained. Do not treat screened statistics as unbiased corpus estimates."
+)
+
+#: Footer/header requests charged before any column bytes (header + footer
+#: tail + metadata); a conservative constant for the request estimate.
+WINDOW_METADATA_REQUESTS = 4
 
 BIAS_WARNING = (
     "Row-group/block sampling is not uniform record sampling. Retained rows "
@@ -69,6 +89,15 @@ def _det_index(seed: int, parts: tuple[str, ...], modulus: int) -> int:
 
 
 @dataclass(frozen=True)
+class ColumnChunkSpec:
+    """One column chunk's footer sizes (``path_in_schema`` identifies it)."""
+
+    path: str
+    compressed: int
+    uncompressed: int
+
+
+@dataclass(frozen=True)
 class RowGroupSpec:
     """One Parquet row group as observed in a bounded footer read."""
 
@@ -80,6 +109,7 @@ class RowGroupSpec:
     num_columns: int
     usable: bool
     refusal: str | None = None
+    columns: tuple[ColumnChunkSpec, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -164,6 +194,10 @@ def discover_layout_local(
             (int(column.total_compressed_size), int(column.total_uncompressed_size))
             for column in columns
         )
+        chunk_specs = tuple(
+            ColumnChunkSpec(str(column.path_in_schema), first, second)
+            for column, (first, second) in zip(columns, pairs, strict=True)
+        )
         compressed = sum(first for first, _ in pairs)
         uncompressed = sum(second for _, second in pairs)
         refusal = _refusal_for_group(
@@ -187,10 +221,17 @@ def discover_layout_local(
                 num_columns=int(meta.num_columns),
                 usable=refusal is None,
                 refusal=refusal,
+                columns=chunk_specs,
             )
         )
         base += rows
     return FileLayout(name=name, num_rows=num_rows, groups=tuple(groups))
+
+
+#: (rows, columns, total_byte_size, compressed, uncompressed, pairs, chunks)
+_GroupFooter = tuple[
+    int, int, int, int, int, tuple[tuple[int, int], ...], tuple[ColumnChunkSpec, ...]
+]
 
 
 class RangeFetch(Protocol):
@@ -258,7 +299,7 @@ def discover_layout_over_ranges(
             )
             num_rows = int(parquet.metadata.num_rows)
             num_row_groups = int(parquet.num_row_groups)
-            specs: list[tuple[int, int, int, int, int, tuple[tuple[int, int], ...]]] = []
+            specs: list[_GroupFooter] = []
             for index in range(num_row_groups):
                 meta = parquet.metadata.row_group(index)
                 columns = [meta.column(position) for position in range(meta.num_columns)]
@@ -273,6 +314,10 @@ def discover_layout_over_ranges(
                         sum(first for first, _ in pairs),
                         sum(second for _, second in pairs),
                         pairs,
+                        tuple(
+                            ColumnChunkSpec(str(c.path_in_schema), first, second)
+                            for c, (first, second) in zip(columns, pairs, strict=True)
+                        ),
                     )
                 )
     except SamplingRefusal:
@@ -281,7 +326,15 @@ def discover_layout_over_ranges(
         raise SamplingRefusal(f"cannot discover Parquet layout for '{name}': {exc}") from exc
     groups: list[RowGroupSpec] = []
     base = 0
-    for index, (rows, num_columns, total, compressed, uncompressed, pairs) in enumerate(specs):
+    for index, (
+        rows,
+        num_columns,
+        total,
+        compressed,
+        uncompressed,
+        pairs,
+        chunk_specs,
+    ) in enumerate(specs):
         refusal = _refusal_for_group(
             index,
             rows,
@@ -303,6 +356,7 @@ def discover_layout_over_ranges(
                 num_columns=num_columns,
                 usable=refusal is None,
                 refusal=refusal,
+                columns=chunk_specs,
             )
         )
         base += rows
@@ -328,6 +382,8 @@ class SamplingRequest:
     max_parser_bytes: int = 32 * 1024 * 1024
     max_decompression_ratio: float = 15.0
     tokens_per_record: float | None = None
+    projected_fields: tuple[str, ...] | None = None
+    window: ParquetWindowDecode | None = None
 
 
 @dataclass(frozen=True)
@@ -340,6 +396,108 @@ class ChosenBlock:
     num_rows: int
     compressed_bytes: int
     uncompressed_bytes: int
+
+
+@dataclass(frozen=True)
+class ChosenWindow:
+    """One deterministic sub-row-group window and its physical work.
+
+    Byte estimates assume rows of roughly uniform size within the group; they
+    are labeled estimates. The hard ceilings are the runtime budgets, and
+    ``selected_compressed_bytes`` bounds what the window path can transfer
+    from column chunks (it never requests unprojected chunks).
+    """
+
+    file: str
+    row_group: int
+    group_start_row: int
+    group_rows: int
+    start_domain_rows: int
+    start_in_group: int
+    stop_in_group: int
+    expected_scan_rows: int
+    selected_columns: tuple[ColumnChunkSpec, ...]
+    group_total_byte_size: int
+    group_compressed_bytes: int
+    estimated_scan_compressed_bytes: int
+    estimated_scan_uncompressed_bytes: int
+    estimated_transfer_upper_bytes: int
+    estimated_requests: int
+    domain_scan_rows: int = 0
+    domain_estimated_transfer_upper_bytes: int = 0
+    domain_estimated_scan_uncompressed_bytes: int = 0
+    domain_estimated_requests: int = 0
+
+    @property
+    def start_row(self) -> int:
+        return self.group_start_row + self.start_in_group
+
+    @property
+    def stop_row(self) -> int:
+        return self.group_start_row + self.stop_in_group
+
+    @property
+    def num_rows(self) -> int:
+        return self.stop_in_group - self.start_in_group
+
+    @property
+    def selected_compressed_bytes(self) -> int:
+        return sum(column.compressed for column in self.selected_columns)
+
+    @property
+    def selected_uncompressed_bytes(self) -> int:
+        return sum(column.uncompressed for column in self.selected_columns)
+
+    def to_report(self) -> dict[str, Any]:
+        largest = max(self.selected_columns, key=lambda column: (column.compressed, column.path))
+        return {
+            "file": self.file,
+            "row_group": self.row_group,
+            "group_start_row": self.group_start_row,
+            "group_rows": self.group_rows,
+            "start_domain_rows": self.start_domain_rows,
+            "start_in_group": self.start_in_group,
+            "stop_in_group": self.stop_in_group,
+            "start_row": self.start_row,
+            "stop_row": self.stop_row,
+            "selected_count": self.num_rows,
+            "expected_scan_rows": self.expected_scan_rows,
+            "expected_skipped_decoded_rows": self.expected_scan_rows - self.num_rows,
+            "group_total_byte_size": self.group_total_byte_size,
+            "group_compressed_bytes": self.group_compressed_bytes,
+            "selected_columns": [
+                {
+                    "path": column.path,
+                    "compressed_bytes": column.compressed,
+                    "uncompressed_bytes": column.uncompressed,
+                }
+                for column in self.selected_columns
+            ],
+            "selected_compressed_bytes": self.selected_compressed_bytes,
+            "selected_uncompressed_bytes": self.selected_uncompressed_bytes,
+            "unselected_compressed_bytes": (
+                self.group_compressed_bytes - self.selected_compressed_bytes
+            ),
+            "largest_selected_chunk": {
+                "path": largest.path,
+                "compressed_bytes": largest.compressed,
+                "uncompressed_bytes": largest.uncompressed,
+            },
+            "physical_transfer_ceiling_bytes": self.selected_compressed_bytes,
+            "estimated_scan_compressed_bytes": self.estimated_scan_compressed_bytes,
+            "estimated_scan_uncompressed_bytes": self.estimated_scan_uncompressed_bytes,
+            "estimated_transfer_upper_bytes": self.estimated_transfer_upper_bytes,
+            "estimated_requests": self.estimated_requests,
+            "eligibility_worst_case": {
+                "basis": "any admissible start: window ending at start_domain_rows",
+                "expected_scan_rows": self.domain_scan_rows,
+                "estimated_transfer_upper_bytes": self.domain_estimated_transfer_upper_bytes,
+                "estimated_scan_uncompressed_bytes": (
+                    self.domain_estimated_scan_uncompressed_bytes
+                ),
+                "estimated_requests": self.domain_estimated_requests,
+            },
+        }
 
 
 @dataclass(frozen=True)
@@ -360,9 +518,47 @@ class SamplingResult:
     view_id: str = ""
     revision: str = ""
     warnings: tuple[str, ...] = ()
+    windows: tuple[ChosenWindow, ...] = ()
+    window_policy: ParquetWindowDecode | None = None
+    projected_fields: tuple[str, ...] | None = None
 
     def to_report(self) -> dict[str, Any]:
         """Deterministic evidence document (no paths, timing, or network order)."""
+        report = self._legacy_report()
+        if self.window_policy is not None:
+            # Window evidence is additive: legacy-mode reports stay byte-identical.
+            report["window_policy"] = {
+                **self.window_policy.model_dump(),
+                "start_construction": (
+                    "sha256('|'.join([seed, source_id, view_id, revision, file, "
+                    "row_group, 'window-v<policy_version>', 'start'])) mod "
+                    "(start_domain_rows - selected_count + 1)"
+                ),
+                "scan_accounting": (
+                    "rows [group start, window stop) are decoded in whole batches of "
+                    "batch_rows and ALL are charged as scanned; nothing past the "
+                    "batch reaching the window stop is decoded"
+                ),
+                "estimate_basis": (
+                    "byte/request estimates assume uniform row size within the row "
+                    "group; runtime transfer/decompression/request/scan budgets are "
+                    "the hard bounds"
+                ),
+            }
+            report["projected_fields"] = sorted(self.projected_fields or ())
+            report["windows"] = [window.to_report() for window in self.windows]
+            report["expected_scan_rows"] = sum(w.expected_scan_rows for w in self.windows)
+            report["physical_transfer_ceiling_bytes"] = sum(
+                w.selected_compressed_bytes for w in self.windows
+            )
+            report["estimated_transfer_upper_bytes"] = sum(
+                w.estimated_transfer_upper_bytes for w in self.windows
+            )
+            report["estimated_requests"] = sum(w.estimated_requests for w in self.windows)
+            report["bias"] = WINDOW_WARNING
+        return report
+
+    def _legacy_report(self) -> dict[str, Any]:
         return {
             "sampling_plan_version": SAMPLING_PLAN_VERSION,
             "source_id": self.source_id,
@@ -419,8 +615,21 @@ def _validate_request(request: SamplingRequest, layouts: dict[str, FileLayout]) 
             raise SamplingRefusal(
                 f"row-group sampling requires Parquet files; '{name}' is unsupported"
             )
-    if request.mode not in ("rowgroup", "contiguous"):
-        raise SamplingRefusal("sampling mode must be 'rowgroup' or 'contiguous'")
+    if request.mode not in ("rowgroup", "contiguous", "window"):
+        raise SamplingRefusal("sampling mode must be 'rowgroup', 'contiguous', or 'window'")
+    if request.mode == "window":
+        if request.window is None or not request.projected_fields:
+            raise SamplingRefusal(
+                "window mode requires an explicit window policy and column projection"
+            )
+        if len(set(request.projected_fields)) != len(request.projected_fields):
+            raise SamplingRefusal("duplicate projected fields are not allowed")
+        if request.window.stream_buffer_bytes > request.max_parser_bytes:
+            raise SamplingRefusal("window stream buffer exceeds the per-range byte bound")
+        if request.window.batch_rows > request.window.max_window_scan_rows:
+            raise SamplingRefusal("window batch rows exceed the window scan bound")
+    elif request.window is not None or request.projected_fields is not None:
+        raise SamplingRefusal("window policy/projection apply to window mode only")
     if request.block_records < 1:
         raise SamplingRefusal("block records must be positive")
     if request.target_records < 1:
@@ -442,8 +651,11 @@ def plan_sample_blocks(layouts: dict[str, FileLayout], request: SamplingRequest)
 
     Diversity-first round robin over seed-rotated file order; one aligned
     block per selected file per round. Pure function of logical inputs.
+    Window mode delegates to :func:`plan_sample_windows`.
     """
     _validate_request(request, layouts)
+    if request.mode == "window":
+        return plan_sample_windows(layouts, request)
     usable: dict[str, list[RowGroupSpec]] = {}
     skipped: dict[str, str] = {}
     for name in request.files:
@@ -627,4 +839,273 @@ def plan_sample_blocks(layouts: dict[str, FileLayout], request: SamplingRequest)
         view_id=request.view_id,
         revision=request.revision,
         warnings=tuple(warnings),
+    )
+
+
+def _window_domain(group_rows: int, window: ParquetWindowDecode) -> int:
+    """Rows a window may end within: whole batches inside the scan bound."""
+    if group_rows <= window.max_window_scan_rows:
+        return group_rows
+    return (window.max_window_scan_rows // window.batch_rows) * window.batch_rows
+
+
+def _window_estimates(
+    columns: tuple[ColumnChunkSpec, ...],
+    group_rows: int,
+    scan_rows: int,
+    buffer_bytes: int,
+) -> tuple[int, int, int, int]:
+    """(scan compressed, scan uncompressed, transfer upper, requests) estimates."""
+    scan_compressed = scan_uncompressed = transfer = requests = 0
+    for column in columns:
+        prefix = -(-column.compressed * scan_rows // group_rows)
+        scan_compressed += prefix
+        scan_uncompressed += -(-column.uncompressed * scan_rows // group_rows)
+        # One buffered read may run up to a buffer past the needed prefix.
+        read = min(column.compressed, prefix + buffer_bytes)
+        transfer += read
+        requests += max(1, -(-read // buffer_bytes))
+    return scan_compressed, scan_uncompressed, transfer, requests + WINDOW_METADATA_REQUESTS
+
+
+def _window_group_refusal(
+    group: RowGroupSpec,
+    projected: tuple[str, ...],
+    request: SamplingRequest,
+) -> tuple[str | None, tuple[ColumnChunkSpec, ...]]:
+    """Projection-aware eligibility of one row group for a scan-bounded window."""
+    window = request.window
+    if window is None:
+        raise SamplingRefusal("window eligibility requires a window policy")
+    if group.num_rows < 1:
+        return f"row group {group.index} is empty", ()
+    by_path = {column.path: column for column in group.columns}
+    missing = [name for name in projected if name not in by_path]
+    if missing:
+        nested = [name for name in missing if any(p.startswith(name + ".") for p in by_path)]
+        if nested:
+            return (
+                f"window mode supports flat projected columns only; nested: {sorted(nested)}",
+                (),
+            )
+        return f"projected fields not present: {sorted(missing)}", ()
+    selected = tuple(by_path[name] for name in projected)
+    ratio = window.ratio_refusal(
+        ((column.path, column.compressed, column.uncompressed) for column in selected),
+        request.max_decompression_ratio,
+    )
+    if ratio is not None:
+        return f"row group {group.index} {ratio}", ()
+    domain = _window_domain(group.num_rows, window)
+    worst_scan = window.expected_scan_rows(group.num_rows, domain)
+    scan_c, scan_u, transfer, requests = _window_estimates(
+        selected, group.num_rows, worst_scan, window.stream_buffer_bytes
+    )
+    for label, value, bound in (
+        ("expected_scan_rows", worst_scan, PILOT_MAX_SCANNED_RECORDS),
+        ("estimated_transfer_upper_bytes", transfer, PILOT_MAX_TRANSFERRED_BYTES),
+        ("estimated_scan_uncompressed_bytes", scan_u, PILOT_MAX_DECOMPRESSED_BYTES),
+        ("estimated_requests", requests, PILOT_MAX_REQUESTS),
+    ):
+        if value > bound:
+            return (
+                f"row group {group.index} worst-case window exceeds pilot bound: "
+                f"{label}={value} against {bound}; num_rows={group.num_rows}; "
+                f"estimated_scan_compressed_bytes={scan_c}"
+            ), ()
+    return None, selected
+
+
+def plan_sample_windows(layouts: dict[str, FileLayout], request: SamplingRequest) -> SamplingResult:
+    """Deterministic scan-bounded sub-row-group windows (at most one per file).
+
+    For a row group of N rows, target window K, and start domain D (N, or
+    the whole batches inside ``max_window_scan_rows``), the start is a
+    versioned SHA-256 choice in ``[0, D - K]`` and the window is
+    ``[start, start + min(K, D))``. Eligibility uses the worst-case window
+    (ending at D), so it never depends on the chosen start. Pure function
+    of logical inputs.
+    """
+    _validate_request(request, layouts)
+    window = request.window
+    projected = request.projected_fields
+    if request.mode != "window" or window is None or not projected:
+        raise SamplingRefusal("window planning requires window mode, policy, and projection")
+    version = f"window-v{window.policy_version}"
+    eligible: dict[str, list[tuple[RowGroupSpec, tuple[ColumnChunkSpec, ...]]]] = {}
+    skipped: dict[str, str] = {}
+    for name in request.files:
+        options: list[tuple[RowGroupSpec, tuple[ColumnChunkSpec, ...]]] = []
+        first_refusal: str | None = None
+        for group in layouts[name].groups:
+            refusal, selected = _window_group_refusal(group, projected, request)
+            if refusal is None:
+                options.append((group, selected))
+            elif first_refusal is None:
+                first_refusal = refusal
+        if options:
+            eligible[name] = options
+        else:
+            skipped[name] = first_refusal or f"no row groups observed in '{name}'"
+    if not eligible:
+        detail = "; ".join(f"{name}: {reason}" for name, reason in sorted(skipped.items()))
+        raise SamplingRefusal(f"no row groups eligible for window sampling: {detail}")
+    ordered = sorted(eligible)
+    rotation = _det_index(
+        request.seed,
+        (request.source_id, request.view_id, request.revision, request.mode, version, "order"),
+        len(ordered),
+    )
+    order = ordered[rotation:] + ordered[:rotation]
+    windows: list[ChosenWindow] = []
+    planned = 0
+    planned_bytes = 0
+    truncation_notes: list[str] = []
+    for name in order:
+        if planned >= request.target_records:
+            break
+        options = eligible[name]
+        group, selected = options[
+            _det_index(
+                request.seed,
+                (request.source_id, request.view_id, request.revision, name, version, "group"),
+                len(options),
+            )
+        ]
+        domain = _window_domain(group.num_rows, window)
+        wanted = min(request.block_records, request.target_records - planned)
+        size = min(wanted, domain)
+        start = _det_index(
+            request.seed,
+            (
+                request.source_id,
+                request.view_id,
+                request.revision,
+                name,
+                str(group.index),
+                version,
+                "start",
+            ),
+            domain - size + 1,
+        )
+        stop = start + size
+        scan_rows = window.expected_scan_rows(group.num_rows, stop)
+        scan_c, scan_u, transfer, requests = _window_estimates(
+            selected, group.num_rows, scan_rows, window.stream_buffer_bytes
+        )
+        domain_scan = window.expected_scan_rows(group.num_rows, domain)
+        _, domain_scan_u, domain_transfer, domain_requests = _window_estimates(
+            selected, group.num_rows, domain_scan, window.stream_buffer_bytes
+        )
+        if request.max_records is not None and planned + size > request.max_records:
+            if planned == 0:
+                raise SamplingRefusal(
+                    f"first window ({size} records) exceeds max records bound {request.max_records}"
+                )
+            continue
+        if (
+            request.max_uncompressed_bytes is not None
+            and planned_bytes + scan_u > request.max_uncompressed_bytes
+        ):
+            if planned == 0:
+                raise SamplingRefusal(
+                    f"first window (estimated {scan_u} decoded bytes) exceeds max "
+                    f"uncompressed bytes bound {request.max_uncompressed_bytes}"
+                )
+            continue
+        if size < wanted:
+            truncation_notes.append(
+                f"'{name}' window truncated to {size} rows by its row group/scan domain"
+            )
+        windows.append(
+            ChosenWindow(
+                file=name,
+                row_group=group.index,
+                group_start_row=group.start_row,
+                group_rows=group.num_rows,
+                start_domain_rows=domain,
+                start_in_group=start,
+                stop_in_group=stop,
+                expected_scan_rows=scan_rows,
+                selected_columns=selected,
+                group_total_byte_size=group.total_byte_size,
+                group_compressed_bytes=sum(column.compressed for column in group.columns),
+                estimated_scan_compressed_bytes=scan_c,
+                estimated_scan_uncompressed_bytes=scan_u,
+                estimated_transfer_upper_bytes=transfer,
+                estimated_requests=requests,
+                domain_scan_rows=domain_scan,
+                domain_estimated_transfer_upper_bytes=domain_transfer,
+                domain_estimated_scan_uncompressed_bytes=domain_scan_u,
+                domain_estimated_requests=domain_requests,
+            )
+        )
+        planned += size
+        planned_bytes += scan_u
+    if not windows:
+        raise SamplingRefusal("no windows selected within the supplied bounds")
+    for label, value, bound in (
+        (
+            "expected_scan_rows",
+            sum(w.expected_scan_rows for w in windows),
+            PILOT_MAX_SCANNED_RECORDS,
+        ),
+        (
+            "estimated_transfer_upper_bytes",
+            sum(w.estimated_transfer_upper_bytes for w in windows),
+            PILOT_MAX_TRANSFERRED_BYTES,
+        ),
+        (
+            "estimated_scan_uncompressed_bytes",
+            sum(w.estimated_scan_uncompressed_bytes for w in windows),
+            PILOT_MAX_DECOMPRESSED_BYTES,
+        ),
+        ("estimated_requests", sum(w.estimated_requests for w in windows), PILOT_MAX_REQUESTS),
+    ):
+        if value > bound:
+            raise SamplingRefusal(
+                f"combined windows exceed pilot bound: {label}={value} against {bound}"
+            )
+    warnings: list[str] = [WINDOW_WARNING]
+    shortfall = max(0, request.target_records - planned)
+    if shortfall:
+        warnings.append(
+            f"planned {planned} records fall {shortfall} short of target "
+            f"{request.target_records}; one window per file and bounds limited coverage"
+        )
+    warnings.extend(truncation_notes)
+    for chosen in windows:
+        if chosen.start_domain_rows < chosen.group_rows:
+            warnings.append(
+                f"'{chosen.file}' window start restricted to the first "
+                f"{chosen.start_domain_rows} of {chosen.group_rows} rows of row group "
+                f"{chosen.row_group} by max_window_scan_rows"
+            )
+        warnings.append(
+            f"'{chosen.file}' decodes {chosen.expected_scan_rows} rows to retain {chosen.num_rows}"
+        )
+    for name in sorted(skipped):
+        warnings.append(f"skipped '{name}': {skipped[name]}")
+    estimated_tokens: float | None = None
+    if request.tokens_per_record is not None:
+        estimated_tokens = planned * request.tokens_per_record
+    return SamplingResult(
+        row_ranges={chosen.file: (chosen.start_row, chosen.stop_row) for chosen in windows},
+        selected_files=tuple(chosen.file for chosen in windows),
+        blocks=(),
+        requested_records=request.target_records,
+        planned_records=planned,
+        overshoot_records=0,
+        estimated_compressed_bytes=sum(w.estimated_scan_compressed_bytes for w in windows),
+        estimated_uncompressed_bytes=planned_bytes,
+        estimated_tokens=estimated_tokens,
+        seed=request.seed,
+        mode=request.mode,
+        source_id=request.source_id,
+        view_id=request.view_id,
+        revision=request.revision,
+        warnings=tuple(warnings),
+        windows=tuple(windows),
+        window_policy=window,
+        projected_fields=projected,
     )

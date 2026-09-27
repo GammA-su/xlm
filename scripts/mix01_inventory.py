@@ -51,6 +51,9 @@ MEASURED_FIELDS = (
     "transferred_bytes",
     "canonical_bytes",
 )
+#: Window-decode disclosure carried from measurement into the calibration entry.
+WINDOW_TRANSFER_BASIS = "calibration_window_retained_share"
+WINDOW_FIELDS = ("transfer_basis", "raw_transferred_bytes", "records_scanned")
 
 
 def _fail(message: str) -> int:
@@ -367,6 +370,13 @@ def _load_measurement(path: Path) -> dict[str, Any]:
     survival = payload.get("extra_survival")
     if isinstance(survival, bool) or not isinstance(survival, (int, float)):
         raise ValueError("measurement 'extra_survival' must be a number")
+    if "transfer_basis" in payload:
+        if payload["transfer_basis"] != WINDOW_TRANSFER_BASIS:
+            raise ValueError(f"measurement transfer_basis {payload['transfer_basis']!r} unknown")
+        raw = _strict_int(payload.get("raw_transferred_bytes"), "raw_transferred_bytes", 1)
+        scanned = _strict_int(payload.get("records_scanned"), "records_scanned", 1)
+        if -(-raw * payload["records_sampled"] // scanned) != payload["transferred_bytes"]:
+            raise ValueError("measurement transferred_bytes is not the retained-row share")
     return payload
 
 
@@ -390,11 +400,14 @@ def cmd_record(args: argparse.Namespace) -> int:
         args.transferred = measured["transferred_bytes"]
         args.canonical = measured["canonical_bytes"]
         args.survival = measured["extra_survival"]
+        disclosure = {key: measured[key] for key in WINDOW_FIELDS if key in measured}
     elif any(value is None for value in explicit):
         return _fail(
             "pass --measurement, or all of --records-sampled/--accepted/--rejected/"
             "--transferred-bytes/--canonical-bytes"
         )
+    else:
+        disclosure = {}
     if args.survival is None:
         args.survival = 1.0
     try:
@@ -439,6 +452,8 @@ def cmd_record(args: argparse.Namespace) -> int:
     }
     if avg_file is not None:
         entry["avg_file_bytes"] = avg_file
+    # Legacy entries keep their exact keys; window entries disclose their basis.
+    entry.update(disclosure)
     if args.source in payload["sources"] and not args.replace:
         if args.adopt and payload["sources"][args.source] == entry:
             print(f"source: {args.source} existing identical entry reused")
@@ -491,6 +506,8 @@ def cmd_record_combine(args: argparse.Namespace) -> int:
             return _fail("combined entries disagree on extra_survival; refusing to mix")
         if any(entries[n].get("avg_file_bytes") is not None for n in parts):
             return _fail("combined entries carry avg_file_bytes; pass it explicitly instead")
+        if any("transfer_basis" in entries[n] for n in parts):
+            return _fail("combined entries carry a calibration-window transfer basis; refusing")
     except (ValueError, TypeError, KeyError) as exc:
         return _fail(str(exc))
     except OSError as exc:
@@ -628,6 +645,33 @@ def measure_unit(
     _expect(state.plan_hash, plan_hash, "journal plan_hash")
     _expect(state.status, "COMPLETED", "journal status")
     transferred = _strict_int(state.transferred_bytes, "journal transferred_bytes", 1)
+    window_fields: dict[str, Any] = {}
+    if plan.parquet_window is not None:
+        # A window run transfers projected-chunk PREFIXES for every decoded
+        # row (records_scanned), not only the retained ones, so the raw
+        # journal transfer is not a production yield input. Record it
+        # verbatim and size with the retained-row share (buffer/dictionary
+        # overhead only inflates raw, keeping the share conservative).
+        scanned = _strict_int(
+            state.accounting.consumed.get("records_scanned"), "journal records_scanned", 1
+        )
+        retained = _strict_int(state.records_acquired, "journal records_acquired", 1)
+        if retained > scanned:
+            raise ValueError(
+                f"journal records_acquired ({retained}) exceeds records_scanned ({scanned})"
+            )
+        window_fields = {
+            "transfer_basis": WINDOW_TRANSFER_BASIS,
+            "raw_transferred_bytes": transferred,
+            "records_scanned": scanned,
+            "transfer_note": (
+                "CALIBRATION-ONLY window decode: raw_transferred_bytes covers projected "
+                "prefixes of records_scanned decoded rows; transferred_bytes = "
+                "ceil(raw_transferred_bytes * records_sampled / records_scanned) assumes "
+                "uniform bytes per decoded row; not production-fetch throughput."
+            ),
+        }
+        transferred = -(-transferred * retained // scanned)
 
     summary = _read_bounded_json(
         canonical_dir / "adaptation_summary.json", MAX_SUMMARY_BYTES, "adaptation summary"
@@ -676,6 +720,7 @@ def measure_unit(
         "canonical_documents": count,
         "documents_sha256": digest,
         "extra_survival": 1.0,
+        **window_fields,
     }
 
 

@@ -14,7 +14,7 @@ from typing import Any, Protocol
 import pyarrow.parquet as pq
 
 from xlm.data.acquisition.disk import CapacityLease, StorageCapacityManager
-from xlm.data.acquisition.plan import AcquisitionLimits
+from xlm.data.acquisition.plan import AcquisitionLimits, ParquetWindowDecode
 from xlm.data.acquisition.written import WrittenPayload
 from xlm.data.adapters.jsonl import _pairs_hook_reject_duplicates
 
@@ -243,6 +243,55 @@ def check_row_group(parquet: pq.ParquetFile, group: int, limits: AcquisitionLimi
             1, column.total_compressed_size
         ):
             raise RecordLimitError("Parquet decompression ratio exceeded")
+
+
+def check_window_group(
+    parquet: pq.ParquetFile,
+    group: int,
+    col_indices: list[int],
+    limits: AcquisitionLimits,
+    window: ParquetWindowDecode,
+    stop_in_group: int,
+) -> int:
+    """Projection-aware physical checks for one streamed window; returns scan rows.
+
+    Unlike :func:`check_row_group` (legacy: whole-group logical size against
+    the parser bound), each risk is checked against its own quantity:
+
+    - footer/Thrift parser allocation: bounded when the footer is opened;
+    - per HTTP range: every stream read is <= ``stream_buffer_bytes`` <=
+      ``max_parser_bytes`` and ``fetch_range`` refuses anything larger;
+    - decompression ratio: PROJECTED column chunks only (unprojected chunks
+      are never read, so they cannot expand), per column above
+      ``ratio_exempt_bytes`` and over the projected aggregate;
+    - scanned rows: whole decode batches from the group start through the
+      window stop, against ``max_window_scan_rows``;
+    - decoded bytes: charged per decoded batch at runtime.
+    """
+    metadata = parquet.metadata.row_group(group)
+    rows = int(metadata.num_rows)
+    scan_rows = window.expected_scan_rows(rows, stop_in_group)
+    if scan_rows > window.max_window_scan_rows:
+        raise RecordLimitError(
+            f"Parquet row group {group} window scan exceeds bound: "
+            f"expected_scan_rows={scan_rows} against "
+            f"max_window_scan_rows={window.max_window_scan_rows}; num_rows={rows}"
+        )
+    projected = [metadata.column(index) for index in col_indices]
+    refusal = window.ratio_refusal(
+        (
+            (
+                str(column.path_in_schema),
+                int(column.total_compressed_size),
+                int(column.total_uncompressed_size),
+            )
+            for column in projected
+        ),
+        limits.max_decompression_ratio,
+    )
+    if refusal is not None:
+        raise RecordLimitError(f"Parquet row group {group} {refusal}")
+    return scan_rows
 
 
 LOCATOR_FIELD = "_xlm_acquisition"

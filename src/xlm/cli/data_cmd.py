@@ -31,6 +31,7 @@ from xlm.data.acquisition import (
     save_acquisition_plan,
 )
 from xlm.data.acquisition.fetcher import CONTENT_RANGE_RE
+from xlm.data.acquisition.plan import ParquetWindowDecode, plan_requires_production_admission
 from xlm.data.acquisition.sampling import (
     FileLayout,
     SamplingRefusal,
@@ -793,6 +794,25 @@ def plan_cmd(
             help="Gap threshold for coalescing adjacent Parquet column ranges.",
         ),
     ] = None,
+    window_scan_rows: Annotated[
+        int | None,
+        typer.Option(
+            "--parquet-window-scan-rows",
+            help="Enable streamed sub-row-group window decode bounded to this many "
+            "decoded rows per file (identity-bound; needs a projection).",
+        ),
+    ] = None,
+    window_buffer_bytes: Annotated[
+        int,
+        typer.Option(
+            "--parquet-window-buffer-bytes",
+            help="Per-column stream buffer (= max range per column read) for window decode.",
+        ),
+    ] = 4 * 1024 * 1024,
+    window_batch_rows: Annotated[
+        int,
+        typer.Option("--parquet-window-batch-rows", help="Decode batch rows for window decode."),
+    ] = 256,
 ) -> None:
     """Generate and validate an acquisition plan adhering to Contracts C01 and C04."""
     try:
@@ -861,6 +881,20 @@ def plan_cmd(
         if not resolved_projection:
             typer.echo("Error: --project-fields must list at least one column.", err=True)
             raise typer.Exit(code=1)
+    window: ParquetWindowDecode | None = None
+    if window_scan_rows is not None:
+        window = ParquetWindowDecode(
+            stream_buffer_bytes=window_buffer_bytes,
+            max_window_scan_rows=window_scan_rows,
+            batch_rows=window_batch_rows,
+        )
+    elif (window_buffer_bytes, window_batch_rows) != (4 * 1024 * 1024, 256):
+        typer.echo(
+            "Error: --parquet-window-buffer-bytes/--parquet-window-batch-rows need "
+            "--parquet-window-scan-rows.",
+            err=True,
+        )
+        raise typer.Exit(code=1)
     sampling = SamplingFrame(
         selected_files=selected_files,
         selection_seed=seed,
@@ -871,11 +905,6 @@ def plan_cmd(
     output_artifact_id = f"raw_{source_id}_{view_id}"
 
     # Build initial plan to compute its behavioral hash
-    is_pilot = not (
-        limits.max_transferred_bytes > 256 * 1024 * 1024
-        or limits.max_records > 25_000
-        or limits.max_output_disk_bytes > 2 * 1024 * 1024 * 1024
-    )
     initial_plan = AcquisitionPlan(
         plan_id=plan_id,
         source_id=source_id,
@@ -888,12 +917,17 @@ def plan_cmd(
         sampling_frame=sampling,
         limits=limits,
         output_artifact_id=output_artifact_id,
-        is_pilot=is_pilot,
         attempt=attempt,
         row_ranges=bounded_json(row_ranges_path),
         expected_file_digests=bounded_json(expected_digests_path) or {},
         projected_fields=resolved_projection,
         range_coalesce_bytes=coalesce_bytes,
+        parquet_window=window,
+    )
+    # One gate decides pilot scope (legacy plans: the original three limits;
+    # window plans: also the physical-work ceilings).
+    initial_plan = initial_plan.model_copy(
+        update={"is_pilot": not plan_requires_production_admission(initial_plan)}
     )
     identity_suffix = initial_plan.compute_behavioral_hash()[:20]
     initial_plan = initial_plan.model_copy(
@@ -941,6 +975,12 @@ def plan_cmd(
         typer.echo(f"Projected:     {', '.join(sorted(resolved_plan.projected_fields))}")
     if resolved_plan.range_coalesce_bytes is not None:
         typer.echo(f"Coalesce:      <= {resolved_plan.range_coalesce_bytes:,} byte gaps")
+    if resolved_plan.parquet_window is not None:
+        pw = resolved_plan.parquet_window
+        typer.echo(
+            f"Window:        v{pw.policy_version} scan <= {pw.max_window_scan_rows:,} rows/file, "
+            f"buffer {pw.stream_buffer_bytes:,} B, batch {pw.batch_rows}"
+        )
     typer.echo(f"Transferred:   <= {resolved_plan.limits.max_transferred_bytes:,} bytes")
     typer.echo(f"Output Disk:   <= {resolved_plan.limits.max_output_disk_bytes:,} bytes")
     typer.echo(f"Behavior Hash: {resolved_plan.plan_hash}")
@@ -989,7 +1029,7 @@ def sample_blocks_cmd(
     seed: Annotated[int, typer.Option("--seed", help="Deterministic sampling seed.")] = 0,
     mode: Annotated[
         str,
-        typer.Option("--mode", "-m", help="Block mode: 'rowgroup' or 'contiguous'."),
+        typer.Option("--mode", "-m", help="Block mode: 'rowgroup', 'contiguous', or 'window'."),
     ] = "rowgroup",
     block_records: Annotated[
         int,
@@ -1046,6 +1086,31 @@ def sample_blocks_cmd(
         Path | None,
         typer.Option("--report", help="Path to write sampling evidence JSON."),
     ] = None,
+    adapter_spec: Annotated[
+        str | None,
+        typer.Option(
+            "--adapter-spec",
+            help="Window mode: adapter spec 'adapter_id[:config]' for the certified projection.",
+        ),
+    ] = None,
+    project_fields: Annotated[
+        str | None,
+        typer.Option("--project-fields", help="Window mode: comma-separated projected columns."),
+    ] = None,
+    window_scan_rows: Annotated[
+        int,
+        typer.Option(
+            "--window-max-scan-rows", help="Window mode: max decoded rows per file window."
+        ),
+    ] = 16384,
+    window_buffer_bytes: Annotated[
+        int,
+        typer.Option("--window-buffer-bytes", help="Window mode: per-column stream buffer."),
+    ] = 4 * 1024 * 1024,
+    window_batch_rows: Annotated[
+        int,
+        typer.Option("--window-batch-rows", help="Window mode: decode batch rows."),
+    ] = 256,
 ) -> None:
     """Plan dense row-group-aligned selections without acquiring records.
 
@@ -1057,8 +1122,37 @@ def sample_blocks_cmd(
     if not selected_files:
         typer.echo("Error: At least one candidate file must be specified.", err=True)
         raise typer.Exit(code=1)
-    if mode not in ("rowgroup", "contiguous"):
-        typer.echo("Error: --mode must be 'rowgroup' or 'contiguous'.", err=True)
+    if mode not in ("rowgroup", "contiguous", "window"):
+        typer.echo("Error: --mode must be 'rowgroup', 'contiguous', or 'window'.", err=True)
+        raise typer.Exit(code=1)
+    projection: tuple[str, ...] | None = None
+    window: ParquetWindowDecode | None = None
+    if mode == "window":
+        if (adapter_spec is None) == (project_fields is None):
+            typer.echo(
+                "Error: --mode window needs exactly one of --adapter-spec / --project-fields.",
+                err=True,
+            )
+            raise typer.Exit(code=1)
+        try:
+            if adapter_spec is not None:
+                from xlm.data.adapters.columns import columns_for, parse_adapter_spec
+
+                projection = tuple(columns_for(*parse_adapter_spec(adapter_spec)))
+            else:
+                projection = tuple(
+                    name.strip() for name in (project_fields or "").split(",") if name.strip()
+                )
+            window = ParquetWindowDecode(
+                stream_buffer_bytes=window_buffer_bytes,
+                max_window_scan_rows=window_scan_rows,
+                batch_rows=window_batch_rows,
+            )
+        except ValueError as e:
+            typer.echo(f"Error: invalid window sampling options: {e}", err=True)
+            raise typer.Exit(code=1) from e
+    elif adapter_spec is not None or project_fields is not None:
+        typer.echo("Error: projection options apply to --mode window only.", err=True)
         raise typer.Exit(code=1)
     if target_tokens is not None and tokens_per_record is None:
         typer.echo("Error: --target-tokens needs an explicit --tokens-per-record factor.", err=True)
@@ -1134,6 +1228,8 @@ def sample_blocks_cmd(
                 max_parser_bytes=max_parser_bytes,
                 max_decompression_ratio=max_decompression_ratio,
                 tokens_per_record=tokens_per_record,
+                projected_fields=projection,
+                window=window,
             ),
         )
     except SamplingRefusal as exc:
@@ -1165,6 +1261,16 @@ def sample_blocks_cmd(
             f"  - {block.file}: rows [{block.start_row},{block.stop_row}) "
             f"({block.num_rows} rows, groups [{block.group_start},{block.group_stop_exclusive}))"
         )
+    for chosen in result.windows:
+        typer.echo(
+            f"  - {chosen.file}: rows [{chosen.start_row},{chosen.stop_row}) "
+            f"({chosen.num_rows} rows) in row group {chosen.row_group} of "
+            f"{chosen.group_rows} rows; decodes {chosen.expected_scan_rows} rows; "
+            f"projected chunks {chosen.selected_compressed_bytes:,} B compressed / "
+            f"{chosen.selected_uncompressed_bytes:,} B uncompressed "
+            f"(group {chosen.group_total_byte_size:,} B); est. transfer <= "
+            f"{chosen.estimated_transfer_upper_bytes:,} B in ~{chosen.estimated_requests} requests"
+        )
     typer.echo(
         f"Requested: {result.requested_records}  Planned: {result.planned_records}  "
         f"Overshoot: {result.overshoot_records}"
@@ -1180,10 +1286,17 @@ def sample_blocks_cmd(
         typer.echo(f"Warning: {warning}")
     typer.echo(f"Row ranges: {output_path}")
     typer.echo(f"Evidence:   {resolved_report}")
+    window_next = ""
+    if window is not None:
+        window_next = (
+            f" --parquet-window-scan-rows {window.max_window_scan_rows}"
+            f" --parquet-window-buffer-bytes {window.stream_buffer_bytes}"
+            f" --parquet-window-batch-rows {window.batch_rows}"
+        )
     typer.echo(
         f"Next: xlm data plan --source {source_id} --view {view_id} --catalog {catalog_path} "
         f"--files {','.join(result.selected_files)} --mode selected_records "
-        f"--row-ranges {output_path} --seed {seed} [...]"
+        f"--row-ranges {output_path} --seed {seed}{window_next} [...]"
     )
     typer.echo("============================================================")
 

@@ -46,6 +46,14 @@ above in the Hub file listing at that SHA → `sample-blocks` footer
 discovery (bounded range reads, `--revision` pinned) derives the exact
 `[start,stop)` row ranges. No blind first-N selection.
 
+> **SYNTH exception (2026-09-27).** Each SYNTH shard is one ~155k-row,
+> ~800 MB row group, so `--mode rowgroup` refuses it. The
+> `synth_en_explanations` unit alone uses `--mode window`: one
+> scan-bounded sub-row-group window, with the same window policy bound
+> into its plan and both adoption checks. Run `-Stage SampleBlocks` first
+> and review the footer-only evidence, then run `-Stage All`. See
+> [SYNTH-LARGE-ROWGROUP-CALIBRATION](SYNTH-LARGE-ROWGROUP-CALIBRATION.md).
+
 ## 2. Driver script (preferred, fail-closed)
 
 `scripts/operator_calibrate_remaining.ps1` runs one unit end-to-end

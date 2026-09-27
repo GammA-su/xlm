@@ -51,6 +51,32 @@ class AdoptionRefused(ValueError):
     """Compatible prior output is absent or must not be reused."""
 
 
+def _window_request(args: argparse.Namespace) -> dict[str, int] | None:
+    """Requested window policy (all three values or none), for agreement checks."""
+    values = (args.window_scan_rows, args.window_buffer_bytes, args.window_batch_rows)
+    if all(value is None for value in values):
+        return None
+    if any(value is None for value in values):
+        raise AdoptionRefused("window adoption needs scan rows, buffer bytes and batch rows")
+    return {
+        "max_window_scan_rows": int(args.window_scan_rows),
+        "stream_buffer_bytes": int(args.window_buffer_bytes),
+        "batch_rows": int(args.window_batch_rows),
+    }
+
+
+def _window_mismatch(recorded: Any, requested: dict[str, int] | None) -> str | None:
+    """Describe a window-policy disagreement, or None when they agree."""
+    if requested is None:
+        return None if recorded is None else "a window decode policy was not requested"
+    if not isinstance(recorded, dict):
+        return "no window decode policy is recorded"
+    for key, value in requested.items():
+        if recorded.get(key) != value:
+            return f"window {key}={recorded.get(key)!r} differs from {value!r}"
+    return None
+
+
 def _fail(message: str) -> int:
     print(f"calibration_adopt: error: {message}", file=sys.stderr)
     return REFUSE
@@ -144,8 +170,15 @@ def check_sample_blocks(
     revision: str,
     seed: int,
     files: list[str],
+    sample_mode: str | None = None,
+    window: dict[str, int] | None = None,
+    projection: list[str] | None = None,
 ) -> None:
-    """Verify sampled row ranges match current parameters exactly."""
+    """Verify sampled row ranges match current parameters exactly.
+
+    ``sample_mode``/``window``/``projection`` are checked only when given, so
+    units that never request them keep their original adoption semantics.
+    """
     if not isinstance(rows, dict) or not rows:
         raise AdoptionRefused("row ranges are empty or not a mapping")
     if not isinstance(report, dict):
@@ -170,6 +203,27 @@ def check_sample_blocks(
             raise AdoptionRefused(f"row range for '{name}' is malformed: {span!r}")
     if sorted(rows) != sorted(files):
         raise AdoptionRefused(f"row ranges cover {sorted(rows)} instead of {sorted(files)}")
+    if sample_mode is not None and report.get("mode") != sample_mode:
+        raise AdoptionRefused(
+            f"sampling report mode={report.get('mode')!r} differs from {sample_mode!r}"
+        )
+    if window is not None:
+        problem = _window_mismatch(report.get("window_policy"), window)
+        if problem:
+            raise AdoptionRefused(f"sampling report {problem}")
+    if projection is not None and report.get("projected_fields") != sorted(projection):
+        raise AdoptionRefused("sampling report projection differs from the adapter projection")
+
+
+def _adapter_projection(spec: str | None) -> list[str] | None:
+    if spec is None:
+        return None
+    from xlm.data.adapters.columns import columns_for, parse_adapter_spec
+
+    try:
+        return list(columns_for(*parse_adapter_spec(spec)))
+    except ValueError as exc:
+        raise AdoptionRefused(f"invalid adapter spec: {exc}") from exc
 
 
 def cmd_sample_blocks(args: argparse.Namespace) -> int:
@@ -194,6 +248,9 @@ def cmd_sample_blocks(args: argparse.Namespace) -> int:
             revision=args.revision,
             seed=args.seed,
             files=files,
+            sample_mode=args.sample_mode,
+            window=_window_request(args),
+            projection=_adapter_projection(args.adapter_spec),
         )
     except AdoptionRefused as exc:
         return _fail(f"{exc}; remove the outputs explicitly to redo them")
@@ -211,8 +268,13 @@ def check_plan(
     seed: int,
     files: list[str],
     mode: str,
+    window: dict[str, int] | None = None,
 ) -> None:
-    """Verify a stored plan binds current parameters and its own hash."""
+    """Verify a stored plan binds current parameters and its own hash.
+
+    The plan's window decode policy must equal the requested one exactly;
+    a legacy request (``window=None``) never adopts a window-decode plan.
+    """
     if plan.source_id != source or plan.view_id != view:
         raise AdoptionRefused(
             f"plan is for '{plan.source_id}:{plan.view_id}', not '{source}:{view}'"
@@ -228,6 +290,10 @@ def check_plan(
         raise AdoptionRefused("plan row ranges differ from the sampled row ranges")
     if (plan.sampling_frame.selection_seed or 0) != seed:
         raise AdoptionRefused("plan seed differs from the requested seed")
+    recorded = plan.parquet_window.model_dump() if plan.parquet_window is not None else None
+    problem = _window_mismatch(recorded, window)
+    if problem:
+        raise AdoptionRefused(f"plan {problem}")
     if plan.compute_behavioral_hash() != plan.plan_hash:
         raise AdoptionRefused("plan hash does not recompute; plan file is corrupt")
 
@@ -254,6 +320,7 @@ def cmd_plan(args: argparse.Namespace) -> int:
             seed=args.seed,
             files=files,
             mode=args.mode,
+            window=_window_request(args),
         )
     except AdoptionRefused as exc:
         return _fail(f"{exc}; use a new reviewed plan path to redo it")
@@ -501,6 +568,12 @@ def cmd_plan_identity(args: argparse.Namespace) -> int:
     return RUN
 
 
+def _add_window_arguments(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--window-scan-rows", type=int, default=None)
+    parser.add_argument("--window-buffer-bytes", type=int, default=None)
+    parser.add_argument("--window-batch-rows", type=int, default=None)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Calibration rerun adoption checks (offline).")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -521,6 +594,9 @@ def build_parser() -> argparse.ArgumentParser:
     blocks.add_argument("--revision", required=True)
     blocks.add_argument("--seed", type=int, required=True)
     blocks.add_argument("--files-csv", required=True)
+    blocks.add_argument("--sample-mode", default=None)
+    blocks.add_argument("--adapter-spec", default=None)
+    _add_window_arguments(blocks)
     blocks.set_defaults(func=cmd_sample_blocks)
 
     plan = sub.add_parser("plan", help="Adopt a compatible stored plan or run.")
@@ -532,6 +608,7 @@ def build_parser() -> argparse.ArgumentParser:
     plan.add_argument("--seed", type=int, required=True)
     plan.add_argument("--files-csv", required=True)
     plan.add_argument("--mode", default="selected_records")
+    _add_window_arguments(plan)
     plan.set_defaults(func=cmd_plan)
 
     adapt = sub.add_parser("adapt", help="Adopt compatible adapted outputs or run.")
