@@ -190,6 +190,192 @@ def test_estimate_refusals(tmp_path: Path) -> None:
     assert code == 1
 
 
+def _record(
+    tmp_path: Path, calib: Path, extra: list[str] | None = None
+) -> tuple[int, dict[str, Any]]:
+    argv = [
+        "record",
+        "--calibration",
+        str(calib),
+        "--source",
+        "ultrax_ultrafineweb",
+        "--records-sampled",
+        "1000",
+        "--accepted",
+        "994",
+        "--rejected",
+        "6",
+        "--transferred-bytes",
+        "3326258",
+        "--canonical-bytes",
+        "3845430",
+    ] + (extra or [])
+    code = _tool.main(argv)
+    if code != 0 or not calib.is_file():
+        return code, {}
+    return code, json.loads(calib.read_text(encoding="utf-8"))
+
+
+def test_record_creates_and_feeds_estimate(tmp_path: Path) -> None:
+    calib = tmp_path / "calibration.json"
+    code, payload = _record(tmp_path, calib)
+    assert code == 0
+    entry = payload["sources"]["ultrax_ultrafineweb"]
+    assert entry["accepted_records"] == 994
+    assert entry["extra_survival"] == 1.0
+    assert "avg_file_bytes" not in entry
+    raw = calib.read_bytes()
+    assert not raw.startswith(b"\xef\xbb\xbf") and b"\r" not in raw
+    quotas = tmp_path / "quotas.yaml"
+    quotas.write_text(
+        yaml.safe_dump(
+            {
+                "final_quotas": {"ultrax_ultrafineweb": 1200000000},
+                "first_pass_headroom_quotas": {"ultrax_ultrafineweb": 1320000000},
+            }
+        ),
+        encoding="utf-8",
+    )
+    out = tmp_path / "estimate.json"
+    assert (
+        _tool.main(
+            ["estimate", "--quotas", str(quotas), "--calibration", str(calib), "--output", str(out)]
+        )
+        == 0
+    )
+    estimate = json.loads(out.read_text(encoding="utf-8"))
+    assert estimate["sources"]["ultrax_ultrafineweb"]["status"] == "ESTIMATED"
+
+
+def test_record_refusals_and_replace(tmp_path: Path) -> None:
+    calib = tmp_path / "calibration.json"
+    assert _record(tmp_path, calib)[0] == 0
+    assert _record(tmp_path, calib)[0] == 1
+    assert _record(tmp_path, calib, ["--replace"])[0] == 0
+    bad = [
+        "record",
+        "--calibration",
+        str(tmp_path / "other.json"),
+        "--source",
+        "x",
+        "--records-sampled",
+        "1000",
+        "--accepted",
+        "990",
+        "--rejected",
+        "6",
+        "--transferred-bytes",
+        "100",
+        "--canonical-bytes",
+        "50",
+    ]
+    assert _tool.main(bad) == 1
+    bad2 = [
+        "record",
+        "--calibration",
+        str(tmp_path / "other.json"),
+        "--source",
+        "x",
+        "--records-sampled",
+        "1000",
+        "--accepted",
+        "994",
+        "--rejected",
+        "6",
+        "--transferred-bytes",
+        "0",
+        "--canonical-bytes",
+        "50",
+    ]
+    assert _tool.main(bad2) == 1
+    assert not (tmp_path / "other.json").is_file()
+
+
+def _record_entry(
+    tmp_path: Path, calib: Path, source: str, sampled: int, accepted: int, rejected: int
+) -> int:
+    return _tool.main(
+        [
+            "record",
+            "--calibration",
+            str(calib),
+            "--source",
+            source,
+            "--records-sampled",
+            str(sampled),
+            "--accepted",
+            str(accepted),
+            "--rejected",
+            str(rejected),
+            "--transferred-bytes",
+            "2000000",
+            "--canonical-bytes",
+            "1000000",
+        ]
+    )
+
+
+def test_record_combine_views(tmp_path: Path) -> None:
+    calib = tmp_path / "calibration.json"
+    assert _record_entry(tmp_path, calib, "ifm_general", 1000, 900, 100) == 0
+    assert _record_entry(tmp_path, calib, "ifm_planning", 1000, 800, 200) == 0
+    assert (
+        _tool.main(
+            [
+                "record",
+                "--calibration",
+                str(calib),
+                "--source",
+                "ifm_behaviors_general_planning",
+                "--records-sampled",
+                "1",
+                "--accepted",
+                "1",
+                "--rejected",
+                "0",
+                "--transferred-bytes",
+                "1",
+                "--canonical-bytes",
+                "1",
+                "--combine-sources",
+                "ifm_general,ifm_planning",
+            ]
+        )
+        == 0
+    )
+    payload = json.loads(calib.read_text(encoding="utf-8"))
+    combined = payload["sources"]["ifm_behaviors_general_planning"]
+    assert combined["records_sampled"] == 2000
+    assert combined["accepted_records"] == 1700
+    assert combined["rejected_records"] == 300
+    assert combined["transferred_bytes"] == 4000000
+    assert combined["canonical_bytes"] == 2000000
+    assert (
+        _tool.main(
+            [
+                "record",
+                "--calibration",
+                str(calib),
+                "--source",
+                "ifm_behaviors_general_planning",
+                "--records-sampled",
+                "1",
+                "--accepted",
+                "1",
+                "--rejected",
+                "0",
+                "--transferred-bytes",
+                "1",
+                "--canonical-bytes",
+                "1",
+                "--combine-sources",
+                "ifm_general,missing_view",
+            ]
+        )
+        == 1
+    )
+
+
 def test_sufficiency_statuses(tmp_path: Path) -> None:
     calibration = {
         "sources": {

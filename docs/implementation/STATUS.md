@@ -40,6 +40,18 @@
 > with STOPs, ≤2-way fetch parallelism. Plan at
 > [MIX01-6B-ACQUISITION-PLAN](reports/MIX01-6B-ACQUISITION-PLAN.md). Verdict:
 > READY FOR CALIBRATION ACQUISITION (bulk NOT authorized). No live run.
+>
+> **REMAINING-UNIT CALIBRATION RUNBOOK (2026-09-27, planning only).**
+> UltraX calibration confirmed the workflow (1000 records, 994 accepted,
+> 6 remove_all, yield ≈ 1.156). Exact per-unit runbook for the other 10
+> units (proven file paths, views, revisions, adapter specs) via new
+> fail-closed driver `scripts/operator_calibrate_remaining.ps1`
+> (`X:\XLM` data roots, pilot caps, network toggled per call, `--no-sync`);
+> `record` (+`--combine-sources` for IFM) appends measurements to
+> `calibration.json` without hand-editing. Common Pile excluded pending
+> license. See
+> [MIX01-CALIBRATION-REMAINING](reports/MIX01-CALIBRATION-REMAINING.md).
+> Verdict: READY FOR REMAINING CALIBRATION. No live run.
 > Surgical idempotent freeze; focused offline tests + ruff + scoped mypy
 > green. No push. See [MIX01-ULTRAX-6B §15](reports/MIX01-ULTRAX-6B.md).
 >

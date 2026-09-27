@@ -1,0 +1,209 @@
+#Requires -Version 5.1
+<#
+.SYNOPSIS
+  Bounded calibration driver for the REMAINING Mix-01 units (Track A follow-up).
+.DESCRIPTION
+  Runs the pilot-capped calibration chain for one unit at a time:
+  probe -> sample-blocks -> plan -> fetch -> status -> verify -> adapt
+  -> summary -> record. Every command is displayed before it runs; any
+  non-zero exit stops the script immediately.
+
+  Safety properties (fail-closed):
+  - Network (HF_HUB_OFFLINE / HF_DATASETS_OFFLINE) is 1 except inside the
+    three explicitly bounded live calls (probe, sample-blocks footer
+    discovery, fetch), restored in finally blocks.
+  - All uv invocations use --offline --locked --no-sync (run -Stage Env
+    once first to sync; later stages refuse loudly if the env is absent).
+  - One scratch/output root per unit under $DataRoot\calib\<unit>.
+  - Calibration stays pilot-capped (plan defaults); the script has NO
+    max-bytes/max-records/max-output-disk parameters and performs NO
+    production-scale fetch.
+  - The script NEVER runs: data admit, production authorization, tokenizer
+    commands, prepare --authorize, experiment/train/resume, or any push.
+  - Record refuses to overwrite an existing calibration entry, EXCEPT the
+    essential triple: the three slices share deterministic-by-construction
+    inputs (same file, seed, target), so re-recording converges to identical
+    numbers and uses --replace. Re-running any essential slice with
+    DIFFERENT -Files breaks that premise: keep -Files identical.
+
+  The three essential slices share one raw fetch each (the slice stamp is
+  adapt-time metadata over identical rows); the script runs independent
+  per-unit chains so every chain mirrors its production per-view plan.
+  IFM general/planning record under view-qualified keys; combine them into
+  the quota key with the documented one-liner before estimate (see report).
+#>
+[CmdletBinding()]
+param(
+    [Parameter(Mandatory = $true)]
+    [ValidateSet(
+        "essential_science", "essential_practical", "essential_prose",
+        "synth_en_explanations", "nemotron_wiki_rewrite", "simple_stories",
+        "finepdfs_en", "finewiki_en", "ifm_general", "ifm_planning"
+    )]
+    [string]$Unit,
+    [Parameter(Mandatory = $false)]
+    [string]$Files = "",
+    [Parameter(Mandatory = $false)]
+    [string]$Repo = "G:\Project\xlm-data-ultrax",
+    [Parameter(Mandatory = $false)]
+    [string]$DataRoot = "X:\XLM",
+    [Parameter(Mandatory = $false)]
+    [ValidateSet("All", "Env", "Probe", "SampleBlocks", "Plan", "Fetch", "Status",
+        "Verify", "Adapt", "Summary", "Record")]
+    [string]$Stage = "All"
+)
+
+Set-StrictMode -Version Latest
+$ErrorActionPreference = "Stop"
+
+$Units = @{
+    essential_science   = @{ Source = "essential_web"; View = "essential_science"; Revision = "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d"; Adapter = "essential_web"; AdapterConfig = "essential_science"; AdapterSpec = "essential_web:essential_science"; DefaultFiles = "data/v1/train/00001.parquet"; RecordAs = @("essential_science", "essential_practical", "essential_prose") }
+    essential_practical = @{ Source = "essential_web"; View = "essential_practical"; Revision = "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d"; Adapter = "essential_web"; AdapterConfig = "essential_practical"; AdapterSpec = "essential_web:essential_practical"; DefaultFiles = "data/v1/train/00001.parquet"; RecordAs = @("essential_science", "essential_practical", "essential_prose") }
+    essential_prose     = @{ Source = "essential_web"; View = "essential_prose"; Revision = "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d"; Adapter = "essential_web"; AdapterConfig = "essential_prose"; AdapterSpec = "essential_web:essential_prose"; DefaultFiles = "data/v1/train/00001.parquet"; RecordAs = @("essential_science", "essential_practical", "essential_prose") }
+    synth_en_explanations = @{ Source = "synth"; View = "default"; Revision = "0d6813a2966662c39f22f0b9af28a0c1c9f7a437"; Adapter = "synth_en"; AdapterConfig = ""; AdapterSpec = "synth_en"; DefaultFiles = "synth_001.parquet"; RecordAs = @("synth_en_explanations") }
+    nemotron_wiki_rewrite = @{ Source = "nemotron_specialized"; View = "Nemotron-Pretraining-Wiki-Rewrite"; Revision = "9ed3718b5f2ae29074c5e34e64115432b7c4320f"; Adapter = "wiki_rewrite"; AdapterConfig = ""; AdapterSpec = "wiki_rewrite"; DefaultFiles = "Nemotron-Pretraining-Wiki-Rewrite/part_000003.parquet"; RecordAs = @("nemotron_wiki_rewrite") }
+    simple_stories      = @{ Source = "simple_stories"; View = "default"; Revision = "e63b8adc3b1a1bdc7cac5b500d150b71346b0628"; Adapter = "simple_stories"; AdapterConfig = ""; AdapterSpec = "simple_stories"; DefaultFiles = "data/train-00003-of-00007.parquet"; RecordAs = @("simple_stories") }
+    finepdfs_en         = @{ Source = "finepdfs_edu"; View = "eng_Latn"; Revision = "9cfabe2127faca99b3d5c4dc6d1fcb397399ebde"; Adapter = "finepdfs_en"; AdapterConfig = ""; AdapterSpec = "finepdfs_en"; DefaultFiles = "data/eng_Latn/train/000_00083.parquet"; RecordAs = @("finepdfs_en") }
+    finewiki_en         = @{ Source = "finewiki"; View = "en"; Revision = "8bd13e72e6a002407649b3e898535f42ceb1aeb9"; Adapter = "finewiki_en"; AdapterConfig = ""; AdapterSpec = "finewiki_en"; DefaultFiles = "data/enwiki/000_00013.parquet"; RecordAs = @("finewiki_en") }
+    ifm_general         = @{ Source = "ifm_behaviors"; View = "general"; Revision = "3345e13d7f3f6d0ecb5fdd67b37aed289f3191f5"; Adapter = "ifm_general"; AdapterConfig = ""; AdapterSpec = "ifm_general"; DefaultFiles = "general/general_full.chunk0-bdbff8a5c6-00315.parquet"; RecordAs = @("ifm_general") }
+    ifm_planning        = @{ Source = "ifm_behaviors"; View = "planning"; Revision = "3345e13d7f3f6d0ecb5fdd67b37aed289f3191f5"; Adapter = "ifm_planning"; AdapterConfig = ""; AdapterSpec = "ifm_planning"; DefaultFiles = "planning/planning.chunk0-160f3594ed-00416.parquet"; RecordAs = @("ifm_planning") }
+}
+
+$U = $Units[$Unit]
+$FileList = if ($Files -ne "") { $Files } else { $U.DefaultFiles }
+if ([string]::IsNullOrWhiteSpace($FileList)) {
+    throw "No remote file list for unit '$Unit': pass -Files from probe review (never invented)."
+}
+$UnitRoot = Join-Path $DataRoot ("calib\" + $Unit)
+$Scratch = Join-Path $UnitRoot "scratch"
+$Raw = Join-Path $UnitRoot "raw"
+$Canonical = Join-Path $UnitRoot "canonical"
+$PlanPath = Join-Path $UnitRoot "plan.json"
+$RowsPath = Join-Path $UnitRoot "rows.json"
+$ReportPath = Join-Path $UnitRoot "rows.evidence.json"
+$LogDir = Join-Path $UnitRoot "logs"
+$CalibJson = Join-Path $DataRoot "calib\calibration.json"
+
+$UvBase = @("run", "--offline", "--locked", "--no-sync", "--extra", "cpu", "--extra", "eval")
+
+function Write-Command([string[]]$Argv) {
+    "COMMAND: uv " + ($Argv -join " ") | Out-Host
+}
+
+function Invoke-Step([string]$Name, [string[]]$CliArgs, [bool]$Live) {
+    $ts = Get-Date -Format "yyyyMMdd-HHmmss"
+    if (!(Test-Path -LiteralPath $LogDir)) {
+        New-Item -ItemType Directory -Path $LogDir -Force | Out-Null
+    }
+    $log = Join-Path $LogDir ("{0}-{1}.log" -f $Name, $ts)
+    $savedHub = $env:HF_HUB_OFFLINE
+    $savedDs = $env:HF_DATASETS_OFFLINE
+    if ($Live) { $env:HF_HUB_OFFLINE = "0"; $env:HF_DATASETS_OFFLINE = "0" }
+    try {
+        $full = $UvBase + @("xlm") + $CliArgs
+        Write-Command $full
+        $out = & uv @full 2>&1
+        $out | Out-File -LiteralPath $log -Encoding utf8NoBOM
+        $out | Out-Host
+        if ($LASTEXITCODE -ne 0) { throw "$Name failed with exit $LASTEXITCODE (log: $log)" }
+        return ($out -join "`n")
+    } finally {
+        $env:HF_HUB_OFFLINE = $savedHub
+        $env:HF_DATASETS_OFFLINE = $savedDs
+    }
+}
+
+function Invoke-Python([string]$Code) {
+    $full = $UvBase + @("python", "-c", $Code)
+    Write-Command $full
+    $out = & uv @full 2>&1
+    if ($LASTEXITCODE -ne 0) { $out | Out-Host; throw "python helper failed with exit $LASTEXITCODE" }
+    return ($out -join "`n")
+}
+
+Set-Location -LiteralPath $Repo
+
+switch ($Stage) {
+    { $_ -in "All", "Env" } {
+        Write-Command (@("sync", "--offline", "--locked", "--extra", "cpu", "--extra", "eval"))
+        & uv sync --offline --locked --extra cpu --extra eval
+        if ($LASTEXITCODE -ne 0) { throw "Env sync failed with exit $LASTEXITCODE" }
+        "Env OK: $Repo" | Out-Host
+    }
+    { $_ -in "All", "Probe" } {
+        Invoke-Step "probe" @("data", "probe", "--catalog", "manifests/datasets.catalog.yaml",
+            "--source", $U.Source, "--view", $U.View, "--live", "--budget-mib", "16",
+            "--probe-id", "cal01", "--json") $true | Out-Null
+    }
+    { $_ -in "All", "SampleBlocks" } {
+        Invoke-Step "sample-blocks" @("data", "sample-blocks", "--source", $U.Source,
+            "--view", $U.View, "--revision", $U.Revision, "--files", $FileList,
+            "--seed", "20260918", "--mode", "rowgroup", "--target-records", "1000",
+            "--output", $RowsPath, "--report", $ReportPath) $true | Out-Null
+    }
+    { $_ -in "All", "Plan" } {
+        Invoke-Step "plan" @("data", "plan", "--source", $U.Source, "--view", $U.View,
+            "--catalog", "manifests/datasets.catalog.yaml", "--files", $FileList,
+            "--mode", "selected_records", "--row-ranges", $RowsPath,
+            "--adapter-spec", $U.AdapterSpec, "--seed", "20260918", "--attempt", "1",
+            "--pilot-approved", "--output", $PlanPath) $false | Out-Null
+        Invoke-Python ("from xlm.data.acquisition.plan import load_acquisition_plan; " +
+            "p=load_acquisition_plan(r'" + $PlanPath + "'); " +
+            "print(p.plan_id, p.plan_hash, p.revision)") | Out-Host
+    }
+    { $_ -in "All", "Fetch" } {
+        Invoke-Step "fetch" @("data", "fetch", "--plan", $PlanPath,
+            "--output-dir", $Raw, "--scratch-dir", $Scratch, "--pilot-approved") $true | Out-Null
+    }
+    { $_ -in "All", "Status" } {
+        Invoke-Step "status" @("data", "status", "--plan", $PlanPath,
+            "--scratch-dir", $Scratch) $false | Out-Null
+    }
+    { $_ -in "All", "Verify" } {
+        Invoke-Step "verify" @("data", "verify", "--plan", $PlanPath,
+            "--output-dir", $Raw, "--scratch-dir", $Scratch, "--json") $false | Out-Null
+    }
+    { $_ -in "All", "Adapt" } {
+        $adaptArgs = @("data", "adapt", "--plan", $PlanPath, "--adapter", $U.Adapter,
+            "--input", (Join-Path $Raw "selected_records.jsonl"),
+            "--output-dir", $Canonical, "--on-reject", "record")
+        if ($U.AdapterConfig -ne "") { $adaptArgs += @("--adapter-config", $U.AdapterConfig) }
+        Invoke-Step "adapt" $adaptArgs $false | Out-Null
+    }
+    { $_ -in "All", "Summary" } {
+        Get-Content -LiteralPath (Join-Path $Canonical "adaptation_summary.json") -Raw -Encoding utf8 | Out-Host
+    }
+    { $_ -in "All", "Record" } {
+        $statusText = Invoke-Step "status-json" @("data", "status", "--plan", $PlanPath,
+            "--scratch-dir", $Scratch, "--json") $false
+        $jsonOnly = $statusText.Substring($statusText.IndexOf("{"))
+        $st = $jsonOnly | ConvertFrom-Json
+        $summary = Get-Content -LiteralPath (Join-Path $Canonical "adaptation_summary.json") -Raw -Encoding utf8 | ConvertFrom-Json
+        $canonOut = Invoke-Python ("import json; d=[json.loads(l) for l in open(r'" +
+            (Join-Path $Canonical "documents.jsonl") + "',encoding='utf-8') if l.strip()]; " +
+            "print(sum(x.get('utf8_byte_count',0) for x in d))")
+        $canonBytes = ($canonOut -split "`n" | Where-Object { $_ -match '^\d+$' } | Select-Object -Last 1)
+        if ([string]::IsNullOrWhiteSpace($canonBytes)) { throw "could not parse canonical byte count" }
+        $sharedTriple = ($Unit -like "essential_*")
+        foreach ($key in $U.RecordAs) {
+            $recordArgs = $UvBase + @("python", "scripts/mix01_inventory.py", "record",
+                "--calibration", $CalibJson, "--source", $key,
+                "--records-sampled", "$($summary.total_input_records)",
+                "--accepted", "$($summary.accepted_records)",
+                "--rejected", "$($summary.rejected_records)",
+                "--transferred-bytes", "$($st.transferred_bytes)",
+                "--canonical-bytes", "$canonBytes")
+            if ($sharedTriple) { $recordArgs += @("--replace") }
+            Write-Command $recordArgs
+            & uv @recordArgs
+            if ($LASTEXITCODE -ne 0) { throw "record ($key) failed with exit $LASTEXITCODE" }
+        }
+        "Record OK: $($U.RecordAs -join ', ') -> $CalibJson" | Out-Host
+        if ($Unit -like "ifm_*") {
+            "NOTE: ifm_general + ifm_planning are recorded separately; combine them into" | Out-Host
+            "ifm_behaviors_general_planning with the report one-liner before estimate." | Out-Host
+        }
+    }
+}
+
+"Done: unit $Unit stage $Stage" | Out-Host

@@ -333,6 +333,129 @@ def cmd_sufficiency(args: argparse.Namespace) -> int:
     return 0
 
 
+def _strict_int(value: Any, name: str, minimum: int = 0) -> int:
+    if isinstance(value, bool) or not isinstance(value, int) or value < minimum:
+        raise ValueError(f"'{name}' must be an integer >= {minimum}")
+    return value
+
+
+def cmd_record(args: argparse.Namespace) -> int:
+    """Append one unit's calibration measurements without manual JSON editing."""
+    if args.combine_sources is not None:
+        if float(args.survival) != 1.0:
+            return _fail("survival comes from the combined entries, not --extra-survival")
+        return cmd_record_combine(args)
+    try:
+        sampled = _strict_int(args.sampled, "records-sampled", 1)
+        accepted = _strict_int(args.accepted, "accepted")
+        rejected = _strict_int(args.rejected, "rejected")
+        if accepted + rejected != sampled:
+            raise ValueError(
+                f"accepted ({accepted}) + rejected ({rejected}) != "
+                f"records-sampled ({sampled}); use the adapt summary counts verbatim"
+            )
+        transferred = _strict_int(args.transferred, "transferred-bytes", 1)
+        canonical = _strict_int(args.canonical, "canonical-bytes", 1)
+        survival = float(args.survival)
+        if not 0 < survival <= 1:
+            raise ValueError("extra-survival must lie in (0, 1]")
+    except (ValueError, TypeError) as exc:
+        return _fail(str(exc))
+    if args.avg_file is not None:
+        try:
+            avg_file: int | None = _strict_int(args.avg_file, "avg-file-bytes", 1)
+        except ValueError as exc:
+            return _fail(str(exc))
+    else:
+        avg_file = None
+    if args.calibration.is_file():
+        try:
+            payload = json.loads(args.calibration.read_text(encoding="utf-8"))
+        except Exception as exc:
+            return _fail(f"cannot read calibration file: {exc}")
+        if not isinstance(payload, dict) or not isinstance(payload.get("sources"), dict):
+            return _fail("calibration file must carry a 'sources' mapping")
+    else:
+        payload = {"sources": {}}
+    if args.source in payload["sources"] and not args.replace:
+        return _fail(
+            f"source '{args.source}' already recorded; re-run with --replace "
+            "to overwrite explicitly"
+        )
+    entry: dict[str, Any] = {
+        "records_sampled": sampled,
+        "accepted_records": accepted,
+        "rejected_records": rejected,
+        "transferred_bytes": transferred,
+        "canonical_bytes": canonical,
+        "extra_survival": survival,
+    }
+    if avg_file is not None:
+        entry["avg_file_bytes"] = avg_file
+    payload["sources"][args.source] = entry
+    try:
+        _atomic_write_json(args.calibration, payload)
+    except OSError as exc:
+        return _fail(str(exc))
+    action = "replaced" if args.replace else "recorded"
+    print(f"source: {args.source} {action} accepted: {accepted}/{sampled}")
+    return 0
+
+
+def cmd_record_combine(args: argparse.Namespace) -> int:
+    """Sum existing view entries (e.g. IFM general+planning) into one quota entry."""
+    if not args.calibration.is_file():
+        return _fail("calibration file absent; record the views first")
+    try:
+        payload = json.loads(args.calibration.read_text(encoding="utf-8"))
+        entries = payload.get("sources", {})
+        parts = [name.strip() for name in str(args.combine_sources).split(",") if name.strip()]
+        if len(parts) < 2:
+            return _fail("--combine-sources needs at least two entries")
+        if args.source in entries and not args.replace:
+            return _fail(f"source '{args.source}' already recorded; re-run with --replace")
+        summed = {
+            "records_sampled": 0,
+            "accepted_records": 0,
+            "rejected_records": 0,
+            "transferred_bytes": 0,
+            "canonical_bytes": 0,
+        }
+        survivals = set()
+        for name in parts:
+            entry = entries.get(name)
+            if not isinstance(entry, dict):
+                return _fail(f"combined entry '{name}' is absent or malformed")
+            for key in summed:
+                value = entry.get(key)
+                if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+                    return _fail(f"combined entry '{name}' has bad '{key}'")
+                summed[key] += value
+            survivals.add(float(entry.get("extra_survival", 1.0)))
+        if len(survivals) != 1:
+            return _fail("combined entries disagree on extra_survival; refusing to mix")
+        if any(entries[n].get("avg_file_bytes") is not None for n in parts):
+            return _fail("combined entries carry avg_file_bytes; pass it explicitly instead")
+    except (ValueError, TypeError, KeyError) as exc:
+        return _fail(str(exc))
+    except OSError as exc:
+        return _fail(str(exc))
+    combined = argparse.Namespace(
+        calibration=args.calibration,
+        source=args.source,
+        sampled=summed["records_sampled"],
+        accepted=summed["accepted_records"],
+        rejected=summed["rejected_records"],
+        transferred=summed["transferred_bytes"],
+        canonical=summed["canonical_bytes"],
+        avg_file=args.avg_file,
+        survival=next(iter(survivals)),
+        replace=args.replace,
+        combine_sources=None,
+    )
+    return cmd_record(combined)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Mix-01 acquisition planning helper (offline).")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -359,6 +482,23 @@ def build_parser() -> argparse.ArgumentParser:
     sufficiency.add_argument("--acquired", type=Path, required=True)
     sufficiency.add_argument("--output", type=Path, required=True)
     sufficiency.set_defaults(func=cmd_sufficiency)
+    record = sub.add_parser("record", help="Append one unit's calibration measurements.")
+    record.add_argument("--calibration", type=Path, required=True)
+    record.add_argument("--source", required=True)
+    record.add_argument("--records-sampled", type=int, required=True, dest="sampled")
+    record.add_argument("--accepted", type=int, required=True)
+    record.add_argument("--rejected", type=int, required=True)
+    record.add_argument("--transferred-bytes", type=int, required=True, dest="transferred")
+    record.add_argument("--canonical-bytes", type=int, required=True, dest="canonical")
+    record.add_argument("--avg-file-bytes", type=int, default=None, dest="avg_file")
+    record.add_argument("--extra-survival", type=float, default=1.0, dest="survival")
+    record.add_argument("--replace", action="store_true")
+    record.add_argument(
+        "--combine-sources",
+        default=None,
+        help="Comma-separated existing entries to sum into --source (IFM views).",
+    )
+    record.set_defaults(func=cmd_record)
     return parser
 
 
