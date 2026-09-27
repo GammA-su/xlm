@@ -25,6 +25,14 @@
     inputs (same file, seed, target), so re-recording converges to identical
     numbers and uses --replace. Re-running any essential slice with
     DIFFERENT -Files breaks that premise: keep -Files identical.
+  - Native execution contract (Invoke-NativeCapture): stdout/stderr go to
+    FILES via Start-Process redirection, never the PowerShell stream, so
+    harmless native stderr can never raise NativeCommandError under
+    $ErrorActionPreference='Stop'. Failure is determined SOLELY by the
+    native exit code (0 = success even with stderr; nonzero = fail-stop).
+    $ErrorActionPreference itself is never weakened.
+  - Dot-sourcing this file under '.' loads functions only (main guarded);
+    see tests/files/calibrate_driver_native.ps1.
 
   The three essential slices share one raw fetch each (the slice stamp is
   adapt-time metadata over identical rows); the script runs independent
@@ -90,23 +98,68 @@ function Write-Command([string[]]$Argv) {
     "COMMAND: uv " + ($Argv -join " ") | Out-Host
 }
 
+function Invoke-NativeCapture(
+    [Parameter(Mandatory = $true)][string]$FilePath,
+    [Parameter(Mandatory = $true)][string[]]$ArgumentList,
+    [Parameter(Mandatory = $true)][string]$LogBase,
+    [string]$WorkingDirectory = ""
+) {
+    # Windows-safe native execution. Stdout/stderr are redirected to FILES,
+    # never the PowerShell output stream, so harmless native stderr can NEVER
+    # surface as a terminating NativeCommandError under
+    # $ErrorActionPreference='Stop'. Failure is determined SOLELY by the
+    # native process exit code. Ordinary cmdlet error handling is untouched.
+    $parent = Split-Path -Parent $LogBase
+    if ($parent -ne "" -and !(Test-Path -LiteralPath $parent)) {
+        New-Item -ItemType Directory -Path $parent -Force | Out-Null
+    }
+    $stdoutFile = "$LogBase.stdout.txt"
+    $stderrFile = "$LogBase.stderr.txt"
+    $startArgs = @{
+        FilePath = $FilePath
+        ArgumentList = $ArgumentList
+        NoNewWindow = $true
+        Wait = $true
+        PassThru = $true
+        RedirectStandardOutput = $stdoutFile
+        RedirectStandardError = $stderrFile
+    }
+    if ($WorkingDirectory -ne "") { $startArgs["WorkingDirectory"] = $WorkingDirectory }
+    $proc = Start-Process @startArgs
+    $stdout = ""
+    $stderr = ""
+    if (Test-Path -LiteralPath $stdoutFile) {
+        $stdout = Get-Content -LiteralPath $stdoutFile -Raw -Encoding utf8
+        if ($null -eq $stdout) { $stdout = "" }
+    }
+    if (Test-Path -LiteralPath $stderrFile) {
+        $stderr = Get-Content -LiteralPath $stderrFile -Raw -Encoding utf8
+        if ($null -eq $stderr) { $stderr = "" }
+    }
+    return @{ ExitCode = $proc.ExitCode; Stdout = $stdout; Stderr = $stderr }
+}
+
 function Invoke-Step([string]$Name, [string[]]$CliArgs, [bool]$Live) {
     $ts = Get-Date -Format "yyyyMMdd-HHmmss"
     if (!(Test-Path -LiteralPath $LogDir)) {
         New-Item -ItemType Directory -Path $LogDir -Force | Out-Null
     }
-    $log = Join-Path $LogDir ("{0}-{1}.log" -f $Name, $ts)
+    $logBase = Join-Path $LogDir ("{0}-{1}" -f $Name, $ts)
     $savedHub = $env:HF_HUB_OFFLINE
     $savedDs = $env:HF_DATASETS_OFFLINE
     if ($Live) { $env:HF_HUB_OFFLINE = "0"; $env:HF_DATASETS_OFFLINE = "0" }
     try {
         $full = $UvBase + @("xlm") + $CliArgs
         Write-Command $full
-        $out = & uv @full 2>&1
-        $out | Out-File -LiteralPath $log -Encoding utf8NoBOM
-        $out | Out-Host
-        if ($LASTEXITCODE -ne 0) { throw "$Name failed with exit $LASTEXITCODE (log: $log)" }
-        return ($out -join "`n")
+        $cap = Invoke-NativeCapture -FilePath "uv" -ArgumentList $full `
+            -LogBase $logBase -WorkingDirectory $Repo
+        $combined = ("=== STDOUT ===`n" + $cap.Stdout + "`n=== STDERR ===`n" `
+            + $cap.Stderr + "`n=== EXIT: " + $cap.ExitCode + " ===`n")
+        [System.IO.File]::WriteAllText("$logBase.log", $combined, [System.Text.UTF8Encoding]::new($false))
+        if ($cap.Stdout -ne "") { $cap.Stdout | Out-Host }
+        if ($cap.Stderr -ne "") { $cap.Stderr | Out-Host }
+        if ($cap.ExitCode -ne 0) { throw "$Name failed with exit $($cap.ExitCode) (log: $logBase.log)" }
+        return $cap.Stdout
     } finally {
         $env:HF_HUB_OFFLINE = $savedHub
         $env:HF_DATASETS_OFFLINE = $savedDs
@@ -116,18 +169,41 @@ function Invoke-Step([string]$Name, [string[]]$CliArgs, [bool]$Live) {
 function Invoke-Python([string]$Code) {
     $full = $UvBase + @("python", "-c", $Code)
     Write-Command $full
-    $out = & uv @full 2>&1
-    if ($LASTEXITCODE -ne 0) { $out | Out-Host; throw "python helper failed with exit $LASTEXITCODE" }
-    return ($out -join "`n")
+    $ts = Get-Date -Format "yyyyMMdd-HHmmssfff"
+    if (!(Test-Path -LiteralPath $LogDir)) {
+        New-Item -ItemType Directory -Path $LogDir -Force | Out-Null
+    }
+    $cap = Invoke-NativeCapture -FilePath "uv" -ArgumentList $full `
+        -LogBase (Join-Path $LogDir "python-$ts") -WorkingDirectory $Repo
+    if ($cap.ExitCode -ne 0) {
+        if ($cap.Stdout -ne "") { $cap.Stdout | Out-Host }
+        if ($cap.Stderr -ne "") { $cap.Stderr | Out-Host }
+        throw "python helper failed with exit $($cap.ExitCode)"
+    }
+    return $cap.Stdout
 }
+
+if ($MyInvocation.InvocationName -ne '.') {
 
 Set-Location -LiteralPath $Repo
 
 switch ($Stage) {
     { $_ -in "All", "Env" } {
-        Write-Command (@("sync", "--offline", "--locked", "--extra", "cpu", "--extra", "eval"))
-        & uv sync --offline --locked --extra cpu --extra eval
-        if ($LASTEXITCODE -ne 0) { throw "Env sync failed with exit $LASTEXITCODE" }
+        $syncArgs = @("sync", "--offline", "--locked", "--extra", "cpu", "--extra", "eval")
+        Write-Command $syncArgs
+        if (!(Test-Path -LiteralPath $LogDir)) {
+            New-Item -ItemType Directory -Path $LogDir -Force | Out-Null
+        }
+        $ts = Get-Date -Format "yyyyMMdd-HHmmss"
+        $syncBase = Join-Path $LogDir "env-$ts"
+        $cap = Invoke-NativeCapture -FilePath "uv" -ArgumentList $syncArgs `
+            -LogBase $syncBase -WorkingDirectory $Repo
+        if ($cap.Stdout -ne "") { $cap.Stdout | Out-Host }
+        if ($cap.Stderr -ne "") { $cap.Stderr | Out-Host }
+        if ($cap.ExitCode -ne 0) { throw "Env sync failed with exit $($cap.ExitCode) (log: $syncBase.log)" }
+        $combined = ("=== STDOUT ===`n" + $cap.Stdout + "`n=== STDERR ===`n" `
+            + $cap.Stderr + "`n=== EXIT: " + $cap.ExitCode + " ===`n")
+        [System.IO.File]::WriteAllText("$syncBase.log", $combined, [System.Text.UTF8Encoding]::new($false))
         "Env OK: $Repo" | Out-Host
     }
     { $_ -in "All", "Probe" } {
@@ -195,8 +271,16 @@ switch ($Stage) {
                 "--canonical-bytes", "$canonBytes")
             if ($sharedTriple) { $recordArgs += @("--replace") }
             Write-Command $recordArgs
-            & uv @recordArgs
-            if ($LASTEXITCODE -ne 0) { throw "record ($key) failed with exit $LASTEXITCODE" }
+            $ts = Get-Date -Format "yyyyMMdd-HHmmssfff"
+            $recBase = Join-Path $LogDir ("record-{0}-{1}" -f $key, $ts)
+            $cap = Invoke-NativeCapture -FilePath "uv" -ArgumentList $recordArgs `
+                -LogBase $recBase -WorkingDirectory $Repo
+            $combined = ("=== STDOUT ===`n" + $cap.Stdout + "`n=== STDERR ===`n" `
+                + $cap.Stderr + "`n=== EXIT: " + $cap.ExitCode + " ===`n")
+            [System.IO.File]::WriteAllText("$recBase.log", $combined, [System.Text.UTF8Encoding]::new($false))
+            if ($cap.Stdout -ne "") { $cap.Stdout | Out-Host }
+            if ($cap.Stderr -ne "") { $cap.Stderr | Out-Host }
+            if ($cap.ExitCode -ne 0) { throw "record ($key) failed with exit $($cap.ExitCode) (log: $recBase.log)" }
         }
         "Record OK: $($U.RecordAs -join ', ') -> $CalibJson" | Out-Host
         if ($Unit -like "ifm_*") {
@@ -207,3 +291,5 @@ switch ($Stage) {
 }
 
 "Done: unit $Unit stage $Stage" | Out-Host
+
+} # end main guard (dot-sourcing under '.' loads functions only, for tests)
