@@ -1,0 +1,225 @@
+# Frozen experimental selector policy spec: Essential-Web sweep v1.
+#
+# EXPERIMENT ONLY. No policy here is final or approved. This file freezes the
+# hypotheses from docs/implementation/reports/ESSENTIAL-WEB-SELECTOR-POLICY-REVIEW.md
+# BEFORE any sweep execution so outcomes cannot alter definitions. The sweep
+# tool records this file's canonical digest in every result; a changed file
+# MUST yield a changed digest (tested). Do not edit after a real run without
+# bumping policy_spec_version.
+schema_version: 1
+kind: essential_web_selector_sweep
+policy_spec_version: essential-web-selector-sweep-v1
+
+# Validity gate: F (trimmed) must match exactly; E numeric, finite,
+# non-boolean, within bounds. FDC codes stay STRINGS (never float-cast).
+fdc_syntax: "[0-9]{3}(?:[.][0-9]+)?"
+english_min: 0.0
+english_max: 1.0
+
+# Exact label universes. Values outside every known set for their classifier
+# are reported as unknown_label and fail closed; known-but-excluded values
+# are reported with their own reason. Nothing is silently added.
+knowledge_labels:
+  - Factual
+  - Conceptual
+  - Procedural
+correctness_allowed:
+  - Highly Correct
+  - Mostly Correct
+  - Not Applicable/Indeterminate
+correctness_rejected:
+  - Partially Correct
+  - Technically Flawed
+doctype_union:
+  - Academic Writing
+  - Knowledge Article
+  - Nonfiction Writing
+  - Documentation
+  - Tutorial
+  - News Article
+  - FAQ
+  - Customer Support
+  - Q&A Forum
+  - Personal Blog
+  - Creative Writing
+doctype_known_excluded:
+  - Product Page
+  - Content Listing
+  - Structured Data
+  - Spam / Ads
+  - Truncated
+  - News (Org.)
+  - About (Org.)
+  - About (Personal)
+  - Comment Section
+  - User Review
+  - Legal Notices
+  - Audio Transcript
+  - Listicle
+  - Other/Unclassified
+artifacts_known:
+  - No Artifacts
+  - Irrelevant Content
+  - Leftover HTML
+  - Text Extraction Errors
+missing_known:
+  - No missing content
+  - Missing Images or Figures
+  - Truncated Snippets
+  - Click Here References
+  - Incoherent Flow
+  - Missing Referenced Data
+  - Indeterminate
+
+# Quality gates (all conditions conjunctive).
+gates:
+  GN:
+    english_min: 0.8
+    artifacts:
+      - No Artifacts
+    missing:
+      - No missing content
+      - Missing Images or Figures
+  GS:
+    english_min: 0.9
+    artifacts:
+      - No Artifacts
+    missing:
+      - No missing content
+  GD:
+    english_min: 0.8
+    artifacts:
+      - No Artifacts
+      - Irrelevant Content
+    missing:
+      - No missing content
+      - Missing Images or Figures
+
+# Component predicates. S5/F6/F789 match the FIRST CHARACTER of the trimmed
+# FDC string (so "005.4" is 0xx, never 5xx). S61 matches the exact
+# three-digit prefix allowlist on the integer portion, zero-padded.
+predicates:
+  s5_genres:
+    - Academic Writing
+    - Knowledge Article
+    - Nonfiction Writing
+    - Documentation
+    - Tutorial
+    - News Article
+  s61_prefixes:
+    - "610"
+    - "612"
+    - "613"
+    - "614"
+    - "615"
+    - "616"
+    - "617"
+    - "618"
+  s61_genres:
+    - Academic Writing
+    - Knowledge Article
+  s61_knowledge:
+    - Conceptual
+  s61_correctness:
+    - Highly Correct
+    - Mostly Correct
+  practical_genres:
+    - Tutorial
+    - Documentation
+    - FAQ
+    - Customer Support
+  practical_conditional_genres:
+    - Q&A Forum
+    - Knowledge Article
+    - Personal Blog
+  practical_knowledge:
+    - Procedural
+  prose_genres:
+    - Creative Writing
+    - Nonfiction Writing
+    - Personal Blog
+    - News Article
+    - Knowledge Article
+  prose_knowledge:
+    - Factual
+    - Conceptual
+
+# Four experimental variants. Tiers bind gates (normal/strict); component
+# rules bind predicates with an explicit combinator: science lists are
+# alternatives (any), practical/prose lists are conjunctions (all), exactly
+# as reviewed (S5 OR S61; F6 AND P; F789 AND R). B-strict and D-strict are
+# identical by design.
+policies:
+  A:
+    normal: GN
+    strict: GS
+    science: {any: [S5]}
+    practical: {all: [P]}
+    prose: {all: [R]}
+  B:
+    normal: GN
+    strict: GS
+    science: {any: [S5, S61]}
+    practical: {all: [P]}
+    prose: {all: [R]}
+  C:
+    normal: GN
+    strict: GS
+    science: {any: [S5, S61]}
+    practical: {all: [F6, P]}
+    prose: {all: [F789, R]}
+  D:
+    normal: GD
+    strict: GS
+    science: {any: [S5, S61]}
+    practical: {all: [P]}
+    prose: {all: [R]}
+
+# Deterministic precedence: validity/shared gate, science, practical,
+# prose, unassigned. Final categories below; a locator appears in at most
+# one Essential component.
+precedence:
+  - science
+  - practical
+  - prose
+final_components:
+  - essential_science
+  - essential_practical
+  - essential_prose
+  - unassigned
+  - rejected
+
+# Diagnostic-only sensitivity (never extra candidate policies or gates).
+sensitivity:
+  english_thresholds: [0.65, 0.8, 0.9, 0.95]
+  artifact_options:
+    - [No Artifacts]
+    - [No Artifacts, Irrelevant Content]
+  missing_options:
+    - [No missing content]
+    - [No missing content, Missing Images or Figures]
+
+# Temporal review flags (diagnostics, not statistical tests).
+temporal_flags:
+  min_cell_count: 20
+  fold_threshold: 2.0
+  pp_threshold: 10.0
+  s61_fraction: 0.5
+
+# Frozen execution limits.
+caps:
+  max_records: 5000
+  max_input_bytes: 33554432
+  max_line_bytes: 1048576
+  max_output_bytes: 67108864
+  max_scratch_bytes: 67108864
+  max_runtime_seconds: 120
+
+# English bands for diagnostic cross-tabs, cut at the sensitivity
+# thresholds above. Binning only; never gates.
+english_bands:
+  - [0.0, 0.65]
+  - [0.65, 0.8]
+  - [0.8, 0.9]
+  - [0.9, 0.95]
+  - [0.95, 1.0]
