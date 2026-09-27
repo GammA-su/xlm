@@ -1,0 +1,160 @@
+{
+  "bias": "Window sampling is clustered, nonuniform sampling: each selected file contributes ONE contiguous window of rows from ONE row group, and the window start is restricted to the first scan-bounded rows of that group. Rows before the window start are physically decoded (scanned) but not retained. Do not treat screened statistics as unbiased corpus estimates.",
+  "blocks": [],
+  "discovery": "remote",
+  "estimated_compressed_bytes": 17653723,
+  "estimated_requests": 21,
+  "estimated_rows": 1000,
+  "estimated_tokens": null,
+  "estimated_transfer_bytes": null,
+  "estimated_transfer_upper_bytes": 34958325,
+  "estimated_uncompressed_bytes": 28987428,
+  "expected_scan_rows": 9984,
+  "metadata_budgets": {
+    "max_bytes": 8388608,
+    "max_requests": 100
+  },
+  "mode": "window",
+  "overshoot_records": 0,
+  "physical_transfer_ceiling_bytes": 273494708,
+  "planned_records": 1000,
+  "projected_fields": [
+    "additional_seed_url",
+    "exercise",
+    "language",
+    "model",
+    "query",
+    "query_seed_text",
+    "query_seed_url",
+    "seed_license",
+    "synth_id",
+    "synthetic_answer",
+    "words"
+  ],
+  "requested_records": 1000,
+  "revision": "0d6813a2966662c39f22f0b9af28a0c1c9f7a437",
+  "row_ranges": {
+    "synth_001.parquet": [
+      8737,
+      9737
+    ]
+  },
+  "sampling_plan_version": 1,
+  "seed": 20260918,
+  "selected_files": [
+    "synth_001.parquet"
+  ],
+  "source_id": "synth",
+  "transfer_estimate_note": "unknown: range-request transfer depends on column projection and request framing, not only footer sizes; never fabricated",
+  "view_id": "default",
+  "warnings": [
+    "Window sampling is clustered, nonuniform sampling: each selected file contributes ONE contiguous window of rows from ONE row group, and the window start is restricted to the first scan-bounded rows of that group. Rows before the window start are physically decoded (scanned) but not retained. Do not treat screened statistics as unbiased corpus estimates.",
+    "'synth_001.parquet' window start restricted to the first 16384 of 154674 rows of row group 0 by max_window_scan_rows",
+    "'synth_001.parquet' decodes 9984 rows to retain 1000"
+  ],
+  "window_policy": {
+    "batch_rows": 256,
+    "estimate_basis": "byte/request estimates assume uniform row size within the row group; runtime transfer/decompression/request/scan budgets are the hard bounds",
+    "max_window_scan_rows": 16384,
+    "policy_version": 1,
+    "ratio_exempt_bytes": 16777216,
+    "scan_accounting": "rows [group start, window stop) are decoded in whole batches of batch_rows and ALL are charged as scanned; nothing past the batch reaching the window stop is decoded",
+    "start_construction": "sha256('|'.join([seed, source_id, view_id, revision, file, row_group, 'window-v<policy_version>', 'start'])) mod (start_domain_rows - selected_count + 1)",
+    "stream_buffer_bytes": 4194304
+  },
+  "windows": [
+    {
+      "eligibility_worst_case": {
+        "basis": "any admissible start: window ending at start_domain_rows",
+        "estimated_requests": 23,
+        "estimated_scan_uncompressed_bytes": 47569107,
+        "estimated_transfer_upper_bytes": 46065959,
+        "expected_scan_rows": 16384
+      },
+      "estimated_requests": 21,
+      "estimated_scan_compressed_bytes": 17653723,
+      "estimated_scan_uncompressed_bytes": 28987428,
+      "estimated_transfer_upper_bytes": 34958325,
+      "expected_scan_rows": 9984,
+      "expected_skipped_decoded_rows": 8984,
+      "file": "synth_001.parquet",
+      "group_compressed_bytes": 471529953,
+      "group_rows": 154674,
+      "group_start_row": 0,
+      "group_total_byte_size": 794617223,
+      "largest_selected_chunk": {
+        "compressed_bytes": 136461404,
+        "path": "synthetic_answer",
+        "uncompressed_bytes": 226952993
+      },
+      "physical_transfer_ceiling_bytes": 273494708,
+      "row_group": 0,
+      "selected_columns": [
+        {
+          "compressed_bytes": 1699931,
+          "path": "synth_id",
+          "uncompressed_bytes": 5014440
+        },
+        {
+          "compressed_bytes": 60398,
+          "path": "language",
+          "uncompressed_bytes": 85286
+        },
+        {
+          "compressed_bytes": 23442574,
+          "path": "query",
+          "uncompressed_bytes": 34971678
+        },
+        {
+          "compressed_bytes": 108543227,
+          "path": "query_seed_text",
+          "uncompressed_bytes": 172869453
+        },
+        {
+          "compressed_bytes": 136461404,
+          "path": "synthetic_answer",
+          "uncompressed_bytes": 226952993
+        },
+        {
+          "compressed_bytes": 2598,
+          "path": "seed_license",
+          "uncompressed_bytes": 3739
+        },
+        {
+          "compressed_bytes": 33750,
+          "path": "exercise",
+          "uncompressed_bytes": 51961
+        },
+        {
+          "compressed_bytes": 33861,
+          "path": "model",
+          "uncompressed_bytes": 52171
+        },
+        {
+          "compressed_bytes": 221292,
+          "path": "words",
+          "uncompressed_bytes": 229398
+        },
+        {
+          "compressed_bytes": 1090261,
+          "path": "query_seed_url",
+          "uncompressed_bytes": 2912823
+        },
+        {
+          "compressed_bytes": 1905412,
+          "path": "additional_seed_url",
+          "uncompressed_bytes": 5934612
+        }
+      ],
+      "selected_compressed_bytes": 273494708,
+      "selected_count": 1000,
+      "selected_uncompressed_bytes": 449078554,
+      "start_domain_rows": 16384,
+      "start_in_group": 8737,
+      "start_row": 8737,
+      "stop_in_group": 9737,
+      "stop_row": 9737,
+      "unselected_compressed_bytes": 198035245
+    }
+  ]
+}

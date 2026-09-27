@@ -115,3 +115,42 @@ def test_synth_unit_binds_one_window_policy_everywhere(tmp_path: Path) -> None:
         flag in plan
         for flag in ("--limits", "--max-bytes", "--max-records", "--authorization-hash")
     )
+
+
+def test_synth_stays_window_v1_without_version_flags(tmp_path: Path) -> None:
+    for name, args in _capture("synth_en_explanations", tmp_path):
+        assert not any("policy-version" in value for value in args), (name, args)
+
+
+def test_wiki_unit_binds_window_v2_everywhere(tmp_path: Path) -> None:
+    calls = _capture("nemotron_wiki_rewrite", tmp_path)
+    named = dict(calls)
+    sample, plan = named["sample-blocks"], named["plan"]
+    assert _after(sample, "--mode") == "window"
+    assert _after(sample, "--adapter-spec") == "wiki_rewrite"
+    assert (
+        _after(sample, "--window-max-scan-rows"),
+        _after(sample, "--window-buffer-bytes"),
+        _after(sample, "--window-batch-rows"),
+        _after(sample, "--window-policy-version"),
+    ) == ("16384", "4194304", "256", "2")
+    assert (
+        _after(plan, "--parquet-window-scan-rows"),
+        _after(plan, "--parquet-window-buffer-bytes"),
+        _after(plan, "--parquet-window-batch-rows"),
+        _after(plan, "--parquet-window-policy-version"),
+    ) == ("16384", "4194304", "256", "2")
+    adopt_sample, adopt_plan = [args for name, args in calls if name == "adopt"][:2]
+    assert _after(adopt_sample, "--sample-mode") == "window"
+    assert _after(adopt_sample, "--adapter-spec") == "wiki_rewrite"
+    for args in (adopt_sample, adopt_plan):
+        assert (
+            _after(args, "--window-scan-rows"),
+            _after(args, "--window-buffer-bytes"),
+            _after(args, "--window-batch-rows"),
+            _after(args, "--window-policy-version"),
+        ) == ("16384", "4194304", "256", "2")
+    assert not any(
+        flag in plan
+        for flag in ("--limits", "--max-bytes", "--max-records", "--authorization-hash")
+    )

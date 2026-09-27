@@ -98,6 +98,26 @@
 >   `rows.evidence.json`, then `-Stage All`.
 >
 > See [SYNTH-LARGE-ROWGROUP-CALIBRATION](reports/SYNTH-LARGE-ROWGROUP-CALIBRATION.md).
+>
+> **PARQUET WINDOW-v2 NESTED STRUCTS (2026-09-27, offline): IMPLEMENTED +
+> FOCUSED-VERIFIED; READY FOR WIKI WINDOW FOOTER RETRY.**
+>
+> - **Problem.** Wiki-Rewrite's projection includes the struct
+>   `metadata`, which the flat window-v1 correctly refused.
+> - **Fix.** A new shared resolver maps logical Arrow fields to every
+>   physical Parquet leaf behind them. Structs are supported; lists and
+>   maps are refused with a reason.
+> - **Identity.** window-v2 is bound into the behavioral hash, the
+>   evidence, the SHA-256 start and adoption. v1 is frozen, and the real
+>   SYNTH plan hash `dd248136…8c33` is pinned.
+> - **Driver.** Only the Wiki unit uses v2.
+> - **Evidence.** 443 + 3 serial focused tests pass; 8/8 mutations
+>   killed. Predicted real window: rows [7519,8519), 8,704 rows scanned.
+> - **Next.** `powershell -NoProfile -ExecutionPolicy Bypass -File
+>   G:\Project\xlm-data-ultrax\scripts\operator_calibrate_remaining.ps1
+>   -Unit nemotron_wiki_rewrite -Stage SampleBlocks`
+>
+> See [PARQUET-WINDOW-NESTED-STRUCT](reports/PARQUET-WINDOW-NESTED-STRUCT.md).
 > Surgical idempotent freeze; focused offline tests + ruff + scoped mypy
 > green. No push. See [MIX01-ULTRAX-6B §15](reports/MIX01-ULTRAX-6B.md).
 >

@@ -53,6 +53,13 @@ discovery (bounded range reads, `--revision` pinned) derives the exact
 > into its plan and both adoption checks. Run `-Stage SampleBlocks` first
 > and review the footer-only evidence, then run `-Stage All`. See
 > [SYNTH-LARGE-ROWGROUP-CALIBRATION](SYNTH-LARGE-ROWGROUP-CALIBRATION.md).
+>
+> **Wiki-Rewrite exception (2026-09-27).** `part_000003.parquet` is one
+> 263,542-row, ~893 MB row group, and the `wiki_rewrite` projection
+> includes the struct `metadata`. The `nemotron_wiki_rewrite` unit alone
+> uses window-v2, which supports nested structs. Run `-Stage SampleBlocks`
+> first and review the per-leaf evidence, then run `-Stage All`. See
+> [PARQUET-WINDOW-NESTED-STRUCT](PARQUET-WINDOW-NESTED-STRUCT.md).
 
 ## 2. Driver script (preferred, fail-closed)
 

@@ -30,6 +30,12 @@ from xlm.data.acquisition.plan import (
     PILOT_MAX_TRANSFERRED_BYTES,
     ParquetWindowDecode,
 )
+from xlm.data.acquisition.projection import (
+    FieldLeaves,
+    ProjectionRefusal,
+    parquet_field_leaves,
+    resolve_projection,
+)
 
 SAMPLING_PLAN_VERSION = 1
 
@@ -119,6 +125,23 @@ class FileLayout:
     name: str
     num_rows: int
     groups: tuple[RowGroupSpec, ...] = field(default_factory=tuple)
+    #: Logical top-level field -> physical leaf indices (window-v2 only).
+    field_leaves: tuple[FieldLeaves, ...] = ()
+    #: Physical leaf paths in schema order (cross-checked per row group).
+    leaf_paths: tuple[str, ...] = ()
+    #: Why the schema could not be mapped (window-v2 refuses; legacy ignores).
+    schema_refusal: str | None = None
+
+
+def _schema_mapping(parquet: Any) -> tuple[tuple[FieldLeaves, ...], tuple[str, ...], str | None]:
+    """Footer-only field->leaf mapping; never raises (legacy modes ignore it)."""
+    try:
+        paths = tuple(str(parquet.schema.column(i).path) for i in range(len(parquet.schema)))
+        return parquet_field_leaves(parquet), paths, None
+    except ProjectionRefusal as exc:
+        return (), (), str(exc)
+    except Exception as exc:
+        return (), (), f"cannot map schema: {type(exc).__name__}: {exc}"
 
 
 def _refusal_for_group(
@@ -182,6 +205,7 @@ def discover_layout_local(
         raise
     except Exception as exc:
         raise SamplingRefusal(f"cannot read Parquet footer for '{name}': {exc}") from exc
+    field_leaves, leaf_paths, schema_refusal = _schema_mapping(parquet)
     if num_rows < 0 or num_row_groups < 0:
         raise SamplingRefusal(f"invalid Parquet metadata for '{name}'")
     groups: list[RowGroupSpec] = []
@@ -225,7 +249,14 @@ def discover_layout_local(
             )
         )
         base += rows
-    return FileLayout(name=name, num_rows=num_rows, groups=tuple(groups))
+    return FileLayout(
+        name=name,
+        num_rows=num_rows,
+        groups=tuple(groups),
+        field_leaves=field_leaves,
+        leaf_paths=leaf_paths,
+        schema_refusal=schema_refusal,
+    )
 
 
 #: (rows, columns, total_byte_size, compressed, uncompressed, pairs, chunks)
@@ -299,6 +330,7 @@ def discover_layout_over_ranges(
             )
             num_rows = int(parquet.metadata.num_rows)
             num_row_groups = int(parquet.num_row_groups)
+            field_leaves, leaf_paths, schema_refusal = _schema_mapping(parquet)
             specs: list[_GroupFooter] = []
             for index in range(num_row_groups):
                 meta = parquet.metadata.row_group(index)
@@ -360,7 +392,14 @@ def discover_layout_over_ranges(
             )
         )
         base += rows
-    return FileLayout(name=name, num_rows=num_rows, groups=tuple(groups))
+    return FileLayout(
+        name=name,
+        num_rows=num_rows,
+        groups=tuple(groups),
+        field_leaves=field_leaves,
+        leaf_paths=leaf_paths,
+        schema_refusal=schema_refusal,
+    )
 
 
 @dataclass(frozen=True)
@@ -427,6 +466,8 @@ class ChosenWindow:
     domain_estimated_transfer_upper_bytes: int = 0
     domain_estimated_scan_uncompressed_bytes: int = 0
     domain_estimated_requests: int = 0
+    #: window-v2: logical field owning each selected physical leaf (else empty).
+    selected_owners: tuple[str, ...] = ()
 
     @property
     def start_row(self) -> int:
@@ -449,6 +490,21 @@ class ChosenWindow:
         return sum(column.uncompressed for column in self.selected_columns)
 
     def to_report(self) -> dict[str, Any]:
+        report = self._report_v1()
+        if self.selected_owners:
+            # window-v2 evidence is additive; v1 window reports are unchanged.
+            report["projected_physical_leaves"] = [
+                {
+                    "logical_field": owner,
+                    "path": column.path,
+                    "compressed_bytes": column.compressed,
+                    "uncompressed_bytes": column.uncompressed,
+                }
+                for owner, column in zip(self.selected_owners, self.selected_columns, strict=True)
+            ]
+        return report
+
+    def _report_v1(self) -> dict[str, Any]:
         largest = max(self.selected_columns, key=lambda column: (column.compressed, column.path))
         return {
             "file": self.file,
@@ -556,6 +612,11 @@ class SamplingResult:
             )
             report["estimated_requests"] = sum(w.estimated_requests for w in self.windows)
             report["bias"] = WINDOW_WARNING
+            if self.window_policy.policy_version >= 2:
+                report["projected_logical_fields"] = list(self.projected_fields or ())
+                report["projected_physical_leaves"] = sorted(
+                    {c.path for w in self.windows for c in w.selected_columns}
+                )
         return report
 
     def _legacy_report(self) -> dict[str, Any]:
@@ -868,34 +929,70 @@ def _window_estimates(
     return scan_compressed, scan_uncompressed, transfer, requests + WINDOW_METADATA_REQUESTS
 
 
+def _window_leaves_v2(
+    group: RowGroupSpec, projected: tuple[str, ...], layout: FileLayout
+) -> tuple[str | None, tuple[ColumnChunkSpec, ...], tuple[str, ...]]:
+    """window-v2: every physical leaf backing the logical projection, once each."""
+    if layout.schema_refusal is not None:
+        return f"schema cannot be mapped to physical leaves: {layout.schema_refusal}", (), ()
+    try:
+        resolved = resolve_projection(layout.field_leaves, projected)
+    except ProjectionRefusal as exc:
+        return str(exc), (), ()
+    if tuple(column.path for column in group.columns) != layout.leaf_paths:
+        return (
+            f"row group {group.index} column chunks disagree with the schema leaves",
+            (),
+            (),
+        )
+    selected = tuple(group.columns[index] for index in resolved.leaf_indices)
+    owners = tuple(resolved.leaf_owner[index] for index in resolved.leaf_indices)
+    return None, selected, owners
+
+
 def _window_group_refusal(
     group: RowGroupSpec,
     projected: tuple[str, ...],
     request: SamplingRequest,
-) -> tuple[str | None, tuple[ColumnChunkSpec, ...]]:
-    """Projection-aware eligibility of one row group for a scan-bounded window."""
+    layout: FileLayout | None = None,
+) -> tuple[str | None, tuple[ColumnChunkSpec, ...], tuple[str, ...]]:
+    """Projection-aware eligibility of one row group for a scan-bounded window.
+
+    Returns ``(refusal, selected physical chunks, logical owner per chunk)``;
+    owners are recorded for window-v2 only (v1 is one leaf per field).
+    """
     window = request.window
     if window is None:
         raise SamplingRefusal("window eligibility requires a window policy")
     if group.num_rows < 1:
-        return f"row group {group.index} is empty", ()
-    by_path = {column.path: column for column in group.columns}
-    missing = [name for name in projected if name not in by_path]
-    if missing:
-        nested = [name for name in missing if any(p.startswith(name + ".") for p in by_path)]
-        if nested:
-            return (
-                f"window mode supports flat projected columns only; nested: {sorted(nested)}",
-                (),
-            )
-        return f"projected fields not present: {sorted(missing)}", ()
-    selected = tuple(by_path[name] for name in projected)
+        return f"row group {group.index} is empty", (), ()
+    owners: tuple[str, ...] = ()
+    if window.policy_version >= 2:
+        if layout is None:
+            raise SamplingRefusal("window-v2 eligibility requires the file layout")
+        refusal, selected, owners = _window_leaves_v2(group, projected, layout)
+        if refusal is not None:
+            return refusal, (), ()
+    else:
+        # window-v1 (frozen): flat projections only, exactly as certified.
+        by_path = {column.path: column for column in group.columns}
+        missing = [name for name in projected if name not in by_path]
+        if missing:
+            nested = [name for name in missing if any(p.startswith(name + ".") for p in by_path)]
+            if nested:
+                return (
+                    f"window mode supports flat projected columns only; nested: {sorted(nested)}",
+                    (),
+                    (),
+                )
+            return f"projected fields not present: {sorted(missing)}", (), ()
+        selected = tuple(by_path[name] for name in projected)
     ratio = window.ratio_refusal(
         ((column.path, column.compressed, column.uncompressed) for column in selected),
         request.max_decompression_ratio,
     )
     if ratio is not None:
-        return f"row group {group.index} {ratio}", ()
+        return f"row group {group.index} {ratio}", (), ()
     domain = _window_domain(group.num_rows, window)
     worst_scan = window.expected_scan_rows(group.num_rows, domain)
     scan_c, scan_u, transfer, requests = _window_estimates(
@@ -909,11 +1006,15 @@ def _window_group_refusal(
     ):
         if value > bound:
             return (
-                f"row group {group.index} worst-case window exceeds pilot bound: "
-                f"{label}={value} against {bound}; num_rows={group.num_rows}; "
-                f"estimated_scan_compressed_bytes={scan_c}"
-            ), ()
-    return None, selected
+                (
+                    f"row group {group.index} worst-case window exceeds pilot bound: "
+                    f"{label}={value} against {bound}; num_rows={group.num_rows}; "
+                    f"estimated_scan_compressed_bytes={scan_c}"
+                ),
+                (),
+                (),
+            )
+    return None, selected, owners
 
 
 def plan_sample_windows(layouts: dict[str, FileLayout], request: SamplingRequest) -> SamplingResult:
@@ -932,15 +1033,19 @@ def plan_sample_windows(layouts: dict[str, FileLayout], request: SamplingRequest
     if request.mode != "window" or window is None or not projected:
         raise SamplingRefusal("window planning requires window mode, policy, and projection")
     version = f"window-v{window.policy_version}"
-    eligible: dict[str, list[tuple[RowGroupSpec, tuple[ColumnChunkSpec, ...]]]] = {}
+    eligible: dict[
+        str, list[tuple[RowGroupSpec, tuple[ColumnChunkSpec, ...], tuple[str, ...]]]
+    ] = {}
     skipped: dict[str, str] = {}
     for name in request.files:
-        options: list[tuple[RowGroupSpec, tuple[ColumnChunkSpec, ...]]] = []
+        options: list[tuple[RowGroupSpec, tuple[ColumnChunkSpec, ...], tuple[str, ...]]] = []
         first_refusal: str | None = None
         for group in layouts[name].groups:
-            refusal, selected = _window_group_refusal(group, projected, request)
+            refusal, selected, owners = _window_group_refusal(
+                group, projected, request, layouts[name]
+            )
             if refusal is None:
-                options.append((group, selected))
+                options.append((group, selected, owners))
             elif first_refusal is None:
                 first_refusal = refusal
         if options:
@@ -965,7 +1070,7 @@ def plan_sample_windows(layouts: dict[str, FileLayout], request: SamplingRequest
         if planned >= request.target_records:
             break
         options = eligible[name]
-        group, selected = options[
+        group, selected, owners = options[
             _det_index(
                 request.seed,
                 (request.source_id, request.view_id, request.revision, name, version, "group"),
@@ -1038,6 +1143,7 @@ def plan_sample_windows(layouts: dict[str, FileLayout], request: SamplingRequest
                 domain_estimated_transfer_upper_bytes=domain_transfer,
                 domain_estimated_scan_uncompressed_bytes=domain_scan_u,
                 domain_estimated_requests=domain_requests,
+                selected_owners=owners,
             )
         )
         planned += size

@@ -1,0 +1,81 @@
+{
+  "schema_version": 2,
+  "plan_id": "plan_synth_default_huggingface_2353ec572c800576ff82",
+  "source_id": "synth",
+  "view_id": "default",
+  "provider": "huggingface",
+  "repository": "PleIAs/SYNTH",
+  "revision": "0d6813a2966662c39f22f0b9af28a0c1c9f7a437",
+  "mode": "selected_records",
+  "selected_files": [
+    "synth_001.parquet"
+  ],
+  "row_ranges": {
+    "synth_001.parquet": [
+      8737,
+      9737
+    ]
+  },
+  "projected_fields": [
+    "synth_id",
+    "language",
+    "query",
+    "query_seed_text",
+    "synthetic_answer",
+    "seed_license",
+    "exercise",
+    "model",
+    "words",
+    "query_seed_url",
+    "additional_seed_url"
+  ],
+  "range_coalesce_bytes": null,
+  "parquet_window": {
+    "policy_version": 1,
+    "stream_buffer_bytes": 4194304,
+    "max_window_scan_rows": 16384,
+    "batch_rows": 256,
+    "ratio_exempt_bytes": 16777216
+  },
+  "sampling_frame": {
+    "total_remote_files": null,
+    "selected_files": [
+      "synth_001.parquet"
+    ],
+    "selection_seed": 20260918,
+    "sampling_method": "explicit_file_list",
+    "coverage_notes": "",
+    "selection_bias_warning": "Warning: Selected subset is not a uniform random sample of the full corpus. Domain, temporal, and shard clustering effects apply."
+  },
+  "expected_bytes": null,
+  "expected_file_digests": {},
+  "limits": {
+    "max_transferred_bytes": 268435456,
+    "max_decompressed_bytes": 536870912,
+    "max_records": 25000,
+    "max_temp_disk_bytes": 1073741824,
+    "max_output_disk_bytes": 2147483648,
+    "max_requests": 100,
+    "max_retries": 5,
+    "per_request_timeout_seconds": 15.0,
+    "overall_deadline_seconds": 600.0,
+    "max_decompression_ratio": 15.0,
+    "max_workers": 2,
+    "max_record_bytes": 1048576,
+    "max_parser_bytes": 33554432,
+    "max_scanned_records": 100000
+  },
+  "output_artifact_id": "raw_synth_default_2353ec572c800576ff82",
+  "admitted_source_reference": null,
+  "is_pilot": true,
+  "attempt": 1,
+  "authorization": {
+    "authorization_hash": "dd248136990f343fa086c674531b9fd61e1a9713bc2f4dcc3e5ff38dd0178c33",
+    "authorized_by": "local_operator_cli",
+    "authorized_at": "2026-09-27T13:28:54.575615+00:00",
+    "scope": "pilot",
+    "is_pilot_approved": true,
+    "bound_limits_hash": ""
+  },
+  "plan_hash": "dd248136990f343fa086c674531b9fd61e1a9713bc2f4dcc3e5ff38dd0178c33"
+}

@@ -94,7 +94,7 @@ $Units = @{
     essential_practical = @{ Source = "essential_web"; Repository = "EssentialAI/essential-web-v1.0"; View = "essential_practical"; Revision = "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d"; Adapter = "essential_web"; AdapterConfig = "essential_practical"; AdapterSpec = "essential_web:essential_practical"; DefaultFiles = "data/v1/train/00001.parquet"; RecordAs = @("essential_science", "essential_practical", "essential_prose") }
     essential_prose     = @{ Source = "essential_web"; Repository = "EssentialAI/essential-web-v1.0"; View = "essential_prose"; Revision = "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d"; Adapter = "essential_web"; AdapterConfig = "essential_prose"; AdapterSpec = "essential_web:essential_prose"; DefaultFiles = "data/v1/train/00001.parquet"; RecordAs = @("essential_science", "essential_practical", "essential_prose") }
     synth_en_explanations = @{ Source = "synth"; Repository = "PleIAs/SYNTH"; View = "default"; Revision = "0d6813a2966662c39f22f0b9af28a0c1c9f7a437"; Adapter = "synth_en"; AdapterConfig = ""; AdapterSpec = "synth_en"; DefaultFiles = "synth_001.parquet"; RecordAs = @("synth_en_explanations"); Window = @{ ScanRows = "16384"; BufferBytes = "4194304"; BatchRows = "256" } }
-    nemotron_wiki_rewrite = @{ Source = "nemotron_specialized"; Repository = "nvidia/Nemotron-Pretraining-Specialized-v1"; View = "Nemotron-Pretraining-Wiki-Rewrite"; Revision = "9ed3718b5f2ae29074c5e34e64115432b7c4320f"; Adapter = "wiki_rewrite"; AdapterConfig = ""; AdapterSpec = "wiki_rewrite"; DefaultFiles = "Nemotron-Pretraining-Wiki-Rewrite/part_000003.parquet"; RecordAs = @("nemotron_wiki_rewrite") }
+    nemotron_wiki_rewrite = @{ Source = "nemotron_specialized"; Repository = "nvidia/Nemotron-Pretraining-Specialized-v1"; View = "Nemotron-Pretraining-Wiki-Rewrite"; Revision = "9ed3718b5f2ae29074c5e34e64115432b7c4320f"; Adapter = "wiki_rewrite"; AdapterConfig = ""; AdapterSpec = "wiki_rewrite"; DefaultFiles = "Nemotron-Pretraining-Wiki-Rewrite/part_000003.parquet"; RecordAs = @("nemotron_wiki_rewrite"); Window = @{ ScanRows = "16384"; BufferBytes = "4194304"; BatchRows = "256"; PolicyVersion = "2" } }
     simple_stories      = @{ Source = "simple_stories"; Repository = "SimpleStories/SimpleStories"; View = "default"; Revision = "e63b8adc3b1a1bdc7cac5b500d150b71346b0628"; Adapter = "simple_stories"; AdapterConfig = ""; AdapterSpec = "simple_stories"; DefaultFiles = "data/train-00003-of-00007.parquet"; RecordAs = @("simple_stories") }
     finepdfs_en         = @{ Source = "finepdfs_edu"; Repository = "HuggingFaceFW/finepdfs-edu"; View = "eng_Latn"; Revision = "9cfabe2127faca99b3d5c4dc6d1fcb397399ebde"; Adapter = "finepdfs_en"; AdapterConfig = ""; AdapterSpec = "finepdfs_en"; DefaultFiles = "data/eng_Latn/train/000_00083.parquet"; RecordAs = @("finepdfs_en") }
     finewiki_en         = @{ Source = "finewiki"; Repository = "HuggingFaceFW/finewiki"; View = "en"; Revision = "8bd13e72e6a002407649b3e898535f42ceb1aeb9"; Adapter = "finewiki_en"; AdapterConfig = ""; AdapterSpec = "finewiki_en"; DefaultFiles = "data/enwiki/000_00013.parquet"; RecordAs = @("finewiki_en") }
@@ -108,6 +108,10 @@ $U = $Units[$Unit]
 # group per shard). It samples one scan-bounded sub-row-group window and
 # binds the identical policy into its plan and both adoption checks; see
 # docs/implementation/reports/SYNTH-LARGE-ROWGROUP-CALIBRATION.md.
+# A Window with PolicyVersion (Wiki-Rewrite: projected struct 'metadata')
+# uses window-v2 (nested struct leaves); without it the policy is the
+# frozen flat window-v1 (SYNTH), whose argv is unchanged. See
+# docs/implementation/reports/PARQUET-WINDOW-NESTED-STRUCT.md.
 $SampleShape = @("--mode", "rowgroup")
 $SampleAdopt = @()
 $PlanShape = @()
@@ -124,6 +128,12 @@ if ($U.ContainsKey("Window")) {
         "--parquet-window-buffer-bytes", $W.BufferBytes,
         "--parquet-window-batch-rows", $W.BatchRows)
     $PlanAdopt = $windowAdopt
+    if ($W.ContainsKey("PolicyVersion")) {
+        $SampleShape += @("--window-policy-version", $W.PolicyVersion)
+        $SampleAdopt += @("--window-policy-version", $W.PolicyVersion)
+        $PlanShape += @("--parquet-window-policy-version", $W.PolicyVersion)
+        $PlanAdopt += @("--window-policy-version", $W.PolicyVersion)
+    }
 }
 $FileList = if ($Files -ne "") { $Files } else { $U.DefaultFiles }
 if ([string]::IsNullOrWhiteSpace($FileList)) {

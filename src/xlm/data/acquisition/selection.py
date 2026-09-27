@@ -20,6 +20,11 @@ from xlm.artifacts.store import compute_file_sha256
 from xlm.data.acquisition.disk import CapacityLease, StorageCapacityManager
 from xlm.data.acquisition.plan import ParquetWindowDecode
 from xlm.data.acquisition.progress import ProgressCorruptionError
+from xlm.data.acquisition.projection import (
+    ProjectionRefusal,
+    parquet_field_leaves,
+    resolve_projection,
+)
 from xlm.data.acquisition.records import (
     RecordLimitError,
     StreamingJsonlWriter,
@@ -446,6 +451,24 @@ def _resolve_projection(
     return seen, [schema_names.index(field) for field in seen]
 
 
+def _resolve_logical_projection(
+    parquet: pq.ParquetFile, name: str, columns: list[str] | None
+) -> tuple[list[str], list[int]]:
+    """window-v2: logical Arrow fields to decode plus EVERY physical leaf behind them.
+
+    Decoding asks Arrow for the logical fields (structs reconstruct exactly);
+    safety checks run over the returned leaf indices, so every child of a
+    projected struct is accounted and unprojected leaves never are.
+    """
+    if columns is None:
+        raise ValueError("window-v2 requires an explicit logical projection")
+    try:
+        resolved = resolve_projection(parquet_field_leaves(parquet), columns)
+    except ProjectionRefusal as exc:
+        raise RecordLimitError(f"window-v2 projection refused for '{name}': {exc}") from exc
+    return list(resolved.logical_fields), list(resolved.leaf_indices)
+
+
 def _column_chunk_spans(
     parquet: pq.ParquetFile, group: int, col_indices: list[int]
 ) -> tuple[list[tuple[int, int]], int, int]:
@@ -722,7 +745,11 @@ def _parquet_selection_window(
             )
         if stop > parquet.metadata.num_rows:
             raise ValueError("selected row range extends beyond Parquet corpus")
-        projected_names, col_indices = _resolve_projection(parquet, name, columns)
+        if window.policy_version >= 2:
+            projected_names, col_indices = _resolve_logical_projection(parquet, name, columns)
+        else:
+            # window-v1 (frozen): flat leaf-name projection, exactly as certified.
+            projected_names, col_indices = _resolve_projection(parquet, name, columns)
         base, group = 0, -1
         for index in range(parquet.num_row_groups):
             end = base + parquet.metadata.row_group(index).num_rows

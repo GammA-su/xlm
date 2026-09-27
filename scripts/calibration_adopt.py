@@ -52,13 +52,21 @@ class AdoptionRefused(ValueError):
 
 
 def _window_request(args: argparse.Namespace) -> dict[str, int] | None:
-    """Requested window policy (all three values or none), for agreement checks."""
+    """Requested window policy (all three values or none), for agreement checks.
+
+    The policy version is always bound: omitted means version 1, so a v1
+    request never adopts a v2 artifact and vice versa.
+    """
     values = (args.window_scan_rows, args.window_buffer_bytes, args.window_batch_rows)
     if all(value is None for value in values):
+        if args.window_policy_version is not None:
+            raise AdoptionRefused("window policy version needs the window values")
         return None
     if any(value is None for value in values):
         raise AdoptionRefused("window adoption needs scan rows, buffer bytes and batch rows")
+    version = 1 if args.window_policy_version is None else int(args.window_policy_version)
     return {
+        "policy_version": version,
         "max_window_scan_rows": int(args.window_scan_rows),
         "stream_buffer_bytes": int(args.window_buffer_bytes),
         "batch_rows": int(args.window_batch_rows),
@@ -572,6 +580,7 @@ def _add_window_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--window-scan-rows", type=int, default=None)
     parser.add_argument("--window-buffer-bytes", type=int, default=None)
     parser.add_argument("--window-batch-rows", type=int, default=None)
+    parser.add_argument("--window-policy-version", type=int, default=None)
 
 
 def build_parser() -> argparse.ArgumentParser:

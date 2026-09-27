@@ -177,3 +177,21 @@ uv run --offline --locked --extra cpu --extra eval xlm data plan \
 
 Details, bounds and measurements are in
 [SYNTH-LARGE-ROWGROUP-CALIBRATION](reports/SYNTH-LARGE-ROWGROUP-CALIBRATION.md).
+
+### 6.1 window-v2: nested struct projections
+
+`--window-policy-version 2` (sample-blocks) and
+`--parquet-window-policy-version 2` (plan) support projections that
+include **structs**, for example `wiki_rewrite`'s `metadata`.
+
+- **Accounting.** Each logical field is accounted over every physical
+  Parquet leaf beneath it (`metadata.category`, `metadata.models_used`),
+  and each leaf is counted once. Unprojected leaves never count.
+- **Decoding.** Decoding asks Arrow for the logical field, so structs
+  come back exactly as in a full decode.
+- **Refused.** Lists, maps, unions and repeated leaves are refused, with
+  a reason.
+- **v1 is unchanged.** It still refuses nested projections. The version
+  binds the plan hash, the evidence, the window start and adoption.
+
+See [PARQUET-WINDOW-NESTED-STRUCT](reports/PARQUET-WINDOW-NESTED-STRUCT.md).

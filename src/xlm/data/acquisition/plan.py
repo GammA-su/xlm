@@ -69,6 +69,8 @@ PILOT_MAX_WINDOW_BUFFER_BYTES = 8 * 1024 * 1024
 PILOT_MAX_RATIO_EXEMPT_BYTES = 16 * 1024 * 1024
 
 PARQUET_WINDOW_POLICY_VERSION = 1
+#: 1 = flat projections only (frozen); 2 = adds scalar/struct nested projections.
+SUPPORTED_WINDOW_POLICY_VERSIONS = (1, 2)
 
 
 class ParquetWindowDecode(BaseModel):
@@ -81,6 +83,14 @@ class ParquetWindowDecode(BaseModel):
     stops at the first batch reaching the window stop. Rows from the row
     group start up to the window stop are decoded and charged as scanned;
     there is no page skipping (PyArrow exposes no page-index row seeking).
+
+    Policy version 1 is frozen: flat projections only (one physical leaf per
+    projected field; nested fields refused). Version 2 keeps every v1 bound
+    and adds nested STRUCT projections: a logical field is accounted over
+    ALL physical leaves beneath it (``xlm.data.acquisition.projection``) and
+    decoded as the logical field so structs reconstruct exactly; repeated
+    leaves (lists/maps) stay refused. The version is part of the model dump,
+    so it binds the behavioral hash, authorization and the window start.
 
     Bound into the behavioral hash only when set, so legacy plans keep
     their identity. Excluded from the selection hash: records and locators
@@ -107,7 +117,7 @@ class ParquetWindowDecode(BaseModel):
 
     @model_validator(mode="after")
     def supported_version(self) -> ParquetWindowDecode:
-        if self.policy_version != PARQUET_WINDOW_POLICY_VERSION:
+        if self.policy_version not in SUPPORTED_WINDOW_POLICY_VERSIONS:
             raise ValueError(f"unsupported parquet window policy_version {self.policy_version}")
         return self
 

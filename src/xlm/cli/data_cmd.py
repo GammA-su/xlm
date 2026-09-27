@@ -813,6 +813,13 @@ def plan_cmd(
         int,
         typer.Option("--parquet-window-batch-rows", help="Decode batch rows for window decode."),
     ] = 256,
+    window_policy_version: Annotated[
+        int,
+        typer.Option(
+            "--parquet-window-policy-version",
+            help="Window policy version: 1 = flat projections (frozen), 2 = nested structs.",
+        ),
+    ] = 1,
 ) -> None:
     """Generate and validate an acquisition plan adhering to Contracts C01 and C04."""
     try:
@@ -883,15 +890,24 @@ def plan_cmd(
             raise typer.Exit(code=1)
     window: ParquetWindowDecode | None = None
     if window_scan_rows is not None:
-        window = ParquetWindowDecode(
-            stream_buffer_bytes=window_buffer_bytes,
-            max_window_scan_rows=window_scan_rows,
-            batch_rows=window_batch_rows,
-        )
-    elif (window_buffer_bytes, window_batch_rows) != (4 * 1024 * 1024, 256):
+        try:
+            window = ParquetWindowDecode(
+                policy_version=window_policy_version,
+                stream_buffer_bytes=window_buffer_bytes,
+                max_window_scan_rows=window_scan_rows,
+                batch_rows=window_batch_rows,
+            )
+        except ValueError as e:
+            typer.echo(f"Error: invalid window decode options: {e}", err=True)
+            raise typer.Exit(code=1) from e
+    elif (window_buffer_bytes, window_batch_rows, window_policy_version) != (
+        4 * 1024 * 1024,
+        256,
+        1,
+    ):
         typer.echo(
-            "Error: --parquet-window-buffer-bytes/--parquet-window-batch-rows need "
-            "--parquet-window-scan-rows.",
+            "Error: --parquet-window-buffer-bytes/--parquet-window-batch-rows/"
+            "--parquet-window-policy-version need --parquet-window-scan-rows.",
             err=True,
         )
         raise typer.Exit(code=1)
@@ -1111,6 +1127,13 @@ def sample_blocks_cmd(
         int,
         typer.Option("--window-batch-rows", help="Window mode: decode batch rows."),
     ] = 256,
+    window_policy_version: Annotated[
+        int,
+        typer.Option(
+            "--window-policy-version",
+            help="Window mode: 1 = flat projections (frozen), 2 = nested structs.",
+        ),
+    ] = 1,
 ) -> None:
     """Plan dense row-group-aligned selections without acquiring records.
 
@@ -1144,6 +1167,7 @@ def sample_blocks_cmd(
                     name.strip() for name in (project_fields or "").split(",") if name.strip()
                 )
             window = ParquetWindowDecode(
+                policy_version=window_policy_version,
                 stream_buffer_bytes=window_buffer_bytes,
                 max_window_scan_rows=window_scan_rows,
                 batch_rows=window_batch_rows,
@@ -1293,6 +1317,8 @@ def sample_blocks_cmd(
             f" --parquet-window-buffer-bytes {window.stream_buffer_bytes}"
             f" --parquet-window-batch-rows {window.batch_rows}"
         )
+        if window.policy_version != 1:
+            window_next += f" --parquet-window-policy-version {window.policy_version}"
     typer.echo(
         f"Next: xlm data plan --source {source_id} --view {view_id} --catalog {catalog_path} "
         f"--files {','.join(result.selected_files)} --mode selected_records "

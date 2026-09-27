@@ -692,3 +692,101 @@ def test_sample_blocks_adoption_binds_mode_window_and_projection(tmp_path: Path)
     report.write_text(json.dumps({**evidence, "mode": "rowgroup"}), encoding="utf-8")
     assert _adopt.main(base + window) == 1
     assert rows.read_bytes() == before
+
+
+def test_window_policy_versions_never_cross_adopt(tmp_path: Path) -> None:
+    import json as _json
+
+    from xlm.data.acquisition.plan import (
+        AcquisitionMode,
+        AcquisitionPlan,
+        ParquetWindowDecode,
+        SamplingFrame,
+        save_acquisition_plan,
+    )
+
+    def saved(version: int) -> tuple[Path, Path]:
+        root = tmp_path / f"v{version}"
+        root.mkdir()
+        plan = AcquisitionPlan(
+            plan_id=f"plan_wiki_v{version}",
+            source_id="nemotron_specialized",
+            view_id="default",
+            provider="huggingface",
+            repository="nvidia/Nemotron-Pretraining-Specialized-v1",
+            revision=REVISION,
+            mode=AcquisitionMode.SELECTED_RECORDS,
+            selected_files=["a.parquet"],
+            row_ranges={"a.parquet": (100, 1100)},
+            sampling_frame=SamplingFrame(selection_seed=20260918),
+            output_artifact_id=f"raw_wiki_v{version}",
+            projected_fields=["text", "license", "metadata", "uuid"],
+            parquet_window=ParquetWindowDecode(
+                policy_version=version,
+                stream_buffer_bytes=4194304,
+                max_window_scan_rows=16384,
+                batch_rows=256,
+            ),
+        )
+        save_acquisition_plan(plan, root / "plan.json")
+        rows = root / "rows.json"
+        rows.write_text(_json.dumps({"a.parquet": [100, 1100]}), encoding="utf-8")
+        return root / "plan.json", rows
+
+    for version in (1, 2):
+        plan_path, rows = saved(version)
+        base = _plan_base(plan_path, rows, "nemotron_specialized")
+        v1 = base + WINDOW_ADOPT
+        v2 = base + WINDOW_ADOPT + ["--window-policy-version", "2"]
+        explicit_v1 = base + WINDOW_ADOPT + ["--window-policy-version", "1"]
+        if version == 1:
+            assert _adopt.main(v1) == 2 and _adopt.main(explicit_v1) == 2
+            assert _adopt.main(v2) == 1
+        else:
+            assert _adopt.main(v2) == 2
+            assert _adopt.main(v1) == 1 and _adopt.main(explicit_v1) == 1
+        # A version without the window values is itself refused.
+        assert _adopt.main(base + ["--window-policy-version", "2"]) == 1
+
+    report = tmp_path / "rows.evidence.json"
+    rows = tmp_path / "rows.json"
+    rows.write_text(_json.dumps({"a.parquet": [100, 1100]}), encoding="utf-8")
+    evidence = {
+        "source_id": "nemotron_specialized",
+        "view_id": "default",
+        "revision": REVISION,
+        "seed": 20260918,
+        "mode": "window",
+        "projected_fields": ["license", "metadata", "text", "uuid"],
+        "window_policy": {
+            "policy_version": 2,
+            "max_window_scan_rows": 16384,
+            "stream_buffer_bytes": 4194304,
+            "batch_rows": 256,
+        },
+    }
+    report.write_text(_json.dumps(evidence), encoding="utf-8")
+    sample = [
+        "sample-blocks",
+        "--rows",
+        str(rows),
+        "--report",
+        str(report),
+        "--source",
+        "nemotron_specialized",
+        "--view",
+        "default",
+        "--revision",
+        REVISION,
+        "--seed",
+        "20260918",
+        "--files-csv",
+        "a.parquet",
+        "--sample-mode",
+        "window",
+        "--adapter-spec",
+        "wiki_rewrite",
+        *WINDOW_ADOPT,
+    ]
+    assert _adopt.main(sample + ["--window-policy-version", "2"]) == 2
+    assert _adopt.main(sample) == 1  # implicit v1 request never adopts v2 evidence
