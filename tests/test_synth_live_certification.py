@@ -156,7 +156,8 @@ def test_missing_and_malformed_render_fields() -> None:
                 source_row=0,
                 source_revision="r",
             )
-        with pytest.raises(MissingFieldError, match=f"'{key}'"):
+        # Unusable content is a recorded policy drop, not a schema failure.
+        with pytest.raises(RecordRejectedError, match=f"'{key}'"):
             adapter.adapt(
                 _base_record(**{key: ""}),
                 source_file="f",

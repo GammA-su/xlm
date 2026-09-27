@@ -53,6 +53,39 @@ def _require(record: Mapping[str, Any], field_name: str, adapter_id: str) -> Any
     return value
 
 
+def _require_recordable_content_text(
+    record: Mapping[str, Any], field_name: str, adapter_id: str
+) -> str:
+    """Fetch a required training-content string; unusable content is a policy drop.
+
+    The column must exist and hold a string (schema: fatal otherwise). A
+    present-but-null or all-whitespace value is row-level content quality,
+    so it raises :class:`RecordRejectedError` for ``--on-reject record``.
+    Valid text is returned verbatim, never stripped.
+    """
+    if field_name not in record:
+        raise MissingFieldError(
+            f"adapter '{adapter_id}' requires upstream field '{field_name}'; "
+            "it is absent and cannot be guessed."
+        )
+    value = record[field_name]
+    if value is None:
+        raise RecordRejectedError(
+            f"adapter '{adapter_id}' drops rows without usable '{field_name}' content (null)."
+        )
+    if not isinstance(value, str):
+        raise MissingFieldError(
+            f"adapter '{adapter_id}' requires upstream field '{field_name}' "
+            "to be a string; it cannot be coerced."
+        )
+    if not value.strip():
+        raise RecordRejectedError(
+            f"adapter '{adapter_id}' drops rows without usable '{field_name}' content "
+            "(empty or whitespace-only)."
+        )
+    return value
+
+
 def _require_english(language: str, allowed: tuple[str, ...], adapter_id: str) -> None:
     if language not in allowed:
         raise RecordRejectedError(
@@ -613,13 +646,36 @@ class SynthExplanationsAdapter:
         Question: <query>
         Answer: <synthetic_answer>
 
-    with source strings preserved faithfully. ``synthetic_reasoning`` is an
-    upstream field present on every row of the observed shard; reasoning
-    CONTENT is deliberately excluded from training text, but the row itself
-    is never rejected merely because reasoning exists. ``query_seed_url`` is
-    optional (2443 nulls observed in the shard). There are no ``context`` /
-    ``question`` / ``explanation`` / ``reasoning_trace`` fields, and none are
-    invented.
+    with source strings preserved verbatim (never stripped). SYNTH is
+    multilingual and is NOT English-pure; this treatment keeps only rows
+    explicitly labelled ``en``.
+
+    Row semantics (fatal = :class:`MissingFieldError`, aborts adaptation;
+    policy drop = :class:`RecordRejectedError`, recorded by
+    ``--on-reject record``):
+
+    - ``synth_id`` / ``seed_license`` (identity/provenance): absent, null,
+      blank or non-string is fatal.
+    - ``query`` / ``query_seed_text`` / ``synthetic_answer`` (training
+      content): the columns are required schema, so absent or non-string is
+      fatal; a present null or blank/whitespace-only value is a policy drop
+      (unusable row content, observed on real rows).
+    - ``language``: absent or non-string is fatal; null/blank (unlabelled)
+      and any label other than ``en`` are policy drops.
+    - ``exercise`` / ``model`` / ``query_seed_url`` / ``additional_seed_url``
+      (optional metadata): absent, null or blank is omitted from canonical
+      metadata; a valid string is preserved verbatim; a non-string is fatal.
+      ``words`` is optional; a non-integer is fatal.
+
+    Every fatal check runs before any policy drop, so a malformed row is
+    never hidden behind a recordable rejection. Content drops are reported
+    before language drops.
+
+    ``synthetic_reasoning`` is an upstream field present on every row of the
+    observed shard; reasoning CONTENT is deliberately excluded from training
+    text, but the row itself is never rejected merely because reasoning
+    exists. There are no ``context`` / ``question`` / ``explanation`` /
+    ``reasoning_trace`` fields, and none are invented.
     """
 
     ADAPTER_ID = "synth_en"
@@ -659,52 +715,32 @@ class SynthExplanationsAdapter:
                 f"adapter '{self.ADAPTER_ID}' requires upstream field 'synth_id' "
                 "to be a non-empty string; it cannot be coerced."
             )
-        query = _require(record, "query", self.ADAPTER_ID)
-        if not isinstance(query, str) or not query:
-            raise MissingFieldError(
-                f"adapter '{self.ADAPTER_ID}' requires upstream field 'query' "
-                "to be a non-empty string; it cannot be coerced."
-            )
-        query_seed_text = _require(record, "query_seed_text", self.ADAPTER_ID)
-        if not isinstance(query_seed_text, str) or not query_seed_text:
-            raise MissingFieldError(
-                f"adapter '{self.ADAPTER_ID}' requires upstream field 'query_seed_text' "
-                "to be a non-empty string; it cannot be coerced."
-            )
-        synthetic_answer = _require(record, "synthetic_answer", self.ADAPTER_ID)
-        if not isinstance(synthetic_answer, str) or not synthetic_answer:
-            raise MissingFieldError(
-                f"adapter '{self.ADAPTER_ID}' requires upstream field 'synthetic_answer' "
-                "to be a non-empty string; it cannot be coerced."
-            )
         seed_license = _require(record, "seed_license", self.ADAPTER_ID)
         if not isinstance(seed_license, str) or not seed_license.strip():
             raise MissingFieldError(
                 f"adapter '{self.ADAPTER_ID}' requires upstream field 'seed_license' "
                 "to be a non-empty string; it cannot be coerced."
             )
+        # Content: schema faults stay fatal for every field; the first
+        # unusable-content drop is held until all fatal checks have run.
+        content: dict[str, str] = {}
+        content_drop: RecordRejectedError | None = None
+        for name in ("query", "query_seed_text", "synthetic_answer"):
+            try:
+                content[name] = _require_recordable_content_text(record, name, self.ADAPTER_ID)
+            except RecordRejectedError as exc:
+                content_drop = content_drop or exc
         if "language" not in record:
             raise MissingFieldError(
                 f"adapter '{self.ADAPTER_ID}' requires upstream field 'language'; "
                 "it is absent and cannot be guessed."
             )
         language = record["language"]
-        if language is None or (isinstance(language, str) and not language.strip()):
-            raise RecordRejectedError(
-                f"adapter '{self.ADAPTER_ID}' keeps explicit 'en' rows only; "
-                "row carries no usable language label."
-            )
-        if not isinstance(language, str):
+        if language is not None and not isinstance(language, str):
             raise MissingFieldError(
                 f"adapter '{self.ADAPTER_ID}' requires upstream field 'language' "
                 "to be a string when present."
             )
-        if language != "en":
-            raise RecordRejectedError(
-                f"adapter '{self.ADAPTER_ID}' keeps explicit 'en' rows only; "
-                f"row carries language '{language}'."
-            )
-        text = f"Context: {query_seed_text}\nQuestion: {query}\nAnswer: {synthetic_answer}"
         source_metadata: dict[str, Any] = {
             "mix01_component": "synth_en_explanations",
             "config_name": "default",
@@ -721,11 +757,13 @@ class SynthExplanationsAdapter:
             if key not in record or record[key] is None:
                 continue
             value = record[key]
-            if not isinstance(value, str) or not value.strip():
+            if not isinstance(value, str):
                 raise MissingFieldError(
                     f"adapter '{self.ADAPTER_ID}' requires upstream field '{key}' "
-                    "to be a non-empty string when present."
+                    "to be a string when present."
                 )
+            if not value.strip():
+                continue
             source_metadata[metadata_key] = value
         if "words" in record and record["words"] is not None:
             words = record["words"]
@@ -735,6 +773,23 @@ class SynthExplanationsAdapter:
                     "to be an integer when present."
                 )
             source_metadata["words"] = words
+        # Policy drops, only after every fatal schema check above passed.
+        if content_drop is not None:
+            raise content_drop
+        if language is None or not language.strip():
+            raise RecordRejectedError(
+                f"adapter '{self.ADAPTER_ID}' keeps explicit 'en' rows only; "
+                "row carries no usable language label."
+            )
+        if language != "en":
+            raise RecordRejectedError(
+                f"adapter '{self.ADAPTER_ID}' keeps explicit 'en' rows only; "
+                f"row carries language '{language}'."
+            )
+        text = (
+            f"Context: {content['query_seed_text']}\nQuestion: {content['query']}\n"
+            f"Answer: {content['synthetic_answer']}"
+        )
         return _canonical_doc(
             doc_id=canonical_source_doc_id("synth", source_file, source_row),
             source_id="synth",
