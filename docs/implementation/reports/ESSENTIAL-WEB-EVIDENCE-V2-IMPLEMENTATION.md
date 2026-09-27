@@ -204,3 +204,68 @@ labeling, or freeze was performed or authorized here. No X: writes, no
 G: writes beyond the single authorized selection manifest, no push.
 **READY FOR BOUNDED FOOTER/COST PLANNING** (pending separate user
 network authorization), not ready to acquire.
+
+## 9. Live footer/cost planning transport (patch, 2026-09-27, offline agent)
+
+CORRECTION: the §8 verdict above was premature. `plan-footers
+--no-dry-run --authorize-network` failed for the user with "live footer
+transport is not implemented in this offline task" — footer planning
+had only a dry-run emitter plus a refusing stub. This patch implements
+the real planning transport; the agent itself stayed offline throughout
+(synthetic fixtures + stub opener only, sockets blocked in tests).
+
+Reused existing XLM machinery (no second HTTP/Parquet stack):
+`canonical_range_url`, `validate_host`, `TransportBudget`,
+`SafeRedirectHandler`, `discover_layout_over_ranges`,
+`plan_sample_windows`, `ParquetWindowDecode`, projection resolution —
+the same composition the `xlm data sample-blocks` footer path uses —
+plus the frozen `ArmLedger` and evidence-v2 provenance. New code:
+`src/xlm/data/evidence_v2/footer.py` (live + fake transports, retry,
+per-file planning, arm aggregate, incomplete receipts) and
+`src/xlm/data/evidence_v2/text_costs.py` (metadata-only Arm-T cost
+planning over the same transport).
+
+With `--no-dry-run --authorize-network`, `plan-footers` now: verifies
+freeze + inventory first; refuses any non-frozen file; fetches only
+header + Parquet footer ranges (4 MiB single-body cap, 30 s timeout,
+≤2 retries with 1 s/2 s delays for timeouts/resets/429/502/503/504,
+every attempt charged); enforces huggingface.co +
+cas-bridge.xethub.hf.co HTTPS/443 with ≤3 redirect hops (all charged);
+binds ETag + length per file and refuses drift; resolves the exact
+metadata projection (text column presence refused); runs frozen
+window-v2 eligibility per group plus `plan_sample_windows`; cross-checks
+the deterministic 512-row window against the independent
+`windows.freeze_window` identities; records per-group bytes/estimates/
+refusals and future-plan feasibility (100 req/plan, 28 MiB data/file,
+64 MiB decomp/file, 16384 scan/file, 256 MiB reservation — refusal when
+no safe bound); stops the whole arm INCOMPLETE on the first bad file
+with no rerank/reseed/substitute. Output `footer_evidence.json` is
+atomic with canonical digest + file binding; failures write only a
+separate `.incomplete.json` receipt, never a success artifact. All
+planning counters live in the same `ArmLedger` later execution
+continues (footer ≤80 requests / ≤32 MiB enforced as stage totals on
+the shared counter; kind-level accounting added for this).
+
+`plan-text-costs --no-dry-run --authorize-network` reuses the same
+transport to read footer/chunk metadata for the text leaf in groups
+holding the frozen 118 locators (offsets, compressed/uncompressed
+lengths, group sizes only — never page data, never decode, never text),
+computes conservative per-file cost uppers against the frozen T caps,
+and seals cost evidence or stops INCOMPLETE.
+
+Verification: 34 new tests (`tests/test_evidence_v2_footer.py`, 88
+total evidence-v2 tests pass, `-n 0`, no network) cover frozen-file
+gating, footer-only ranges (served bytes ≪ file, header + tail zone
+only), deterministic windows, request/retry/redirect accounting,
+per-file + arm request/byte refusals, body cap, host/redirect-host
+refusals, revision pinning, length/ETag drift, schema/missing-field
+refusals, 512-row and no-eligible-group refusals, future-plan and
+workspace refusals, no-rerank stop, incomplete receipts without success
+artifacts, ledger resume accumulation, text-column exclusion, and all T
+cost behaviors. `ruff check` / `format --check` clean, scoped `mypy`
+clean. Live transport itself was NOT run (no network in this task).
+
+Frozen identities unchanged: freeze `fe215779…`, policy `f4357f61…`,
+23200-path inventory, 8 winners; locator manifest digest recomputed
+`975ba3dee4af0598e665ea05c69bbe49336c3e3a35fca777a863073190b78474`
+(118 rows, unchanged).

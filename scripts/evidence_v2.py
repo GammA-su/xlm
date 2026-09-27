@@ -239,22 +239,148 @@ def _refuse_live(args: argparse.Namespace, what: str) -> int:
     return 0
 
 
+def _live_transport() -> Any:
+    from xlm.data.evidence_v2.footer import LiveFooterTransport
+    from xlm.data.sources.transport import TransportBudget
+
+    budget = TransportBudget(
+        max_bytes=frozen.ARM_M_LIMITS["response_body_bytes_total"],
+        max_requests=frozen.ARM_M_LIMITS["requests_total"],
+        deadline_seconds=float(frozen.ARM_M_LIMITS["time_seconds_arm"]),
+        per_request_timeout=float(frozen.PER_REQUEST_TIMEOUT_SECONDS),
+    )
+    return LiveFooterTransport(budget)
+
+
 def cmd_plan_footers(args: argparse.Namespace) -> int:
     if args.dry_run:
         return cmd_dry_m_plan(args)
     code = _refuse_live(args, "footer planning")
     if code:
         return code
-    # Live footer inspection was not exercised in the offline implementation
-    # task; the authorized operator run starts from the dry plan above.
-    return _fail("live footer transport is not implemented in this offline task")
+    from xlm.data.evidence_v2 import footer as footer_mod
+
+    if args.out is None:
+        return _fail("live footer planning requires --out for the evidence file")
+    try:
+        inv = _load_json(EVIDENCE_DIR / "inventory-freeze.json")
+        result = inventory.verify_inventory_freeze(inv)
+        ledger = budgets.new_arm_m()
+        aggregate = footer_mod.plan_arm_m(_live_transport(), ledger, result["winners"])
+        provenance = receipts.provenance(
+            root=ROOT,
+            code_paths=_code_paths(),
+            command="plan-footers --no-dry-run --authorize-network",
+            exit_status=0,
+            caps=frozen.ARM_M_LIMITS,
+            parents={"freeze": frozen.FREEZE_DIGEST},
+            stage="footer-planning",
+        )
+        sealed = receipts.seal({**aggregate, "provenance": provenance})
+    except footer_mod.ArmIncomplete as exc:
+        receipt = receipts.seal(footer_mod.incomplete_receipt(exc, command="plan-footers live"))
+        incomplete = args.out.with_name(args.out.stem + ".incomplete.json")
+        try:
+            receipts.publish_manifest(incomplete, receipt)
+        except (receipts.ReceiptError, OSError) as publish_exc:
+            return _fail(f"{exc}; also failed to write incomplete receipt: {publish_exc}")
+        print(f"evidence_v2: Arm M INCOMPLETE; failure receipt: {incomplete}", file=sys.stderr)
+        return _fail(str(exc))
+    except (footer_mod.FooterError, budgets.BudgetRefusal, receipts.ReceiptError) as exc:
+        return _fail(str(exc))
+    try:
+        receipts.publish_manifest(args.out, sealed)
+    except (receipts.ReceiptError, OSError) as exc:
+        return _fail(str(exc))
+    print(
+        json.dumps(
+            {
+                "status": sealed["status"],
+                "digest": sealed["digest"],
+                "units": len(sealed["units"]),
+                "budget": sealed["budget"],
+            },
+            indent=2,
+        )
+    )
+    return 0
 
 
 def cmd_plan_text_costs(args: argparse.Namespace) -> int:
+    if args.dry_run:
+        return cmd_dry_t_plan(args)
     code = _refuse_live(args, "text cost planning")
     if code:
         return code
-    return _fail("live cost transport is not implemented in this offline task")
+    from xlm.data.evidence_v2 import text_costs as text_costs_mod
+
+    if args.out is None:
+        return _fail("live text cost planning requires --out for the evidence file")
+    try:
+        manifest = _load_json(args.selection_manifest)
+        ledger = budgets.new_arm_t()
+        aggregate = text_costs_mod.plan_text_costs(
+            manifest, transport=_live_transport(), ledger=ledger
+        )
+        provenance = receipts.provenance(
+            root=ROOT,
+            code_paths=_code_paths(),
+            command="plan-text-costs --no-dry-run --authorize-network",
+            exit_status=0,
+            caps=frozen.ARM_T_LIMITS,
+            parents={
+                "freeze": frozen.FREEZE_DIGEST,
+                "selection": manifest["digest"],
+            },
+            stage="text-cost-planning",
+        )
+        sealed = receipts.seal({**aggregate, "provenance": provenance})
+    except text_costs_mod.TextCostsIncomplete as exc:
+        receipt = receipts.seal(
+            {
+                "kind": "essential_web_evidence_v2_text_costs_incomplete",
+                "protocol_version": frozen.PROTOCOL_VERSION,
+                "freeze_digest": frozen.FREEZE_DIGEST,
+                "completed_units": exc.units,
+                "failed_file": exc.failed_file,
+                "reason": exc.reason,
+                "budget": exc.budget,
+                "command": "plan-text-costs live",
+                "exit_status": 1,
+                "status": "INCOMPLETE",
+            }
+        )
+        incomplete = args.out.with_name(args.out.stem + ".incomplete.json")
+        try:
+            receipts.publish_manifest(incomplete, receipt)
+        except (receipts.ReceiptError, OSError) as publish_exc:
+            return _fail(f"{exc}; also failed to write incomplete receipt: {publish_exc}")
+        print(
+            f"evidence_v2: Arm-T costs INCOMPLETE; failure receipt: {incomplete}", file=sys.stderr
+        )
+        return _fail(str(exc))
+    except (
+        text_costs_mod.TextCostError,
+        budgets.BudgetRefusal,
+        receipts.ReceiptError,
+    ) as exc:
+        return _fail(str(exc))
+    try:
+        receipts.publish_manifest(args.out, sealed)
+    except (receipts.ReceiptError, OSError) as exc:
+        return _fail(str(exc))
+    print(
+        json.dumps(
+            {
+                "status": sealed["status"],
+                "digest": sealed["digest"],
+                "files": len(sealed["files"]),
+                "budget": sealed["budget"],
+            },
+            indent=2,
+        )
+    )
+    return 0
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -289,7 +415,10 @@ def build_parser() -> argparse.ArgumentParser:
     footers.set_defaults(func=cmd_plan_footers)
 
     costs = sub.add_parser("plan-text-costs", help="Text cost planning (gated).")
+    costs.add_argument("--dry-run", action=argparse.BooleanOptionalAction, default=True)
     costs.add_argument("--authorize-network", action="store_true", default=False)
+    costs.add_argument("--selection-manifest", type=Path, required=True)
+    costs.add_argument("--out", type=Path, default=None)
     costs.set_defaults(func=cmd_plan_text_costs)
 
     return parser

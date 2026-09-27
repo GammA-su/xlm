@@ -534,11 +534,17 @@ def test_cli_dry_t_plan(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> N
 
 
 def test_cli_live_planning_refuses_without_authorization(
-    capsys: pytest.CaptureFixture[str],
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
     cli = _cli()
     assert cli.main(["plan-footers", "--no-dry-run"]) == 2
     assert "STOP" in capsys.readouterr().err
-    assert cli.main(["plan-text-costs"]) == 2
+    selection = text_select.select_text(_science_world(), CRAWLS)
+    manifest = text_select.seal(
+        text_select.build_manifest(selection, evaluator_hash="ab" * 32, command="t", exit_status=0)
+    )
+    path = tmp_path / "selection.json"
+    receipts.publish_manifest(path, manifest)
+    assert cli.main(["plan-text-costs", "--no-dry-run", "--selection-manifest", str(path)]) == 2
     assert "STOP" in capsys.readouterr().err
     assert cli.main(["plan-footers"]) == 0

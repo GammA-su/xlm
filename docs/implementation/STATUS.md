@@ -1,5 +1,23 @@
 # Implementation status
 
+> **ESSENTIAL-WEB EVIDENCE V2 FOOTER TRANSPORT (2026-09-27, offline):
+> PREMATURE VERDICT CORRECTED; LIVE PLANNING IMPLEMENTED, NOT RUN.**
+> The earlier READY claim was wrong: `plan-footers --no-dry-run
+> --authorize-network` failed with an unimplemented-transport stub.
+> This patch implements the real footer/cost planning on the existing
+> XLM stack (range/transport/footer/window machinery + frozen
+> ArmLedger/provenance): footer-only ranges, retry/redirect/host
+> enforcement, drift refusal, deterministic 512-row windows with
+> cross-check, future-plan feasibility, no-rerank INCOMPLETE receipts,
+> atomic outputs, plus metadata-only Arm-T cost planning (never page
+> data/text). Agent stayed offline (mock transports, sockets blocked).
+> 88 focused tests pass; ruff/mypy clean. Frozen digests unchanged;
+> 118-locator manifest digest recomputed
+> `975ba3dee4…78474`. Prior user/Astra docs preserved. Details in
+> [ESSENTIAL-WEB-EVIDENCE-V2-IMPLEMENTATION](reports/ESSENTIAL-WEB-EVIDENCE-V2-IMPLEMENTATION.md)
+> §9. Next: separately authorized operator footer/cost run; live
+> transport itself is implemented but unexecuted.
+
 > **ESSENTIAL-WEB EVIDENCE V2 IMPLEMENTATION (2026-09-27, offline):
 > MECHANISMS DONE; 118/118 LOCATORS SEALED; READY FOR BOUNDED
 > FOOTER/COST PLANNING.** Implemented `essential-web-evidence-v2.0`

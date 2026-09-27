@@ -52,6 +52,8 @@ class ArmLedger:
         self.retries = 0
         self.redirects = 0
         self.response_body_bytes = 0
+        self.kind_requests: dict[str, int] = {}
+        self.footer_body_bytes = 0
         self.transfer_per_file: dict[str, int] = {}
         self.decompressed_per_file: dict[str, int] = {}
         self.decompressed_arm = 0
@@ -87,6 +89,7 @@ class ArmLedger:
         if redirected_hops > self._ceiling("max_redirect_hops"):
             raise self._refuse(f"{kind}: {redirected_hops} redirect hops exceed cap")
         self.requests += 1
+        self.kind_requests[kind] = self.kind_requests.get(kind, 0) + 1
         if retried:
             self.retries += 1
         self.redirects += redirected_hops
@@ -94,6 +97,17 @@ class ArmLedger:
             self.failed_requests += 1
         if self.requests > self._ceiling(self._requests_key):
             raise self._refuse(f"{kind}: arm request ceiling exhausted")
+        # Arm M splits the arm total into frozen footer/data stage totals
+        # sharing this same counter: footer planning stops at 80 even
+        # though later data execution may continue to 800/880.
+        stage_key = {"M": {"footer": "footer_requests_total", "data": "data_requests_total"}}
+        key = stage_key.get(self.arm, {}).get(kind)
+        if key is not None and self.kind_requests[kind] > self._ceiling(key):
+            raise self._refuse(f"{kind}: arm {kind} request ceiling exhausted")
+
+    def note_failed_attempt(self) -> None:
+        """Count a failed attempt without consuming another request charge."""
+        self.failed_requests += 1
 
     def charge_file_request(self, source_file: str, *, kind: str) -> None:
         """One attempt charged to the shared arm counter AND the file cell."""
@@ -117,16 +131,22 @@ class ArmLedger:
         self.response_body_bytes += nbytes
         if self.response_body_bytes > self._ceiling(self._transfer_arm_key):
             raise self._refuse(f"{kind}: arm transfer ceiling exhausted")
+        # Footer response bodies share the arm transfer counter and stop at
+        # the frozen footer byte total (32 MiB M, 16 MiB T).
+        if kind == "footer":
+            self.footer_body_bytes += nbytes
+            footer_key = "footer_bytes_total" if self.arm == "M" else "footer_bytes_total_max"
+            if self.footer_body_bytes > self._ceiling(footer_key):
+                raise self._refuse(f"{kind}: arm footer byte ceiling exhausted")
 
     def charge_transfer(self, source_file: str, nbytes: int, *, kind: str) -> None:
         """Per-file and arm transfer bounds; footer and data share the arm."""
-        per_file_key = (
-            "footer_bytes_per_file"
-            if kind == "footer"
-            else "data_bytes_per_file"
-            if self.arm == "M"
-            else "transfer_bytes_per_file_max"
-        )
+        if self.arm == "M":
+            per_file_key = "footer_bytes_per_file" if kind == "footer" else "data_bytes_per_file"
+        else:
+            per_file_key = (
+                "footer_bytes_per_file_max" if kind == "footer" else "data_bytes_per_file_max"
+            )
         got = self.transfer_per_file.get(source_file, 0) + nbytes
         if got > self._ceiling(per_file_key):
             raise self._refuse(f"{kind}: per-file transfer ceiling for {source_file}")
@@ -201,10 +221,12 @@ class ArmLedger:
         return {
             "arm": self.arm,
             "requests": self.requests,
+            "kind_requests": dict(sorted(self.kind_requests.items())),
             "failed_requests": self.failed_requests,
             "retries": self.retries,
             "redirects": self.redirects,
             "response_body_bytes": self.response_body_bytes,
+            "footer_body_bytes": self.footer_body_bytes,
             "transfer_per_file": dict(sorted(self.transfer_per_file.items())),
             "decompressed_arm": self.decompressed_arm,
             "decompressed_per_file": dict(sorted(self.decompressed_per_file.items())),
