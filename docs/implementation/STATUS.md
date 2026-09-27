@@ -118,6 +118,22 @@
 >   -Unit nemotron_wiki_rewrite -Stage SampleBlocks`
 >
 > See [PARQUET-WINDOW-NESTED-STRUCT](reports/PARQUET-WINDOW-NESTED-STRUCT.md).
+>
+> **ESSENTIAL-WEB SELECTOR RECON (2026-09-27): READY FOR ESSENTIAL LIVE
+> RECON.** The adapter stamps the science/practical/prose component from
+> configuration and never selects rows, so the three calibration units
+> would share identical raw rows. Do not run them yet.
+> `scripts/essential_web_recon.py` adds:
+> - `discover`: bounded HF tree listing, 8 temporal crawl strata, a seeded
+>   choice of one file per crawl, and a digest-frozen manifest;
+> - `analyze`: offline distributions, cross-tabs, accounting, percentiles
+>   and candidate overlap, with nothing approved.
+>
+> Acquisition reuses window-v2 sample-blocks → plan → fetch → verify with
+> a metadata-only projection (`text` excluded), capped at 4,096 records.
+> 14 new tests pass along with 22 nested-window regressions; ruff and
+> mypy are clean. Selectors, the adapter, weights and quotas are
+> unchanged. See [ESSENTIAL-WEB-SELECTOR-RECON](reports/ESSENTIAL-WEB-SELECTOR-RECON.md) §10.
 > Surgical idempotent freeze; focused offline tests + ruff + scoped mypy
 > green. No push. See [MIX01-ULTRAX-6B §15](reports/MIX01-ULTRAX-6B.md).
 >
