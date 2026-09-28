@@ -1,0 +1,498 @@
+{
+  "M_accounting": {
+    "all_response_body_bytes_exact": null,
+    "file_history": [
+      {
+        "absolute_window": [
+          90023,
+          90535
+        ],
+        "all_body_bytes_exact": null,
+        "complete_requests": 6,
+        "etag": "\"a898462fb164d7eea3e8248a28cb1f855843d72bd55cfd126f537653c4eae323\"",
+        "file": "data/crawl=CC-MAIN-2014-15/train-01860-of-02772.parquet",
+        "footer_bytes_remaining_from_recorded_only": 3656688,
+        "footer_requests_remaining_after_nominal_revalidation": 2,
+        "footer_requests_remaining_v22": 4,
+        "historical_requests": 12,
+        "old_requests": 6,
+        "recorded_range_body_bytes": 537616,
+        "remote_length": 290684578
+      },
+      {
+        "absolute_window": [
+          92096,
+          92608
+        ],
+        "all_body_bytes_exact": null,
+        "complete_requests": 6,
+        "etag": "\"d25ba04f1376333b6706e0becc19aa92f9540219aa4df5e96360fce324851975\"",
+        "file": "data/crawl=CC-MAIN-2015-32/train-01682-of-01920.parquet",
+        "footer_bytes_remaining_from_recorded_only": 3929982,
+        "footer_requests_remaining_after_nominal_revalidation": 7,
+        "footer_requests_remaining_v22": 9,
+        "historical_requests": 7,
+        "old_requests": 1,
+        "recorded_range_body_bytes": 264322,
+        "remote_length": 316724715
+      },
+      {
+        "absolute_window": [
+          67173,
+          67685
+        ],
+        "all_body_bytes_exact": null,
+        "complete_requests": 6,
+        "etag": "\"87b6c7d4142774d0e716ed48826151f9a7e9d13ffe98c239feb7980cd06af746\"",
+        "file": "data/crawl=CC-MAIN-2016-50/train-02156-of-03132.parquet",
+        "footer_bytes_remaining_from_recorded_only": 3978673,
+        "footer_requests_remaining_after_nominal_revalidation": 8,
+        "footer_requests_remaining_v22": 10,
+        "historical_requests": 6,
+        "old_requests": 0,
+        "recorded_range_body_bytes": 215631,
+        "remote_length": 207246017
+      },
+      {
+        "absolute_window": [
+          11728,
+          12240
+        ],
+        "all_body_bytes_exact": null,
+        "complete_requests": 6,
+        "etag": "\"d2c33e6f97b7cd8a0a1ff9eb419be453a3e6d4658445f86d2265bb0dc6ecd6ef\"",
+        "file": "data/crawl=CC-MAIN-2018-05/train-03378-of-03429.parquet",
+        "footer_bytes_remaining_from_recorded_only": 3929541,
+        "footer_requests_remaining_after_nominal_revalidation": 8,
+        "footer_requests_remaining_v22": 10,
+        "historical_requests": 6,
+        "old_requests": 0,
+        "recorded_range_body_bytes": 264763,
+        "remote_length": 285464583
+      },
+      {
+        "absolute_window": [
+          26634,
+          27146
+        ],
+        "all_body_bytes_exact": null,
+        "complete_requests": 6,
+        "etag": "\"9d0c7824df33063587958afb535fa097d8c5af423c172e63714f725aa3003f1b\"",
+        "file": "data/crawl=CC-MAIN-2019-09/train-00153-of-02577.parquet",
+        "footer_bytes_remaining_from_recorded_only": 3965590,
+        "footer_requests_remaining_after_nominal_revalidation": 8,
+        "footer_requests_remaining_v22": 10,
+        "historical_requests": 6,
+        "old_requests": 0,
+        "recorded_range_body_bytes": 228714,
+        "remote_length": 247450105
+      },
+      {
+        "absolute_window": [
+          46415,
+          46927
+        ],
+        "all_body_bytes_exact": null,
+        "complete_requests": 6,
+        "etag": "\"6b46903d378381f127814c1d81e741d8b7616e5d39abee5524ac22ded871461e\"",
+        "file": "data/crawl=CC-MAIN-2021-04/train-00179-of-03315.parquet",
+        "footer_bytes_remaining_from_recorded_only": 3973021,
+        "footer_requests_remaining_after_nominal_revalidation": 8,
+        "footer_requests_remaining_v22": 10,
+        "historical_requests": 6,
+        "old_requests": 0,
+        "recorded_range_body_bytes": 221283,
+        "remote_length": 246957884
+      },
+      {
+        "absolute_window": [
+          58279,
+          58791
+        ],
+        "all_body_bytes_exact": null,
+        "complete_requests": 6,
+        "etag": "\"852e5570ccf4c5f762c0300f8d8b6f9e691f50b01fdf590d2b987fa09d18542e\"",
+        "file": "data/crawl=CC-MAIN-2021-49/train-00408-of-02895.parquet",
+        "footer_bytes_remaining_from_recorded_only": 3962525,
+        "footer_requests_remaining_after_nominal_revalidation": 8,
+        "footer_requests_remaining_v22": 10,
+        "historical_requests": 6,
+        "old_requests": 0,
+        "recorded_range_body_bytes": 231779,
+        "remote_length": 247477157
+      },
+      {
+        "absolute_window": [
+          19154,
+          19666
+        ],
+        "all_body_bytes_exact": null,
+        "complete_requests": 6,
+        "etag": "\"bdc91792cb54687e353f7aa5b2ddb70eabdfe9bd3b8e781f6c564aa60a0b3b90\"",
+        "file": "data/crawl=CC-MAIN-2024-26/train-01127-of-03168.parquet",
+        "footer_bytes_remaining_from_recorded_only": 3966964,
+        "footer_requests_remaining_after_nominal_revalidation": 8,
+        "footer_requests_remaining_v22": 10,
+        "historical_requests": 6,
+        "old_requests": 0,
+        "recorded_range_body_bytes": 227340,
+        "remote_length": 246493238
+      }
+    ],
+    "historical_status": "v2.0/v2.1 first-file 12>10 request cap violation remains",
+    "known_event_requests": 55,
+    "missing_history_blocks_execution": true,
+    "reconciliation_digest": "f1e570d6b9936c9fb3984d5bc364750f8e282077a4259c65ee278b07b2d5d5ff",
+    "recorded_range_body_bytes": 2191448,
+    "v21_first_file_audit_capture_content_digest": "7d61e181d43934481864fd251180f22388ffab261bf9fb48168eac7d6993f1d9"
+  },
+  "M_prospective_revalidation": {
+    "expected_magic": "PAR1",
+    "expected_status": 206,
+    "failure_policy": "STOP INCOMPLETE before any binding cap; do not guarantee all theoretical retries",
+    "file_order": "inherited frozen crawl order",
+    "identity": "exact adopted strong ETag and Content-Range total length; revision/path/plan checked locally",
+    "includes": "originals, followed redirects, retries, failed requests; no budget reset",
+    "logical_request": "GET bytes=0-3 inclusive",
+    "logical_requests_per_file": 1,
+    "max_footer_plus_8x85_data": 760,
+    "max_prospective_physical_requests_arm": 25,
+    "max_prospective_physical_requests_per_file": 4,
+    "nominal_8x85_data_plus_history_revalidation": 751,
+    "nominal_cumulative_footer_requests": 71,
+    "nominal_four_byte_payload_sum": 32,
+    "nominal_physical_requests_arm": 16,
+    "nominal_physical_requests_per_file": 2
+  },
+  "T_disk_clarification": {
+    "acquisition_preflight_required": true,
+    "combined_bytes_max": 536870912,
+    "current_child_disk_readiness": "BLOCKED pending corrected inventory and tests",
+    "decision": "stage-gated cumulative acquisition and publication; no cap increase",
+    "final_bytes_max": 16777216,
+    "later_publication_requires_remaining_shared_budget": true,
+    "retained_text_bytes_max": 8388608
+  },
+  "T_readiness": "BLOCKED beyond authorization: dictionary ranges, history, durable live state, disk, supervision and complete child bindings",
+  "arm_m_caps_v2_1": {
+    "batch_rows": 256,
+    "buffer_bytes": 4194304,
+    "data_bytes_per_file": 29360128,
+    "data_bytes_total": 234881024,
+    "data_requests_per_plan": 100,
+    "data_requests_total": 800,
+    "decompressed_bytes_arm": 536870912,
+    "decompressed_bytes_per_file": 67108864,
+    "disk_combined_bytes": 536870912,
+    "disk_final_bytes": 67108864,
+    "disk_scratch_bytes": 469762048,
+    "footer_bytes_per_file": 4194304,
+    "footer_bytes_total": 33554432,
+    "footer_requests_per_file": 10,
+    "footer_requests_total": 80,
+    "max_redirect_hops": 3,
+    "max_retries": 2,
+    "max_scan_rows_arm": 131072,
+    "max_scan_rows_per_file": 16384,
+    "memory_resident_bytes": 268435456,
+    "parser_bytes_max": 33554432,
+    "pilot_requests_per_plan": 100,
+    "plans": 8,
+    "record_bytes_max": 1048576,
+    "requests_total": 880,
+    "response_body_bytes_max": 4194304,
+    "response_body_bytes_total": 268435456,
+    "rows_per_file": 512,
+    "rows_total": 4096,
+    "time_seconds_arm": 1800,
+    "time_seconds_plan": 600,
+    "time_seconds_request": 30
+  },
+  "arm_m_caps_v2_2": {
+    "batch_rows": 256,
+    "buffer_bytes": 4194304,
+    "data_bytes_per_file": 29360128,
+    "data_bytes_total": 234881024,
+    "data_requests_per_plan": 100,
+    "data_requests_total": 800,
+    "decompressed_bytes_arm": 536870912,
+    "decompressed_bytes_per_file": 67108864,
+    "disk_combined_bytes": 536870912,
+    "disk_final_bytes": 67108864,
+    "disk_scratch_bytes": 469762048,
+    "footer_bytes_per_file": 4194304,
+    "footer_bytes_total": 33554432,
+    "footer_requests_per_file": 16,
+    "footer_requests_total": 80,
+    "max_redirect_hops": 3,
+    "max_retries": 2,
+    "max_scan_rows_arm": 131072,
+    "max_scan_rows_per_file": 16384,
+    "memory_resident_bytes": 268435456,
+    "parser_bytes_max": 33554432,
+    "pilot_requests_per_plan": 100,
+    "plans": 8,
+    "record_bytes_max": 1048576,
+    "requests_total": 880,
+    "response_body_bytes_max": 4194304,
+    "response_body_bytes_total": 268435456,
+    "rows_per_file": 512,
+    "rows_total": 4096,
+    "time_seconds_arm": 1800,
+    "time_seconds_plan": 600,
+    "time_seconds_request": 30
+  },
+  "arm_t_caps_unchanged_from_v2_1": {
+    "batch_rows": 256,
+    "data_bytes_arm_max": 251658240,
+    "data_bytes_per_file_max": 31457280,
+    "decompressed_bytes_arm_max": 536870912,
+    "decompressed_bytes_per_file_max": 67108864,
+    "disk_combined_bytes": 536870912,
+    "disk_final_bytes": 16777216,
+    "disk_scratch_bytes": 520093696,
+    "document_bytes_max": 65536,
+    "final_artifact_bytes_max": 16777216,
+    "footer_bytes_per_file_max": 2097152,
+    "footer_bytes_total_max": 16777216,
+    "max_redirect_hops": 3,
+    "max_retries": 2,
+    "memory_resident_bytes": 268435456,
+    "parser_bytes_max": 33554432,
+    "range_buffer_bytes_max": 4194304,
+    "ratio_exempt_bytes": 16777216,
+    "ratio_max": 15,
+    "requests_arm_max": 800,
+    "requests_per_file_max": 100,
+    "response_body_bytes_max": 4194304,
+    "retained_text_bytes_max": 8388608,
+    "scan_rows_arm_max": 131072,
+    "scan_rows_per_file_max": 16384,
+    "selected_rows_max": 118,
+    "time_seconds_arm": 1800,
+    "time_seconds_file": 600,
+    "time_seconds_request": 30,
+    "transfer_bytes_arm_max": 268435456,
+    "transfer_bytes_per_file_max": 33554432
+  },
+  "artifacts": [
+    {
+      "bytes": 18643,
+      "descriptor_digest": "f80eae4f3763915500efddf12c1d81b9dc4adad078a8c9d8140530b7d1d39006",
+      "media_type": "text/markdown",
+      "relative_path": "docs/implementation/reports/ESSENTIAL-WEB-EVIDENCE-V2.2-PROTOCOL.md",
+      "sha256": "fd698793068458b31563418fdca29c97fa1efe1099b8776c7fd1407887f4f49d"
+    },
+    {
+      "bytes": 17628,
+      "descriptor_digest": "8ea2f018b767559438e8bc30a02c7b6fc847845bcd277a7462879e3be1a66d16",
+      "media_type": "text/markdown",
+      "relative_path": "docs/implementation/reports/ESSENTIAL-WEB-EVIDENCE-V2.2-REVIEW.md",
+      "sha256": "6189fe52fef82d4f3bd32478910c860f42256026f56a03436dfa483bf519a915"
+    },
+    {
+      "bytes": 30879,
+      "descriptor_digest": "4beb61d9e1d9b5fa51195a19d2c4aa740709465ea1376eeb8a2ed575a24a8406",
+      "media_type": "text/markdown",
+      "relative_path": "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V2.2/COMMANDS.md",
+      "sha256": "4ad0dccbfa8fce152f003787283e310a6ebd0a5fdb87edca66c4be95b67e2c19"
+    },
+    {
+      "bytes": 18658,
+      "descriptor_digest": "c49878915c6e531b14c710210a3c90a7137019e13568016b0f2deeb596cca957",
+      "media_type": "application/json",
+      "relative_path": "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V2.2/verification.json",
+      "sha256": "453342f59f0b05b1dba3f6fa21ae3c1eabfccd99eb291b73aa3ec2375596b47e"
+    },
+    {
+      "bytes": 450,
+      "descriptor_digest": "b86cc2a059491889e8fbcafd2d0289e5eeede2377c0d0016a72f6f86b4123813",
+      "media_type": "application/json",
+      "relative_path": "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V2.2/v21_m_audit_capture.json",
+      "sha256": "9e1062ffb5d4cde5cbdca7fec26500a91603fcbb15c2dcac2a8d2e7b344a71f4"
+    },
+    {
+      "bytes": 7467,
+      "descriptor_digest": "fbfdb3d8c52f87db5586145f442753cb1772a57613f3b0ef435d14166e07e548",
+      "media_type": "application/json",
+      "relative_path": "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V2.2/v21_t_carry_capture.json",
+      "sha256": "d14024ab4f0e2c53690719225e990ca37e47f0b4ca542aee923fbc32878ce6ac"
+    }
+  ],
+  "authorization": {
+    "arm_M_acquisition": false,
+    "arm_T_acquisition": false,
+    "corpus_text_inspection": false,
+    "network": false
+  },
+  "canonical_scheme": "UTF-8 json.dumps(sort_keys=True,separators=(',',':'),ensure_ascii=False,allow_nan=False); self-digest excludes only top-level digest",
+  "digest": "b6602a445307d9638913c046b4cfebab3356e20559d89b3f2ab601aa924ebd0c",
+  "environment": {
+    "packages_metadata_only": {
+      "pyarrow": "25.0.1",
+      "torch": "2.14.0+cpu"
+    },
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.12.13 (main, Apr  7 2026, 20:53:22) [MSC v.1944 64 bit (AMD64)]",
+    "uv_lock_sha256": "658f83d08e7003c0642223759736dcccfa983ce0bab4b75f8f2b234e7a114631"
+  },
+  "frozen_date": "2026-09-28",
+  "historical_code_bindings": {
+    "6714160:src/xlm/data/evidence_v2/footer.py": {
+      "bytes": 28839,
+      "sha256": "6cc8a8f2c36b51f1324f1ae5ae88d181d2229da2faa26cba45fd87abe896f051"
+    },
+    "943b816:scripts/evidence_v2.py": {
+      "bytes": 16754,
+      "sha256": "f733c7e531559f558312d7c7d8cdbf3cbc61b3723026793ff81085b70998aa31"
+    },
+    "943b816:src/xlm/data/evidence_v2/footer.py": {
+      "bytes": 21410,
+      "sha256": "b62944e669bea6cfecda806e26f5d0b57898f37c370919f131c6f2444322c980"
+    },
+    "943b816:src/xlm/data/sources/transport.py": {
+      "bytes": 42340,
+      "sha256": "51cf3f137efec69e3f407137b9c391e14558e7ff856e7812e9fcd503fda90ff5"
+    }
+  },
+  "kind": "essential_web_evidence_protocol_amendment_freeze",
+  "metadata_seed": 20260927,
+  "parent_freeze_digest": "bac82d6b9538f4005f7f0ffee6aa5c4f3a5394098c0fae8f63fc94c76832a7cd",
+  "parents": {
+    "M_child": {
+      "bytes": 2071,
+      "digest": "ac426c44fc75a6165d7ccb65ca061f4ad9fe9ffd4c7b0f3fa20b2a037b462683",
+      "original_protocol_version": "essential-web-evidence-v2.1",
+      "original_status": "BLOCKED",
+      "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\evidence\\ESSENTIAL-WEB-EVIDENCE-V2.1-CHILD\\arm_m_blocked_plan.json",
+      "role": "historical_blocked_child_keep_blocked",
+      "sha256": "7b4600443714f6dd4a18d5df4c53fc7b155c6f8765730f417c68b54379d46c37"
+    },
+    "M_complete": {
+      "bytes": 879128,
+      "digest": "2ecf3eb9df01a41f7f9defa20633841211396f654350df80e460f5c2b5740052",
+      "original_protocol_version": "essential-web-evidence-v2.0",
+      "original_status": "COMPLETE",
+      "path": "G:\\Project\\xlm-evidence-v2\\essential-web\\footer_evidence.json",
+      "role": "adopted_footer_window_observations_not_old_compliance",
+      "sha256": "ba1af742b81f4502beec44624891f869092b0e440f98fb48ea182b3b86cdc276"
+    },
+    "M_old": {
+      "bytes": 123348,
+      "digest": "08b02d6a909f831039a7bfd9ddf01da7ca1dcd68d8f7cc2465d99291b26fa6c1",
+      "original_protocol_version": "essential-web-evidence-v2.0",
+      "original_status": "INCOMPLETE",
+      "path": "G:\\Project\\xlm-evidence-v2\\essential-web\\footer_evidence.incomplete.json",
+      "role": "historical_failed_planning_budget",
+      "sha256": "0aa1c30ceae77ed08bfdc84d7da6edaa59d71889f83b14190a5b1c94447057f5"
+    },
+    "T_child": {
+      "bytes": 13832,
+      "digest": "8cf4c377a85e9ce1a57a4c07cba930c48a1ebacab91e4bb79a1caacfc4a3a66e",
+      "original_protocol_version": "essential-web-evidence-v2.1",
+      "original_status": "DRY_NOT_AUTHORIZED",
+      "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\evidence\\ESSENTIAL-WEB-EVIDENCE-V2.1-CHILD\\arm_t_child_plan_dry.json",
+      "role": "historical_dry_child_reviewed_defective",
+      "sha256": "848b466a4057cb4527637bd8e277430ef2e1d6695acacda389f104fe3965095b"
+    },
+    "T_costmap": {
+      "bytes": 24617,
+      "digest": "ed713a0a6fe22cdd396f758182b841b0208f0fe92795b3784f8d71bb6bbf665b",
+      "original_protocol_version": "essential-web-evidence-v2.0",
+      "original_status": "INCOMPLETE",
+      "path": "G:\\Project\\xlm-evidence-v2\\essential-web\\text_cost_evidence_attempt2.incomplete.json",
+      "role": "historical_incomplete_cost_map",
+      "sha256": "4b5acee72e925071f012a163024b3d54d56f95a9e80283742cb01b26160e475a"
+    },
+    "T_old": {
+      "bytes": 980,
+      "digest": "511d4c0771aec2c44066a04a1a7d07792902cdd0f1606bbd4249d80fbddee572",
+      "original_protocol_version": "essential-web-evidence-v2.0",
+      "original_status": "INCOMPLETE",
+      "path": "G:\\Project\\xlm-evidence-v2\\essential-web\\text_cost_evidence.incomplete.json",
+      "role": "historical_planning_budget",
+      "sha256": "7b2dcbadd8113b28d340b331f18cb5e8d0ed8ab605c23ef8306d6d58e54d67d5"
+    },
+    "selection": {
+      "bytes": 23807,
+      "digest": "975ba3dee4af0598e665ea05c69bbe49336c3e3a35fca777a863073190b78474",
+      "original_protocol_version": "essential-web-evidence-v2.0",
+      "original_status": null,
+      "path": "G:\\Project\\xlm-evidence-v2\\essential-web\\text_selection_manifest.json",
+      "role": "byte_identical_scientific_selection",
+      "sha256": "8424f9668fef6952a558ead0dae27a705545a7f4a4d302713707d3ec6bb1af27"
+    },
+    "v21_freeze": {
+      "bytes": 11329,
+      "digest": "bac82d6b9538f4005f7f0ffee6aa5c4f3a5394098c0fae8f63fc94c76832a7cd",
+      "original_protocol_version": "essential-web-evidence-v2.1",
+      "original_status": null,
+      "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\evidence\\ESSENTIAL-WEB-EVIDENCE-V2.1\\freeze.json",
+      "role": "normative_parent",
+      "sha256": "b8c92cf6085a8737e25cd0e5edaa5a414d02180e660bf0828aa4082fa5ba486e"
+    }
+  },
+  "policy_digest": "f4357f61f434d5105d823266153dac6372e122f12767187631e8796b4899dd07",
+  "protocol_version": "essential-web-evidence-v2.2",
+  "rationale": "Footer-only operational deviation does not change scientific membership. 16 permits 12 historical requests plus one original and three redirects; 55+16 nominal revalidation fits unchanged footer arm 80 and whole arm 880. Old violation and missing history remain explicit; no other numerical ceiling changes.",
+  "repository": "EssentialAI/essential-web-v1.0",
+  "required_sequence": [
+    "Muse offline implementation",
+    "new offline child-plan review",
+    "separate acquisition authorization review"
+  ],
+  "review_order_seed": 20260928,
+  "reviewed_code_bindings": {
+    "scripts/evidence_v2.py": {
+      "bytes": 28455,
+      "sha256": "715ca989cca08884c86b03e69ffa52e7c6359bd21276c921cc5d77a3472a1829"
+    },
+    "src/xlm/data/acquisition/sampling.py": {
+      "bytes": 50298,
+      "sha256": "7c996596d3312d7acbee62b88716323b33b2acf5a62079d0dd9f5993a6ea9c51"
+    },
+    "src/xlm/data/evidence_v2/budgets.py": {
+      "bytes": 19142,
+      "sha256": "983d6e70fe1db1b6b2ecd60aec2878f6f1ae2b1f82ba7ff4c8eb424fffed3292"
+    },
+    "src/xlm/data/evidence_v2/carry.py": {
+      "bytes": 11480,
+      "sha256": "154d036d247fa43201363c4a33529f92f8bdcbd94fe0ec25ba56ccb95bae24a7"
+    },
+    "src/xlm/data/evidence_v2/child_plans.py": {
+      "bytes": 4282,
+      "sha256": "f628207e58feecafbb20582f98c932ac572d5cfa3b8a4ea9ca7c84722ca39fce"
+    },
+    "src/xlm/data/evidence_v2/footer.py": {
+      "bytes": 30229,
+      "sha256": "29d8dada8bd272ba76a4f17c07c4d86c4cbb46311b2eae0363eadfcb7f5acf16"
+    },
+    "src/xlm/data/evidence_v2/m_audit.py": {
+      "bytes": 7036,
+      "sha256": "0da912c2329a1126e9b585fc6761c06cc397d4bb60836e0651d10ae5ee4adc64"
+    },
+    "src/xlm/data/evidence_v2/reserves.py": {
+      "bytes": 6977,
+      "sha256": "37610d08b6628dddee7e8ac562ad04b11d17608449bfa9786587677af778e366"
+    },
+    "src/xlm/data/evidence_v2/schedule.py": {
+      "bytes": 7933,
+      "sha256": "13a4aaf97f99858cf34c7e8fa4ce8eb99f43434ba66f78f046d3a618c85da3c1"
+    },
+    "src/xlm/data/sources/transport.py": {
+      "bytes": 43399,
+      "sha256": "cabc335e125998344b6f52e6c857a341405067eacf0cf64e955cd7ef1ea4cc5d"
+    }
+  },
+  "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+  "schema_version": 1,
+  "scientific_identity_namespace": "essential-web-evidence-v2.0",
+  "scope": "PROTOCOL_AND_READINESS_REVIEW_ONLY_NOT_ACQUISITION_AUTHORIZATION",
+  "selection_digest": "975ba3dee4af0598e665ea05c69bbe49336c3e3a35fca777a863073190b78474",
+  "selection_file_sha256": "8424f9668fef6952a558ead0dae27a705545a7f4a4d302713707d3ec6bb1af27",
+  "selection_total": 118,
+  "source_checkout": "9e008987454fa8370438ec1f25a61a71196be5ec",
+  "text_selection_seed": 20260927,
+  "v21_t_carry_capture_digest": "979511b094e3b57cadc74d2bcb866bacb5273bc38260e54b58bea942314b5fe1",
+  "verdict": "READY TO IMPLEMENT EVIDENCE V2.2"
+}
