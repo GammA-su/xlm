@@ -1,0 +1,255 @@
+{
+  "adoption": {
+    "M": "Reuse original footer/window observations by hash without network; resource compliance remains blocked pending prior-attempt reconciliation.",
+    "M_history_status": "BLOCKED: old redirect accounting implies first-file footer requests 12 > unchanged 10; must reconcile, never waive under this amendment.",
+    "T": "Preserve original v2.0 INCOMPLETE cost-map status as motivation and numeric planning parent.",
+    "accounting": "All prior attempts and planning carry forward once; version change never resets budgets. Unknown costs block execution.",
+    "known_T_planning_carry_in": {
+      "complete_history_certified": false,
+      "recorded_bytes": 2231492,
+      "recorded_requests": 54
+    },
+    "selection": "Reference original bytes and digest; no rewrite, relabel or reselection."
+  },
+  "arm_m_caps_unchanged": {
+    "batch_rows": 256,
+    "buffer_bytes": 4194304,
+    "data_bytes_per_file": 29360128,
+    "data_bytes_total": 234881024,
+    "data_requests_per_plan": 100,
+    "data_requests_total": 800,
+    "decompressed_bytes_arm": 536870912,
+    "decompressed_bytes_per_file": 67108864,
+    "disk_combined_bytes": 536870912,
+    "disk_final_bytes": 67108864,
+    "disk_scratch_bytes": 469762048,
+    "footer_bytes_per_file": 4194304,
+    "footer_bytes_total": 33554432,
+    "footer_requests_per_file": 10,
+    "footer_requests_total": 80,
+    "max_redirect_hops": 3,
+    "max_retries": 2,
+    "max_scan_rows_arm": 131072,
+    "max_scan_rows_per_file": 16384,
+    "memory_resident_bytes": 268435456,
+    "parser_bytes_max": 33554432,
+    "pilot_requests_per_plan": 100,
+    "plans": 8,
+    "record_bytes_max": 1048576,
+    "requests_total": 880,
+    "response_body_bytes_max": 4194304,
+    "response_body_bytes_total": 268435456,
+    "rows_per_file": 512,
+    "rows_total": 4096,
+    "time_seconds_arm": 1800,
+    "time_seconds_plan": 600,
+    "time_seconds_request": 30
+  },
+  "arm_m_footer_evidence_digest": "2ecf3eb9df01a41f7f9defa20633841211396f654350df80e460f5c2b5740052",
+  "arm_t_caps_v2_0": {
+    "batch_rows": 256,
+    "data_bytes_per_file_max": 14680064,
+    "decompressed_bytes_arm_max": 536870912,
+    "decompressed_bytes_per_file_max": 67108864,
+    "disk_combined_bytes": 536870912,
+    "disk_final_bytes": 16777216,
+    "disk_scratch_bytes": 520093696,
+    "document_bytes_max": 65536,
+    "final_artifact_bytes_max": 16777216,
+    "footer_bytes_per_file_max": 2097152,
+    "footer_bytes_total_max": 16777216,
+    "max_redirect_hops": 3,
+    "max_retries": 2,
+    "memory_resident_bytes": 268435456,
+    "parser_bytes_max": 33554432,
+    "range_buffer_bytes_max": 4194304,
+    "ratio_exempt_bytes": 16777216,
+    "ratio_max": 15,
+    "requests_arm_max": 800,
+    "requests_per_file_max": 100,
+    "response_body_bytes_max": 4194304,
+    "retained_text_bytes_max": 8388608,
+    "scan_rows_arm_max": 131072,
+    "scan_rows_per_file_max": 16384,
+    "selected_rows_max": 118,
+    "time_seconds_arm": 1800,
+    "time_seconds_file": 600,
+    "time_seconds_request": 30,
+    "transfer_bytes_arm_max": 134217728,
+    "transfer_bytes_per_file_max": 16777216
+  },
+  "arm_t_caps_v2_1": {
+    "batch_rows": 256,
+    "data_bytes_arm_max": 251658240,
+    "data_bytes_per_file_max": 31457280,
+    "decompressed_bytes_arm_max": 536870912,
+    "decompressed_bytes_per_file_max": 67108864,
+    "disk_combined_bytes": 536870912,
+    "disk_final_bytes": 16777216,
+    "disk_scratch_bytes": 520093696,
+    "document_bytes_max": 65536,
+    "final_artifact_bytes_max": 16777216,
+    "footer_bytes_per_file_max": 2097152,
+    "footer_bytes_total_max": 16777216,
+    "max_redirect_hops": 3,
+    "max_retries": 2,
+    "memory_resident_bytes": 268435456,
+    "parser_bytes_max": 33554432,
+    "range_buffer_bytes_max": 4194304,
+    "ratio_exempt_bytes": 16777216,
+    "ratio_max": 15,
+    "requests_arm_max": 800,
+    "requests_per_file_max": 100,
+    "response_body_bytes_max": 4194304,
+    "retained_text_bytes_max": 8388608,
+    "scan_rows_arm_max": 131072,
+    "scan_rows_per_file_max": 16384,
+    "selected_rows_max": 118,
+    "time_seconds_arm": 1800,
+    "time_seconds_file": 600,
+    "time_seconds_request": 30,
+    "transfer_bytes_arm_max": 268435456,
+    "transfer_bytes_per_file_max": 33554432
+  },
+  "arm_t_v2_0_cost_map_digest": "ed713a0a6fe22cdd396f758182b841b0208f0fe92795b3784f8d71bb6bbf665b",
+  "artifacts": [
+    {
+      "bytes": 14790,
+      "descriptor_digest": "a4deef947313c6718b723d3f8a931e561b62bc18635fb1acbd6deeb7ebe15df2",
+      "media_type": "text/markdown",
+      "relative_path": "docs/implementation/reports/ESSENTIAL-WEB-EVIDENCE-V2.1-PROTOCOL.md",
+      "sha256": "1c437881148c3d6c1c42ca610e364055a0625732b07361f2e9271d0918fcdb4b"
+    },
+    {
+      "bytes": 17439,
+      "descriptor_digest": "6c2ec40dd70fc18acd83e228877a3f03bb75fc9d2fd42e58b4ff78269d5069ce",
+      "media_type": "text/markdown",
+      "relative_path": "docs/implementation/reports/ESSENTIAL-WEB-EVIDENCE-V2.1-REVIEW.md",
+      "sha256": "151f2aabe174780751b65cd42afd0668491e826b7eeeee6c686e9d1eac7c9c7b"
+    },
+    {
+      "bytes": 27907,
+      "descriptor_digest": "6c29d2ab7c6984e1fd14d5b399ce30cf0f24f4e98ae65acee9f403601314c293",
+      "media_type": "text/markdown",
+      "relative_path": "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V2.1/COMMANDS.md",
+      "sha256": "4bf2045c6fd866b11b5ed989e80a8cceaa5cd574d8e460d9b0374f62edf538a1"
+    },
+    {
+      "bytes": 9583,
+      "descriptor_digest": "14e06f002471b6b204caa5c7c1856b7beaaa5c3e39fdea06a20d2bf5ce9da9e0",
+      "media_type": "application/json",
+      "relative_path": "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V2.1/verification.json",
+      "sha256": "afdf21fa8d5a4f2b501e8824167d0ff1c32bb3d36fe23e319baf2cff9b38faf7"
+    }
+  ],
+  "authorization": {
+    "arm_M_acquisition": false,
+    "arm_T_text_acquisition": false,
+    "corpus_text_inspection": false,
+    "network": false
+  },
+  "canonical_scheme": "UTF-8 json.dumps(sort_keys=True,separators=(',',':'),ensure_ascii=False,allow_nan=False), no BOM/newline; self-digest excludes only top-level digest",
+  "digest": "bac82d6b9538f4005f7f0ffee6aa5c4f3a5394098c0fae8f63fc94c76832a7cd",
+  "environment": {
+    "packages_metadata_only": {
+      "pyarrow": "25.0.1",
+      "torch": "2.14.0+cpu"
+    },
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.12.13 (main, Apr  7 2026, 20:53:22) [MSC v.1944 64 bit (AMD64)]",
+    "uv_lock_sha256": "658f83d08e7003c0642223759736dcccfa983ce0bab4b75f8f2b234e7a114631"
+  },
+  "frozen_date": "2026-09-28",
+  "kind": "essential_web_evidence_protocol_amendment_freeze",
+  "metadata_seed": 20260927,
+  "parent_freeze_digest": "fe2157799a86fe777e45c220716563f8a73245a12593c40909222555bf1b8248",
+  "parents": {
+    "footer_evidence.incomplete.json": {
+      "bytes": 123348,
+      "digest": "08b02d6a909f831039a7bfd9ddf01da7ca1dcd68d8f7cc2465d99291b26fa6c1",
+      "original_protocol_version": "essential-web-evidence-v2.0",
+      "original_status": "INCOMPLETE",
+      "path": "G:\\Project\\xlm-evidence-v2\\essential-web\\footer_evidence.incomplete.json",
+      "role": "budget_history_M_unreconciled",
+      "sha256": "0aa1c30ceae77ed08bfdc84d7da6edaa59d71889f83b14190a5b1c94447057f5"
+    },
+    "footer_evidence.json": {
+      "bytes": 879128,
+      "digest": "2ecf3eb9df01a41f7f9defa20633841211396f654350df80e460f5c2b5740052",
+      "original_protocol_version": "essential-web-evidence-v2.0",
+      "original_status": "COMPLETE",
+      "path": "G:\\Project\\xlm-evidence-v2\\essential-web\\footer_evidence.json",
+      "role": "adopted_observation_not_resource_compliance",
+      "sha256": "ba1af742b81f4502beec44624891f869092b0e440f98fb48ea182b3b86cdc276"
+    },
+    "freeze.json": {
+      "bytes": 2232,
+      "digest": "fe2157799a86fe777e45c220716563f8a73245a12593c40909222555bf1b8248",
+      "original_protocol_version": "essential-web-evidence-v2.0",
+      "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\evidence\\ESSENTIAL-WEB-EVIDENCE-V2\\freeze.json",
+      "role": "normative_parent",
+      "sha256": "1f81574b1fb2fc06bb566bd543cb712e026200c551090e8265c10958db78e4c4"
+    },
+    "inventory-freeze.json": {
+      "bytes": 6784,
+      "digest": "466ece976bfadfbd024c7fb66ff0076f1d86f36ce7d362331d85f1fee36c018f",
+      "original_protocol_version": "essential-web-evidence-v2.0",
+      "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\evidence\\ESSENTIAL-WEB-EVIDENCE-V2\\inventory-freeze.json",
+      "role": "unchanged_inventory",
+      "sha256": "46906d6dea9d7b790bc6cb4b01ce59db292fefef498b57d4eca80987d9407341"
+    },
+    "text_cost_evidence.incomplete.json": {
+      "bytes": 980,
+      "digest": "511d4c0771aec2c44066a04a1a7d07792902cdd0f1606bbd4249d80fbddee572",
+      "original_protocol_version": "essential-web-evidence-v2.0",
+      "original_status": "INCOMPLETE",
+      "path": "G:\\Project\\xlm-evidence-v2\\essential-web\\text_cost_evidence.incomplete.json",
+      "role": "budget_history_T",
+      "sha256": "7b2dcbadd8113b28d340b331f18cb5e8d0ed8ab605c23ef8306d6d58e54d67d5"
+    },
+    "text_cost_evidence_attempt2.incomplete.json": {
+      "bytes": 24617,
+      "digest": "ed713a0a6fe22cdd396f758182b841b0208f0fe92795b3784f8d71bb6bbf665b",
+      "original_protocol_version": "essential-web-evidence-v2.0",
+      "original_status": "INCOMPLETE",
+      "path": "G:\\Project\\xlm-evidence-v2\\essential-web\\text_cost_evidence_attempt2.incomplete.json",
+      "role": "historical_incomplete_cost_map",
+      "sha256": "4b5acee72e925071f012a163024b3d54d56f95a9e80283742cb01b26160e475a"
+    },
+    "text_selection_manifest.json": {
+      "bytes": 23807,
+      "digest": "975ba3dee4af0598e665ea05c69bbe49336c3e3a35fca777a863073190b78474",
+      "original_protocol_version": "essential-web-evidence-v2.0",
+      "path": "G:\\Project\\xlm-evidence-v2\\essential-web\\text_selection_manifest.json",
+      "role": "byte_identical_selection",
+      "sha256": "8424f9668fef6952a558ead0dae27a705545a7f4a4d302713707d3ec6bb1af27"
+    }
+  },
+  "policy_digest": "f4357f61f434d5105d823266153dac6372e122f12767187631e8796b4899dd07",
+  "protocol_version": "essential-web-evidence-v2.1",
+  "rationale": "Footer-only discovery revealed whole-column-chunk transport granularity. Next binary 32 MiB/file and 256 MiB/arm capacities with unchanged 2/16 MiB footer reserves fit the complete frozen map with material headroom. No semantic outcome, selection, reader, rubric, or non-transfer cap changes.",
+  "repository": "EssentialAI/essential-web-v1.0",
+  "review_order_seed": 20260928,
+  "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+  "schema_version": 1,
+  "scientific_identity_namespace": "essential-web-evidence-v2.0",
+  "scope": "PROTOCOL_AMENDMENT_ONLY_NOT_ACQUISITION_AUTHORIZATION",
+  "selection_digest": "975ba3dee4af0598e665ea05c69bbe49336c3e3a35fca777a863073190b78474",
+  "selection_file_sha256": "8424f9668fef6952a558ead0dae27a705545a7f4a4d302713707d3ec6bb1af27",
+  "selection_total": 118,
+  "source_checkout": "aaa674d8b1d0da459b88450dc4eb6c68ca52e933",
+  "text_selection_seed": 20260927,
+  "transfer_allocations_v2_1": {
+    "arm": {
+      "data": 251658240,
+      "footer": 16777216,
+      "total": 268435456
+    },
+    "per_file": {
+      "data": 31457280,
+      "footer": 2097152,
+      "total": 33554432
+    }
+  },
+  "verdict": "READY TO IMPLEMENT EVIDENCE V2.1"
+}
