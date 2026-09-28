@@ -740,6 +740,79 @@ def test_text_costs_infeasible_file() -> None:
     assert caught.value.failed_file == "dev-a.parquet"
 
 
+def test_text_costs_failed_unit_preserved_numbers_only() -> None:
+    # The refusal decision is unchanged, but the failed file's computed
+    # cost evidence (wanted rows, groups, chunk sizes, uppers) survives
+    # for audit without re-fetching footers. No text content survives.
+    bodies = _distinct_payloads("body", 600, 120000)
+    table = _table(600, bulk_text_bytes=120000)
+    images = {
+        "dev-a.parquet": footer.FakeImage(_parquet_bytes([table])),
+        "dev-b.parquet": _good_image((600,)),
+    }
+    manifest = _t_manifest()
+    with pytest.raises(text_costs.TextCostsIncomplete) as caught:
+        text_costs.plan_text_costs(
+            manifest,
+            transport=footer.FakeFooterTransport(images),
+            ledger=budgets.new_arm_t(),
+        )
+    unit = caught.value.failed_unit
+    assert unit is not None
+    assert unit["file"] == "dev-a.parquet"
+    assert unit["wanted_rows"] == [10, 500]
+    assert unit["feasible"] is False
+    assert any("transfer upper" in reason for reason in unit["reasons"])
+    costs = unit["text_costs"]
+    assert costs["chunk_count"] >= 1
+    assert unit["transfer_upper_bytes"] == (
+        costs["text_compressed_bytes"] + costs["chunk_count"] * 4194304
+    )
+    assert unit["scan_rows_upper"] <= 16384
+    import json as _json
+
+    dumped = _json.dumps(unit)
+    assert bodies[0] not in dumped
+    assert bodies[599] not in dumped
+    assert "body" not in dumped.replace('"text_costs"', "").replace('"text_leaf"', "")
+
+
+def test_text_costs_failed_unit_in_incomplete_receipt(tmp_path: Path) -> None:
+    table = _table(600, bulk_text_bytes=120000)
+    images = {
+        "dev-a.parquet": footer.FakeImage(_parquet_bytes([table])),
+        "dev-b.parquet": _good_image((600,)),
+    }
+    try:
+        text_costs.plan_text_costs(
+            _t_manifest(),
+            transport=footer.FakeFooterTransport(images),
+            ledger=budgets.new_arm_t(),
+        )
+        raise AssertionError("expected TextCostsIncomplete")
+    except text_costs.TextCostsIncomplete as exc:
+        receipt = receipts.seal(
+            {
+                "kind": "essential_web_evidence_v2_text_costs_incomplete",
+                "protocol_version": frozen.PROTOCOL_VERSION,
+                "freeze_digest": frozen.FREEZE_DIGEST,
+                "completed_units": exc.units,
+                "failed_file": exc.failed_file,
+                "failed_unit": exc.failed_unit,
+                "reason": exc.reason,
+                "budget": exc.budget,
+                "command": "plan-text-costs live",
+                "exit_status": 1,
+                "status": "INCOMPLETE",
+            }
+        )
+    assert receipt["failed_unit"]["file"] == "dev-a.parquet"
+    assert receipt["status"] == "INCOMPLETE"
+    target = tmp_path / "text_cost_evidence.incomplete.json"
+    receipts.publish_manifest(target, receipt)
+    assert not (tmp_path / "text_cost_evidence.json").exists()
+
+
 def test_fixture_content_hash_stable() -> None:
     first = _parquet_bytes([_table(600), _table(600)])
     assert (

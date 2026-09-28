@@ -1,5 +1,20 @@
 # Implementation status
 
+> **ESSENTIAL-WEB EVIDENCE V2 ARM-T REFUSAL (2026-09-27, offline): WHOLE-
+> CHUNK BOUND STANDS; NO SAFE TIGHTENING; REFUSAL KEPT.** Authorized run
+> did Arm M 8/8, then refused T costs on 2014-15: transfer upper
+> 26,707,302 = whole-chunk compressed text in wanted groups + 4 MiB
+> framing per chunk (both caps exceeded). pyarrow exposes zero page
+> APIs; the stack's minimum read is whole column chunks, so a
+> page-subset bound would be unenforceable (second decoder stack
+> forbidden). Dictionaries requisite per chunk; selected span covers
+> ~93% of the window anyway. No text/X: reads. Observability only:
+> failed-unit numbers now preserved in future incomplete receipts;
+> user's receipt untouched. 103 tests pass; ruff/mypy clean. Freeze,
+> policy, inventory, caps, 118-manifest unchanged. Details in
+> [ESSENTIAL-WEB-EVIDENCE-V2-IMPLEMENTATION](reports/ESSENTIAL-WEB-EVIDENCE-V2-IMPLEMENTATION.md)
+> §11. Prior user/Astra docs preserved.
+
 > **ESSENTIAL-WEB EVIDENCE V2 REDIRECT FIX (2026-09-27, offline): COUNTING
 > BUG, NOT A FOURTH REDIRECT; READY TO RETRY.** The user's "hop 4" stop
 > (file 2, zero retries, 4 arm requests, file 1 complete) was the

@@ -149,8 +149,22 @@ def cost_file(
         "reasons": reasons,
     }
     if reasons:
-        raise TextCostError(f"text costs infeasible for {source_file}: {reasons}")
+        raise TextCostInfeasible(source_file, reasons, unit)
     return unit
+
+
+class TextCostInfeasible(TextCostError):
+    """One file's computed cost evidence exceeds caps; carries that evidence.
+
+    The partial unit holds footer-derived numbers only (wanted rows,
+    groups, chunk sizes, uppers, reasons) — never text content — so a
+    future authorized audit can see exactly which bound failed without
+    re-fetching footers. The refusal decision itself is unchanged.
+    """
+
+    def __init__(self, source_file: str, reasons: list[str], partial_unit: dict[str, Any]) -> None:
+        super().__init__(f"text costs infeasible for {source_file}: {reasons}")
+        self.partial_unit = partial_unit
 
 
 class TextCostsIncomplete(TextCostError):
@@ -162,12 +176,15 @@ class TextCostsIncomplete(TextCostError):
         failed_file: str,
         reason: str,
         budget: dict[str, Any],
+        *,
+        failed_unit: dict[str, Any] | None = None,
     ) -> None:
         super().__init__(f"Arm-T costs INCOMPLETE at {failed_file}: {reason}")
         self.units = units
         self.failed_file = failed_file
         self.reason = reason
         self.budget = budget
+        self.failed_unit = failed_unit
 
 
 def plan_text_costs(
@@ -190,6 +207,10 @@ def plan_text_costs(
     for name, rows in wanted.items():
         try:
             units.append(cost_file(name, rows, transport=transport, ledger=ledger))
+        except TextCostInfeasible as exc:
+            raise TextCostsIncomplete(
+                units, name, str(exc), ledger.snapshot(), failed_unit=exc.partial_unit
+            ) from exc
         except (TextCostError, budgets.BudgetRefusal) as exc:
             raise TextCostsIncomplete(units, name, str(exc), ledger.snapshot()) from exc
     return {

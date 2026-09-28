@@ -313,3 +313,64 @@ charges the ledger, evil targets refuse before following, and
 credentials are redacted from diagnostics and receipts. 101
 evidence-v2 tests pass; ruff/format/mypy clean. Cap, freeze, policy,
 and 118-manifest identities unchanged.
+
+## 11. Arm-T cost refusal audit (2026-09-27, offline agent, no text)
+
+The authorized run completed Arm M (8/8 feasible, 48 footer requests,
+1,922,640 footer bytes, no retries/failures; 85-request 512-row future
+plans) and then refused Arm-T cost planning on the first file,
+`.../2014-15/train-01787-of-02772.parquet`: `transfer upper 26707302
+exceeds data/file cap` (14,680,064 bytes; also above the 16,777,216
+total/file cap). Cap unchanged. No text inspected; no X: reads.
+
+Exact derivation: `transfer_upper = text_compressed_bytes +
+chunk_count × 4,194,304`, where both terms cover only row groups
+holding frozen wanted rows (whole text column chunks, the minimum unit
+the stack can read, plus one 4 MiB range-framing buffer per chunk, the
+same prefix+buffer convention as the audited window estimator).
+Decompressed upper = whole-chunk uncompressed text (minimum decodable
+unit); request upper = chunks + wanted groups + 4; scan upper =
+256-row batches covering each group's greatest wanted row. The
+decompressed/scan/request checks were not reached for this file.
+
+Failing-file selection facts (from the sealed G: manifest, metadata
+only): 16 locators, rows 55315–55792, span 478 of the 512-row window
+[55285, 55797). Exact row groups, chunk sizes, and page structure are
+not in the refusal receipt and are unknowable offline (no network/X:
+access); the receipt now preserves the failed unit's numbers for
+future authorized audits (see below).
+
+Yes, this is whole-chunk conservative accounting: the code assumes
+reading entire text column chunks because execution cannot do less.
+pyarrow 25.0.1 exposes zero page/index/offset APIs on `ParquetFile`;
+the stack's minimum read unit is whole column-chunk spans
+(`_column_chunk_spans`, dictionary page included by construction), and
+`plan.py` documents "no page skipping". Whether these files carry page
+indexes is unknowable offline — and immaterial: even with perfect page
+metadata, no decoder in the stack can execute a single-page read, so a
+page-subset cost bound would be unenforceable at execution (a second
+decoder stack is forbidden and uncertifiable here). Dropping the 4 MiB
+framing slack would assume exact-range execution discipline that no
+implemented T execution path provides. Dictionaries are requisite for
+any decode (format fact) and shared per chunk (format fact); the
+selected span covers ~93% of the window's row extent, so page-level
+savings would be marginal regardless.
+
+Therefore no tighter SAFE mechanically enforceable bound exists with
+the current infrastructure: keep the refusal. The protocol's
+"conservative whole projected-chunk bounds are acceptable even when
+they force refusal" covers exactly this outcome.
+
+Receipt improvement (observability only; refusal logic, caps, and
+selection untouched): infeasible files now preserve their computed
+cost evidence (`failed_unit`: wanted rows, groups, chunk sizes, uppers,
+reasons — numbers only, never text) in `TextCostsIncomplete` and in
+future `.incomplete.json` receipts, so the C/n decomposition above is
+answerable without re-fetching footers. The user's existing receipt is
+untouched. Tested: formula-exact uppers, numbers-only dumps, receipt
+round-trip, no success artifact, footer-only ranges.
+
+103 evidence-v2 tests pass (`-n 0`, sockets blocked); `ruff check` /
+`format --check` clean; scoped `mypy` clean. Frozen identities (freeze,
+policy, inventory, 8 files, 118-manifest, strata, 16 MiB cap)
+unchanged. No G: writes in this task.

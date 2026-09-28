@@ -343,6 +343,7 @@ def cmd_plan_text_costs(args: argparse.Namespace) -> int:
                 "freeze_digest": frozen.FREEZE_DIGEST,
                 "completed_units": exc.units,
                 "failed_file": exc.failed_file,
+                "failed_unit": exc.failed_unit,
                 "reason": exc.reason,
                 "budget": exc.budget,
                 "command": "plan-text-costs live",
