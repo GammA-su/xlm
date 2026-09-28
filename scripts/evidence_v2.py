@@ -38,6 +38,7 @@ from xlm.data.evidence_v2 import (
 ROOT = Path(__file__).resolve().parents[1]
 
 EVIDENCE_DIR = ROOT / "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V2"
+EVIDENCE_V21 = ROOT / "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V2.1"
 DEFAULT_X = Path(r"X:\XLM\recon\essential_web")
 DEFAULT_G_ROOT = Path(r"G:\Project\xlm-evidence-v2\essential-web")
 
@@ -386,6 +387,253 @@ def cmd_plan_text_costs(args: argparse.Namespace) -> int:
     return 0
 
 
+def _read_receipt(path: Path) -> Any:
+    return canonical.loads_bytes_strict(Path(path).read_bytes())
+
+
+def cmd_verify_v21_freeze(args: argparse.Namespace) -> int:
+    from xlm.data.evidence_v2 import lineage as lineage_mod
+
+    try:
+        freeze = canonical.loads_bytes_strict(Path(args.freeze).read_bytes())
+        lineage_mod.verify_freeze(freeze)
+        lineage_mod.verify_protocol_bytes(
+            (
+                ROOT / "docs/implementation/reports/ESSENTIAL-WEB-EVIDENCE-V2.1-PROTOCOL.md"
+            ).read_bytes()
+        )
+        for artifact in freeze.get("artifacts", []):
+            lineage_mod.verify_freeze_artifact(
+                freeze, artifact["relative_path"], (ROOT / artifact["relative_path"]).read_bytes()
+            )
+        repo_parents = lineage_mod.parent_records(ROOT, freeze)
+        for key, path in sorted(repo_parents.items()):
+            lineage_mod.verify_parent(freeze, key, raw=path.read_bytes(), digest=None)
+        g_root = Path(args.g_root)
+        for key in (
+            "footer_evidence.json",
+            "footer_evidence.incomplete.json",
+            "text_cost_evidence.incomplete.json",
+            "text_cost_evidence_attempt2.incomplete.json",
+            "text_selection_manifest.json",
+        ):
+            bound = freeze["parents"][key]
+            raw = (g_root / Path(bound["path"]).name).read_bytes()
+            lineage_mod.verify_parent(freeze, key, raw=raw, digest=None)
+        lineage_mod.verify_selection_identity(
+            (g_root / "text_selection_manifest.json").read_bytes()
+        )
+        lineage_mod.check_scientific_namespace()
+    except (lineage_mod.LineageError, canonical.CanonicalError, OSError) as exc:
+        return _fail(str(exc))
+    print(
+        json.dumps(
+            {
+                "freeze_digest": frozen.V21_FREEZE_DIGEST,
+                "artifacts": len(freeze.get("artifacts", [])),
+                "parents": sorted(freeze.get("parents", {})),
+                "selection_digest": frozen.V21_SELECTION_DIGEST,
+            },
+            indent=2,
+        )
+    )
+    return 0
+
+
+def _v21_carry(g_root: Path) -> tuple[Any, dict[str, Any]]:
+    """Build the v2.1 T durable ledger and its sealed reconciliation receipt."""
+    from xlm.data.evidence_v2 import carry as carry_mod
+
+    attempt2 = _read_receipt(g_root / "text_cost_evidence_attempt2.incomplete.json")
+    prior = _read_receipt(g_root / "text_cost_evidence.incomplete.json")
+    if attempt2.get("digest") != frozen.V21_COSTMAP_DIGEST:
+        raise carry_mod.CarryError("attempt-2 cost map digest mismatch")
+    if prior.get("budget", {}).get("requests", -1) != 6:
+        raise carry_mod.CarryError("prior T receipt request total mismatch")
+    attempt2_files = {
+        name: {
+            "requests": 6,
+            "bytes": n,
+            "measurement": "derived_uniform_split_of_measured_arm_total",
+        }
+        for name, n in sorted(attempt2["budget"]["transfer_per_file"].items())
+    }
+    prior_files = {
+        name: {"requests": 6, "bytes": n, "measurement": "measured"}
+        for name, n in sorted(prior["budget"]["transfer_per_file"].items())
+    }
+    entries = carry_mod.v21_t_carry_entries(
+        frozen.V21_COSTMAP_DIGEST,
+        str(g_root / "text_cost_evidence_attempt2.incomplete.json"),
+        attempt2_files,
+        prior["digest"],
+        str(g_root / "text_cost_evidence.incomplete.json"),
+        prior_files,
+    )
+    durable = carry_mod.DurableLedger(budgets.new_arm_t_v21())
+    for entry in entries:
+        durable.adopt(entry)
+    durable.register_gap(
+        None,
+        48,
+        48 * 4096,
+        "attempt-2 redirect/error response bodies metered only by transport, "
+        "unattributed to the arm ledger (requests counted, bodies not)",
+    )
+    durable.register_gap(
+        "data/crawl=CC-MAIN-2014-15/train-01787-of-02772.parquet",
+        6,
+        6 * 4096,
+        "pre-fix prior run: redirect follows uncounted and their bodies "
+        "unattributed (attempts counted)",
+    )
+    receipt = durable.reconciliation_receipt(command="reconcile-carry-in", exit_status=0)
+    return durable, receipts.seal(receipt)
+
+
+def cmd_reconcile_carry_in(args: argparse.Namespace) -> int:
+    from xlm.data.evidence_v2 import carry as carry_mod
+
+    try:
+        _, sealed = _v21_carry(Path(args.g_root))
+    except (carry_mod.CarryError, canonical.CanonicalError, OSError) as exc:
+        return _fail(str(exc))
+    if args.out is not None:
+        try:
+            receipts.publish_manifest(args.out, sealed)
+        except (receipts.ReceiptError, OSError) as exc:
+            return _fail(str(exc))
+    else:
+        print(canonical.canonical_bytes(sealed).decode("utf-8"))
+    return 0
+
+
+def cmd_audit_m_history(args: argparse.Namespace) -> int:
+    from xlm.data.evidence_v2 import m_audit as m_audit_mod
+
+    try:
+        g_root = Path(args.g_root)
+        old = _read_receipt(g_root / "footer_evidence.incomplete.json")
+        complete = _read_receipt(g_root / "footer_evidence.json")
+        target = "data/crawl=CC-MAIN-2014-15/train-01860-of-02772.parquet"
+        verdict = m_audit_mod.audit_m_file_compliance(old, complete, target)
+    except (m_audit_mod.AuditError, canonical.CanonicalError, OSError) as exc:
+        return _fail(str(exc))
+    print(json.dumps(verdict, indent=2))
+    return 0
+
+
+def cmd_build_child_plans(args: argparse.Namespace) -> int:
+    from xlm.data.evidence_v2 import child_plans as child_plans_mod
+    from xlm.data.evidence_v2 import m_audit as m_audit_mod
+    from xlm.data.evidence_v2 import schedule as schedule_mod
+
+    try:
+        g_root = Path(args.g_root)
+        old = _read_receipt(g_root / "footer_evidence.incomplete.json")
+        complete = _read_receipt(g_root / "footer_evidence.json")
+        attempt2 = _read_receipt(g_root / "text_cost_evidence_attempt2.incomplete.json")
+        selection = _read_receipt(g_root / "text_selection_manifest.json")
+        if attempt2.get("digest") != frozen.V21_COSTMAP_DIGEST:
+            return _fail("attempt-2 cost map digest mismatch")
+        target = "data/crawl=CC-MAIN-2014-15/train-01860-of-02772.parquet"
+        try:
+            audit = m_audit_mod.audit_m_file_compliance(old, complete, target)
+        except m_audit_mod.AuditError as exc:
+            audit = {"conclusion": "C", "blocked": True, "reason": str(exc), "evidence": {}}
+        m_windows = [
+            {"file": u["file"], "absolute_window": u["absolute_window"]}
+            for u in complete.get("units", [])
+        ]
+        artifacts: dict[str, str] = {}
+        out_dir = Path(args.out_dir)
+        if audit.get("conclusion") in ("A", "C"):
+            blocked = child_plans_mod.seal(
+                child_plans_mod.build_m_blocked_plan(
+                    audit=audit, m_windows=m_windows, command="build-child-plans"
+                )
+            )
+            path = out_dir / "arm_m_blocked_plan.json"
+            if path.exists():
+                return _fail(f"refusing to overwrite {path}")
+            receipts.publish_manifest(path, blocked)
+            artifacts["arm_m_blocked_plan.json"] = blocked["digest"]
+        files: dict[str, list[dict[str, Any]]] = {}
+        lengths: dict[str, int] = {}
+        wanted: dict[str, list[int]] = {}
+        for unit in attempt2.get("units", []):
+            chunks = []
+            for group in unit["text_costs"]["groups"]:
+                for chunk in group["text_chunks"]:
+                    chunks.append(
+                        {"offset": chunk["offset"], "compressed_bytes": chunk["compressed_bytes"]}
+                    )
+            files[unit["file"]] = chunks
+            lengths[unit["file"]] = int(unit["remote_length"])
+            wanted[unit["file"]] = list(unit["wanted_rows"])
+        scheduled = schedule_mod.schedule_arm(files, lengths)
+        caps = schedule_mod.v21_data_caps()
+        durable, carry_sealed = _v21_carry(g_root)
+        carried = durable.effective()
+        carried_file_requests = carried.get("requests_per_file", {})
+        carried_file_bytes = {
+            name: cell.get("footer", 0)
+            for name, cell in carried.get("transfer_per_file", {}).items()
+        }
+        remaining = {
+            name: schedule_mod.remaining_budgets(
+                nominal_data_ranges=scheduled["files"][name]["nominal_data_range_count"],
+                nominal_data_bytes=scheduled["files"][name]["nominal_data_bytes"],
+                nominal_controls=scheduled["files"][name]["nominal_control_requests"],
+                carried_requests=int(sum(carried_file_requests.get(name, {}).values())),
+                carried_bytes=int(carried_file_bytes.get(name, 0)),
+                request_cap=caps["per_file_requests"],
+                byte_cap=caps["per_file_data"],
+            )
+            for name in scheduled["files"]
+        }
+        from xlm.data.evidence_v2 import reserves as reserves_mod
+
+        reservations = {
+            name: reserves_mod.memory_reservation(
+                compressed_staged_bytes=sum(c["compressed_bytes"] for c in files[name]),
+                decompressed_upper_bytes=next(
+                    u["decompressed_upper_bytes"] for u in attempt2["units"] if u["file"] == name
+                ),
+                output_retained_bytes=reserves_mod.output_retained_upper(len(wanted[name])),
+            )
+            for name in scheduled["files"]
+        }
+        t_plan = child_plans_mod.seal(
+            child_plans_mod.build_t_child_plan(
+                selection_digest=selection["digest"],
+                total_selected=selection["total_selected"],
+                wanted_by_file=wanted,
+                schedule=scheduled,
+                remaining=remaining,
+                reservations=reservations,
+                carry_digest=carry_sealed["digest"],
+                costmap_digest=frozen.V21_COSTMAP_DIGEST,
+                command="build-child-plans",
+            )
+        )
+        path = out_dir / "arm_t_child_plan_dry.json"
+        if path.exists():
+            return _fail(f"refusing to overwrite {path}")
+        receipts.publish_manifest(path, t_plan)
+        artifacts["arm_t_child_plan_dry.json"] = t_plan["digest"]
+    except (
+        m_audit_mod.AuditError,
+        child_plans_mod.ChildPlanError,
+        schedule_mod.ScheduleError,
+        canonical.CanonicalError,
+        OSError,
+    ) as exc:
+        return _fail(str(exc))
+    print(json.dumps(artifacts, indent=2))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Evidence-v2.0 offline mechanisms.")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -423,6 +671,25 @@ def build_parser() -> argparse.ArgumentParser:
     costs.add_argument("--selection-manifest", type=Path, required=True)
     costs.add_argument("--out", type=Path, default=None)
     costs.set_defaults(func=cmd_plan_text_costs)
+
+    verify21 = sub.add_parser("verify-v21-freeze", help="Verify v2.1 freeze + parents.")
+    verify21.add_argument("--freeze", type=Path, default=EVIDENCE_V21 / "freeze.json")
+    verify21.add_argument("--g-root", type=Path, default=DEFAULT_G_ROOT)
+    verify21.set_defaults(func=cmd_verify_v21_freeze)
+
+    reconcile = sub.add_parser("reconcile-carry-in", help="Build T carry-in ledger.")
+    reconcile.add_argument("--g-root", type=Path, default=DEFAULT_G_ROOT)
+    reconcile.add_argument("--out", type=Path, default=None)
+    reconcile.set_defaults(func=cmd_reconcile_carry_in)
+
+    audit_m = sub.add_parser("audit-m-history", help="Audit M historical accounting.")
+    audit_m.add_argument("--g-root", type=Path, default=DEFAULT_G_ROOT)
+    audit_m.set_defaults(func=cmd_audit_m_history)
+
+    child = sub.add_parser("build-child-plans", help="Dry v2.1 child artifacts.")
+    child.add_argument("--g-root", type=Path, default=DEFAULT_G_ROOT)
+    child.add_argument("--out-dir", type=Path, required=True)
+    child.set_defaults(func=cmd_build_child_plans)
 
     return parser
 

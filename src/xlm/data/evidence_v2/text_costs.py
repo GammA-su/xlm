@@ -151,6 +151,7 @@ def cost_file(
     *,
     transport: LiveFooterTransport | FakeFooterTransport,
     ledger: budgets.ArmLedger,
+    caps: Mapping[str, int] | None = None,
 ) -> dict[str, Any]:
     """Cost one development file's wanted rows from footer metadata only.
 
@@ -159,14 +160,17 @@ def cost_file(
     stop planning immediately. Pure future-acquisition cap overruns raise
     ``TextCostInfeasible`` carrying the computed unit, which the caller
     may collect across files without altering the INCOMPLETE verdict.
+    ``caps`` defaults to the frozen v2.0 limits; v2.1 callers pass the
+    amended transfer ceilings explicitly (same formulas, new bounds).
     """
+    limits = dict(frozen.ARM_T_LIMITS) if caps is None else dict(caps)
     state: dict[str, Any] = {}
     try:
         layout = discover_layout_over_ranges(
             source_file,
             _charging_closure(transport, ledger, source_file, state),
-            max_parser_bytes=frozen.ARM_T_LIMITS["parser_bytes_max"],
-            max_decompression_ratio=float(frozen.ARM_T_LIMITS["ratio_max"]),
+            max_parser_bytes=limits["parser_bytes_max"],
+            max_decompression_ratio=float(limits["ratio_max"]),
         )
     except SamplingRefusal as exc:
         raise TextCostError(f"footer discovery refused for {source_file}: {exc}") from exc
@@ -184,12 +188,10 @@ def cost_file(
     # compressed text plus per-chunk buffer, full group rows scanned.
     requests_upper = text["chunk_count"] + len(wanted_groups) + 4
     transfer_upper = (
-        text["text_compressed_bytes"]
-        + text["chunk_count"] * frozen.ARM_T_LIMITS["range_buffer_bytes_max"]
+        text["text_compressed_bytes"] + text["chunk_count"] * limits["range_buffer_bytes_max"]
     )
     scan_rows = sum(entry["scan_upper_rows"] for entry in text["groups"])
-    workspace_upper = text["text_uncompressed_bytes"] + frozen.ARM_T_LIMITS["parser_bytes_max"]
-    limits = frozen.ARM_T_LIMITS
+    workspace_upper = text["text_uncompressed_bytes"] + limits["parser_bytes_max"]
     fits = {
         "transfer": _fits(transfer_upper, limits["data_bytes_per_file_max"]),
         "decompressed": _fits(
@@ -282,6 +284,7 @@ def plan_text_costs(
     *,
     transport: LiveFooterTransport | FakeFooterTransport,
     ledger: budgets.ArmLedger,
+    caps: Mapping[str, int] | None = None,
 ) -> dict[str, Any]:
     """Cost all files holding frozen locators; first infeasible file stops."""
     if manifest.get("digest") != canonical.self_digest(
@@ -298,7 +301,7 @@ def plan_text_costs(
     first_failure: tuple[str, str, dict[str, Any] | None] | None = None
     for name, rows in wanted.items():
         try:
-            units.append(cost_file(name, rows, transport=transport, ledger=ledger))
+            units.append(cost_file(name, rows, transport=transport, ledger=ledger, caps=caps))
             continue
         except TextCostInfeasible as exc:
             # Collectable: future-acquisition cap overrun on this file only.

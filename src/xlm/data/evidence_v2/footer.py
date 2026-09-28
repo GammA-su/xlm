@@ -362,23 +362,55 @@ def _charging_closure(
     def _charge_redirects(count: int) -> None:
         for _ in range(count):
             ledger.charge_file_request(source_file, kind="footer")
+        if count:
+            ledger.note_redirects(count)
+
+    def _transport_delta() -> int | None:
+        budget = getattr(transport, "budget", None)
+        transferred = getattr(budget, "bytes_transferred", None)
+        return int(transferred) if type(transferred) is int else None
+
+    def _charge_unseen_body(before: int | None, accounted: int) -> None:
+        """Charge redirect/error bodies the transport metered but the range
+        accounting did not cover (the range body itself is charged
+        separately). Fake transports expose no meter and are skipped."""
+        after = _transport_delta()
+        if before is None or after is None:
+            return
+        extra = after - before - accounted
+        if extra > 0:
+            ledger.charge_transfer(source_file, extra, kind="footer")
+
+    def _account_safely(action: Any) -> None:
+        """Failure-path accounting must not mask the original error: a cap
+        refusal here is recorded in the ledger and the caller re-raises."""
+        try:
+            action()
+        except budgets.BudgetRefusal:
+            pass
 
     def fetch(start: int, end: int) -> tuple[bytes, int]:
         ledger.charge_file_request(source_file, kind="footer")
+        before = _transport_delta()
         try:
             evidence = transport.fetch_range(source_file, start, end)
         except FooterError as exc:
             ledger.note_failed_attempt()
-            _charge_redirects(int(getattr(exc, "attempt_redirects", 0) or 0))
+            _account_safely(
+                lambda exc=exc: _charge_redirects(int(getattr(exc, "attempt_redirects", 0) or 0))
+            )
+            _account_safely(lambda: _charge_unseen_body(before, 0))
             exc.diagnostics.setdefault("file", source_file)
             exc.diagnostics.setdefault("range", [start, end])
             exc.diagnostics.setdefault("resource", transport.canonical_url(source_file))
             raise
         except Exception:
             ledger.note_failed_attempt()
+            _account_safely(lambda: _charge_unseen_body(before, 0))
             raise
         _charge_redirects(evidence.redirect_hops)
         ledger.charge_transfer(source_file, len(evidence.body), kind="footer")
+        _charge_unseen_body(before, len(evidence.body))
         state.setdefault("ranges", []).append(
             {
                 "start": start,

@@ -1,5 +1,47 @@
 # Implementation status
 
+> **ESSENTIAL-WEB EVIDENCE V2.1 (2026-09-28, offline): IMPLEMENTED BUT
+> ARM-M ACCOUNTING BLOCKS ACQUISITION.** v2.1 freeze/parents/selection
+> verified; v2.0 namespace pinned. Amended T transfer caps enforced
+> with no-borrowing subcaps/totals. Durable carry-in reconciled
+> (54 req / 2,231,492 B + bounded gaps; restarts replay idempotently).
+> Exact 47-range schedule with remaining budgets (tightest file: 0
+> re-attempts). Memory/disk/scratch fit; final-disk conditional on
+> measured labeling. M audit: conclusion A — cumulative 12 > 10
+> (proven 3+3 old, 3+3 complete, distinct runs), BLOCKED, blocked-plan
+> receipt only. T dry child plan built, no authorization. 203 tests
+> pass; ruff/mypy clean. Details in
+> [ESSENTIAL-WEB-EVIDENCE-V2.1-IMPLEMENTATION](reports/ESSENTIAL-WEB-EVIDENCE-V2.1-IMPLEMENTATION.md).
+> Prior user/Astra docs preserved. No network/text/X: writes/push.
+
+> **ESSENTIAL-WEB EVIDENCE V2.1 AMENDMENT REVIEW (2026-09-28, offline):
+> READY TO IMPLEMENT EVIDENCE V2.1; ACQUISITION NOT AUTHORIZED.**
+> Independent receipt/hash audit reproduced the eight-file T cost map and
+> exact 118-locator membership. New normative transfer-only amendment:
+> footer/data/total = 2/30/32 MiB per T file and 16/240/256 MiB per T arm.
+> All scientific identities, v2.0 hash namespaces, reader and non-transfer
+> limits stay fixed; v2.0 remains historically blocked. M observations are
+> adopted by hash; T's original INCOMPLETE map remains the motivation parent.
+> Prior attempts carry forward: known T planning 2,231,492 bytes / 54 requests.
+> The six-request estimate is not a physical upper bound; memory/disk/runtime
+> readiness is unverified. Prior M redirect accounting implies a possible
+> 12 requests against its unchanged 10/file footer cap: resource compliance
+> remains BLOCKED pending reconciliation, with no waiver or budget reset.
+> Protocol SHA-256:
+> `1c437881148c3d6c1c42ca610e364055a0625732b07361f2e9271d0918fcdb4b`.
+> New freeze digest:
+> `bac82d6b9538f4005f7f0ffee6aa5c4f3a5394098c0fae8f63fc94c76832a7cd`.
+> Parent verification, independent arithmetic audit and final binding checks
+> exit 0. No product implementation or test suite run; no network/text reads.
+> No commit or push. Existing selector-review edits preserved.
+> [Normative protocol](reports/ESSENTIAL-WEB-EVIDENCE-V2.1-PROTOCOL.md),
+> [review / exact next Muse prompt](reports/ESSENTIAL-WEB-EVIDENCE-V2.1-REVIEW.md#5-exact-muse-implementation-prompt),
+> [freeze](evidence/ESSENTIAL-WEB-EVIDENCE-V2.1/freeze.json),
+> [commands](evidence/ESSENTIAL-WEB-EVIDENCE-V2.1/COMMANDS.md).
+> Next: give Muse the exact implementation prompt in review section 5;
+> stop after offline implementation and focused verification. Both M and T
+> acquisition still require separate authorization and resolved execution gates.
+
 > **ESSENTIAL-WEB EVIDENCE V2 COST MAP (2026-09-27, offline): COLLECT
 > ALL FILES' BOUNDS, STAY INCOMPLETE.** Diagnostic collection mode:
 > footer-only T cost planning now continues past per-file future-

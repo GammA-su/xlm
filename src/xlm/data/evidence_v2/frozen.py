@@ -171,6 +171,40 @@ ACQUISITION_STATUSES: tuple[str, ...] = (
 
 REVIEWERS: tuple[str, ...] = ("reviewer-1", "reviewer-2")
 
+# --------------------------------------------------------------------------
+# Evidence-v2.1 bounded transport amendment (additive; v2.0 above untouched).
+# Scientific hash namespace intentionally stays v2.0 (see PROTOCOL_VERSION).
+# --------------------------------------------------------------------------
+
+V21_PROTOCOL_VERSION = "essential-web-evidence-v2.1"
+V21_SCIENTIFIC_NAMESPACE = "essential-web-evidence-v2.0"
+V21_FREEZE_DIGEST = "bac82d6b9538f4005f7f0ffee6aa5c4f3a5394098c0fae8f63fc94c76832a7cd"
+V21_PROTOCOL_SHA256 = "1c437881148c3d6c1c42ca610e364055a0625732b07361f2e9271d0918fcdb4b"
+V21_SELECTION_DIGEST = "975ba3dee4af0598e665ea05c69bbe49336c3e3a35fca777a863073190b78474"
+V21_SELECTION_BYTES = 23807
+V21_SELECTION_SHA256 = "8424f9668fef6952a558ead0dae27a705545a7f4a4d302713707d3ec6bb1af27"
+V21_M_EVIDENCE_DIGEST = "2ecf3eb9df01a41f7f9defa20633841211396f654350df80e460f5c2b5740052"
+V21_COSTMAP_DIGEST = "ed713a0a6fe22cdd396f758182b841b0208f0fe92795b3784f8d71bb6bbf665b"
+V21_M_INCOMPLETE_DIGEST = "08b02d6a909f831039a7bfd9ddf01da7ca1dcd68d8f7cc2465d99291b26fa6c1"
+V21_T_INCOMPLETE_DIGEST = "511d4c0771aec2c44066a04a1a7d07792902cdd0f1606bbd4249d80fbddee572"
+
+# Only the transfer ceilings change; every other T limit is inherited.
+V21_T_LIMITS: dict[str, int] = {
+    **ARM_T_LIMITS,
+    "data_bytes_per_file_max": 31457280,
+    "data_bytes_arm_max": 251658240,
+    "transfer_bytes_per_file_max": 33554432,
+    "transfer_bytes_arm_max": 268435456,
+}
+
+# Adopted planning history: measured arm totals (attempt2 + prior failure).
+V21_T_CARRY_BYTES = 2231492
+V21_T_CARRY_REQUESTS = 54
+V21_T_CARRY_ATTEMPT2_BYTES = 1994765
+V21_T_CARRY_ATTEMPT2_REQUESTS = 48
+V21_T_CARRY_PRIOR_BYTES = 236727
+V21_T_CARRY_PRIOR_REQUESTS = 6
+
 # Reviewer-visible package MUST NOT contain these source attributes.
 FORBIDDEN_PACKAGE_FIELDS: frozenset[str] = frozenset(
     {
