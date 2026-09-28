@@ -377,6 +377,28 @@ def new_arm_t() -> ArmLedger:
     )
 
 
+def new_arm_m_v22() -> ArmLedger:
+    """Shared ledger for Arm M under the v2.2 prospective amendment.
+
+    The ONLY numeric change: cumulative footer-request/file 10 -> 16.
+    Every other M ceiling, and all byte/decompression/scan/disk/time
+    rules, stay exactly as in v2.0/v2.1.
+    """
+    ceilings = dict(frozen.ARM_M_LIMITS)
+    ceilings["footer_requests_per_file"] = frozen.V22_M_FOOTER_REQUESTS_PER_FILE
+    return ArmLedger(
+        "M",
+        ceilings,
+        requests_key="requests_total",
+        transfer_arm_key="response_body_bytes_total",
+        decompressed_arm_key="decompressed_bytes_arm",
+        disk_scratch_key="disk_scratch_bytes",
+        disk_final_key="disk_final_bytes",
+        disk_combined_key="disk_combined_bytes",
+        time_arm_key="time_seconds_arm",
+    )
+
+
 def new_arm_t_v21() -> ArmLedger:
     """Shared ledger for Arm T under the v2.1 transfer amendment.
 

@@ -27,12 +27,14 @@ def _base(
     parents: Mapping[str, Mapping[str, Any]],
     command: str,
     exit_status: int,
+    protocol_version: str = frozen.V21_PROTOCOL_VERSION,
+    freeze_digest: str = frozen.V21_FREEZE_DIGEST,
 ) -> dict[str, Any]:
     return {
         "kind": kind,
-        "protocol_version": frozen.V21_PROTOCOL_VERSION,
+        "protocol_version": protocol_version,
         "scientific_identity_namespace": frozen.V21_SCIENTIFIC_NAMESPACE,
-        "freeze_digest": frozen.V21_FREEZE_DIGEST,
+        "freeze_digest": freeze_digest,
         "selection_digest": frozen.V21_SELECTION_DIGEST,
         "repository": frozen.REPOSITORY,
         "revision": frozen.REVISION,
@@ -92,6 +94,14 @@ def build_t_child_plan(
     carry_digest: str,
     costmap_digest: str,
     command: str,
+    parents: Mapping[str, Mapping[str, Any]] | None = None,
+    disk_schedule: Mapping[str, Any] | None = None,
+    memory_schedule: Mapping[str, Any] | None = None,
+    deadline_schedule: Mapping[str, Any] | None = None,
+    readiness: Mapping[str, Any] | None = None,
+    receipt_version: str = "essential-web-evidence-v2.2",
+    protocol_version: str = frozen.V21_PROTOCOL_VERSION,
+    freeze_digest: str = frozen.V21_FREEZE_DIGEST,
 ) -> dict[str, Any]:
     """Dry offline T execution child plan (no authorization to execute)."""
     if selection_digest != frozen.V21_SELECTION_DIGEST:
@@ -100,12 +110,15 @@ def build_t_child_plan(
         raise ChildPlanError("T child plan binds exactly 118 locators")
     body = _base(
         "essential_web_evidence_v2_1_arm_t_child_plan_dry",
-        parents={},
+        parents=dict(parents) if parents is not None else {},
         command=command,
         exit_status=0,
+        protocol_version=protocol_version,
+        freeze_digest=freeze_digest,
     )
     body.update(
         {
+            "receipt_version": receipt_version,
             "selection_total": 118,
             "wanted_by_file": {name: list(rows) for name, rows in sorted(wanted_by_file.items())},
             "range_schedule": schedule,
@@ -117,7 +130,42 @@ def build_t_child_plan(
             "status": "DRY_NOT_AUTHORIZED",
         }
     )
+    if disk_schedule is not None:
+        body["disk_schedule"] = dict(disk_schedule)
+    if memory_schedule is not None:
+        body["memory_schedule"] = dict(memory_schedule)
+    if deadline_schedule is not None:
+        body["deadline_schedule"] = dict(deadline_schedule)
+    if readiness is not None:
+        body["readiness"] = dict(readiness)
     return body
+
+
+def readiness_review(
+    arm: str,
+    checks: Mapping[str, bool],
+    *,
+    reasons: Sequence[str] = (),
+) -> dict[str, Any]:
+    """Per-arm readiness vector: every non-authorization item must be true.
+
+    Only an all-true vector (with authorization separately NONE) may be
+    READY_FOR_ACQUISITION_AUTHORIZATION_REVIEW; otherwise BLOCKED. Never
+    executable, never an acquisition command.
+    """
+    items = dict(checks)
+    failed = sorted(name for name, ok in items.items() if not ok)
+    return {
+        "arm": arm,
+        "items": items,
+        "failed": failed,
+        "extra_reasons": list(reasons),
+        "authorization": "NONE",
+        "executable": False,
+        "status": "READY_FOR_ACQUISITION_AUTHORIZATION_REVIEW"
+        if not failed and not reasons
+        else "BLOCKED",
+    }
 
 
 def seal(body: Mapping[str, Any]) -> dict[str, Any]:
@@ -125,3 +173,161 @@ def seal(body: Mapping[str, Any]) -> dict[str, Any]:
     sealed = dict(body)
     sealed["digest"] = canonical.self_digest(body)
     return sealed
+
+
+def build_v22_bundle(
+    *,
+    freeze22: Mapping[str, Any],
+    parents: Mapping[str, Mapping[str, Any]],
+    m_audit_verdict: Mapping[str, Any],
+    m_windows: Sequence[Mapping[str, Any]],
+    m_data_schedule: Mapping[str, Any],
+    m_revalidation: Mapping[str, Any],
+    t_schedule: Mapping[str, Any],
+    t_remaining: Mapping[str, Mapping[str, Any]],
+    t_physical: Mapping[str, Any],
+    t_reservations: Mapping[str, Any],
+    carry_digest: str,
+    costmap_digest: str,
+    selection_digest: str,
+    total_selected: int,
+    wanted_by_file: Mapping[str, Sequence[int]],
+    command: str,
+    m_readiness_items: Mapping[str, bool] | None = None,
+    m_readiness_reasons: Sequence[str] = (),
+    t_readiness_items: Mapping[str, bool] | None = None,
+    t_readiness_reasons: Sequence[str] = (),
+    t_disk: Mapping[str, Any] | None = None,
+    t_memory: Mapping[str, Any] | None = None,
+    t_deadlines: Mapping[str, Any] | None = None,
+) -> dict[str, dict[str, Any]]:
+    """Assemble the nine v2.2 offline child artifacts (all DRY, none authorized).
+
+    Every artifact binds complete parent descriptors; readiness vectors
+    are computed mechanically (all-true or BLOCKED); nothing here is
+    executable and no acquisition command is produced. Readiness inputs
+    are caller-supplied evidence verdicts; defaults preserve the audited
+    real-arm vectors.
+    """
+    if freeze22.get("digest") != frozen.V22_FREEZE_DIGEST:
+        raise ChildPlanError("v2.2 bundle binds only the frozen v2.2 digest")
+    base_parents = dict(parents)
+    m_blocked = seal(
+        build_m_blocked_plan(audit=m_audit_verdict, m_windows=m_windows, command=command)
+    )
+    m_blocked["parents"] = base_parents
+    m_blocked["protocol_version"] = frozen.V22_PROTOCOL_VERSION
+    m_blocked["freeze_digest"] = frozen.V22_FREEZE_DIGEST
+    m_blocked["digest"] = canonical.self_digest(
+        {k: v for k, v in m_blocked.items() if k != "digest"}
+    )
+    t_child = seal(
+        build_t_child_plan(
+            selection_digest=selection_digest,
+            total_selected=total_selected,
+            wanted_by_file=wanted_by_file,
+            schedule=t_schedule,
+            remaining=t_remaining,
+            reservations=t_reservations,
+            carry_digest=carry_digest,
+            costmap_digest=costmap_digest,
+            command=command,
+            parents=base_parents,
+            disk_schedule=t_disk,
+            memory_schedule=t_memory,
+            deadline_schedule=t_deadlines,
+            protocol_version=frozen.V22_PROTOCOL_VERSION,
+            freeze_digest=frozen.V22_FREEZE_DIGEST,
+        )
+    )
+    readiness_m = readiness_review(
+        "M",
+        dict(m_readiness_items)
+        if m_readiness_items is not None
+        else {
+            "scientific_identity_ok": True,
+            "lineage_ok": True,
+            "historical_accounting_ok": False,
+            "range_schedule_ok": True,
+            "requests_ok": False,
+            "response_bytes_ok": False,
+            "decompression_ok": True,
+            "scan_ok": True,
+            "memory_supervision_ok": False,
+            "disk_schedule_ok": False,
+            "deadlines_ok": False,
+        },
+        reasons=list(m_readiness_reasons)
+        or [
+            "cumulative 12 > 10 first-file planning usage (conclusion A)",
+            "historical redirect/error bodies unmeasured (no sound bound)",
+            "historical durations unmeasured",
+            "no supervised live enforcement has run",
+        ],
+    )
+    readiness_t = readiness_review(
+        "T",
+        dict(t_readiness_items)
+        if t_readiness_items is not None
+        else {
+            "scientific_identity_ok": True,
+            "lineage_ok": True,
+            "historical_accounting_ok": False,
+            "range_schedule_ok": True,
+            "requests_ok": True,
+            "response_bytes_ok": False,
+            "decompression_ok": True,
+            "scan_ok": True,
+            "memory_supervision_ok": False,
+            "disk_schedule_ok": False,
+            "deadlines_ok": False,
+        },
+        reasons=list(t_readiness_reasons)
+        or [
+            "historical redirect/error bodies unmeasured (bounded gaps only)",
+            "historical durations unmeasured",
+            "final-disk fit conditional on measured labeling volume",
+            "no supervised live enforcement has run",
+        ],
+    )
+    return {
+        "arm_m_child_plan.json": m_blocked,
+        "arm_t_child_plan.json": t_child,
+        "readiness_review.json": seal(
+            {
+                "kind": "essential_web_evidence_v2_2_readiness_review",
+                "protocol_version": frozen.V22_PROTOCOL_VERSION,
+                "freeze_digest": frozen.V22_FREEZE_DIGEST,
+                "parents": base_parents,
+                "arms": {"M": readiness_m, "T": readiness_t},
+                "command": command,
+                "exit_status": 0,
+            }
+        ),
+        "ledger_reconciliation.json": seal(
+            {
+                "kind": "essential_web_evidence_v2_2_ledger_reconciliation",
+                "protocol_version": frozen.V22_PROTOCOL_VERSION,
+                "freeze_digest": frozen.V22_FREEZE_DIGEST,
+                "parents": base_parents,
+                "carry_digest": carry_digest,
+                "command": command,
+                "exit_status": 0,
+            }
+        ),
+        "disk_schedule.json": seal(dict(t_disk or {})),
+        "memory_schedule.json": seal(dict(t_reservations)),
+        "deadline_schedule.json": seal(dict(t_deadlines or {})),
+        "range_schedule_m.json": seal(
+            dict(
+                m_data_schedule,
+                **{
+                    "protocol_version": frozen.V22_PROTOCOL_VERSION,
+                    "revalidation": m_revalidation,
+                },
+            )
+        ),
+        "range_schedule_t.json": seal(
+            dict(t_schedule, **{"protocol_version": frozen.V22_PROTOCOL_VERSION})
+        ),
+    }

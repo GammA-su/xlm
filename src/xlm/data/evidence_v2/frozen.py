@@ -205,6 +205,51 @@ V21_T_CARRY_ATTEMPT2_REQUESTS = 48
 V21_T_CARRY_PRIOR_BYTES = 236727
 V21_T_CARRY_PRIOR_REQUESTS = 6
 
+# --------------------------------------------------------------------------
+# Evidence-v2.2 prospective M amendment (additive; v2.0/v2.1 above untouched).
+# Only M's cumulative footer-request/file ceiling changes (10 -> 16).
+# Scientific hash namespace stays v2.0.
+# --------------------------------------------------------------------------
+
+V22_PROTOCOL_VERSION = "essential-web-evidence-v2.2"
+V22_SCIENTIFIC_NAMESPACE = "essential-web-evidence-v2.0"
+V22_FREEZE_DIGEST = "b6602a445307d9638913c046b4cfebab3356e20559d89b3f2ab601aa924ebd0c"
+V22_PROTOCOL_SHA256 = "fd698793068458b31563418fdca29c97fa1efe1099b8776c7fd1407887f4f49d"
+V22_M_EVIDENCE_DIGEST = "2ecf3eb9df01a41f7f9defa20633841211396f654350df80e460f5c2b5740052"
+V22_COSTMAP_DIGEST = "ed713a0a6fe22cdd396f758182b841b0208f0fe92795b3784f8d71bb6bbf665b"
+
+# The ONLY v2.2 numeric cap change: M footer-request/file, cumulative.
+V22_M_FOOTER_REQUESTS_PER_FILE = 16
+# Prospective revalidation reservations nested inside cumulative caps.
+V22_M_REVALIDATION_PER_FILE = 4
+V22_M_REVALIDATION_ARM = 25
+
+# Authoritative reconstructed M historical physical requests (distinct runs).
+V22_M_HISTORY_REQUESTS: dict[str, int] = {
+    "data/crawl=CC-MAIN-2014-15/train-01860-of-02772.parquet": 12,
+    "data/crawl=CC-MAIN-2015-32/train-01682-of-01920.parquet": 7,
+    "data/crawl=CC-MAIN-2016-50/train-02156-of-03132.parquet": 6,
+    "data/crawl=CC-MAIN-2018-05/train-03378-of-03429.parquet": 6,
+    "data/crawl=CC-MAIN-2019-09/train-00153-of-02577.parquet": 6,
+    "data/crawl=CC-MAIN-2021-04/train-00179-of-03315.parquet": 6,
+    "data/crawl=CC-MAIN-2021-49/train-00408-of-02895.parquet": 6,
+    "data/crawl=CC-MAIN-2024-26/train-01127-of-03168.parquet": 6,
+}
+V22_M_HISTORY_TOTAL = 55
+
+# Recorded returned range-body bytes (NOT all-body exact totals).
+V22_M_HISTORY_BYTES: dict[str, int] = {
+    "data/crawl=CC-MAIN-2014-15/train-01860-of-02772.parquet": 537616,
+    "data/crawl=CC-MAIN-2015-32/train-01682-of-01920.parquet": 264322,
+    "data/crawl=CC-MAIN-2016-50/train-02156-of-03132.parquet": 215631,
+    "data/crawl=CC-MAIN-2018-05/train-03378-of-03429.parquet": 264763,
+    "data/crawl=CC-MAIN-2019-09/train-00153-of-02577.parquet": 228714,
+    "data/crawl=CC-MAIN-2021-04/train-00179-of-03315.parquet": 221283,
+    "data/crawl=CC-MAIN-2021-49/train-00408-of-02895.parquet": 231779,
+    "data/crawl=CC-MAIN-2024-26/train-01127-of-03168.parquet": 227340,
+}
+V22_M_HISTORY_BYTES_TOTAL = 2191448
+
 # Reviewer-visible package MUST NOT contain these source attributes.
 FORBIDDEN_PACKAGE_FIELDS: frozenset[str] = frozenset(
     {

@@ -168,3 +168,53 @@ def m_file_cap() -> int:
     if frozen.ARM_M_LIMITS["footer_requests_per_file"] != M_FILE_CAP:
         raise AuditError("frozen M per-file cap drifted")
     return M_FILE_CAP
+
+
+# --------------------------------------------------------------------------
+# Historical response-body audit: is there a mechanically justified bound?
+# --------------------------------------------------------------------------
+
+# Code-archaeology facts (verified offline via git object hashes):
+# - At 943b816 (old attempt) and at every later revision through HEAD,
+#   redirect/error response bodies pass through
+#   SafeRedirectHandler -> TransportBudget.read_body(fp, budget.max_bytes),
+#   with max_bytes = the 268,435,456-byte arm total. No 4 MiB bound ever
+#   applied to redirect bodies; the closure-level 4 MiB check covers only
+#   planned range bodies.
+# - Consumed redirect bodies accumulated in TransportBudget.bytes_transferred
+#   (in-memory only) and were never exported into arm receipts at either
+#   generation. Per-response Content-Length gating existed but no lengths
+#   were recorded, so no tighter bound is derivable from the receipts.
+OLD_TRANSPORT_REVISION = "943b816"
+OLD_REDIRECT_BODY_LIMIT = 268435456
+
+
+def audit_m_bytes_unknown() -> dict[str, Any]:
+    """Historical redirect/error body bytes: no sound bound -> BLOCKED.
+
+    Recorded range-body bytes are exact (2,191,448 arm-wide); redirect and
+    error response bodies are unmeasured at both code generations, and the
+    only mechanically enforced bound (256 MiB per body) is vacuous. An
+    analyst small estimate is insufficient, so actual all-body bytes per
+    file and arm remain unknown and block acquisition.
+    """
+    if frozen.V22_M_HISTORY_BYTES_TOTAL != sum(frozen.V22_M_HISTORY_BYTES.values()):
+        raise AuditError("frozen M byte history does not sum")
+    return {
+        "conclusion": "BLOCKED_BYTES_UNKNOWN",
+        "blocked": True,
+        "evidence": {
+            "recorded_range_body_bytes_total": frozen.V22_M_HISTORY_BYTES_TOTAL,
+            "redirect_error_bodies": "unmeasured at both generations",
+            "enforced_redirect_body_limit": OLD_REDIRECT_BODY_LIMIT,
+            "enforced_limit_source": (
+                f"{OLD_TRANSPORT_REVISION}:transport.read_body(budget.max_bytes)"
+            ),
+            "four_mib_cap_applies_to_redirects": False,
+            "reason": (
+                "no exact historical redirect/error-body measurements and no "
+                "sufficiently tight mechanically enforced bound exist in the "
+                "supplied artifacts"
+            ),
+        },
+    }

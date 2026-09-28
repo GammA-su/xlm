@@ -525,6 +525,7 @@ def cmd_audit_m_history(args: argparse.Namespace) -> int:
 
 def cmd_build_child_plans(args: argparse.Namespace) -> int:
     from xlm.data.evidence_v2 import child_plans as child_plans_mod
+    from xlm.data.evidence_v2 import lineage as lineage_mod
     from xlm.data.evidence_v2 import m_audit as m_audit_mod
     from xlm.data.evidence_v2 import schedule as schedule_mod
 
@@ -536,6 +537,14 @@ def cmd_build_child_plans(args: argparse.Namespace) -> int:
         selection = _read_receipt(g_root / "text_selection_manifest.json")
         if attempt2.get("digest") != frozen.V21_COSTMAP_DIGEST:
             return _fail("attempt-2 cost map digest mismatch")
+        freeze_path = ROOT / "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V2.2/freeze.json"
+        freeze22 = json.loads(freeze_path.read_bytes())
+        lineage_mod.verify_v22_freeze(freeze22)
+        contents = {
+            key: Path(bound["path"]).read_bytes()
+            for key, bound in freeze22.get("parents", {}).items()
+        }
+        parents = lineage_mod.complete_parent_descriptors(freeze22, contents)
         target = "data/crawl=CC-MAIN-2014-15/train-01860-of-02772.parquet"
         try:
             audit = m_audit_mod.audit_m_file_compliance(old, complete, target)
@@ -545,32 +554,37 @@ def cmd_build_child_plans(args: argparse.Namespace) -> int:
             {"file": u["file"], "absolute_window": u["absolute_window"]}
             for u in complete.get("units", [])
         ]
-        artifacts: dict[str, str] = {}
-        out_dir = Path(args.out_dir)
-        if audit.get("conclusion") in ("A", "C"):
-            blocked = child_plans_mod.seal(
-                child_plans_mod.build_m_blocked_plan(
-                    audit=audit, m_windows=m_windows, command="build-child-plans"
-                )
-            )
-            path = out_dir / "arm_m_blocked_plan.json"
-            if path.exists():
-                return _fail(f"refusing to overwrite {path}")
-            receipts.publish_manifest(path, blocked)
-            artifacts["arm_m_blocked_plan.json"] = blocked["digest"]
+        m_data = schedule_mod.m_data_schedule(complete.get("units", []))
+        revalidation_files = {
+            entry["file"]: {"etag": entry["etag"], "remote_length": entry["remote_length"]}
+            for entry in freeze22.get("M_accounting", {}).get("file_history", [])
+        }
+        revalidation_history = {
+            entry["file"]: int(entry["historical_requests"])
+            for entry in freeze22.get("M_accounting", {}).get("file_history", [])
+        }
+        m_revalidation = schedule_mod.m_revalidation_plan(
+            revalidation_files, historical_requests=revalidation_history
+        )
         files: dict[str, list[dict[str, Any]]] = {}
         lengths: dict[str, int] = {}
         wanted: dict[str, list[int]] = {}
+        decomp_by_file: dict[str, int] = {}
         for unit in attempt2.get("units", []):
             chunks = []
             for group in unit["text_costs"]["groups"]:
                 for chunk in group["text_chunks"]:
                     chunks.append(
-                        {"offset": chunk["offset"], "compressed_bytes": chunk["compressed_bytes"]}
+                        {
+                            "offset": chunk["offset"],
+                            "dictionary_page_offset": chunk.get("dictionary_page_offset"),
+                            "compressed_bytes": chunk["compressed_bytes"],
+                        }
                     )
             files[unit["file"]] = chunks
             lengths[unit["file"]] = int(unit["remote_length"])
             wanted[unit["file"]] = list(unit["wanted_rows"])
+            decomp_by_file[unit["file"]] = int(unit["decompressed_upper_bytes"])
         scheduled = schedule_mod.schedule_arm(files, lengths)
         caps = schedule_mod.v21_data_caps()
         durable, carry_sealed = _v21_carry(g_root)
@@ -586,9 +600,11 @@ def cmd_build_child_plans(args: argparse.Namespace) -> int:
                 nominal_data_bytes=scheduled["files"][name]["nominal_data_bytes"],
                 nominal_controls=scheduled["files"][name]["nominal_control_requests"],
                 carried_requests=int(sum(carried_file_requests.get(name, {}).values())),
-                carried_bytes=int(carried_file_bytes.get(name, 0)),
+                carried_data_bytes=0,
+                carried_footer_bytes=int(carried_file_bytes.get(name, 0)),
                 request_cap=caps["per_file_requests"],
-                byte_cap=caps["per_file_data"],
+                data_cap=caps["per_file_data"],
+                total_cap=schedule_mod.v21_data_caps()["per_file_total"],
             )
             for name in scheduled["files"]
         }
@@ -597,31 +613,133 @@ def cmd_build_child_plans(args: argparse.Namespace) -> int:
         reservations = {
             name: reserves_mod.memory_reservation(
                 compressed_staged_bytes=sum(c["compressed_bytes"] for c in files[name]),
-                decompressed_upper_bytes=next(
-                    u["decompressed_upper_bytes"] for u in attempt2["units"] if u["file"] == name
-                ),
+                decompressed_upper_bytes=decomp_by_file[name],
                 output_retained_bytes=reserves_mod.output_retained_upper(len(wanted[name])),
             )
             for name in scheduled["files"]
         }
-        t_plan = child_plans_mod.seal(
-            child_plans_mod.build_t_child_plan(
-                selection_digest=selection["digest"],
-                total_selected=selection["total_selected"],
-                wanted_by_file=wanted,
-                schedule=scheduled,
-                remaining=remaining,
-                reservations=reservations,
-                carry_digest=carry_sealed["digest"],
-                costmap_digest=frozen.V21_COSTMAP_DIGEST,
-                command="build-child-plans",
-            )
+        physical = schedule_mod.t_physical_plan(
+            files={
+                name: {
+                    "nominal_ranges": scheduled["files"][name]["nominal_data_range_count"],
+                    "nominal_bytes": scheduled["files"][name]["nominal_data_bytes"],
+                }
+                for name in scheduled["files"]
+            },
+            carried_requests=int(carried.get("requests", 0)),
+            carried_bytes=int(carried.get("response_body_bytes", 0)),
+            request_cap=caps["arm_requests"],
+            data_cap=caps["arm_data"],
+            total_cap=schedule_mod.v21_data_caps()["arm_total"],
         )
-        path = out_dir / "arm_t_child_plan_dry.json"
-        if path.exists():
-            return _fail(f"refusing to overwrite {path}")
-        receipts.publish_manifest(path, t_plan)
-        artifacts["arm_t_child_plan_dry.json"] = t_plan["digest"]
+        adopted = 23807 + 24617 + 7000
+        stages = []
+        for name in sorted(scheduled["files"]):
+            out = reserves_mod.output_retained_upper(len(wanted[name]))
+            scratch = (
+                sum(c["compressed_bytes"] for c in files[name])
+                + decomp_by_file[name]
+                + 33554432
+                + out
+                + out
+            )
+            stages.append({"file": name, "scratch": scratch, "final": out})
+        disk = reserves_mod.disk_schedule(
+            adopted_artifact_bytes=adopted,
+            per_file_stages=stages,
+            review_package_bytes=9465152,
+            log_bytes=1048576,
+        )
+        disk["conditional"] = (
+            "final-disk fit uses an estimated review package; "
+            "conditional on measured labeling volume"
+        )
+        deadlines = reserves_mod.DeadlineTracker(history_unknown=True)
+        m_items = {
+            "scientific_identity_ok": True,
+            "lineage_ok": True,
+            "historical_accounting_ok": False,
+            "range_schedule_ok": True,
+            "requests_ok": False,
+            "response_bytes_ok": False,
+            "decompression_ok": True,
+            "scan_ok": True,
+            "memory_supervision_ok": False,
+            "disk_schedule_ok": False,
+            "deadlines_ok": False,
+        }
+        m_reasons = [
+            "cumulative 12 > 10 first-file planning usage (conclusion A)",
+            "historical redirect/error bodies unmeasured (no sound bound)",
+            "historical durations unmeasured",
+            "no supervised live enforcement has run",
+        ]
+        t_items = {
+            "scientific_identity_ok": True,
+            "lineage_ok": True,
+            "historical_accounting_ok": False,
+            "range_schedule_ok": True,
+            "requests_ok": True,
+            "response_bytes_ok": False,
+            "decompression_ok": True,
+            "scan_ok": True,
+            "memory_supervision_ok": False,
+            "disk_schedule_ok": False,
+            "deadlines_ok": False,
+        }
+        t_reasons = [
+            "historical redirect/error bodies unmeasured (bounded gaps only)",
+            "historical durations unmeasured",
+            "final-disk fit conditional on measured labeling volume",
+            "no supervised live enforcement has run",
+        ]
+        bundle = child_plans_mod.build_v22_bundle(
+            freeze22=freeze22,
+            parents=parents,
+            m_audit_verdict=audit,
+            m_windows=m_windows,
+            m_data_schedule=m_data,
+            m_revalidation=m_revalidation,
+            t_schedule={**scheduled, "physical": physical},
+            t_remaining=remaining,
+            t_physical=physical,
+            t_reservations=reservations,
+            carry_digest=carry_sealed["digest"],
+            costmap_digest=frozen.V21_COSTMAP_DIGEST,
+            selection_digest=selection["digest"],
+            total_selected=selection["total_selected"],
+            wanted_by_file=wanted,
+            command="build-child-plans",
+            m_readiness_items=m_items,
+            m_readiness_reasons=m_reasons,
+            t_readiness_items=t_items,
+            t_readiness_reasons=t_reasons,
+            t_disk=disk,
+            t_memory=reservations,
+            t_deadlines=deadlines.state(),
+        )
+        artifacts: dict[str, str] = {}
+        out_dir = Path(args.out_dir)
+        out_dir.mkdir(parents=True, exist_ok=True)
+        for name in (
+            "arm_m_child_plan.json",
+            "arm_t_child_plan.json",
+            "readiness_review.json",
+            "ledger_reconciliation.json",
+            "disk_schedule.json",
+            "memory_schedule.json",
+            "deadline_schedule.json",
+            "range_schedule_m.json",
+            "range_schedule_t.json",
+        ):
+            path = out_dir / name
+            if path.exists():
+                return _fail(f"refusing to overwrite {path}")
+        filing = dict(bundle)
+        filing["ledger_reconciliation.json"] = carry_sealed
+        for name, body in filing.items():
+            receipts.publish_manifest(out_dir / name, body)
+            artifacts[name] = body["digest"]
     except (
         m_audit_mod.AuditError,
         child_plans_mod.ChildPlanError,

@@ -352,13 +352,16 @@ def test_schedule_arm_remaining_and_attempt_bounds() -> None:
         nominal_data_bytes=9000000,
         nominal_controls=2,
         carried_requests=12,
-        carried_bytes=473454,
+        carried_data_bytes=0,
+        carried_footer_bytes=473454,
         request_cap=100,
-        byte_cap=31457280,
+        data_cap=31457280,
+        total_cap=33554432,
     )
     assert remaining["nominal_requests"] == 5
     assert remaining["requests_remaining_after_nominal"] == 100 - 12 - 5
-    assert remaining["bytes_remaining_after_nominal"] == 31457280 - 473454 - 9000000
+    assert remaining["data_remaining_after_nominal"] == 31457280 - 9000000
+    assert remaining["total_remaining_after_nominal"] == 33554432 - 473454 - 9000000
     bounds = remaining["attempt_bounds"]
     assert bounds["full_nominal_executions_fitting"] == 3
     assert bounds["reattempts_beyond_nominal"] == 2

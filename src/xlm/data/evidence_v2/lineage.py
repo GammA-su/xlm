@@ -32,6 +32,12 @@ def verify_protocol_bytes(raw: bytes) -> None:
         raise LineageError("v2.1 protocol bytes do not match the frozen SHA-256")
 
 
+def verify_v22_protocol_bytes(raw: bytes) -> None:
+    """The normative v2.2 protocol document must match its frozen hash."""
+    if file_sha256(raw) != frozen.V22_PROTOCOL_SHA256:
+        raise LineageError("v2.2 protocol bytes do not match the frozen SHA-256")
+
+
 def verify_freeze(freeze: Mapping[str, Any]) -> None:
     """v2.1 freeze self-digest, expected value, and artifact bindings."""
     if freeze.get("digest") != frozen.V21_FREEZE_DIGEST:
@@ -149,3 +155,62 @@ def parent_records(root: Path, freeze: Mapping[str, Any]) -> dict[str, Path]:
         candidate = root / Path(path)
         out[key] = candidate
     return out
+
+
+def verify_v22_freeze(freeze: Mapping[str, Any]) -> None:
+    """v2.2 freeze self-digest, expected value, protocol version, parent."""
+    if freeze.get("digest") != frozen.V22_FREEZE_DIGEST:
+        raise LineageError("v2.2 freeze digest is not the expected canonical value")
+    if canonical.self_digest(freeze) != freeze["digest"]:
+        raise LineageError("v2.2 freeze self-digest recomputation mismatch")
+    if freeze.get("protocol_version") != frozen.V22_PROTOCOL_VERSION:
+        raise LineageError("freeze is not essential-web-evidence-v2.2")
+    if freeze.get("parent_freeze_digest") != frozen.V21_FREEZE_DIGEST:
+        raise LineageError("v2.2 freeze does not bind the v2.1 parent freeze")
+    if freeze.get("scientific_identity_namespace") != frozen.V22_SCIENTIFIC_NAMESPACE:
+        raise LineageError("scientific namespace is not frozen v2.0")
+
+
+def complete_parent_descriptors(
+    freeze: Mapping[str, Any],
+    contents: Mapping[str, bytes],
+) -> dict[str, dict[str, Any]]:
+    """Complete descriptors for every bound parent: role, identity, hashes.
+
+    ``contents`` maps parent key -> raw bytes. Every parent must resolve;
+    a missing parent blocks. Original roles, versions, and statuses are
+    preserved verbatim, never relabeled.
+    """
+    parents = freeze.get("parents", {})
+    if not isinstance(parents, dict) or not parents:
+        raise LineageError("freeze carries no parent graph")
+    descriptors: dict[str, dict[str, Any]] = {}
+    for key in sorted(parents):
+        bound = parents[key]
+        if key not in contents:
+            raise LineageError(f"parent unresolved (blocks): {key}")
+        raw = contents[key]
+        if len(raw) != bound.get("bytes") or file_sha256(raw) != bound.get("sha256"):
+            raise LineageError(f"parent byte drift: {key}")
+        body_digest: str | None = None
+        try:
+            body = canonical.loads_bytes_strict(raw)
+            if isinstance(body, dict) and "digest" in body:
+                if canonical.self_digest(body) != body["digest"]:
+                    raise LineageError(f"parent self-digest mismatch: {key}")
+                body_digest = str(body["digest"])
+        except canonical.CanonicalError:
+            body_digest = None
+        if body_digest is not None and body_digest != bound.get("digest"):
+            raise LineageError(f"parent digest drift: {key}")
+        descriptors[key] = {
+            "role": bound.get("role"),
+            "path": bound.get("path"),
+            "bytes": bound.get("bytes"),
+            "sha256": bound.get("sha256"),
+            "digest": bound.get("digest"),
+            "body_digest_verified": body_digest,
+            "original_protocol_version": bound.get("original_protocol_version"),
+            "original_status": bound.get("original_status"),
+        }
+    return descriptors

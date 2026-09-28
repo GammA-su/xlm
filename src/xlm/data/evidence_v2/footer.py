@@ -351,12 +351,17 @@ def _charging_closure(
     ledger: budgets.ArmLedger,
     source_file: str,
     state: dict[str, Any],
+    *,
+    durable: Any = None,
 ) -> Any:
     """RangeFetch for footer discovery: charges the shared ArmLedger.
 
     The attempt itself plus every redirect transition it follows are each
     one footer request in the arm budget ("all redirect requests count").
     Per-range hop counts accumulate boundedly in ``state["ranges"]``.
+    When ``durable`` (a DurableLedger) is supplied, each attempt opens an
+    in-flight token closed on success, so a crash preserves attempted
+    work instead of refunding it.
     """
 
     def _charge_redirects(count: int) -> None:
@@ -392,6 +397,7 @@ def _charging_closure(
     def fetch(start: int, end: int) -> tuple[bytes, int]:
         ledger.charge_file_request(source_file, kind="footer")
         before = _transport_delta()
+        token = durable.begin_range(source_file, start, end) if durable is not None else None
         try:
             evidence = transport.fetch_range(source_file, start, end)
         except FooterError as exc:
@@ -411,6 +417,8 @@ def _charging_closure(
         _charge_redirects(evidence.redirect_hops)
         ledger.charge_transfer(source_file, len(evidence.body), kind="footer")
         _charge_unseen_body(before, len(evidence.body))
+        if durable is not None and token is not None:
+            durable.complete_range(token)
         state.setdefault("ranges", []).append(
             {
                 "start": start,

@@ -1,5 +1,46 @@
 # Implementation status
 
+> **ESSENTIAL-WEB EVIDENCE V2.2 (2026-09-28, offline): BLOCKED — NEITHER
+> ARM READY FOR AUTHORIZATION REVIEW.** v2.2 freeze/parents/selection
+> verified; v2.0 namespace pinned; only M 16/file changed. M audit: A
+> (12>10 proven) + bytes unbound (256 MiB transport ceiling vacuous) →
+> BLOCKED. T: dictionary-corrected 47-range schedule, carry reconciled,
+> durable ledger repaired, supervisor/disk/deadline mechanisms built
+> and tested — but historical bodies/timing unknown and final-disk
+> conditional → BLOCKED. 9 DRY child artifacts published (no
+> authorization). 163 focused + 67 sampling/bounds tests green;
+> ruff/mypy clean. Details in
+> [ESSENTIAL-WEB-EVIDENCE-V2.2-IMPLEMENTATION](reports/ESSENTIAL-WEB-EVIDENCE-V2.2-IMPLEMENTATION.md).
+> Prior user/Astra docs preserved. No network/text/X: writes/push.
+
+> **ESSENTIAL-WEB EVIDENCE V2.2 PROTOCOL / READINESS REVIEW (2026-09-28,
+> offline): READY TO IMPLEMENT EVIDENCE V2.2; ACQUISITION STILL BLOCKED.**
+> M known physical history reconstructs to 55 requests (old 7 + complete 48),
+> including the proven first-file 12>10 violation. Recorded range bodies total
+> 2,191,448 bytes; missing historical redirect/error-body totals remain unknown,
+> not a certified zero or 4 KiB/request. Prospective amendment changes only M
+> footer requests/file 10->16. Footer arm 80, data 100/plan and 800/arm, combined
+> 880 unchanged. One four-byte identity revalidation/file: nominal 16 physical
+> requests/arm, prospective maximum 4/file and 25/arm; 55+16+8*85=751 nominal.
+> Historical violations remain recorded; all usage carries forward without reset.
+> T keeps every cap and all 118 locators. Final disk uses cumulative guarded
+> acquisition/publication stages, no cap increase. T child is not ready: all
+> eight ranges omit dictionary prefixes; live ledger charges disappear on reload;
+> unsupported gap bounds, disk helper defects and missing supervision/history
+> remain blockers. Three bounded synthetic probes reproduced defects; no pytest
+> suite or implementation change. Parent/arithmetic audit and final checks exit 0.
+> Protocol SHA-256:
+> `fd698793068458b31563418fdca29c97fa1efe1099b8776c7fd1407887f4f49d`.
+> Freeze canonical digest:
+> `b6602a445307d9638913c046b4cfebab3356e20559d89b3f2ab601aa924ebd0c`.
+> [Normative protocol](reports/ESSENTIAL-WEB-EVIDENCE-V2.2-PROTOCOL.md),
+> [review / exact Muse handoff](reports/ESSENTIAL-WEB-EVIDENCE-V2.2-REVIEW.md#5-exact-muse-handoff),
+> [freeze](evidence/ESSENTIAL-WEB-EVIDENCE-V2.2/freeze.json),
+> [commands](evidence/ESSENTIAL-WEB-EVIDENCE-V2.2/COMMANDS.md).
+> Next: Muse offline implementation -> regenerated child-plan review -> separate
+> acquisition authorization review. No network, acquisition, text, selection
+> change, commit or push. Existing user edits and v2.0/v2.1 artifacts preserved.
+
 > **ESSENTIAL-WEB EVIDENCE V2.1 (2026-09-28, offline): IMPLEMENTED BUT
 > ARM-M ACCOUNTING BLOCKS ACQUISITION.** v2.1 freeze/parents/selection
 > verified; v2.0 namespace pinned. Amended T transfer caps enforced
