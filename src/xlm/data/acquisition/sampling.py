@@ -101,6 +101,10 @@ class ColumnChunkSpec:
     path: str
     compressed: int
     uncompressed: int
+    #: Byte offset of the first data page, when the footer exposed it.
+    data_page_offset: int | None = None
+    #: Byte offset of the dictionary page, or None when unencoded/absent.
+    dictionary_page_offset: int | None = None
 
 
 @dataclass(frozen=True)
@@ -219,7 +223,17 @@ def discover_layout_local(
             for column in columns
         )
         chunk_specs = tuple(
-            ColumnChunkSpec(str(column.path_in_schema), first, second)
+            ColumnChunkSpec(
+                str(column.path_in_schema),
+                first,
+                second,
+                data_page_offset=int(column.data_page_offset),
+                dictionary_page_offset=(
+                    None
+                    if column.dictionary_page_offset is None
+                    else int(column.dictionary_page_offset)
+                ),
+            )
             for column, (first, second) in zip(columns, pairs, strict=True)
         )
         compressed = sum(first for first, _ in pairs)
@@ -347,7 +361,17 @@ def discover_layout_over_ranges(
                         sum(second for _, second in pairs),
                         pairs,
                         tuple(
-                            ColumnChunkSpec(str(c.path_in_schema), first, second)
+                            ColumnChunkSpec(
+                                str(c.path_in_schema),
+                                first,
+                                second,
+                                data_page_offset=int(c.data_page_offset),
+                                dictionary_page_offset=(
+                                    None
+                                    if c.dictionary_page_offset is None
+                                    else int(c.dictionary_page_offset)
+                                ),
+                            )
                             for c, (first, second) in zip(columns, pairs, strict=True)
                         ),
                     )

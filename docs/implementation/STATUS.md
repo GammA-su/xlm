@@ -1,5 +1,20 @@
 # Implementation status
 
+> **ESSENTIAL-WEB EVIDENCE V2 COST MAP (2026-09-27, offline): COLLECT
+> ALL FILES' BOUNDS, STAY INCOMPLETE.** Diagnostic collection mode:
+> footer-only T cost planning now continues past per-file future-
+> acquisition infeasibility (§11 verdict stands — no tightening, caps
+> frozen) to map every safely reachable frozen file, while integrity/
+> safety failures still stop immediately with stopped_early. Extended
+> incomplete receipt (schema v2): per-group units, exact formulas,
+> per-limit file/arm fits, aggregate sums/maxima, refusal list; final
+> status INCOMPLETE, never a success artifact. Chunk offsets plumbed
+> from footers; page indexes explicitly unexposed. 109 tests pass;
+> ruff/mypy clean; 67 sampling/bounds regressions green. Frozen
+> identities unchanged. Details in
+> [ESSENTIAL-WEB-EVIDENCE-V2-IMPLEMENTATION](reports/ESSENTIAL-WEB-EVIDENCE-V2-IMPLEMENTATION.md)
+> §12. Prior user/Astra docs preserved.
+
 > **ESSENTIAL-WEB EVIDENCE V2 ARM-T REFUSAL (2026-09-27, offline): WHOLE-
 > CHUNK BOUND STANDS; NO SAFE TIGHTENING; REFUSAL KEPT.** Authorized run
 > did Arm M 8/8, then refused T costs on 2014-15: transfer upper

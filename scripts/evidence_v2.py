@@ -336,21 +336,22 @@ def cmd_plan_text_costs(args: argparse.Namespace) -> int:
         )
         sealed = receipts.seal({**aggregate, "provenance": provenance})
     except text_costs_mod.TextCostsIncomplete as exc:
-        receipt = receipts.seal(
-            {
-                "kind": "essential_web_evidence_v2_text_costs_incomplete",
-                "protocol_version": frozen.PROTOCOL_VERSION,
-                "freeze_digest": frozen.FREEZE_DIGEST,
-                "completed_units": exc.units,
-                "failed_file": exc.failed_file,
-                "failed_unit": exc.failed_unit,
-                "reason": exc.reason,
-                "budget": exc.budget,
-                "command": "plan-text-costs live",
-                "exit_status": 1,
-                "status": "INCOMPLETE",
-            }
+        aggregate = text_costs_mod.build_incomplete_aggregate(
+            exc, manifest, command="plan-text-costs live", exit_status=1
         )
+        aggregate["provenance"] = receipts.provenance(
+            root=ROOT,
+            code_paths=_code_paths(),
+            command="plan-text-costs --no-dry-run --authorize-network",
+            exit_status=1,
+            caps=frozen.ARM_T_LIMITS,
+            parents={
+                "freeze": frozen.FREEZE_DIGEST,
+                "selection": manifest["digest"],
+            },
+            stage="text-cost-planning",
+        )
+        receipt = receipts.seal(aggregate)
         incomplete = args.out.with_name(args.out.stem + ".incomplete.json")
         try:
             receipts.publish_manifest(incomplete, receipt)
@@ -364,6 +365,7 @@ def cmd_plan_text_costs(args: argparse.Namespace) -> int:
         text_costs_mod.TextCostError,
         budgets.BudgetRefusal,
         receipts.ReceiptError,
+        canonical.CanonicalError,
     ) as exc:
         return _fail(str(exc))
     try:

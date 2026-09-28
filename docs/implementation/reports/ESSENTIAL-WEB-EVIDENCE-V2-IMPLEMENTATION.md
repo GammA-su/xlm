@@ -374,3 +374,47 @@ round-trip, no success artifact, footer-only ranges.
 `format --check` clean; scoped `mypy` clean. Frozen identities (freeze,
 policy, inventory, 8 files, 118-manifest, strata, 16 MiB cap)
 unchanged. No G: writes in this task.
+
+## 12. Arm-T cost-map collection mode (2026-09-27, offline agent, no text)
+
+The planner aborted at the first future-infeasible file, hiding the
+other files' physical bounds. Diagnostic collection mode now continues
+footer-only cost planning across all frozen Arm-T source files after a
+per-file FUTURE-acquisition infeasibility (§11 verdict stands: no safe
+tightening, caps unchanged). Collectable: cap overruns on computed
+uppers (transfer/decompressed/requests/scan/workspace) — recorded per
+file, planning continues. Immediate stop (unchanged): freeze/selection/
+repo mismatches, foreign locators, malformed footer/schema,
+unresolvable text leaf, locator outside every group, transport budget
+or body-cap exhaustion, host/redirect violations, identity drift.
+Only the former is collected; the latter truncates with
+stopped_early=true. Final status stays INCOMPLETE whenever any file is
+infeasible or collection stopped early; no success artifact is ever
+published alongside it. No locator, order, substitution, decoder, or
+cap change.
+
+Per-file units now record selected count/min/max, per-group index/row
+counts/selected counts/min/max, text chunk offsets (new optional
+ColumnChunkSpec fields populated at both footer-discovery sites;
+positional construction unchanged), compressed/uncompressed bytes,
+chunk counts, dictionary requirement from metadata, page/offset index
+availability as explicitly not exposed by the stack, and scan/request/
+transfer/decompressed/workspace uppers with exact formulas
+(\FORMULAS\ in receipt: transfer = compressed sum + chunks x 4194304;
+workspace = decompressed + 33554432 parser headroom, subsumed in
+practice by the 64 MiB decompressed gate). The incomplete receipt
+(eceipt_schema_version\ 2) adds files planned/feasible/infeasible,
+per-group units for every safely reached file, infeasible-file reasons,
+aggregate transfer/decompressed sums and maxima, future+planning
+request totals, scan totals, per-limit file/arm fits, and the refusal
+list. Planning still consumes the single shared ArmLedger (never
+reset); real budget exhaustion stops immediately.
+
+109 evidence-v2 tests pass (\-n 0\, sockets blocked), including
+collection across feasible/infeasible files, multi-infeasible maps,
+integrity/budget immediate stops with later files untouched,
+footer-only ranges, no text decode, unchanged locators, frozen caps,
+exact aggregate arithmetic, no-success-artifact, determinism, and
+digest stability; plus 67 targeted sampling/bounds regressions for the
+surgical \sampling.py\ change. uff check\ / \ormat --checkclean; scoped \mypy\ clean. Frozen identities unchanged. No G:
+writes in this task.

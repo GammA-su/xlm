@@ -777,6 +777,196 @@ def test_text_costs_failed_unit_preserved_numbers_only() -> None:
     assert "body" not in dumped.replace('"text_costs"', "").replace('"text_leaf"', "")
 
 
+def _manifest_for(wanted: dict[str, list[int]]) -> dict[str, Any]:
+    identities = [
+        [frozen.REPOSITORY, frozen.REVISION, name, row]
+        for name, rows in sorted(wanted.items())
+        for row in sorted(rows)
+    ]
+    manifest: dict[str, Any] = {
+        "kind": "essential_web_evidence_v2_text_selection",
+        "protocol_version": frozen.PROTOCOL_VERSION,
+        "freeze_digest": frozen.FREEZE_DIGEST,
+        "total_selected": len(identities),
+        "cells": [
+            {
+                "stratum": "B_science_census",
+                "requested": 29,
+                "eligible": 29,
+                "conflicts": 0,
+                "selected": len(identities),
+                "shortfall": 0,
+                "identities": identities,
+            }
+        ],
+    }
+    manifest["digest"] = canonical.self_digest(manifest)
+    return manifest
+
+
+def test_collection_continues_past_infeasible_file() -> None:
+    table = _table(600, bulk_text_bytes=120000)
+    images = {
+        "dev-a.parquet": footer.FakeImage(_parquet_bytes([table])),
+        "dev-b.parquet": _good_image((600,)),
+    }
+    manifest = _manifest_for({"dev-a.parquet": [10, 500], "dev-b.parquet": [5]})
+    with pytest.raises(text_costs.TextCostsIncomplete) as caught:
+        text_costs.plan_text_costs(
+            manifest,
+            transport=footer.FakeFooterTransport(images),
+            ledger=budgets.new_arm_t(),
+        )
+    exc = caught.value
+    assert exc.stopped_early is False
+    assert [u["file"] for u in exc.units] == ["dev-a.parquet", "dev-b.parquet"]
+    assert exc.units[0]["feasible"] is False
+    assert exc.units[1]["feasible"] is True
+    assert exc.infeasible == [{"file": "dev-a.parquet", "reasons": exc.units[0]["reasons"]}]
+    assert exc.failed_file == "dev-a.parquet"
+    assert exc.failed_unit == exc.units[0]
+
+
+def test_collection_records_multiple_infeasible_files() -> None:
+    table = _table(600, bulk_text_bytes=120000)
+    images = {
+        "dev-a.parquet": footer.FakeImage(_parquet_bytes([table])),
+        "dev-b.parquet": _good_image((600,)),
+        "dev-c.parquet": footer.FakeImage(_parquet_bytes([table])),
+    }
+    manifest = _manifest_for({"dev-a.parquet": [10], "dev-b.parquet": [5], "dev-c.parquet": [7]})
+    with pytest.raises(text_costs.TextCostsIncomplete) as caught:
+        text_costs.plan_text_costs(
+            manifest,
+            transport=footer.FakeFooterTransport(images),
+            ledger=budgets.new_arm_t(),
+        )
+    assert [u["file"] for u in caught.value.units] == [
+        "dev-a.parquet",
+        "dev-b.parquet",
+        "dev-c.parquet",
+    ]
+    assert [i["file"] for i in caught.value.infeasible] == [
+        "dev-a.parquet",
+        "dev-c.parquet",
+    ]
+
+
+def test_integrity_failure_stops_collection_immediately() -> None:
+    images = {
+        "dev-a.parquet": _good_image((600,)),
+        "dev-c.parquet": _good_image((600,)),
+    }
+    manifest = _manifest_for({"dev-a.parquet": [10], "dev-b.parquet": [5], "dev-c.parquet": [7]})
+    transport = footer.FakeFooterTransport(images)
+    with pytest.raises(text_costs.TextCostsIncomplete) as caught:
+        text_costs.plan_text_costs(manifest, transport=transport, ledger=budgets.new_arm_t())
+    exc = caught.value
+    assert exc.stopped_early is True
+    assert exc.failed_file == "dev-b.parquet"
+    assert [u["file"] for u in exc.units] == ["dev-a.parquet"]
+    assert exc.infeasible == []
+    assert all(call[0] != "dev-c.parquet" for call in transport.calls)
+
+
+def test_budget_exhaustion_stops_collection_immediately() -> None:
+    images = {
+        "dev-a.parquet": _good_image((600,)),
+        "dev-b.parquet": _good_image((600,)),
+    }
+    manifest = _manifest_for({"dev-a.parquet": [10], "dev-b.parquet": [5]})
+    ledger = budgets.new_arm_t()
+    for _ in range(100):
+        ledger.charge_file_request("dev-a.parquet", kind="footer")
+    transport = footer.FakeFooterTransport(images)
+    with pytest.raises(text_costs.TextCostsIncomplete) as caught:
+        text_costs.plan_text_costs(manifest, transport=transport, ledger=ledger)
+    assert caught.value.stopped_early is True
+    assert [u["file"] for u in caught.value.units] == []
+
+
+def test_incomplete_aggregate_sums_fits_formulas() -> None:
+    table = _table(600, bulk_text_bytes=120000)
+    images = {
+        "dev-a.parquet": footer.FakeImage(_parquet_bytes([table])),
+        "dev-b.parquet": _good_image((600,)),
+    }
+    manifest = _manifest_for({"dev-a.parquet": [10, 500], "dev-b.parquet": [5]})
+    try:
+        text_costs.plan_text_costs(
+            manifest,
+            transport=footer.FakeFooterTransport(images),
+            ledger=budgets.new_arm_t(),
+        )
+        raise AssertionError("expected TextCostsIncomplete")
+    except text_costs.TextCostsIncomplete as exc:
+        aggregate = text_costs.build_incomplete_aggregate(
+            exc, manifest, command="plan-text-costs live", exit_status=1
+        )
+    assert aggregate["status"] == "INCOMPLETE"
+    assert aggregate["receipt_schema_version"] == 2
+    assert aggregate["files_planned"] == 2
+    assert aggregate["files_feasible"] == 1
+    assert aggregate["files_infeasible"] == 1
+    units = {u["file"]: u for u in aggregate["units"]}
+    assert aggregate["aggregate"]["transfer_upper_sum_bytes"] == sum(
+        u["transfer_upper_bytes"] for u in units.values()
+    )
+    assert aggregate["aggregate"]["transfer_upper_max_bytes"] == max(
+        u["transfer_upper_bytes"] for u in units.values()
+    )
+    assert aggregate["aggregate"]["decompressed_upper_sum_bytes"] == sum(
+        u["decompressed_upper_bytes"] for u in units.values()
+    )
+    assert aggregate["aggregate"]["requests_upper_future_total"] == sum(
+        u["requests_upper"] for u in units.values()
+    )
+    assert aggregate["aggregate"]["scan_upper_total_rows"] == sum(
+        u["scan_rows_upper"] for u in units.values()
+    )
+    assert aggregate["formulas"]["transfer_upper_bytes"] == (
+        "sum(text compressed chunk bytes over wanted groups) + chunk_count * 4194304"
+    )
+    assert aggregate["aggregate"]["fits"]["transfer_arm"]["cap"] == 134217728
+    assert aggregate["aggregate"]["fits"]["transfer_arm"]["fits"] is True
+    assert units["dev-a.parquet"]["fits"]["transfer"]["fits"] is False
+    assert units["dev-b.parquet"]["fits"]["transfer"]["fits"] is True
+    group = units["dev-b.parquet"]["text_costs"]["groups"][0]
+    assert group["selected_count"] == 1
+    assert group["selected_min"] == group["selected_max"] == 5
+    assert isinstance(group["text_chunks"][0]["offset"], int)
+    assert isinstance(group["dictionary_required"], bool)
+    assert "not exposed by the current stack" in group["page_index"]
+    assert aggregate["aggregate"]["refusal_reasons"] == sorted(units["dev-a.parquet"]["reasons"])
+    sealed = receipts.seal(aggregate)
+    assert sealed["digest"] == canonical.self_digest(
+        {k: v for k, v in sealed.items() if k != "digest"}
+    )
+
+
+def test_collection_deterministic_and_caps_frozen() -> None:
+    images = {
+        "dev-a.parquet": _good_image((600,)),
+        "dev-b.parquet": _good_image((600,)),
+    }
+    manifest = _manifest_for({"dev-a.parquet": [10], "dev-b.parquet": [5]})
+
+    def run() -> dict[str, Any]:
+        return text_costs.plan_text_costs(
+            manifest,
+            transport=footer.FakeFooterTransport(images),
+            ledger=budgets.new_arm_t(),
+        )
+
+    first, second = run(), run()
+    assert first["status"] == "COMPLETE"
+    assert canonical.digest(first) == canonical.digest(second)
+    assert frozen.ARM_T_LIMITS["transfer_bytes_per_file_max"] == 16777216
+    assert frozen.ARM_T_LIMITS["data_bytes_per_file_max"] == 14680064
+    assert frozen.ARM_T_LIMITS["requests_arm_max"] == 800
+    assert frozen.ARM_T_LIMITS["decompressed_bytes_arm_max"] == 536870912
+
+
 def test_text_costs_failed_unit_in_incomplete_receipt(tmp_path: Path) -> None:
     table = _table(600, bulk_text_bytes=120000)
     images = {
