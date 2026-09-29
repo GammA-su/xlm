@@ -1,0 +1,16 @@
+{
+  "head": "a9f89c0d13ef01e9ab387104c4acd4da948d2366",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.12.13 (main, Aug  7 2026, 02:26:41) [MSC v.1944 64 bit (AMD64)]",
+  "executable": "F:\\Project\\xlm-data-ultrax\\.venv\\Scripts\\python.exe",
+  "prior_files_sha256": {
+    "docs/implementation/STATUS.md": "f4712169ad133ce8f728625f7756669aa5e5e471be6519330f01f062a0534920",
+    "docs/implementation/reports/ESSENTIAL-WEB-SELECTOR-RECON.md": "e301b125c16b53af1858062145096171f21333a59f00d4ae36edbd5bda6b5962",
+    "docs/implementation/evidence/ESSENTIAL-WEB-SELECTOR-SWEEP-REVIEW/audit.json": "2602eb75cba02ddc593a695a3ce15d6f6917a46fdd9ae95866915956dd49141a",
+    "docs/implementation/reports/ESSENTIAL-WEB-EVIDENCE-V3.0-REVALIDATION.md": "2a0e473eccebeab82681d47d907dc6d1c0063da0b1d46a8aed3f2d319f5a16b3",
+    "docs/implementation/reports/ESSENTIAL-WEB-SELECTOR-POLICY-REVIEW.md": "c6a57a7086ef2042c4a3d42eb2a98304019ff22d5472c7399c20208cc0d920a5",
+    "docs/implementation/reports/ESSENTIAL-WEB-SELECTOR-SWEEP-REVIEW-AUDIT.md": "0308a88bcfc04b23a641240f0ecff1e52760ed7c56e236a2eec5e767c547496e",
+    "docs/implementation/reports/ESSENTIAL-WEB-SELECTOR-SWEEP-REVIEW.md": "cc6c7bab56f898ee0149ec7041ca82fe3eecfdafee8b2ee1ce552a6c676369ef"
+  },
+  "root_absent": true
+}

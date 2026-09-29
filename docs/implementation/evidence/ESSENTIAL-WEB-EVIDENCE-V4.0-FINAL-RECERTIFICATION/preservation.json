@@ -1,0 +1,9 @@
+{
+  "starting_head": "a9f89c0d13ef01e9ab387104c4acd4da948d2366",
+  "prior_files_unchanged_except_status_prefix": true,
+  "status_previous_bytes_preserved": 163755,
+  "status_prefix_bytes": 922,
+  "real_root_absent": true,
+  "implementation_diff_empty": true,
+  "index_contains_only_review_paths": true
+}

@@ -1,0 +1,118 @@
+[
+  {
+    "name": "verify",
+    "argv": [
+      "uv",
+      "run",
+      "--offline",
+      "--locked",
+      "--extra",
+      "cpu",
+      "--extra",
+      "eval",
+      "python",
+      "scripts/evidence_v4.py",
+      "verify"
+    ],
+    "exit": 0,
+    "seconds": 0.1976619000051869
+  },
+  {
+    "name": "focused",
+    "argv": [
+      "uv",
+      "run",
+      "--offline",
+      "--locked",
+      "--extra",
+      "cpu",
+      "--extra",
+      "eval",
+      "python",
+      "-m",
+      "pytest",
+      "-n",
+      "0",
+      "-q",
+      "-p",
+      "no:cacheprovider",
+      "tests/test_evidence_v4_plan.py",
+      "tests/test_evidence_v4_transport.py",
+      "tests/test_evidence_v4_engine.py",
+      "tests/test_evidence_v4_e2e.py",
+      "tests/test_evidence_v4_wire.py",
+      "--junitxml=F:\\Project\\xlm-data-ultrax\\docs\\implementation\\evidence\\ESSENTIAL-WEB-EVIDENCE-V4.0-FINAL-RECERTIFICATION\\focused.xml"
+    ],
+    "exit": 0,
+    "seconds": 17.6883405999979
+  },
+  {
+    "name": "repair-probe",
+    "argv": [
+      "uv",
+      "run",
+      "--offline",
+      "--locked",
+      "--extra",
+      "cpu",
+      "--extra",
+      "eval",
+      "python",
+      "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.0-B01-B02-REPAIR/probe_b01_b02.py",
+      "F:\\Project\\xlm-data-ultrax"
+    ],
+    "exit": 0,
+    "seconds": 0.809907300004852
+  },
+  {
+    "name": "independent",
+    "argv": [
+      "uv",
+      "run",
+      "--offline",
+      "--locked",
+      "--extra",
+      "cpu",
+      "--extra",
+      "eval",
+      "python",
+      "F:\\Project\\xlm-data-ultrax\\docs\\implementation\\evidence\\ESSENTIAL-WEB-EVIDENCE-V4.0-FINAL-RECERTIFICATION\\independent_check.py"
+    ],
+    "exit": 1,
+    "seconds": 1.5088575000117999
+  },
+  {
+    "name": "independent-corrected",
+    "argv": [
+      "uv",
+      "run",
+      "--offline",
+      "--locked",
+      "--extra",
+      "cpu",
+      "--extra",
+      "eval",
+      "python",
+      "F:\\Project\\xlm-data-ultrax\\docs\\implementation\\evidence\\ESSENTIAL-WEB-EVIDENCE-V4.0-FINAL-RECERTIFICATION\\independent_check.py"
+    ],
+    "exit": 0,
+    "seconds": 1.5180888999893796
+  },
+  {
+    "name": "injection",
+    "argv": [
+      "uv",
+      "run",
+      "--offline",
+      "--locked",
+      "--extra",
+      "cpu",
+      "--extra",
+      "eval",
+      "python",
+      "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.0-B01-B02-REPAIR/probe_injection.py"
+    ],
+    "exit": 0,
+    "seconds": 0.9364357000013115
+  }
+]

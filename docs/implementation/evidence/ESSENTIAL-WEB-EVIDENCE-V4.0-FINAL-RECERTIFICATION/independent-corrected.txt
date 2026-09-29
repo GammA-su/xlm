@@ -1,0 +1,433 @@
+{
+  "identities": {
+    "protocol_worktree_sha256": "4c7f11b15adb7d0601977fef61ab04d62fae0e9e64091fa22dbd99e1caf65727",
+    "protocol": "4c7f11b15adb7d0601977fef61ab04d62fae0e9e64091fa22dbd99e1caf65727",
+    "freeze": "747b82a2df7702db2b111ea62c2f27f3de3d22a37428472fdc0550af90767f57",
+    "phase_p_plan": "16b93183b485ced924466028b84a8b4cfd84a65f596dc95c80879e32464f35d3",
+    "selection": "975ba3dee4af0598e665ea05c69bbe49336c3e3a35fca777a863073190b78474",
+    "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d"
+  },
+  "parser": {
+    "events": [
+      {
+        "t": 60,
+        "body": "PAR1"
+      },
+      {
+        "t": 120,
+        "raised": "DeadlineError"
+      }
+    ],
+    "timeouts": [
+      120.0,
+      120.0,
+      120.0,
+      60.0
+    ],
+    "stdlib_partial_control": "PAR1"
+  },
+  "B01": {
+    "attempts": [
+      {
+        "attempt_id": 1,
+        "try_number": 1,
+        "physical_bytes": 4,
+        "retained_bytes": 4,
+        "sqlite_bytes": 4,
+        "body_hex": "50415231",
+        "outcome": "TRANSPORT_ERROR",
+        "seconds": 0.0,
+        "timeouts": [
+          120.0,
+          120.0,
+          120.0
+        ]
+      },
+      {
+        "attempt_id": 2,
+        "try_number": 2,
+        "physical_bytes": 4,
+        "retained_bytes": 4,
+        "sqlite_bytes": 4,
+        "body_hex": "50415231",
+        "outcome": "TRANSPORT_ERROR",
+        "seconds": 0.0,
+        "timeouts": [
+          120.0,
+          120.0,
+          120.0
+        ]
+      },
+      {
+        "attempt_id": 3,
+        "try_number": 3,
+        "physical_bytes": 4,
+        "retained_bytes": 4,
+        "sqlite_bytes": 4,
+        "body_hex": "50415231",
+        "outcome": "TRANSPORT_ERROR",
+        "seconds": 0.0,
+        "timeouts": [
+          120.0,
+          120.0,
+          120.0
+        ]
+      }
+    ],
+    "operation": "PENDING",
+    "result": [
+      "INCOMPLETE",
+      "STOPPED"
+    ],
+    "stop_reason": "M-00-head: retries exhausted after 3 tries",
+    "total_physical": 12,
+    "total_sqlite_scripted": 12,
+    "all_operation_attempts": [
+      {
+        "id": 1,
+        "attempt": 1,
+        "outcome": "TRANSPORT_ERROR",
+        "bytes": 4
+      },
+      {
+        "id": 2,
+        "attempt": 2,
+        "outcome": "TRANSPORT_ERROR",
+        "bytes": 4
+      },
+      {
+        "id": 3,
+        "attempt": 3,
+        "outcome": "TRANSPORT_ERROR",
+        "bytes": 4
+      }
+    ]
+  },
+  "B02": {
+    "attempts": [
+      {
+        "attempt_id": 1,
+        "try_number": 1,
+        "physical_bytes": 4,
+        "retained_bytes": 4,
+        "sqlite_bytes": 4,
+        "body_hex": "50415231",
+        "outcome": "TIMEOUT",
+        "seconds": 120.0,
+        "timeouts": [
+          120.0,
+          120.0,
+          120.0,
+          60.0
+        ]
+      },
+      {
+        "attempt_id": 2,
+        "try_number": 2,
+        "physical_bytes": 4,
+        "retained_bytes": 4,
+        "sqlite_bytes": 4,
+        "body_hex": "50415231",
+        "outcome": "TIMEOUT",
+        "seconds": 120.0,
+        "timeouts": [
+          120.0,
+          120.0,
+          120.0,
+          60.0
+        ]
+      },
+      {
+        "attempt_id": 3,
+        "try_number": 3,
+        "physical_bytes": 4,
+        "retained_bytes": 4,
+        "sqlite_bytes": 4,
+        "body_hex": "50415231",
+        "outcome": "TIMEOUT",
+        "seconds": 120.0,
+        "timeouts": [
+          120.0,
+          120.0,
+          120.0,
+          60.0
+        ]
+      }
+    ],
+    "operation": "PENDING",
+    "result": [
+      "INCOMPLETE",
+      "STOPPED"
+    ],
+    "stop_reason": "M-00-head: retries exhausted after 3 tries",
+    "total_physical": 12,
+    "total_sqlite_scripted": 12,
+    "all_operation_attempts": [
+      {
+        "id": 1,
+        "attempt": 1,
+        "outcome": "TIMEOUT",
+        "bytes": 4
+      },
+      {
+        "id": 2,
+        "attempt": 2,
+        "outcome": "TIMEOUT",
+        "bytes": 4
+      },
+      {
+        "id": 3,
+        "attempt": 3,
+        "outcome": "TIMEOUT",
+        "bytes": 4
+      }
+    ]
+  },
+  "119": {
+    "attempts": [
+      {
+        "attempt_id": 1,
+        "try_number": 1,
+        "physical_bytes": 4,
+        "retained_bytes": 4,
+        "sqlite_bytes": 4,
+        "body_hex": "50415231",
+        "outcome": "SUCCESS",
+        "seconds": 119.0,
+        "timeouts": [
+          120.0,
+          120.0,
+          120.0,
+          60.0
+        ]
+      }
+    ],
+    "operation": "COMPLETE",
+    "result": [
+      "COMPLETE",
+      "COMPLETE"
+    ],
+    "stop_reason": null,
+    "total_physical": 4,
+    "total_sqlite_scripted": 4,
+    "all_operation_attempts": [
+      {
+        "id": 1,
+        "attempt": 1,
+        "outcome": "SUCCESS",
+        "bytes": 4
+      }
+    ]
+  },
+  "120": {
+    "attempts": [
+      {
+        "attempt_id": 1,
+        "try_number": 1,
+        "physical_bytes": 4,
+        "retained_bytes": 4,
+        "sqlite_bytes": 4,
+        "body_hex": "50415231",
+        "outcome": "TIMEOUT",
+        "seconds": 120.0,
+        "timeouts": [
+          120.0,
+          120.0,
+          120.0,
+          60.0
+        ]
+      },
+      {
+        "attempt_id": 2,
+        "try_number": 2,
+        "physical_bytes": 4,
+        "retained_bytes": 4,
+        "sqlite_bytes": 4,
+        "body_hex": "50415231",
+        "outcome": "TIMEOUT",
+        "seconds": 120.0,
+        "timeouts": [
+          120.0,
+          120.0,
+          120.0,
+          60.0
+        ]
+      },
+      {
+        "attempt_id": 3,
+        "try_number": 3,
+        "physical_bytes": 4,
+        "retained_bytes": 4,
+        "sqlite_bytes": 4,
+        "body_hex": "50415231",
+        "outcome": "TIMEOUT",
+        "seconds": 120.0,
+        "timeouts": [
+          120.0,
+          120.0,
+          120.0,
+          60.0
+        ]
+      }
+    ],
+    "operation": "PENDING",
+    "result": [
+      "INCOMPLETE",
+      "STOPPED"
+    ],
+    "stop_reason": "M-00-head: retries exhausted after 3 tries",
+    "total_physical": 12,
+    "total_sqlite_scripted": 12,
+    "all_operation_attempts": [
+      {
+        "id": 1,
+        "attempt": 1,
+        "outcome": "TIMEOUT",
+        "bytes": 4
+      },
+      {
+        "id": 2,
+        "attempt": 2,
+        "outcome": "TIMEOUT",
+        "bytes": 4
+      },
+      {
+        "id": 3,
+        "attempt": 3,
+        "outcome": "TIMEOUT",
+        "bytes": 4
+      }
+    ]
+  },
+  "121": {
+    "attempts": [
+      {
+        "attempt_id": 1,
+        "try_number": 1,
+        "physical_bytes": 4,
+        "retained_bytes": 4,
+        "sqlite_bytes": 4,
+        "body_hex": "50415231",
+        "outcome": "TIMEOUT",
+        "seconds": 120.0,
+        "timeouts": [
+          120.0,
+          120.0,
+          120.0,
+          60.0
+        ]
+      },
+      {
+        "attempt_id": 2,
+        "try_number": 2,
+        "physical_bytes": 4,
+        "retained_bytes": 4,
+        "sqlite_bytes": 4,
+        "body_hex": "50415231",
+        "outcome": "TIMEOUT",
+        "seconds": 120.0,
+        "timeouts": [
+          120.0,
+          120.0,
+          120.0,
+          60.0
+        ]
+      },
+      {
+        "attempt_id": 3,
+        "try_number": 3,
+        "physical_bytes": 4,
+        "retained_bytes": 4,
+        "sqlite_bytes": 4,
+        "body_hex": "50415231",
+        "outcome": "TIMEOUT",
+        "seconds": 120.0,
+        "timeouts": [
+          120.0,
+          120.0,
+          120.0,
+          60.0
+        ]
+      }
+    ],
+    "operation": "PENDING",
+    "result": [
+      "INCOMPLETE",
+      "STOPPED"
+    ],
+    "stop_reason": "M-00-head: retries exhausted after 3 tries",
+    "total_physical": 12,
+    "total_sqlite_scripted": 12,
+    "all_operation_attempts": [
+      {
+        "id": 1,
+        "attempt": 1,
+        "outcome": "TIMEOUT",
+        "bytes": 4
+      },
+      {
+        "id": 2,
+        "attempt": 2,
+        "outcome": "TIMEOUT",
+        "bytes": 4
+      },
+      {
+        "id": 3,
+        "attempt": 3,
+        "outcome": "TIMEOUT",
+        "bytes": 4
+      }
+    ]
+  },
+  "timeout_then_retry": {
+    "attempts": [
+      {
+        "attempt_id": 1,
+        "try_number": 1,
+        "physical_bytes": 4,
+        "retained_bytes": 4,
+        "sqlite_bytes": 4,
+        "body_hex": "50415231",
+        "outcome": "TIMEOUT",
+        "seconds": 120.0,
+        "timeouts": [
+          120.0,
+          120.0,
+          120.0,
+          60.0
+        ]
+      }
+    ],
+    "operation": "COMPLETE",
+    "result": [
+      "COMPLETE",
+      "COMPLETE"
+    ],
+    "stop_reason": null,
+    "total_physical": 4,
+    "total_sqlite_scripted": 4,
+    "all_operation_attempts": [
+      {
+        "id": 1,
+        "attempt": 1,
+        "outcome": "TIMEOUT",
+        "bytes": 4
+      },
+      {
+        "id": 2,
+        "attempt": 2,
+        "outcome": "REDIRECT",
+        "bytes": 39
+      },
+      {
+        "id": 3,
+        "attempt": 2,
+        "outcome": "SUCCESS",
+        "bytes": 4
+      }
+    ]
+  },
+  "fixture_disk_bytes_before_cleanup": 561586,
+  "seconds": 1.179482299994561,
+  "assertions": "PASS"
+}

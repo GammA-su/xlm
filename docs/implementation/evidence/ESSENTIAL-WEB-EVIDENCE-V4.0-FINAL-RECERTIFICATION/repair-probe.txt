@@ -1,0 +1,133 @@
+{
+ "tree": "F:\\Project\\xlm-data-ultrax",
+ "repaired_transport": true,
+ "B01_par1_then_eof_x3": {
+  "result": [
+   "INCOMPLETE",
+   "STOPPED",
+   "M-00-head: retries exhausted after 3 tries"
+  ],
+  "M-00-head attempts": [
+   {
+    "try": 1,
+    "hop": 0,
+    "outcome": "TRANSPORT_ERROR",
+    "sqlite_bytes": 4,
+    "temp_bytes": "50415231"
+   },
+   {
+    "try": 2,
+    "hop": 0,
+    "outcome": "TRANSPORT_ERROR",
+    "sqlite_bytes": 4,
+    "temp_bytes": "50415231"
+   },
+   {
+    "try": 3,
+    "hop": 0,
+    "outcome": "TRANSPORT_ERROR",
+    "sqlite_bytes": 4,
+    "temp_bytes": "50415231"
+   }
+  ],
+  "physically_supplied_body_bytes": 12,
+  "sqlite_total_M-00-head": 12,
+  "scripted_attempt_durations_s": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "scripted_socket_timeouts": [
+   [
+    120.0,
+    120.0,
+    120.0
+   ],
+   [
+    120.0,
+    120.0,
+    120.0
+   ],
+   [
+    120.0,
+    120.0,
+    120.0
+   ]
+  ]
+ },
+ "B02_parser_60_plus_70": {
+  "events": [
+   {
+    "t": 60.0,
+    "read": "50415231"
+   },
+   {
+    "t": 120.0,
+    "raised": "DeadlineError"
+   }
+  ],
+  "socket_timeouts": [
+   120.0,
+   120.0,
+   120.0,
+   60.0
+  ]
+ },
+ "B02_engine_60_plus_70_x3": {
+  "result": [
+   "INCOMPLETE",
+   "STOPPED",
+   "M-00-head: retries exhausted after 3 tries"
+  ],
+  "M-00-head attempts": [
+   {
+    "try": 1,
+    "hop": 0,
+    "outcome": "TIMEOUT",
+    "sqlite_bytes": 4,
+    "temp_bytes": "50415231"
+   },
+   {
+    "try": 2,
+    "hop": 0,
+    "outcome": "TIMEOUT",
+    "sqlite_bytes": 4,
+    "temp_bytes": "50415231"
+   },
+   {
+    "try": 3,
+    "hop": 0,
+    "outcome": "TIMEOUT",
+    "sqlite_bytes": 4,
+    "temp_bytes": "50415231"
+   }
+  ],
+  "physically_supplied_body_bytes": 12,
+  "sqlite_total_M-00-head": 12,
+  "scripted_attempt_durations_s": [
+   120.0,
+   120.0,
+   120.0
+  ],
+  "scripted_socket_timeouts": [
+   [
+    120.0,
+    120.0,
+    120.0,
+    60.0
+   ],
+   [
+    120.0,
+    120.0,
+    120.0,
+    60.0
+   ],
+   [
+    120.0,
+    120.0,
+    120.0,
+    60.0
+   ]
+  ]
+ }
+}

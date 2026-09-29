@@ -1,0 +1,62 @@
+{
+  "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.0-FINAL-RECERTIFICATION/baseline.json": {
+    "bytes": 1297,
+    "sha256": "5a21167f06e404711f813a5b3a1e56ccb373268d4ec5fe794f57022e7b68366a"
+  },
+  "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.0-FINAL-RECERTIFICATION/commands.json": {
+    "bytes": 2604,
+    "sha256": "9776902debe27d44f69b9f5664ffbd48984c6d565a0c7e034dcde0533dfa491f"
+  },
+  "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.0-FINAL-RECERTIFICATION/COMMANDS.md": {
+    "bytes": 5274,
+    "sha256": "582454a66bd92e8cfe0b2bd24a4e5cf417e40f917b25f4a67f144a87f423d4d2"
+  },
+  "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.0-FINAL-RECERTIFICATION/finalize_review.py": {
+    "bytes": 4532,
+    "sha256": "37a488a0992b272475f37cf8787f8c1641b89cee20add663d3d7b4d19e976609"
+  },
+  "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.0-FINAL-RECERTIFICATION/focused.txt": {
+    "bytes": 265,
+    "sha256": "75b943f8647cc09413605ec56a7409f713f3abaadb6050fb4ad9efc6658da5ae"
+  },
+  "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.0-FINAL-RECERTIFICATION/focused.xml": {
+    "bytes": 24798,
+    "sha256": "9c8662c22c298fdb7888a079762f9e5cbc42df972e875c8abc7f0a0567ebf331"
+  },
+  "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.0-FINAL-RECERTIFICATION/independent-corrected.txt": {
+    "bytes": 9406,
+    "sha256": "57960f483db57211e2ac7f7cd4f2fffc4cd155db0ffc12a7d83fae2d22b7829f"
+  },
+  "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.0-FINAL-RECERTIFICATION/independent.txt": {
+    "bytes": 2202,
+    "sha256": "befc4f2e1e1cf72211688d1550b19f78ae53cba8d61d41fe6f6fce7730710477"
+  },
+  "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.0-FINAL-RECERTIFICATION/independent_check.py": {
+    "bytes": 11096,
+    "sha256": "38acdbbf31dc487932a8214503664454dcd5c3c7e4133e265fc46699898d785f"
+  },
+  "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.0-FINAL-RECERTIFICATION/injection.txt": {
+    "bytes": 408,
+    "sha256": "f35b76a9f6396c6c8e14a59b4f31ca80614d5470416dd30a2cc507e785f32842"
+  },
+  "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.0-FINAL-RECERTIFICATION/preservation.json": {
+    "bytes": 313,
+    "sha256": "18459501faeca3e1c76909c1b7d71a74c5b91d14b2655e290d3a9024e7cc05b8"
+  },
+  "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.0-FINAL-RECERTIFICATION/repair-probe.txt": {
+    "bytes": 2111,
+    "sha256": "184244366b1a33d6824caf7bb665b2c9169a4c623a803806ee4bb75b57f81290"
+  },
+  "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.0-FINAL-RECERTIFICATION/run_review.py": {
+    "bytes": 3855,
+    "sha256": "9925cc3330f641e4c6045c9cf5eed1bcb510567c828809046260de68be87af17"
+  },
+  "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.0-FINAL-RECERTIFICATION/verify.txt": {
+    "bytes": 921,
+    "sha256": "ca5351164983e459135ea1e89a7f67e4e34b9020234b13afc42596ea3a499fa4"
+  },
+  "docs/implementation/reports/ESSENTIAL-WEB-EVIDENCE-V4.0-FINAL-RECERTIFICATION.md": {
+    "bytes": 10068,
+    "sha256": "7807a588ed1362ca2152e8955cb84ca00810da622328302cb76806c96e147f05"
+  }
+}
