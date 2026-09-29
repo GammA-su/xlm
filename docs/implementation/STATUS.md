@@ -1,5 +1,34 @@
 # Implementation status
 
+> **ESSENTIAL-WEB EVIDENCE V4.1 HOST AMENDMENT (2026-09-29, offline): READY FOR
+> NARROW V4.1 HOST-AMENDMENT REVIEW.** The first real v4.0 Phase-P run stopped
+> safely on its first request (`M-00-head: host 'us.aws.cdn.hf.co' is not an
+> exact allowlisted host`; M 1 attempt / 1098 redirect-body bytes /
+> POLICY_REFUSED 1 / 0 complete / 0 retained; T 0 attempts). It is recorded as
+> **STOPPED_POLICY_REFUSED**, not success. No scientific output was exposed.
+> The v4.0 root `G:\Project\xlm-evidence-v4\essential-web` stays historical.
+> v4.1 changes only the exact host set: 17 documented Hugging Face
+> lfs/CDN hosts added as signed targets, 19 hosts total, exact equality,
+> HTTPS/443, no wildcard. It also sets version `essential-web-evidence-v4.1`
+> and a fresh root `G:\Project\xlm-evidence-v4.1\essential-web` (not
+> created). Scientific identity, ranges, limits, B01/B02 and engine are
+> unchanged; the engine is reused with an explicit profile/host policy.
+> Protocol SHA-256
+> `3d667a263b92696a2d7a266f896e460b10a81ae38097f788c8b885ce768079cf`; freeze
+> `285015604d30e1699b5f63fa4f25ec9c747c778be2f372bb87119adc0e455f80`; new plan
+> digest `762cef78051011d518c4918a41aa87cf81fbb3224bf438af8cc1c499cfca7711`;
+> membership-and-ranges digest (v4.0 = v4.1)
+> `304bd0761125b48720a4de9c82bb6b3bf47100b8a15fc0953d548a8a1dab38bd`.
+> Focused v4+v4.1 tests: 337 passed (157 new); wire B01/B02: 23 passed; science
+> regressions: 69 passed; ruff, format and strict mypy clean (CPython 3.12.3 Linux;
+> the 3.12.13 Windows rerun has NOT been run). No live Phase P, no HF network, no
+> corpus text, no push.
+> [Protocol](reports/ESSENTIAL-WEB-EVIDENCE-V4.1-PROTOCOL.md),
+> [implementation report / next command](reports/ESSENTIAL-WEB-EVIDENCE-V4.1-IMPLEMENTATION.md#6-next-command--do-not-run-in-this-task),
+> [freeze](evidence/ESSENTIAL-WEB-EVIDENCE-V4.1/freeze.json).
+> Next: narrow v4.1 host-amendment review; only then the operator runs
+> `scripts/evidence_v41.py phase-p --confirm-plan-digest 762cef78…7711`.
+
 > **ESSENTIAL-WEB EVIDENCE V2.2 (2026-09-28, offline): BLOCKED — NEITHER
 > ARM READY FOR AUTHORIZATION REVIEW.** v2.2 freeze/parents/selection
 > verified; v2.0 namespace pinned; only M 16/file changed. M audit: A

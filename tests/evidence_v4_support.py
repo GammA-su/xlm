@@ -150,7 +150,9 @@ def _t_entry(ordinal: int, name: str, raw: bytes) -> dict[str, Any]:
     }
 
 
-def plan_dict(files: list[dict[str, Any]], data: dict[str, bytes]) -> dict[str, Any]:
+def plan_dict(
+    files: list[dict[str, Any]], data: dict[str, bytes], profile: frozen.Profile = frozen.V40
+) -> dict[str, Any]:
     operations: list[dict[str, Any]] = []
     for f in files:
         n = f["remote_length"]
@@ -190,7 +192,7 @@ def plan_dict(files: list[dict[str, Any]], data: dict[str, bytes]) -> dict[str, 
         op["seq"] = seq
     body: dict[str, Any] = {
         "kind": "essential_web_v4_phase_p_plan",
-        "protocol_version": frozen.PROTOCOL_VERSION,
+        "protocol_version": profile.protocol_version,
         "plan_schema_version": 1,
         "synthetic": True,
         "phase": "P",
@@ -208,7 +210,7 @@ def plan_dict(files: list[dict[str, Any]], data: dict[str, bytes]) -> dict[str, 
         "files": files,
         "operations": operations,
         "limits": frozen.LIMITS,
-        "network": frozen.NETWORK,
+        "network": profile.network,
     }
     body["digest"] = canonical.self_digest(body)
     return body
@@ -235,7 +237,12 @@ class Fixture:
 
 
 def build_fixture(
-    directory: Path, *, m_files: int = 2, t_files: int = 2, t_pad: int = 0
+    directory: Path,
+    *,
+    m_files: int = 2,
+    t_files: int = 2,
+    t_pad: int = 0,
+    profile: frozen.Profile = frozen.V40,
 ) -> Fixture:
     """Author the Parquet files and the synthetic plan; T file 1 carries ``t_pad``."""
     directory.mkdir(parents=True, exist_ok=True)
@@ -249,13 +256,14 @@ def build_fixture(
         name = f"data/crawl=SYN-T/train-{i:05d}.parquet"
         data[name] = _t_bytes(90, i, t_pad if i == 1 else 0)
         entries.append(_t_entry(i, name, data[name]))
-    plan_obj = plan_dict(entries, data)
+    plan_obj = plan_dict(entries, data, profile)
     for raw in data.values():
         target = directory / "files" / hashlib.sha256(raw).hexdigest()
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(raw)
     (directory / "plan.json").write_bytes(canonical.canonical_bytes(plan_obj))
-    return Fixture(directory, data, plan_obj, frozen.validate_plan(plan_obj, synthetic=True))
+    plan = frozen.validate_plan(plan_obj, synthetic=True, profile=profile)
+    return Fixture(directory, data, plan_obj, plan)
 
 
 def load_fixture(directory: Path) -> Fixture:
@@ -533,6 +541,7 @@ class WireTransport:
     rules: list[WireRule] = field(default_factory=list)
     calls: list[Call] = field(default_factory=list)
     sockets: list[ScriptedSocket] = field(default_factory=list)
+    policy: frozen.HostPolicy = frozen.V40_HOSTS
 
     def open(
         self, url: str, *, start: int, end: int, timeout_seconds: float, deadline: float
@@ -561,7 +570,7 @@ class WireTransport:
         try:
             return tp.exchange(
                 cast(socket.socket, sock),
-                tp.check_url(url),
+                tp.check_url(url, self.policy),
                 start=start,
                 end=end,
                 deadline=deadline,

@@ -10,6 +10,11 @@ repository path and accepts it only if its canonical self-digest equals
 for the real plan and for authored synthetic fixture plans; synthetic plans
 must name the synthetic source and can never name the real repository or
 revision. Both return deeply immutable objects.
+
+Execution identity (version, digests, plan path, root, network object and
+exact host policy) is a :class:`Profile`; :data:`V40` is this module's. Both
+functions take a profile (default :data:`V40`) so the v4.1 amendment in
+:mod:`xlm.data.evidence_v4.v41` reuses the same grammar with its own values.
 """
 
 from __future__ import annotations
@@ -67,6 +72,27 @@ CANONICAL_HOST = "huggingface.co"
 SIGNED_TARGET_HOST = "cas-bridge.xethub.hf.co"
 ALLOWED_HOSTS: tuple[str, ...] = (CANONICAL_HOST, SIGNED_TARGET_HOST)
 ALLOWED_PORT = 443
+
+
+@dataclass(frozen=True)
+class HostPolicy:
+    """The exact host set of one execution version (protocol section 7).
+
+    ``canonical_host`` serves the frozen resource path; every signed target
+    is an opaque byte-delivery endpoint reachable only through a validated
+    redirect. Matching is exact string equality, never suffix or pattern.
+    """
+
+    canonical_host: str
+    signed_target_hosts: tuple[str, ...]
+
+    @property
+    def hosts(self) -> tuple[str, ...]:
+        return (self.canonical_host, *self.signed_target_hosts)
+
+
+V40_HOSTS = HostPolicy(CANONICAL_HOST, (SIGNED_TARGET_HOST,))
+
 REDIRECT_STATUSES: tuple[int, ...] = (301, 302, 303, 307, 308)
 
 LIMITS: dict[str, Any] = {
@@ -95,6 +121,38 @@ NETWORK: dict[str, Any] = {
     "request_headers": {"Accept-Encoding": "identity", "Range": "bytes=<start>-<end>"},
     "credentials_sent": False,
 }
+
+
+@dataclass(frozen=True, eq=False)
+class Profile:
+    """Execution identity of one frozen version: compiled in, never a caller input.
+
+    v4.0 and its v4.1 host amendment share the scientific identity, plan
+    grammar, limits and engine; they differ only in these fields.
+    """
+
+    label: str
+    protocol_version: str
+    protocol_sha256: str
+    freeze_digest: str
+    plan_digest: str
+    plan_path: str
+    execution_root: str
+    network: dict[str, Any]
+    hosts: HostPolicy
+
+
+V40 = Profile(
+    label="v4",
+    protocol_version=PROTOCOL_VERSION,
+    protocol_sha256=PROTOCOL_SHA256,
+    freeze_digest=FREEZE_DIGEST,
+    plan_digest=PLAN_DIGEST,
+    plan_path=PLAN_PATH,
+    execution_root=EXECUTION_ROOT,
+    network=NETWORK,
+    hosts=V40_HOSTS,
+)
 
 HEAD = "HEAD_0_3"
 M_FOOTER = "M_FOOTER_AND_TRAILER"
@@ -187,6 +245,7 @@ class Plan:
     execution_root: str
     files: tuple[SourceFile, ...]
     operations: tuple[Operation, ...]
+    profile: Profile
 
     def operation(self, op_id: str) -> Operation:
         for op in self.operations:
@@ -376,14 +435,14 @@ PLAN_KEYS = {
 }
 
 
-def validate_plan(obj: Any, *, synthetic: bool) -> Plan:
-    """Structurally validate a plan object; the real plan must be THE frozen plan."""
+def validate_plan(obj: Any, *, synthetic: bool, profile: Profile = V40) -> Plan:
+    """Structurally validate a plan object; the real plan must be THE profile's frozen plan."""
     body = _keys(obj, PLAN_KEYS, "plan")
     if canonical.self_digest(body) != body["digest"]:
         raise PlanError("plan self-digest mismatch")
     if body["kind"] != "essential_web_v4_phase_p_plan" or body["phase"] != "P":
         raise PlanError("not an essential-web v4 Phase-P plan")
-    if body["protocol_version"] != PROTOCOL_VERSION or body["plan_schema_version"] != 1:
+    if body["protocol_version"] != profile.protocol_version or body["plan_schema_version"] != 1:
         raise PlanError("plan protocol/schema version mismatch")
     if body["synthetic"] is not synthetic:
         raise PlanError("synthetic and real plans are not interchangeable")
@@ -393,13 +452,13 @@ def validate_plan(obj: Any, *, synthetic: bool) -> Plan:
         POLICY_DIGEST,
     ):
         raise PlanError("plan scientific bindings differ from the adopted identity")
-    if body["limits"] != LIMITS or body["network"] != NETWORK:
+    if body["limits"] != LIMITS or body["network"] != profile.network:
         raise PlanError("plan limits/network policy differ from the frozen values")
     if body["arms"] != ["M", "T"]:
         raise PlanError("plan arms must be exactly [M, T]")
     source = _source(body["source"], synthetic)
     if not synthetic and (
-        body["digest"] != PLAN_DIGEST or body["execution_root"] != EXECUTION_ROOT
+        body["digest"] != profile.plan_digest or body["execution_root"] != profile.execution_root
     ):
         raise PlanError("real plan digest/root differ from the frozen plan")
     files_raw = body["files"]
@@ -434,21 +493,22 @@ def validate_plan(obj: Any, *, synthetic: bool) -> Plan:
         execution_root=str(body["execution_root"]),
         files=tuple(files),
         operations=tuple(operations),
+        profile=profile,
     )
 
 
-def load_committed_plan() -> Plan:
-    """Load THE frozen plan from its fixed repository path (no caller input)."""
-    raw = (REPO_ROOT / PLAN_PATH).read_bytes()
+def load_committed_plan(profile: Profile = V40) -> Plan:
+    """Load THE profile's frozen plan from its fixed repository path (no caller input)."""
+    raw = (REPO_ROOT / profile.plan_path).read_bytes()
     try:
         obj = canonical.loads_bytes_strict(raw)
     except canonical.CanonicalError as exc:
         raise PlanError(f"committed plan is not strict JSON: {exc}") from exc
     if canonical.canonical_bytes(obj) != raw:
         raise PlanError("committed plan bytes are not canonical")
-    if not isinstance(obj, dict) or obj.get("digest") != PLAN_DIGEST:
+    if not isinstance(obj, dict) or obj.get("digest") != profile.plan_digest:
         raise PlanError("committed plan digest differs from the frozen plan digest")
-    return validate_plan(obj, synthetic=False)
+    return validate_plan(obj, synthetic=False, profile=profile)
 
 
 def derive_t_footer_range(op: Operation, trailer: bytes) -> tuple[int, int, int]:

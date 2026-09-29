@@ -199,7 +199,7 @@ class Store:
             db.execute(
                 "INSERT INTO run VALUES (1, ?, ?, ?, ?, ?, ?, 'RUNNING', NULL, ?)",
                 (
-                    frozen.PROTOCOL_VERSION,
+                    plan.profile.protocol_version,
                     plan.digest,
                     frozen.SELECTION_DIGEST,
                     plan.source.revision,

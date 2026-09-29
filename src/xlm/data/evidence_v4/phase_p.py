@@ -1,9 +1,11 @@
-"""The v4.0 Phase-P engine: execute the frozen plan, one exact operation at a time.
+"""The v4 Phase-P engine: execute the frozen plan, one exact operation at a time.
 
 Public entry points:
 
-- :func:`run_live` — the only live path: THE committed plan (confirmed by its
-  exact digest), THE frozen execution root and the live HTTPS transport;
+- :func:`run_live` / :func:`run_live_v41` — the only live paths: THE committed
+  v4.0 / v4.1 plan (confirmed by its exact digest), THAT version's frozen
+  execution root and the live HTTPS transport with THAT version's exact host
+  set. The engine is shared; the version profile travels with the plan;
 - :func:`run_offline` — authored synthetic fixtures only: refuses the real
   repository/revision, the live transport and the frozen roots;
 - :func:`inspect` — read-only status of a root.
@@ -28,7 +30,7 @@ from pathlib import Path
 from typing import Any, BinaryIO
 
 from xlm.data.evidence_v2 import canonical
-from xlm.data.evidence_v4 import frozen, layout, state
+from xlm.data.evidence_v4 import frozen, layout, state, v41
 from xlm.data.evidence_v4 import transport as tp
 
 RECEIPT = "phase_p_receipt.json"
@@ -39,6 +41,7 @@ MANIFEST = "artifact_manifest.json"
 READ_CHUNK = 65536
 RESPONSE_READ_LIMIT = frozen.BODY_BYTES_PER_RESPONSE_MAX + frozen.OVERFLOW_DETECTION_BYTES
 V3_ROOT = "G:\\Project\\xlm-evidence-v3\\essential-web"
+FROZEN_ROOTS = (V3_ROOT, frozen.EXECUTION_ROOT, v41.EXECUTION_ROOT)
 _HEADERS = ("content-range", "etag", "content-encoding", "content-length", "location")
 _MAGIC = {frozen.HEAD: "equal", frozen.M_FOOTER: "tail", frozen.T_TRAILER: "tail"}
 
@@ -145,7 +148,7 @@ class _Engine:
                 run.source_revision,
                 run.synthetic,
             ) != (
-                frozen.PROTOCOL_VERSION,
+                self.plan.profile.protocol_version,
                 self.plan.digest,
                 frozen.SELECTION_DIGEST,
                 self.plan.source.revision,
@@ -263,8 +266,9 @@ class _Engine:
     def _logical_request(self, op: frozen.Operation, try_number: int, start: int, end: int) -> bool:
         """One logical request (<=3 redirect transitions). True on verified success."""
         file = op.source_file.file
+        hosts = self.plan.profile.hosts
         try:
-            current = tp.start_url(self.plan.source, file)
+            current = tp.start_url(self.plan.source, file, hosts)
         except tp.PolicyError as exc:
             raise StopError(f"{op.op_id}: {exc}") from exc
         hop = 0
@@ -321,7 +325,7 @@ class _Engine:
                     raise StopError(f"{op.op_id}: {message}")
                 try:
                     target = tp.resolve_redirect(
-                        current, headers["location"], self.plan.source, file
+                        current, headers["location"], self.plan.source, file, hosts
                     )
                 except tp.PolicyError as exc:
                     self._finish(
@@ -355,6 +359,7 @@ class _Engine:
                         strong_etag=op.source_file.strong_etag,
                         magic=_MAGIC.get(op.kind, "none"),
                     ),
+                    policy=hosts,
                 )
             except tp.IdentityError as exc:
                 self._finish(
@@ -603,9 +608,9 @@ class _Engine:
     def _doc(self, kind: str, **payload: Any) -> dict[str, Any]:
         body: dict[str, Any] = {
             "kind": f"essential_web_v4_{kind}",
-            "protocol_version": frozen.PROTOCOL_VERSION,
-            "protocol_sha256": frozen.PROTOCOL_SHA256,
-            "freeze_digest": frozen.FREEZE_DIGEST,
+            "protocol_version": self.plan.profile.protocol_version,
+            "protocol_sha256": self.plan.profile.protocol_sha256,
+            "freeze_digest": self.plan.profile.freeze_digest,
             "plan_digest": self.plan.digest,
             "scientific_namespace": frozen.SCIENTIFIC_NAMESPACE,
             "selection_digest": frozen.SELECTION_DIGEST,
@@ -766,24 +771,49 @@ class _Engine:
         )
 
 
+def _run_live(
+    profile: frozen.Profile,
+    confirm_plan_digest: str,
+    root: Callable[[], Path],
+    transport: Callable[[], tp.Transport],
+) -> Result:
+    if confirm_plan_digest != profile.plan_digest:
+        raise RefusedError(
+            f"--confirm-plan-digest does not equal the frozen {profile.label} plan digest"
+        )
+    try:
+        plan = frozen.load_committed_plan(profile)
+    except frozen.PlanError as exc:
+        raise RefusedError(str(exc)) from exc
+    if plan.digest != confirm_plan_digest or plan.synthetic or plan.profile is not profile:
+        raise RefusedError("committed plan differs from the confirmed plan")
+    engine = _Engine(plan, root(), transport(), sleep=time.sleep, clock=time.monotonic)
+    return engine.run()
+
+
 def live_root() -> Path:
-    """THE frozen v4 execution root; never a caller input."""
+    """THE frozen v4.0 execution root; never a caller input."""
     return Path(frozen.EXECUTION_ROOT)
 
 
 def run_live(*, confirm_plan_digest: str) -> Result:
-    """Execute THE frozen Phase-P plan against the live source at THE frozen root."""
-    if confirm_plan_digest != frozen.PLAN_DIGEST:
-        raise RefusedError("--confirm-plan-digest does not equal the frozen v4 plan digest")
-    try:
-        plan = frozen.load_committed_plan()
-    except frozen.PlanError as exc:
-        raise RefusedError(str(exc)) from exc
-    if plan.digest != confirm_plan_digest or plan.synthetic:
-        raise RefusedError("committed plan differs from the confirmed plan")
-    root = live_root()
-    engine = _Engine(plan, root, tp.LiveHttpsTransport(), sleep=time.sleep, clock=time.monotonic)
-    return engine.run()
+    """Execute THE frozen v4.0 Phase-P plan against the live source at THE frozen root."""
+    return _run_live(frozen.V40, confirm_plan_digest, live_root, tp.LiveHttpsTransport)
+
+
+def live_root_v41() -> Path:
+    """THE fresh v4.1 execution root (never the historical v4.0 root)."""
+    return Path(v41.EXECUTION_ROOT)
+
+
+def run_live_v41(*, confirm_plan_digest: str) -> Result:
+    """Execute THE frozen v4.1 plan: the v4.0 engine with the exact v4.1 host set."""
+    return _run_live(
+        v41.PROFILE,
+        confirm_plan_digest,
+        live_root_v41,
+        lambda: tp.LiveHttpsTransport(policy=v41.HOSTS),
+    )
 
 
 def run_offline(
@@ -799,13 +829,13 @@ def run_offline(
         not plan.synthetic
         or plan.source.repository != frozen.SYNTHETIC_REPOSITORY
         or plan.source.revision == frozen.SOURCE_REVISION
-        or plan.digest == frozen.PLAN_DIGEST
+        or plan.digest in (frozen.PLAN_DIGEST, v41.PLAN_DIGEST)
     ):
         raise RefusedError("offline runs accept only synthetic fixture plans")
     if isinstance(transport, tp.LiveHttpsTransport):
         raise RefusedError("offline runs never use the live transport")
-    if _same_or_inside(root, frozen.EXECUTION_ROOT) or _same_or_inside(root, V3_ROOT):
-        raise RefusedError("offline runs never use the frozen v3/v4 execution roots")
+    if any(_same_or_inside(root, fixed) for fixed in FROZEN_ROOTS):
+        raise RefusedError("offline runs never use the frozen v3/v4/v4.1 execution roots")
     return _Engine(plan, root, transport, sleep=sleep, clock=clock).run()
 
 

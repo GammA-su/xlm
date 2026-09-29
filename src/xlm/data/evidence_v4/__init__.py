@@ -10,7 +10,11 @@ execution mechanism with a deliberately small program (protocol
   the single-hop live HTTPS transport;
 - :mod:`state` — the SQLite receipt store;
 - :mod:`layout` — metadata-only Parquet footer checks (never statistics);
-- :mod:`phase_p` — the engine, restart reconciliation and output export.
+- :mod:`phase_p` — the engine, restart reconciliation and output export;
+- :mod:`v41` — the frozen v4.1 transport-host amendment (exact expanded
+  Hugging Face storage/CDN host set, fresh version and root) reusing this
+  engine unchanged (protocol
+  ``docs/implementation/reports/ESSENTIAL-WEB-EVIDENCE-V4.1-PROTOCOL.md``).
 
 Nothing here accepts a URL, file, range, ETag, operation kind or output path
 from a caller. Phase D is not implemented.

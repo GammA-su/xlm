@@ -1,7 +1,9 @@
 """URL/redirect policy, response identity checks and the single-hop transport.
 
 Policy (protocol section 7) is structural: ``urllib.parse.urlsplit`` plus
-exact component comparison, never substring matching. The transport performs
+exact component comparison, never substring matching. The exact host set is
+the executing version's :class:`frozen.HostPolicy` (v4.0 by default; the v4.1
+amendment passes its expanded set explicitly). The transport performs
 exactly one GET per call, never follows redirects and never retries; the
 engine in :mod:`phase_p` owns redirects, retries, accounting and identity.
 """
@@ -68,7 +70,7 @@ class CheckedUrl:
         return self.path + (f"?{self.query}" if self.query else "")
 
 
-def check_url(url: str) -> CheckedUrl:
+def check_url(url: str, policy: frozen.HostPolicy = frozen.V40_HOSTS) -> CheckedUrl:
     """Validate one absolute URL against the exact frozen network policy."""
     if type(url) is not str or not url or len(url) > 8192:
         raise PolicyError("URL must be a non-empty bounded string")
@@ -96,7 +98,7 @@ def check_url(url: str) -> CheckedUrl:
         pass
     else:
         raise PolicyError("IP literals are forbidden")
-    if host not in frozen.ALLOWED_HOSTS:
+    if host not in policy.hosts:
         raise PolicyError(f"host {host!r} is not an exact allowlisted host")
     if port is not None and port != frozen.ALLOWED_PORT:
         raise PolicyError(f"port {port} is not 443")
@@ -112,21 +114,27 @@ def is_canonical(checked: CheckedUrl, source: frozen.Source, file: str) -> bool:
     )
 
 
-def start_url(source: frozen.Source, file: str) -> CheckedUrl:
-    checked = check_url(source.canonical_url(file))
+def start_url(
+    source: frozen.Source, file: str, policy: frozen.HostPolicy = frozen.V40_HOSTS
+) -> CheckedUrl:
+    checked = check_url(source.canonical_url(file), policy)
     if not is_canonical(checked, source, file) or checked.query:
         raise PolicyError("canonical resource URL does not satisfy its own identity")
     return checked
 
 
 def resolve_redirect(
-    current: CheckedUrl, location: str | None, source: frozen.Source, file: str
+    current: CheckedUrl,
+    location: str | None,
+    source: frozen.Source,
+    file: str,
+    policy: frozen.HostPolicy = frozen.V40_HOSTS,
 ) -> CheckedUrl:
-    """Validate the actual Location destination: signed target or the canonical path."""
+    """Validate the actual Location destination: a signed target or the canonical path."""
     if location is None or not location.strip():
         raise PolicyError("redirect response without a Location header")
-    checked = check_url(urljoin(current.url, location.strip()))
-    if checked.host == frozen.SIGNED_TARGET_HOST:
+    checked = check_url(urljoin(current.url, location.strip()), policy)
+    if checked.host in policy.signed_target_hosts:
         return checked
     if is_canonical(checked, source, file) and not checked.query:
         return checked
@@ -163,11 +171,12 @@ def verify_identity(
     source: frozen.Source,
     file: str,
     expected: Expected,
+    policy: frozen.HostPolicy = frozen.V40_HOSTS,
 ) -> None:
     """Exact identity of one successful range response (protocol section 7)."""
     if status != 206:
         raise IdentityError(f"status {status} is not 206")
-    if final_url.host != frozen.SIGNED_TARGET_HOST and not (
+    if final_url.host not in policy.signed_target_hosts and not (
         is_canonical(final_url, source, file) and not final_url.query
     ):
         raise IdentityError("final resource is neither the canonical path nor the signed target")
@@ -394,13 +403,18 @@ class LiveHttpsTransport:
     and fails at once when nothing remains; a socket timeout is DeadlineError.
     """
 
-    def __init__(self, clock: Callable[[], float] = time.monotonic) -> None:
+    def __init__(
+        self,
+        clock: Callable[[], float] = time.monotonic,
+        policy: frozen.HostPolicy = frozen.V40_HOSTS,
+    ) -> None:
         self._clock = clock
+        self._policy = policy
 
     def open(
         self, url: str, *, start: int, end: int, timeout_seconds: float, deadline: float
     ) -> Response:
-        checked = check_url(url)
+        checked = check_url(url, self._policy)
         if not 0 <= start <= end:
             raise PolicyError("invalid inclusive range")
         if timeout_seconds != frozen.ATTEMPT_TIMEOUT_SECONDS:
