@@ -1,0 +1,90 @@
+{
+  "checks": [
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--exit-code",
+        "9c420c014afabb25156d09aeff9c0ed719a3db2c",
+        "HEAD",
+        "--",
+        "src/xlm/data/evidence_v4",
+        "scripts/evidence_v41.py"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--exit-code",
+        "HEAD",
+        "--",
+        "src",
+        "scripts",
+        "tests",
+        "pyproject.toml",
+        "uv.lock",
+        ".python-version"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--cached",
+        "--name-only"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "G_snapshot_unchanged": true,
+  "dry_digest": "ee82125d1b0d2b6d0a6c420144910db954659d5b757283d39123ddc3d0080356",
+  "request_counts": {
+    "M": 8,
+    "T": 47
+  },
+  "success_payload_bytes": {
+    "M": 11692530,
+    "T": 179963169
+  },
+  "unique_T_locators": 118,
+  "review_package_bytes_before_final_json": 206962,
+  "stage_scope": [
+    "docs/implementation/reports/ESSENTIAL-WEB-EVIDENCE-V4.1-PHASE-P-RESULT-REVIEW.md",
+    "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-PHASE-P-RESULT-REVIEW"
+  ],
+  "actual_staged_paths": [
+    "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-PHASE-P-RESULT-REVIEW/COMMANDS.md",
+    "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-PHASE-P-RESULT-REVIEW/final-checks.json",
+    "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-PHASE-P-RESULT-REVIEW/phase_d_dry_plan.json",
+    "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-PHASE-P-RESULT-REVIEW/review-result.json",
+    "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-PHASE-P-RESULT-REVIEW/review-run-corrected.log",
+    "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-PHASE-P-RESULT-REVIEW/review-run-final.log",
+    "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-PHASE-P-RESULT-REVIEW/review-run.log",
+    "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-PHASE-P-RESULT-REVIEW/review_result.py",
+    "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-PHASE-P-RESULT-REVIEW/root-after.json",
+    "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-PHASE-P-RESULT-REVIEW/root-before.json",
+    "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-PHASE-P-RESULT-REVIEW/status-preservation.json",
+    "docs/implementation/reports/ESSENTIAL-WEB-EVIDENCE-V4.1-PHASE-P-RESULT-REVIEW.md"
+  ],
+  "initial_staged_whitespace_exit": 1,
+  "whitespace_correction": "Only two newly authored F: review JSON files converted from CRLF to LF; G: unchanged."
+}
