@@ -1,0 +1,226 @@
+{
+  "requests": 10,
+  "active_ns": 40000000000,
+  "journal_records_before_sealed_noop": 97,
+  "arms": {
+    "M": {
+      "phase": "P_COMPLETE_SEALED",
+      "requests": 6,
+      "requests_by_file": {
+        "data/crawl=SYN-M-00/train-00000-of-00008.parquet": 6
+      },
+      "body_charged": 68492,
+      "body_charged_by_file": {
+        "data/crawl=SYN-M-00/train-00000-of-00008.parquet": 68492
+      },
+      "body_held": 0,
+      "time_ns": 36000000000,
+      "time_ns_by_file": {
+        "data/crawl=SYN-M-00/train-00000-of-00008.parquet": 36000000000
+      },
+      "hold_ns": 0,
+      "ops_done": 2,
+      "result_digest": "482b197d47149d79db873195ae55c1aa86c170270d2d71ddc3f1d4b55ad3d348",
+      "incomplete_reason": null
+    },
+    "T": {
+      "phase": "P_COMPLETE_SEALED",
+      "requests": 4,
+      "requests_by_file": {
+        "data/crawl=SYN-T-00/train-00000-of-00008.parquet": 4
+      },
+      "body_charged": 1283,
+      "body_charged_by_file": {
+        "data/crawl=SYN-T-00/train-00000-of-00008.parquet": 1283
+      },
+      "body_held": 0,
+      "time_ns": 4000000000,
+      "time_ns_by_file": {
+        "data/crawl=SYN-T-00/train-00000-of-00008.parquet": 4000000000
+      },
+      "hold_ns": 0,
+      "ops_done": 3,
+      "result_digest": "3953cfd12216b3a82800131c5613c59c52c5185a8bf52c0bf5517934094897d9",
+      "incomplete_reason": null
+    }
+  },
+  "attempts": [
+    {
+      "attempt_id": "M-o000-l0-h0-s1",
+      "arm": "M",
+      "file": "data/crawl=SYN-M-00/train-00000-of-00008.parquet",
+      "op_index": 0,
+      "outcome": "REDIRECT",
+      "charged": 18,
+      "body_total": 18,
+      "reservation": 65537
+    },
+    {
+      "attempt_id": "M-o000-l0-h1-s1",
+      "arm": "M",
+      "file": "data/crawl=SYN-M-00/train-00000-of-00008.parquet",
+      "op_index": 0,
+      "outcome": "COMPLETE",
+      "charged": 4,
+      "body_total": 4,
+      "reservation": 65537
+    },
+    {
+      "attempt_id": "M-o001-l0-h0-s2",
+      "arm": "M",
+      "file": "data/crawl=SYN-M-00/train-00000-of-00008.parquet",
+      "op_index": 1,
+      "outcome": "REDIRECT",
+      "charged": 18,
+      "body_total": 18,
+      "reservation": 65537
+    },
+    {
+      "attempt_id": "M-o001-l0-h1-s2",
+      "arm": "M",
+      "file": "data/crawl=SYN-M-00/train-00000-of-00008.parquet",
+      "op_index": 1,
+      "outcome": "CRASH_RESERVED",
+      "charged": 65537,
+      "body_total": 1,
+      "reservation": 65537
+    },
+    {
+      "attempt_id": "M-o001-l1-h0-s3",
+      "arm": "M",
+      "file": "data/crawl=SYN-M-00/train-00000-of-00008.parquet",
+      "op_index": 1,
+      "outcome": "REDIRECT",
+      "charged": 18,
+      "body_total": 18,
+      "reservation": 65537
+    },
+    {
+      "attempt_id": "M-o001-l1-h1-s3",
+      "arm": "M",
+      "file": "data/crawl=SYN-M-00/train-00000-of-00008.parquet",
+      "op_index": 1,
+      "outcome": "COMPLETE",
+      "charged": 2897,
+      "body_total": 2897,
+      "reservation": 65537
+    },
+    {
+      "attempt_id": "T-o000-l0-h0-s3",
+      "arm": "T",
+      "file": "data/crawl=SYN-T-00/train-00000-of-00008.parquet",
+      "op_index": 0,
+      "outcome": "REDIRECT",
+      "charged": 18,
+      "body_total": 18,
+      "reservation": 65537
+    },
+    {
+      "attempt_id": "T-o000-l0-h1-s3",
+      "arm": "T",
+      "file": "data/crawl=SYN-T-00/train-00000-of-00008.parquet",
+      "op_index": 0,
+      "outcome": "COMPLETE",
+      "charged": 4,
+      "body_total": 4,
+      "reservation": 65537
+    },
+    {
+      "attempt_id": "T-o001-l0-h0-s3",
+      "arm": "T",
+      "file": "data/crawl=SYN-T-00/train-00000-of-00008.parquet",
+      "op_index": 1,
+      "outcome": "COMPLETE",
+      "charged": 8,
+      "body_total": 8,
+      "reservation": 65537
+    },
+    {
+      "attempt_id": "T-o002-l0-h0-s3",
+      "arm": "T",
+      "file": "data/crawl=SYN-T-00/train-00000-of-00008.parquet",
+      "op_index": 2,
+      "outcome": "COMPLETE",
+      "charged": 1253,
+      "body_total": 1253,
+      "reservation": 65537
+    }
+  ],
+  "physical": {
+    "epoch_start.json": {
+      "bytes": 7977,
+      "sha256": "7121b9370f0ddfa9dfc721a28588d2d4032d84bc9cc9474f3e8fc9138b79c282"
+    },
+    "genesis.claim": {
+      "bytes": 560,
+      "sha256": "767e74cf03748841920293e61abf0ab70a81a56397cbf921fb7609f89cdfa878"
+    },
+    "state/journal.head": {
+      "bytes": 152,
+      "sha256": "0583a7c215b421e57300bde066cca432d0f24756c8297e62c270d7cb656cb5ba"
+    },
+    "state/journal.jsonl": {
+      "bytes": 34981,
+      "sha256": "88e3eca5631a54623e8fbde9e1d8154ac8761b4258e18ec0bcd5450403dcf3dc"
+    },
+    "state/lock": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "phase_p/m/f00-identity-head-0-3.bin": {
+      "bytes": 4,
+      "sha256": "fbc62d3b511368ee275ddc74117d8689b430e1427220e25d30816201d89ca7b6"
+    },
+    "phase_p/m/f00-m-footer-and-trailer.bin": {
+      "bytes": 2897,
+      "sha256": "70aa3929711ff890992b4960af58876dd4c06a0df0d7302e51c1a5ab63c8b656"
+    },
+    "phase_p/m/result.json": {
+      "bytes": 2200,
+      "sha256": "90a720fdee79d4db89e2ff4f3542f662259f1e3c5dbf841d4bf540710c766faa"
+    },
+    "phase_p/t/f00-identity-head-0-3.bin": {
+      "bytes": 4,
+      "sha256": "fbc62d3b511368ee275ddc74117d8689b430e1427220e25d30816201d89ca7b6"
+    },
+    "phase_p/t/f00-t-footer-from-trailer.bin": {
+      "bytes": 1253,
+      "sha256": "a842c9b284d87c9c362f9e8bb0420c7d31238471f0fb10b1434fc50d683ba447"
+    },
+    "phase_p/t/f00-t-trailer.bin": {
+      "bytes": 8,
+      "sha256": "61933db2eff328a8fa26d5c2745cd3cd499b0397d56e84c15ab581eae037bbef"
+    },
+    "phase_p/t/result.json": {
+      "bytes": 1844,
+      "sha256": "f4a9cec26bbc2d25b189650621a152217309560fa1710e3323d0f79118285e15"
+    }
+  },
+  "completed": [
+    [
+      "M",
+      0
+    ],
+    [
+      "M",
+      1
+    ],
+    [
+      "T",
+      0
+    ],
+    [
+      "T",
+      1
+    ],
+    [
+      "T",
+      2
+    ]
+  ],
+  "genesis_sha256": "7121b9370f0ddfa9dfc721a28588d2d4032d84bc9cc9474f3e8fc9138b79c282",
+  "subprocess_exit_codes": [
+    137,
+    0
+  ]
+}

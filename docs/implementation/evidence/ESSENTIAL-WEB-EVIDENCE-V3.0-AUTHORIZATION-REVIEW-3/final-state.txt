@@ -1,0 +1,14 @@
+﻿ M docs/implementation/STATUS.md
+ M docs/implementation/reports/ESSENTIAL-WEB-SELECTOR-RECON.md
+?? docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V3.0-AUTHORIZATION-REVIEW-3/
+?? docs/implementation/evidence/ESSENTIAL-WEB-SELECTOR-SWEEP-REVIEW/
+?? docs/implementation/reports/ESSENTIAL-WEB-EVIDENCE-V3.0-AUTHORIZATION-REVIEW-3.md
+?? docs/implementation/reports/ESSENTIAL-WEB-EVIDENCE-V3.0-REVALIDATION.md
+?? docs/implementation/reports/ESSENTIAL-WEB-SELECTOR-POLICY-REVIEW.md
+?? docs/implementation/reports/ESSENTIAL-WEB-SELECTOR-SWEEP-REVIEW-AUDIT.md
+?? docs/implementation/reports/ESSENTIAL-WEB-SELECTOR-SWEEP-REVIEW.md
+12d85158206378c0d6833d95df9b9d8fa5789761
+source_worktree_diff_exit=0
+frozen_committed_diff_exit=0
+G_exists=True
+execution_root_exists=False

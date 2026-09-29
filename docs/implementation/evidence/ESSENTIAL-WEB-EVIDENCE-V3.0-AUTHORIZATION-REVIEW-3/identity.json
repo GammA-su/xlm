@@ -1,0 +1,1062 @@
+{
+  "HEAD": "12d85158206378c0d6833d95df9b9d8fa5789761",
+  "branch": "data/mix01-ultrax-6b",
+  "A": "3dd5ebce0edb7d8e676966c9195b73fb5a1978c9",
+  "freeze_commit": "52569c525a6613faab096d17b60167b4aaa0f214",
+  "protocol_sha256": "c191aa49a7e35349e27eb077c7105ead1a15a7edbbb28ef0bc78f157b219fd79",
+  "freeze_digest": "aa977972883af209afffebae221683658b2637281ae8e72741150750534fd834",
+  "cap_map_digest": "e2485cd438524124c22074d59c48a5ee7dc699f9c9a9ea3f9c11deeef54e0f7b",
+  "frozen_paths_unchanged": [
+    "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V3.0/COMMANDS.md",
+    "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V3.0/epoch_definition.json",
+    "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V3.0/final_validation.json",
+    "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V3.0/freeze.json",
+    "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V3.0/lineage_closure.json",
+    "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V3.0/relocated_revalidation.json",
+    "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V3.0/verification.json",
+    "docs/implementation/reports/ESSENTIAL-WEB-EVIDENCE-V3.0-PROTOCOL.md",
+    "docs/implementation/reports/ESSENTIAL-WEB-EVIDENCE-V3.0-REVIEW.md"
+  ],
+  "scientific_code_diff": "",
+  "science": {
+    "M_observation_digest": "2ecf3eb9df01a41f7f9defa20633841211396f654350df80e460f5c2b5740052",
+    "M_windows": [
+      {
+        "file": "data/crawl=CC-MAIN-2014-15/train-01860-of-02772.parquet",
+        "window": [
+          90023,
+          90535
+        ]
+      },
+      {
+        "file": "data/crawl=CC-MAIN-2015-32/train-01682-of-01920.parquet",
+        "window": [
+          92096,
+          92608
+        ]
+      },
+      {
+        "file": "data/crawl=CC-MAIN-2016-50/train-02156-of-03132.parquet",
+        "window": [
+          67173,
+          67685
+        ]
+      },
+      {
+        "file": "data/crawl=CC-MAIN-2018-05/train-03378-of-03429.parquet",
+        "window": [
+          11728,
+          12240
+        ]
+      },
+      {
+        "file": "data/crawl=CC-MAIN-2019-09/train-00153-of-02577.parquet",
+        "window": [
+          26634,
+          27146
+        ]
+      },
+      {
+        "file": "data/crawl=CC-MAIN-2021-04/train-00179-of-03315.parquet",
+        "window": [
+          46415,
+          46927
+        ]
+      },
+      {
+        "file": "data/crawl=CC-MAIN-2021-49/train-00408-of-02895.parquet",
+        "window": [
+          58279,
+          58791
+        ]
+      },
+      {
+        "file": "data/crawl=CC-MAIN-2024-26/train-01127-of-03168.parquet",
+        "window": [
+          19154,
+          19666
+        ]
+      }
+    ],
+    "T_costmap_digest": "ed713a0a6fe22cdd396f758182b841b0208f0fe92795b3784f8d71bb6bbf665b",
+    "inventory_binding": {
+      "bytes": 6784,
+      "canonical_content_digest": "8240e7fc7b2d959c9dde4078e0dc2a297631a90f1f2805b54d5e6f4dfd63a5d8",
+      "digest": "466ece976bfadfbd024c7fb66ff0076f1d86f36ce7d362331d85f1fee36c018f",
+      "original_status": null,
+      "original_version": "essential-web-evidence-v2.0",
+      "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\evidence\\ESSENTIAL-WEB-EVIDENCE-V2\\inventory-freeze.json",
+      "sha256": "46906d6dea9d7b790bc6cb4b01ce59db292fefef498b57d4eca80987d9407341"
+    },
+    "metadata_and_text_seed": 20260927,
+    "policy_digest": "f4357f61f434d5105d823266153dac6372e122f12767187631e8796b4899dd07",
+    "projection": [
+      "eai_taxonomy",
+      "quality_signals"
+    ],
+    "repository": "EssentialAI/essential-web-v1.0",
+    "review_order_seed": 20260928,
+    "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+    "rubric_blinding_strata_censuses": "unchanged original protocol and manifest; two reviewers and adjudication",
+    "scientific_namespace": "essential-web-evidence-v2.0",
+    "secret_lifecycle": "unchanged; no secret generated in this task",
+    "selection_adoption": "byte-identical original artifact by reference; no regenerated identity",
+    "selection_binding": {
+      "bytes": 23807,
+      "canonical_content_digest": "8424f9668fef6952a558ead0dae27a705545a7f4a4d302713707d3ec6bb1af27",
+      "digest": "975ba3dee4af0598e665ea05c69bbe49336c3e3a35fca777a863073190b78474",
+      "original_status": null,
+      "original_version": "essential-web-evidence-v2.0",
+      "path": "G:\\Project\\xlm-evidence-v2\\essential-web\\text_selection_manifest.json",
+      "sha256": "8424f9668fef6952a558ead0dae27a705545a7f4a4d302713707d3ec6bb1af27"
+    },
+    "selection_digest": "975ba3dee4af0598e665ea05c69bbe49336c3e3a35fca777a863073190b78474",
+    "selection_sha256": "8424f9668fef6952a558ead0dae27a705545a7f4a4d302713707d3ec6bb1af27",
+    "selection_total": 118
+  },
+  "external_original_selection": "NOT READ: committed frozen descriptor identity verified; no external original opened",
+  "closure": {
+    "digest": "ceaa2fbc6c0f638d333b3e08fd1591d2619bfe645c75ce7028c0e2bae96dda9b",
+    "future_discovered_facts": "append provenance only; no silent reopening",
+    "historical_accounting": "HISTORICALLY_UNCERTIFIABLE",
+    "historical_footer_network_did_occur": true,
+    "history_bindings": {
+      "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V2.1-CHILD/README.md": {
+        "bytes": 1089,
+        "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\evidence\\ESSENTIAL-WEB-EVIDENCE-V2.1-CHILD\\README.md",
+        "sha256": "e256544375b6631530973d81b53d0533fa1f0413d132604143af2c341a0a91dc"
+      },
+      "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V2.1-CHILD/arm_m_blocked_plan.json": {
+        "bytes": 2071,
+        "canonical_content_digest": "7b4600443714f6dd4a18d5df4c53fc7b155c6f8765730f417c68b54379d46c37",
+        "digest": "ac426c44fc75a6165d7ccb65ca061f4ad9fe9ffd4c7b0f3fa20b2a037b462683",
+        "original_status": "BLOCKED",
+        "original_version": "essential-web-evidence-v2.1",
+        "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\evidence\\ESSENTIAL-WEB-EVIDENCE-V2.1-CHILD\\arm_m_blocked_plan.json",
+        "sha256": "7b4600443714f6dd4a18d5df4c53fc7b155c6f8765730f417c68b54379d46c37"
+      },
+      "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V2.1-CHILD/arm_t_child_plan_dry.json": {
+        "bytes": 13832,
+        "canonical_content_digest": "848b466a4057cb4527637bd8e277430ef2e1d6695acacda389f104fe3965095b",
+        "digest": "8cf4c377a85e9ce1a57a4c07cba930c48a1ebacab91e4bb79a1caacfc4a3a66e",
+        "original_status": "DRY_NOT_AUTHORIZED",
+        "original_version": "essential-web-evidence-v2.1",
+        "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\evidence\\ESSENTIAL-WEB-EVIDENCE-V2.1-CHILD\\arm_t_child_plan_dry.json",
+        "sha256": "848b466a4057cb4527637bd8e277430ef2e1d6695acacda389f104fe3965095b"
+      },
+      "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V2.1/COMMANDS.md": {
+        "bytes": 27907,
+        "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\evidence\\ESSENTIAL-WEB-EVIDENCE-V2.1\\COMMANDS.md",
+        "sha256": "4bf2045c6fd866b11b5ed989e80a8cceaa5cd574d8e460d9b0374f62edf538a1"
+      },
+      "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V2.1/freeze.json": {
+        "bytes": 11329,
+        "canonical_content_digest": "f25ead621438f023faab670dfae4f2550f1b7dd35210973c1e5d68f535bf3f5d",
+        "digest": "bac82d6b9538f4005f7f0ffee6aa5c4f3a5394098c0fae8f63fc94c76832a7cd",
+        "original_status": null,
+        "original_version": "essential-web-evidence-v2.1",
+        "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\evidence\\ESSENTIAL-WEB-EVIDENCE-V2.1\\freeze.json",
+        "sha256": "b8c92cf6085a8737e25cd0e5edaa5a414d02180e660bf0828aa4082fa5ba486e"
+      },
+      "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V2.1/verification.json": {
+        "bytes": 9583,
+        "canonical_content_digest": "b7a4371182142a1f0e078e3ecb2ded5b9645dcfbdfd44a4156eb1bb055758838",
+        "digest": "d5d9cad0a01d36c770ff99b66588def053df19d69cd1401ae57acb9a70ced33d",
+        "original_status": "VERIFIED_RECEIPT_ARITHMETIC_NOT_EXECUTION_READINESS",
+        "original_version": null,
+        "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\evidence\\ESSENTIAL-WEB-EVIDENCE-V2.1\\verification.json",
+        "sha256": "afdf21fa8d5a4f2b501e8824167d0ff1c32bb3d36fe23e319baf2cff9b38faf7"
+      },
+      "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V2.2-CHILD/README.md": {
+        "bytes": 1469,
+        "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\evidence\\ESSENTIAL-WEB-EVIDENCE-V2.2-CHILD\\README.md",
+        "sha256": "cf4e3695edbec7f4ca72165311833bded05862f27d9db32bd2dcc388e2413f38"
+      },
+      "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V2.2-CHILD/arm_m_child_plan.json": {
+        "bytes": 6072,
+        "canonical_content_digest": "5d1f0cd02f1dd609bb2b1ef39e0434c84ecbd68ffebf3aa33cd00d89860cd48b",
+        "digest": "b68513c5e1517b2faac72186cabf4de53b5a4417dbdd4c0257abdb7ce42669a3",
+        "original_status": "BLOCKED",
+        "original_version": "essential-web-evidence-v2.2",
+        "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\evidence\\ESSENTIAL-WEB-EVIDENCE-V2.2-CHILD\\arm_m_child_plan.json",
+        "sha256": "5d1f0cd02f1dd609bb2b1ef39e0434c84ecbd68ffebf3aa33cd00d89860cd48b"
+      },
+      "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V2.2-CHILD/arm_t_child_plan.json": {
+        "bytes": 24698,
+        "canonical_content_digest": "ae5920f1e41d5a1e5753c49b4c349f5a98686a0fbd01657fd8a414505e7737a9",
+        "digest": "b69600a28b3804ca765577444b3febbbe8d7a216c4e366b9892fe4a99eca958a",
+        "original_status": "DRY_NOT_AUTHORIZED",
+        "original_version": "essential-web-evidence-v2.2",
+        "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\evidence\\ESSENTIAL-WEB-EVIDENCE-V2.2-CHILD\\arm_t_child_plan.json",
+        "sha256": "ae5920f1e41d5a1e5753c49b4c349f5a98686a0fbd01657fd8a414505e7737a9"
+      },
+      "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V2.2-CHILD/deadline_schedule.json": {
+        "bytes": 145,
+        "canonical_content_digest": "9f0dbeb7b16352bb9bc9b570c8b9942518c8feb866b3222bd72f8add5fa81f85",
+        "digest": "b3810228078878e4e7f84a8f03d5e9c17683a67c0f2187486a4b73350b0699f8",
+        "original_status": null,
+        "original_version": null,
+        "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\evidence\\ESSENTIAL-WEB-EVIDENCE-V2.2-CHILD\\deadline_schedule.json",
+        "sha256": "9f0dbeb7b16352bb9bc9b570c8b9942518c8feb866b3222bd72f8add5fa81f85"
+      },
+      "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V2.2-CHILD/disk_schedule.json": {
+        "bytes": 1355,
+        "canonical_content_digest": "27fccde63034ad3958132e2159107cb2c05a2f00f3025bd4550e392f1df8ad6c",
+        "digest": "d8fb9f4c350b5438f06024fe7fa2425a13847df148c2ded8b3ca1bc2bcea755d",
+        "original_status": null,
+        "original_version": null,
+        "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\evidence\\ESSENTIAL-WEB-EVIDENCE-V2.2-CHILD\\disk_schedule.json",
+        "sha256": "27fccde63034ad3958132e2159107cb2c05a2f00f3025bd4550e392f1df8ad6c"
+      },
+      "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V2.2-CHILD/ledger_reconciliation.json": {
+        "bytes": 7466,
+        "canonical_content_digest": "5c65fcc9a07703138a71dcf50d0a659530542fbd4d9edff15b17ad688619c82e",
+        "digest": "979511b094e3b57cadc74d2bcb866bacb5273bc38260e54b58bea942314b5fe1",
+        "original_status": null,
+        "original_version": "essential-web-evidence-v2.1",
+        "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\evidence\\ESSENTIAL-WEB-EVIDENCE-V2.2-CHILD\\ledger_reconciliation.json",
+        "sha256": "5c65fcc9a07703138a71dcf50d0a659530542fbd4d9edff15b17ad688619c82e"
+      },
+      "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V2.2-CHILD/memory_schedule.json": {
+        "bytes": 3153,
+        "canonical_content_digest": "03d77e8686855503d349e5ef0623cdedacc7daebec92f858e26ceffe1ccef2a9",
+        "digest": "c73e997fe2cee88f4127f9d2408d662673b72ac92bae31126d620b1b7d1dc72b",
+        "original_status": null,
+        "original_version": null,
+        "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\evidence\\ESSENTIAL-WEB-EVIDENCE-V2.2-CHILD\\memory_schedule.json",
+        "sha256": "03d77e8686855503d349e5ef0623cdedacc7daebec92f858e26ceffe1ccef2a9"
+      },
+      "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V2.2-CHILD/range_schedule_m.json": {
+        "bytes": 5731,
+        "canonical_content_digest": "8d3a4b5c0ec14b78c76b3bf2c74f8c95cd027c3d98df926bae166474e3c77d4b",
+        "digest": "53fb80f0596daca32067df5b1b8f3c10da6b3b9706d7fdbd11f557303e66742f",
+        "original_status": null,
+        "original_version": "essential-web-evidence-v2.2",
+        "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\evidence\\ESSENTIAL-WEB-EVIDENCE-V2.2-CHILD\\range_schedule_m.json",
+        "sha256": "8d3a4b5c0ec14b78c76b3bf2c74f8c95cd027c3d98df926bae166474e3c77d4b"
+      },
+      "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V2.2-CHILD/range_schedule_t.json": {
+        "bytes": 6687,
+        "canonical_content_digest": "593adee3922539df03b4f3241d3fe644dadfd5b4f958a7f15583d7ff3ce04c41",
+        "digest": "4285e63ce2594eda84b36a58f211b72ebc5d37596c82075c2c71e3daad64feac",
+        "original_status": null,
+        "original_version": "essential-web-evidence-v2.2",
+        "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\evidence\\ESSENTIAL-WEB-EVIDENCE-V2.2-CHILD\\range_schedule_t.json",
+        "sha256": "593adee3922539df03b4f3241d3fe644dadfd5b4f958a7f15583d7ff3ce04c41"
+      },
+      "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V2.2-CHILD/readiness_review.json": {
+        "bytes": 5719,
+        "canonical_content_digest": "176f397f361fafcbd171643f8174410877cf1923613b0f1a86683c51d7865524",
+        "digest": "3f1ae11da62ec9a96a23494021808d98635fa8b10b04608ca4af73a6d87ebcde",
+        "original_status": null,
+        "original_version": "essential-web-evidence-v2.2",
+        "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\evidence\\ESSENTIAL-WEB-EVIDENCE-V2.2-CHILD\\readiness_review.json",
+        "sha256": "176f397f361fafcbd171643f8174410877cf1923613b0f1a86683c51d7865524"
+      },
+      "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V2.2/COMMANDS.md": {
+        "bytes": 30879,
+        "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\evidence\\ESSENTIAL-WEB-EVIDENCE-V2.2\\COMMANDS.md",
+        "sha256": "4ad0dccbfa8fce152f003787283e310a6ebd0a5fdb87edca66c4be95b67e2c19"
+      },
+      "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V2.2/freeze.json": {
+        "bytes": 20971,
+        "canonical_content_digest": "e4e84d732121f1529b8179f00d3cbcabbca3eab3baca1e70a3cbe3a40b7a79a9",
+        "digest": "b6602a445307d9638913c046b4cfebab3356e20559d89b3f2ab601aa924ebd0c",
+        "original_status": null,
+        "original_version": "essential-web-evidence-v2.2",
+        "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\evidence\\ESSENTIAL-WEB-EVIDENCE-V2.2\\freeze.json",
+        "sha256": "d708d3842631c49cec34199ed2727ab7d77e3f9a246700ea928b94f8a6e5aef2"
+      },
+      "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V2.2/v21_m_audit_capture.json": {
+        "bytes": 450,
+        "canonical_content_digest": "7d61e181d43934481864fd251180f22388ffab261bf9fb48168eac7d6993f1d9",
+        "original_status": null,
+        "original_version": null,
+        "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\evidence\\ESSENTIAL-WEB-EVIDENCE-V2.2\\v21_m_audit_capture.json",
+        "sha256": "9e1062ffb5d4cde5cbdca7fec26500a91603fcbb15c2dcac2a8d2e7b344a71f4"
+      },
+      "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V2.2/v21_t_carry_capture.json": {
+        "bytes": 7467,
+        "canonical_content_digest": "5c65fcc9a07703138a71dcf50d0a659530542fbd4d9edff15b17ad688619c82e",
+        "digest": "979511b094e3b57cadc74d2bcb866bacb5273bc38260e54b58bea942314b5fe1",
+        "original_status": null,
+        "original_version": "essential-web-evidence-v2.1",
+        "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\evidence\\ESSENTIAL-WEB-EVIDENCE-V2.2\\v21_t_carry_capture.json",
+        "sha256": "d14024ab4f0e2c53690719225e990ca37e47f0b4ca542aee923fbc32878ce6ac"
+      },
+      "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V2.2/verification.json": {
+        "bytes": 18658,
+        "canonical_content_digest": "3aca373bab7857ec87261fff2a78b3fd739970a9ef9a52cf600d579810b3f11c",
+        "digest": "f1e570d6b9936c9fb3984d5bc364750f8e282077a4259c65ee278b07b2d5d5ff",
+        "original_status": "PROTOCOL_AMENDMENT_JUSTIFIED_EXECUTION_BLOCKED",
+        "original_version": null,
+        "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\evidence\\ESSENTIAL-WEB-EVIDENCE-V2.2\\verification.json",
+        "sha256": "453342f59f0b05b1dba3f6fa21ae3c1eabfccd99eb291b73aa3ec2375596b47e"
+      },
+      "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V2/COMMANDS.md": {
+        "bytes": 14011,
+        "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\evidence\\ESSENTIAL-WEB-EVIDENCE-V2\\COMMANDS.md",
+        "sha256": "eabbc35e2271ddd440ed2b35c0e4e8bae5d889c6492fb0d7b94bceead301e5ce"
+      },
+      "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V2/freeze.json": {
+        "bytes": 2232,
+        "canonical_content_digest": "bcfbe80b6c8c91e93202a39f1d1bf23291aaec1b8080925bde732b25549b51ec",
+        "digest": "fe2157799a86fe777e45c220716563f8a73245a12593c40909222555bf1b8248",
+        "original_status": null,
+        "original_version": "essential-web-evidence-v2.0",
+        "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\evidence\\ESSENTIAL-WEB-EVIDENCE-V2\\freeze.json",
+        "sha256": "1f81574b1fb2fc06bb566bd543cb712e026200c551090e8265c10958db78e4c4"
+      },
+      "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V2/inventory-freeze.json": {
+        "bytes": 6784,
+        "canonical_content_digest": "8240e7fc7b2d959c9dde4078e0dc2a297631a90f1f2805b54d5e6f4dfd63a5d8",
+        "digest": "466ece976bfadfbd024c7fb66ff0076f1d86f36ce7d362331d85f1fee36c018f",
+        "original_status": null,
+        "original_version": "essential-web-evidence-v2.0",
+        "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\evidence\\ESSENTIAL-WEB-EVIDENCE-V2\\inventory-freeze.json",
+        "sha256": "46906d6dea9d7b790bc6cb4b01ce59db292fefef498b57d4eca80987d9407341"
+      },
+      "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V2/verification.json": {
+        "bytes": 2622,
+        "canonical_content_digest": "8fc76123f3c0014ef5b04d1922e0d943e4f0e7a6e0ff34de3ece2c8f8c61fce9",
+        "original_status": "VERIFIED",
+        "original_version": null,
+        "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\evidence\\ESSENTIAL-WEB-EVIDENCE-V2\\verification.json",
+        "sha256": "aabab4645f8a786a365e81e56e2f96dfd70731316d9c38a7fdc13ea2d014b445"
+      },
+      "docs/implementation/reports/ESSENTIAL-WEB-EVIDENCE-V2-IMPLEMENTATION.md": {
+        "bytes": 23880,
+        "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\reports\\ESSENTIAL-WEB-EVIDENCE-V2-IMPLEMENTATION.md",
+        "sha256": "bcc7cd46b67fe4caca728c65072efd8ea941035e10fd9336441cfc598f93f763"
+      },
+      "docs/implementation/reports/ESSENTIAL-WEB-EVIDENCE-V2-PROTOCOL.md": {
+        "bytes": 48628,
+        "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\reports\\ESSENTIAL-WEB-EVIDENCE-V2-PROTOCOL.md",
+        "sha256": "c32dff47dc6faeb3733a391a79744ba7a887e26ade157c399e806f0f47a99618"
+      },
+      "docs/implementation/reports/ESSENTIAL-WEB-EVIDENCE-V2.1-IMPLEMENTATION.md": {
+        "bytes": 12233,
+        "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\reports\\ESSENTIAL-WEB-EVIDENCE-V2.1-IMPLEMENTATION.md",
+        "sha256": "10cd4113b9b0292467bcbcabca03eaaedbce7b5fdba1a0ccc2f09d4d6c56dfc4"
+      },
+      "docs/implementation/reports/ESSENTIAL-WEB-EVIDENCE-V2.1-PROTOCOL.md": {
+        "bytes": 14790,
+        "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\reports\\ESSENTIAL-WEB-EVIDENCE-V2.1-PROTOCOL.md",
+        "sha256": "1c437881148c3d6c1c42ca610e364055a0625732b07361f2e9271d0918fcdb4b"
+      },
+      "docs/implementation/reports/ESSENTIAL-WEB-EVIDENCE-V2.1-REVIEW.md": {
+        "bytes": 17439,
+        "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\reports\\ESSENTIAL-WEB-EVIDENCE-V2.1-REVIEW.md",
+        "sha256": "151f2aabe174780751b65cd42afd0668491e826b7eeeee6c686e9d1eac7c9c7b"
+      },
+      "docs/implementation/reports/ESSENTIAL-WEB-EVIDENCE-V2.2-IMPLEMENTATION.md": {
+        "bytes": 15691,
+        "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\reports\\ESSENTIAL-WEB-EVIDENCE-V2.2-IMPLEMENTATION.md",
+        "sha256": "8816692ef7fed48ed98124d2b38a6c8b1f156f8b92373448123d2896c355031e"
+      },
+      "docs/implementation/reports/ESSENTIAL-WEB-EVIDENCE-V2.2-PROTOCOL.md": {
+        "bytes": 18643,
+        "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\reports\\ESSENTIAL-WEB-EVIDENCE-V2.2-PROTOCOL.md",
+        "sha256": "fd698793068458b31563418fdca29c97fa1efe1099b8776c7fd1407887f4f49d"
+      },
+      "docs/implementation/reports/ESSENTIAL-WEB-EVIDENCE-V2.2-REVIEW.md": {
+        "bytes": 17628,
+        "path": "G:\\Project\\xlm-data-ultrax\\docs\\implementation\\reports\\ESSENTIAL-WEB-EVIDENCE-V2.2-REVIEW.md",
+        "sha256": "6189fe52fef82d4f3bd32478910c860f42256026f56a03436dfa483bf519a915"
+      },
+      "external/dry_arm_m_plan.json": {
+        "bytes": 7168,
+        "canonical_content_digest": "3426af5478ad36a28be4cb04c30094888462ad91500fe273b03a390a1cbfb8bc",
+        "digest": "01392051e218fb84dcd9cb4f79a6be59980dcab550df1ae6243b5b3365d82882",
+        "original_status": null,
+        "original_version": null,
+        "path": "G:\\Project\\xlm-evidence-v2\\essential-web\\dry_arm_m_plan.json",
+        "sha256": "3426af5478ad36a28be4cb04c30094888462ad91500fe273b03a390a1cbfb8bc"
+      },
+      "external/footer_evidence.incomplete.json": {
+        "bytes": 123348,
+        "canonical_content_digest": "0aa1c30ceae77ed08bfdc84d7da6edaa59d71889f83b14190a5b1c94447057f5",
+        "digest": "08b02d6a909f831039a7bfd9ddf01da7ca1dcd68d8f7cc2465d99291b26fa6c1",
+        "original_status": "INCOMPLETE",
+        "original_version": "essential-web-evidence-v2.0",
+        "path": "G:\\Project\\xlm-evidence-v2\\essential-web\\footer_evidence.incomplete.json",
+        "sha256": "0aa1c30ceae77ed08bfdc84d7da6edaa59d71889f83b14190a5b1c94447057f5"
+      },
+      "external/footer_evidence.json": {
+        "bytes": 879128,
+        "canonical_content_digest": "ba1af742b81f4502beec44624891f869092b0e440f98fb48ea182b3b86cdc276",
+        "digest": "2ecf3eb9df01a41f7f9defa20633841211396f654350df80e460f5c2b5740052",
+        "original_status": "COMPLETE",
+        "original_version": "essential-web-evidence-v2.0",
+        "path": "G:\\Project\\xlm-evidence-v2\\essential-web\\footer_evidence.json",
+        "sha256": "ba1af742b81f4502beec44624891f869092b0e440f98fb48ea182b3b86cdc276"
+      },
+      "external/text_cost_evidence.incomplete.json": {
+        "bytes": 980,
+        "canonical_content_digest": "7b2dcbadd8113b28d340b331f18cb5e8d0ed8ab605c23ef8306d6d58e54d67d5",
+        "digest": "511d4c0771aec2c44066a04a1a7d07792902cdd0f1606bbd4249d80fbddee572",
+        "original_status": "INCOMPLETE",
+        "original_version": "essential-web-evidence-v2.0",
+        "path": "G:\\Project\\xlm-evidence-v2\\essential-web\\text_cost_evidence.incomplete.json",
+        "sha256": "7b2dcbadd8113b28d340b331f18cb5e8d0ed8ab605c23ef8306d6d58e54d67d5"
+      },
+      "external/text_cost_evidence_attempt2.incomplete.json": {
+        "bytes": 24617,
+        "canonical_content_digest": "4b5acee72e925071f012a163024b3d54d56f95a9e80283742cb01b26160e475a",
+        "digest": "ed713a0a6fe22cdd396f758182b841b0208f0fe92795b3784f8d71bb6bbf665b",
+        "original_status": "INCOMPLETE",
+        "original_version": "essential-web-evidence-v2.0",
+        "path": "G:\\Project\\xlm-evidence-v2\\essential-web\\text_cost_evidence_attempt2.incomplete.json",
+        "sha256": "4b5acee72e925071f012a163024b3d54d56f95a9e80283742cb01b26160e475a"
+      },
+      "external/text_selection_manifest.json": {
+        "bytes": 23807,
+        "canonical_content_digest": "8424f9668fef6952a558ead0dae27a705545a7f4a4d302713707d3ec6bb1af27",
+        "digest": "975ba3dee4af0598e665ea05c69bbe49336c3e3a35fca777a863073190b78474",
+        "original_status": null,
+        "original_version": "essential-web-evidence-v2.0",
+        "path": "G:\\Project\\xlm-evidence-v2\\essential-web\\text_selection_manifest.json",
+        "sha256": "8424f9668fef6952a558ead0dae27a705545a7f4a4d302713707d3ec6bb1af27"
+      }
+    },
+    "issued_under": "essential-web-evidence-v3.0",
+    "kind": "permanent_prior_execution_lineage_closure",
+    "known_history": {
+      "M": {
+        "first_file_historical_request_violation": "12 > 10 under original cap",
+        "physical_requests": 55,
+        "recorded_range_body_bytes": 2191448
+      },
+      "T": {
+        "recorded_range_body_bytes": 2231492,
+        "recorded_requests": 54
+      }
+    },
+    "old_body_ceiling_bytes": 268435456,
+    "old_costs_are_zero": false,
+    "original_bytes_and_statuses_preserved": true,
+    "parent_v22_freeze_digest": "b6602a445307d9638913c046b4cfebab3356e20559d89b3f2ab601aa924ebd0c",
+    "reason": "missing measurements cannot establish cumulative compliance; code patches cannot recover them",
+    "status": "CLOSED_NON_EXECUTABLE",
+    "successful_authorized_data_acquisition_established": false,
+    "terminal_v22_readiness_digest": "3f1ae11da62ec9a96a23494021808d98635fa8b10b04608ca4af73a6d87ebcde",
+    "unknown_history": [
+      "redirect/error-body byte totals",
+      "elapsed time"
+    ],
+    "v3_claim": "prospective interval only, never cumulative lifetime project-cost compliance",
+    "v3_network_charge_from_history": false,
+    "versions": [
+      "essential-web-evidence-v2.0",
+      "essential-web-evidence-v2.1",
+      "essential-web-evidence-v2.2"
+    ]
+  },
+  "configs": {
+    ".python-version": {
+      "sha256_committed_blob": "aa0d6581054e6e4ff3f91839deca7a854ad37221b8784d060b42d0f847ff1a3b",
+      "git_object_id": "28d9a01b1faabb66c0b96a3a32018cf52f6bc077",
+      "worktree_sha256": "50b10393ce287fb4af7616d016dd16ac1a56412af4d2c74cde7ddc5ad5c78761",
+      "representation": "crlf"
+    },
+    "pyproject.toml": {
+      "sha256_committed_blob": "75723d525207f7ff3d71fee35f9e69a258c4bc493fcc971189965c9d672fc54e",
+      "git_object_id": "f6d0be768de2e0ee6c2f784d6010c6cc1c4ce793",
+      "worktree_sha256": "d503fbd9c69bee626e387b0e230fdfcf762327993e73ab711e039550495ebe54",
+      "representation": "crlf"
+    },
+    "uv.lock": {
+      "sha256_committed_blob": "c44ecb0a0ed55e277d1bd24ee267e6ac8342f2e6e98efa2db11322ee458bac65",
+      "git_object_id": "46f7f14da19054749aa412b364978bce4d23cd87",
+      "worktree_sha256": "658f83d08e7003c0642223759736dcccfa983ce0bab4b75f8f2b234e7a114631",
+      "representation": "crlf"
+    }
+  },
+  "children": {
+    "adopted_planning_evidence.json": {
+      "bytes": 7464,
+      "sha256": "2c54a5972bedccbc630e1834882cd70a6b072a1e8b299866dffc04a25353b95a",
+      "canonical_digest": "4285a61b65ee5a7455f9ea86f702fadfb48a7287e35a9ee6f33a353fd1177a1f"
+    },
+    "arm_m_phase_d_dry.json": {
+      "bytes": 8081,
+      "sha256": "3fd37cd41db4b92fc61ea9e3d6a57315febda3d341c616e622e73cd9547ee15a",
+      "canonical_digest": "d7191fdbe81c9f0995a063fdaeafc85ac64226e8489c253d9f5cb3b0e8b90f91"
+    },
+    "arm_m_phase_p_dry.json": {
+      "bytes": 11086,
+      "sha256": "0ac4f51b09aa9bd2008237aeb824023d92c3d2a83cbc68a9b4b5f37b6286f580",
+      "canonical_digest": "b4af65eced13ac9e7cca0ef99830f3f9307f85e77da090dd6406c0e3c0766905"
+    },
+    "arm_t_phase_d_dry.json": {
+      "bytes": 10083,
+      "sha256": "9c2a5de8a432c836f13c6d4aa712be98380385834ce022ed5761ad87b16e75c8",
+      "canonical_digest": "ad5b2205748ce1182f9854d0867399329de9a6588eca902bb87ecd1ef45415de"
+    },
+    "arm_t_phase_p_dry.json": {
+      "bytes": 11111,
+      "sha256": "9f623e08edfb4e30b87d9d177b4c685ec9ab8628810b80fabbdcad6ff1ec912a",
+      "canonical_digest": "9c1f17017d0d493ed5ebfa13a4e9db478ac5a0b781c0c96dfe9ddd0195e623a0"
+    },
+    "artifact_manifest.json": {
+      "bytes": 9445,
+      "sha256": "88a014e31d8cac0dbcc962d9298442068bd6048af16a9e797233a1f8a6159a37",
+      "canonical_digest": "3a524225312641ad1c7f65247709ea66b576afadebe8c13e28d938096f0f3d0b"
+    },
+    "disk_schedule.json": {
+      "bytes": 6063,
+      "sha256": "540b00cda306ef094bb19d5b46c356384c06d366c87f1eae65df17948992785f",
+      "canonical_digest": "8eefa3151c3691cfedec6b57b2e2973d91cba7cca8b8e887f53b495a80146868"
+    },
+    "epoch_genesis_template.json": {
+      "bytes": 6479,
+      "sha256": "11160c43aab24168b8e628fe528b34c07e3ecf6fc733a217fef57eeb8f2056ca",
+      "canonical_digest": "b4eb1e4170fac2bac16b485a36ca83782b6d24ebf97a851b50818c1ee0f316a7"
+    },
+    "memory_guard.json": {
+      "bytes": 6044,
+      "sha256": "42453e3bcebb4e472cf7c592cfdbfe8c505535b815a05a315e47467d1a5684d5",
+      "canonical_digest": "6247a4651c8cf4efea2b0c4dec2a73908a1353943dc7909c48fc66b9a98699a0"
+    },
+    "prospective_budget_m.json": {
+      "bytes": 7377,
+      "sha256": "c5064965bb08dd0d7f20c0b0ca5850407651c3844a4705af27ecb32e4405f9a2",
+      "canonical_digest": "28ac4fc50243c73800980bc06522798b91eef7deadf23335ef4aad4b92440212"
+    },
+    "prospective_budget_t.json": {
+      "bytes": 7662,
+      "sha256": "cb9510a950fd18b52da4f434279f1990fb3a17220869cb5d938cf3e754d38028",
+      "canonical_digest": "8100ddee2b6c42cfbc1d8a6a9c362d12a655b2d7a2f7fdc6a80825490b733a1d"
+    },
+    "readiness_review.json": {
+      "bytes": 8953,
+      "sha256": "d9bcd1b2ffaf675fdd57b29f9fd93139912cfb98b44a964b2fdfd247ab45a00e",
+      "canonical_digest": "5bdbecc656fee68521ccf9a3737cdfa5cd15493c0ca2c32f2f3c6de02c1006e2"
+    },
+    "runtime_schedule.json": {
+      "bytes": 5892,
+      "sha256": "8bbba97e10ed9b127d33675f7d0fc3a5d00931a946b0db8447b16900fe42c8a8",
+      "canonical_digest": "7a605acfa989f5420120dfb4e6630f551a9371c1746735590ddc0a33189b7bf1"
+    },
+    "scientific_identity_adoption.json": {
+      "bytes": 8214,
+      "sha256": "41cdef90d0e970729126e2c1353a07a9a50a9ceec4564b622d50291f8424496d",
+      "canonical_digest": "a77ddca1cca5157cd4a4ba70ae0f14af92c1e118a20cd2c69c7706eeafda730e"
+    }
+  },
+  "code_bound_files": 25,
+  "runtime": {
+    "python_version": "3.12.13",
+    "python_implementation": "CPython",
+    "python_executable_class": "project-venv",
+    "uv_version": "uv 0.12.19 (bea138450 2026-09-24 x86_64-pc-windows-msvc)",
+    "python_version_file_sha256": "aa0d6581054e6e4ff3f91839deca7a854ad37221b8784d060b42d0f847ff1a3b",
+    "pyproject_sha256": "75723d525207f7ff3d71fee35f9e69a258c4bc493fcc971189965c9d672fc54e",
+    "uv_lock_sha256": "c44ecb0a0ed55e277d1bd24ee267e6ac8342f2e6e98efa2db11322ee458bac65",
+    "pyarrow_version": "25.0.1",
+    "psutil_version": "7.2.2",
+    "torch_version": "2.14.0+cpu",
+    "torch_build": "cpu",
+    "os_system": "Windows",
+    "os_release": "11",
+    "os_version": "10.0.26200",
+    "architecture": "AMD64"
+  },
+  "arithmetic": {
+    "M_P_logical": 16,
+    "M_P_observed": 24,
+    "M_P_cold": 40,
+    "M_D_identity": 32,
+    "M_payload": 1398416,
+    "M_footer_margin": 32156016,
+    "M_min_file_margin": 3991024,
+    "T_P_logical": 24,
+    "T_P_observed": 32,
+    "T_P_cold": 48,
+    "T_D_identity": 32,
+    "T_D_data": 47,
+    "T_P_ceiling": 721,
+    "D_identity_byte_reservation_per_file": 262148,
+    "D_identity_byte_reservation_arm": 2097184
+  },
+  "imports": {
+    "scripts/evidence_v3.py": [
+      "__future__",
+      "argparse",
+      "collections.abc",
+      "hashlib",
+      "json",
+      "pathlib",
+      "sys",
+      "typing",
+      "xlm.data.evidence_v2",
+      "xlm.data.evidence_v3",
+      "xlm.data.evidence_v3.harness"
+    ],
+    "src/xlm/__init__.py": [
+      "importlib.metadata"
+    ],
+    "src/xlm/data/__init__.py": [],
+    "src/xlm/data/evidence_v2/__init__.py": [
+      "xlm.data.evidence_v2.frozen"
+    ],
+    "src/xlm/data/evidence_v2/canonical.py": [
+      "__future__",
+      "collections.abc",
+      "hashlib",
+      "json",
+      "math",
+      "os",
+      "pathlib",
+      "typing"
+    ],
+    "src/xlm/data/evidence_v2/frozen.py": [
+      "__future__"
+    ],
+    "src/xlm/data/evidence_v3/__init__.py": [
+      "__future__"
+    ],
+    "src/xlm/data/evidence_v3/authorization.py": [
+      "__future__",
+      "collections.abc",
+      "datetime",
+      "hashlib",
+      "pathlib",
+      "re",
+      "sys",
+      "typing",
+      "xlm.data.evidence_v2",
+      "xlm.data.evidence_v3",
+      "xlm.data.evidence_v3.harness"
+    ],
+    "src/xlm/data/evidence_v3/dry.py": [
+      "__future__",
+      "collections.abc",
+      "pathlib",
+      "typing",
+      "xlm.data.evidence_v2",
+      "xlm.data.evidence_v3"
+    ],
+    "src/xlm/data/evidence_v3/envidentity.py": [
+      "__future__",
+      "collections.abc",
+      "hashlib",
+      "importlib.metadata",
+      "os",
+      "pathlib",
+      "platform",
+      "re",
+      "shutil",
+      "subprocess",
+      "sys",
+      "typing"
+    ],
+    "src/xlm/data/evidence_v3/executor.py": [
+      "__future__",
+      "copy",
+      "dataclasses",
+      "fcntl",
+      "hashlib",
+      "msvcrt",
+      "os",
+      "pathlib",
+      "secrets",
+      "sys",
+      "typing",
+      "xlm.data.evidence_v2",
+      "xlm.data.evidence_v3",
+      "xlm.data.evidence_v3.harness"
+    ],
+    "src/xlm/data/evidence_v3/footer.py": [
+      "__future__",
+      "collections.abc",
+      "pyarrow",
+      "pyarrow.parquet",
+      "typing",
+      "xlm.data.evidence_v3"
+    ],
+    "src/xlm/data/evidence_v3/frozen_v3.py": [
+      "__future__"
+    ],
+    "src/xlm/data/evidence_v3/fsroot.py": [
+      "__future__",
+      "ctypes",
+      "dataclasses",
+      "hashlib",
+      "os",
+      "pathlib",
+      "re",
+      "stat",
+      "sys"
+    ],
+    "src/xlm/data/evidence_v3/genesis.py": [
+      "__future__",
+      "hashlib",
+      "os",
+      "pathlib",
+      "re",
+      "secrets",
+      "stat",
+      "typing",
+      "xlm.data.evidence_v2",
+      "xlm.data.evidence_v3"
+    ],
+    "src/xlm/data/evidence_v3/harness.py": [
+      "__future__",
+      "collections.abc",
+      "dataclasses",
+      "datetime",
+      "pathlib",
+      "time",
+      "typing",
+      "xlm.data.evidence_v3"
+    ],
+    "src/xlm/data/evidence_v3/journal.py": [
+      "__future__",
+      "copy",
+      "dataclasses",
+      "hashlib",
+      "os",
+      "re",
+      "typing",
+      "xlm.data.evidence_v2",
+      "xlm.data.evidence_v3"
+    ],
+    "src/xlm/data/evidence_v3/memory.py": [
+      "__future__",
+      "collections.abc",
+      "dataclasses",
+      "os",
+      "psutil",
+      "secrets",
+      "threading",
+      "time"
+    ],
+    "src/xlm/data/evidence_v3/netpolicy.py": [
+      "__future__",
+      "collections.abc",
+      "dataclasses",
+      "ipaddress",
+      "re",
+      "urllib.parse",
+      "xlm.data.evidence_v3"
+    ],
+    "src/xlm/data/evidence_v3/plan.py": [
+      "__future__",
+      "collections.abc",
+      "dataclasses",
+      "hashlib",
+      "pathlib",
+      "re",
+      "typing",
+      "xlm.data.evidence_v2",
+      "xlm.data.evidence_v3"
+    ],
+    "src/xlm/data/evidence_v3/readiness.py": [
+      "__future__",
+      "collections.abc",
+      "hashlib",
+      "pathlib",
+      "subprocess",
+      "sys",
+      "tempfile",
+      "threading",
+      "typing",
+      "xlm.data.evidence_v2",
+      "xlm.data.evidence_v3"
+    ],
+    "src/xlm/data/evidence_v3/schedules.py": [
+      "__future__",
+      "collections.abc",
+      "typing",
+      "xlm.data.evidence_v3"
+    ],
+    "src/xlm/data/evidence_v3/synthetic.py": [
+      "__future__",
+      "collections.abc",
+      "dataclasses",
+      "hashlib",
+      "io",
+      "pathlib",
+      "pyarrow",
+      "pyarrow.parquet",
+      "threading",
+      "typing",
+      "xlm.data.evidence_v2",
+      "xlm.data.evidence_v3",
+      "xlm.data.evidence_v3.harness"
+    ],
+    "src/xlm/data/evidence_v3/transport.py": [
+      "__future__",
+      "collections.abc",
+      "dataclasses",
+      "http.client",
+      "ipaddress",
+      "socket",
+      "ssl",
+      "time",
+      "typing",
+      "weakref",
+      "xlm.data.evidence_v3"
+    ],
+    "src/xlm/data/evidence_v3/trust.py": [
+      "__future__",
+      "typing",
+      "weakref"
+    ]
+  },
+  "public_surface": {
+    "scripts/evidence_v3.py": [
+      "cmd_verify_v3",
+      "cmd_readiness",
+      "cmd_build_children",
+      "cmd_check_auth",
+      "cmd_genesis",
+      "cmd_execute",
+      "cmd_inspect",
+      "build_parser",
+      "main"
+    ],
+    "src/xlm/__init__.py": [],
+    "src/xlm/data/__init__.py": [],
+    "src/xlm/data/evidence_v2/__init__.py": [],
+    "src/xlm/data/evidence_v2/canonical.py": [
+      "CanonicalError",
+      "canonical_bytes",
+      "digest",
+      "loads_strict",
+      "loads_bytes_strict",
+      "check_known_fields",
+      "self_digest",
+      "file_binding",
+      "descriptor",
+      "write_atomic",
+      "write_canonical_json",
+      "verify_binding",
+      "check_sequence_of_strings",
+      "check_exact_int",
+      "check_ordered_paths"
+    ],
+    "src/xlm/data/evidence_v2/frozen.py": [
+      "crawl_path"
+    ],
+    "src/xlm/data/evidence_v3/__init__.py": [],
+    "src/xlm/data/evidence_v3/authorization.py": [
+      "AuthorizationError",
+      "Expectations",
+      "ValidatedPhasePAuthorization",
+      "ValidatedOperatorApproval",
+      "is_under_frozen_project",
+      "synthetic_manifest_digest",
+      "authorization_request_digest",
+      "derive_expectations",
+      "validate_authorization",
+      "validate_operator_approval"
+    ],
+    "src/xlm/data/evidence_v3/dry.py": [
+      "DryError",
+      "producer_identity",
+      "envelope",
+      "publish"
+    ],
+    "src/xlm/data/evidence_v3/envidentity.py": [
+      "EnvIdentityError",
+      "is_commit",
+      "is_sha256",
+      "committed_blob",
+      "resolve_commit",
+      "representation",
+      "normalized_worktree_bytes",
+      "code_paths",
+      "committed_identity",
+      "verify_worktree_against_commit",
+      "worktree_identity",
+      "python_executable_class",
+      "uv_version",
+      "runtime_environment",
+      "check_environment_schema",
+      "check_code_map_schema"
+    ],
+    "src/xlm/data/evidence_v3/executor.py": [
+      "PhasePError",
+      "PhasePStop",
+      "check_authorization",
+      "perform_genesis",
+      "execute_phase_p",
+      "inspect_epoch"
+    ],
+    "src/xlm/data/evidence_v3/footer.py": [
+      "FooterError",
+      "trailer_length",
+      "compare_m",
+      "compare_t"
+    ],
+    "src/xlm/data/evidence_v3/frozen_v3.py": [],
+    "src/xlm/data/evidence_v3/fsroot.py": [
+      "ContainmentError",
+      "check_rel",
+      "is_reparse",
+      "check_ancestors",
+      "RootIdentity",
+      "observe_root",
+      "root_string",
+      "RootFS"
+    ],
+    "src/xlm/data/evidence_v3/genesis.py": [
+      "GenesisError",
+      "VerifiedRootContext",
+      "verify_root",
+      "plan_summary",
+      "disk_caps",
+      "supervision_identity",
+      "publish",
+      "load_epoch_start"
+    ],
+    "src/xlm/data/evidence_v3/harness.py": [
+      "Clock",
+      "RealClock",
+      "EpochPaths",
+      "SyntheticHarness"
+    ],
+    "src/xlm/data/evidence_v3/journal.py": [
+      "JournalError",
+      "StateError",
+      "chain_seed",
+      "Attempt",
+      "ArmState",
+      "DiskEntry",
+      "DiskPending",
+      "EpochState",
+      "new_state",
+      "Journal"
+    ],
+    "src/xlm/data/evidence_v3/memory.py": [
+      "MemoryGuardError",
+      "StepDeadlineExceeded",
+      "Registration",
+      "OwnedProcessRegistry",
+      "TreeSampler",
+      "Supervisor",
+      "wait_interval",
+      "monotonic_ns"
+    ],
+    "src/xlm/data/evidence_v3/netpolicy.py": [
+      "PolicyError",
+      "IdentityError",
+      "SourceIdentity",
+      "check_source_identity",
+      "CheckedUrl",
+      "check_url",
+      "is_canonical_resource",
+      "classify_target",
+      "check_redirect",
+      "is_strong_etag",
+      "parse_content_range",
+      "ExpectedIdentity",
+      "verify_identity"
+    ],
+    "src/xlm/data/evidence_v3/plan.py": [
+      "PlanError",
+      "PlanOperation",
+      "FilePlan",
+      "ValidatedPhasePPlan",
+      "derive_t_footer_range",
+      "validate_plan_bytes",
+      "CommittedChildren",
+      "recompute_real_payloads",
+      "load_committed_children"
+    ],
+    "src/xlm/data/evidence_v3/readiness.py": [
+      "scenario_baseline",
+      "scenario_authorization",
+      "scenario_genesis",
+      "scenario_journal",
+      "scenario_redirect",
+      "scenario_body",
+      "scenario_identity",
+      "scenario_memory",
+      "scenario_runtime",
+      "scenario_future_d_reserve",
+      "scenario_junction",
+      "static_checks",
+      "derive_readiness"
+    ],
+    "src/xlm/data/evidence_v3/schedules.py": [
+      "ScheduleError",
+      "build_m_phase_p",
+      "build_m_phase_d",
+      "build_t_phase_p",
+      "build_t_phase_d",
+      "check_prospective_totals",
+      "m_phase_p_accounting",
+      "t_phase_p_accounting",
+      "body_reservation",
+      "m_file_d_reserve",
+      "t_file_d_reserve",
+      "phase_p_ceilings",
+      "m_phase_p_plan_payload",
+      "t_phase_p_plan_payload"
+    ],
+    "src/xlm/data/evidence_v3/synthetic.py": [
+      "SimulatedCrash",
+      "SyntheticFile",
+      "make_m_file",
+      "make_t_file",
+      "plan_bytes",
+      "FakeClock",
+      "FakeResponse",
+      "signed_url",
+      "FakeServer",
+      "FakeTransport",
+      "review_body",
+      "authorization_review_bytes",
+      "authorization_body",
+      "approval_body",
+      "reseal",
+      "SyntheticEpoch",
+      "constant_reader",
+      "build_epoch",
+      "reload_epoch"
+    ],
+    "src/xlm/data/evidence_v3/transport.py": [
+      "TransportError",
+      "DeadlineExceeded",
+      "TransportRequest",
+      "TransportResponse",
+      "Transport"
+    ],
+    "src/xlm/data/evidence_v3/trust.py": [
+      "TrustError",
+      "TrustedObject",
+      "require_minted"
+    ]
+  },
+  "root_metadata": {
+    "G_exists": true,
+    "execution_root_exists": false,
+    "ancestors": [
+      {
+        "path": "G:\\",
+        "device": 134349773812170000,
+        "file_id": 1407374883553285,
+        "attributes": 22,
+        "reparse_tag": 0
+      }
+    ]
+  },
+  "audit_wall_seconds": 5.0414604999969015,
+  "audit_process_memory": {
+    "rss": 37101568,
+    "vms": 24043520,
+    "num_page_faults": 19371,
+    "peak_wset": 41783296,
+    "wset": 37101568,
+    "peak_paged_pool": 198744,
+    "paged_pool": 191696,
+    "peak_nonpaged_pool": 25824,
+    "nonpaged_pool": 16992,
+    "pagefile": 24043520,
+    "peak_pagefile": 31686656,
+    "private": 24043520
+  }
+}
