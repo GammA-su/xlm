@@ -290,6 +290,9 @@ class _Engine:
                         timeout_seconds=frozen.ATTEMPT_TIMEOUT_SECONDS,
                         deadline=deadline,
                     )
+                except tp.DeadlineError as exc:
+                    self._finish(attempt_id, state.TIMEOUT, None, 0, _sha(b""), str(exc))
+                    return False
                 except tp.TransportError as exc:
                     self._finish(attempt_id, state.TRANSPORT_ERROR, None, 0, _sha(b""), str(exc))
                     return False
@@ -385,10 +388,15 @@ class _Engine:
                 break
             try:
                 chunk = response.read(min(READ_CHUNK, RESPONSE_READ_LIMIT - received))
+            except tp.DeadlineError as exc:
+                failure = (state.TIMEOUT, str(exc))
+                break
             except tp.TransportError as exc:
                 failure = (state.TRANSPORT_ERROR, str(exc))
                 break
             if not chunk:
+                if self.clock() >= deadline:  # a late end of body is no success
+                    failure = (state.TIMEOUT, "the response ended after the 120-second deadline")
                 break
             _write_all(sink, chunk)
             digest.update(chunk)

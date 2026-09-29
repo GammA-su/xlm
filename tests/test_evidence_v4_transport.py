@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
-import http.client
 from typing import Any
 
 import pytest
 
-from evidence_v4_support import block_network
+from evidence_v4_support import FakeClock, ScriptedSocket, block_network, response_head
 from xlm.data.evidence_v4 import frozen
 from xlm.data.evidence_v4 import transport as tp
 
@@ -158,82 +157,59 @@ def test_identity_refuses(kwargs: dict[str, Any], match: str) -> None:
         _verify(**kwargs)
 
 
-class _FakeConnection:
-    instances: list[_FakeConnection] = []
+def _scripted_connect(
+    monkeypatch: pytest.MonkeyPatch, clock: FakeClock, wire: bytes
+) -> list[tuple[str, ScriptedSocket]]:
+    opened: list[tuple[str, ScriptedSocket]] = []
 
-    def __init__(self, host: str, port: int, *, timeout: float, context: Any) -> None:
-        self.args = (host, port, timeout)
-        self.headers: list[tuple[str, str]] = []
-        self.request_line: tuple[str, str] | None = None
-        self.sock = None
-        self.closed = False
-        _FakeConnection.instances.append(self)
+    def connect(host: str, deadline: float, clk: Any) -> ScriptedSocket:
+        assert clk is clock
+        sock = ScriptedSocket(clock, [(0.0, wire)])
+        opened.append((host, sock))
+        return sock
 
-    def connect(self) -> None:
-        pass
-
-    def putrequest(self, method: str, target: str, skip_accept_encoding: bool = False) -> None:
-        assert skip_accept_encoding
-        self.request_line = (method, target)
-
-    def putheader(self, name: str, value: str) -> None:
-        self.headers.append((name, value))
-
-    def endheaders(self) -> None:
-        pass
-
-    def getresponse(self) -> Any:
-        class _Resp:
-            status = 302
-
-            def getheader(self, name: str) -> str | None:
-                return SIGNED if name.lower() == "location" else None
-
-            def read(self, amount: int) -> bytes:
-                return b""
-
-            def close(self) -> None:
-                pass
-
-        return _Resp()
-
-    def close(self) -> None:
-        self.closed = True
+    monkeypatch.setattr(tp, "_connect", connect)
+    return opened
 
 
 def test_live_transport_sends_one_exact_request_and_never_follows_redirects(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     block_network(monkeypatch)
-    _FakeConnection.instances = []
-    monkeypatch.setattr(http.client, "HTTPSConnection", _FakeConnection)
-    live = tp.LiveHttpsTransport()
-    import time
-
-    response = live.open(
-        CANONICAL, start=10, end=20, timeout_seconds=120, deadline=time.monotonic() + 120
-    )
+    clock = FakeClock()
+    wire = response_head(302, {"Location": SIGNED, "Content-Length": "0"})
+    opened = _scripted_connect(monkeypatch, clock, wire)
+    live = tp.LiveHttpsTransport(clock=clock)
+    response = live.open(CANONICAL, start=10, end=20, timeout_seconds=120, deadline=clock() + 120)
     assert response.status == 302 and response.header("Location") == SIGNED
-    (conn,) = _FakeConnection.instances
-    assert conn.args[0:2] == ("huggingface.co", 443) and 0 < conn.args[2] <= 120
-    assert conn.request_line == ("GET", tp.check_url(CANONICAL).target)
-    assert dict(conn.headers) == {
-        "Range": "bytes=10-20",
-        "Accept-Encoding": "identity",
-        "User-Agent": tp.USER_AGENT,
-    }
+    assert response.read(65536) == b""
+    ((host, sock),) = opened
+    assert host == "huggingface.co"
+    assert (
+        bytes(sock.sent)
+        == (
+            f"GET {tp.check_url(CANONICAL).target} HTTP/1.1\r\n"
+            "Host: huggingface.co\r\n"
+            "Range: bytes=10-20\r\n"
+            "Accept-Encoding: identity\r\n"
+            f"User-Agent: {tp.USER_AGENT}\r\n\r\n"
+        ).encode()
+    )
+    assert sock.timeouts and all(t is not None and 0 < t <= 120 for t in sock.timeouts)
+    response.close()
+    assert sock.closed_at is not None
 
 
 def test_live_transport_refuses_policy_violations_before_any_connection(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     block_network(monkeypatch)
-    _FakeConnection.instances = []
-    monkeypatch.setattr(http.client, "HTTPSConnection", _FakeConnection)
-    live = tp.LiveHttpsTransport()
+    clock = FakeClock()
+    opened = _scripted_connect(monkeypatch, clock, b"")
+    live = tp.LiveHttpsTransport(clock=clock)
     for url, timeout in (("http://huggingface.co/x", 120), (CANONICAL, 30), (CANONICAL, 121)):
         with pytest.raises(tp.PolicyError):
             live.open(url, start=0, end=3, timeout_seconds=timeout, deadline=1e18)
-    with pytest.raises(tp.TransportError, match="deadline"):
-        live.open(CANONICAL, start=0, end=3, timeout_seconds=120, deadline=0.0)
-    assert _FakeConnection.instances == []
+    with pytest.raises(tp.DeadlineError, match="deadline"):
+        live.open(CANONICAL, start=0, end=3, timeout_seconds=120, deadline=clock())
+    assert opened == []

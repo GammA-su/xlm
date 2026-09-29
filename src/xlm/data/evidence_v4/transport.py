@@ -10,14 +10,16 @@ from __future__ import annotations
 
 import hashlib
 import http.client
+import io
 import ipaddress
 import re
 import socket
 import ssl
 import time
-from collections.abc import Mapping
+from collections.abc import Callable, Iterator, Mapping
+from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Protocol
+from typing import Any, Protocol, cast
 from urllib.parse import unquote, urljoin, urlsplit
 
 from xlm.data.evidence_v4 import frozen
@@ -36,6 +38,13 @@ class IdentityError(ValueError):
 
 class TransportError(RuntimeError):
     """A physical transport failure (connection, TLS, timeout): retryable."""
+
+
+class DeadlineError(TransportError):
+    """The one absolute 120-second physical-attempt deadline elapsed: retryable TIMEOUT."""
+
+
+_DEADLINE_MESSAGE = "the 120-second attempt deadline elapsed"
 
 
 @dataclass(frozen=True)
@@ -205,45 +214,188 @@ class Transport(Protocol):
     ) -> Response: ...
 
 
-class _LiveResponse:
-    def __init__(
-        self, conn: http.client.HTTPSConnection, resp: http.client.HTTPResponse, deadline: float
-    ) -> None:
-        self._conn = conn
-        self._resp = resp
+def _remaining(deadline: float, clock: Callable[[], float]) -> float:
+    """Seconds left before the absolute attempt deadline; DeadlineError when none."""
+    remaining = deadline - clock()
+    if remaining <= 0:
+        raise DeadlineError(_DEADLINE_MESSAGE)
+    return remaining
+
+
+@contextmanager
+def _classified(stage: str) -> Iterator[None]:
+    """Socket timeouts are the deadline (each timeout is the remaining time)."""
+    try:
+        yield
+    except TimeoutError as exc:
+        raise DeadlineError(_DEADLINE_MESSAGE) from exc
+    except (OSError, http.client.HTTPException) as exc:
+        raise TransportError(f"{stage} failed: {type(exc).__name__}: {exc}") from exc
+
+
+class _DeadlineReader(io.RawIOBase):
+    """Raw socket input whose every blocking receive is bounded by the attempt deadline.
+
+    ``http.client`` parses through a ``BufferedReader``; one parser call can
+    issue several receives. Each receive here re-arms the socket timeout to
+    the time remaining before the one absolute deadline, so no sequence of
+    receives can outlast it (B02).
+    """
+
+    def __init__(self, sock: socket.socket, deadline: float, clock: Callable[[], float]) -> None:
+        super().__init__()
+        self._sock = sock
         self._deadline = deadline
+        self._clock = clock
+
+    def readable(self) -> bool:
+        return True
+
+    def readinto(self, buffer: Any) -> int:
+        self._sock.settimeout(_remaining(self._deadline, self._clock))
+        return self._sock.recv_into(buffer)
+
+
+class _DeadlineSocket:
+    """All ``http.client.HTTPResponse`` uses of a socket: a deadline-bounded ``makefile``."""
+
+    def __init__(self, sock: socket.socket, deadline: float, clock: Callable[[], float]) -> None:
+        self._reader = _DeadlineReader(sock, deadline, clock)
+
+    def makefile(self, mode: str) -> io.BufferedReader:
+        if mode != "rb":
+            raise ValueError("the response stream is read-only binary")
+        return io.BufferedReader(self._reader)
+
+
+class _LiveResponse:
+    def __init__(self, sock: socket.socket, resp: http.client.HTTPResponse) -> None:
+        self._sock = sock
+        self._resp = resp
         self.status = resp.status
 
     def header(self, name: str) -> str | None:
         return self._resp.getheader(name)
 
     def read(self, amount: int) -> bytes:
-        try:
-            _arm_socket(self._conn, self._deadline)
-            return self._resp.read(amount)
-        except (OSError, http.client.HTTPException) as exc:
-            raise TransportError(f"read failed: {type(exc).__name__}: {exc}") from exc
+        """Return body bytes as soon as the parser has them (B01).
+
+        ``read1`` performs at most one body receive and returns its bytes
+        before any later framing step can fail, so a failure (IncompleteRead,
+        reset, deadline) never holds body bytes the parser already received:
+        an earlier call returned them and the engine persisted them. b""
+        means the HTTP framing ended correctly.
+        """
+        with _classified("read"):
+            return self._resp.read1(amount)
 
     def close(self) -> None:
         self._resp.close()
-        self._conn.close()
+        self._sock.close()
 
 
-def _remaining(deadline: float) -> float:
-    remaining = deadline - time.monotonic()
-    if remaining <= 0:
-        raise TransportError("the 120-second attempt deadline elapsed")
-    return remaining
+def _send_all(
+    sock: socket.socket, data: bytes, deadline: float, clock: Callable[[], float]
+) -> None:
+    view = memoryview(data)
+    while view:
+        sock.settimeout(_remaining(deadline, clock))
+        view = view[sock.send(view) :]
 
 
-def _arm_socket(conn: http.client.HTTPSConnection, deadline: float) -> None:
-    sock: socket.socket | None = conn.sock
-    if sock is not None:
-        sock.settimeout(_remaining(deadline))
+def _connect(host: str, deadline: float, clock: Callable[[], float]) -> socket.socket:
+    """TCP connect and TLS handshake, each blocking step bounded by the remaining time.
+
+    Name resolution is outside the v4 deadline (protocol section 4); its
+    elapsed time is still charged against the same absolute deadline.
+    """
+    with _classified("connect"):
+        infos = socket.getaddrinfo(host, frozen.ALLOWED_PORT, type=socket.SOCK_STREAM)
+        failure: OSError = OSError(f"no address for {host}")
+        for family, kind, proto, _, address in infos:
+            raw = socket.socket(family, kind, proto)
+            try:
+                raw.settimeout(_remaining(deadline, clock))
+                raw.connect(address)
+            except TimeoutError:
+                raw.close()
+                raise
+            except OSError as exc:  # refused/unreachable: next address, same deadline
+                raw.close()
+                failure = exc
+                continue
+            except BaseException:
+                raw.close()
+                raise
+            break
+        else:
+            raise failure
+        try:
+            tls = ssl.create_default_context().wrap_socket(
+                raw, server_hostname=host, do_handshake_on_connect=False
+            )
+        except BaseException:
+            raw.close()
+            raise
+        try:
+            tls.settimeout(_remaining(deadline, clock))
+            tls.do_handshake()
+        except BaseException:
+            tls.close()
+            raise
+        return tls
+
+
+def request_bytes(checked: CheckedUrl, *, start: int, end: int) -> bytes:
+    """The one exact GET (the request ``HTTPSConnection`` produced before B02)."""
+    lines = (
+        f"GET {checked.target} HTTP/1.1",
+        f"Host: {checked.host}",
+        f"Range: bytes={start}-{end}",
+        "Accept-Encoding: identity",
+        f"User-Agent: {USER_AGENT}",
+    )
+    return ("\r\n".join(lines) + "\r\n\r\n").encode("ascii")
+
+
+def exchange(
+    sock: socket.socket,
+    checked: CheckedUrl,
+    *,
+    start: int,
+    end: int,
+    deadline: float,
+    clock: Callable[[], float],
+) -> Response:
+    """Send the request on a connected socket and parse the response head.
+
+    Every send and every receive (status line, headers, body framing and
+    body) re-arms the socket timeout from the one absolute deadline. The
+    caller owns ``sock`` until a response is returned; then the response does.
+    """
+    with _classified("request"):
+        _send_all(sock, request_bytes(checked, start=start, end=end), deadline, clock)
+        resp = http.client.HTTPResponse(
+            cast(socket.socket, _DeadlineSocket(sock, deadline, clock)), method="GET"
+        )
+        try:
+            resp.begin()
+        except BaseException:
+            resp.close()
+            raise
+    return _LiveResponse(sock, resp)
 
 
 class LiveHttpsTransport:
-    """The only network implementation: one policy-checked HTTPS GET per call."""
+    """The only network implementation: one policy-checked HTTPS GET per call.
+
+    One absolute deadline covers connect, TLS, request, headers and body:
+    each blocking socket operation gets ``deadline - clock()`` as its timeout
+    and fails at once when nothing remains; a socket timeout is DeadlineError.
+    """
+
+    def __init__(self, clock: Callable[[], float] = time.monotonic) -> None:
+        self._clock = clock
 
     def open(
         self, url: str, *, start: int, end: int, timeout_seconds: float, deadline: float
@@ -253,26 +405,12 @@ class LiveHttpsTransport:
             raise PolicyError("invalid inclusive range")
         if timeout_seconds != frozen.ATTEMPT_TIMEOUT_SECONDS:
             raise PolicyError("the physical attempt timeout is frozen at 120 seconds")
-        conn = http.client.HTTPSConnection(
-            checked.host,
-            frozen.ALLOWED_PORT,
-            timeout=min(timeout_seconds, _remaining(deadline)),
-            context=ssl.create_default_context(),
-        )
+        _remaining(deadline, self._clock)
+        sock = _connect(checked.host, deadline, self._clock)
         try:
-            conn.connect()
-            _arm_socket(conn, deadline)
-            conn.putrequest("GET", checked.target, skip_accept_encoding=True)
-            conn.putheader("Range", f"bytes={start}-{end}")
-            conn.putheader("Accept-Encoding", "identity")
-            conn.putheader("User-Agent", USER_AGENT)
-            conn.endheaders()
-            _arm_socket(conn, deadline)
-            resp = conn.getresponse()
-        except (OSError, http.client.HTTPException) as exc:
-            conn.close()
-            raise TransportError(f"request failed: {type(exc).__name__}: {exc}") from exc
-        except TransportError:
-            conn.close()
+            return exchange(
+                sock, checked, start=start, end=end, deadline=deadline, clock=self._clock
+            )
+        except BaseException:
+            sock.close()
             raise
-        return _LiveResponse(conn, resp, deadline)

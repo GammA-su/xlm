@@ -1,0 +1,14 @@
+{
+ "M_data_chunk": {
+  "status": "INCOMPLETE",
+  "run_status": "STOPPED",
+  "stop_reason": "stored operations differ from the frozen plan (injected or missing)",
+  "requests_after_injection": 0
+ },
+ "T_text_page": {
+  "status": "INCOMPLETE",
+  "run_status": "STOPPED",
+  "stop_reason": "stored operations differ from the frozen plan (injected or missing)",
+  "requests_after_injection": 0
+ }
+}

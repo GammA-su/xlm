@@ -1,0 +1,17 @@
+{
+  "protocol_version": "essential-web-evidence-v4.0",
+  "protocol_sha256": "4c7f11b15adb7d0601977fef61ab04d62fae0e9e64091fa22dbd99e1caf65727",
+  "freeze_digest": "747b82a2df7702db2b111ea62c2f27f3de3d22a37428472fdc0550af90767f57",
+  "plan_digest": "16b93183b485ced924466028b84a8b4cfd84a65f596dc95c80879e32464f35d3",
+  "scientific_adoption_digest": "158c3fc9fed030d0290aa50eded70f7d94b162ab6186ae38aca2ce6b1ebdffd3",
+  "scientific_identity_digest": "080caebb962c86562b530ddfa6a130118a49a6d207b044e83ce6a90a6d9691c6",
+  "selection_digest": "975ba3dee4af0598e665ea05c69bbe49336c3e3a35fca777a863073190b78474",
+  "source_revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+  "M_files": 8,
+  "T_files": 8,
+  "M_logical_operations": 16,
+  "T_logical_operations": 24,
+  "T_ranges_derived_after_trailer": 8,
+  "execution_root": "G:\\Project\\xlm-evidence-v4\\essential-web",
+  "execution_root_exists": false
+}

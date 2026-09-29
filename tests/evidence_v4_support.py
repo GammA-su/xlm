@@ -20,7 +20,7 @@ import sys
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 from urllib.parse import unquote, urlsplit
 
 import pyarrow as pa
@@ -427,7 +427,7 @@ def at(fixture: Fixture, op_id: str, *, host: str | None = None) -> Callable[[Ca
 def run(
     root: Path,
     fixture: Fixture,
-    transport: SyntheticTransport,
+    transport: tp.Transport,
     clock: FakeClock | None = None,
 ) -> phase_p.Result:
     return phase_p.run_offline(
@@ -437,6 +437,142 @@ def run(
         sleep=lambda _: None,
         clock=clock or FakeClock(),
     )
+
+
+# -- authored wire: the production HTTP parser over a scripted socket ------
+
+Step = tuple[float, bytes]  # (virtual seconds until the bytes arrive, bytes; b"" = EOF)
+LAST_CHUNK = b"0\r\n\r\n"
+
+
+def chunk(data: bytes) -> bytes:
+    return f"{len(data):x}\r\n".encode() + data + b"\r\n"
+
+
+def response_head(status: int, headers: dict[str, str]) -> bytes:
+    lines = [f"HTTP/1.1 {status} Synthetic"] + [f"{k}: {v}" for k, v in headers.items()]
+    return ("\r\n".join(lines) + "\r\n\r\n").encode("latin-1")
+
+
+def wire_of(response: FakeResponse, *, chunked: bool = False) -> bytes:
+    """One authored HTTP/1.1 response carrying a FakeResponse's status/headers/body."""
+    headers = {k: v for k, v in response._headers.items() if k != "content-length"}
+    if chunked:
+        headers["transfer-encoding"] = "chunked"
+        body = (chunk(response._body) if response._body else b"") + LAST_CHUNK
+    else:
+        headers["content-length"] = str(len(response._body))
+        body = response._body
+    return response_head(response.status, headers) + body
+
+
+class ScriptedSocket:
+    """Authored raw socket on a virtual clock: no network, no wall-clock sleeps.
+
+    Each receive waits its step's virtual delay, then yields the step's bytes.
+    A receive whose delay reaches the armed timeout advances the clock by the
+    timeout and raises the socket timeout instead (the stdlib behaviour).
+    """
+
+    def __init__(self, clock: FakeClock, steps: list[Step]) -> None:
+        self.clock = clock
+        self.steps = list(steps)
+        self.timeouts: list[float | None] = []
+        self.sent = bytearray()
+        self.opened_at = clock.now
+        self.closed_at: float | None = None
+        self._timeout: float | None = None
+
+    def settimeout(self, value: float | None) -> None:
+        self.timeouts.append(value)
+        self._timeout = value
+
+    def send(self, data: Any) -> int:
+        self.sent += bytes(data)
+        return len(data)
+
+    def recv_into(self, buffer: Any) -> int:
+        if not self.steps:
+            return 0
+        delay, data = self.steps[0]
+        if self._timeout is not None and delay >= self._timeout:
+            self.clock.now += self._timeout
+            self.steps[0] = (delay - self._timeout, data)
+            raise TimeoutError("timed out")
+        self.clock.now += delay
+        count = min(len(buffer), len(data))
+        buffer[:count] = data[:count]
+        if count < len(data):
+            self.steps[0] = (0.0, data[count:])
+        else:
+            self.steps.pop(0)
+        return count
+
+    def close(self) -> None:
+        if self.closed_at is None:
+            self.closed_at = self.clock.now
+
+
+WireResponder = Callable[[Call], list[Step]]
+
+
+@dataclass
+class WireRule:
+    match: Callable[[Call], bool]
+    respond: WireResponder
+    times: int = 1
+
+
+@dataclass
+class WireTransport:
+    """Offline transport through the PRODUCTION request writer, HTTPResponse parser,
+    deadline reader and ``_LiveResponse`` (``tp.exchange``); only TCP/TLS is scripted."""
+
+    fixture: Fixture
+    clock: FakeClock
+    rules: list[WireRule] = field(default_factory=list)
+    calls: list[Call] = field(default_factory=list)
+    sockets: list[ScriptedSocket] = field(default_factory=list)
+
+    def open(
+        self, url: str, *, start: int, end: int, timeout_seconds: float, deadline: float
+    ) -> tp.Response:
+        parts = urlsplit(url)
+        call = Call(
+            len(self.calls),
+            url,
+            parts.hostname or "",
+            parts.path,
+            parts.query,
+            start,
+            end,
+            timeout_seconds,
+            deadline,
+        )
+        self.calls.append(call)
+        steps = self.default(call)
+        for rule in self.rules:
+            if rule.times > 0 and rule.match(call):
+                rule.times -= 1
+                steps = rule.respond(call)
+                break
+        sock = ScriptedSocket(self.clock, steps)
+        self.sockets.append(sock)
+        try:
+            return tp.exchange(
+                cast(socket.socket, sock),
+                tp.check_url(url),
+                start=start,
+                end=end,
+                deadline=deadline,
+                clock=self.clock,
+            )
+        except BaseException:
+            sock.close()
+            raise
+
+    def default(self, call: Call) -> list[Step]:
+        return [(0.0, wire_of(SyntheticTransport(self.fixture).default(call)))]
 
 
 def e2e_crash_rules(fixture: Fixture, crash: Callable[[], None] | None) -> list[Rule]:

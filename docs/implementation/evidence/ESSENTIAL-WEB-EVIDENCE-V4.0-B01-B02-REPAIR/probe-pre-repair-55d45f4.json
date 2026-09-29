@@ -1,0 +1,123 @@
+{
+ "tree": "<pre-repair worktree @55d45f4>",
+ "repaired_transport": false,
+ "B01_par1_then_eof_x3": {
+  "result": [
+   "INCOMPLETE",
+   "STOPPED",
+   "M-00-head: retries exhausted after 3 tries"
+  ],
+  "M-00-head attempts": [
+   {
+    "try": 1,
+    "hop": 0,
+    "outcome": "TRANSPORT_ERROR",
+    "sqlite_bytes": 0,
+    "temp_bytes": ""
+   },
+   {
+    "try": 2,
+    "hop": 0,
+    "outcome": "TRANSPORT_ERROR",
+    "sqlite_bytes": 0,
+    "temp_bytes": ""
+   },
+   {
+    "try": 3,
+    "hop": 0,
+    "outcome": "TRANSPORT_ERROR",
+    "sqlite_bytes": 0,
+    "temp_bytes": ""
+   }
+  ],
+  "physically_supplied_body_bytes": 12,
+  "sqlite_total_M-00-head": 0,
+  "scripted_attempt_durations_s": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "scripted_socket_timeouts": [
+   [
+    119.982,
+    119.981
+   ],
+   [
+    119.976,
+    119.976
+   ],
+   [
+    119.972,
+    119.971
+   ]
+  ]
+ },
+ "B02_parser_60_plus_70": {
+  "events": [
+   {
+    "t": 130.0,
+    "read": "50415231"
+   },
+   {
+    "t": 130.0,
+    "read": ""
+   }
+  ],
+  "socket_timeouts": [
+   120.0,
+   120.0,
+   120.0
+  ]
+ },
+ "B02_engine_60_plus_70_x3": {
+  "result": [
+   "INCOMPLETE",
+   "STOPPED",
+   "M-00-head: retries exhausted after 3 tries"
+  ],
+  "M-00-head attempts": [
+   {
+    "try": 1,
+    "hop": 0,
+    "outcome": "TIMEOUT",
+    "sqlite_bytes": 4,
+    "temp_bytes": "50415231"
+   },
+   {
+    "try": 2,
+    "hop": 0,
+    "outcome": "TIMEOUT",
+    "sqlite_bytes": 4,
+    "temp_bytes": "50415231"
+   },
+   {
+    "try": 3,
+    "hop": 0,
+    "outcome": "TIMEOUT",
+    "sqlite_bytes": 4,
+    "temp_bytes": "50415231"
+   }
+  ],
+  "physically_supplied_body_bytes": 12,
+  "sqlite_total_M-00-head": 12,
+  "scripted_attempt_durations_s": [
+   130.0,
+   130.0,
+   130.0
+  ],
+  "scripted_socket_timeouts": [
+   [
+    119.983,
+    119.983
+   ],
+   [
+    249.974,
+    249.974
+   ],
+   [
+    379.965,
+    379.964
+   ]
+  ]
+ }
+}
