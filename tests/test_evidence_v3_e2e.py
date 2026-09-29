@@ -107,7 +107,12 @@ def test_integrated_phase_p_across_real_process_death(tmp_path: Path) -> None:
             stream.write(f"{os.getpid()} {request.host} {request.range_header}\n")
 
     ep.transport.before_open = record
-    ep.transport.rule = lambda _i, _r, resp: (ep.clock.advance(1.0), resp)[1]
+
+    def tick(_i: int, _r: transport.TransportRequest, resp: FakeResponse) -> FakeResponse:
+        ep.clock.advance(1.0)
+        return resp
+
+    ep.transport.rule = tick
 
     # authorize + approve (offline validation of both artifacts)
     checked = executor.check_authorization(**ep.paths(), harness=ep.harness())
@@ -227,9 +232,12 @@ def _variant(ep: synthetic.SyntheticEpoch, name: str, monkeypatch: pytest.Monkey
     elif name == "memory_breach":
         pass  # configured through the reader in the test body
     elif name == "disk_breach":
-        ep.transport.before_open = lambda i, _r: (
-            (ep.root / "phase_p" / "m" / "stray.bin").write_bytes(b"x") if i == 2 else None
-        )
+
+        def plant(index: int, _r: transport.TransportRequest) -> None:
+            if index == 2:
+                (ep.root / "phase_p" / "m" / "stray.bin").write_bytes(b"x")
+
+        ep.transport.before_open = plant
     elif name == "journal_crash":
         calls = {"n": 0}
         real_fsync = os.fsync

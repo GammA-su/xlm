@@ -266,7 +266,7 @@ def test_minted_objects_are_immutable_and_uncopyable(tmp_path: Path) -> None:
     ep = build(tmp_path)
     minted = plan.validate_plan_bytes(ep.plan_m, arm="M", synthetic=True)
     with pytest.raises(trust.TrustError):
-        minted.arm = "T"  # type: ignore[misc]
+        minted.arm = "T"
     with pytest.raises(trust.TrustError):
         copy.copy(minted)
     with pytest.raises(trust.TrustError):

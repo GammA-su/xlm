@@ -9,6 +9,7 @@ authorization NONE and executable false.
 
 from __future__ import annotations
 
+import hashlib
 import os
 import re
 import subprocess
@@ -16,10 +17,10 @@ import sys
 from pathlib import Path
 
 import pytest
-from evidence_v3_support import REPO, load_json
 
+from evidence_v3_support import REPO, load_json
 from xlm.data.evidence_v2 import canonical
-from xlm.data.evidence_v3 import envidentity, plan
+from xlm.data.evidence_v3 import dry, envidentity, plan
 
 CHILD = REPO / plan.CHILD_DIR
 
@@ -58,13 +59,30 @@ def test_regeneration_is_exact_for_relative_and_absolute_output(tmp_path: Path) 
             assert (out / name).read_bytes() == (CHILD / name).read_bytes(), name
 
 
-def test_children_embed_no_absolute_paths() -> None:
-    pattern = re.compile(rb"[A-Za-z]:[\\/]{1,2}(Project|Users|Windows|tmp)", re.IGNORECASE)
+def test_children_embed_no_builder_or_checkout_paths() -> None:
+    """No checkout, builder-output or temp path is bound into child identity.
+
+    Absolute paths that ARE present come verbatim from frozen ``freeze.json``
+    provenance records (historical G: evidence locations) and the frozen
+    execution root; those are normative and asserted to match the freeze.
+    """
+    checkout = REPO.resolve()
+    forbidden = [
+        checkout.as_posix().encode(),
+        str(checkout).encode(),
+        str(checkout).replace("\\", "\\\\").encode(),
+        b"AppData",
+        b"pytest-of-",
+    ]
+    freeze_raw = (REPO / plan.FREEZE_PATH).read_bytes()
+    drive_path = re.compile(rb"[A-Za-z]:(?:\\\\|/)[^\"]*")
     for path in CHILD.iterdir():
         raw = path.read_bytes()
-        assert not pattern.search(raw.replace(b"G:/Project/xlm-evidence-v3/essential-web", b"")), (
-            path.name
-        )
+        for needle in forbidden:
+            assert needle.lower() not in raw.lower(), (path.name, needle)
+        for match in drive_path.findall(raw):
+            frozen_root = b"G:/Project/xlm-evidence-v3/essential-web"
+            assert match == frozen_root or match in freeze_raw, (path.name, match)
 
 
 def test_manifest_binds_every_child_by_repository_path() -> None:
@@ -78,7 +96,6 @@ def test_manifest_binds_every_child_by_repository_path() -> None:
         raw = (CHILD / name).read_bytes()
         assert cell["path"] == f"{plan.CHILD_DIR}/{name}"
         assert cell["bytes"] == len(raw)
-        import hashlib
 
         assert cell["sha256"] == hashlib.sha256(raw).hexdigest()
         body = canonical.loads_bytes_strict(raw)
@@ -94,7 +111,7 @@ def test_child_code_identity_is_committed_blob_sha256() -> None:
     assert set(code) == set(envidentity.code_paths(REPO))
     assert all(envidentity.is_sha256(v) for v in code.values())
     assert code == envidentity.committed_identity(REPO, commit, list(code))
-    assert producer["code_identity_method"] == "sha256-of-committed-git-blob-at-implementation-commit"
+    assert producer["code_identity_method"] == dry.CODE_IDENTITY_METHOD
     assert set(producer["checkout_representation"].values()) <= {"exact", "crlf"}
 
 

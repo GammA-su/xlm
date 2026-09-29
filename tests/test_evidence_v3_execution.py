@@ -44,7 +44,8 @@ def _stop(ep: synthetic.SyntheticEpoch) -> dict[str, Any]:
 
 
 def _attempt(state: dict[str, Any], index: int) -> dict[str, Any]:
-    return sorted(state["attempts"], key=lambda a: a["attempt_id"])[index]
+    attempts: list[dict[str, Any]] = sorted(state["attempts"], key=lambda a: a["attempt_id"])
+    return attempts[index]
 
 
 def _records(ep: synthetic.SyntheticEpoch, kind: str) -> list[dict[str, Any]]:

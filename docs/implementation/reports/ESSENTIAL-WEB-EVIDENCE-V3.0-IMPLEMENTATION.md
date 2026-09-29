@@ -1,5 +1,15 @@
 # Essential-Web evidence v3.0: offline implementation
 
+> **Superseded execution design (2026-09-29).** A second independent review
+> blocked Phase-P authorization for commit `37c9fcc`. The helper modules
+> described in §7–§15 below (`authz`, `epoch`, `guards`, `ledger`, the old
+> executor/transport) were deleted and replaced by one trusted Phase-P
+> boundary in commit `3dd5ebce0edb7d8e676966c9195b73fb5a1978c9`; the CHILD
+> artifacts were regenerated against it. The current design, exploit
+> reproduction, tests, digests and limits are in
+> [OPUS-REMEDIATION](ESSENTIAL-WEB-EVIDENCE-V3.0-OPUS-REMEDIATION.md). The
+> scientific identity, lineage, caps and dry arithmetic below are unchanged.
+
 2026-09-29. Baseline reviewed commit: `4051e5c4052e5e04da85f14b791a8b406bb9e8b3`.
 Frozen protocol commit: `52569c525a6613faab096d17b60167b4aaa0f214`.
 Remediation commit: see §14.

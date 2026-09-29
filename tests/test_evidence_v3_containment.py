@@ -440,7 +440,7 @@ def test_supervisor_latches_breach_and_refuses_bad_readings() -> None:
         sup.checkpoint()
     bad = memory.Supervisor(
         reader=lambda: True, cap_bytes=100, interval_s=0.5, monotonic_ns=clock.monotonic_ns
-    )  # type: ignore[arg-type,return-value]
+    )
     bad.sample_once()
     with pytest.raises(memory.MemoryGuardError, match="non-integer"):
         bad.checkpoint()
