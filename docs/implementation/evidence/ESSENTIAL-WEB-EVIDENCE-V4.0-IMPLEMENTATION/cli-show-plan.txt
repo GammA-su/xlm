@@ -1,0 +1,43 @@
+plan digest 16b93183b485ced924466028b84a8b4cfd84a65f596dc95c80879e32464f35d3  (protocol essential-web-evidence-v4.0)
+source      EssentialAI/essential-web-v1.0@ce4eccc7e9604667b6d7f32cb6274b8b41f3113d
+root        G:\Project\xlm-evidence-v4\essential-web
+ 0 M-00-head      HEAD_0_3               0-3                    N=290684578 data/crawl=CC-MAIN-2014-15/train-01860-of-02772.parquet
+ 1 M-00-footer    M_FOOTER_AND_TRAILER   290481302-290684577    N=290684578 data/crawl=CC-MAIN-2014-15/train-01860-of-02772.parquet
+ 2 M-01-head      HEAD_0_3               0-3                    N=316724715 data/crawl=CC-MAIN-2015-32/train-01682-of-01920.parquet
+ 3 M-01-footer    M_FOOTER_AND_TRAILER   316525925-316724714    N=316724715 data/crawl=CC-MAIN-2015-32/train-01682-of-01920.parquet
+ 4 M-02-head      HEAD_0_3               0-3                    N=207246017 data/crawl=CC-MAIN-2016-50/train-02156-of-03132.parquet
+ 5 M-02-footer    M_FOOTER_AND_TRAILER   207095918-207246016    N=207246017 data/crawl=CC-MAIN-2016-50/train-02156-of-03132.parquet
+ 6 M-03-head      HEAD_0_3               0-3                    N=285464583 data/crawl=CC-MAIN-2018-05/train-03378-of-03429.parquet
+ 7 M-03-footer    M_FOOTER_AND_TRAILER   285265352-285464582    N=285464583 data/crawl=CC-MAIN-2018-05/train-03378-of-03429.parquet
+ 8 M-04-head      HEAD_0_3               0-3                    N=247450105 data/crawl=CC-MAIN-2019-09/train-00153-of-02577.parquet
+ 9 M-04-footer    M_FOOTER_AND_TRAILER   247286923-247450104    N=247450105 data/crawl=CC-MAIN-2019-09/train-00153-of-02577.parquet
+10 M-05-head      HEAD_0_3               0-3                    N=246957884 data/crawl=CC-MAIN-2021-04/train-00179-of-03315.parquet
+11 M-05-footer    M_FOOTER_AND_TRAILER   246802133-246957883    N=246957884 data/crawl=CC-MAIN-2021-04/train-00179-of-03315.parquet
+12 M-06-head      HEAD_0_3               0-3                    N=247477157 data/crawl=CC-MAIN-2021-49/train-00408-of-02895.parquet
+13 M-06-footer    M_FOOTER_AND_TRAILER   247310910-247477156    N=247477157 data/crawl=CC-MAIN-2021-49/train-00408-of-02895.parquet
+14 M-07-head      HEAD_0_3               0-3                    N=246493238 data/crawl=CC-MAIN-2024-26/train-01127-of-03168.parquet
+15 M-07-footer    M_FOOTER_AND_TRAILER   246331430-246493237    N=246493238 data/crawl=CC-MAIN-2024-26/train-01127-of-03168.parquet
+16 T-00-head      HEAD_0_3               0-3                    N=246305126 data/crawl=CC-MAIN-2014-15/train-01787-of-02772.parquet
+17 T-00-trailer   T_TRAILER              246305118-246305125    N=246305126 data/crawl=CC-MAIN-2014-15/train-01787-of-02772.parquet
+18 T-00-footer    T_FOOTER_FROM_TRAILER  N-8-L..N-9             N=246305126 data/crawl=CC-MAIN-2014-15/train-01787-of-02772.parquet
+19 T-01-head      HEAD_0_3               0-3                    N=319839046 data/crawl=CC-MAIN-2015-32/train-01486-of-01920.parquet
+20 T-01-trailer   T_TRAILER              319839038-319839045    N=319839046 data/crawl=CC-MAIN-2015-32/train-01486-of-01920.parquet
+21 T-01-footer    T_FOOTER_FROM_TRAILER  N-8-L..N-9             N=319839046 data/crawl=CC-MAIN-2015-32/train-01486-of-01920.parquet
+22 T-02-head      HEAD_0_3               0-3                    N=266456951 data/crawl=CC-MAIN-2016-50/train-00454-of-03132.parquet
+23 T-02-trailer   T_TRAILER              266456943-266456950    N=266456951 data/crawl=CC-MAIN-2016-50/train-00454-of-03132.parquet
+24 T-02-footer    T_FOOTER_FROM_TRAILER  N-8-L..N-9             N=266456951 data/crawl=CC-MAIN-2016-50/train-00454-of-03132.parquet
+25 T-03-head      HEAD_0_3               0-3                    N=246789543 data/crawl=CC-MAIN-2018-05/train-01826-of-03429.parquet
+26 T-03-trailer   T_TRAILER              246789535-246789542    N=246789543 data/crawl=CC-MAIN-2018-05/train-01826-of-03429.parquet
+27 T-03-footer    T_FOOTER_FROM_TRAILER  N-8-L..N-9             N=246789543 data/crawl=CC-MAIN-2018-05/train-01826-of-03429.parquet
+28 T-04-head      HEAD_0_3               0-3                    N=324914738 data/crawl=CC-MAIN-2019-09/train-01825-of-02577.parquet
+29 T-04-trailer   T_TRAILER              324914730-324914737    N=324914738 data/crawl=CC-MAIN-2019-09/train-01825-of-02577.parquet
+30 T-04-footer    T_FOOTER_FROM_TRAILER  N-8-L..N-9             N=324914738 data/crawl=CC-MAIN-2019-09/train-01825-of-02577.parquet
+31 T-05-head      HEAD_0_3               0-3                    N=247552812 data/crawl=CC-MAIN-2021-04/train-00297-of-03315.parquet
+32 T-05-trailer   T_TRAILER              247552804-247552811    N=247552812 data/crawl=CC-MAIN-2021-04/train-00297-of-03315.parquet
+33 T-05-footer    T_FOOTER_FROM_TRAILER  N-8-L..N-9             N=247552812 data/crawl=CC-MAIN-2021-04/train-00297-of-03315.parquet
+34 T-06-head      HEAD_0_3               0-3                    N=309043465 data/crawl=CC-MAIN-2021-49/train-02221-of-02895.parquet
+35 T-06-trailer   T_TRAILER              309043457-309043464    N=309043465 data/crawl=CC-MAIN-2021-49/train-02221-of-02895.parquet
+36 T-06-footer    T_FOOTER_FROM_TRAILER  N-8-L..N-9             N=309043465 data/crawl=CC-MAIN-2021-49/train-02221-of-02895.parquet
+37 T-07-head      HEAD_0_3               0-3                    N=245750212 data/crawl=CC-MAIN-2024-26/train-02037-of-03168.parquet
+38 T-07-trailer   T_TRAILER              245750204-245750211    N=245750212 data/crawl=CC-MAIN-2024-26/train-02037-of-03168.parquet
+39 T-07-footer    T_FOOTER_FROM_TRAILER  N-8-L..N-9             N=245750212 data/crawl=CC-MAIN-2024-26/train-02037-of-03168.parquet
