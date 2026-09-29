@@ -1,0 +1,45 @@
+{
+    "kind":  "relocated_workspace_protocol_revalidation",
+    "status":  "VERIFIED_LOCAL_BINDINGS_AND_ARITHMETIC",
+    "exit_status":  0,
+    "date":  "2026-09-28",
+    "repository":  "F:\\Project\\xlm-data-ultrax",
+    "read_only_path_resolution":  "G:/Project -\u003e F:/Project; stored bindings unchanged",
+    "protocol_sha256":  "c191aa49a7e35349e27eb077c7105ead1a15a7edbbb28ef0bc78f157b219fd79",
+    "freeze_digest":  "aa977972883af209afffebae221683658b2637281ae8e72741150750534fd834",
+    "bound_files_verified":  74,
+    "branch_ref_commit":  "4051e5c4052e5e04da85f14b791a8b406bb9e8b3",
+    "git_status_diff":  "NOT RUN: git unavailable; original worktree path stale",
+    "epoch_state":  "NOT_STARTED",
+    "execution_root":  "G:/Project/xlm-evidence-v3/essential-web",
+    "execution_root_availability":  "BLOCKED: original G:/Project absent; no automatic remap",
+    "authorization":  "NONE",
+    "M":  {
+              "data_payload":  11692530,
+              "nominal_requests":  688,
+              "footer_payload":  1398448,
+              "cold_no_retry_requests":  720
+          },
+    "T":  {
+              "data_payload":  179963169,
+              "nominal_requests":  95,
+              "data_ranges":  47,
+              "conservative_data_bound":  213517601,
+              "cold_no_retry_requests":  127
+          },
+    "network_requests":  0,
+    "corpus_text_bytes_read":  0,
+    "tests":  "NOT RUN: no pytest, live source, CUDA or fixture execution",
+    "environment":  {
+                        "powershell":  "5.1.26100.9444",
+                        "uv":  "unavailable on PATH",
+                        "os":  "Microsoft Windows NT 10.0.26200.0",
+                        "python":  "NOT RUN"
+                    },
+    "measurements":  {
+                         "peak_RSS":  "NOT MEASURED",
+                         "elapsed_seconds_before_output":  1.393945,
+                         "peak_disk":  "NOT MEASURED",
+                         "local_bytes_read":  3349034
+                     }
+}
