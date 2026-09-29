@@ -29,6 +29,10 @@ T_COSTMAP_DIGEST = "ed713a0a6fe22cdd396f758182b841b0208f0fe92795b3784f8d71bb6bbf
 POLICY_DIGEST = "f4357f61f434d5105d823266153dac6372e122f12767187631e8796b4899dd07"
 SOURCE_REVISION = "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d"
 SOURCE_REPOSITORY = "EssentialAI/essential-web-v1.0"
+FROZEN_PROTOCOL_COMMIT = "52569c525a6613faab096d17b60167b4aaa0f214"
+# Canonical digest of {"M": ARM_M_CAPS, "T": ARM_T_CAPS} with the standard
+# canonical JSON form; independently recomputed from freeze.json arm_caps.
+RESOURCE_CAPS_DIGEST = "e2485cd438524124c22074d59c48a5ee7dc699f9c9a9ea3f9c11deeef54e0f7b"
 METADATA_SEED = 20260927
 REVIEW_ORDER_SEED = 20260928
 PROJECTION = ("eai_taxonomy", "quality_signals")

@@ -11,13 +11,12 @@ executable stays false.
 from __future__ import annotations
 
 import hashlib
-import platform
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
 from xlm.data.evidence_v2 import canonical
-from xlm.data.evidence_v3 import frozen_v3
+from xlm.data.evidence_v3 import envidentity, frozen_v3
 
 
 class DryError(ValueError):
@@ -25,6 +24,12 @@ class DryError(ValueError):
 
 
 def code_hashes(paths: list[Path], root: Path) -> dict[str, str]:
+    """Working-tree SHA-256 per file (checkout representation, not identity).
+
+    Canonical code identity is Git blob bytes; see
+    :func:`code_blob_hashes`. This helper records the checkout
+    representation alongside it.
+    """
     out: dict[str, str] = {}
     for path in paths:
         raw = path.read_bytes()
@@ -32,20 +37,23 @@ def code_hashes(paths: list[Path], root: Path) -> dict[str, str]:
     return dict(sorted(out.items()))
 
 
+def code_blob_hashes(paths: list[Path], root: Path) -> dict[str, str]:
+    """Canonical code identity: Git blob hashes for committed files."""
+    return envidentity.code_blob_hashes(root, paths)
+
+
 def producer_identity(root: Path, code_paths: list[Path], *, command: str) -> dict[str, Any]:
-    requested = (root / ".python-version").read_text(encoding="utf-8").strip()
-    lock = hashlib.sha256((root / "uv.lock").read_bytes()).hexdigest()
+    environment = envidentity.collect_environment_identity(root)
     return {
         "command": command,
         "protocol_version": frozen_v3.PROTOCOL_VERSION,
         "freeze_digest": frozen_v3.FREEZE_DIGEST,
         "epoch_id": frozen_v3.EPOCH_ID,
+        "code_identity_method": "git-blob-bytes-authoritative",
+        "code_blob_hashes": code_blob_hashes(code_paths, root),
         "code_hashes": code_hashes(code_paths, root),
-        "environment": {
-            "python_version": platform.python_version(),
-            "python_version_file": requested,
-            "uv_lock_sha256": lock,
-        },
+        "environment": environment,
+        "checkout_representation": envidentity.checkout_representation(root, code_paths),
         "checkout_path": root.as_posix(),
     }
 

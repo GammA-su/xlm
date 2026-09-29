@@ -24,6 +24,11 @@ class EpochError(ValueError):
     """Any epoch, authorization, phase, or root violation: refuse."""
 
 
+def _require_nonempty_mapping(name: str, value: Mapping[str, Any]) -> None:
+    if not isinstance(value, Mapping) or not value:
+        raise EpochError(f"genesis {name} must be a non-empty mapping")
+
+
 VALID_PHASES = set(frozen_v3.PHASE_STATES)
 
 # P_AUTHORIZED may only come from NOT_STARTED; D_AUTHORIZED only from sealed P.
@@ -254,6 +259,10 @@ def build_epoch_start(
     return body
 
 
+def _self(body: Mapping[str, Any]) -> str:
+    return canonical.self_digest({k: v for k, v in body.items() if k != "digest"})
+
+
 def publish_epoch_start(root: Path, body: Mapping[str, Any]) -> dict[str, Any]:
     """Crash-safe atomic epoch_start publication; exactly once.
 
@@ -278,3 +287,179 @@ def publish_epoch_start(root: Path, body: Mapping[str, Any]) -> dict[str, Any]:
 def monotonic_ns() -> int:
     """Monotonic clock baseline source (never wall-clock subtraction)."""
     return time.monotonic_ns()
+
+
+GENESIS_CLAIM_NAME = "genesis.claim"
+GENESIS_RECORD_NAME = "epoch_start.json"
+
+
+def utc_timestamp_now() -> str:
+    """UTC start timestamp in strict ISO-8601 Z form (validated on use)."""
+    import datetime
+
+    return datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def claim_genesis_exclusive(root: Path, *, owner: str) -> dict[str, Any]:
+    """Claim exactly-once epoch genesis with a filesystem-exclusive lock file.
+
+    Uses ``O_CREAT | O_EXCL`` so competing genesis attempts resolve to one
+    winner on Windows and POSIX alike: losers raise ``EpochError``. The
+    claim file itself is fsynced before returning. Callers must still
+    refuse when ``epoch_start.json`` already exists (no second genesis
+    after restart).
+    """
+    if not owner:
+        raise EpochError("genesis claim requires an owner")
+    root.mkdir(parents=True, exist_ok=True)
+    claim = root / GENESIS_CLAIM_NAME
+    if (root / GENESIS_RECORD_NAME).exists() or (root / GENESIS_RECORD_NAME).is_symlink():
+        raise EpochError("second genesis refused: epoch_start.json already exists")
+    fd = None
+    try:
+        fd = os.open(str(claim), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+    except FileExistsError as exc:
+        raise EpochError("competing genesis attempt refused: genesis already claimed") from exc
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as stream:
+            stream.write(
+                canonical.canonical_bytes({"epoch_id": frozen_v3.EPOCH_ID, "owner": owner}).decode(
+                    "utf-8"
+                )
+            )
+            stream.flush()
+            os.fsync(stream.fileno())
+        fd = None
+    finally:
+        if fd is not None:
+            os.close(fd)
+    return {"claim": claim.as_posix(), "owner": owner}
+
+
+def build_genesis_record(
+    *,
+    authorization_digest: str,
+    operator_approval_digest: str,
+    protocol_digest: str,
+    freeze_digest: str,
+    implementation_commit: str,
+    child_manifest_digest: str,
+    m_phase_p_plan_digest: str,
+    t_phase_p_plan_digest: str,
+    execution_root: Path,
+    initial_inventory: Mapping[str, Any],
+    initial_zero_ledgers: Mapping[str, Any],
+    code_hashes: Mapping[str, str],
+    environment_identity: Mapping[str, Any],
+    resource_caps: Mapping[str, Any],
+    supervision_identity: Mapping[str, Any],
+    owner: str,
+    utc_timestamp: str,
+    clock_monotonic_ns: int,
+    allow_nonfrozen_root: bool = False,
+) -> dict[str, Any]:
+    """Build the strict durable genesis record binding every required field."""
+    import re as _re
+
+    for name, value in (
+        ("authorization_digest", authorization_digest),
+        ("operator_approval_digest", operator_approval_digest),
+        ("child_manifest_digest", child_manifest_digest),
+        ("m_phase_p_plan_digest", m_phase_p_plan_digest),
+        ("t_phase_p_plan_digest", t_phase_p_plan_digest),
+    ):
+        if not isinstance(value, str) or not _re.match(r"\A[0-9a-f]{64}\Z", value):
+            raise EpochError(f"genesis {name} must be a 64-char hex digest")
+    if protocol_digest != frozen_v3.PROTOCOL_SHA256:
+        raise EpochError("genesis binds the wrong protocol digest")
+    if freeze_digest != frozen_v3.FREEZE_DIGEST:
+        raise EpochError("genesis binds the wrong freeze digest")
+    if not _re.match(r"\A[0-9a-f]{40}\Z", implementation_commit or ""):
+        raise EpochError("genesis implementation_commit must be a 40-char commit SHA")
+    if execution_root.as_posix() != frozen_v3.EXECUTION_ROOT and not allow_nonfrozen_root:
+        raise EpochError("genesis must use the frozen execution root verbatim")
+    if not _re.match(r"\A\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z\Z", utc_timestamp or ""):
+        raise EpochError("genesis utc_timestamp must be ISO-8601 UTC")
+    if not isinstance(clock_monotonic_ns, int) or clock_monotonic_ns < 0:
+        raise EpochError("genesis clock_monotonic_ns must be a non-negative integer")
+    if not owner:
+        raise EpochError("genesis requires an exclusive owner")
+    _require_nonempty_mapping("initial_zero_ledgers", initial_zero_ledgers)
+    _require_nonempty_mapping("code_hashes", code_hashes)
+    _require_nonempty_mapping("environment_identity", environment_identity)
+    _require_nonempty_mapping("resource_caps", resource_caps)
+    _require_nonempty_mapping("supervision_identity", supervision_identity)
+    for arm in ("M", "T"):
+        cell = initial_zero_ledgers.get(arm)
+        if not isinstance(cell, Mapping) or int(cell.get("requests", -1)) != 0:
+            raise EpochError(f"genesis {arm} ledger is not zero-initialized")
+    body: dict[str, Any] = {
+        "kind": "essential_web_evidence_v3_epoch_start",
+        "protocol_version": frozen_v3.PROTOCOL_VERSION,
+        "epoch_id": frozen_v3.EPOCH_ID,
+        "protocol_sha256": protocol_digest,
+        "freeze_digest": freeze_digest,
+        "implementation_commit": implementation_commit,
+        "child_manifest_digest": child_manifest_digest,
+        "m_phase_p_plan_digest": m_phase_p_plan_digest,
+        "t_phase_p_plan_digest": t_phase_p_plan_digest,
+        "execution_root": execution_root.as_posix(),
+        "initial_inventory": json.loads(json.dumps(initial_inventory)),
+        "initial_zero_ledgers": json.loads(json.dumps(initial_zero_ledgers)),
+        "code_hashes": dict(sorted(code_hashes.items())),
+        "environment_identity": dict(environment_identity),
+        "resource_caps": json.loads(json.dumps(resource_caps)),
+        "supervision_identity": dict(supervision_identity),
+        "authorization_digest": authorization_digest,
+        "operator_approval_digest": operator_approval_digest,
+        "owner": owner,
+        "utc_timestamp": utc_timestamp,
+        "clock_monotonic_ns": int(clock_monotonic_ns),
+        "v3_network_events_before_genesis": 0,
+        "epoch_state": "STARTED",
+    }
+    body["digest"] = canonical.self_digest(body)
+    return body
+
+
+def publish_genesis_record(
+    root: Path, body: Mapping[str, Any], *, claim: Mapping[str, Any]
+) -> dict[str, Any]:
+    """Atomically publish the genesis record under an exclusive claim.
+
+    Refuses without a matching claim, when the record already exists, or
+    when the body digest is malformed. No overwrite, no replacement epoch.
+    """
+    if not isinstance(claim, Mapping) or "claim" not in claim:
+        raise EpochError("genesis publication requires an exclusive claim")
+    if Path(str(claim["claim"])).resolve() != (root / GENESIS_CLAIM_NAME).resolve():
+        raise EpochError("genesis claim does not match this root")
+    target = root / GENESIS_RECORD_NAME
+    if target.exists() or target.is_symlink():
+        raise EpochError("second genesis refused: epoch_start.json already exists")
+    if _self(body) != body.get("digest"):
+        raise EpochError("genesis record digest mismatch")
+    payload = canonical.canonical_bytes(dict(body))
+    tmp = target.with_name(target.name + ".tmp")
+    with tmp.open("wb") as stream:
+        stream.write(payload)
+        stream.flush()
+        os.fsync(stream.fileno())
+    os.replace(tmp, target)
+    raw = target.read_bytes()
+    return {"bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest()}
+
+
+def load_genesis_record(root: Path, *, allow_nonfrozen_root: bool = False) -> dict[str, Any]:
+    """Load and validate the durable genesis record (epoch gate)."""
+    target = root / GENESIS_RECORD_NAME
+    body = canonical.loads_bytes_strict(target.read_bytes())
+    if not isinstance(body, dict):
+        raise EpochError("genesis record is not a mapping")
+    if _self(body) != body.get("digest"):
+        raise EpochError("genesis record digest mismatch")
+    if body.get("epoch_id") != frozen_v3.EPOCH_ID:
+        raise EpochError("genesis record binds a different epoch")
+    if body.get("execution_root") != frozen_v3.EXECUTION_ROOT and not allow_nonfrozen_root:
+        raise EpochError("genesis record binds a different root")
+    return body

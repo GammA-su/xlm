@@ -1,13 +1,19 @@
 # Essential-Web evidence v3.0: offline implementation
 
 2026-09-29. Baseline reviewed commit: `4051e5c4052e5e04da85f14b791a8b406bb9e8b3`.
+Frozen protocol commit: `52569c525a6613faab096d17b60167b4aaa0f214`.
+Remediation commit: see §14.
 Current checkout: `F:\Project\xlm-data-ultrax`, branch `data/mix01-ultrax-6b`.
 Frozen execution root remains `G:/Project/xlm-evidence-v3/essential-web` (absent,
 never created or remapped here).
 
-**READY FOR INDEPENDENT PHASE-P AUTHORIZATION REVIEW.** Data authorization
+**READY TO REPEAT PHASE-P AUTHORIZATION REVIEW.** The independent review's
+BLOCKED verdict (enforcement gaps; identity/arithmetic had passed) is
+remediated below and in
+[REMEDIATION](ESSENTIAL-WEB-EVIDENCE-V3.0-REMEDIATION.md). Data authorization
 remains blocked until separately authorized P supplies complete validated plans.
-No live authorization ticket or `epoch_start.json` was generated.
+No live authorization ticket, no operator approval, and no `epoch_start.json`
+were generated.
 
 ## 1. Lineage closure (exact)
 
@@ -96,9 +102,22 @@ Per-arm state machine `NOT_STARTED → P_AUTHORIZED → P_RUNNING →
 P_COMPLETE_SEALED → D_AUTHORIZED → D_RUNNING → D_COMPLETE`
 (with `INCOMPLETE`/`REFUSED` terminals). P authorization never authorizes D.
 D authorization binds the sealed P digest inside the artifact and refuses on
-mismatch. Wrong digests refuse; no boolean CLI bypass (`prepare-epoch`
-requires `--authorization <artifact>` plus `--synthetic-root` for mechanism
-tests; real genesis is refused in this task).
+mismatch.
+
+Remediation (independent review): the permissive digest-only check is replaced
+by the strict 26-field Phase-P schema in `authz.py`
+(kind `essential-web-evidence-v3-phase-p-authorization`, schema 1,
+`phase = "P"`, `reviewer_decision = "APPROVED"` only, exact frozen
+epoch/root/namespace/selection/revision/caps/plan/commit/code bindings,
+stale-review refusal; self-digest excludes only `digest`). Cap-map digest
+`e2485cd4…54e0f7b` is recomputed from `freeze.json` before use. Operator
+approval is a separate explicit artifact bound to the authorization core;
+no `--yes`/`--force`/boolean/env bypass exists. Genesis claims are
+exclusive (`O_CREAT|O_EXCL`) with a fully bound record. The integrated
+`PhasePExecutor` is the only Phase-P path, gating epoch, authorization,
+approval, PhaseGate, inventory, ledgers, memory, disk, runtime, transport
+policy, body accounting, and remote identity. No CLI bypass, no raw
+transport bypass.
 
 ## 8. Fresh root / contamination control
 
@@ -110,125 +129,161 @@ imported (with lineage/role/bytes/SHA), counted against disk. Unknown files
 STOP. `G:` absence after the Windows reinstall is reported as a readiness
 item; no `F:` substitute was created.
 
-## 9. Runtime guard repairs (vs v2.2 substrate)
+## 9. Runtime guard repairs (vs v2.2 substrate, plus Astra remediation)
 
-- `FailClosedSupervisor`: missing owned PIDs without terminated proof and
-  unreadable children are unobservable → refuse. No zero-RSS insertion, no
-  silent skip. Covers child inclusion, dedup, over-cap, exit race.
-- `PhysicalDiskInventory`: reservation BEFORE write, atomic tmp+fsync+replace,
-  release only after verified deletion, per-phase filesystem reconciliation,
-  unknown-file STOP, staged 16 MiB cumulative final gate preserved.
-- `ActiveRuntime`: persisted arm/file totals + monotonic anchors, absolute
-  30 s request bound clipped by remaining file/arm time, crash uncertainty
-  conserved, only sealed quiescent pauses suspend charging. No wall-clock
-  subtraction. `begin_range` inclusive/half-open conventions are pinned in
-  dry schedules; durable pre-I/O issuance is enforced in `V3Ledger.apply`.
+- `FailClosedSupervisor` + authoritative `OwnedProcessRegistry`: exit proof
+  is a registry-issued nonce-bound `ExitProof`; booleans and forged proofs
+  refuse. Missing owned PIDs and unreadable children are unobservable →
+  refuse. `enforce_around` wraps work with pre/post plus periodic monitor
+  hooks; the executor checks memory around every operation (256 MiB cap).
+  Parser/allocation reservations qualified.
+- `PhysicalDiskInventory`: strict in-root containment (`..`, absolute,
+  symlink/reparse, ancestor redirection, alternate volume all refuse);
+  reservation totals must cover actual writes or the write refuses and the
+  object is marked incomplete; atomic replace counts old+temp into a real
+  peak-physical mark from filesystem walks; inventory persists;
+  unknown-file STOP; release after verified deletion; allowlisted,
+  hash-verified, disk-counted imports.
+- `ActiveRuntime`: open-segment elapsed included in every budget query
+  (an over-allowance open segment reports zero); anchors never cleared
+  without charging (refused `end_segment` keeps anchor + elapsed);
+  open-segment state persists and is conserved at restart; pauses require
+  explicit sealed quiescent state and refuse mid-segment; earliest
+  request/file/arm deadline wins. No wall-clock subtraction.
+- `V3Ledger`: fsynced append-only journal with hash-chained lines and
+  RESERVED/ISSUED/RESPONSE_STARTED/COMPLETE/FAILED/REFUSED/CRASH_RESERVED
+  states; reserve-before-I/O; incremental body metering; explicit category
+  persistence; replay-is-truth recovery with truncation/corruption/rollback
+  refusal.
+- `transport.py`: HTTPS/443 only, exact frozen hosts, no IP/loopback/
+  userinfo, every redirect hop revalidated, ≤3 transitions.
 
 ## 10. Dry child artifacts
 
 Under `docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V3.0-CHILD/`
-(79,462 bytes total), each sealed with canonical digest + file SHA-256 +
-producer/code/environment identity, `authorization: NONE`, `executable: false`:
+(195,941 bytes total after remediation), each sealed with canonical digest +
+file SHA-256 + Git-blob code identity + extended environment identity +
+checkout representation, `authorization: NONE`, `executable: false`:
 
 | Artifact | Bytes | SHA-256 (prefix) | Canonical (prefix) |
 |---|---|---|---|
-| arm_m_phase_p_dry.json | 8695 | c5ab00ef2e6b | b15037742b86 |
-| arm_m_phase_d_dry.json | 6850 | 1b6c8ecf3f54 | 62e274d11ea0 |
-| arm_t_phase_p_dry.json | 6804 | 22a8da562707 | 47fb722a20e8 |
-| arm_t_phase_d_dry.json | 8852 | 898ccd832b41 | 516d01150af0 |
-| prospective_budget_m.json | 5637 | 3c81cdea7b8a | 6e167aefa59d |
-| prospective_budget_t.json | 5695 | facc3589a21f | 694e97f43e65 |
-| adopted_planning_evidence.json | 6233 | cf5a82c643df | b670e201b8ee |
-| scientific_identity_adoption.json | 6983 | 8c42e0a14b1b | e7d8a9351084 |
-| memory_guard.json | 4651 | 47ed97fc3608 | c58771a3617b |
-| disk_schedule.json | 4524 | 1e7ee362e3de | 6ad3347b088e |
-| runtime_schedule.json | 4466 | de5c1fc9cbd9 | 2221403e2c56 |
-| epoch_genesis_template.json | 4844 | 306f170d064d | 8b798805f813 |
-| readiness_review.json | 5228 | 15fae63a5421 | f1d8bad2272e |
-| artifact_manifest.json | 8211 | a4b9498def2b | dd394bf4b43a |
+| arm_m_phase_p_dry.json | 16289 | 5cc312c53241 | 48f1c59dae0f |
+| arm_m_phase_d_dry.json | 14444 | 6f7991dbd6be | dea195bfa79e |
+| arm_t_phase_p_dry.json | 14398 | 771bf4da87f3 | bf96b340f0ee |
+| arm_t_phase_d_dry.json | 16446 | 72d01ee57872 | 36c1f49bac58 |
+| prospective_budget_m.json | 13231 | c5788c13ea4d | 4ea7d9010de5 |
+| prospective_budget_t.json | 13289 | a039e8f4de88 | add7a1d98737 |
+| adopted_planning_evidence.json | 13827 | 223e2183e7f3 | 2067b6738a76 |
+| scientific_identity_adoption.json | 14577 | 9da79b29fc0d | 59807ebab0f4 |
+| memory_guard.json | 12245 | fcc1776b5c07 | 09171eed8270 |
+| disk_schedule.json | 12118 | 5b86fb21998d | a6802e3753e3 |
+| runtime_schedule.json | 12060 | 5b79db6ea065 | 7216fa13aaa7 |
+| epoch_genesis_template.json | 12438 | 0bddf221b5f8 | 819887861b0d |
+| readiness_review.json | 14410 | ef78c957fa3f | e26bcbcbaac6 |
+| artifact_manifest.json | 16169 | df753a0164ea | edf50c62bfe2 |
 
-Manifest digest: `dd394bf4b43a252289def6462b82c67186f3302323941d5d0a07409453963945`.
+Manifest digest: `edf50c62bfe2d6247ceb4b3fd44041a6643a47da3e39f544f078dfa7c0111f63`.
+Old committed child artifacts remain in Git history; this remediation
+replaces the current derived set.
 
 ## 11. Readiness vector
 
-M: scientific_identity_ok true, lineage_closed_v2_ok true,
-v3_epoch_semantics_ok true, planning_adoption_ok true, phase_p_schedule_ok
-true, phase_d_schedule_ok true, prospective_requests_ok true,
-prospective_bytes_ok true, decompression_ok true, scan_ok true,
-memory_supervision_ok true, disk_schedule_ok true, runtime_accounting_ok true,
-authorization NONE → **READY_FOR_PHASE_P_AUTHORIZATION_REVIEW**.
-T: identical → **READY_FOR_PHASE_P_AUTHORIZATION_REVIEW**.
+Readiness is derived, not assigned: `readiness.derive_arm_readiness`
+evaluates one evidence check per item (the memory/disk/runtime items run
+live mechanism self-tests during the build; the builder fails closed when
+any arm is not ready). Per-item evidence strings ship in
+`readiness_review.json`.
+
+M and T: all 13 items true, authorization NONE →
+**READY_FOR_PHASE_P_AUTHORIZATION_REVIEW**.
 D authorization is not requested (P has not run/sealed).
 
 ## 12. Tests (offline/synthetic only)
 
-- `tests/test_evidence_v3.py`: 40 passed, 0 skipped. Covers lineage, epoch
-  genesis (ID, NOT_STARTED, auth required, once-only, pristine root,
-  inventory, atomic publish), ledger (zero start, first charge, restart,
-  idempotence, conflict refusal, crash reservation, no v2 import), M P/D,
-  T P/D, request/byte totals, P/D authorization separation, fail-closed
-  memory (child/dedup/unobservable/over-cap/exit race), physical disk
-  (fresh root, unknown refusal, reservation-before-write, atomic temp,
-  verified deletion, reconciliation, staged publication), monotonic runtime
-  (persisted resume, earliest deadline, sealed pause), no-network static guard.
-- Evidence-v2 regressions: `test_evidence_v22` + `test_evidence_v21` 54 passed;
-  `test_evidence_v2_core/footer/text` 109 passed.
+- `tests/test_evidence_v3_remediation.py`: 71 tests covering every Astra
+  finding (strict authn schema, exclusive genesis, journaled ledger,
+  transport policy, body accounting, registry memory, contained disk,
+  conserved runtime, integrated executor, derived readiness, P accounting,
+  env identity). All pass (1 environment-conditional symlink skip where
+  the volume forbids symlinks).
+- `tests/test_evidence_v3.py`: 41 passed. Covers lineage, epoch
+  genesis, ledger basics, M P/D, T P/D, totals, P/D separation,
+  fail-closed memory, physical disk, monotonic runtime, no-network guard.
+- Evidence-v2 regressions: `test_evidence_v22` + `test_evidence_v21`
+  passed; `test_evidence_v2_core/footer/text` passed;
+  `test_prepare_bounds` passed (see final §20 for the exact run).
+- Genesis mechanism tests plus the CLI synthetic genesis probe ran only
+  against disposable temp roots; probe artifacts deleted.
 - `ruff check` clean; `ruff format --check` clean; scoped `mypy`
   (`src/xlm/data/evidence_v3`, `scripts/evidence_v3.py`) clean.
 - Full suite, live-source, and CUDA tests NOT RUN (explicit final gate only).
 
-Environment: Windows 11, Python 3.12.13, torch 2.14.0+cpu, CUDA False,
-pyarrow 25.0.1, psutil 7.2.2. Commands used `uv run --offline --locked
---no-sync --extra cpu --extra eval` with `-n 0` for single-file runs.
-No network, acquisition, corpus text, or push.
+Environment: Windows 11 build 26200, Python 3.12.13, torch 2.14.0+cpu,
+CUDA False, pyarrow 25.0.1, psutil 7.2.2, uv 0.12.19. Commands used
+`uv run --offline --locked --no-sync --extra cpu --extra eval` with
+`-n 0` for single-file runs and `-p no:cacheprovider` (repo cache
+directory is not writable). No network, acquisition, corpus text, or push.
 
-## 13. Requirement ledger
+## 13. Requirement ledger (remediation status)
 
 | Requirement | Status | Evidence |
 |---|---|---|
 | v3 protocol/freeze/epoch/lineage verification | VERIFIED | `verify-v3` exit 0; digests match |
 | v2 parent graph + terminal BLOCKED preserved | VERIFIED | 39 history + 29 code bindings; terminal digest match |
-| Scientific identity adoption (M/T/policy/namespace) | VERIFIED | Byte bindings; 40 v3 tests |
+| Scientific identity adoption (M/T/policy/namespace) | VERIFIED | Byte bindings; frozen-identity tests |
 | Planning-observation adoption (no v3 spend import) | VERIFIED | Role flags; ledger refusal test |
-| Epoch genesis mechanism (one-shot, auth-bound, atomic) | IMPLEMENTED | `epoch.py`; synthetic test only |
-| V3 ledger (zero, durable, idempotent, crash-conserving) | IMPLEMENTED | `ledger.py`; focused tests |
-| M phase-P dry schedule (8 files, 0-3 + footer, ≤80) | VERIFIED | 16/24/40; cold 72 ≤ 80 |
+| Strict Phase-P authorization schema | IMPLEMENTED | `authz.py`; 11 schema tests; `check-auth` CLI |
+| Distinct operator approval binding | IMPLEMENTED | `validate_operator_approval`; no bypass flags |
+| Exclusive exactly-once genesis | IMPLEMENTED | `O_CREAT|O_EXCL` claim; concurrency test; synthetic only |
+| Journaled ledger (reserve-before-I/O, crash-conserving) | IMPLEMENTED | `ledger.py`; 7 durability tests |
+| Integrated Phase-P executor (only path) | IMPLEMENTED | `executor.py`; 7 integration tests; never run live |
+| Strict transport policy (exact hosts, 443, ≤3 hops) | IMPLEMENTED | `transport.py`; 8 policy tests |
+| Full body accounting (all responses metered) | IMPLEMENTED | Meter-while-reading; 4 body tests |
+| Exact remote identity (206/range/ETag/revision/PAR1) | IMPLEMENTED | `verify_remote_identity`; STOP semantics |
+| Enforcing memory supervision + exit-proof registry | IMPLEMENTED | `OwnedProcessRegistry`; 6 tests |
+| Contained disk inventory + real peak accounting | IMPLEMENTED | `_resolve_inside`; 8 disk tests |
+| Conserved monotonic runtime + sealed pauses | IMPLEMENTED | Open-segment budgets; 5 runtime tests |
+| Derived readiness (no hard-coded booleans) | IMPLEMENTED | `readiness.py`; builder fails closed |
+| Git-blob code identity + extended environment | IMPLEMENTED | `envidentity.py`; blob/exe/uv/lib/OS/arch |
+| M phase-P accounting (16/24/40; 32 D; 8 spare) | VERIFIED | 1,398,416 B; 32,156,016 left; 3,991,024 min |
+| T phase-P accounting (24/32/48; 32 D; 80 combined) | VERIFIED | No fabricated headroom before L |
 | M phase-D dry schedule (648 chunks, 688/720) | VERIFIED | Reproduced arithmetic |
-| T phase-P dry schedule (24/32/48, no text) | VERIFIED | Pattern + reserve checks |
 | T phase-D dry schedule (47 ranges, 95/127) | VERIFIED | Corrected spans; no old schedule |
-| Phase separation + digest-bound authorization | IMPLEMENTED | `PhaseGate`; P≠D tests |
-| Fail-closed memory supervision | IMPLEMENTED | `FailClosedSupervisor`; 5 tests |
-| Physical disk inventory + reconciliation | IMPLEMENTED | `PhysicalDiskInventory`; 5 tests |
-| Monotonic runtime accounting + sealed pauses | IMPLEMENTED | `ActiveRuntime`; 3 tests |
-| Fresh-root enforcement (no remap/creation) | VERIFIED | Absent; readiness item |
-| DRY child artifacts + manifest | IMPLEMENTED | 14 files, manifest digest above |
+| Fresh-root enforcement (no remap/creation) | VERIFIED | G: volume present; root absent; no F: substitute |
+| DRY child artifacts + manifest | IMPLEMENTED | 14 files; manifest `edf50c62…0111f63` |
 | v2.x acquisition lineage | BLOCKED | Permanently closed (provenance only) |
 | Real epoch genesis / network / acquisition / text | NOT RUN | Epoch NOT_STARTED, root absent |
 | Training/tokenizer/admission/promotion/push | OUT OF SCOPE | Not undertaken |
 
-## 14. Files changed
+## 14. Files changed (remediation)
 
-- `src/xlm/data/evidence_v3/__init__.py` (new)
-- `src/xlm/data/evidence_v3/frozen_v3.py` (new)
-- `src/xlm/data/evidence_v3/epoch.py` (new)
-- `src/xlm/data/evidence_v3/ledger.py` (new)
-- `src/xlm/data/evidence_v3/schedules.py` (new)
-- `src/xlm/data/evidence_v3/guards.py` (new)
-- `src/xlm/data/evidence_v3/dry.py` (new)
-- `scripts/evidence_v3.py` (new)
-- `tests/test_evidence_v3.py` (new, 40 tests)
-- `docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V3.0-CHILD/` (14 new dry artifacts)
-- `docs/implementation/reports/ESSENTIAL-WEB-EVIDENCE-V3.0-IMPLEMENTATION.md` (this report)
-- `docs/implementation/STATUS.md` (index entry prepended)
+- `src/xlm/data/evidence_v3/authz.py` (new: strict Phase-P schema + operator approval)
+- `src/xlm/data/evidence_v3/transport.py` (new: exact-host policy)
+- `src/xlm/data/evidence_v3/executor.py` (new: integrated Phase-P path)
+- `src/xlm/data/evidence_v3/readiness.py` (new: derived readiness)
+- `src/xlm/data/evidence_v3/envidentity.py` (new: blob/env identity)
+- `src/xlm/data/evidence_v3/epoch.py` (exclusive claim + strict genesis record)
+- `src/xlm/data/evidence_v3/ledger.py` (journal durability rewrite)
+- `src/xlm/data/evidence_v3/guards.py` (registry/containment/conservation rewrite)
+- `src/xlm/data/evidence_v3/schedules.py` (P-capacity accounting detail)
+- `src/xlm/data/evidence_v3/frozen_v3.py` (cap-map digest + protocol commit constants)
+- `src/xlm/data/evidence_v3/dry.py` (blob identity + extended environment)
+- `scripts/evidence_v3.py` (derived readiness, `check-auth`, strict synthetic genesis)
+- `tests/test_evidence_v3_remediation.py` (new, 71 adversarial tests)
+- `tests/test_evidence_v3.py` (sealed-pause + module-list updates)
+- `docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V3.0-CHILD/` (regenerated 14 artifacts)
+- `docs/implementation/reports/ESSENTIAL-WEB-EVIDENCE-V3.0-REMEDIATION.md` (new, this task)
+- `docs/implementation/reports/ESSENTIAL-WEB-EVIDENCE-V3.0-IMPLEMENTATION.md` (updated §§7,9–14)
 
 Frozen protocol, review, freeze, epoch definition, lineage closure, and all
 v2 artifacts are untouched. User/Astra working-tree changes preserved.
 
 ## 15. Remaining blockers / unknowns
 
-1. Independent phase-P authorization review (no ticket issued here).
-2. Frozen execution root `G:/Project/...` is absent on this machine; activation
-   requires resolving that location explicitly (no remap performed).
+1. Repeat Phase-P authorization review (no ticket or operator approval issued here).
+2. G: volume is present (999.7 GB free) but `G:\Project` and the execution
+   root are absent; future genesis must verify the intended volume,
+   absent/pristine root, ancestor containment, and initial inventory.
 3. T footer actual lengths L unknown until P runs (bounded by 2 MiB/file reserve).
 4. M data offsets unresolved until authorized P seals them.
 5. No live-source compatibility claim (synthetic fixtures only).
@@ -236,8 +291,10 @@ v2 artifacts are untouched. User/Astra working-tree changes preserved.
 
 ## 16. Exact next operator action
 
-Run the independent phase-P authorization review against the frozen protocol,
-freeze, dry child plans, and this implementation report. Do NOT create
-`epoch_start.json`, do NOT run `prepare-epoch` in real mode, do NOT issue any
-data/text acquisition command. The only in-scope commands were the offline
-`verify-v3` and `build-v3-dry-plans` invocations already executed.
+Repeat the Phase-P authorization review against the frozen protocol, freeze,
+regenerated dry child plans, this report, and the remediation record. Do NOT
+create `epoch_start.json` or the G: execution root, do NOT run
+`prepare-epoch` in real mode, do NOT issue any data/text acquisition command.
+The only in-scope commands were the offline `verify-v3`, `build-v3-dry-plans`,
+`check-auth` (schema only, no ticket), and synthetic-temp `prepare-epoch`
+probes already executed and cleaned.

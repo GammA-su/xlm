@@ -284,3 +284,71 @@ def check_prospective_totals(
     _require(t_d["nominal_physical_total"] == 95, "T dry nominal mismatch")
     _require(t_d["cold_chain_max_no_retry_total"] == 127, "T dry cold mismatch")
     _ = (m_p, t_p)
+
+
+# --------------------------------------------------------------------------
+# Phase-P capacity detail (Astra correction).
+# --------------------------------------------------------------------------
+
+M_P_LOGICAL = 16
+M_P_OBSERVED_PHYSICAL = 24
+M_P_COLD_NO_RETRY = 40
+M_D_IDENTITY_ALLOCATION = 32
+M_CONTROLS_TOTAL = 72
+M_FOOTER_ARM_CAP = 80
+# With 32 requests reserved for future D identity checks, the P arm
+# capacity is 48; cold P (40) leaves only 8 additional P requests while
+# preserving the future D control allocation.
+M_P_ARM_CAPACITY = 48
+M_P_SPARE_WHILE_PRESERVING_D = 8
+
+T_P_LOGICAL = 24
+T_P_OBSERVED_PHYSICAL = 32
+T_P_COLD_NO_RETRY = 48
+T_D_IDENTITY_ALLOCATION = 32
+T_CONTROLS_COMBINED = 80
+
+
+def m_phase_p_accounting(m_files: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    """Exact recomputed M Phase-P byte/request accounting."""
+    payloads = {str(e["file"]): int(e["phase_P_payload_bytes"]) for e in m_files}
+    _require(len(payloads) == 8, "M Phase-P accounting needs 8 files")
+    total = sum(payloads.values())
+    _require(total == 1398416, f"M Phase-P payload must be 1398416, got {total}")
+    remaining = 33554432 - total
+    _require(remaining == 32156016, "M Phase-P footer remaining mismatch")
+    per_file = {name: 4194304 - value for name, value in payloads.items()}
+    _require(min(per_file.values()) == 3991024, "minimum per-file footer headroom mismatch")
+    _require(M_P_COLD_NO_RETRY + M_D_IDENTITY_ALLOCATION == M_CONTROLS_TOTAL, "M control total")
+    _require(M_CONTROLS_TOTAL <= M_FOOTER_ARM_CAP, "M controls exceed footer arm cap")
+    _require(
+        M_P_ARM_CAPACITY - M_P_COLD_NO_RETRY == M_P_SPARE_WHILE_PRESERVING_D,
+        "M P spare capacity mismatch",
+    )
+    return {
+        "P_logical": M_P_LOGICAL,
+        "P_observed_physical": M_P_OBSERVED_PHYSICAL,
+        "P_cold_no_retry": M_P_COLD_NO_RETRY,
+        "D_identity_allocation": M_D_IDENTITY_ALLOCATION,
+        "controls_total": M_CONTROLS_TOTAL,
+        "footer_arm_cap": M_FOOTER_ARM_CAP,
+        "P_arm_capacity_preserving_D": M_P_ARM_CAPACITY,
+        "P_spare_preserving_D": M_P_SPARE_WHILE_PRESERVING_D,
+        "P_payload_bytes": total,
+        "footer_remaining_before_redirect_error_retry": remaining,
+        "per_file_footer_headroom": dict(sorted(per_file.items())),
+        "minimum_per_file_footer_headroom": min(per_file.values()),
+    }
+
+
+def t_phase_p_accounting() -> dict[str, Any]:
+    """T Phase-P request accounting (byte headroom waits on measured L)."""
+    _require(T_P_COLD_NO_RETRY + T_D_IDENTITY_ALLOCATION == T_CONTROLS_COMBINED, "T control total")
+    return {
+        "P_logical": T_P_LOGICAL,
+        "P_observed_physical": T_P_OBSERVED_PHYSICAL,
+        "P_cold_no_retry": T_P_COLD_NO_RETRY,
+        "D_identity_allocation": T_D_IDENTITY_ALLOCATION,
+        "controls_combined": T_CONTROLS_COMBINED,
+        "footer_headroom": "not fabricated before L is measured in P",
+    }

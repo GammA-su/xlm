@@ -592,7 +592,7 @@ def test_memory_unobservable_pid_fails_closed() -> None:
         pid = 999
 
     supervisor.register_child(Child())
-    with pytest.raises(guards.GuardError, match="absent without terminated proof"):
+    with pytest.raises(guards.GuardError, match="authoritative release"):
         supervisor.check(context="t")
     # Explicit terminated proof removes the PID; then the check passes.
     supervisor.release_child(999, terminated=True)
@@ -638,7 +638,7 @@ def test_memory_process_exit_race() -> None:
 
     supervisor.register_child(Child())
     assert supervisor.check(context="first")["total_rss"] == 30
-    with pytest.raises(guards.GuardError, match="absent without terminated proof"):
+    with pytest.raises(guards.GuardError, match="authoritative release"):
         supervisor.check(context="second")
 
 
@@ -726,7 +726,7 @@ class _FakeClock:
 def test_runtime_monotonic_active_time_and_resume() -> None:
     clock = _FakeClock()
     runtime = guards.ActiveRuntime(clock=clock)
-    runtime.start_segment()
+    runtime.start_segment(file="f.parquet")
     clock.advance(2.5)
     charged = runtime.end_segment(file="f.parquet")
     assert charged == pytest.approx(2.5)
@@ -734,7 +734,7 @@ def test_runtime_monotonic_active_time_and_resume() -> None:
     assert state["arm_elapsed"] == pytest.approx(2.5)
     restored = guards.ActiveRuntime.load(state, clock=clock)
     assert restored.state()["arm_elapsed"] == pytest.approx(2.5)
-    restored.start_segment()
+    restored.start_segment(file="f.parquet")
     clock.advance(1.0)
     restored.end_segment(file="f.parquet")
     assert restored.state()["arm_elapsed"] == pytest.approx(3.5)
@@ -758,12 +758,14 @@ def test_runtime_earliest_deadline_wins() -> None:
 def test_runtime_sealed_pause_semantics() -> None:
     clock = _FakeClock()
     runtime = guards.ActiveRuntime(clock=clock)
-    runtime.start_segment()
+    runtime.start_segment(file="f.parquet")
     with pytest.raises(guards.GuardError, match="open active segment"):
-        runtime.seal_pause()
+        runtime.seal_pause(sealed_quiescent=True)
+    with pytest.raises(guards.GuardError, match="sealed quiescent"):
+        runtime.seal_pause(sealed_quiescent=False)
     clock.advance(1.0)
     runtime.end_segment(file="f.parquet")
-    runtime.seal_pause()
+    runtime.seal_pause(sealed_quiescent=True)
     with pytest.raises(guards.GuardError, match="while paused"):
         runtime.charge(1.0, file="f.parquet")
     runtime.resume()
@@ -773,7 +775,18 @@ def test_runtime_sealed_pause_semantics() -> None:
 
 def test_no_live_network_or_text_paths() -> None:
     # Static guard: v3 modules must not import sockets/requests or read text.
-    for module in ("epoch.py", "ledger.py", "schedules.py", "guards.py", "dry.py"):
+    for module in (
+        "epoch.py",
+        "ledger.py",
+        "schedules.py",
+        "guards.py",
+        "dry.py",
+        "authz.py",
+        "transport.py",
+        "executor.py",
+        "readiness.py",
+        "envidentity.py",
+    ):
         raw = (ROOT / "src/xlm/data/evidence_v3" / module).read_bytes().decode("utf-8")
         assert "socket" not in raw
         assert "requests.get" not in raw
