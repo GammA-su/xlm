@@ -1,0 +1,3 @@
+usage: evidence_v41_phase_d.py [-h]
+                               {verify,show-plan,phase-d-status,phase-d} ...
+evidence_v41_phase_d.py: error: unrecognized arguments: --url https://evil.example/

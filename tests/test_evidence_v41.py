@@ -607,7 +607,9 @@ def test_verify_reproduces_every_v41_binding() -> None:
     assert summary["v4_0_live_status"] == "STOPPED_POLICY_REFUSED"
     assert summary["allowed_hosts"] == list(EXACT_HOSTS)
     assert (summary["M_logical_operations"], summary["T_logical_operations"]) == (16, 24)
-    assert summary["execution_root_exists"] is False
+    # The v4.1 root exists after the reviewed live Phase-P run (ed8efcf); verify must
+    # report its existence exactly, never assume either state.
+    assert summary["execution_root_exists"] is Path(v41.EXECUTION_ROOT).exists()
     protocol = (REPO / v41.PROTOCOL_PATH).read_bytes()
     assert hashlib.sha256(protocol).hexdigest() == v41.PROTOCOL_SHA256
 
@@ -638,7 +640,9 @@ def test_v41_root_is_fresh_and_distinct() -> None:
     assert phase_p.live_root_v41() != phase_p.live_root()
     assert v41.EXECUTION_ROOT in phase_p.FROZEN_ROOTS
     assert frozen.EXECUTION_ROOT in phase_p.FROZEN_ROOTS
-    assert not Path(v41.EXECUTION_ROOT).exists()
+    # Fresh at its live run; it now holds the reviewed COMPLETE Phase-P evidence (ed8efcf)
+    # and stays a frozen root that offline runs refuse (see the next test).
+    assert v41.EXECUTION_ROOT not in (frozen.EXECUTION_ROOT, phase_p.V3_ROOT)
 
 
 def test_offline_runs_refuse_the_v41_root_and_the_real_v41_plan(fx41: Fixture) -> None:

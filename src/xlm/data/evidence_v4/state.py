@@ -9,6 +9,7 @@ it describes is issued.
 
 from __future__ import annotations
 
+import re
 import sqlite3
 from collections.abc import Iterator
 from contextlib import contextmanager
@@ -139,20 +140,26 @@ class RunRow:
     updated_utc: str
 
 
-def temp_name(op_id: str, attempt_id: int) -> str:
-    if not frozen.OP_ID.match(op_id) or type(attempt_id) is not int or attempt_id < 1:
+def temp_name(op_id: str, attempt_id: int, pattern: re.Pattern[str] = frozen.OP_ID) -> str:
+    if not pattern.match(op_id) or type(attempt_id) is not int or attempt_id < 1:
         raise StateError("temp names derive only from plan operation IDs and attempt IDs")
     return f"tmp/{op_id}.a{attempt_id}.part"
 
 
-def payload_name(op_id: str) -> str:
-    if not frozen.OP_ID.match(op_id):
+def payload_name(op_id: str, pattern: re.Pattern[str] = frozen.OP_ID) -> str:
+    if not pattern.match(op_id):
         raise StateError("payload names derive only from plan operation IDs")
     return f"payload/{op_id}.bin"
 
 
 class Store:
-    """Exclusive read-write connection to one root's ``state.sqlite``."""
+    """Exclusive read-write connection to one root's ``state.sqlite``.
+
+    ``op_id_pattern`` is the operation-ID grammar from which temp and payload
+    names derive (Phase P by default; the Phase-D store narrows it to its own).
+    """
+
+    op_id_pattern: re.Pattern[str] = frozen.OP_ID
 
     def __init__(self, path: Path, *, create: bool) -> None:
         if create == path.exists():
@@ -291,7 +298,7 @@ class Store:
                 ),
             )
             attempt_id = int(cursor.lastrowid or 0)
-            name = temp_name(op.op_id, attempt_id)
+            name = temp_name(op.op_id, attempt_id, self.op_id_pattern)
             db.execute("UPDATE attempts SET temp_path = ? WHERE attempt_id = ?", (name, attempt_id))
         return attempt_id, name
 
@@ -336,7 +343,7 @@ class Store:
         derived: tuple[str, int, int] | None,
     ) -> str:
         """One transaction: attempt SUCCESS, output row, operation COMPLETE (+ derived range)."""
-        retained = payload_name(op.op_id)
+        retained = payload_name(op.op_id, self.op_id_pattern)
         with self._tx() as db:
             updated = db.execute(
                 "UPDATE attempts SET outcome = ?, http_status = 206, response_bytes = ?, "

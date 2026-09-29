@@ -111,6 +111,8 @@ def _same_or_inside(path: Path, fixed: str) -> bool:
 
 
 class _Engine:
+    store_class: type[state.Store] = state.Store
+
     def __init__(
         self,
         plan: frozen.Plan,
@@ -187,7 +189,7 @@ class _Engine:
         else:
             create = True
         try:
-            store = state.Store(db, create=create)
+            store = self.store_class(db, create=create)
         except state.StateError as exc:
             raise RefusedError(str(exc)) from exc
         try:
@@ -508,7 +510,7 @@ class _Engine:
             attempt = attempts[output["attempt_id"]]
             if (
                 attempt["op_id"] != op_id
-                or output["retained_file"] != state.payload_name(op_id)
+                or output["retained_file"] != state.payload_name(op_id, self.store.op_id_pattern)
                 or (attempt["response_bytes"], attempt["response_sha256"])
                 != (output["bytes"], output["sha256"])
             ):
@@ -548,7 +550,9 @@ class _Engine:
 
     def _check_temp_name(self, attempt: dict[str, Any]) -> None:
         try:
-            expected = state.temp_name(attempt["op_id"], attempt["attempt_id"])
+            expected = state.temp_name(
+                attempt["op_id"], attempt["attempt_id"], self.store.op_id_pattern
+            )
         except state.StateError as exc:
             raise StopError(str(exc)) from exc
         if attempt["temp_path"] != expected:
