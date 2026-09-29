@@ -589,22 +589,45 @@ def test_injected_or_altered_operations_are_refused(
     assert transport.calls == []
 
 
+def _frozen_root_descriptor(path: Path) -> dict[str, Any]:
+    """Metadata/tree snapshot of a frozen root; reads stat only, never payloads."""
+    if not path.exists() and not path.is_symlink():
+        return {"exists": False}
+    entries: dict[str, dict[str, Any]] = {}
+    for child in sorted(path.rglob("*")):
+        try:
+            probe = child.stat(follow_symlinks=False)
+        except OSError:
+            return {"exists": True, "unreadable": child.relative_to(path).as_posix()}
+        entries[child.relative_to(path).as_posix()] = {
+            "size": probe.st_size,
+            "mtime_ns": probe.st_mtime_ns,
+            "is_symlink": child.is_symlink(),
+            "is_dir": child.is_dir(),
+        }
+    return {"exists": True, "entries": entries}
+
+
 def test_offline_entry_refuses_real_plan_live_transport_and_frozen_roots(
     fx: Fixture, root: Path, tmp_path: Path
 ) -> None:
     real = frozen.load_committed_plan()
+    before = {fixed: _frozen_root_descriptor(Path(fixed)) for fixed in phase_p.FROZEN_ROOTS}
     with pytest.raises(phase_p.RefusedError):
         phase_p.run_offline(root, plan=real, transport=SyntheticTransport(fx))
     with pytest.raises(phase_p.RefusedError):
         phase_p.run_offline(root, plan=fx.plan, transport=tp.LiveHttpsTransport())
-    for frozen_root in (frozen.EXECUTION_ROOT, phase_p.V3_ROOT):
+    for frozen_root in phase_p.FROZEN_ROOTS:
         with pytest.raises(phase_p.RefusedError):
             phase_p.run_offline(Path(frozen_root), plan=fx.plan, transport=SyntheticTransport(fx))
         with pytest.raises(phase_p.RefusedError):
             phase_p.run_offline(
                 Path(frozen_root) / "sub", plan=fx.plan, transport=SyntheticTransport(fx)
             )
-    assert not root.exists() and not Path(frozen.EXECUTION_ROOT).exists()
+    assert not root.exists()
+    for frozen_root in phase_p.FROZEN_ROOTS:
+        after = _frozen_root_descriptor(Path(frozen_root))
+        assert after == before[frozen_root]
 
 
 # -- CAPS ----------------------------------------------------------------
