@@ -352,3 +352,243 @@ def t_phase_p_accounting() -> dict[str, Any]:
         "controls_combined": T_CONTROLS_COMBINED,
         "footer_headroom": "not fabricated before L is measured in P",
     }
+
+
+# --------------------------------------------------------------------------
+# Executable Phase-P plan payloads with explicit future-D reservations.
+# --------------------------------------------------------------------------
+
+PLAN_SCHEMA = "essential-web-evidence-v3-phase-p-plan"
+PLAN_SCHEMA_VERSION = 2
+
+# Implementation reservation policy (not a cap change): every physical
+# request holds a body reservation of max(expected payload, 64 KiB) + 1
+# bytes. 64 KiB bounds any redirect/error body; the +1 byte lets the
+# executor detect an over-long body without reading past its reservation.
+NON_PAYLOAD_BODY_BYTES = 65536
+
+
+def body_reservation(expected_payload: int) -> int:
+    _require(type(expected_payload) is int and expected_payload > 0, "payload must be > 0")
+    return max(expected_payload, NON_PAYLOAD_BODY_BYTES) + 1
+
+
+# Future Phase-D identity revalidation per file: GET 0-3 with <=3 redirect
+# follows (frozen D_footer_cold_chain_max = 4 physical requests).
+D_IDENTITY_PHYSICAL_PER_FILE = 4
+D_IDENTITY_BODY_BYTES_PER_FILE = D_IDENTITY_PHYSICAL_PER_FILE * (NON_PAYLOAD_BODY_BYTES + 1)
+
+M_OPS = ("IDENTITY_HEAD_0_3", "M_FOOTER_AND_TRAILER")
+T_OPS = ("IDENTITY_HEAD_0_3", "T_TRAILER", "T_FOOTER_FROM_TRAILER")
+
+
+def m_file_d_reserve() -> dict[str, int]:
+    return {
+        "requests": D_IDENTITY_PHYSICAL_PER_FILE,
+        "footer_bytes": D_IDENTITY_BODY_BYTES_PER_FILE,
+    }
+
+
+def t_file_d_reserve(data_range_count: int, data_transfer_upper: int) -> dict[str, int]:
+    _require(type(data_range_count) is int and data_range_count >= 0, "T range count invalid")
+    _require(type(data_transfer_upper) is int and data_transfer_upper >= 0, "T upper invalid")
+    return {
+        "requests": D_IDENTITY_PHYSICAL_PER_FILE + data_range_count,
+        "footer_bytes": D_IDENTITY_BODY_BYTES_PER_FILE,
+        "transfer_bytes": D_IDENTITY_BODY_BYTES_PER_FILE + data_transfer_upper,
+    }
+
+
+def phase_p_ceilings(arm: str, d_reserves: Sequence[Mapping[str, int]]) -> dict[str, Any]:
+    """P-phase ceilings = frozen caps minus the retained future-D allocation.
+
+    M: footer/control requests 16/file, 80/arm with 4/file (32/arm) kept
+    for D identity -> P <= 12/file, 48/arm (40 cold + 8 spare). T has no
+    separate footer request cap: P must leave D identity (4/file) plus the
+    frozen D data ranges inside 100/file and 800/arm. Unused reservation is
+    never reallocated automatically.
+    """
+    if arm == "M":
+        caps = frozen_v3.ARM_M_CAPS
+        per_file = [
+            {
+                "requests": caps["footer_requests_per_file"] - r["requests"],
+                "footer_bytes": caps["footer_bytes_per_file"] - r["footer_bytes"],
+            }
+            for r in d_reserves
+        ]
+        arm_ceiling = {
+            "requests": caps["footer_requests_total"] - sum(r["requests"] for r in d_reserves),
+            "footer_bytes": caps["footer_bytes_total"] - sum(r["footer_bytes"] for r in d_reserves),
+        }
+        file_seconds = caps["time_seconds_plan"]
+    elif arm == "T":
+        caps = frozen_v3.ARM_T_CAPS
+        per_file = [
+            {
+                "requests": caps["requests_per_file_max"] - r["requests"],
+                "footer_bytes": caps["footer_bytes_per_file_max"] - r["footer_bytes"],
+                "transfer_bytes": caps["transfer_bytes_per_file_max"] - r["transfer_bytes"],
+            }
+            for r in d_reserves
+        ]
+        arm_ceiling = {
+            "requests": caps["requests_arm_max"] - sum(r["requests"] for r in d_reserves),
+            "footer_bytes": caps["footer_bytes_total_max"]
+            - sum(r["footer_bytes"] for r in d_reserves),
+            "transfer_bytes": caps["transfer_bytes_arm_max"]
+            - sum(r["transfer_bytes"] for r in d_reserves),
+        }
+        file_seconds = caps["time_seconds_file"]
+    else:
+        raise ScheduleError(f"unknown arm {arm!r}")
+    for cell in [*per_file, arm_ceiling]:
+        _require(all(v > 0 for v in cell.values()), "future-D reservation leaves no P capacity")
+    return {
+        "per_file": per_file,
+        "arm": arm_ceiling,
+        "response_body_bytes_max": caps["response_body_bytes_max"],
+        "time_seconds": {
+            "request": caps["time_seconds_request"],
+            "file": file_seconds,
+            "arm": caps["time_seconds_arm"],
+        },
+        "non_payload_body_bytes": NON_PAYLOAD_BODY_BYTES,
+    }
+
+
+def _strong_etag(value: Any, name: str) -> str:
+    _require(
+        isinstance(value, str)
+        and len(value) >= 2
+        and value.startswith('"')
+        and value.endswith('"')
+        and '"' not in value[1:-1],
+        f"strong ETag required for {name}",
+    )
+    return str(value)
+
+
+def _source() -> dict[str, str]:
+    return {
+        "host": frozen_v3.CANONICAL_HOST,
+        "repository_type": "datasets",
+        "repository": frozen_v3.SOURCE_REPOSITORY,
+        "revision": frozen_v3.SOURCE_REVISION,
+    }
+
+
+def m_phase_p_plan_payload(m_files: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    """Executable M Phase-P plan (frozen crawl order, exact ranges)."""
+    base = build_m_phase_p(m_files)
+    files: list[dict[str, Any]] = []
+    reserves: list[dict[str, int]] = []
+    for ordinal, entry in enumerate(m_files):
+        name = str(entry["file"])
+        length = int(entry["remote_length"])
+        start, stop = (int(v) for v in entry["phase_P_ranges_inclusive"][1])
+        reserve = m_file_d_reserve()
+        reserves.append(reserve)
+        files.append(
+            {
+                "ordinal": ordinal,
+                "file": name,
+                "remote_length": length,
+                "strong_etag": _strong_etag(entry["etag"], name),
+                "operations": [
+                    {"op": "IDENTITY_HEAD_0_3", "range": [0, 3]},
+                    {
+                        "op": "M_FOOTER_AND_TRAILER",
+                        "range": [start, stop],
+                        "expected_footer_length": length - 8 - start,
+                    },
+                ],
+                "bindings": {
+                    "window": [int(v) for v in entry["window"]],
+                    "projection": list(frozen_v3.PROJECTION),
+                    "data_chunk_count": int(entry["data_chunk_count"]),
+                    "data_payload_bytes": int(entry["data_payload_bytes"]),
+                    "data_uncompressed_bytes": int(entry["data_uncompressed_bytes"]),
+                },
+                "d_reserve": reserve,
+            }
+        )
+    accounting = m_phase_p_accounting(m_files)
+    return {
+        "plan_schema": PLAN_SCHEMA,
+        "plan_schema_version": PLAN_SCHEMA_VERSION,
+        "arm": "M",
+        "phase": "P",
+        "synthetic": False,
+        "source": _source(),
+        "files": files,
+        "ceilings": phase_p_ceilings("M", reserves),
+        "arithmetic": {
+            "P_logical_arm": base["P_logical_arm"],
+            "P_nominal_physical_arm": base["P_nominal_physical_arm"],
+            "P_cold_chain_max_no_retry_arm": base["P_cold_chain_max_no_retry_arm"],
+            "P_payload_bytes_arm": base["P_payload_bytes_arm"],
+            "D_identity_allocation_requests": accounting["D_identity_allocation"],
+            "P_arm_capacity_preserving_D": accounting["P_arm_capacity_preserving_D"],
+            "P_spare_preserving_D": accounting["P_spare_preserving_D"],
+            "footer_remaining_before_redirect_error_retry": accounting[
+                "footer_remaining_before_redirect_error_retry"
+            ],
+            "minimum_per_file_footer_headroom": accounting["minimum_per_file_footer_headroom"],
+        },
+    }
+
+
+def t_phase_p_plan_payload(t_files: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    """Executable T Phase-P plan: 0-3, N-8..N-1, then N-8-L..N-9 from L."""
+    base = build_t_phase_p(t_files)
+    build_t_phase_d(t_files)
+    files: list[dict[str, Any]] = []
+    reserves: list[dict[str, int]] = []
+    for ordinal, entry in enumerate(t_files):
+        name = str(entry["file"])
+        length = int(entry["remote_length"])
+        ranges = list(entry["data_ranges_half_open"])
+        reserve = t_file_d_reserve(
+            int(entry["data_range_count"]), int(entry["data_transfer_upper"])
+        )
+        reserves.append(reserve)
+        files.append(
+            {
+                "ordinal": ordinal,
+                "file": name,
+                "remote_length": length,
+                "strong_etag": _strong_etag(entry["etag"], name),
+                "operations": [
+                    {"op": "IDENTITY_HEAD_0_3", "range": [0, 3]},
+                    {"op": "T_TRAILER", "range": [length - 8, length - 1]},
+                    {"op": "T_FOOTER_FROM_TRAILER", "range": None},
+                ],
+                "bindings": {
+                    "text_column": "text",
+                    "data_span_half_open": [int(ranges[0]["start"]), int(ranges[-1]["end"])],
+                    "data_range_count": int(entry["data_range_count"]),
+                    "data_payload_bytes": int(entry["data_payload_bytes"]),
+                },
+                "d_reserve": reserve,
+            }
+        )
+    accounting = t_phase_p_accounting()
+    return {
+        "plan_schema": PLAN_SCHEMA,
+        "plan_schema_version": PLAN_SCHEMA_VERSION,
+        "arm": "T",
+        "phase": "P",
+        "synthetic": False,
+        "source": _source(),
+        "files": files,
+        "ceilings": phase_p_ceilings("T", reserves),
+        "arithmetic": {
+            "P_logical_arm": base["P_logical_arm"],
+            "P_nominal_physical_arm": base["P_nominal_physical_arm"],
+            "P_cold_chain_max_no_retry_arm": base["P_cold_chain_max_no_retry_arm"],
+            "D_identity_allocation_requests": accounting["D_identity_allocation"],
+            "controls_combined": accounting["controls_combined"],
+            "footer_headroom": accounting["footer_headroom"],
+        },
+    }

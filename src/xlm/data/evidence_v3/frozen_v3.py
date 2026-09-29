@@ -131,6 +131,23 @@ T_DATA_PAYLOAD = 179963169
 T_DATA_BOUND = 213517601
 T_FOOTER_RESERVE = 16777216
 
+# Transport policy transcribed from freeze.json common_guards plus the
+# inherited v2 retry/timeout values (protocol section 4). Exact hosts only.
+ALLOWED_HOSTS: tuple[str, ...] = ("huggingface.co", "cas-bridge.xethub.hf.co")
+CANONICAL_HOST = "huggingface.co"
+SIGNED_TARGET_HOST = "cas-bridge.xethub.hf.co"
+ALLOWED_PORT = 443
+MAX_REDIRECT_TRANSITIONS = 3
+MAX_RETRIES = 2
+RETRY_DELAYS_SECONDS: tuple[int, ...] = (1, 2)
+RETRYABLE_HTTP: tuple[int, ...] = (429, 502, 503, 504)
+REQUEST_SECONDS_MAX = 30
+FILE_SECONDS_MAX = 600
+ARM_SECONDS_MAX = 1800
+RESPONSE_BODY_BYTES_MAX = 4194304
+MEMORY_RESIDENT_BYTES_MAX = 268435456
+PARSER_BYTES_MAX = 33554432
+
 PHASE_STATES: tuple[str, ...] = (
     "NOT_STARTED",
     "P_AUTHORIZED",
