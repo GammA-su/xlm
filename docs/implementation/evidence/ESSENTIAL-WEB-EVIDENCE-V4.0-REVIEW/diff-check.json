@@ -1,0 +1,12 @@
+﻿{
+    "command":  "git diff --check",
+    "exit_code":  2,
+    "output_lines":  5602,
+    "sample":  [
+                   "docs/implementation/STATUS.md:1: trailing whitespace.",
+                   "+\u003e **ESSENTIAL-WEB EVIDENCE V4.0 NARROW PHASE-P REVIEW (2026-09-29, offline):",
+                   "docs/implementation/STATUS.md:2: trailing whitespace.",
+                   "+\u003e BLOCKED for both M and T.** Frozen identities/scientific membership match."
+               ],
+    "note":  "CRLF whitespace in the preserved pre-existing dirty documentation and same-format status notice; no source edits"
+}

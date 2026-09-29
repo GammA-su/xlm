@@ -1,0 +1,10 @@
+{
+  "status_original_bytes_preserved": true,
+  "status_original_sha256": "b30ec287ab4e793af335823e4caa0e6c2872be672edca4cb6b08cb6c8e57c6b3",
+  "notice_bytes": 778,
+  "source_hashes_unchanged": true,
+  "tracked_implementation_or_dependency_changes": [],
+  "root_exists": false,
+  "HEAD": "791d3b866db7276180c2e8a93d13d1b775256baf",
+  "review_commit": null
+}

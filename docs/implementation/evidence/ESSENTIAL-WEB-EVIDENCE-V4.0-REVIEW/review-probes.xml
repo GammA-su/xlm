@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="2" time="0.875" timestamp="2026-09-29T19:08:24.378032+02:00" hostname="GammA-DeskMain"><testcase classname="docs.implementation.evidence.ESSENTIAL-WEB-EVIDENCE-V4.0-REVIEW.test_review_probes" name="test_completed_chunk_bytes_survive_live_parser_interruption" time="0.456"><failure message="assert 0 == 12">tmp_path = WindowsPath('C:/Users/gamma/AppData/Local/Temp/pytest-of-gamma/pytest-58/test_completed_chunk_bytes_sur0')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x0000017196DA0320&gt;
+
+    def test_completed_chunk_bytes_survive_live_parser_interruption(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+    ) -&gt; None:
+        block_network(monkeypatch)
+        fx = build_fixture(tmp_path / "fixture", m_files=1, t_files=1)
+        root = tmp_path / "root"
+        op = fx.op("M-00-head")
+        wire = (
+            b"HTTP/1.1 206 Partial Content\r\n"
+            b"Transfer-Encoding: chunked\r\nConnection: close\r\n"
+            + f"ETag: {op.source_file.strong_etag}\r\n".encode()
+            + f"Content-Range: bytes 0-3/{op.source_file.remote_length}\r\n\r\n".encode()
+            # One COMPLETE four-byte HTTP chunk, followed by missing chunk terminator.
+            + b"4\r\nPAR1\r\n"
+        )
+    
+        def response(_: Any) -&gt; Any:
+            parsed = http.client.HTTPResponse(MemorySocket(wire))
+            parsed.begin()
+            assert parsed.will_close
+            return tp._LiveResponse(ClosedConnection(), parsed, time.monotonic() + 120)
+    
+        # Positive control: the real stdlib parser preserves these bytes on its exception.
+        parsed = http.client.HTTPResponse(MemorySocket(wire))
+        parsed.begin()
+        with pytest.raises(http.client.IncompleteRead) as caught:
+            parsed.read(65536)
+        assert caught.value.partial == b"PAR1"
+        transport = SyntheticTransport(fx, rules=[Rule(at(fx, op.op_id), response, 3)])
+        result = run(root, fx, transport)
+        conn = state.open_read_only(root / state.DB_NAME)
+        try:
+            attempts = state.read_attempts(conn)
+        finally:
+            conn.close()
+        observed = {
+            "status": result.status,
+            "physical_attempts": len(attempts),
+            "completed_body_bytes_supplied": 12,
+            "accounted_body_bytes": sum(a["response_bytes"] for a in attempts),
+            "temp_sizes": [(root / a["temp_path"]).stat().st_size for a in attempts],
+            "outcomes": [a["outcome"] for a in attempts],
+        }
+        print(json.dumps(observed, sort_keys=True))
+        assert result.status == "INCOMPLETE" and len(attempts) == 3
+&gt;       assert observed["accounted_body_bytes"] == 12
+E       assert 0 == 12
+
+docs\implementation\evidence\ESSENTIAL-WEB-EVIDENCE-V4.0-REVIEW\test_review_probes.py:87: AssertionError</failure></testcase><testcase classname="docs.implementation.evidence.ESSENTIAL-WEB-EVIDENCE-V4.0-REVIEW.test_review_probes" name="test_eof_after_attempt_deadline_cannot_succeed" time="0.144"><failure message="AssertionError: assert 'COMPLETE' == 'INCOMPLETE'&#10;  &#10;  - INCOMPLETE&#10;  ? --&#10;  + COMPLETE">tmp_path = WindowsPath('C:/Users/gamma/AppData/Local/Temp/pytest-of-gamma/pytest-58/test_eof_after_attempt_deadlin0')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x0000017197039E20&gt;
+
+    def test_eof_after_attempt_deadline_cannot_succeed(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+    ) -&gt; None:
+        block_network(monkeypatch)
+        fx = build_fixture(tmp_path / "fixture", m_files=1, t_files=1)
+        clock = FakeClock()
+        root = tmp_path / "root"
+        base = SyntheticTransport(fx)
+    
+        def delayed_eof(call: Any) -&gt; Any:
+            def tick(pos: int) -&gt; None:
+                if pos == 4:
+                    clock.now += 121
+            return base.ok(call, on_read=tick)
+    
+        transport = SyntheticTransport(
+            fx, rules=[Rule(at(fx, "M-00-head"), delayed_eof, 3)],
+        )
+        result = run(root, fx, transport, clock)
+        print(json.dumps({"status": result.status, "clock_seconds": clock.now}))
+&gt;       assert result.status == "INCOMPLETE"
+E       AssertionError: assert 'COMPLETE' == 'INCOMPLETE'
+E         
+E         - INCOMPLETE
+E         ? --
+E         + COMPLETE
+
+docs\implementation\evidence\ESSENTIAL-WEB-EVIDENCE-V4.0-REVIEW\test_review_probes.py:110: AssertionError</failure></testcase></testsuite></testsuites>
