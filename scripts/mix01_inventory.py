@@ -122,17 +122,37 @@ def cmd_freeze(args: argparse.Namespace) -> int:
             if isinstance(size, bool) or not isinstance(size, int) or size < 0:
                 return _fail(f"size for {name!r} must be a non-negative integer")
             sizes[str(name)] = size
+    payload = freeze_inventory(args.source, args.repo, revision, args.seed, names, sizes)
+    _atomic_write_json(args.output, payload)
+    print(f"source: {args.source} files: {len(names)} digest: {payload['inventory_digest']}")
+    return 0
+
+
+def freeze_inventory(
+    source: str,
+    repository: str,
+    revision: str,
+    seed: int,
+    names: list[str],
+    sizes: dict[str, int],
+) -> dict[str, Any]:
+    """Existing production inventory format, also usable for offline adoption."""
+    _checked_sha(revision, "revision")
+    if not names or len(set(names)) != len(names):
+        raise ValueError("inventory requires nonempty distinct paths")
+    if any(name not in names or type(size) is not int or size < 0 for name, size in sizes.items()):
+        raise ValueError("invalid inventory size or unknown path")
     entries = [
         {
             "file": name,
             "size_bytes": sizes.get(name),
-            "order_key": _det_key(args.seed, args.repo, revision, name),
+            "order_key": _det_key(seed, repository, revision, name),
         }
         for name in names
     ]
     entries.sort(key=lambda e: (str(e["order_key"]), str(e["file"])))
     digest_input = (
-        f"v{INVENTORY_VERSION}|{args.source}|{args.repo}|{revision}|{args.seed}"
+        f"v{INVENTORY_VERSION}|{source}|{repository}|{revision}|{seed}"
         f"|{len(entries)}\n"
         + "".join(
             f"{e['order_key']} {e['size_bytes'] if e['size_bytes'] is not None else -1}"
@@ -143,19 +163,17 @@ def cmd_freeze(args: argparse.Namespace) -> int:
     known = [int(str(e["size_bytes"])) for e in entries if e["size_bytes"] is not None]
     payload = {
         "inventory_version": INVENTORY_VERSION,
-        "source_id": args.source,
-        "repository": args.repo,
+        "source_id": source,
+        "repository": repository,
         "revision": revision,
-        "seed": args.seed,
+        "seed": seed,
         "selection": "SHA-256(seed|repository|revision|file) ascending, filename tiebreak",
         "files": entries,
         "file_count": len(entries),
         "known_size_bytes": sum(known) if len(known) == len(entries) else None,
         "inventory_digest": hashlib.sha256(digest_input.encode("utf-8")).hexdigest(),
     }
-    _atomic_write_json(args.output, payload)
-    print(f"source: {args.source} files: {len(entries)} digest: {payload['inventory_digest']}")
-    return 0
+    return payload
 
 
 def _load_quotas(path: Path) -> dict[str, Any]:
@@ -609,6 +627,7 @@ def measure_unit(
     source: str,
     view: str,
     revision: str,
+    allow_empty: bool = False,
 ) -> dict[str, Any]:
     """Derive calibration measurements from one unit's artifacts, fail-closed.
 
@@ -703,7 +722,7 @@ def measure_unit(
     count, canonical, digest = scan_canonical(canonical_dir / "documents.jsonl", require_text=True)
     _expect(digest, documents.get("sha256"), "documents.jsonl sha256")
     _expect(count, accepted, "documents.jsonl document count")
-    _strict_int(canonical, "canonical_bytes", 1)
+    _strict_int(canonical, "canonical_bytes", 0 if allow_empty else 1)
     return {
         "measurement_version": MEASUREMENT_VERSION,
         "source_id": source,

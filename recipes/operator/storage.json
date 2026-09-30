@@ -1,0 +1,6 @@
+{
+  "data_root": "G:\\XLM",
+  "artifact_store_relative": "xlm-home",
+  "cache_relative": "hf-cache",
+  "temporary_relative": "temp"
+}

@@ -46,6 +46,7 @@ class AdmissionDecision(BaseModel):
     immutable_revision: str
     adapter_id: str
     adapter_version: str = "1"
+    selector_binding: dict[str, str] | None = None
     probe_fingerprint: str
     license_review: str = LicenseReviewStatus.PENDING
     provenance_review: str = "pending"
@@ -140,6 +141,28 @@ class AdmissionGate:
             )
 
         # 7. Stale evidence / fingerprint invalidation check
+        for key in ("source_id", "view_id", "provider", "repository"):
+            if getattr(decision, key) != getattr(evidence, key):
+                reasons.append(f"Admission decision {key} differs from probe evidence.")
+        if evidence.source_id == "essential_web":
+            from xlm.data.adapters.essential_web_selector import (
+                ADMITTED_COMPONENTS,
+                SOURCE_REVISION,
+                selector_identity,
+            )
+
+            if evidence.view_id in ADMITTED_COMPONENTS:
+                if evidence.repository != "EssentialAI/essential-web-v1.0":
+                    reasons.append("Essential-Web repository differs from the production source.")
+                if evidence.immutable_revision != SOURCE_REVISION:
+                    reasons.append("Essential-Web revision differs from the production pin.")
+                if decision.adapter_id != "essential_web_bnormal":
+                    reasons.append("Essential-Web production requires essential_web_bnormal.")
+                if decision.selector_binding != selector_identity():
+                    reasons.append(
+                        "Essential-Web production selector binding differs from B-normal."
+                    )
+
         if decision.probe_fingerprint != evidence.probe_fingerprint:
             reasons.append(
                 "Admission decision probe fingerprint does not match current evidence fingerprint. "

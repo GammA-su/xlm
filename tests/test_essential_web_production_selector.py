@@ -37,11 +37,11 @@ from xlm.data.adapters.columns import columns_for, parse_adapter_spec
 from xlm.data.adapters.mix01_adapters import (
     ADAPTERS_BY_ID,
     EssentialWebAdapter,
+    EssentialWebMalformedRowError,
     EssentialWebSelectedAdapter,
     EssentialWebSelectorOtherComponentError,
     EssentialWebSelectorRejectedError,
     EssentialWebSelectorUnassignedError,
-    MissingFieldError,
     RecordRejectedError,
 )
 from xlm.data.adapters.rejections import is_recordable_rejection, rejection_code
@@ -378,22 +378,22 @@ def test_rejections_are_explicit_recordable_and_text_free(
     }
 
 
-def test_malformed_rows_stay_fatal_even_when_the_selector_would_reject(
+def test_malformed_rows_are_recordable_even_when_the_selector_would_reject(
     adapters: dict[str, EssentialWebSelectedAdapter],
 ) -> None:
     rejected = _row(a="Irrelevant Content")
     del rejected["id"]
-    with pytest.raises(MissingFieldError):
+    with pytest.raises(EssentialWebMalformedRowError):
         _adapt(adapters[SCIENCE], rejected)
     empty_text = _row(d="Product Page")
     empty_text["text"] = ""
-    with pytest.raises(MissingFieldError):
+    with pytest.raises(EssentialWebMalformedRowError):
         _adapt(adapters[PROSE], empty_text)
-    # The selector alone rejects these rows; the certified renderer refuses them first.
+    # The selector outcome is unchanged; the production wrapper records renderer faults.
     for kwargs in ({"f": "  "}, {"e": True}):
         malformed = _row(**kwargs)
         assert adapters[SCIENCE].selector_final(malformed) == "rejected"
-        with pytest.raises(MissingFieldError):
+        with pytest.raises(EssentialWebMalformedRowError):
             _adapt(adapters[SCIENCE], malformed)
 
 
@@ -737,6 +737,7 @@ def _store(tmp_path: Path, *, outcome: str = "accessible", adapter: str | None =
             "repository": production.REPOSITORY,
             "immutable_revision": REVISION,
             "adapter_id": adapter,
+            "selector_binding": selector.selector_identity(),
             "probe_fingerprint": "authored-fingerprint",
             "license_review": "approved",
             "benchmark_risk": "clean",
@@ -799,7 +800,7 @@ def test_readiness_admission_inventory_and_calibration(tmp_path: Path) -> None:
 
     legacy = _readiness(xlm_home=_store(tmp_path / "c", adapter="essential_web"))
     assert legacy["vector"]["production_admission_ok"] is False
-    assert "names adapter 'essential_web'" in legacy["reasons"]["production_admission_ok"][0]
+    assert "requires essential_web_bnormal" in legacy["reasons"]["production_admission_ok"][0]
 
     inventory = tmp_path / "essential_web.inventory.json"
     inventory.write_text(

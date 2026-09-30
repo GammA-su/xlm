@@ -59,10 +59,9 @@
 
   The three essential slices adapt through the frozen B-normal selector
   (adapter essential_web_bnormal): each slice admits only its own rows, so
-  each unit records under its own key. The 1000-record default sample is
-  too small to calibrate the sparse science slice, and the default file
-  path is not a confirmed path at the pinned revision; do not run the
-  essential units before the production-acquisition review sizes them.
+  each unit records under its own key. Essential units now refuse this
+  legacy 1000-record path. Use the frozen shared 16384-row production
+  readiness commands; the old unverified file defaults have been removed.
   IFM general/planning record under view-qualified keys; combine them into
   the quota key with the documented one-liner before estimate (see report).
 #>
@@ -78,9 +77,9 @@ param(
     [Parameter(Mandatory = $false)]
     [string]$Files = "",
     [Parameter(Mandatory = $false)]
-    [string]$Repo = "G:\Project\xlm-data-ultrax",
+    [string]$Repo = "",
     [Parameter(Mandatory = $false)]
-    [string]$DataRoot = "X:\XLM",
+    [string]$DataRoot = $env:XLM_DATA_ROOT,
     [Parameter(Mandatory = $false)]
     [ValidateSet("All", "Env", "Probe", "SampleBlocks", "Plan", "Fetch", "Status",
         "Verify", "Adapt", "Summary", "Record")]
@@ -90,10 +89,18 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
+if ([string]::IsNullOrWhiteSpace($Repo)) {
+    $Repo = Split-Path -Parent $PSScriptRoot
+}
+
+if ([string]::IsNullOrWhiteSpace($DataRoot)) {
+    throw "Set XLM_DATA_ROOT to the operator data root or pass -DataRoot explicitly."
+}
+
 $Units = @{
-    essential_science   = @{ Source = "essential_web"; Repository = "EssentialAI/essential-web-v1.0"; View = "essential_science"; Revision = "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d"; Adapter = "essential_web_bnormal"; AdapterConfig = "essential_science"; AdapterSpec = "essential_web_bnormal:essential_science"; DefaultFiles = "data/v1/train/00001.parquet"; RecordAs = @("essential_science") }
-    essential_practical = @{ Source = "essential_web"; Repository = "EssentialAI/essential-web-v1.0"; View = "essential_practical"; Revision = "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d"; Adapter = "essential_web_bnormal"; AdapterConfig = "essential_practical"; AdapterSpec = "essential_web_bnormal:essential_practical"; DefaultFiles = "data/v1/train/00001.parquet"; RecordAs = @("essential_practical") }
-    essential_prose     = @{ Source = "essential_web"; Repository = "EssentialAI/essential-web-v1.0"; View = "essential_prose"; Revision = "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d"; Adapter = "essential_web_bnormal"; AdapterConfig = "essential_prose"; AdapterSpec = "essential_web_bnormal:essential_prose"; DefaultFiles = "data/v1/train/00001.parquet"; RecordAs = @("essential_prose") }
+    essential_science   = @{ Source = "essential_web"; Repository = "EssentialAI/essential-web-v1.0"; View = "essential_science"; Revision = "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d"; Adapter = "essential_web_bnormal"; AdapterConfig = "essential_science"; AdapterSpec = "essential_web_bnormal:essential_science"; DefaultFiles = ""; RecordAs = @("essential_science") }
+    essential_practical = @{ Source = "essential_web"; Repository = "EssentialAI/essential-web-v1.0"; View = "essential_practical"; Revision = "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d"; Adapter = "essential_web_bnormal"; AdapterConfig = "essential_practical"; AdapterSpec = "essential_web_bnormal:essential_practical"; DefaultFiles = ""; RecordAs = @("essential_practical") }
+    essential_prose     = @{ Source = "essential_web"; Repository = "EssentialAI/essential-web-v1.0"; View = "essential_prose"; Revision = "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d"; Adapter = "essential_web_bnormal"; AdapterConfig = "essential_prose"; AdapterSpec = "essential_web_bnormal:essential_prose"; DefaultFiles = ""; RecordAs = @("essential_prose") }
     synth_en_explanations = @{ Source = "synth"; Repository = "PleIAs/SYNTH"; View = "default"; Revision = "0d6813a2966662c39f22f0b9af28a0c1c9f7a437"; Adapter = "synth_en"; AdapterConfig = ""; AdapterSpec = "synth_en"; DefaultFiles = "synth_001.parquet"; RecordAs = @("synth_en_explanations"); Window = @{ ScanRows = "16384"; BufferBytes = "4194304"; BatchRows = "256" } }
     nemotron_wiki_rewrite = @{ Source = "nemotron_specialized"; Repository = "nvidia/Nemotron-Pretraining-Specialized-v1"; View = "Nemotron-Pretraining-Wiki-Rewrite"; Revision = "9ed3718b5f2ae29074c5e34e64115432b7c4320f"; Adapter = "wiki_rewrite"; AdapterConfig = ""; AdapterSpec = "wiki_rewrite"; DefaultFiles = "Nemotron-Pretraining-Wiki-Rewrite/part_000003.parquet"; RecordAs = @("nemotron_wiki_rewrite"); Window = @{ ScanRows = "16384"; BufferBytes = "4194304"; BatchRows = "256"; PolicyVersion = "2" } }
     simple_stories      = @{ Source = "simple_stories"; Repository = "SimpleStories/SimpleStories"; View = "default"; Revision = "e63b8adc3b1a1bdc7cac5b500d150b71346b0628"; Adapter = "simple_stories"; AdapterConfig = ""; AdapterSpec = "simple_stories"; DefaultFiles = "data/train-00003-of-00007.parquet"; RecordAs = @("simple_stories") }
@@ -104,6 +111,9 @@ $Units = @{
 }
 
 $U = $Units[$Unit]
+if ($MyInvocation.InvocationName -ne '.' -and $Unit -like "essential_*") {
+    throw "Use the frozen shared Essential-Web production-readiness commands; this legacy driver cannot run Essential calibration."
+}
 # Sampling/plan shape. Every unit keeps whole-row-group sampling EXCEPT a
 # unit that declares a Window policy (SYNTH: one ~155k-row, ~800 MB row
 # group per shard). It samples one scan-bounded sub-row-group window and
@@ -404,6 +414,8 @@ function Invoke-Stage([string]$Name) {
 }
 
 if ($MyInvocation.InvocationName -ne '.') {
+
+
 
 Set-Location -LiteralPath $Repo
 

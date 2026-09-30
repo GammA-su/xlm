@@ -43,6 +43,10 @@ class EssentialWebSelectorRejectedError(RecordRejectedError):
     """The frozen Essential-Web selector rejects the row (validity or gate)."""
 
 
+class EssentialWebMalformedRowError(RecordRejectedError):
+    """Isolated unusable row; record a text-free reason and continue within limits."""
+
+
 class EssentialWebSelectorUnassignedError(RecordRejectedError):
     """The row passes the frozen gate but matches no Essential component."""
 
@@ -474,8 +478,8 @@ class EssentialWebSelectedAdapter:
     unless the evaluator and policy files hash to their frozen identities.
 
     Rendering is the certified :class:`EssentialWebAdapter`, unchanged, and
-    it runs first: a malformed row stays a fatal :class:`MissingFieldError`
-    and is never hidden behind a recordable selector rejection. Selector
+    it runs first. Isolated malformed values become text-free row drops;
+    source identity and container/schema errors remain fatal. Selector
     outcomes other than this component are policy drops with distinct
     rejection codes (rejected, unassigned, other component). The reason
     carries the evaluator's reason codes only, never text or label values.
@@ -514,13 +518,24 @@ class EssentialWebSelectedAdapter:
         source_row: int,
         source_revision: str,
     ) -> CanonicalDocument:
-        document = self._base.adapt(
-            record,
-            source_file=source_file,
-            source_row=source_row,
-            source_revision=source_revision,
-        )
+        from xlm.data.adapters.essential_web_selector import SOURCE_REVISION
+
+        if source_revision != SOURCE_REVISION:
+            raise AdapterError("essential_web_source_revision_mismatch")
+        try:
+            document = self._base.adapt(
+                record,
+                source_file=source_file,
+                source_row=source_row,
+                source_revision=source_revision,
+            )
+        except (MissingFieldError, UnicodeError) as exc:
+            raise EssentialWebMalformedRowError("essential_web_unusable_record") from exc
         decision = self._selector.decide(record)
+        if decision.stage == "validity":
+            raise EssentialWebMalformedRowError(
+                "essential_web_selector_value: " + ", ".join(decision.reasons)
+            )
         if decision.final == "rejected":
             raise EssentialWebSelectorRejectedError(
                 f"adapter '{self.ADAPTER_ID}' drops rows the frozen "

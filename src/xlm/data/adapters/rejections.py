@@ -18,7 +18,7 @@ from typing import Any
 
 from xlm.core.contracts import CanonicalDocument
 from xlm.data.acquisition.records import StreamingJsonlWriter
-from xlm.data.adapters.mix01_adapters import RecordRejectedError
+from xlm.data.adapters.mix01_adapters import EssentialWebMalformedRowError, RecordRejectedError
 
 #: Ledger/summary contract version. Bump explicitly if either schema changes.
 ADAPTATION_REJECTION_VERSION = 1
@@ -76,7 +76,9 @@ def build_rejection_record(
         "source_row": source_row,
         "adapter_id": adapter_id,
         "rejection_code": rejection_code(error),
-        "rejection_category": "policy",
+        "rejection_category": "malformed"
+        if isinstance(error, EssentialWebMalformedRowError)
+        else "policy",
         "reason": str(error)[:REJECTION_REASON_MAX_CHARS],
         "original_record_sha256": original_record_sha256,
     }

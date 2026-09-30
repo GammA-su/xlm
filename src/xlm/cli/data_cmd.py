@@ -664,6 +664,15 @@ def admit_source_view(
         raise typer.Exit(code=1)
 
     is_approved = decision.strip().lower() == "approve"
+    selector_binding = None
+    if source_id == "essential_web" and adapter_id == "essential_web_bnormal":
+        from xlm.data.adapters.essential_web_selector import (
+            FrozenEssentialWebSelector,
+            selector_identity,
+        )
+
+        FrozenEssentialWebSelector.load()
+        selector_binding = selector_identity()
     adm_decision = AdmissionDecision(
         source_id=source_id,
         view_id=view_id,
@@ -671,6 +680,7 @@ def admit_source_view(
         repository=cand.repository,
         immutable_revision=evidence.immutable_revision or "",
         adapter_id=adapter_id,
+        selector_binding=selector_binding,
         probe_fingerprint=evidence.probe_fingerprint or "",
         license_review=license_review,
         benchmark_risk=benchmark_risk,
@@ -1954,7 +1964,12 @@ def adapt_cmd(
     import time
 
     from xlm.data.acquisition.records import StreamingJsonlWriter
-    from xlm.data.adapters.mix01_adapters import ADAPTERS_BY_ID, RecordRejectedError
+    from xlm.data.adapters.malformed import MalformedCounter
+    from xlm.data.adapters.mix01_adapters import (
+        ADAPTERS_BY_ID,
+        EssentialWebMalformedRowError,
+        RecordRejectedError,
+    )
     from xlm.data.adapters.rejections import (
         DOCUMENTS_FILENAME,
         REJECTIONS_FILENAME,
@@ -2083,6 +2098,7 @@ def adapt_cmd(
     input_bytes = 0
     parse_seconds = adapter_seconds = serialize_seconds = rejection_seconds = 0.0
     rejection_counts: dict[str, int] = {}
+    malformed_counter = MalformedCounter()
     pending: list[tuple[int, bytes]] = []
     buffer = bytearray()
     wall_start = time.monotonic()
@@ -2161,6 +2177,8 @@ def adapt_cmd(
                 )
             except RecordRejectedError as e:
                 adapter_seconds += time.monotonic() - started
+                if adapter_id == "essential_web_bnormal":
+                    malformed_counter.observe(isinstance(e, EssentialWebMalformedRowError))
                 if on_reject != "record":
                     typer.echo(
                         f"Error: adapter '{adapter_id}' refused line {current_line}: {e}",
@@ -2197,6 +2215,8 @@ def adapt_cmd(
                 )
                 raise typer.Exit(code=1) from e
             adapter_seconds += time.monotonic() - started
+            if adapter_id == "essential_web_bnormal":
+                malformed_counter.observe(False)
             if doc.source_id != plan.source_id:
                 typer.echo(
                     f"Error: adapter '{adapter_id}' produced source '{doc.source_id}', "
@@ -3038,7 +3058,7 @@ def embeddings_build_cmd(
         )
         raise typer.Exit(code=1)
     try:
-        import numpy as np  # type: ignore[import-not-found]  # noqa: F401
+        import numpy as np  # noqa: F401
     except ImportError:
         typer.echo(
             "Error: embeddings-build needs NumPy, which is absent here; run in an "
