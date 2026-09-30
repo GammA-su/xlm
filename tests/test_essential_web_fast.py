@@ -968,16 +968,29 @@ class World:
 
 @pytest.fixture
 def world(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, served: Any) -> World:
-    state, base = served
-    monkeypatch.syspath_prepend(str(REPO / "scripts"))
-    old_tool = importlib.import_module("essential_web_bulk")
-    tool = importlib.import_module("essential_web_fast")
     required = {
         SCIENCE: 2 * historical_tests.science_bytes_per_batch() - 1,
         PRACTICAL: 1,
         PROSE: 1,
     }
-    historical = historical_tests.make_world(tmp_path, monkeypatch, old_tool, required)
+    return make_fast_world(tmp_path, monkeypatch, served, required)
+
+
+def make_fast_world(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    served: Any,
+    required: dict[str, int],
+    max_batches: int = 3,
+) -> World:
+    """An authored fast campaign: eight files, two per batch, on the loopback endpoint."""
+    state, base = served
+    monkeypatch.syspath_prepend(str(REPO / "scripts"))
+    old_tool = importlib.import_module("essential_web_bulk")
+    tool = importlib.import_module("essential_web_fast")
+    historical = historical_tests.make_world(
+        tmp_path, monkeypatch, old_tool, required, max_batches=max_batches
+    )
     names = [entry["file"] for entry in historical.campaign().inventory["files"]]
     rows = {name: rows_of(10) for name in names}
     for name in names:

@@ -1,3 +1,25 @@
+> **ESSENTIAL-WEB AUTOMATIC CAMPAIGN RUNNER (2026-09-30, offline): READY FOR
+> AUTOMATED ESSENTIAL-WEB ACQUISITION.** Authoritative state: 3 complete batches,
+> 96 sealed files, 7,956,430 rows, 32,970,294,061 B footprint. Science
+> 118.9M/660M and practical 300.9M/660M estimated tokens are TOP_UP; prose
+> 840.1M/330M is SUFFICIENT. Next is Batch 3, `CLEAN_NOT_STARTED` (membership
+> `bb7fd547…4480`, batch authorization `f25da873…f56c`). A one-time bounded
+> envelope (at most 20 batches; now 3–22) binds campaign, source, revision,
+> selector, adapter, inventory, limits, running code and every child's exact
+> authorization digest. Before each batch, `RunAuto` re-derives the child and
+> compares it with the envelope. It then uses the unchanged
+> plan/authorize/gate/C04/executor path. It stops when the first-pass targets
+> are met, or on any human-review condition; it never approves a recovery,
+> record bound or identity change. Real-store dry run: 0 network attempts,
+> 1,196 files unchanged; the derivation reproduces the Batch 0–2 authorizations.
+> Tests: 26 new; related selection 786 + 3 serial passed, 0 skipped; ruff,
+> format and strict mypy pass. Batch 3, `RunAuto` and full acceptance NOT RUN;
+> C05 NOT RUN; training not permitted.
+> [Report, evidence and operator commands](reports/ESSENTIAL-WEB-AUTO-CAMPAIGN.md).
+> Next: dot-source `scripts/operator_storage.ps1`, then
+> `scripts/operator_essential_web_campaign.ps1 -Stage PrepareAuto -MaxBatches 20`
+> and `-Stage RunAuto -Authorize <printed digest>`.
+
 > **ESSENTIAL-WEB BATCH-1 WINDOWS PUBLICATION FIX (2026-09-30, offline): READY TO
 > RESUME ESSENTIAL-WEB BATCH 1.** Authoritative state: 10/32 sealed (31.25%),
 > 848,755 rows. Root failure: f00035 `PermissionError` (errno 13 / WinError 5)

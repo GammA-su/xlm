@@ -1,0 +1,51 @@
+========================================================================
+ESSENTIAL-WEB AUTO CAMPAIGN  8e42ba31b0ef9fcb
+batch 3 next  complete batches 3  sealed files 96  cumulative rows 7,956,430
+TARGETS (estimated tokens, complete batches only)
+  SCIENCE   118.9M / 660.0M   18.0%  TOP_UP
+  PRACTICAL 300.9M / 660.0M   45.6%  TOP_UP
+  PROSE     840.1M / 330.0M  254.6%  SUFFICIENT
+DISK
+  durable footprint 30.7 GiB / cap 400.0 GiB
+  durable free 899.8 GiB  campaign reserve 64.0 GiB  automation guard 128.0 GiB
+  scratch used 0.1 GiB / cap 64.0 GiB  scratch free 802.8 GiB  guard 96.0 GiB
+TIME
+  campaign elapsed not started  last batch this session -
+  recent batch 4m03s (mean of batches [0, 1, 2])
+  science recent yield 39.6M/batch
+  projected remaining ~14 batches  ETA ~56m46s (projected, not a promise)
+  projected additional footprint ~143.3 GiB
+========================================================================
+AUTO-CAMPAIGN ENVELOPE (offline; no network request was made)
+  campaign            8e42ba31b0ef9fcbae1079cebf88d2449b88a9b37ec52b68c7a408eb2546bb8c
+  source              EssentialAI/essential-web-v1.0 @ ce4eccc7e9604667b6d7f32cb6274b8b41f3113d
+  selector            essential-web-b-normal freeze c6f32a65f083c99b64245e25151f2cc73275093e1013d68b625c6d6f63d10a0c
+  inventory           4bbd5517e760971405d9aed56bba5b84877a6325d10f5a10a05b50f5a8d763d8
+  batches             3 .. 22 (20 at most)
+  next batch          3: CLEAN_NOT_STARTED membership bb7fd547ede2aeb36cb6ede5f72c49459451749148a3d50cfb50d4bbac264480
+                      plan 242b0cf4592b75149357b5beed1ca159d39b2981348186360fa2da708da432e0
+                      batch authorization f25da8735fecea374935c05b1a0727fe77f8855ed91e4d12420da40ed6ccf56c
+  membership proof    fast = historical campaign = inventory slice: True
+  reproduced plans    3 existing batch authorizations re-derived identically
+  guards              durable free >= 137,438,953,472 B, scratch free >= 103,079,215,104 B
+  worst-case durable  687,194,767,360 B (footprint cap 429,496,729,600 B)
+  operator            gamma
+STOPS ON
+  - campaign, source, revision, selector, adapter, inventory, limits or code identity differs from the envelope
+  - a child batch's membership, plan hash or authorization digest differs from the envelope
+  - the next batch is outside the envelope or beyond the campaign ceiling
+  - the next batch needs human review (recorded unit failure, unexplained fatal stop, unit without receipt, retained-source or checkpoint identity conflict, recovery amendment in scope)
+  - the campaign gate says anything other than RUN (disk reserve, footprint cap, order, ceiling, benchmark, superseded campaign)
+  - C04 production admission of the authorized plan fails
+  - an automation guard: durable free space or scratch free space or scratch occupancy
+  - the batch process exits with any code other than 0 (continue) or 3 (targets met)
+  - the batch is not complete and verified after its process exits
+  - operator interruption (Ctrl+C)
+NEVER APPROVES
+  - a recovery amendment
+  - an oversized-record exception or any changed record bound
+  - a changed source file identity
+  - a changed code compatibility contract
+  - a top-up after the first-pass targets are met
+envelope file: not written (--dry)
+AUTO AUTHORIZATION DIGEST: 21cbad8ca0de96148b094c14753187145ba0558481a17b4b9ab6a2bd4527ad9e

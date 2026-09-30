@@ -1,0 +1,133 @@
+{
+  "c05": "NOT RUN",
+  "campaign": "8e42ba31b0ef9fcbae1079cebf88d2449b88a9b37ec52b68c7a408eb2546bb8c",
+  "ceiling_batches": 33,
+  "complete_batches": 3,
+  "counted_rows": 7956430,
+  "decision": "CONTINUE",
+  "disk": {
+    "automation_min_durable_free_bytes": null,
+    "automation_min_scratch_free_bytes": null,
+    "batch_output_ceiling_bytes": 34359738368,
+    "campaign_min_free_bytes": 68719476736,
+    "durable_free_bytes": 966130540544,
+    "footprint_bytes": 32970294061,
+    "footprint_cap_bytes": 429496729600,
+    "scratch_cap_bytes": 68719476736,
+    "scratch_free_bytes": 862048034816,
+    "scratch_min_free_bytes": 34359738368,
+    "scratch_used_bytes": 63352737
+  },
+  "history": [
+    {
+      "batch": 0,
+      "files": 32,
+      "footprint_bytes": 10782557732,
+      "rows": 2604815,
+      "seconds": 243.7509999999893,
+      "tokens": {
+        "essential_practical": 97768710.5,
+        "essential_prose": 274137810.5,
+        "essential_science": 40167642.5
+      }
+    },
+    {
+      "batch": 1,
+      "files": 32,
+      "footprint_bytes": 11304245237,
+      "rows": 2708168,
+      "seconds": 264.9529999999795,
+      "tokens": {
+        "essential_practical": 104719230.5,
+        "essential_prose": 292188655.5,
+        "essential_science": 39869891.25
+      }
+    },
+    {
+      "batch": 2,
+      "files": 32,
+      "footprint_bytes": 10883491092,
+      "rows": 2643447,
+      "seconds": 221.18799999999464,
+      "tokens": {
+        "essential_practical": 98377920.75,
+        "essential_prose": 273815237.0,
+        "essential_science": 38856635.0
+      }
+    }
+  ],
+  "kind": "essential_web_auto_campaign_status",
+  "network": "none",
+  "next_batch": 3,
+  "next_batch_classification": {
+    "authorized": false,
+    "batch": 3,
+    "planned": false,
+    "reasons": [
+      "no execution evidence"
+    ],
+    "state": "CLEAN_NOT_STARTED"
+  },
+  "next_batch_membership_digest": "bb7fd547ede2aeb36cb6ede5f72c49459451749148a3d50cfb50d4bbac264480",
+  "projection": {
+    "basis_batches": [
+      0,
+      1,
+      2
+    ],
+    "eta_seconds": 3406.162666666496,
+    "note": "projected from the rolling mean of recent complete batches; measured execution time only, excluding pauses between runs; not a promise",
+    "projected_additional_footprint_bytes": 153861372284.6667,
+    "recent_batch_seconds": 243.29733333332115,
+    "recent_footprint_bytes_per_batch": 10990098020.333334,
+    "remaining_batches": 14,
+    "status": "projected",
+    "views": {
+      "essential_practical": {
+        "recent_tokens_per_batch": 100288620.58333333,
+        "remaining_batches": 4
+      },
+      "essential_prose": {
+        "recent_tokens_per_batch": 280047234.3333333,
+        "remaining_batches": 0
+      },
+      "essential_science": {
+        "recent_tokens_per_batch": 39631389.583333336,
+        "remaining_batches": 14
+      }
+    }
+  },
+  "rows": 7956430,
+  "sealed_files": 96,
+  "time": {
+    "campaign_elapsed_seconds": null,
+    "last_batch_seconds": null
+  },
+  "training_permitted": false,
+  "views": {
+    "essential_practical": {
+      "canonical_bytes": 1203463447,
+      "deficit_tokens": 359134138.25,
+      "estimated_tokens": 300865861.75,
+      "required_canonical_bytes": 2640000000,
+      "status": "TOP_UP",
+      "target_tokens": 660000000
+    },
+    "essential_prose": {
+      "canonical_bytes": 3360566812,
+      "deficit_tokens": 0.0,
+      "estimated_tokens": 840141703.0,
+      "required_canonical_bytes": 1320000000,
+      "status": "SUFFICIENT",
+      "target_tokens": 330000000
+    },
+    "essential_science": {
+      "canonical_bytes": 475576675,
+      "deficit_tokens": 541105831.25,
+      "estimated_tokens": 118894168.75,
+      "required_canonical_bytes": 2640000000,
+      "status": "TOP_UP",
+      "target_tokens": 660000000
+    }
+  }
+}

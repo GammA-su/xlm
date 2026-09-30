@@ -1,0 +1,686 @@
+{
+  "envelope": {
+    "automation_guards": {
+      "min_durable_free_bytes": 137438953472,
+      "min_scratch_free_bytes": 103079215104
+    },
+    "children": [
+      {
+        "authorization_digest": "f25da8735fecea374935c05b1a0727fe77f8855ed91e4d12420da40ed6ccf56c",
+        "batch": 3,
+        "files": 32,
+        "first_inventory_rank": 96,
+        "limits_digest": "f85f180e2cc44787dcf014966ed36da4757246106e7c048ae12658d5d9ddfa8b",
+        "membership_digest": "bb7fd547ede2aeb36cb6ede5f72c49459451749148a3d50cfb50d4bbac264480",
+        "plan_hash": "242b0cf4592b75149357b5beed1ca159d39b2981348186360fa2da708da432e0",
+        "selection_hash": "d1401b051f82bca9f49e265b9bbbc33b0da24403b1bd4e5a9aa560d10b096137"
+      },
+      {
+        "authorization_digest": "d52ef475fc99bad2432316e71b2f5d5fdcc99fc5951c6747ed90190db25acc42",
+        "batch": 4,
+        "files": 32,
+        "first_inventory_rank": 128,
+        "limits_digest": "f85f180e2cc44787dcf014966ed36da4757246106e7c048ae12658d5d9ddfa8b",
+        "membership_digest": "4fa4bca1c604c623395260a48c1a33008b85f2d307ac162cc4a1bd1d0623f24e",
+        "plan_hash": "2291bd95b7af89809ff0e3cec5b07ef661cf99abe6ce89f548f553eeef7398c5",
+        "selection_hash": "8dbd8ebf2b8cd6bd232df01043ca1076d37fc92ae427664ae6c6035c061804ed"
+      },
+      {
+        "authorization_digest": "5a5a1602b57b277d99086af57bfc7e372a7be55758de5f4ab349a5b3b5a43f94",
+        "batch": 5,
+        "files": 32,
+        "first_inventory_rank": 160,
+        "limits_digest": "f85f180e2cc44787dcf014966ed36da4757246106e7c048ae12658d5d9ddfa8b",
+        "membership_digest": "8b22db6d1179b8902eead2ac03e1abc9b3a5a62ecb1eae153c1daf90994dc8a1",
+        "plan_hash": "012a980eeb80ea41d85521a0361d20167e771fb776c4803980b6a46b23e1617d",
+        "selection_hash": "48e6bf3f127c573bb81446c3d9807aba2d943adca1abe3d440d195e3f1407d98"
+      },
+      {
+        "authorization_digest": "e859b9e9b66a03de34f01fef9f14c76df2d75ed3de70a6531f533b788a7adfb3",
+        "batch": 6,
+        "files": 32,
+        "first_inventory_rank": 192,
+        "limits_digest": "f85f180e2cc44787dcf014966ed36da4757246106e7c048ae12658d5d9ddfa8b",
+        "membership_digest": "1f46223480e42910f3993f81022b9790e58b644454e4107855ed56cd5d8d4cfc",
+        "plan_hash": "4ed8720ec9e2983d1b38f795160498239c5c8f6d8ea7f2067658c75e1d77fbdb",
+        "selection_hash": "b21e2b1f9099f528775cf5515108ce2f81a87263cb140ddbfa3696e8286b8d25"
+      },
+      {
+        "authorization_digest": "f08a4aa42b292e2cd23653188a97743959fe338dcb4b79933ea7527e4467ef8b",
+        "batch": 7,
+        "files": 32,
+        "first_inventory_rank": 224,
+        "limits_digest": "f85f180e2cc44787dcf014966ed36da4757246106e7c048ae12658d5d9ddfa8b",
+        "membership_digest": "46cf0ce1b8cb7443dc1c1942bd84009c03d0a174a8ac1fbe4b92eeb760a9ca8a",
+        "plan_hash": "5573bd9febf0b9fe250a518e6bfadb2dcff4eab6eafcd87e8db0f847008a26d6",
+        "selection_hash": "20054dd86f90b58344cde1f6f47795b0b8487fc8f34693707172b021969e62ba"
+      },
+      {
+        "authorization_digest": "7b750f54103cdef24944a332b62b8c45f25e74d7c51991aa86b9a05f0fb0c660",
+        "batch": 8,
+        "files": 32,
+        "first_inventory_rank": 256,
+        "limits_digest": "f85f180e2cc44787dcf014966ed36da4757246106e7c048ae12658d5d9ddfa8b",
+        "membership_digest": "de2cd7e43bbca20224817faed916e67f9634915303dba7c6427f530c66583337",
+        "plan_hash": "21018c7373407804153a94c014927cdda0859c0755506a66ba94ec6068ddc7c8",
+        "selection_hash": "5482ef41b288ae60803caaf7b91965b37732403db1606cf83ffe740673c62044"
+      },
+      {
+        "authorization_digest": "48d70a4f404acb91c712203fa9bd25af502f2adb80662b448778c480090ddb5d",
+        "batch": 9,
+        "files": 32,
+        "first_inventory_rank": 288,
+        "limits_digest": "f85f180e2cc44787dcf014966ed36da4757246106e7c048ae12658d5d9ddfa8b",
+        "membership_digest": "40f6f29eaaa036af0a622bd0656f98ae137f31e927fdf9b5b443ae5ab6568266",
+        "plan_hash": "097b5660f0a729d71dd21b7d7acd35c93f318be51c107d46fa7466b10f0e11d7",
+        "selection_hash": "262599a80c99744369c729efd789fc761cc63f1d5c59b169c6eefbbe6909f608"
+      },
+      {
+        "authorization_digest": "9e84346d568b1629ce38402ba7c16f04ea3d5b98d01c2f1d1c405989b9f310ac",
+        "batch": 10,
+        "files": 32,
+        "first_inventory_rank": 320,
+        "limits_digest": "f85f180e2cc44787dcf014966ed36da4757246106e7c048ae12658d5d9ddfa8b",
+        "membership_digest": "555f7235883886865f0ab6b72cce203b0a557d0c457be58e6f4644eca389067e",
+        "plan_hash": "58eb55e51c9dfc8f593122fecd613329c4b42b5df3df266446b2b1310c2f02de",
+        "selection_hash": "e7543bf5dea05e8ee8a9bf2f62d319ecc71d0f3f4c27dde9a75442f7daa33013"
+      },
+      {
+        "authorization_digest": "2bf6d548c0d1e7c4a6c810503717ab7d1a836203de0e63498f2d3a86a5332294",
+        "batch": 11,
+        "files": 32,
+        "first_inventory_rank": 352,
+        "limits_digest": "f85f180e2cc44787dcf014966ed36da4757246106e7c048ae12658d5d9ddfa8b",
+        "membership_digest": "d60c52f6a95bde300c991978a0ddf459a3393ccf12b92a37a3f8c751a6fed5e4",
+        "plan_hash": "b74ca38d4600a9fda7fadc1960d4d92dd3665b670d2a9b017394162fb602a0c9",
+        "selection_hash": "24c3650b832e004c427cf52ab7658b0c949549aa3c2a7acfd0a0f566d18608a0"
+      },
+      {
+        "authorization_digest": "88184e3b5bc7cf7c6c50937779277cbe542d9459135ac1cad797165c43562106",
+        "batch": 12,
+        "files": 32,
+        "first_inventory_rank": 384,
+        "limits_digest": "f85f180e2cc44787dcf014966ed36da4757246106e7c048ae12658d5d9ddfa8b",
+        "membership_digest": "4c51622e4291973005911e65f257804b34e468fdd61c4d27cecbfaaff61afc76",
+        "plan_hash": "e8fa029eb52853c7eab63ea00873b05ba339dc495aa5c1b41cbb905847b85d14",
+        "selection_hash": "f8d58614c35d153632a3e353f8e6ba0e812ec60d0b658601f8d7f6466930369e"
+      },
+      {
+        "authorization_digest": "7fa69cc3188a69011d45d3dd562ad325225d0e265097e3c67293847a332a0a36",
+        "batch": 13,
+        "files": 32,
+        "first_inventory_rank": 416,
+        "limits_digest": "f85f180e2cc44787dcf014966ed36da4757246106e7c048ae12658d5d9ddfa8b",
+        "membership_digest": "8daa2efdbed7d52a750625f6415293c12385cb95419eb1257c09f9a75d1b2bf1",
+        "plan_hash": "3213c3f946755de49040a7807cb92f0f16525e96846e14c73092e33825060f03",
+        "selection_hash": "06ff95d4a808f3dadc78fe294742592457fb7757b1a583a35fce6fc3ac252fac"
+      },
+      {
+        "authorization_digest": "745603745b636001f83952694fe1035082482d1ed2e7601a8d3a2a2af57f7fce",
+        "batch": 14,
+        "files": 32,
+        "first_inventory_rank": 448,
+        "limits_digest": "f85f180e2cc44787dcf014966ed36da4757246106e7c048ae12658d5d9ddfa8b",
+        "membership_digest": "6bacb57846eafe258406b4330b03638bb5be65ba8fe6b4bacd8e6968dec25634",
+        "plan_hash": "6c1639f66a9b566691c0964bd43445a2d53c377a22d20080df4a992617f13f5e",
+        "selection_hash": "6274bd44e691cb9a36ad48d1bf1f6c54a418ceebc1487c1e2350973ef24c4fff"
+      },
+      {
+        "authorization_digest": "dd9ca272aa83bd09d2a348deba6a523680664e5ee1a25c0f400057c06e38b8fe",
+        "batch": 15,
+        "files": 32,
+        "first_inventory_rank": 480,
+        "limits_digest": "f85f180e2cc44787dcf014966ed36da4757246106e7c048ae12658d5d9ddfa8b",
+        "membership_digest": "5cb8ece6107eaec4c0001278c45250cdcb53c831574728713bc7ca56b6fada53",
+        "plan_hash": "fcb01c3c36497aa21a6711a094f7dd3e8d258265f3a84af0ce700979c69d4c43",
+        "selection_hash": "b3212cedf51b45b8704f74e859f5db7c14372f3143dd740409c23ddeb49b449c"
+      },
+      {
+        "authorization_digest": "8b03655ed7e857e9eb39eb513d4b9abc2a2fe8661c479b9f6bcbed29a5862731",
+        "batch": 16,
+        "files": 32,
+        "first_inventory_rank": 512,
+        "limits_digest": "f85f180e2cc44787dcf014966ed36da4757246106e7c048ae12658d5d9ddfa8b",
+        "membership_digest": "cd771cffcff358498dfded128489a4c1f98b573342614a6ebe52cca971a0b849",
+        "plan_hash": "e07be943edea1810517c7789965f21567cc324e6df9d5a60e6dd2b74c27d8f65",
+        "selection_hash": "3dcd398f0bda30b87c6d5eba11347e19ebed3d96cf6b49592b26f64c81ddd1d1"
+      },
+      {
+        "authorization_digest": "92e18cd01184936709bb0b5a30a4994804a871673907e4a2dd5c10da7fbff3b5",
+        "batch": 17,
+        "files": 32,
+        "first_inventory_rank": 544,
+        "limits_digest": "f85f180e2cc44787dcf014966ed36da4757246106e7c048ae12658d5d9ddfa8b",
+        "membership_digest": "133eda8125bac53b8032d84307e7fd25c63099d358a96000b02718b5c0ea7718",
+        "plan_hash": "26f8d603e390166e021c38af624d5a0f92589b893cff00839d6888d628195c99",
+        "selection_hash": "9c0bd57504f9654943d13d7baf0edbb096929f24a8b22053150c3db698767cbb"
+      },
+      {
+        "authorization_digest": "fe51e5d96c1ffb4d10c18f49dd27c7d1862e70e945c1da74c3457222ccc29cec",
+        "batch": 18,
+        "files": 32,
+        "first_inventory_rank": 576,
+        "limits_digest": "f85f180e2cc44787dcf014966ed36da4757246106e7c048ae12658d5d9ddfa8b",
+        "membership_digest": "c2ecdd2d151091ffea900e6feec4292093d554cdbb10a7a392e91cd2081dc92d",
+        "plan_hash": "18702a73f626146d5edd8f2e9d807d3aed1bb8737d0f6242dee539d9981b1ce0",
+        "selection_hash": "6ed8c806e55a52023e5d02ef278c6a496791bae2ca1370b525ab8be04291f1eb"
+      },
+      {
+        "authorization_digest": "36543978ed59c8286e8f7f5cdee3383a4749c6ba58963254e0ecb2c914f6d38b",
+        "batch": 19,
+        "files": 32,
+        "first_inventory_rank": 608,
+        "limits_digest": "f85f180e2cc44787dcf014966ed36da4757246106e7c048ae12658d5d9ddfa8b",
+        "membership_digest": "404995db058dc531d096f19845c8bcc06b7f42630aa8034b6d6831145f3b52ee",
+        "plan_hash": "a6bfbfe836e5075d420f045e44b5268ad2e008c11a3e0977370a5511a79427d0",
+        "selection_hash": "90653fea27bafe0f21fb28c69529c6e05b46e009119f3c46224488ad98f5990d"
+      },
+      {
+        "authorization_digest": "5da5dc4f0db3b886359668882fb3231d7d3f1390f49cadc7b70381ef0db72f11",
+        "batch": 20,
+        "files": 32,
+        "first_inventory_rank": 640,
+        "limits_digest": "f85f180e2cc44787dcf014966ed36da4757246106e7c048ae12658d5d9ddfa8b",
+        "membership_digest": "0c536f829c3f1f173bb7988ea460b417e1eea0afecc16db3c1dbf31b88c29889",
+        "plan_hash": "399cb70f446405b8555f110a9c1207b94b9cb218f1957eed544e2f9ca48835d5",
+        "selection_hash": "fb10eb47af78f273b51770acfc2e9101f0c134517b07873aab0e17093e3c7062"
+      },
+      {
+        "authorization_digest": "869777fefaa6210fb2fb9ae8d481ab6dc69d3fdcccc0ae8d6b350b58619fc82b",
+        "batch": 21,
+        "files": 32,
+        "first_inventory_rank": 672,
+        "limits_digest": "f85f180e2cc44787dcf014966ed36da4757246106e7c048ae12658d5d9ddfa8b",
+        "membership_digest": "b7955e8a7fe4ee09dd664ea4bd60c8374a94703b9e5c173d9d61f993fdc7342f",
+        "plan_hash": "7acd232fc85860491020f372ba34bf0e3592e11063ea61bd4943109a0d545f0b",
+        "selection_hash": "b34e1f20f766d78597805fae1c980ba0b4d2977af7eb115a6a09bfce998fddfe"
+      },
+      {
+        "authorization_digest": "29aaa8d1ac93d91cf9edc758eb069450dc61c72f5cf02833df1dc6c95dc63fbc",
+        "batch": 22,
+        "files": 32,
+        "first_inventory_rank": 704,
+        "limits_digest": "f85f180e2cc44787dcf014966ed36da4757246106e7c048ae12658d5d9ddfa8b",
+        "membership_digest": "2e614a445c20a29919363da714c1d45c80948401412869cd92ca0b52cd4165fb",
+        "plan_hash": "f80670cb188e00fe458264516cd8c3da02ebab6c09e788ea2a7c5b55e6792cbf",
+        "selection_hash": "3d6c4891654fa588732c782ea599d37a835b3465805e69dd0207cacbf7291071"
+      }
+    ],
+    "digest": "21cbad8ca0de96148b094c14753187145ba0558481a17b4b9ab6a2bd4527ad9e",
+    "identity": {
+      "adapter": {
+        "adapter_id": "essential_web_bnormal",
+        "canonicalization": "EssentialWebSelectedAdapter -> EssentialWebAdapter -> CanonicalDocument",
+        "frozen_code_sha256": {
+          "src/xlm/data/adapters/essential_web_selector.py": "fd891e16b0ef6cca0ccf0d1b5a38ad41fab82689094f73c5c7d01c10064a46ac",
+          "src/xlm/data/adapters/malformed.py": "0b93dfb44d79e4493bf6ef9760b2d604544ec79dedf27156eada5472f647bcf6",
+          "src/xlm/data/adapters/mix01_adapters.py": "3651ff2af4fcb46c207404e052caa59e1ec42f2ac5a429e5dec752f7e83a7ef6",
+          "src/xlm/data/adapters/rejections.py": "f23b9a767220731423419e1961fb3fbada6d1e0f4b6650c569cb410707990c8b"
+        },
+        "running_code_sha256": {
+          "src/xlm/data/adapters/essential_web_selector.py": "fd891e16b0ef6cca0ccf0d1b5a38ad41fab82689094f73c5c7d01c10064a46ac",
+          "src/xlm/data/adapters/malformed.py": "0b93dfb44d79e4493bf6ef9760b2d604544ec79dedf27156eada5472f647bcf6",
+          "src/xlm/data/adapters/mix01_adapters.py": "3651ff2af4fcb46c207404e052caa59e1ec42f2ac5a429e5dec752f7e83a7ef6",
+          "src/xlm/data/adapters/rejections.py": "f23b9a767220731423419e1961fb3fbada6d1e0f4b6650c569cb410707990c8b"
+        }
+      },
+      "batch_files": 32,
+      "benchmark_plan_digest": "f319a6f0cb7ccdf08f4b770f7d54c087169483bfaa15aeb3d22f25ed5802a316",
+      "c05": {
+        "obligation": {
+          "before_official_benchmark_claims": true,
+          "before_training": true,
+          "benchmarks": [
+            "BLiMP",
+            "ARC-Easy",
+            "HellaSwag",
+            "PIQA"
+          ],
+          "mechanism": "xlm.data.exclusion",
+          "receipt_verifier": "xlm.data.exclusion.receipt.verify_benchmark_claim",
+          "scope": "eventually_frozen_essential_mix01_canonical_training_pool",
+          "version": "c04-benchmark-risk-v2"
+        },
+        "status": "NOT RUN"
+      },
+      "campaign": "8e42ba31b0ef9fcbae1079cebf88d2449b88a9b37ec52b68c7a408eb2546bb8c",
+      "ceiling": {
+        "max_batches": 33,
+        "meaning": "execution contingency, not a quota: beyond it a new reviewed campaign version is required"
+      },
+      "code": {
+        "compatibility": {
+          "records": [
+            {
+              "digest": "94ab7cdbebea1dc20af2c875d9774d4d5655adf0743cca12379c7ffa4c47fab6",
+              "kind": "essential_web_recovery_scope_fix_v1",
+              "path": "docs/implementation/evidence/ESSENTIAL-WEB-RECOVERY-SCOPE/code-compatibility.json"
+            },
+            {
+              "digest": "1a63736c47c9bc516b406fa81465b7784e96b6fce467c452db2591f8d558c0d9",
+              "kind": "essential_web_windows_publication_fix_v1",
+              "path": "docs/implementation/evidence/ESSENTIAL-WEB-BATCH1-WINDOWS/code-compatibility.json"
+            }
+          ],
+          "recovery_amendment": {
+            "batch": 0,
+            "digest": "51c09f0b15e6b19ebeb9854c6d65ec1994b473467b555723f0924606574c24db",
+            "file": "data/crawl=CC-MAIN-2016-50/train-02164-of-03132.parquet",
+            "max_record_bytes": 11494172
+          }
+        },
+        "frozen_transport_sha256": {
+          "src/xlm/data/acquisition/source_parquet.py": "40921b00192de706218b7629a31adf18299b0dca1c93d462fbd09067864ddb8a",
+          "src/xlm/data/adapters/columns.py": "3e594f755eea797ac0d29d819c28b4ccf8e387cfc7889470dfc58e8657e58db1",
+          "src/xlm/data/sources/essential_web_local.py": "05cb36e81c550528af56aa98f8d5c73c15f1f65141429e0ec4e7a33502183bad"
+        },
+        "running_sha256": {
+          "scripts/essential_web_campaign.py": "55a5ed8d24050daefdba296f0ab5f4c0f6ba57b9661557bb265619977950f88b",
+          "scripts/essential_web_fast.py": "aaadb12a03d521d06a4080ab6cef5e8886ff08441a495fad346d6b710b32da66",
+          "src/xlm/data/acquisition/source_parquet.py": "a05fbdc48a5bde0d6696cfa4b85d3e85c752f21761a43cf8552f29835e3efe97",
+          "src/xlm/data/adapters/columns.py": "3e594f755eea797ac0d29d819c28b4ccf8e387cfc7889470dfc58e8657e58db1",
+          "src/xlm/data/sources/essential_web_campaign_runner.py": "7e440aaa2eb5c772b666a787d564d6d2384eb723c3235d38b62a4476188165d4",
+          "src/xlm/data/sources/essential_web_local.py": "882583efc76400153f4a7a4b05883ae6b4448513f7ffe2e6e61eefdc836df6dd",
+          "src/xlm/data/sources/essential_web_monitor.py": "4c151ed23431f8368d828010b3ef9c4a1af180b1e9abffd3cda38edb6a5f65ac",
+          "src/xlm/data/sources/essential_web_progress.py": "edbba2e52d37a46bcbeb58e0a75c4f4a981d47ed5495767826eeb313e9a7f856",
+          "src/xlm/data/sources/essential_web_recovery.py": "7edaf5364188f782f1ab17dfdedccf2a572193b16f3ffd9fdf47997ef44e3342"
+        }
+      },
+      "concurrency": {
+        "download_workers": 8,
+        "download_workers_max": 16,
+        "process_threads": 1,
+        "process_workers": 12,
+        "process_workers_max": 16
+      },
+      "disk": {
+        "footprint_cap_bytes": 429496729600,
+        "min_free_bytes": 68719476736
+      },
+      "inventory": {
+        "digest": "4bbd5517e760971405d9aed56bba5b84877a6325d10f5a10a05b50f5a8d763d8",
+        "file_count": 23200,
+        "order": "SHA-256(seed|repository|revision|file) ascending, filename tiebreak",
+        "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/production.inventory.json",
+        "seed": 20260930
+      },
+      "limits": {
+        "batch_deadline_seconds": 14400.0,
+        "deadline_basis": "a stalled stream fails after the request timeout and resumes; the file deadline bounds one file at about 0.3 MiB/s and the batch deadline one run",
+        "file_deadline_seconds": 1800.0,
+        "identity_rule": "opaque-strong-etag+local-sha256+independent-sha256-when-declared",
+        "max_decoded_bytes_per_file": 2147483648,
+        "max_decompression_ratio": 15.0,
+        "max_durable_bytes_per_file": 1073741824,
+        "max_file_bytes": 536870912,
+        "max_ledger_bytes": 536870912,
+        "max_parser_bytes": 33554432,
+        "max_record_bytes": 8388608,
+        "max_requests_per_file": 16,
+        "max_retries": 5,
+        "max_rows_per_file": 250000,
+        "observed_max_file_bytes": 316724715,
+        "observed_max_rows_per_file": 97828,
+        "request_timeout_seconds": 30.0,
+        "transfer_factor": 1.5
+      },
+      "scratch": {
+        "cap_bytes": 68719476736,
+        "max_in_flight_files": 32,
+        "min_free_bytes": 34359738368,
+        "relative": "ew-fast"
+      },
+      "selector": {
+        "condition": "B-normal",
+        "evaluator_sha256": "5a63e78560ea9e12b0ec03b5e7e63204b5c75554bee02192c12bb4ab0853bf9c",
+        "freeze_digest": "c6f32a65f083c99b64245e25151f2cc73275093e1013d68b625c6d6f63d10a0c",
+        "freeze_version": "essential-web-selector-fasttrack-v1",
+        "policy_digest": "f4357f61f434d5105d823266153dac6372e122f12767187631e8796b4899dd07",
+        "selector_id": "essential-web-b-normal"
+      },
+      "source": {
+        "repository": "EssentialAI/essential-web-v1.0",
+        "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+        "source_id": "essential_web"
+      },
+      "targets": {
+        "essential_practical": {
+          "final_exact_token_quota": 600000000,
+          "first_pass_estimated_token_target": 660000000,
+          "required_canonical_bytes": 2640000000
+        },
+        "essential_prose": {
+          "final_exact_token_quota": 300000000,
+          "first_pass_estimated_token_target": 330000000,
+          "required_canonical_bytes": 1320000000
+        },
+        "essential_science": {
+          "final_exact_token_quota": 600000000,
+          "first_pass_estimated_token_target": 660000000,
+          "required_canonical_bytes": 2640000000
+        }
+      }
+    },
+    "kind": "essential_web_auto_campaign_authorization",
+    "may_approve": "only the listed child authorization digests, each re-derived and compared before its batch starts",
+    "never_approves": [
+      "a recovery amendment",
+      "an oversized-record exception or any changed record bound",
+      "a changed source file identity",
+      "a changed code compatibility contract",
+      "a top-up after the first-pass targets are met"
+    ],
+    "operator": "gamma",
+    "range": {
+      "clamped_by_campaign_ceiling": false,
+      "end_batch_exclusive": 23,
+      "max_batches": 20,
+      "start_batch": 3
+    },
+    "version": 1
+  },
+  "first_child": {
+    "authorization_digest": "f25da8735fecea374935c05b1a0727fe77f8855ed91e4d12420da40ed6ccf56c",
+    "batch": 3,
+    "files": 32,
+    "first_inventory_rank": 96,
+    "limits_digest": "f85f180e2cc44787dcf014966ed36da4757246106e7c048ae12658d5d9ddfa8b",
+    "membership_digest": "bb7fd547ede2aeb36cb6ede5f72c49459451749148a3d50cfb50d4bbac264480",
+    "plan_hash": "242b0cf4592b75149357b5beed1ca159d39b2981348186360fa2da708da432e0",
+    "selection_hash": "d1401b051f82bca9f49e265b9bbbc33b0da24403b1bd4e5a9aa560d10b096137"
+  },
+  "kind": "essential_web_auto_campaign_prepare",
+  "membership_proof": {
+    "all_equal": true,
+    "batches": [
+      {
+        "batch": 3,
+        "historical_campaign_equal": true,
+        "inventory_slice_equal": true,
+        "membership_digest": "bb7fd547ede2aeb36cb6ede5f72c49459451749148a3d50cfb50d4bbac264480"
+      },
+      {
+        "batch": 4,
+        "historical_campaign_equal": true,
+        "inventory_slice_equal": true,
+        "membership_digest": "4fa4bca1c604c623395260a48c1a33008b85f2d307ac162cc4a1bd1d0623f24e"
+      },
+      {
+        "batch": 5,
+        "historical_campaign_equal": true,
+        "inventory_slice_equal": true,
+        "membership_digest": "8b22db6d1179b8902eead2ac03e1abc9b3a5a62ecb1eae153c1daf90994dc8a1"
+      },
+      {
+        "batch": 6,
+        "historical_campaign_equal": true,
+        "inventory_slice_equal": true,
+        "membership_digest": "1f46223480e42910f3993f81022b9790e58b644454e4107855ed56cd5d8d4cfc"
+      },
+      {
+        "batch": 7,
+        "historical_campaign_equal": true,
+        "inventory_slice_equal": true,
+        "membership_digest": "46cf0ce1b8cb7443dc1c1942bd84009c03d0a174a8ac1fbe4b92eeb760a9ca8a"
+      },
+      {
+        "batch": 8,
+        "historical_campaign_equal": true,
+        "inventory_slice_equal": true,
+        "membership_digest": "de2cd7e43bbca20224817faed916e67f9634915303dba7c6427f530c66583337"
+      },
+      {
+        "batch": 9,
+        "historical_campaign_equal": true,
+        "inventory_slice_equal": true,
+        "membership_digest": "40f6f29eaaa036af0a622bd0656f98ae137f31e927fdf9b5b443ae5ab6568266"
+      },
+      {
+        "batch": 10,
+        "historical_campaign_equal": true,
+        "inventory_slice_equal": true,
+        "membership_digest": "555f7235883886865f0ab6b72cce203b0a557d0c457be58e6f4644eca389067e"
+      },
+      {
+        "batch": 11,
+        "historical_campaign_equal": true,
+        "inventory_slice_equal": true,
+        "membership_digest": "d60c52f6a95bde300c991978a0ddf459a3393ccf12b92a37a3f8c751a6fed5e4"
+      },
+      {
+        "batch": 12,
+        "historical_campaign_equal": true,
+        "inventory_slice_equal": true,
+        "membership_digest": "4c51622e4291973005911e65f257804b34e468fdd61c4d27cecbfaaff61afc76"
+      },
+      {
+        "batch": 13,
+        "historical_campaign_equal": true,
+        "inventory_slice_equal": true,
+        "membership_digest": "8daa2efdbed7d52a750625f6415293c12385cb95419eb1257c09f9a75d1b2bf1"
+      },
+      {
+        "batch": 14,
+        "historical_campaign_equal": true,
+        "inventory_slice_equal": true,
+        "membership_digest": "6bacb57846eafe258406b4330b03638bb5be65ba8fe6b4bacd8e6968dec25634"
+      },
+      {
+        "batch": 15,
+        "historical_campaign_equal": true,
+        "inventory_slice_equal": true,
+        "membership_digest": "5cb8ece6107eaec4c0001278c45250cdcb53c831574728713bc7ca56b6fada53"
+      },
+      {
+        "batch": 16,
+        "historical_campaign_equal": true,
+        "inventory_slice_equal": true,
+        "membership_digest": "cd771cffcff358498dfded128489a4c1f98b573342614a6ebe52cca971a0b849"
+      },
+      {
+        "batch": 17,
+        "historical_campaign_equal": true,
+        "inventory_slice_equal": true,
+        "membership_digest": "133eda8125bac53b8032d84307e7fd25c63099d358a96000b02718b5c0ea7718"
+      },
+      {
+        "batch": 18,
+        "historical_campaign_equal": true,
+        "inventory_slice_equal": true,
+        "membership_digest": "c2ecdd2d151091ffea900e6feec4292093d554cdbb10a7a392e91cd2081dc92d"
+      },
+      {
+        "batch": 19,
+        "historical_campaign_equal": true,
+        "inventory_slice_equal": true,
+        "membership_digest": "404995db058dc531d096f19845c8bcc06b7f42630aa8034b6d6831145f3b52ee"
+      },
+      {
+        "batch": 20,
+        "historical_campaign_equal": true,
+        "inventory_slice_equal": true,
+        "membership_digest": "0c536f829c3f1f173bb7988ea460b417e1eea0afecc16db3c1dbf31b88c29889"
+      },
+      {
+        "batch": 21,
+        "historical_campaign_equal": true,
+        "inventory_slice_equal": true,
+        "membership_digest": "b7955e8a7fe4ee09dd664ea4bd60c8374a94703b9e5c173d9d61f993fdc7342f"
+      },
+      {
+        "batch": 22,
+        "historical_campaign_equal": true,
+        "inventory_slice_equal": true,
+        "membership_digest": "2e614a445c20a29919363da714c1d45c80948401412869cd92ca0b52cd4165fb"
+      }
+    ],
+    "inventory_digest": "4bbd5517e760971405d9aed56bba5b84877a6325d10f5a10a05b50f5a8d763d8"
+  },
+  "network": "none",
+  "next_batch_classification": {
+    "authorized": false,
+    "batch": 3,
+    "planned": false,
+    "reasons": [
+      "no execution evidence"
+    ],
+    "state": "CLEAN_NOT_STARTED"
+  },
+  "reproduced_existing_plans": [
+    {
+      "authorization_digest_equal": true,
+      "batch": 0
+    },
+    {
+      "authorization_digest_equal": true,
+      "batch": 1
+    },
+    {
+      "authorization_digest_equal": true,
+      "batch": 2
+    }
+  ],
+  "space": {
+    "footprint_after_worst_case_bytes": 720165061421,
+    "footprint_cap_bytes": 429496729600,
+    "note": "worst case is every envelope batch at its per-batch durable ceiling; the campaign gate and the footprint cap still refuse any batch that would not fit",
+    "projected_additional_footprint_bytes": 153861372284.6667,
+    "worst_case_durable_bytes": 687194767360
+  },
+  "status": {
+    "c05": "NOT RUN",
+    "campaign": "8e42ba31b0ef9fcbae1079cebf88d2449b88a9b37ec52b68c7a408eb2546bb8c",
+    "ceiling_batches": 33,
+    "complete_batches": 3,
+    "counted_rows": 7956430,
+    "decision": "CONTINUE",
+    "disk": {
+      "automation_min_durable_free_bytes": 137438953472,
+      "automation_min_scratch_free_bytes": 103079215104,
+      "batch_output_ceiling_bytes": 34359738368,
+      "campaign_min_free_bytes": 68719476736,
+      "durable_free_bytes": 966130540544,
+      "footprint_bytes": 32970294061,
+      "footprint_cap_bytes": 429496729600,
+      "scratch_cap_bytes": 68719476736,
+      "scratch_free_bytes": 862048034816,
+      "scratch_min_free_bytes": 34359738368,
+      "scratch_used_bytes": 63352737
+    },
+    "history": [
+      {
+        "batch": 0,
+        "files": 32,
+        "footprint_bytes": 10782557732,
+        "rows": 2604815,
+        "seconds": 243.7509999999893,
+        "tokens": {
+          "essential_practical": 97768710.5,
+          "essential_prose": 274137810.5,
+          "essential_science": 40167642.5
+        }
+      },
+      {
+        "batch": 1,
+        "files": 32,
+        "footprint_bytes": 11304245237,
+        "rows": 2708168,
+        "seconds": 264.9529999999795,
+        "tokens": {
+          "essential_practical": 104719230.5,
+          "essential_prose": 292188655.5,
+          "essential_science": 39869891.25
+        }
+      },
+      {
+        "batch": 2,
+        "files": 32,
+        "footprint_bytes": 10883491092,
+        "rows": 2643447,
+        "seconds": 221.18799999999464,
+        "tokens": {
+          "essential_practical": 98377920.75,
+          "essential_prose": 273815237.0,
+          "essential_science": 38856635.0
+        }
+      }
+    ],
+    "kind": "essential_web_auto_campaign_status",
+    "network": "none",
+    "next_batch": 3,
+    "projection": {
+      "basis_batches": [
+        0,
+        1,
+        2
+      ],
+      "eta_seconds": 3406.162666666496,
+      "note": "projected from the rolling mean of recent complete batches; measured execution time only, excluding pauses between runs; not a promise",
+      "projected_additional_footprint_bytes": 153861372284.6667,
+      "recent_batch_seconds": 243.29733333332115,
+      "recent_footprint_bytes_per_batch": 10990098020.333334,
+      "remaining_batches": 14,
+      "status": "projected",
+      "views": {
+        "essential_practical": {
+          "recent_tokens_per_batch": 100288620.58333333,
+          "remaining_batches": 4
+        },
+        "essential_prose": {
+          "recent_tokens_per_batch": 280047234.3333333,
+          "remaining_batches": 0
+        },
+        "essential_science": {
+          "recent_tokens_per_batch": 39631389.583333336,
+          "remaining_batches": 14
+        }
+      }
+    },
+    "rows": 7956430,
+    "sealed_files": 96,
+    "time": {
+      "campaign_elapsed_seconds": null,
+      "last_batch_seconds": null
+    },
+    "training_permitted": false,
+    "views": {
+      "essential_practical": {
+        "canonical_bytes": 1203463447,
+        "deficit_tokens": 359134138.25,
+        "estimated_tokens": 300865861.75,
+        "required_canonical_bytes": 2640000000,
+        "status": "TOP_UP",
+        "target_tokens": 660000000
+      },
+      "essential_prose": {
+        "canonical_bytes": 3360566812,
+        "deficit_tokens": 0.0,
+        "estimated_tokens": 840141703.0,
+        "required_canonical_bytes": 1320000000,
+        "status": "SUFFICIENT",
+        "target_tokens": 330000000
+      },
+      "essential_science": {
+        "canonical_bytes": 475576675,
+        "deficit_tokens": 541105831.25,
+        "estimated_tokens": 118894168.75,
+        "required_canonical_bytes": 2640000000,
+        "status": "TOP_UP",
+        "target_tokens": 660000000
+      }
+    }
+  },
+  "stop_conditions": [
+    "campaign, source, revision, selector, adapter, inventory, limits or code identity differs from the envelope",
+    "a child batch's membership, plan hash or authorization digest differs from the envelope",
+    "the next batch is outside the envelope or beyond the campaign ceiling",
+    "the next batch needs human review (recorded unit failure, unexplained fatal stop, unit without receipt, retained-source or checkpoint identity conflict, recovery amendment in scope)",
+    "the campaign gate says anything other than RUN (disk reserve, footprint cap, order, ceiling, benchmark, superseded campaign)",
+    "C04 production admission of the authorized plan fails",
+    "an automation guard: durable free space or scratch free space or scratch occupancy",
+    "the batch process exits with any code other than 0 (continue) or 3 (targets met)",
+    "the batch is not complete and verified after its process exits",
+    "operator interruption (Ctrl+C)"
+  ],
+  "written": null
+}

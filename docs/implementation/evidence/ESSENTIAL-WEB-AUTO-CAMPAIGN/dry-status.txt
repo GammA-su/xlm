@@ -1,0 +1,20 @@
+========================================================================
+ESSENTIAL-WEB AUTO CAMPAIGN  8e42ba31b0ef9fcb
+batch 3 next  complete batches 3  sealed files 96  cumulative rows 7,956,430
+TARGETS (estimated tokens, complete batches only)
+  SCIENCE   118.9M / 660.0M   18.0%  TOP_UP
+  PRACTICAL 300.9M / 660.0M   45.6%  TOP_UP
+  PROSE     840.1M / 330.0M  254.6%  SUFFICIENT
+DISK
+  durable footprint 30.7 GiB / cap 400.0 GiB
+  durable free 899.8 GiB  campaign reserve 64.0 GiB  automation guard set by PrepareAuto
+  scratch used 0.1 GiB / cap 64.0 GiB  scratch free 802.8 GiB  guard set by PrepareAuto
+TIME
+  campaign elapsed not started  last batch this session -
+  recent batch 4m03s (mean of batches [0, 1, 2])
+  science recent yield 39.6M/batch
+  projected remaining ~14 batches  ETA ~56m46s (projected, not a promise)
+  projected additional footprint ~143.3 GiB
+========================================================================
+next batch 3: CLEAN_NOT_STARTED membership bb7fd547ede2aeb36cb6ede5f72c49459451749148a3d50cfb50d4bbac264480
+  no execution evidence

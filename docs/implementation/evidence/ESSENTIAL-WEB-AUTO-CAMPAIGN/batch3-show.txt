@@ -1,0 +1,35 @@
+campaign 8e42ba31b0ef9fcbae1079cebf88d2449b88a9b37ec52b68c7a408eb2546bb8c
+batch 3: 32 files, membership bb7fd547ede2aeb36cb6ede5f72c49459451749148a3d50cfb50d4bbac264480
+     96  data/crawl=CC-MAIN-2014-15/train-00202-of-02772.parquet
+     97  data/crawl=CC-MAIN-2024-26/train-00279-of-03168.parquet
+     98  data/crawl=CC-MAIN-2021-49/train-01476-of-02895.parquet
+     99  data/crawl=CC-MAIN-2024-26/train-00141-of-03168.parquet
+    100  data/crawl=CC-MAIN-2018-05/train-02481-of-03429.parquet
+    101  data/crawl=CC-MAIN-2021-04/train-01530-of-03315.parquet
+    102  data/crawl=CC-MAIN-2021-04/train-02538-of-03315.parquet
+    103  data/crawl=CC-MAIN-2014-15/train-02412-of-02772.parquet
+    104  data/crawl=CC-MAIN-2019-09/train-02035-of-02577.parquet
+    105  data/crawl=CC-MAIN-2019-09/train-01993-of-02577.parquet
+    106  data/crawl=CC-MAIN-2021-49/train-01660-of-02895.parquet
+    107  data/crawl=CC-MAIN-2016-50/train-00640-of-03132.parquet
+    108  data/crawl=CC-MAIN-2024-26/train-00360-of-03168.parquet
+    109  data/crawl=CC-MAIN-2024-26/train-02452-of-03168.parquet
+    110  data/crawl=CC-MAIN-2024-26/train-00549-of-03168.parquet
+    111  data/crawl=CC-MAIN-2014-15/train-01853-of-02772.parquet
+    112  data/crawl=CC-MAIN-2018-05/train-03201-of-03429.parquet
+    113  data/crawl=CC-MAIN-2018-05/train-00402-of-03429.parquet
+    114  data/crawl=CC-MAIN-2021-49/train-01692-of-02895.parquet
+    115  data/crawl=CC-MAIN-2018-05/train-02489-of-03429.parquet
+    116  data/crawl=CC-MAIN-2018-05/train-01229-of-03429.parquet
+    117  data/crawl=CC-MAIN-2016-50/train-01853-of-03132.parquet
+    118  data/crawl=CC-MAIN-2018-05/train-00717-of-03429.parquet
+    119  data/crawl=CC-MAIN-2018-05/train-01226-of-03429.parquet
+    120  data/crawl=CC-MAIN-2021-04/train-01419-of-03315.parquet
+    121  data/crawl=CC-MAIN-2021-04/train-00600-of-03315.parquet
+    122  data/crawl=CC-MAIN-2015-32/train-01492-of-01920.parquet
+    123  data/crawl=CC-MAIN-2015-32/train-00773-of-01920.parquet
+    124  data/crawl=CC-MAIN-2018-05/train-02758-of-03429.parquet
+    125  data/crawl=CC-MAIN-2015-32/train-00348-of-01920.parquet
+    126  data/crawl=CC-MAIN-2015-32/train-01047-of-01920.parquet
+    127  data/crawl=CC-MAIN-2014-15/train-01086-of-02772.parquet
+planning is offline: no footer or layout read is needed before the run

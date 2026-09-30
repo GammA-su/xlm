@@ -1,3 +1,12 @@
+> **Essential-Web automatic campaign (2026-09-30):** after `. .\scripts\operator_storage.ps1`,
+> `.\scripts\operator_essential_web_campaign.ps1 -Stage Status` shows the campaign, the
+> next batch and a projected ETA (offline). `-Stage PrepareAuto -MaxBatches 20` binds a
+> bounded envelope offline and prints `AUTO AUTHORIZATION DIGEST`.
+> `-Stage RunAuto -Authorize <digest>` runs one batch after another through the unchanged
+> fast driver until the first-pass targets are met. It stops for review on any failure;
+> after an interruption, rerun the same command.
+> [Runner report](../implementation/reports/ESSENTIAL-WEB-AUTO-CAMPAIGN.md).
+>
 > **Essential-Web Batch-1 Windows fix (2026-09-30):** Batch 1 stopped at 10/32
 > because a progress-file replace met the monitor's open handle (WinError 5).
 > After the fix, rerun `-Batch 1 -Stage Run` after dot-sourcing storage: no

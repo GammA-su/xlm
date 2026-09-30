@@ -1,0 +1,7 @@
+selection: tests/test_essential_web_campaign_runner.py tests/test_essential_web_fast.py tests/test_essential_web_recovery.py tests/test_essential_web_recovery_scope.py tests/test_essential_web_windows_publication.py tests/test_essential_web_calibration.py tests/test_essential_web_bulk.py tests/test_essential_web_readiness.py tests/test_essential_web_production_selector.py tests/test_essential_web_fasttrack_freeze.py tests/test_essential_web_selector_sweep.py tests/test_essential_web_bootstrap.py tests/test_essential_web_live_certification.py tests/test_source_admission.py tests/test_mix01_inventory.py tests/test_mix01_quotas_6b.py tests/test_mix01_views.py tests/test_acquisition_plan.py tests/test_acquisition_verifier.py tests/test_acquisition_bounds.py tests/test_acquisition_fetcher.py tests/test_acquisition_leases.py tests/test_hf_range_transport.py tests/test_production_ingest.py tests/test_rowgroup_sampling.py tests/test_adapt_rejections.py tests/test_exclusion_receipt.py tests/test_exclusion_benchmark.py tests/test_parquet_window_nested.py tests/test_parquet_window_sampling.py tests/test_selected_record_concurrency.py tests/test_calibration_adopt.py
+........................................................................ [ 91%]
+..................................................................       [100%]
+786 passed in 57.39s
+parallel (-n 8, not serial) exit=0 seconds=58
+3 passed, 786 deselected in 5.84s
+serial (-n 0, serial) exit=0 seconds=6
