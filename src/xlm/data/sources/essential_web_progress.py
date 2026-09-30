@@ -95,6 +95,7 @@ class Snapshot:
     retries: int = 0
     malformed: int = 0
     failed: int = 0
+    cancelled: int = 0
     scratch: int = 0
     scratch_cap: int = 0
     durable: int = 0
@@ -179,7 +180,8 @@ class Dashboard:
             )
         lines.extend(
             [
-                f"ERRORS malformed={s.malformed} retries={s.retries} failed units={s.failed}",
+                f"ERRORS malformed={s.malformed} retries={s.retries} failed units={s.failed} "
+                f"cancelled={s.cancelled}",
                 f"DISK scratch={s.scratch:,}/{s.scratch_cap:,} B durable batch={s.durable:,} B "
                 f"free={s.free if s.free is not None else '?'} B",
                 "ACTIVE download="

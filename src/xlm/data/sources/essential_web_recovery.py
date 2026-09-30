@@ -16,6 +16,26 @@ from xlm.data.sources.essential_web_bulk import BulkError
 
 MANIFEST = "docs/implementation/evidence/ESSENTIAL-WEB-BATCH0-RECOVERY/recovery.json"
 SCOPE_FIX = "docs/implementation/evidence/ESSENTIAL-WEB-RECOVERY-SCOPE/code-compatibility.json"
+WINDOWS_FIX = "docs/implementation/evidence/ESSENTIAL-WEB-BATCH1-WINDOWS/code-compatibility.json"
+_DRIVER = "scripts/essential_web_fast.py"
+_DISPATCHER = "src/xlm/data/sources/essential_web_recovery.py"
+#: Additive code-compatibility records in order: path, kind, and the exact files each changes.
+COMPATIBILITY = (
+    (SCOPE_FIX, "essential_web_recovery_scope_fix_v1", frozenset({_DRIVER, _DISPATCHER})),
+    (
+        WINDOWS_FIX,
+        "essential_web_windows_publication_fix_v1",
+        frozenset(
+            {
+                _DRIVER,
+                _DISPATCHER,
+                "src/xlm/data/sources/essential_web_local.py",
+                "src/xlm/data/sources/essential_web_monitor.py",
+                "src/xlm/data/sources/essential_web_progress.py",
+            }
+        ),
+    ),
+)
 CODE_FILES = (
     *fast.TRANSPORT_CODE_FILES,
     "src/xlm/data/sources/essential_web_progress.py",
@@ -57,25 +77,39 @@ def load_manifest(repo: Path, config: Mapping[str, Any]) -> dict[str, Any] | Non
 
 
 def compatible_code(repo: Path, manifest: Mapping[str, Any]) -> bool:
-    """Preserve the historical amendment; bind only the reviewed scope repair."""
+    """Preserve the historical amendment; bind only the reviewed repairs, in order.
+
+    Each record must continue exactly from the code the previous one froze and
+    may change only its own files; the running code must be one of the frozen
+    states. Nothing is rewritten: a later repair only appends a record.
+    """
     current = code_identity(repo)
-    if manifest.get("code") == current:
+    code = manifest.get("code")
+    if code == current:
         return True
-    path = repo / SCOPE_FIX
-    if not path.is_file():
-        return False
-    fix = json.loads(path.read_bytes())
-    changed = {name for name in current if current[name] != manifest["code"].get(name)}
-    return bool(
-        fix.get("kind") == "essential_web_recovery_scope_fix_v1"
-        and fix.get("digest") == canonical.digest({k: v for k, v in fix.items() if k != "digest"})
-        and fix.get("recovery_digest") == manifest["digest"]
-        and fix.get("campaign") == manifest["campaign"]
-        and fix.get("previous_code") == manifest["code"]
-        and fix.get("code") == current
-        and changed
-        == {"scripts/essential_web_fast.py", "src/xlm/data/sources/essential_web_recovery.py"}
-    )
+    for relative, kind, allowed in COMPATIBILITY:
+        path = repo / relative
+        if not path.is_file() or not isinstance(code, dict):
+            return False
+        fix = json.loads(path.read_bytes())
+        frozen = fix.get("code")
+        if not isinstance(frozen, dict) or set(frozen) != set(code):
+            return False
+        changed = {name for name in frozen if frozen[name] != code[name]}
+        if not (
+            fix.get("kind") == kind
+            and fix.get("digest")
+            == canonical.digest({k: v for k, v in fix.items() if k != "digest"})
+            and fix.get("recovery_digest") == manifest["digest"]
+            and fix.get("campaign") == manifest["campaign"]
+            and fix.get("previous_code") == code
+            and changed == allowed
+        ):
+            return False
+        code = frozen
+        if code == current:
+            return True
+    return False
 
 
 def unit_scope(campaign: Any, batch: int, rank: int, name: str) -> dict[str, Any] | None:

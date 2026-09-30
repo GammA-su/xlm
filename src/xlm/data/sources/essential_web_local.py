@@ -13,8 +13,10 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 import threading
 import time
+import traceback
 import uuid
 from collections import deque
 from collections.abc import Callable, Mapping, Sequence
@@ -30,6 +32,7 @@ from pathlib import Path
 from typing import Any
 
 import pyarrow as pa
+from filelock import FileLock, Timeout
 
 from xlm.artifacts.manifest import ensure_plain_path
 from xlm.data.acquisition.records import StreamingJsonlWriter
@@ -38,6 +41,7 @@ from xlm.data.acquisition.source_parquet import (
     ScratchBudget,
     ScratchCapError,
     SourceTransferError,
+    TransferCancelledError,
     TransferLimits,
     TransferMeter,
     TransferResult,
@@ -102,6 +106,102 @@ def _write_bytes(path: Path, data: bytes) -> None:
         stream.write(data)
         stream.flush()
         os.fsync(stream.fileno())
+
+
+# ------------------------------------------------------------ live progress
+#
+# A worker process publishes its snapshot with os.replace while the parent's
+# monitor reads the same name. On Windows a replace fails with WinError 5 while
+# any other handle on the target is open (even one opened with
+# FILE_SHARE_DELETE), and a read racing the replace fails too. Both sides hold
+# one per-unit lock across exactly that open/replace, so a replace never meets
+# an open reader. Neither side waits: a contended snapshot is simply skipped.
+
+
+def _progress_lock(path: Path) -> FileLock:
+    return FileLock(path.with_suffix(".lock"), preserve_lock_file=True)
+
+
+def publish_progress(path: Path, value: Mapping[str, Any]) -> bool:
+    """Atomically replace one progress snapshot; False when a reader holds it right now."""
+    temporary = path.with_suffix(".tmp")
+    temporary.write_text(json.dumps(dict(value)), encoding="utf-8")
+    lock = _progress_lock(path)
+    try:
+        lock.acquire(blocking=False)
+    except Timeout:
+        return False
+    try:
+        os.replace(temporary, path)
+    finally:
+        lock.release()
+    return True
+
+
+def read_progress(path: Path) -> dict[str, Any] | None:
+    """The last published snapshot, or None when absent or being replaced right now."""
+    if not path.is_file():
+        return None
+    lock = _progress_lock(path)
+    try:
+        lock.acquire(blocking=False)
+    except Timeout:
+        return None
+    try:
+        value: dict[str, Any] = json.loads(path.read_bytes())
+    finally:
+        lock.release()
+    return value
+
+
+_FRAME = re.compile(r'^\s*File "(?P<file>[^"]+)", line (?P<line>\d+), in (?P<function>\S+)$', re.M)
+_WINERROR = re.compile(r"^(?P<type>\w+): \[WinError (?P<code>\d+)\]", re.M)
+_WINDOWS_ERRORS = {
+    5: "access denied: the target was held open by another handle",
+    32: "sharing violation: the file was in use by another handle",
+    33: "lock violation: a byte range was locked by another handle",
+}
+
+
+def failure_detail(error: BaseException) -> dict[str, Any]:
+    """Code-authored facts about a failure: type, OS codes, own file names and the raising line.
+
+    Never the exception message, which may quote source content. A worker
+    exception carries the remote traceback text that concurrent.futures
+    attaches as its cause; only its ``File/line/in`` frame lines are parsed.
+    """
+    detail: dict[str, Any] = {"exception": type(error).__name__}
+    if isinstance(error, OSError):
+        winerror = getattr(error, "winerror", None)
+        detail.update(
+            errno=error.errno,
+            winerror=winerror,
+            reason=_WINDOWS_ERRORS.get(winerror) if isinstance(winerror, int) else None,
+            path=Path(str(error.filename)).name if error.filename is not None else None,
+            path2=Path(str(error.filename2)).name if error.filename2 is not None else None,
+        )
+    remote = getattr(error.__cause__, "tb", None)
+    if isinstance(remote, str):
+        frames = [(m["file"], m["line"], m["function"]) for m in _FRAME.finditer(remote)]
+        where = " (worker process)"
+        # Pickling drops ``winerror`` when ``filename2`` is set; keep only its number.
+        codes = [m for m in _WINERROR.finditer(remote) if m["type"] == type(error).__name__]
+        if isinstance(error, OSError) and detail.get("winerror") is None and codes:
+            detail["winerror"] = int(codes[-1]["code"])
+            detail["reason"] = _WINDOWS_ERRORS.get(detail["winerror"])
+    else:
+        frames = [
+            (f.filename, str(f.lineno), f.name) for f in traceback.extract_tb(error.__traceback__)
+        ]
+        where = ""
+    # The innermost frame of this project's code names the operation; a library frame does not.
+    own = [
+        f for f in frames if "xlm" in Path(f[0]).parts or Path(f[0]).name.startswith("essential_")
+    ]
+    if own or frames:
+        file, line, function = (own or frames)[-1]
+        detail["site"] = f"{Path(file).name}:{line} in {function}{where}"
+    return detail
 
 
 @dataclass
@@ -190,7 +290,6 @@ def adapt_source_file(
         now = time.monotonic()
         if now - last_progress < 1 and rows != stop - start:
             return
-        last_progress = now
         value = {
             "rows": rows,
             "total": stop - start,
@@ -203,9 +302,9 @@ def adapt_source_file(
             ),
         }
         progress_path.parent.mkdir(parents=True, exist_ok=True)
-        temporary = progress_path.with_suffix(".tmp")
-        temporary.write_text(json.dumps(value), encoding="utf-8")
-        os.replace(temporary, progress_path)
+        # A snapshot the monitor is reading this instant goes out with the next row.
+        if publish_progress(progress_path, value):
+            last_progress = now
 
     progress()
     try:
@@ -447,6 +546,8 @@ def run_pipeline(
     ``process_workers=0`` processing runs inline. After the first failure no
     new work starts, running streams stop at their next read and verified
     scratch files stay for the next run; the first error is then raised.
+    ``on_progress`` reports that root failure (``root=True``) apart from the
+    streams it cancelled, which are the consequence and not source failures.
     """
     if not 1 <= download_workers <= 16 or not 0 <= process_workers <= 16:
         raise ValueError("pipeline needs 1..16 download workers and 0..16 process workers")
@@ -466,10 +567,15 @@ def run_pipeline(
     }
 
     def fail(error: BaseException, key: str = "pipeline") -> None:
+        if failures and isinstance(error, TransferCancelledError):
+            # The cooperative stop that the root failure requested, not a source failure.
+            if on_progress is not None:
+                on_progress({"cancelled": key})
+            return
         failures.append(error)
         cancel.set()
         if on_progress is not None:
-            on_progress({"failed": key, "exception": type(error).__name__})
+            on_progress({"failed": key, "root": len(failures) == 1, **failure_detail(error)})
 
     def finish(unit: Unit, transfer: TransferResult | None, result: dict[str, Any] | None) -> None:
         try:

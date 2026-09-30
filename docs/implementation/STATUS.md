@@ -1,3 +1,20 @@
+> **ESSENTIAL-WEB BATCH-1 WINDOWS PUBLICATION FIX (2026-09-30, offline): READY TO
+> RESUME ESSENTIAL-WEB BATCH 1.** Authoritative state: 10/32 sealed (31.25%),
+> 848,755 rows. Root failure: f00035 `PermissionError` (errno 13 / WinError 5)
+> from the worker's live-progress `os.replace(.progress.tmp -> .progress.json)`
+> while the parent monitor held the target open; reproduced offline on NTFS.
+> The 8 `TransferCancelledError`s were the cooperative cascade. Fix: a per-unit
+> lock coordinates replace and read (no sleeps or retries), the monitor no
+> longer opens live download state, and the root is reported apart from
+> cancellations with a restart plan. Restart: 10 sealed skipped, 1 local
+> (f00035 durable raw), 5 Range resumes (872,415,232 bytes kept), 16 fresh.
+> 555 operator files are hash/size/mtime-identical; campaign, Batch-1 plan
+> and authorization unchanged; an additive code-compatibility record binds the
+> fix. Real resume and full acceptance NOT RUN.
+> [Report, evidence and operator command](reports/ESSENTIAL-WEB-BATCH1-WINDOWS.md).
+> Next: dot-source `scripts/operator_storage.ps1`, then
+> `scripts/operator_essential_web_fast.ps1 -Batch 1 -Stage Run`.
+
 > **ESSENTIAL-WEB RECOVERY SCOPE FIX (2026-09-30, offline): READY TO RUN
 > ESSENTIAL-WEB BATCH 1.** Batch 0 is complete: 32/32, 2,604,815 rows. Batch 1
 > has zero raw/processed/sealed files, no scratch directory, and a valid existing

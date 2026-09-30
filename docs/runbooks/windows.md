@@ -1,3 +1,11 @@
+> **Essential-Web Batch-1 Windows fix (2026-09-30):** Batch 1 stopped at 10/32
+> because a progress-file replace met the monitor's open handle (WinError 5).
+> After the fix, rerun `-Batch 1 -Stage Run` after dot-sourcing storage: no
+> Prepare, `-Authorize` or recovery digest. A fatal stop now prints ROOT
+> FAILURE, CANCELLED, PRESERVED and RESTART blocks; `-Stage ResumeCheck` shows
+> the verified restart classes. See the
+> [Windows-fix report](../implementation/reports/ESSENTIAL-WEB-BATCH1-WINDOWS.md).
+
 > **Essential-Web Batch-1 scope fix (2026-09-30):** Batch 0 is now complete and
 > immutable (32/32). Batch 1 has no acquired work and retains its valid plan and
 > authorization. After dot-sourcing storage, use `-Batch 1 -Stage Run` with no

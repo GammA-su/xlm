@@ -45,10 +45,12 @@ from xlm.data.acquisition.plan import (
 )
 from xlm.data.acquisition.sampling import canonical_range_url
 from xlm.data.acquisition.source_parquet import (
+    READ_BYTES,
     ScratchBudget,
     TransferLimits,
     TransferMeter,
     TransferResult,
+    file_sha256,
     identity_path,
     identity_record,
     load_durable_source,
@@ -61,7 +63,7 @@ from xlm.data.sources import essential_web_calibration as calibration
 from xlm.data.sources import essential_web_fast as fast
 from xlm.data.sources import essential_web_local as local
 from xlm.data.sources import essential_web_recovery as recovery
-from xlm.data.sources.essential_web_monitor import Monitor
+from xlm.data.sources.essential_web_monitor import Monitor, ObservedScratch
 
 REPO = Path(__file__).resolve().parents[1]
 #: The checkout that holds the executing code, even when tests relocate REPO.
@@ -842,6 +844,67 @@ def prepare_units(
     return units, ranks, charged
 
 
+def prefix_sha256(path: Path, length: int) -> str | None:
+    """SHA-256 of the first ``length`` bytes; None when the file is shorter."""
+    digest, left = hashlib.sha256(), length
+    with path.open("rb") as stream:
+        while left:
+            chunk = stream.read(min(READ_BYTES, left))
+            if not chunk:
+                return None
+            digest.update(chunk)
+            left -= len(chunk)
+    return digest.hexdigest()
+
+
+def restart_plan(units: list[local.Unit], max_file_bytes: int) -> dict[str, Any]:
+    """The exact network work these units need, judged as the transport will judge it.
+
+    A retained source was rehashed by ``prepare_units``. A complete scratch file
+    must rehash to its checkpoint and a partial one must reproduce its fsynced
+    prefix hash, which is what the transport reuses; anything else restarts
+    from zero. Read-only.
+    """
+    reuse: list[str] = []
+    resume: list[str] = []
+    fresh: list[str] = []
+    kept = known = unknown = 0
+    for unit in units:
+        if unit.url is None:
+            reuse.append(unit.key)
+            continue
+        state = read_json(unit.state) if unit.state.is_file() else {}
+        length = state.get("length")
+        verified = int(state.get("verified_bytes", 0))
+        if state.get("complete") and unit.partial.is_file():
+            if file_sha256(unit.partial) == (state.get("sha256"), length):
+                reuse.append(unit.key)
+                continue
+        elif verified and length is not None and unit.partial.is_file():
+            if prefix_sha256(unit.partial, verified) == state.get("prefix_sha256"):
+                resume.append(unit.key)
+                kept += verified
+                known += int(length) - verified
+                continue
+        fresh.append(unit.key)
+        if length is None:
+            unknown += 1
+        else:
+            known += int(length)
+    return {
+        "local_complete_reuse": len(reuse),
+        "partial_resume": len(resume),
+        "fresh_download": len(fresh),
+        "local_complete_reuse_keys": reuse,
+        "partial_resume_keys": resume,
+        "fresh_download_keys": fresh,
+        "resumable_verified_bytes": kept,
+        "known_network_bytes": known,
+        "unknown_length_units": unknown,
+        "worst_case_network_bytes": known + unknown * max_file_bytes,
+    }
+
+
 def cmd_resume_check(args: argparse.Namespace) -> int:
     """Read-only verification using the exact executor's scheduling path."""
     campaign = load_campaign(args.campaign, args.data_root, args.scratch_root)
@@ -850,12 +913,18 @@ def cmd_resume_check(args: argparse.Namespace) -> int:
     if plan.plan_hash != record["plan_hash"] or plan.selected_files != record["files"]:
         raise bulk.BulkError("authorized plan differs from batch")
     resume = recovery.resume_state(campaign, record)
-    units, _, _ = prepare_units(
+    units, _, charged = prepare_units(
         campaign, plan, record, campaign.scratch(f"b{args.batch:04d}"), resume
     )
     result = {k: v for k, v in resume.items() if k != "receipts"}
     result["network_units"] = sum(u.url is not None for u in units)
     result["scheduled_keys"] = [u.key for u in units]
+    result["restart"] = {
+        "sealed_skip": resume["sealed"],
+        **restart_plan(units, int(campaign.config["limits"]["max_file_bytes"])),
+        "charged_bytes": charged,
+        "transfer_ceiling_bytes": plan.limits.max_transferred_bytes,
+    }
     amendment = campaign.recovery
     if amendment is not None and args.batch != amendment["batch"]:
         amendment = None
@@ -913,7 +982,7 @@ def execute_batch(
         raise bulk.BulkError("staging deletion escapes the campaign staging root")
     shutil.rmtree(staging, ignore_errors=True)
     limits = campaign.transfer_limits()
-    scratch = ScratchBudget(
+    scratch = ObservedScratch(
         campaign.scratch(),
         int(campaign.config["scratch"]["cap_bytes"]),
         int(campaign.config["scratch"]["min_free_bytes"]),
@@ -972,6 +1041,12 @@ def execute_batch(
         monitor.update(
             {"downloading": [], "processing": [], "process_workers": 0, "backlog": 0}, force=True
         )
+    except BaseException as exc:
+        try:
+            monitor.fatal(exc)
+        except Exception as summary:  # the root failure stays the raised error
+            print(f"failure summary unavailable: {type(summary).__name__}", file=sys.stderr)
+        raise
     finally:
         monitor.dashboard.clear()
         system = sampler.stop()

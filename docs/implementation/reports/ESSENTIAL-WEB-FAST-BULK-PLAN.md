@@ -1,5 +1,10 @@
 # Essential-Web fast bulk plan — 2026-09-30
 
+> **2026-09-30 Batch-1 failure fix:** Batch 1 stopped at 10/32 on a Windows
+> live-progress race (f00035), now fixed. Rerun `-Batch 1 -Stage Run` with no
+> Prepare, `-Authorize` or recovery digest; sealed units are skipped and partial
+> downloads resume. See the [Windows-fix report](ESSENTIAL-WEB-BATCH1-WINDOWS.md).
+
 > **2026-09-30 scope correction:** Batch 0 is complete, 32/32. Batch 1 is
 > prepared and authorized, with no acquired work. Use `-Batch 1 -Stage Run`;
 > no recovery digest or new Prepare is needed. The

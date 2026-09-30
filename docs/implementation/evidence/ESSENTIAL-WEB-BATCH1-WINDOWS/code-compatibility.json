@@ -1,0 +1,26 @@
+{
+  "authorization_basis": "No source, membership, acquisition plan, resource limit, selector, mixture, quota or scientific contract changes. Only live-progress coordination, failure reporting and restart classification change; document, ledger and receipt bytes do not. Existing batch authorizations apply.",
+  "campaign": "8e42ba31b0ef9fcbae1079cebf88d2449b88a9b37ec52b68c7a408eb2546bb8c",
+  "code": {
+    "scripts/essential_web_fast.py": "aaadb12a03d521d06a4080ab6cef5e8886ff08441a495fad346d6b710b32da66",
+    "src/xlm/data/acquisition/source_parquet.py": "a05fbdc48a5bde0d6696cfa4b85d3e85c752f21761a43cf8552f29835e3efe97",
+    "src/xlm/data/adapters/columns.py": "3e594f755eea797ac0d29d819c28b4ccf8e387cfc7889470dfc58e8657e58db1",
+    "src/xlm/data/sources/essential_web_local.py": "882583efc76400153f4a7a4b05883ae6b4448513f7ffe2e6e61eefdc836df6dd",
+    "src/xlm/data/sources/essential_web_monitor.py": "4c151ed23431f8368d828010b3ef9c4a1af180b1e9abffd3cda38edb6a5f65ac",
+    "src/xlm/data/sources/essential_web_progress.py": "edbba2e52d37a46bcbeb58e0a75c4f4a981d47ed5495767826eeb313e9a7f856",
+    "src/xlm/data/sources/essential_web_recovery.py": "7edaf5364188f782f1ab17dfdedccf2a572193b16f3ffd9fdf47997ef44e3342"
+  },
+  "digest": "1a63736c47c9bc516b406fa81465b7784e96b6fce467c452db2591f8d558c0d9",
+  "kind": "essential_web_windows_publication_fix_v1",
+  "previous_code": {
+    "scripts/essential_web_fast.py": "2fbdb043a0b7ca7c7d0dc8171bde91d1272d99c8d3055c6914bb37c810f38961",
+    "src/xlm/data/acquisition/source_parquet.py": "a05fbdc48a5bde0d6696cfa4b85d3e85c752f21761a43cf8552f29835e3efe97",
+    "src/xlm/data/adapters/columns.py": "3e594f755eea797ac0d29d819c28b4ccf8e387cfc7889470dfc58e8657e58db1",
+    "src/xlm/data/sources/essential_web_local.py": "cb99f8dc2ce53792497e66724aadedd42008d511894ef969230fc6d7d8da34a5",
+    "src/xlm/data/sources/essential_web_monitor.py": "4efa7ef7dad35728ac2b590694a68e0f3a050c10c6cfefcc545dd008d2721670",
+    "src/xlm/data/sources/essential_web_progress.py": "98ff9cac4d233f6491abdeb6ddb46a70b718761be69f3003bc490368031e7cd4",
+    "src/xlm/data/sources/essential_web_recovery.py": "9ea66d2017e9dfd5492a3e32f823bfec793f920eed5146f26bf7e0b73ebfd3f0"
+  },
+  "previous_digest": "94ab7cdbebea1dc20af2c875d9774d4d5655adf0743cca12379c7ffa4c47fab6",
+  "recovery_digest": "51c09f0b15e6b19ebeb9854c6d65ec1994b473467b555723f0924606574c24db"
+}

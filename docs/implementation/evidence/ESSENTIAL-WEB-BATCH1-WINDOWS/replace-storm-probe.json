@@ -1,0 +1,54 @@
+[
+  {
+    "volume": "C:",
+    "case": "FILE_READ_ATTRIBUTES handle (os.stat fallback)",
+    "replaced": false,
+    "winerror": 5,
+    "errno": 13
+  },
+  {
+    "volume": "C:",
+    "case": "stat()/is_file() storm, 3000 replaces",
+    "failures": 0,
+    "winerrors": []
+  },
+  {
+    "volume": "C:",
+    "case": "read_bytes() storm, 3000 replaces",
+    "failures": 1893,
+    "winerrors": [
+      5
+    ],
+    "reader_errors": 2537,
+    "reader_winerrors": [
+      null
+    ],
+    "tmp_left": true
+  },
+  {
+    "volume": "G:",
+    "case": "FILE_READ_ATTRIBUTES handle (os.stat fallback)",
+    "replaced": false,
+    "winerror": 5,
+    "errno": 13
+  },
+  {
+    "volume": "G:",
+    "case": "stat()/is_file() storm, 3000 replaces",
+    "failures": 0,
+    "winerrors": []
+  },
+  {
+    "volume": "G:",
+    "case": "read_bytes() storm, 3000 replaces",
+    "failures": 1706,
+    "winerrors": [
+      5
+    ],
+    "reader_errors": 2303,
+    "reader_winerrors": [
+      null
+    ],
+    "tmp_left": false
+  }
+]

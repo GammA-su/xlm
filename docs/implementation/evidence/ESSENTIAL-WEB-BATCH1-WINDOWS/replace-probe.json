@@ -1,0 +1,49 @@
+{
+  "python": "3.12.13",
+  "results": [
+    {
+      "volume": "C:",
+      "reader": "python open() / Path.read_bytes",
+      "replaced": false,
+      "type": "PermissionError",
+      "errno": 13,
+      "winerror": 5,
+      "strerror": "\u30a2\u30af\u30bb\u30b9\u304c\u62d2\u5426\u3055\u308c\u307e\u3057\u305f\u3002",
+      "tmp_left": true,
+      "replace_after_close": true
+    },
+    {
+      "volume": "C:",
+      "reader": "CreateFileW FILE_SHARE_READ|WRITE|DELETE",
+      "replaced": false,
+      "type": "PermissionError",
+      "errno": 13,
+      "winerror": 5,
+      "strerror": "\u30a2\u30af\u30bb\u30b9\u304c\u62d2\u5426\u3055\u308c\u307e\u3057\u305f\u3002",
+      "tmp_left": true,
+      "replace_after_close": true
+    },
+    {
+      "volume": "G:",
+      "reader": "python open() / Path.read_bytes",
+      "replaced": false,
+      "type": "PermissionError",
+      "errno": 13,
+      "winerror": 5,
+      "strerror": "\u30a2\u30af\u30bb\u30b9\u304c\u62d2\u5426\u3055\u308c\u307e\u3057\u305f\u3002",
+      "tmp_left": true,
+      "replace_after_close": true
+    },
+    {
+      "volume": "G:",
+      "reader": "CreateFileW FILE_SHARE_READ|WRITE|DELETE",
+      "replaced": false,
+      "type": "PermissionError",
+      "errno": 13,
+      "winerror": 5,
+      "strerror": "\u30a2\u30af\u30bb\u30b9\u304c\u62d2\u5426\u3055\u308c\u307e\u3057\u305f\u3002",
+      "tmp_left": true,
+      "replace_after_close": true
+    }
+  ]
+}

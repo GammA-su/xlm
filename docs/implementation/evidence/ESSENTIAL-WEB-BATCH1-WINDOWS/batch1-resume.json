@@ -1,0 +1,186 @@
+{
+  "already_sealed_scheduled": 0,
+  "completion_percent": 31.25,
+  "network_units": 21,
+  "recovery_authorized": true,
+  "recovery_digest": null,
+  "remaining": [
+    {
+      "file": "data/crawl=CC-MAIN-2016-50/train-01628-of-03132.parquet",
+      "key": "f00033",
+      "rank": 33
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2016-50/train-00523-of-03132.parquet",
+      "key": "f00034",
+      "rank": 34
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2021-04/train-00049-of-03315.parquet",
+      "key": "f00035",
+      "rank": 35
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2015-32/train-00615-of-01920.parquet",
+      "key": "f00040",
+      "rank": 40
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2016-50/train-01262-of-03132.parquet",
+      "key": "f00044",
+      "rank": 44
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2024-26/train-02627-of-03168.parquet",
+      "key": "f00046",
+      "rank": 46
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2018-05/train-01190-of-03429.parquet",
+      "key": "f00048",
+      "rank": 48
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2024-26/train-02588-of-03168.parquet",
+      "key": "f00049",
+      "rank": 49
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2014-15/train-00381-of-02772.parquet",
+      "key": "f00050",
+      "rank": 50
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2019-09/train-01453-of-02577.parquet",
+      "key": "f00051",
+      "rank": 51
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2018-05/train-02343-of-03429.parquet",
+      "key": "f00052",
+      "rank": 52
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2019-09/train-00296-of-02577.parquet",
+      "key": "f00053",
+      "rank": 53
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2018-05/train-00483-of-03429.parquet",
+      "key": "f00054",
+      "rank": 54
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2021-49/train-02251-of-02895.parquet",
+      "key": "f00055",
+      "rank": 55
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2018-05/train-02010-of-03429.parquet",
+      "key": "f00056",
+      "rank": 56
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2021-04/train-00163-of-03315.parquet",
+      "key": "f00057",
+      "rank": 57
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2014-15/train-02466-of-02772.parquet",
+      "key": "f00058",
+      "rank": 58
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2021-04/train-02725-of-03315.parquet",
+      "key": "f00059",
+      "rank": 59
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2021-04/train-02510-of-03315.parquet",
+      "key": "f00060",
+      "rank": 60
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2021-04/train-00589-of-03315.parquet",
+      "key": "f00061",
+      "rank": 61
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2018-05/train-00364-of-03429.parquet",
+      "key": "f00062",
+      "rank": 62
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2021-04/train-01715-of-03315.parquet",
+      "key": "f00063",
+      "rank": 63
+    }
+  ],
+  "restart": {
+    "charged_bytes": 4331467791,
+    "fresh_download": 16,
+    "fresh_download_keys": [
+      "f00048",
+      "f00049",
+      "f00050",
+      "f00051",
+      "f00052",
+      "f00053",
+      "f00054",
+      "f00055",
+      "f00056",
+      "f00057",
+      "f00058",
+      "f00059",
+      "f00060",
+      "f00061",
+      "f00062",
+      "f00063"
+    ],
+    "known_network_bytes": 1269159626,
+    "local_complete_reuse": 1,
+    "local_complete_reuse_keys": [
+      "f00035"
+    ],
+    "partial_resume": 5,
+    "partial_resume_keys": [
+      "f00033",
+      "f00034",
+      "f00040",
+      "f00044",
+      "f00046"
+    ],
+    "resumable_verified_bytes": 872415232,
+    "sealed_skip": 10,
+    "transfer_ceiling_bytes": 25769803776,
+    "unknown_length_units": 13,
+    "worst_case_network_bytes": 8248481482
+  },
+  "scheduled": 22,
+  "scheduled_keys": [
+    "f00033",
+    "f00034",
+    "f00035",
+    "f00040",
+    "f00044",
+    "f00046",
+    "f00048",
+    "f00049",
+    "f00050",
+    "f00051",
+    "f00052",
+    "f00053",
+    "f00054",
+    "f00055",
+    "f00056",
+    "f00057",
+    "f00058",
+    "f00059",
+    "f00060",
+    "f00061",
+    "f00062",
+    "f00063"
+  ],
+  "sealed": 10,
+  "total": 32
+}
