@@ -1,3 +1,12 @@
+> **Essential-Web Batch-1 scope fix (2026-09-30):** Batch 0 is now complete and
+> immutable (32/32). Batch 1 has no acquired work and retains its valid plan and
+> authorization. After dot-sourcing storage, use `-Batch 1 -Stage Run` with no
+> recovery digest and no new Prepare. The exception applies only to Batch-0
+> f00026's exact content; future files retain the 8 MiB bound. See the
+> [scope-fix report](../implementation/reports/ESSENTIAL-WEB-RECOVERY-SCOPE.md)
+> for the exact command, evidence and checks. The recovery instructions below
+> are historical.
+
 > **Essential-Web Batch-0 recovery (2026-09-30):** authoritative state is 31/32
 > sealed (96.875%), with only `f00026` remaining and its source already retained.
 > Do not run Prepare or download again. Review the

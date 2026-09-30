@@ -579,10 +579,24 @@ def cmd_status(args: argparse.Namespace) -> int:
 # ------------------------------------------------------------------------ run
 
 
-def unit_job(campaign: Campaign, plan: AcquisitionPlan, name: str, staging: Path) -> dict[str, Any]:
+def unit_job(
+    campaign: Campaign,
+    plan: AcquisitionPlan,
+    name: str,
+    staging: Path,
+    *,
+    batch: int | None = None,
+    rank: int | None = None,
+    source: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     limits = campaign.process_limits()
-    if campaign.recovery is not None and name == campaign.recovery["file"]:
-        limits["max_record_bytes"] = campaign.recovery["max_record_bytes"]
+    amendment = (
+        None
+        if batch is None or rank is None
+        else recovery.lookup_matching_recovery(campaign, batch, rank, name, source)
+    )
+    if amendment is not None:
+        limits["max_record_bytes"] = amendment["max_record_bytes"]
     return {
         "source_file": name,
         "staging_dir": str(staging),
@@ -676,9 +690,10 @@ def seal_unit(
         + identity_path(durable).stat().st_size,
         sealed_at=datetime.now(UTC).isoformat(),
     )
-    if campaign.recovery is not None:
+    amendment = recovery.lookup_matching_recovery(campaign, batch, rank, unit.source_file, source)
+    if amendment is not None:
         receipt["recovery"] = {
-            "digest": campaign.recovery["digest"],
+            "digest": amendment["digest"],
             "effective_max_record_bytes": unit.job["limits"]["max_record_bytes"]
             if unit.job
             else None,
@@ -713,10 +728,6 @@ def cmd_run(args: argparse.Namespace) -> int:
     if gate["decision"] != "RUN":
         return EXIT_REFUSED
     record = batch_record(campaign, args.batch)
-    if campaign.recovery is not None:
-        if args.batch != campaign.recovery["batch"]:
-            raise bulk.BulkError("this recovery amendment authorizes Batch 0 only")
-        recovery.check_authorization(campaign.recovery, campaign.batch_dir(args.batch))
     directory = campaign.batch_dir(args.batch)
     if not (directory / "batch.plan.json").is_file():
         raise bulk.BulkError("batch is not authorized: run authorize with the printed digest")
@@ -755,6 +766,8 @@ def prepare_units(
     record: dict[str, Any],
     scratch_dir: Path,
     resume: dict[str, Any],
+    *,
+    require_recovery_authorization: bool = False,
 ) -> tuple[list[local.Unit], dict[str, int], int]:
     batch = int(record["batch"])
     staging = campaign.staging(batch)
@@ -766,8 +779,6 @@ def prepare_units(
         key = f"f{rank:05d}"
         partial, state = scratch_dir / f"{key}.parquet.part", scratch_dir / f"{key}.state.json"
         ranks[key] = rank
-        job = unit_job(campaign, plan, name, staging / key)
-        job["progress_path"] = str(staging / f"{key}.progress.json")
         durable = campaign.raw_path(name)
         if state.is_file():
             charged += int(read_json(state).get("charged_bytes", 0))
@@ -789,11 +800,18 @@ def prepare_units(
                 or not previous.get("complete")
             ):
                 raise bulk.BulkError(f"retained source checkpoint identity differs for {key}")
-        if campaign.recovery is not None and name == campaign.recovery["file"]:
-            if retained is None or retained["sha256"] != campaign.recovery["source_sha256"]:
+        amendment = recovery.unit_scope(campaign, batch, rank, name)
+        if amendment is not None:
+            if recovery.lookup_matching_recovery(campaign, batch, rank, name, retained) is None:
                 raise bulk.BulkError(
                     "recovery requires its exact retained source; download refused"
                 )
+            if record["digest"] != amendment["batch_digest"]:
+                raise bulk.BulkError("recovery is bound to another batch plan")
+            if require_recovery_authorization:
+                recovery.check_authorization(amendment, campaign.batch_dir(batch))
+        job = unit_job(campaign, plan, name, staging / key, batch=batch, rank=rank, source=retained)
+        job["progress_path"] = str(staging / f"{key}.progress.json")
         if retained is not None and not state.is_file():
             # A promoted file still counts against the original transfer ceiling.
             charged += int(retained["length"])
@@ -838,11 +856,14 @@ def cmd_resume_check(args: argparse.Namespace) -> int:
     result = {k: v for k, v in resume.items() if k != "receipts"}
     result["network_units"] = sum(u.url is not None for u in units)
     result["scheduled_keys"] = [u.key for u in units]
-    result["recovery_digest"] = None if campaign.recovery is None else campaign.recovery["digest"]
-    result["recovery_authorized"] = campaign.recovery is None
-    if campaign.recovery is not None:
+    amendment = campaign.recovery
+    if amendment is not None and args.batch != amendment["batch"]:
+        amendment = None
+    result["recovery_digest"] = None if amendment is None else amendment["digest"]
+    result["recovery_authorized"] = amendment is None
+    if amendment is not None:
         try:
-            recovery.check_authorization(campaign.recovery, campaign.batch_dir(args.batch))
+            recovery.check_authorization(amendment, campaign.batch_dir(args.batch))
             result["recovery_authorized"] = True
         except bulk.BulkError:
             pass
@@ -880,14 +901,9 @@ def execute_batch(
 ) -> int:
     batch = int(record["batch"])
     resume = recovery.resume_state(campaign, record)
-    if campaign.recovery is not None:
-        if (
-            batch != campaign.recovery["batch"]
-            or record["digest"] != campaign.recovery["batch_digest"]
-        ):
-            raise bulk.BulkError("recovery is bound to another batch plan")
-        recovery.check_authorization(campaign.recovery, campaign.batch_dir(batch))
-    units, ranks, charged = prepare_units(campaign, plan, record, scratch_dir, resume)
+    units, ranks, charged = prepare_units(
+        campaign, plan, record, scratch_dir, resume, require_recovery_authorization=True
+    )
     if offline and any(unit.url is not None for unit in units):
         raise bulk.BulkError("offline resume requires every remaining source to be retained")
     staging = campaign.staging(batch)

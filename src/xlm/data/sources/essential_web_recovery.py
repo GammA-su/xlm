@@ -15,6 +15,7 @@ from xlm.data.sources import essential_web_local as local
 from xlm.data.sources.essential_web_bulk import BulkError
 
 MANIFEST = "docs/implementation/evidence/ESSENTIAL-WEB-BATCH0-RECOVERY/recovery.json"
+SCOPE_FIX = "docs/implementation/evidence/ESSENTIAL-WEB-RECOVERY-SCOPE/code-compatibility.json"
 CODE_FILES = (
     *fast.TRANSPORT_CODE_FILES,
     "src/xlm/data/sources/essential_web_progress.py",
@@ -43,7 +44,7 @@ def load_manifest(repo: Path, config: Mapping[str, Any]) -> dict[str, Any] | Non
     if (
         value.get("kind") != "essential_web_batch_recovery_v1"
         or value.get("original_code") != config["transport_code_sha256"]
-        or value.get("code") != code_identity(repo)
+        or not compatible_code(repo, value)
     ):
         raise BulkError("recovery code changed since its freeze")
     bound = value.get("max_record_bytes")
@@ -53,6 +54,60 @@ def load_manifest(repo: Path, config: Mapping[str, Any]) -> dict[str, Any] | Non
     ):
         raise BulkError("recovery record bound is invalid")
     return value
+
+
+def compatible_code(repo: Path, manifest: Mapping[str, Any]) -> bool:
+    """Preserve the historical amendment; bind only the reviewed scope repair."""
+    current = code_identity(repo)
+    if manifest.get("code") == current:
+        return True
+    path = repo / SCOPE_FIX
+    if not path.is_file():
+        return False
+    fix = json.loads(path.read_bytes())
+    changed = {name for name in current if current[name] != manifest["code"].get(name)}
+    return bool(
+        fix.get("kind") == "essential_web_recovery_scope_fix_v1"
+        and fix.get("digest") == canonical.digest({k: v for k, v in fix.items() if k != "digest"})
+        and fix.get("recovery_digest") == manifest["digest"]
+        and fix.get("campaign") == manifest["campaign"]
+        and fix.get("previous_code") == manifest["code"]
+        and fix.get("code") == current
+        and changed
+        == {"scripts/essential_web_fast.py", "src/xlm/data/sources/essential_web_recovery.py"}
+    )
+
+
+def unit_scope(campaign: Any, batch: int, rank: int, name: str) -> dict[str, Any] | None:
+    """Scope comes from immutable campaign membership, never a path alone."""
+    amendment: dict[str, Any] | None = campaign.recovery
+    if (
+        amendment is None
+        or amendment["campaign"] != campaign.config["digest"]
+        or batch != amendment["batch"]
+        or name != amendment["file"]
+    ):
+        return None
+    members = campaign.members(batch)
+    if name not in members or rank != campaign.rank(batch, members.index(name)):
+        return None
+    return amendment
+
+
+def lookup_matching_recovery(
+    campaign: Any, batch: int, rank: int, name: str, source: Mapping[str, Any] | None
+) -> dict[str, Any] | None:
+    amendment = unit_scope(campaign, batch, rank, name)
+    if (
+        amendment is None
+        or source is None
+        or source.get("source_file") != name
+        or source.get("sha256") != amendment["source_sha256"]
+        or source.get("revision") != campaign.config["binding"]["revision"]
+        or source.get("repository") != campaign.config["binding"]["repository"]
+    ):
+        return None
+    return amendment
 
 
 def check_authorization(manifest: Mapping[str, Any], directory: Path) -> None:
@@ -72,15 +127,10 @@ def verify_unit(campaign: Any, record: Mapping[str, Any], rank: int, name: str) 
         {k: v for k, v in receipt.items() if k != "digest"}
     ):
         raise BulkError(f"unit f{rank:05d} receipt digest differs")
-    if campaign.recovery is not None:
+    if campaign.recovery is not None and record["batch"] == campaign.recovery["batch"]:
         expected = campaign.recovery["sealed_receipts"].get(f"f{rank:05d}")
         if expected is not None and receipt["digest"] != expected:
             raise BulkError(f"unit f{rank:05d} differs from the preserved recovery seal")
-        if (
-            expected is None
-            and receipt.get("recovery", {}).get("digest") != campaign.recovery["digest"]
-        ):
-            raise BulkError(f"unit f{rank:05d} lacks its recovery lineage")
     if (
         receipt.get("kind") != fast.RECEIPT_KIND
         or receipt.get("campaign") != campaign.config["digest"]
@@ -102,6 +152,15 @@ def verify_unit(campaign: Any, record: Mapping[str, Any], rank: int, name: str) 
         or receipt["raw"]["path"] != campaign.raw_path(name).relative_to(campaign.root).as_posix()
     ):
         raise BulkError(f"unit f{rank:05d} raw identity differs")
+    amendment = lookup_matching_recovery(campaign, int(record["batch"]), rank, name, source)
+    if amendment is not None:
+        if receipt.get("recovery") != {
+            "digest": amendment["digest"],
+            "effective_max_record_bytes": amendment["max_record_bytes"],
+        }:
+            raise BulkError(f"unit f{rank:05d} lacks its exact recovery lineage")
+    elif "recovery" in receipt:
+        raise BulkError(f"unit f{rank:05d} has recovery lineage outside its scope")
     for view in campaign.config["views"]:
         info = receipt["views"][view]
         for filename, hash_key in (

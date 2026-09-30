@@ -1,3 +1,18 @@
+> **ESSENTIAL-WEB RECOVERY SCOPE FIX (2026-09-30, offline): READY TO RUN
+> ESSENTIAL-WEB BATCH 1.** Batch 0 is complete: 32/32, 2,604,815 rows. Batch 1
+> has zero raw/processed/sealed files, no scratch directory, and a valid existing
+> plan/authorization; its failed attempt stopped before transport. The historical
+> recovery now matches only Batch 0/f00026 plus its exact path/content identity.
+> Other batches use their normal 8 MiB bound and authorization. No Prepare or
+> reauthorization needed; campaign and original recovery digests unchanged.
+> 398 operator artifacts are hash/size/mtime-identical; dashboard/ETA unchanged.
+> Related regressions: 744 passed, zero skipped (288.16 s); scoped ruff,
+> format and strict mypy pass. Full acceptance and real Batch 1 NOT RUN.
+> [Scope fix, evidence and operator command](reports/ESSENTIAL-WEB-RECOVERY-SCOPE.md).
+> Next: dot-source `scripts/operator_storage.ps1`, then
+> `scripts/operator_essential_web_fast.ps1 -Batch 1 -Stage Run`.
+> No external network, redownload, production execution or push in this task.
+
 > **ESSENTIAL-WEB BATCH-0 RECOVERY (2026-09-30, offline): READY TO RESUME
 > ESSENTIAL-WEB BATCH 0.** Authoritative receipts and hashes verify 31/32 sealed
 > (96.875%), only `f00026` remaining; its full source is retained. Row 58,327 is

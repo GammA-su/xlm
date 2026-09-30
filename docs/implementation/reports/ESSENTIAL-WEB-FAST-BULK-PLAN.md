@@ -1,5 +1,11 @@
 # Essential-Web fast bulk plan — 2026-09-30
 
+> **2026-09-30 scope correction:** Batch 0 is complete, 32/32. Batch 1 is
+> prepared and authorized, with no acquired work. Use `-Batch 1 -Stage Run`;
+> no recovery digest or new Prepare is needed. The
+> [scope-fix report](ESSENTIAL-WEB-RECOVERY-SCOPE.md) supersedes the earlier
+> restriction on later batches. They retain the normal 8 MiB record bound.
+
 > **2026-09-30 recovery update:** Batch 0 has 31/32 verified seals. One retained
 > source needs a reviewed, file-specific record-bound amendment. Use the
 > [recovery report's offline-only restart command](ESSENTIAL-WEB-BATCH0-RECOVERY.md);
