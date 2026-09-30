@@ -1,3 +1,22 @@
+> **ESSENTIAL-WEB PRODUCTION CALIBRATION SEALED (2026-09-30, offline).**
+> The live 16,384-row calibration (8 crawls, 8 files, 2,048 rows each) was
+> recomputed from its executed artifacts and every recorded value reproduced:
+> 110,070,226 transfer bytes, 94,613,662 decompressed, 301.28 s, 8 malformed;
+> science/practical/prose/rejected/unassigned 101/434/1,495/14,214/140; 2,030
+> documents, 10,462,526 canonical bytes. The current adapter reproduces all 24
+> canonical outputs byte for byte. Seal `149f3eb4…e2a1` binds measurement,
+> plans, raw, adaptation, selector, adapter code, admission attempt 2, freeze
+> `a6cab8cd…89b0` and revision `ce4eccc…`. Science yields 10.244553 estimated
+> tokens per input row (4 bytes/token assumed; not exact tokens) and is the
+> bottleneck: 64,424,483 rows for 660M, against 22,754,957 (practical) and
+> 2,740,950 (prose). Per-crawl science yield spans 5.08–18.79; clustered
+> sample, no interval claimed. Malformed 0.0488%, within policy; dominant code
+> `unknown_label:k` (6 of 8). Focused tests 8 passed; ruff/format/strict mypy
+> clean; fast/full selections NOT RUN. No network, text in Git, selector or
+> quota change, or push.
+> [Report](reports/ESSENTIAL-WEB-PRODUCTION-CALIBRATION.md).
+> Next: freeze the bulk acquisition campaign from this seal.
+
 > **ESSENTIAL-WEB POST-FIX BINDINGS (2026-09-30, offline): BLOCKED BY ONE OPERATOR ACTION.**
 > Adapter code hash changed `56ca4fb2…` → `3651ff2a…`. The enforced C04 gate still
 > admits all three views (it does not persist a code hash), but the approved

@@ -1,0 +1,923 @@
+{
+  "adapter": {
+    "adapter_id": "essential_web_bnormal",
+    "code_sha256": {
+      "src/xlm/data/adapters/essential_web_selector.py": "fd891e16b0ef6cca0ccf0d1b5a38ad41fab82689094f73c5c7d01c10064a46ac",
+      "src/xlm/data/adapters/malformed.py": "0b93dfb44d79e4493bf6ef9760b2d604544ec79dedf27156eada5472f647bcf6",
+      "src/xlm/data/adapters/mix01_adapters.py": "3651ff2af4fcb46c207404e052caa59e1ec42f2ac5a429e5dec752f7e83a7ef6",
+      "src/xlm/data/adapters/rejections.py": "f23b9a767220731423419e1961fb3fbada6d1e0f4b6650c569cb410707990c8b"
+    }
+  },
+  "admission": {
+    "essential_practical": {
+      "adapter_id": "essential_web_bnormal",
+      "admission_decision": {
+        "artifact_id": "admission_essential_web_essential_practical.attempt02",
+        "attempt": 2,
+        "manifest_content_hash": "9e4c0ae8a9ee2570278f8f1ea1b1357278ffb3196126507b53d43d4eab482efe",
+        "record_sha256": "598bfa3e68f550ce0666e20459176f36837cfd6adab0eed959d79abaf86655b9"
+      },
+      "admitted": true,
+      "benchmark_risk": "suspect_with_mitigation",
+      "contamination_mitigation": {
+        "before_official_benchmark_claims": true,
+        "before_training": true,
+        "benchmarks": [
+          "BLiMP",
+          "ARC-Easy",
+          "HellaSwag",
+          "PIQA"
+        ],
+        "mechanism": "xlm.data.exclusion",
+        "receipt_verifier": "xlm.data.exclusion.receipt.verify_benchmark_claim",
+        "scope": "eventually_frozen_essential_mix01_canonical_training_pool",
+        "version": "c04-benchmark-risk-v2"
+      },
+      "contract_version": "c04-benchmark-risk-v2",
+      "decision_timestamp": "2026-09-30T13:20:16.975246+00:00",
+      "immutable_revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+      "probe_evidence": {
+        "artifact_id": "probe_essential_web_essential_practical",
+        "attempt": 1,
+        "manifest_content_hash": "6750a694b60e1e7ca347071cb4987f525f58fc320db79c00592efc63839abc2d",
+        "record_sha256": "707c3cd757158cb5e3fd453206c9577ba94f0303a9beab8f0f867ce8b6db41e8"
+      },
+      "probe_fingerprint": "73035aa5727ff54ecebcf3eca372c13216f46566dde0497b8ac79b3eb0bd3840",
+      "reviews_sha256": {
+        "attribution": "ecd0b45091debfc435d8090f07a45972e0c4ccf7b093318b4cff6aa8f0139535",
+        "benchmark_risk": "f1dc3fda3cca4d04802540f4667aaee1f0bd07de11b7c201c041498ecb250dea",
+        "external_evidence": "dc11530035d9036c06473bb8cf5ebe3463d753ae6a594468dc9c2ccecc6aac0c",
+        "source_rights": "a45b8bcae4f602d866596d02daaf43c31dea7e476de6fe41270438e444ea1f7e"
+      }
+    },
+    "essential_prose": {
+      "adapter_id": "essential_web_bnormal",
+      "admission_decision": {
+        "artifact_id": "admission_essential_web_essential_prose.attempt02",
+        "attempt": 2,
+        "manifest_content_hash": "021876e10e8b43e04f02e05146a6134499045f53f48c4a65343fbb437cc1a879",
+        "record_sha256": "2e5a77eab4f4fb5f02860c291dd63260664b0f1ac3c29ee8a7176810caf0362b"
+      },
+      "admitted": true,
+      "benchmark_risk": "suspect_with_mitigation",
+      "contamination_mitigation": {
+        "before_official_benchmark_claims": true,
+        "before_training": true,
+        "benchmarks": [
+          "BLiMP",
+          "ARC-Easy",
+          "HellaSwag",
+          "PIQA"
+        ],
+        "mechanism": "xlm.data.exclusion",
+        "receipt_verifier": "xlm.data.exclusion.receipt.verify_benchmark_claim",
+        "scope": "eventually_frozen_essential_mix01_canonical_training_pool",
+        "version": "c04-benchmark-risk-v2"
+      },
+      "contract_version": "c04-benchmark-risk-v2",
+      "decision_timestamp": "2026-09-30T13:20:16.980542+00:00",
+      "immutable_revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+      "probe_evidence": {
+        "artifact_id": "probe_essential_web_essential_prose",
+        "attempt": 1,
+        "manifest_content_hash": "d986587ce5bc1604e1503c59a03b1fa8e20d41f524345e9797525da67208d932",
+        "record_sha256": "abae0513f208125cdb3c9a2ea86aae167753730079df9046c5040d0a3a144828"
+      },
+      "probe_fingerprint": "7448f2f1f7ac8309f77b1d3e14bded496756400065187b5b09cb8e1a56e0286d",
+      "reviews_sha256": {
+        "attribution": "ecd0b45091debfc435d8090f07a45972e0c4ccf7b093318b4cff6aa8f0139535",
+        "benchmark_risk": "f1dc3fda3cca4d04802540f4667aaee1f0bd07de11b7c201c041498ecb250dea",
+        "external_evidence": "dc11530035d9036c06473bb8cf5ebe3463d753ae6a594468dc9c2ccecc6aac0c",
+        "source_rights": "a45b8bcae4f602d866596d02daaf43c31dea7e476de6fe41270438e444ea1f7e"
+      }
+    },
+    "essential_science": {
+      "adapter_id": "essential_web_bnormal",
+      "admission_decision": {
+        "artifact_id": "admission_essential_web_essential_science.attempt02",
+        "attempt": 2,
+        "manifest_content_hash": "6a3cc0be0697def4c78d8ed6649ad7c042125c94dbbaa32e20082ee4e18c3e87",
+        "record_sha256": "34325e517b76cbbdba1f799665fcd73950c2380d435ea787641162a9a4fff1be"
+      },
+      "admitted": true,
+      "benchmark_risk": "suspect_with_mitigation",
+      "contamination_mitigation": {
+        "before_official_benchmark_claims": true,
+        "before_training": true,
+        "benchmarks": [
+          "BLiMP",
+          "ARC-Easy",
+          "HellaSwag",
+          "PIQA"
+        ],
+        "mechanism": "xlm.data.exclusion",
+        "receipt_verifier": "xlm.data.exclusion.receipt.verify_benchmark_claim",
+        "scope": "eventually_frozen_essential_mix01_canonical_training_pool",
+        "version": "c04-benchmark-risk-v2"
+      },
+      "contract_version": "c04-benchmark-risk-v2",
+      "decision_timestamp": "2026-09-30T13:20:16.971735+00:00",
+      "immutable_revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+      "probe_evidence": {
+        "artifact_id": "probe_essential_web_essential_science.attempt02",
+        "attempt": 2,
+        "manifest_content_hash": "b3ee35f5bc2dc91c79910bfd08a54ac296aa765d97948a93739444632cee6a83",
+        "record_sha256": "38112e1ddae222dec4341921d7a87fff31955b7b19b62eb0306bd93b05076752"
+      },
+      "probe_fingerprint": "2f64b00d35446dc3623d168edcb053a0131c43938b309a74f57110f541317ea9",
+      "reviews_sha256": {
+        "attribution": "ecd0b45091debfc435d8090f07a45972e0c4ccf7b093318b4cff6aa8f0139535",
+        "benchmark_risk": "f1dc3fda3cca4d04802540f4667aaee1f0bd07de11b7c201c041498ecb250dea",
+        "external_evidence": "dc11530035d9036c06473bb8cf5ebe3463d753ae6a594468dc9c2ccecc6aac0c",
+        "source_rights": "a45b8bcae4f602d866596d02daaf43c31dea7e476de6fe41270438e444ea1f7e"
+      }
+    }
+  },
+  "binding": {
+    "adapter_id": "essential_web_bnormal",
+    "canonicalization": "EssentialWebSelectedAdapter -> EssentialWebAdapter -> CanonicalDocument",
+    "repository": "EssentialAI/essential-web-v1.0",
+    "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+    "selector": {
+      "condition": "B-normal",
+      "evaluator_sha256": "5a63e78560ea9e12b0ec03b5e7e63204b5c75554bee02192c12bb4ab0853bf9c",
+      "freeze_digest": "c6f32a65f083c99b64245e25151f2cc73275093e1013d68b625c6d6f63d10a0c",
+      "freeze_version": "essential-web-selector-fasttrack-v1",
+      "policy_digest": "f4357f61f434d5105d823266153dac6372e122f12767187631e8796b4899dd07",
+      "selector_id": "essential-web-b-normal"
+    },
+    "source_id": "essential_web"
+  },
+  "calibration_freeze_digest": "a6cab8cd58a127b77dd130249147f3541ac4575f3ea8369bf248879fd52e89b0",
+  "calibration_root": "G:\\XLM\\calib\\essential-web-production\\calibration",
+  "contains_document_text": false,
+  "evidence_class": "REAL live production calibration; recomputed offline from artifacts",
+  "kind": "essential_web_production_calibration_seal",
+  "measurement": {
+    "bytes": 11093,
+    "file": "measurement.json",
+    "reproduced_from_artifacts": true,
+    "sha256": "75b0b95997701e33ba60cd070eaa8e6f1bc7ea9a4e6ad3e802bed1baeb1963cb"
+  },
+  "seal_digest": "149f3eb48e047e6545314dcb40cc01fe2b0e8853898a83a2060f0e8c9032e2a1",
+  "selector": {
+    "condition": "B-normal",
+    "evaluator_sha256": "5a63e78560ea9e12b0ec03b5e7e63204b5c75554bee02192c12bb4ab0853bf9c",
+    "freeze_digest": "c6f32a65f083c99b64245e25151f2cc73275093e1013d68b625c6d6f63d10a0c",
+    "freeze_version": "essential-web-selector-fasttrack-v1",
+    "policy_digest": "f4357f61f434d5105d823266153dac6372e122f12767187631e8796b4899dd07",
+    "selector_id": "essential-web-b-normal"
+  },
+  "source_revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+  "token_method": "mix01_inventory: assumed UTF-8 bytes/token 3/4/5; estimated tokens only",
+  "totals": {
+    "crawls": 8,
+    "decompressed_bytes": 94613662,
+    "documents_file_bytes": 14418258,
+    "elapsed_wall_seconds_including_restart_downtime": 301.27573900000004,
+    "files": 8,
+    "input_rows": 16384,
+    "malformed_reason_code_occurrences": {
+      "essential_web_selector_value:invalid_fdc_syntax": 3,
+      "essential_web_selector_value:unknown_label:k": 6
+    },
+    "malformed_rows": 8,
+    "malformed_rows_by_reason_codes": {
+      "essential_web_selector_value:invalid_fdc_syntax": 2,
+      "essential_web_selector_value:invalid_fdc_syntax + essential_web_selector_value:unknown_label:k": 1,
+      "essential_web_selector_value:unknown_label:k": 5
+    },
+    "max_raw_record_bytes": 540293,
+    "physical_response_body_bytes": 110070226,
+    "raw_bytes": 149979195,
+    "rejections_file_bytes": 26318331,
+    "requests": 848,
+    "retained": {
+      "essential_practical": {
+        "canonical_bytes": 1900850,
+        "characters": 1885481,
+        "documents": 434
+      },
+      "essential_prose": {
+        "canonical_bytes": 7890289,
+        "characters": 7799962,
+        "documents": 1495
+      },
+      "essential_science": {
+        "canonical_bytes": 671387,
+        "characters": 667124,
+        "documents": 101
+      }
+    },
+    "scanned_rows": 16384,
+    "selector_counts": {
+      "essential_practical": 434,
+      "essential_prose": 1495,
+      "essential_science": 101,
+      "rejected": 14214,
+      "unassigned": 140
+    },
+    "total_canonical_bytes": 10462526,
+    "total_retained_documents": 2030
+  },
+  "units": [
+    {
+      "authorization": {
+        "authorization_hash": "446549cf88b9029f70a85a5bd7e7c6203cb1d90eeef5e153fe77e993d93df338",
+        "authorized_at": "2026-09-30T13:20:43.879853+00:00",
+        "authorized_by": "operator_authorization",
+        "bound_limits_hash": "",
+        "is_pilot_approved": false,
+        "scope": "production"
+      },
+      "crawl": "crawl=CC-MAIN-2014-15",
+      "file": "data/crawl=CC-MAIN-2014-15/train-01860-of-02772.parquet",
+      "frozen_plan_file_sha256": "e4cb34848a066c3ac2e5103bd582730cfde677db5a2cdcb6f767c5ceccdf3ada",
+      "journal_sha256": "f32099cf9eed867db5c7ce75f1330b27bd67efc5c2846b12a5e39dad4462c548",
+      "plan_file_sha256": "040db9987ffc962c9877f7b3c6bcaed37792674cb55becf8379e02acf96f73dd",
+      "plan_hash": "446549cf88b9029f70a85a5bd7e7c6203cb1d90eeef5e153fe77e993d93df338",
+      "plan_id": "plan_essential_web_essential_science_huggingface_50c9d457f8267273cdfa",
+      "raw_bytes": 18294627,
+      "raw_dataset_artifact": {
+        "artifact_id": "raw_essential_web_essential_science_50c9d457f8267273cdfa",
+        "content_hash": "5bf64fc8502635bdc364a3db21309724a059d69664c09cce31c1e286a31142ec",
+        "manifest_sha256": "eb56368ff608c3117a773c8cde992c2c3964225a1851609fb4d0a703dc173557",
+        "receipt_sha256": "20571d4d90bc604b5d768d1de351e5dceb428e570ded3c7a0fda82eb99d4a758"
+      },
+      "raw_rows": 2048,
+      "raw_sha256": "e903e610c41e91b933d4f2d96a11dcf874615982164f2555289ab6cd6ddaa145",
+      "row_range": [
+        0,
+        2048
+      ],
+      "selection_hash": "3dd770dc8e6d396dc65fcc580f795511902f0c670fb7589501644cd99acf958e",
+      "source_validator": {
+        "etag": "\"a898462fb164d7eea3e8248a28cb1f855843d72bd55cfd126f537653c4eae323\"",
+        "length": 290684578
+      },
+      "unit": "calibration-00",
+      "views": {
+        "essential_practical": {
+          "accepted_records": 27,
+          "adaptation_summary_sha256": "cae97183bbeb9043c1144135fad985d7e4e1137e5260db04707853eb10c4d7aa",
+          "canonical_bytes": 156357,
+          "documents_file_bytes": 210108,
+          "documents_sha256": "e7706e5655ee9ce20746e373f8aa61c055e8f951272fe7425db50deddce8cb57",
+          "rejected_records": 2021,
+          "rejection_counts_by_code": {
+            "EssentialWebSelectorOtherComponentError": 158,
+            "EssentialWebSelectorRejectedError": 1853,
+            "EssentialWebSelectorUnassignedError": 10
+          },
+          "rejections_file_bytes": 1131562,
+          "rejections_sha256": "fc5aeaeece0afd284391f732d6e45207d2070eff3198ad9746b3ad8b956b041c",
+          "reproduced_by_current_adapter": true
+        },
+        "essential_prose": {
+          "accepted_records": 152,
+          "adaptation_summary_sha256": "cf82421f9642eaf957f5e73abc7be74e682d8587ed2839be39179a6c9cf3b123",
+          "canonical_bytes": 1130400,
+          "documents_file_bytes": 1426725,
+          "documents_sha256": "c84441333294fd06a6682c31207e494902f832ed89bafec1af4ebeb23bcd0579",
+          "rejected_records": 1896,
+          "rejection_counts_by_code": {
+            "EssentialWebSelectorOtherComponentError": 33,
+            "EssentialWebSelectorRejectedError": 1853,
+            "EssentialWebSelectorUnassignedError": 10
+          },
+          "rejections_file_bytes": 1058311,
+          "rejections_sha256": "bc29aa76b3f53136ea4c369c5bc495acee3267659204bc8adc609881c208ccab",
+          "reproduced_by_current_adapter": true
+        },
+        "essential_science": {
+          "accepted_records": 6,
+          "adaptation_summary_sha256": "3443c0957f0ae6d40bec734361b5617fa4dddbe8bcdc28c4e79691d9634c9f41",
+          "canonical_bytes": 41582,
+          "documents_file_bytes": 53517,
+          "documents_sha256": "a5b99eb66ad9fdc40cd237402ab65f916a7d68702ff51390dea8021f2192d2db",
+          "rejected_records": 2042,
+          "rejection_counts_by_code": {
+            "EssentialWebSelectorOtherComponentError": 179,
+            "EssentialWebSelectorRejectedError": 1853,
+            "EssentialWebSelectorUnassignedError": 10
+          },
+          "rejections_file_bytes": 1143603,
+          "rejections_sha256": "0d19befe87bfa2e9897c6c476bbae978c4456aa5ffce09db73d9ff7c940153a4",
+          "reproduced_by_current_adapter": true
+        }
+      }
+    },
+    {
+      "authorization": {
+        "authorization_hash": "fd05c18384abd52f1a371523246982cc6cae5420097d0dadefe7035870dd6c4e",
+        "authorized_at": "2026-09-30T13:21:24.520830+00:00",
+        "authorized_by": "operator_authorization",
+        "bound_limits_hash": "",
+        "is_pilot_approved": false,
+        "scope": "production"
+      },
+      "crawl": "crawl=CC-MAIN-2015-32",
+      "file": "data/crawl=CC-MAIN-2015-32/train-01682-of-01920.parquet",
+      "frozen_plan_file_sha256": "d27067aed60835b18ffb823b1403d83157e8c06572ee8d635b456f2abb3c62f9",
+      "journal_sha256": "f43f3002794eb89882ee0eccecfa94fa8c6a7ff16aece14cb770b97624bdeb39",
+      "plan_file_sha256": "86c21430e20ebd7b60d26360c797a843892d4a5ad0426f07e0b8e9c545a4e02b",
+      "plan_hash": "fd05c18384abd52f1a371523246982cc6cae5420097d0dadefe7035870dd6c4e",
+      "plan_id": "plan_essential_web_essential_science_huggingface_3c5f697b7cf4c93111cc",
+      "raw_bytes": 18562543,
+      "raw_dataset_artifact": {
+        "artifact_id": "raw_essential_web_essential_science_3c5f697b7cf4c93111cc",
+        "content_hash": "0c158db04a7948604b2543221b16ea6f8e468a5d658198257c69b148c460f208",
+        "manifest_sha256": "480ca41f1dd4b27c6f282624dcdbd78c8599266fce03e72616fcefe7303e1ead",
+        "receipt_sha256": "2b805980aeaa2f912f3b1c08e9ccad6bb37ead985e99cb8f9370a453ff894811"
+      },
+      "raw_rows": 2048,
+      "raw_sha256": "81909e42ce772c86357fe0657f82054b132afb21ea660aac0a1837096858e364",
+      "row_range": [
+        0,
+        2048
+      ],
+      "selection_hash": "dd0a2c0141f87a55597facb315c8547291c80bcbcac9781ba59253d6c43ea89f",
+      "source_validator": {
+        "etag": "\"d25ba04f1376333b6706e0becc19aa92f9540219aa4df5e96360fce324851975\"",
+        "length": 316724715
+      },
+      "unit": "calibration-01",
+      "views": {
+        "essential_practical": {
+          "accepted_records": 34,
+          "adaptation_summary_sha256": "99d6ff41e4a5851e5fbf31c1945b31c2b30b107a58a3d74a597bd2d9b9c3ccdb",
+          "canonical_bytes": 194833,
+          "documents_file_bytes": 262716,
+          "documents_sha256": "98ff8e40e867538a921b1e6b00f6145473653dfe954b26b7b6eda11be5786980",
+          "rejected_records": 2014,
+          "rejection_counts_by_code": {
+            "EssentialWebSelectorOtherComponentError": 171,
+            "EssentialWebSelectorRejectedError": 1830,
+            "EssentialWebSelectorUnassignedError": 13
+          },
+          "rejections_file_bytes": 1127240,
+          "rejections_sha256": "64fae64f786d5a12426c21d2b33ebd22581aa1955dbebe98c7082ffd51e041c0",
+          "reproduced_by_current_adapter": true
+        },
+        "essential_prose": {
+          "accepted_records": 162,
+          "adaptation_summary_sha256": "1e3e2a142322ac50e0f5b4baa8f61c8f7690de2d70504b1d3246bec4d935b476",
+          "canonical_bytes": 758557,
+          "documents_file_bytes": 1073644,
+          "documents_sha256": "8e5cfacee97610255540ad95db118f0fd781d74a551df1c0af4e252c9d85631e",
+          "rejected_records": 1886,
+          "rejection_counts_by_code": {
+            "EssentialWebSelectorOtherComponentError": 43,
+            "EssentialWebSelectorRejectedError": 1830,
+            "EssentialWebSelectorUnassignedError": 13
+          },
+          "rejections_file_bytes": 1052214,
+          "rejections_sha256": "2d4fee87aa4ade19ff7c53fc791ee26297cc0c6e2c5a9b6fdac0466f7ed9a2df",
+          "reproduced_by_current_adapter": true
+        },
+        "essential_science": {
+          "accepted_records": 9,
+          "adaptation_summary_sha256": "77fa202d99be35ed6067b04bb1cd14617093c90e61eff9a38517f5bbb75b31c7",
+          "canonical_bytes": 47531,
+          "documents_file_bytes": 65202,
+          "documents_sha256": "def2f1abcf31154c4d657033726079b1e50ef40df599659d4ed138475d2ed49c",
+          "rejected_records": 2039,
+          "rejection_counts_by_code": {
+            "EssentialWebSelectorOtherComponentError": 196,
+            "EssentialWebSelectorRejectedError": 1830,
+            "EssentialWebSelectorUnassignedError": 13
+          },
+          "rejections_file_bytes": 1141605,
+          "rejections_sha256": "76bf184c081fc34bcd90eae95e06d6cf4661673ba38636ecc85508432e51a0ff",
+          "reproduced_by_current_adapter": true
+        }
+      }
+    },
+    {
+      "authorization": {
+        "authorization_hash": "99eaabeb14c5b8b0a1beb3c7e4a398c5829cee0c36c5ca61e50096f2eb8b32da",
+        "authorized_at": "2026-09-30T13:22:08.523938+00:00",
+        "authorized_by": "operator_authorization",
+        "bound_limits_hash": "",
+        "is_pilot_approved": false,
+        "scope": "production"
+      },
+      "crawl": "crawl=CC-MAIN-2016-50",
+      "file": "data/crawl=CC-MAIN-2016-50/train-02156-of-03132.parquet",
+      "frozen_plan_file_sha256": "2f5170bd74df8ad3f76c9813754be5bad43183c3c7fa45525a079ef0f85f9345",
+      "journal_sha256": "edc7de17809be593ad67c72dfdf769a7eb6d845a8ef2449eb34bf4f3b026e639",
+      "plan_file_sha256": "567ec020b7a3b1b1993b3a24ee556b3ff419215a3f62df0b60b534271f30b495",
+      "plan_hash": "99eaabeb14c5b8b0a1beb3c7e4a398c5829cee0c36c5ca61e50096f2eb8b32da",
+      "plan_id": "plan_essential_web_essential_science_huggingface_02d5507eecf175c769d0",
+      "raw_bytes": 18230056,
+      "raw_dataset_artifact": {
+        "artifact_id": "raw_essential_web_essential_science_02d5507eecf175c769d0",
+        "content_hash": "069edb9e4f97047bdb164cd33a4bf945a015c0b0058829e5566a72d65c18f6e4",
+        "manifest_sha256": "b7db0c72207f2dcadd392a42caddfee29381a77b5a1a0f74e4b7cd8d8a7a50c0",
+        "receipt_sha256": "f3e3ee334ae4ff9c88486784ae2abe23551524771d019a81156b00e5724a9fc1"
+      },
+      "raw_rows": 2048,
+      "raw_sha256": "7cbf2b91b30f4173ebd9f4cc2f5f488e66b0ada713fe31a2b3e07591d2be657b",
+      "row_range": [
+        0,
+        2048
+      ],
+      "selection_hash": "929767ca261c16e6731531206372a2070e8bdc79886a241e2fadc7573f9ddbeb",
+      "source_validator": {
+        "etag": "\"87b6c7d4142774d0e716ed48826151f9a7e9d13ffe98c239feb7980cd06af746\"",
+        "length": 207246017
+      },
+      "unit": "calibration-02",
+      "views": {
+        "essential_practical": {
+          "accepted_records": 50,
+          "adaptation_summary_sha256": "ba8af0416c81f7b11fe28c17df7bc994d0f8ba523318b4490e5212865cc56ab7",
+          "canonical_bytes": 168153,
+          "documents_file_bytes": 266568,
+          "documents_sha256": "c5545494f19beab35ac696740c0b3dba4d0344176d4e6e09610362e557369afc",
+          "rejected_records": 1998,
+          "rejection_counts_by_code": {
+            "EssentialWebSelectorOtherComponentError": 173,
+            "EssentialWebSelectorRejectedError": 1804,
+            "EssentialWebSelectorUnassignedError": 21
+          },
+          "rejections_file_bytes": 1118480,
+          "rejections_sha256": "1bba69485484841eec75435789bb187676889e864fc6b75f914ed69b4de70e1d",
+          "reproduced_by_current_adapter": true
+        },
+        "essential_prose": {
+          "accepted_records": 162,
+          "adaptation_summary_sha256": "629eb847dd9223fae26e3f6255482da544db61522a637d971ca9a0ef6b06f079",
+          "canonical_bytes": 818185,
+          "documents_file_bytes": 1133298,
+          "documents_sha256": "cf2e5aa430e2ceaedc84b955b54efdd7dbf8fd97e719007c8aad8d3e25ea3067",
+          "rejected_records": 1886,
+          "rejection_counts_by_code": {
+            "EssentialWebSelectorOtherComponentError": 61,
+            "EssentialWebSelectorRejectedError": 1804,
+            "EssentialWebSelectorUnassignedError": 21
+          },
+          "rejections_file_bytes": 1052816,
+          "rejections_sha256": "a5a959f0676d942777dbfb4da32341613837f1f39130d242fad667f4ab0d71d3",
+          "reproduced_by_current_adapter": true
+        },
+        "essential_science": {
+          "accepted_records": 11,
+          "adaptation_summary_sha256": "549d5d5215e1b98a378f6d6eb476a3457a0c4fd8b2887b75cb575caddaf60560",
+          "canonical_bytes": 75927,
+          "documents_file_bytes": 97670,
+          "documents_sha256": "8c3dc61dad54e43d17c98cca93b5b5f53161cbc8b2f7c2a8b975c671a6d538a4",
+          "rejected_records": 2037,
+          "rejection_counts_by_code": {
+            "EssentialWebSelectorOtherComponentError": 212,
+            "EssentialWebSelectorRejectedError": 1804,
+            "EssentialWebSelectorUnassignedError": 21
+          },
+          "rejections_file_bytes": 1141077,
+          "rejections_sha256": "879e59339ab0c49a5e3e78eac2004a5aaa5a21323de384ea10d8f5f03b61d1cb",
+          "reproduced_by_current_adapter": true
+        }
+      }
+    },
+    {
+      "authorization": {
+        "authorization_hash": "753a5fbe4f16ee1d9c5dadd09e84d7767c9ac64b170194cbb3a1717f4100b2bb",
+        "authorized_at": "2026-09-30T13:22:51.711568+00:00",
+        "authorized_by": "operator_authorization",
+        "bound_limits_hash": "",
+        "is_pilot_approved": false,
+        "scope": "production"
+      },
+      "crawl": "crawl=CC-MAIN-2018-05",
+      "file": "data/crawl=CC-MAIN-2018-05/train-03378-of-03429.parquet",
+      "frozen_plan_file_sha256": "3a2f1e95796a38cbf6393faf4795ea9679d5a90bb4d8bf208754462299ec6cab",
+      "journal_sha256": "3075caa0e2bec53cb005431034787d7604c78f0f90963e52c5b45293edc4d757",
+      "plan_file_sha256": "ea2b17358dcb473be730f389d1413c44b582a8fd51b89a9f0e293fbf43df2014",
+      "plan_hash": "753a5fbe4f16ee1d9c5dadd09e84d7767c9ac64b170194cbb3a1717f4100b2bb",
+      "plan_id": "plan_essential_web_essential_science_huggingface_e84c9c5b4677273a9d53",
+      "raw_bytes": 18267079,
+      "raw_dataset_artifact": {
+        "artifact_id": "raw_essential_web_essential_science_e84c9c5b4677273a9d53",
+        "content_hash": "db878793a28e7ffcd4ba15dfd8170497d05f0bbd5a159058daaec531c411b1c7",
+        "manifest_sha256": "0cb1b9d78939ec4e54c8d4557b8fc0cee6ec7bb11b6cb5ee8af1e9b79d001245",
+        "receipt_sha256": "5924b9404302b8d67291295e55726f5ccffc1e0003797402550be38afeea1bbe"
+      },
+      "raw_rows": 2048,
+      "raw_sha256": "89274d54327fc66beaddc8f46ea7ccb46ccc3aabaa9facd3bef76ac35eee1e32",
+      "row_range": [
+        0,
+        2048
+      ],
+      "selection_hash": "d1b091ecfc11414aaabbfade402c63ad9af05a9915d29fb4119db147d4b3663b",
+      "source_validator": {
+        "etag": "\"d2c33e6f97b7cd8a0a1ff9eb419be453a3e6d4658445f86d2265bb0dc6ecd6ef\"",
+        "length": 285464583
+      },
+      "unit": "calibration-03",
+      "views": {
+        "essential_practical": {
+          "accepted_records": 58,
+          "adaptation_summary_sha256": "a33762ab33720d753fa8aa646f063f4ee255cc785f1e9ed4c6630b85946957c6",
+          "canonical_bytes": 276094,
+          "documents_file_bytes": 390416,
+          "documents_sha256": "1f4383a02d646de687caa445450c91f7455f69ecfddfecabdfb8717bd35e927f",
+          "rejected_records": 1990,
+          "rejection_counts_by_code": {
+            "EssentialWebMalformedRowError": 4,
+            "EssentialWebSelectorOtherComponentError": 208,
+            "EssentialWebSelectorRejectedError": 1760,
+            "EssentialWebSelectorUnassignedError": 18
+          },
+          "rejections_file_bytes": 1113314,
+          "rejections_sha256": "a94234c82556b3ab43e125d95ee47d29e3e33411d6fc8eb804e19df6854e51f2",
+          "reproduced_by_current_adapter": true
+        },
+        "essential_prose": {
+          "accepted_records": 198,
+          "adaptation_summary_sha256": "73d01d81bbbb0482c92e2bc1675df1a9277391e51dc4e64d76be51cf51465adb",
+          "canonical_bytes": 699415,
+          "documents_file_bytes": 1081043,
+          "documents_sha256": "fd8fa82f7b0ccecffca88ffffc6c27d8e9c03174521f594dcb8cf54563fda9ff",
+          "rejected_records": 1850,
+          "rejection_counts_by_code": {
+            "EssentialWebMalformedRowError": 4,
+            "EssentialWebSelectorOtherComponentError": 68,
+            "EssentialWebSelectorRejectedError": 1760,
+            "EssentialWebSelectorUnassignedError": 18
+          },
+          "rejections_file_bytes": 1031290,
+          "rejections_sha256": "f2001153c6187f65f92dbcbbb194cf2b6e491e2bcb24d419bcd0ae7a18e2f6f4",
+          "reproduced_by_current_adapter": true
+        },
+        "essential_science": {
+          "accepted_records": 10,
+          "adaptation_summary_sha256": "d303129af481819bbf3882da1789c98ff1a00e97bef65cb041b9993f853edf12",
+          "canonical_bytes": 60515,
+          "documents_file_bytes": 80016,
+          "documents_sha256": "a294ad882646426815e0c65a611ee2d8b5c2310ce1233a5659a99baaaf380f3f",
+          "rejected_records": 2038,
+          "rejection_counts_by_code": {
+            "EssentialWebMalformedRowError": 4,
+            "EssentialWebSelectorOtherComponentError": 256,
+            "EssentialWebSelectorRejectedError": 1760,
+            "EssentialWebSelectorUnassignedError": 18
+          },
+          "rejections_file_bytes": 1141154,
+          "rejections_sha256": "b6cfbe155dc5ae54d50376cb319674650e8e47d4c3dff445e218e84ba4a9a72c",
+          "reproduced_by_current_adapter": true
+        }
+      }
+    },
+    {
+      "authorization": {
+        "authorization_hash": "1eaac483dadbfa43e519c077d80fae2ae3ea075d03a916513c23d6e5f594b8ca",
+        "authorized_at": "2026-09-30T13:23:35.084475+00:00",
+        "authorized_by": "operator_authorization",
+        "bound_limits_hash": "",
+        "is_pilot_approved": false,
+        "scope": "production"
+      },
+      "crawl": "crawl=CC-MAIN-2019-09",
+      "file": "data/crawl=CC-MAIN-2019-09/train-00153-of-02577.parquet",
+      "frozen_plan_file_sha256": "53a8eb63cf60eee09eb1a9ed0241742a7130a662aa8b48f8ebfd35b32c71df1f",
+      "journal_sha256": "5f3962135849704871ecd7c591ee3d3d013b9dd5e4c221d7e1a31ae3cf0a2d5a",
+      "plan_file_sha256": "b580464ba5d597080bb9fd98fa50697bf36f86fd0bb108378e190eb1cf85b1a5",
+      "plan_hash": "1eaac483dadbfa43e519c077d80fae2ae3ea075d03a916513c23d6e5f594b8ca",
+      "plan_id": "plan_essential_web_essential_science_huggingface_32af3c480b3c924d452c",
+      "raw_bytes": 19282643,
+      "raw_dataset_artifact": {
+        "artifact_id": "raw_essential_web_essential_science_32af3c480b3c924d452c",
+        "content_hash": "9f904c9ca9d29d73a535a2c07ed0974a4a5d32ebe5d24233d363c5b8039ac560",
+        "manifest_sha256": "1d917d70de52ef01c13f02fd41ac40bb772aa01310770b36e4e7c9a67a9ec46c",
+        "receipt_sha256": "fedf03de752f8c0a391361c3b6f3003d2e49306f85190b1ed76535b30561b8a1"
+      },
+      "raw_rows": 2048,
+      "raw_sha256": "bdab0a310179aa1752665ae906e06f518a1781a36de709b6f8fa2f39982c9a9e",
+      "row_range": [
+        0,
+        2048
+      ],
+      "selection_hash": "3c4791300ee31edf9051459016265a364f91692beaed1e6aef93cb0ee89af555",
+      "source_validator": {
+        "etag": "\"9d0c7824df33063587958afb535fa097d8c5af423c172e63714f725aa3003f1b\"",
+        "length": 247450105
+      },
+      "unit": "calibration-04",
+      "views": {
+        "essential_practical": {
+          "accepted_records": 61,
+          "adaptation_summary_sha256": "0f324f05c6077e9f778a01b1259d525ffe894d4434f1fcfd894bae3cdcf8235c",
+          "canonical_bytes": 229069,
+          "documents_file_bytes": 348752,
+          "documents_sha256": "abf43fece9566552bc7d4b5ad664d4369eff6bcc4dfd56c7e33d111b5a8dd460",
+          "rejected_records": 1987,
+          "rejection_counts_by_code": {
+            "EssentialWebMalformedRowError": 2,
+            "EssentialWebSelectorOtherComponentError": 203,
+            "EssentialWebSelectorRejectedError": 1761,
+            "EssentialWebSelectorUnassignedError": 21
+          },
+          "rejections_file_bytes": 1109849,
+          "rejections_sha256": "2b3ae0e2c168ad4d641687f7307289c28fcc2cdb84584637c839d13026749879",
+          "reproduced_by_current_adapter": true
+        },
+        "essential_prose": {
+          "accepted_records": 200,
+          "adaptation_summary_sha256": "5bcbf469e6fa96873cd0779f591ad19027f06e1d60733129916065051efe5f81",
+          "canonical_bytes": 1048848,
+          "documents_file_bytes": 1437210,
+          "documents_sha256": "bd93d57b7cbbcad1b8d127180f4e696d2da85bde5eb11ace470b9a780a17beaf",
+          "rejected_records": 1848,
+          "rejection_counts_by_code": {
+            "EssentialWebMalformedRowError": 2,
+            "EssentialWebSelectorOtherComponentError": 64,
+            "EssentialWebSelectorRejectedError": 1761,
+            "EssentialWebSelectorUnassignedError": 21
+          },
+          "rejections_file_bytes": 1028419,
+          "rejections_sha256": "dede02220a75e976febc66a4cad809a296e81a19adde494c307b94a63c6980e7",
+          "reproduced_by_current_adapter": true
+        },
+        "essential_science": {
+          "accepted_records": 3,
+          "adaptation_summary_sha256": "f1bc5c0e4b2de40173ba4f75511f8d1520986a44b63a3011770b88333ec9505c",
+          "canonical_bytes": 90392,
+          "documents_file_bytes": 96966,
+          "documents_sha256": "37171dbcfc027aef53ba9caa9e6f84302fbdc1dcdcdd0b7a5bcec938c57ec94d",
+          "rejected_records": 2045,
+          "rejection_counts_by_code": {
+            "EssentialWebMalformedRowError": 2,
+            "EssentialWebSelectorOtherComponentError": 261,
+            "EssentialWebSelectorRejectedError": 1761,
+            "EssentialWebSelectorUnassignedError": 21
+          },
+          "rejections_file_bytes": 1143537,
+          "rejections_sha256": "595bb3987b625baa0e37f0fa422e2260a555e519eca3c983d6d41433e91e76c7",
+          "reproduced_by_current_adapter": true
+        }
+      }
+    },
+    {
+      "authorization": {
+        "authorization_hash": "67319d4ab28e255bad6f3d20327854feb0f9c788af0c8cc34c54cbec5ddc131e",
+        "authorized_at": "2026-09-30T13:24:20.025750+00:00",
+        "authorized_by": "operator_authorization",
+        "bound_limits_hash": "",
+        "is_pilot_approved": false,
+        "scope": "production"
+      },
+      "crawl": "crawl=CC-MAIN-2021-04",
+      "file": "data/crawl=CC-MAIN-2021-04/train-00179-of-03315.parquet",
+      "frozen_plan_file_sha256": "f8120f975916baf824679a9545bfe72891aca14db4f57dcbd3ae7a64c91cff6c",
+      "journal_sha256": "f91947628276198ce82d483722eb4a1632438aed1d00f1e8166754ad120583a6",
+      "plan_file_sha256": "dbb470bcfbc1b56994a3539d60bb4f760b70c216a3e6a358a99b62ddfe50d81e",
+      "plan_hash": "67319d4ab28e255bad6f3d20327854feb0f9c788af0c8cc34c54cbec5ddc131e",
+      "plan_id": "plan_essential_web_essential_science_huggingface_8aa55939d668517caf23",
+      "raw_bytes": 18486615,
+      "raw_dataset_artifact": {
+        "artifact_id": "raw_essential_web_essential_science_8aa55939d668517caf23",
+        "content_hash": "b866b71ed4dd130cd54c1b9ffa331612720097bcf9a8d6022159a2ca66c81d84",
+        "manifest_sha256": "1c8e9fbae1f8a3adbb718670b41b084323e1a8bc9000b2fbc53e7fce1d63af60",
+        "receipt_sha256": "042d1f43cfad2f366190a478d2257c3eb4f8a7273b7f7f22f2c16c442edb607c"
+      },
+      "raw_rows": 2048,
+      "raw_sha256": "cb77ab1d15f1571a0c57a1ac8b9ef670ebb67aa2a371581b5471b8881855047c",
+      "row_range": [
+        0,
+        2048
+      ],
+      "selection_hash": "6697a144cfebdcc27ee5ce167ec7b30c532487849155881ae83be8cb0e46d7fe",
+      "source_validator": {
+        "etag": "\"6b46903d378381f127814c1d81e741d8b7616e5d39abee5524ac22ded871461e\"",
+        "length": 246957884
+      },
+      "unit": "calibration-05",
+      "views": {
+        "essential_practical": {
+          "accepted_records": 61,
+          "adaptation_summary_sha256": "e7051c9a4c366ef0f4a755a214f5305ede019adca15e2f6342a18040de1a17b4",
+          "canonical_bytes": 237624,
+          "documents_file_bytes": 356979,
+          "documents_sha256": "8e395e937ed7ccf020482cdf8794a55d0a0844bb2acd039e2b25559312ad262c",
+          "rejected_records": 1987,
+          "rejection_counts_by_code": {
+            "EssentialWebMalformedRowError": 2,
+            "EssentialWebSelectorOtherComponentError": 215,
+            "EssentialWebSelectorRejectedError": 1751,
+            "EssentialWebSelectorUnassignedError": 19
+          },
+          "rejections_file_bytes": 1108747,
+          "rejections_sha256": "7e64d7e23a99ae3ad47d6062c1d8def3c2c5311e82a61d87ad0fedcc97ca6fff",
+          "reproduced_by_current_adapter": true
+        },
+        "essential_prose": {
+          "accepted_records": 199,
+          "adaptation_summary_sha256": "8991ba36ddfc8a8731833e938c1854f80116b7546d79d16105f288330bfa5c1a",
+          "canonical_bytes": 972157,
+          "documents_file_bytes": 1358871,
+          "documents_sha256": "3f8124613d6c42d5017c846a224f32f7ed246346519f06bea2b62c9c45a7e167",
+          "rejected_records": 1849,
+          "rejection_counts_by_code": {
+            "EssentialWebMalformedRowError": 2,
+            "EssentialWebSelectorOtherComponentError": 77,
+            "EssentialWebSelectorRejectedError": 1751,
+            "EssentialWebSelectorUnassignedError": 19
+          },
+          "rejections_file_bytes": 1027825,
+          "rejections_sha256": "f82899434a541d92d5ab7e1b621c8450aaf79a184e67cbfdb77ca62d5050134a",
+          "reproduced_by_current_adapter": true
+        },
+        "essential_science": {
+          "accepted_records": 16,
+          "adaptation_summary_sha256": "ebd84d1329e5f5cd65b53551b5c77adddb1c9ed5eb55d82eb8cd0712dd3be0c1",
+          "canonical_bytes": 120154,
+          "documents_file_bytes": 152295,
+          "documents_sha256": "086f6f65c7b688c1904afffa248c8360dfb1a04375fbeea4ebd56d787a30164f",
+          "rejected_records": 2032,
+          "rejection_counts_by_code": {
+            "EssentialWebMalformedRowError": 2,
+            "EssentialWebSelectorOtherComponentError": 260,
+            "EssentialWebSelectorRejectedError": 1751,
+            "EssentialWebSelectorUnassignedError": 19
+          },
+          "rejections_file_bytes": 1134797,
+          "rejections_sha256": "06ca7c7264983f8ec9cc9a765175064927e4ac5aa62cc53e1525c0520290c35d",
+          "reproduced_by_current_adapter": true
+        }
+      }
+    },
+    {
+      "authorization": {
+        "authorization_hash": "6e96067cf2e2db2b43c308c486b8b9647690b6e5f42a25c6f8867f24fe1014a7",
+        "authorized_at": "2026-09-30T13:25:02.438771+00:00",
+        "authorized_by": "operator_authorization",
+        "bound_limits_hash": "",
+        "is_pilot_approved": false,
+        "scope": "production"
+      },
+      "crawl": "crawl=CC-MAIN-2021-49",
+      "file": "data/crawl=CC-MAIN-2021-49/train-00408-of-02895.parquet",
+      "frozen_plan_file_sha256": "1a085c558569d683845df3b54f96852b24d0ab605c6752dfe77611af46b9b67f",
+      "journal_sha256": "65be4770af0ba63386664ddad9f81a0e268fa4285eb81e80fc8b6c1f69e89f9c",
+      "plan_file_sha256": "b028537d61c2b3370266dea70a100ddb698181156550cad261a102128fb02d2a",
+      "plan_hash": "6e96067cf2e2db2b43c308c486b8b9647690b6e5f42a25c6f8867f24fe1014a7",
+      "plan_id": "plan_essential_web_essential_science_huggingface_53785d2530cb1759440f",
+      "raw_bytes": 18767134,
+      "raw_dataset_artifact": {
+        "artifact_id": "raw_essential_web_essential_science_53785d2530cb1759440f",
+        "content_hash": "1bc7d303e111d2c1f2f565f6db2d7b72a1bf9071f5c080007204307e513bedf1",
+        "manifest_sha256": "c501dacb7b6cc366740e08ed29c9dbee800bae990c221173c823745b57239e26",
+        "receipt_sha256": "7a21a46ec454afe0f78eb1eddeb566dccea820def322d0a8a4fb5b2142df6a4b"
+      },
+      "raw_rows": 2048,
+      "raw_sha256": "d14df19b15893fca5338ed9e976e93623c7a512a95fca535355d103108777221",
+      "row_range": [
+        0,
+        2048
+      ],
+      "selection_hash": "cbd30e7286771e5f92938f08d3089e8704918d2aa4fa406cf10374070d8d6173",
+      "source_validator": {
+        "etag": "\"852e5570ccf4c5f762c0300f8d8b6f9e691f50b01fdf590d2b987fa09d18542e\"",
+        "length": 247477157
+      },
+      "unit": "calibration-06",
+      "views": {
+        "essential_practical": {
+          "accepted_records": 83,
+          "adaptation_summary_sha256": "8915a1a4b5cf12ae52ff1e594382bfeb0c5c9cae24751d1114049e96e5fd9c41",
+          "canonical_bytes": 355424,
+          "documents_file_bytes": 517900,
+          "documents_sha256": "42c7ef610dcc5387bdd461434410bbe59c7f02d7ce275496c89870d880f90e99",
+          "rejected_records": 1965,
+          "rejection_counts_by_code": {
+            "EssentialWebSelectorOtherComponentError": 239,
+            "EssentialWebSelectorRejectedError": 1708,
+            "EssentialWebSelectorUnassignedError": 18
+          },
+          "rejections_file_bytes": 1098682,
+          "rejections_sha256": "54f47acb9819c83cd374c06c2662bf36fa1cf3581908a914a3db1c437d837857",
+          "reproduced_by_current_adapter": true
+        },
+        "essential_prose": {
+          "accepted_records": 213,
+          "adaptation_summary_sha256": "e010beeef399d86cb74d118c9fa9f5e6d90564629b39f43410922476817a01a1",
+          "canonical_bytes": 904443,
+          "documents_file_bytes": 1315058,
+          "documents_sha256": "bed616b3b314c8e4e00bf655a29308f0764cdc171265c5762a65bfe656ff3733",
+          "rejected_records": 1835,
+          "rejection_counts_by_code": {
+            "EssentialWebSelectorOtherComponentError": 109,
+            "EssentialWebSelectorRejectedError": 1708,
+            "EssentialWebSelectorUnassignedError": 18
+          },
+          "rejections_file_bytes": 1022396,
+          "rejections_sha256": "80cba414655f18c28a5418e384468d9729dc95c664892daff0ad9679ee86bcd7",
+          "reproduced_by_current_adapter": true
+        },
+        "essential_science": {
+          "accepted_records": 26,
+          "adaptation_summary_sha256": "c5e8b7439cb678a56e51bff8f49e1ddad848a718e8a7c2d614ff0afc638ddb47",
+          "canonical_bytes": 153928,
+          "documents_file_bytes": 205098,
+          "documents_sha256": "716590cacda7c4a76445b89d0e85e9df80d80ce1a6d65484eb5d1d27efb6e7d8",
+          "rejected_records": 2022,
+          "rejection_counts_by_code": {
+            "EssentialWebSelectorOtherComponentError": 296,
+            "EssentialWebSelectorRejectedError": 1708,
+            "EssentialWebSelectorUnassignedError": 18
+          },
+          "rejections_file_bytes": 1131767,
+          "rejections_sha256": "870344374e69b8c1763b06aac705b042eb13eb9e414491fcd8e783dd41b72639",
+          "reproduced_by_current_adapter": true
+        }
+      }
+    },
+    {
+      "authorization": {
+        "authorization_hash": "c1143c76c568d3546b979d1c5f5b54cdb0c184d6cfab89c36fb764fb27a7d70c",
+        "authorized_at": "2026-09-30T13:25:48.822442+00:00",
+        "authorized_by": "operator_authorization",
+        "bound_limits_hash": "",
+        "is_pilot_approved": false,
+        "scope": "production"
+      },
+      "crawl": "crawl=CC-MAIN-2024-26",
+      "file": "data/crawl=CC-MAIN-2024-26/train-01127-of-03168.parquet",
+      "frozen_plan_file_sha256": "f0168b1adccbdf9eabc0fda8613cfd9695c90013f07c04af5ca6d6345b62ff40",
+      "journal_sha256": "08488beb98daa7ffe62e1e39b455b19f661270da82e91f62837c9a142166c358",
+      "plan_file_sha256": "63f6f80e6466f20b8ba3dad599bbed15c5552cccf7aad981b486d4442d6dc5e4",
+      "plan_hash": "c1143c76c568d3546b979d1c5f5b54cdb0c184d6cfab89c36fb764fb27a7d70c",
+      "plan_id": "plan_essential_web_essential_science_huggingface_9bf8c0b49554237f9ded",
+      "raw_bytes": 20088498,
+      "raw_dataset_artifact": {
+        "artifact_id": "raw_essential_web_essential_science_9bf8c0b49554237f9ded",
+        "content_hash": "e9451e1a1f9811555ddcd912a17f1e8cab58065c8a8d66b8f703baa53e4dd01b",
+        "manifest_sha256": "aa81b394b51be630548962064805c66375a2a7d6ba88b8ddf9abe268e5c162d5",
+        "receipt_sha256": "a16553adb693887764daa3862e02092c833f026e83cce85a94a89f263e366872"
+      },
+      "raw_rows": 2048,
+      "raw_sha256": "40e5d71eee67a1b9a61bc69c5e26114cd83db25fcea4a84ce9e599b0b33373d2",
+      "row_range": [
+        0,
+        2048
+      ],
+      "selection_hash": "b4a7abfc039c7b787927ad96487ddd5ef750f37394f5048c1d9909c555642ba2",
+      "source_validator": {
+        "etag": "\"bdc91792cb54687e353f7aa5b2ddb70eabdfe9bd3b8e781f6c564aa60a0b3b90\"",
+        "length": 246493238
+      },
+      "unit": "calibration-07",
+      "views": {
+        "essential_practical": {
+          "accepted_records": 60,
+          "adaptation_summary_sha256": "e79ce14e3ce95ceb4ca6557fa8e7989c23b245faaa6079fc6c3534109fefaf3a",
+          "canonical_bytes": 283296,
+          "documents_file_bytes": 401000,
+          "documents_sha256": "6bef1b8dab7ab4bc2a05af0e8bec2ba539f671c7cb8291cd22b037f0960da679",
+          "rejected_records": 1988,
+          "rejection_counts_by_code": {
+            "EssentialWebSelectorOtherComponentError": 229,
+            "EssentialWebSelectorRejectedError": 1739,
+            "EssentialWebSelectorUnassignedError": 20
+          },
+          "rejections_file_bytes": 1107997,
+          "rejections_sha256": "ae527281e1a34cb74bbc5e264f32fc054db520a9e8c34ba59d2fe4bb6fbfbac5",
+          "reproduced_by_current_adapter": true
+        },
+        "essential_prose": {
+          "accepted_records": 209,
+          "adaptation_summary_sha256": "5a2febbf5d91a0985e97f9ced5bfefd611989606e41eaad730d1db31fb6f82bf",
+          "canonical_bytes": 1558284,
+          "documents_file_bytes": 1967153,
+          "documents_sha256": "b95a4ecc65f4dcc8d9af05aab62699825adca35fb2f13bf4538dfe668e6e458a",
+          "rejected_records": 1839,
+          "rejection_counts_by_code": {
+            "EssentialWebSelectorOtherComponentError": 80,
+            "EssentialWebSelectorRejectedError": 1739,
+            "EssentialWebSelectorUnassignedError": 20
+          },
+          "rejections_file_bytes": 1020570,
+          "rejections_sha256": "425f74d48e5ed69e131d0da01f564585029ca1844956fc7640a08f861b487483",
+          "reproduced_by_current_adapter": true
+        },
+        "essential_science": {
+          "accepted_records": 20,
+          "adaptation_summary_sha256": "798d2a68e75d0adb436f21182ff98a3d9e335e18b56a1f3c0b60184fb47c497a",
+          "canonical_bytes": 81358,
+          "documents_file_bytes": 120053,
+          "documents_sha256": "df0aaed07982e0f062b0ac873883dd9feed2e9a8d52b7bbba25a2a8d93958042",
+          "rejected_records": 2028,
+          "rejection_counts_by_code": {
+            "EssentialWebSelectorOtherComponentError": 269,
+            "EssentialWebSelectorRejectedError": 1739,
+            "EssentialWebSelectorUnassignedError": 20
+          },
+          "rejections_file_bytes": 1131079,
+          "rejections_sha256": "0475997c2ae5c84c5133a3903b3067c4ab3902349c78482fbd6a89f15e52d52a",
+          "reproduced_by_current_adapter": true
+        }
+      }
+    }
+  ],
+  "version": 1
+}

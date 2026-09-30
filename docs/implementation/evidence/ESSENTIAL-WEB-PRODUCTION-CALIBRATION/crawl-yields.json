@@ -1,0 +1,440 @@
+{
+  "crawls": 8,
+  "design": "one prefix window per crawl and file: clustered, not independent rows",
+  "interval_statement": "no confidence interval is reported; spread is descriptive only",
+  "per_crawl": [
+    {
+      "crawl": "crawl=CC-MAIN-2014-15",
+      "decompressed_bytes": 11364976,
+      "elapsed_seconds": 34.419945,
+      "essential_practical": {
+        "canonical_bytes": 156357,
+        "documents": 27,
+        "documents_per_input_row": 0.01318359375,
+        "estimated_tokens": 39089.25,
+        "estimated_tokens_per_input_row": 19.0865478515625
+      },
+      "essential_prose": {
+        "canonical_bytes": 1130400,
+        "documents": 152,
+        "documents_per_input_row": 0.07421875,
+        "estimated_tokens": 282600.0,
+        "estimated_tokens_per_input_row": 137.98828125
+      },
+      "essential_science": {
+        "canonical_bytes": 41582,
+        "documents": 6,
+        "documents_per_input_row": 0.0029296875,
+        "estimated_tokens": 10395.5,
+        "estimated_tokens_per_input_row": 5.075927734375
+      },
+      "file": "data/crawl=CC-MAIN-2014-15/train-01860-of-02772.parquet",
+      "input_rows": 2048,
+      "malformed_rows": 0,
+      "max_raw_record_bytes": 389386,
+      "performance": {
+        "body_seconds": 2.830999999860069,
+        "cpu_process_seconds": 1.75,
+        "logical_requests": 105,
+        "max_workers": 1,
+        "open_seconds": 29.12200000017765,
+        "peak_rss_bytes": 137752576,
+        "wall_seconds": 33.14100000000326
+      },
+      "raw_bytes": 18294627,
+      "requests": 106,
+      "transferred_bytes": 13705877
+    },
+    {
+      "crawl": "crawl=CC-MAIN-2015-32",
+      "decompressed_bytes": 11603962,
+      "elapsed_seconds": 37.798595,
+      "essential_practical": {
+        "canonical_bytes": 194833,
+        "documents": 34,
+        "documents_per_input_row": 0.0166015625,
+        "estimated_tokens": 48708.25,
+        "estimated_tokens_per_input_row": 23.7833251953125
+      },
+      "essential_prose": {
+        "canonical_bytes": 758557,
+        "documents": 162,
+        "documents_per_input_row": 0.0791015625,
+        "estimated_tokens": 189639.25,
+        "estimated_tokens_per_input_row": 92.5972900390625
+      },
+      "essential_science": {
+        "canonical_bytes": 47531,
+        "documents": 9,
+        "documents_per_input_row": 0.00439453125,
+        "estimated_tokens": 11882.75,
+        "estimated_tokens_per_input_row": 5.8021240234375
+      },
+      "file": "data/crawl=CC-MAIN-2015-32/train-01682-of-01920.parquet",
+      "input_rows": 2048,
+      "malformed_rows": 0,
+      "max_raw_record_bytes": 96082,
+      "performance": {
+        "body_seconds": 7.236999999935506,
+        "cpu_process_seconds": 1.953125,
+        "logical_requests": 105,
+        "max_workers": 1,
+        "open_seconds": 28.18600000004517,
+        "peak_rss_bytes": 139825152,
+        "wall_seconds": 36.530999999988126
+      },
+      "raw_bytes": 18562543,
+      "requests": 106,
+      "transferred_bytes": 13667949
+    },
+    {
+      "crawl": "crawl=CC-MAIN-2016-50",
+      "decompressed_bytes": 11287817,
+      "elapsed_seconds": 36.733203,
+      "essential_practical": {
+        "canonical_bytes": 168153,
+        "documents": 50,
+        "documents_per_input_row": 0.0244140625,
+        "estimated_tokens": 42038.25,
+        "estimated_tokens_per_input_row": 20.5264892578125
+      },
+      "essential_prose": {
+        "canonical_bytes": 818185,
+        "documents": 162,
+        "documents_per_input_row": 0.0791015625,
+        "estimated_tokens": 204546.25,
+        "estimated_tokens_per_input_row": 99.8760986328125
+      },
+      "essential_science": {
+        "canonical_bytes": 75927,
+        "documents": 11,
+        "documents_per_input_row": 0.00537109375,
+        "estimated_tokens": 18981.75,
+        "estimated_tokens_per_input_row": 9.2684326171875
+      },
+      "file": "data/crawl=CC-MAIN-2016-50/train-02156-of-03132.parquet",
+      "input_rows": 2048,
+      "malformed_rows": 0,
+      "max_raw_record_bytes": 255378,
+      "performance": {
+        "body_seconds": 6.671999999991385,
+        "cpu_process_seconds": 1.9375,
+        "logical_requests": 105,
+        "max_workers": 1,
+        "open_seconds": 27.453999999939697,
+        "peak_rss_bytes": 143196160,
+        "wall_seconds": 35.437999999994645
+      },
+      "raw_bytes": 18230056,
+      "requests": 106,
+      "transferred_bytes": 13650333
+    },
+    {
+      "crawl": "crawl=CC-MAIN-2018-05",
+      "decompressed_bytes": 11322469,
+      "elapsed_seconds": 37.150969,
+      "essential_practical": {
+        "canonical_bytes": 276094,
+        "documents": 58,
+        "documents_per_input_row": 0.0283203125,
+        "estimated_tokens": 69023.5,
+        "estimated_tokens_per_input_row": 33.702880859375
+      },
+      "essential_prose": {
+        "canonical_bytes": 699415,
+        "documents": 198,
+        "documents_per_input_row": 0.0966796875,
+        "estimated_tokens": 174853.75,
+        "estimated_tokens_per_input_row": 85.3778076171875
+      },
+      "essential_science": {
+        "canonical_bytes": 60515,
+        "documents": 10,
+        "documents_per_input_row": 0.0048828125,
+        "estimated_tokens": 15128.75,
+        "estimated_tokens_per_input_row": 7.3870849609375
+      },
+      "file": "data/crawl=CC-MAIN-2018-05/train-03378-of-03429.parquet",
+      "input_rows": 2048,
+      "malformed_rows": 4,
+      "max_raw_record_bytes": 279513,
+      "performance": {
+        "body_seconds": 6.661000000021886,
+        "cpu_process_seconds": 2.046875,
+        "logical_requests": 105,
+        "max_workers": 1,
+        "open_seconds": 27.958999999944353,
+        "peak_rss_bytes": 146333696,
+        "wall_seconds": 35.89000000001397
+      },
+      "raw_bytes": 18267079,
+      "requests": 106,
+      "transferred_bytes": 13792025
+    },
+    {
+      "crawl": "crawl=CC-MAIN-2019-09",
+      "decompressed_bytes": 12376042,
+      "elapsed_seconds": 38.741423,
+      "essential_practical": {
+        "canonical_bytes": 229069,
+        "documents": 61,
+        "documents_per_input_row": 0.02978515625,
+        "estimated_tokens": 57267.25,
+        "estimated_tokens_per_input_row": 27.9625244140625
+      },
+      "essential_prose": {
+        "canonical_bytes": 1048848,
+        "documents": 200,
+        "documents_per_input_row": 0.09765625,
+        "estimated_tokens": 262212.0,
+        "estimated_tokens_per_input_row": 128.033203125
+      },
+      "essential_science": {
+        "canonical_bytes": 90392,
+        "documents": 3,
+        "documents_per_input_row": 0.00146484375,
+        "estimated_tokens": 22598.0,
+        "estimated_tokens_per_input_row": 11.0341796875
+      },
+      "file": "data/crawl=CC-MAIN-2019-09/train-00153-of-02577.parquet",
+      "input_rows": 2048,
+      "malformed_rows": 2,
+      "max_raw_record_bytes": 232335,
+      "performance": {
+        "body_seconds": 7.306999999738764,
+        "cpu_process_seconds": 2.015625,
+        "logical_requests": 105,
+        "max_workers": 1,
+        "open_seconds": 28.83100000018021,
+        "peak_rss_bytes": 142962688,
+        "wall_seconds": 37.390999999974156
+      },
+      "raw_bytes": 19282643,
+      "requests": 106,
+      "transferred_bytes": 13775155
+    },
+    {
+      "crawl": "crawl=CC-MAIN-2021-04",
+      "decompressed_bytes": 11591106,
+      "elapsed_seconds": 36.24394,
+      "essential_practical": {
+        "canonical_bytes": 237624,
+        "documents": 61,
+        "documents_per_input_row": 0.02978515625,
+        "estimated_tokens": 59406.0,
+        "estimated_tokens_per_input_row": 29.0068359375
+      },
+      "essential_prose": {
+        "canonical_bytes": 972157,
+        "documents": 199,
+        "documents_per_input_row": 0.09716796875,
+        "estimated_tokens": 243039.25,
+        "estimated_tokens_per_input_row": 118.6715087890625
+      },
+      "essential_science": {
+        "canonical_bytes": 120154,
+        "documents": 16,
+        "documents_per_input_row": 0.0078125,
+        "estimated_tokens": 30038.5,
+        "estimated_tokens_per_input_row": 14.667236328125
+      },
+      "file": "data/crawl=CC-MAIN-2021-04/train-00179-of-03315.parquet",
+      "input_rows": 2048,
+      "malformed_rows": 2,
+      "max_raw_record_bytes": 111605,
+      "performance": {
+        "body_seconds": 5.965999999985797,
+        "cpu_process_seconds": 1.703125,
+        "logical_requests": 105,
+        "max_workers": 1,
+        "open_seconds": 27.761999999987893,
+        "peak_rss_bytes": 139829248,
+        "wall_seconds": 34.953000000008615
+      },
+      "raw_bytes": 18486615,
+      "requests": 106,
+      "transferred_bytes": 13806866
+    },
+    {
+      "crawl": "crawl=CC-MAIN-2021-49",
+      "decompressed_bytes": 11877242,
+      "elapsed_seconds": 40.197288,
+      "essential_practical": {
+        "canonical_bytes": 355424,
+        "documents": 83,
+        "documents_per_input_row": 0.04052734375,
+        "estimated_tokens": 88856.0,
+        "estimated_tokens_per_input_row": 43.38671875
+      },
+      "essential_prose": {
+        "canonical_bytes": 904443,
+        "documents": 213,
+        "documents_per_input_row": 0.10400390625,
+        "estimated_tokens": 226110.75,
+        "estimated_tokens_per_input_row": 110.4056396484375
+      },
+      "essential_science": {
+        "canonical_bytes": 153928,
+        "documents": 26,
+        "documents_per_input_row": 0.0126953125,
+        "estimated_tokens": 38482.0,
+        "estimated_tokens_per_input_row": 18.7900390625
+      },
+      "file": "data/crawl=CC-MAIN-2021-49/train-00408-of-02895.parquet",
+      "input_rows": 2048,
+      "malformed_rows": 0,
+      "max_raw_record_bytes": 208522,
+      "performance": {
+        "body_seconds": 7.41900000005262,
+        "cpu_process_seconds": 1.9375,
+        "logical_requests": 105,
+        "max_workers": 1,
+        "open_seconds": 30.191000000020722,
+        "peak_rss_bytes": 141094912,
+        "wall_seconds": 38.905999999988126
+      },
+      "raw_bytes": 18767134,
+      "requests": 106,
+      "transferred_bytes": 13857049
+    },
+    {
+      "crawl": "crawl=CC-MAIN-2024-26",
+      "decompressed_bytes": 13190048,
+      "elapsed_seconds": 39.990376,
+      "essential_practical": {
+        "canonical_bytes": 283296,
+        "documents": 60,
+        "documents_per_input_row": 0.029296875,
+        "estimated_tokens": 70824.0,
+        "estimated_tokens_per_input_row": 34.58203125
+      },
+      "essential_prose": {
+        "canonical_bytes": 1558284,
+        "documents": 209,
+        "documents_per_input_row": 0.10205078125,
+        "estimated_tokens": 389571.0,
+        "estimated_tokens_per_input_row": 190.22021484375
+      },
+      "essential_science": {
+        "canonical_bytes": 81358,
+        "documents": 20,
+        "documents_per_input_row": 0.009765625,
+        "estimated_tokens": 20339.5,
+        "estimated_tokens_per_input_row": 9.931396484375
+      },
+      "file": "data/crawl=CC-MAIN-2024-26/train-01127-of-03168.parquet",
+      "input_rows": 2048,
+      "malformed_rows": 0,
+      "max_raw_record_bytes": 540293,
+      "performance": {
+        "body_seconds": 6.885999999940395,
+        "cpu_process_seconds": 2.0,
+        "logical_requests": 105,
+        "max_workers": 1,
+        "open_seconds": 30.4539999999688,
+        "peak_rss_bytes": 144224256,
+        "wall_seconds": 38.687999999994645
+      },
+      "raw_bytes": 20088498,
+      "requests": 106,
+      "transferred_bytes": 13814972
+    }
+  ],
+  "science_leave_one_out_max_over_pooled": 1.1352853541719536,
+  "science_rows_required_leave_one_crawl_out": [
+    {
+      "left_out_crawl": "crawl=CC-MAIN-2014-15",
+      "required_input_rows": 60093267
+    },
+    {
+      "left_out_crawl": "crawl=CC-MAIN-2015-32",
+      "required_input_rows": 60666308
+    },
+    {
+      "left_out_crawl": "crawl=CC-MAIN-2016-50",
+      "required_input_rows": 63559333
+    },
+    {
+      "left_out_crawl": "crawl=CC-MAIN-2018-05",
+      "required_input_rows": 61955762
+    },
+    {
+      "left_out_crawl": "crawl=CC-MAIN-2019-09",
+      "required_input_rows": 65141766
+    },
+    {
+      "left_out_crawl": "crawl=CC-MAIN-2021-04",
+      "required_input_rows": 68658880
+    },
+    {
+      "left_out_crawl": "crawl=CC-MAIN-2021-49",
+      "required_input_rows": 73140172
+    },
+    {
+      "left_out_crawl": "crawl=CC-MAIN-2024-26",
+      "required_input_rows": 64144373
+    }
+  ],
+  "science_rows_required_leave_one_out_range": [
+    60093267,
+    73140172
+  ],
+  "science_rows_required_pooled": 64424483,
+  "seal_digest": "149f3eb48e047e6545314dcb40cc01fe2b0e8853898a83a2060f0e8c9032e2a1",
+  "spread": {
+    "essential_practical": {
+      "documents": {
+        "max": 83.0,
+        "max_over_min": 3.074074074074074,
+        "min": 27.0,
+        "unweighted_mean": 54.25
+      },
+      "estimated_tokens_per_input_row": {
+        "max": 43.38671875,
+        "max_over_min": 2.273156942126032,
+        "min": 19.0865478515625,
+        "unweighted_mean": 29.004669189453125
+      }
+    },
+    "essential_prose": {
+      "documents": {
+        "max": 213.0,
+        "max_over_min": 1.4013157894736843,
+        "min": 152.0,
+        "unweighted_mean": 186.875
+      },
+      "estimated_tokens_per_input_row": {
+        "max": 190.22021484375,
+        "max_over_min": 2.2279819563492347,
+        "min": 85.3778076171875,
+        "unweighted_mean": 120.39625549316406
+      }
+    },
+    "essential_science": {
+      "documents": {
+        "max": 26.0,
+        "max_over_min": 8.666666666666666,
+        "min": 3.0,
+        "unweighted_mean": 12.625
+      },
+      "estimated_tokens_per_input_row": {
+        "max": 18.7900390625,
+        "max_over_min": 3.7017940455004568,
+        "min": 5.075927734375,
+        "unweighted_mean": 10.244552612304688
+      }
+    },
+    "malformed_rows": {
+      "max": 4.0,
+      "max_over_min": null,
+      "min": 0.0,
+      "unweighted_mean": 1.0
+    },
+    "transferred_bytes": {
+      "max": 13857049.0,
+      "max_over_min": 1.015143659865294,
+      "min": 13650333.0,
+      "unweighted_mean": 13758778.25
+    }
+  }
+}

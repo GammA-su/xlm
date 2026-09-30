@@ -1,0 +1,248 @@
+{
+  "bytes_per_token": {
+    "central": 4,
+    "high": 5,
+    "low": 3
+  },
+  "components": {
+    "essential_practical": {
+      "average_canonical_bytes_per_document": {
+        "fraction": "135775/31",
+        "value": 4379.8387096774195
+      },
+      "canonical_bytes": 1900850,
+      "canonical_bytes_per_input_row": {
+        "fraction": "950425/8192",
+        "value": 116.0186767578125
+      },
+      "characters": 1885481,
+      "documents": 434,
+      "documents_per_input_row": {
+        "fraction": "217/8192",
+        "value": 0.0264892578125
+      },
+      "estimated_tokens": {
+        "central": {
+          "fraction": "950425/2",
+          "value": 475212.5
+        },
+        "high": {
+          "fraction": "380170/1",
+          "value": 380170.0
+        },
+        "low": {
+          "fraction": "1900850/3",
+          "value": 633616.6666666666
+        }
+      },
+      "estimated_tokens_per_document": {
+        "fraction": "135775/124",
+        "value": 1094.9596774193549
+      },
+      "estimated_tokens_per_input_row": {
+        "central": {
+          "fraction": "950425/32768",
+          "value": 29.004669189453125
+        },
+        "high": {
+          "fraction": "190085/8192",
+          "value": 23.2037353515625
+        },
+        "low": {
+          "fraction": "950425/24576",
+          "value": 38.672892252604164
+        }
+      },
+      "input_rows_per_retained_document": {
+        "fraction": "8192/217",
+        "value": 37.75115207373272
+      },
+      "transfer_bytes_per_canonical_byte": {
+        "fraction": "7862159/135775",
+        "value": 57.9057926716995
+      },
+      "transfer_bytes_per_estimated_token": {
+        "fraction": "31448636/135775",
+        "value": 231.623170686798
+      }
+    },
+    "essential_prose": {
+      "average_canonical_bytes_per_document": {
+        "fraction": "7890289/1495",
+        "value": 5277.785284280936
+      },
+      "canonical_bytes": 7890289,
+      "canonical_bytes_per_input_row": {
+        "fraction": "7890289/16384",
+        "value": 481.58502197265625
+      },
+      "characters": 7799962,
+      "documents": 1495,
+      "documents_per_input_row": {
+        "fraction": "1495/16384",
+        "value": 0.09124755859375
+      },
+      "estimated_tokens": {
+        "central": {
+          "fraction": "7890289/4",
+          "value": 1972572.25
+        },
+        "high": {
+          "fraction": "7890289/5",
+          "value": 1578057.8
+        },
+        "low": {
+          "fraction": "7890289/3",
+          "value": 2630096.3333333335
+        }
+      },
+      "estimated_tokens_per_document": {
+        "fraction": "7890289/5980",
+        "value": 1319.446321070234
+      },
+      "estimated_tokens_per_input_row": {
+        "central": {
+          "fraction": "7890289/65536",
+          "value": 120.39625549316406
+        },
+        "high": {
+          "fraction": "7890289/81920",
+          "value": 96.31700439453125
+        },
+        "low": {
+          "fraction": "7890289/49152",
+          "value": 160.5283406575521
+        }
+      },
+      "input_rows_per_retained_document": {
+        "fraction": "16384/1495",
+        "value": 10.959197324414715
+      },
+      "transfer_bytes_per_canonical_byte": {
+        "fraction": "110070226/7890289",
+        "value": 13.950088013252747
+      },
+      "transfer_bytes_per_estimated_token": {
+        "fraction": "440280904/7890289",
+        "value": 55.80035205301099
+      }
+    },
+    "essential_science": {
+      "average_canonical_bytes_per_document": {
+        "fraction": "671387/101",
+        "value": 6647.39603960396
+      },
+      "canonical_bytes": 671387,
+      "canonical_bytes_per_input_row": {
+        "fraction": "671387/16384",
+        "value": 40.97821044921875
+      },
+      "characters": 667124,
+      "documents": 101,
+      "documents_per_input_row": {
+        "fraction": "101/16384",
+        "value": 0.00616455078125
+      },
+      "estimated_tokens": {
+        "central": {
+          "fraction": "671387/4",
+          "value": 167846.75
+        },
+        "high": {
+          "fraction": "671387/5",
+          "value": 134277.4
+        },
+        "low": {
+          "fraction": "671387/3",
+          "value": 223795.66666666666
+        }
+      },
+      "estimated_tokens_per_document": {
+        "fraction": "671387/404",
+        "value": 1661.84900990099
+      },
+      "estimated_tokens_per_input_row": {
+        "central": {
+          "fraction": "671387/65536",
+          "value": 10.244552612304688
+        },
+        "high": {
+          "fraction": "671387/81920",
+          "value": 8.19564208984375
+        },
+        "low": {
+          "fraction": "671387/49152",
+          "value": 13.659403483072916
+        }
+      },
+      "input_rows_per_retained_document": {
+        "fraction": "16384/101",
+        "value": 162.21782178217822
+      },
+      "transfer_bytes_per_canonical_byte": {
+        "fraction": "110070226/671387",
+        "value": 163.94452975705516
+      },
+      "transfer_bytes_per_estimated_token": {
+        "fraction": "440280904/671387",
+        "value": 655.7781190282207
+      }
+    }
+  },
+  "input_rows": 16384,
+  "requirements": {
+    "basis": "pooled calibration yield, central 4 bytes/token, linear in scanned rows",
+    "bottleneck": "essential_science",
+    "bottleneck_required_input_rows": 64424483,
+    "components": {
+      "essential_practical": {
+        "expected_canonical_bytes_at_bottleneck_scan": 7474443268.466187,
+        "expected_estimated_tokens_at_bottleneck_scan": 1868610817.1165466,
+        "final_exact_token_quota": 600000000,
+        "first_pass_estimated_token_target": 660000000,
+        "ratio_to_first_pass_target": 2.8312285107826463,
+        "required_input_rows": 22754957
+      },
+      "essential_prose": {
+        "expected_canonical_bytes_at_bottleneck_scan": 31025866061.13202,
+        "expected_estimated_tokens_at_bottleneck_scan": 7756466515.283005,
+        "final_exact_token_quota": 300000000,
+        "first_pass_estimated_token_target": 330000000,
+        "ratio_to_first_pass_target": 23.504443985706075,
+        "required_input_rows": 2740950
+      },
+      "essential_science": {
+        "expected_canonical_bytes_at_bottleneck_scan": 2640000022.4561157,
+        "expected_estimated_tokens_at_bottleneck_scan": 660000005.6140289,
+        "final_exact_token_quota": 600000000,
+        "first_pass_estimated_token_target": 660000000,
+        "ratio_to_first_pass_target": 1.0000000085061045,
+        "required_input_rows": 64424483
+      }
+    },
+    "quotas_changed": false
+  },
+  "seal_digest": "149f3eb48e047e6545314dcb40cc01fe2b0e8853898a83a2060f0e8c9032e2a1",
+  "shared": {
+    "decompressed_bytes_per_input_row": {
+      "fraction": "47306831/8192",
+      "value": 5774.7596435546875
+    },
+    "elapsed_note": "journal wall time, one worker, including restart downtime",
+    "elapsed_seconds_per_input_row": {
+      "fraction": "7531893475000001/409600000000000000",
+      "value": 0.01838841180419922
+    },
+    "malformed_rate": {
+      "fraction": "1/2048",
+      "value": 0.00048828125
+    },
+    "malformed_rows": 8,
+    "physical_transfer_bytes_per_input_row": {
+      "fraction": "55035113/8192",
+      "value": 6718.1534423828125
+    },
+    "transfer_note": "2,048-row prefix windows; NOT a full-file cost per row"
+  },
+  "token_method": "mix01_inventory: assumed UTF-8 bytes/token 3/4/5; estimated tokens only"
+}
