@@ -1,0 +1,22 @@
+ M docs/implementation/STATUS.md
+?? docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-PHASE-D-AUTHORIZATION-REVIEW/review_inventory.py
+?? docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-REVIEW/COMMANDS.md
+?? docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-REVIEW/final-checks.json
+?? docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-REVIEW/focused-run.json
+?? docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-REVIEW/focused.log
+?? docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-REVIEW/focused.xml
+?? docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-REVIEW/independent-checks.json
+?? docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-REVIEW/policy-checks.json
+?? docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-REVIEW/policy_checks.py
+?? docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-REVIEW/probe-b01-b02.json
+?? docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-REVIEW/production-verify.json
+?? docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-REVIEW/review_checks.py
+?? docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-REVIEW/roots-after.json
+?? docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-REVIEW/roots-before.json
+?? docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-REVIEW/status-preservation.json
+?? docs/implementation/evidence/ESSENTIAL-WEB-SELECTOR-SWEEP-REVIEW/audit.json
+?? docs/implementation/reports/ESSENTIAL-WEB-EVIDENCE-V3.0-REVALIDATION.md
+?? docs/implementation/reports/ESSENTIAL-WEB-EVIDENCE-V4.1-REVIEW.md
+?? docs/implementation/reports/ESSENTIAL-WEB-SELECTOR-POLICY-REVIEW.md
+?? docs/implementation/reports/ESSENTIAL-WEB-SELECTOR-SWEEP-REVIEW-AUDIT.md
+?? docs/implementation/reports/ESSENTIAL-WEB-SELECTOR-SWEEP-REVIEW.md

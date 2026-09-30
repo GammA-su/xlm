@@ -1,0 +1,32 @@
+{
+  "freeze.json": {
+    "digest": "9c4612fe860ef49c26ff09b25f8fdaf00f0a7015d7eab4fd7cfe28a0e1675228",
+    "sha256": "f0e4ec2a7239519417442769fe8ba128dab718e67eea4f8ded5e64cda30599c5",
+    "bytes": 4376
+  },
+  "phase_d_plan.json": {
+    "digest": "23a26ffc87d27e4c8fa5de86d7ec446c260bfd65442dc5b1dfd2651cd62222b7",
+    "sha256": "df67d54e0e4dd4c7d3ec9527a0ebb2b91baa36bcf222081a20af277c01c0f198",
+    "bytes": 128699
+  },
+  "phase_p_parent_binding.json": {
+    "digest": "de27e2a56f83970a91f9f3224b3bad7cefc977018612522679838ebd15b61559",
+    "sha256": "bcd9fb06de7ac98cdc2512280553883dc66cef926210f309d0c39f0371dfd077",
+    "bytes": 6028
+  },
+  "scientific_adoption.json": {
+    "digest": "4a2de146e53b4a21f1596f1f3518d0a12f5fec2b5760bfab20fd3eabcdea2cba",
+    "sha256": "88425c38d33f12b443932b28f00b195964f6125898bea6ef6eefc834b71103d5",
+    "bytes": 3621
+  },
+  "verification.json": {
+    "digest": "6c68478bff86ccc824365460ad28e1604a944cebce496e1189608958b9a33884",
+    "sha256": "43f3efe239128105141176825faf409a01585d18a5ca7944d5d05ce6f5a44150",
+    "bytes": 2258
+  },
+  "phase_d_dry_plan.json": {
+    "digest": "ee82125d1b0d2b6d0a6c420144910db954659d5b757283d39123ddc3d0080356",
+    "sha256": "8e5c3b5bd555281c8d610390c401f0ef65f8bdea8e239fb4680dffaa69ab0a9f",
+    "bytes": 124373
+  }
+}

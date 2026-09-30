@@ -1,0 +1,10 @@
+{
+  "simulation": "constant pre-existing occupancy added to measured root bytes at decode boundary",
+  "cap": 1073741824,
+  "final_accounted_bytes": 1073737540,
+  "excess_bytes": -4284,
+  "result": "COMPLETE",
+  "run_status": "COMPLETE",
+  "decoded_output_bytes": 28741,
+  "after_exports_before_store_close": 1073758572
+}

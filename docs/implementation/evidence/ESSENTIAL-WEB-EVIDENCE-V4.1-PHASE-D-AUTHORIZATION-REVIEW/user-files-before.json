@@ -1,0 +1,86 @@
+{
+  "docs/implementation/STATUS.md": {
+    "bytes": 162569,
+    "sha256": "8c1c6bd9a2435c1f6d36c835770f593976cf777e2e67b4bd63962180798bb254"
+  },
+  "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-REVIEW/COMMANDS.md": {
+    "bytes": 6397,
+    "sha256": "f8bf774bbc20135bb1b7ed9429270a433e5462f71766c0a96cf68025768291df"
+  },
+  "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-REVIEW/final-checks.json": {
+    "bytes": 2182,
+    "sha256": "3f77336e1a5354f461728df951b1c1d54e0ab390f21cd218266292b398588db9"
+  },
+  "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-REVIEW/focused-run.json": {
+    "bytes": 72,
+    "sha256": "3d6096fffabaa342cdf0bf25eb1db4cf30dfaa636dd6ef1063c13d6c5983441b"
+  },
+  "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-REVIEW/focused.log": {
+    "bytes": 856,
+    "sha256": "395e1eb41f953c89408871ba5ae6e606d534cb23944ab5686f67b3fc6a538d1b"
+  },
+  "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-REVIEW/focused.xml": {
+    "bytes": 46126,
+    "sha256": "53a57ec08caf0fe26e9639d4d96f18034b5580936d083b4a8f45447d44a7c810"
+  },
+  "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-REVIEW/independent-checks.json": {
+    "bytes": 2441,
+    "sha256": "6e67e0bebcc25edb594a0b9425b16d648d805e06d0aee90db94ae11f23a0734a"
+  },
+  "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-REVIEW/policy-checks.json": {
+    "bytes": 1020,
+    "sha256": "92a81bd217a30e02f46d67d7e1ec7f77ce8daf432da830cc5f9368db774730c5"
+  },
+  "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-REVIEW/policy_checks.py": {
+    "bytes": 2405,
+    "sha256": "34496ad039375d701155bd4e389b6b78674c1a7f47164b16c116f9c25171b05c"
+  },
+  "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-REVIEW/probe-b01-b02.json": {
+    "bytes": 4224,
+    "sha256": "44c4b7cad447e71626be2cf20cac7e832d694d2c4efe5770c5b45d1c3fb5b2d0"
+  },
+  "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-REVIEW/production-verify.json": {
+    "bytes": 4636,
+    "sha256": "aae3f844bf133e73c882c004fb2fcf7ba4e9d7e9defa6c2714702e014ee35c8e"
+  },
+  "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-REVIEW/review_checks.py": {
+    "bytes": 7662,
+    "sha256": "3fccacf84032eb4547d42cba177a9e056cb7143093bd4be2a136ffd0fb5ecc03"
+  },
+  "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-REVIEW/roots-after.json": {
+    "bytes": 1375,
+    "sha256": "700112bcc67b5c3614cc8ba7480f19c3f3922288cec4b9162f2508a674bebbea"
+  },
+  "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-REVIEW/roots-before.json": {
+    "bytes": 1375,
+    "sha256": "700112bcc67b5c3614cc8ba7480f19c3f3922288cec4b9162f2508a674bebbea"
+  },
+  "docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-REVIEW/status-preservation.json": {
+    "bytes": 181,
+    "sha256": "239bcb1f233e7ce156a3e1436752bf33dd792627083748536b5ef2559e097a1a"
+  },
+  "docs/implementation/evidence/ESSENTIAL-WEB-SELECTOR-SWEEP-REVIEW/audit.json": {
+    "bytes": 41677,
+    "sha256": "2602eb75cba02ddc593a695a3ce15d6f6917a46fdd9ae95866915956dd49141a"
+  },
+  "docs/implementation/reports/ESSENTIAL-WEB-EVIDENCE-V3.0-REVALIDATION.md": {
+    "bytes": 17830,
+    "sha256": "2a0e473eccebeab82681d47d907dc6d1c0063da0b1d46a8aed3f2d319f5a16b3"
+  },
+  "docs/implementation/reports/ESSENTIAL-WEB-EVIDENCE-V4.1-REVIEW.md": {
+    "bytes": 9285,
+    "sha256": "ddfa4f0af3db0d0018c597b0c7cb70c7cae4f32f3f03002eb422137fbbd18ec4"
+  },
+  "docs/implementation/reports/ESSENTIAL-WEB-SELECTOR-POLICY-REVIEW.md": {
+    "bytes": 31412,
+    "sha256": "c6a57a7086ef2042c4a3d42eb2a98304019ff22d5472c7399c20208cc0d920a5"
+  },
+  "docs/implementation/reports/ESSENTIAL-WEB-SELECTOR-SWEEP-REVIEW-AUDIT.md": {
+    "bytes": 13801,
+    "sha256": "0308a88bcfc04b23a641240f0ecff1e52760ed7c56e236a2eec5e767c547496e"
+  },
+  "docs/implementation/reports/ESSENTIAL-WEB-SELECTOR-SWEEP-REVIEW.md": {
+    "bytes": 29272,
+    "sha256": "cc6c7bab56f898ee0149ec7041ca82fe3eecfdafee8b2ee1ce552a6c676369ef"
+  }
+}

@@ -1,0 +1,268 @@
+{
+  "verdict": "PHASE-D AUTHORIZATION REVIEW BLOCKED",
+  "M_authorization": "BLOCKED",
+  "T_authorization": "BLOCKED",
+  "reviewed_head": "b1e1d10bbfcde78e708ba21409c7a0a765f9f5be",
+  "finishing_head": "b1e1d10bbfcde78e708ba21409c7a0a765f9f5be",
+  "freeze_commit": "d58693822ce06baddf1d62a21f69ecf0bb81f2bd",
+  "phase_p_result_review_commit": "ed8efcf3c85c265828a88579a264f08a2048640f",
+  "protocol_sha256": "bb2bca6f571c9e02b02536bc518cdc1b61fdf0f56b0c6970eaa257c8d198769f",
+  "independently_recomputed_bindings": {
+    "freeze.json": {
+      "digest": "9c4612fe860ef49c26ff09b25f8fdaf00f0a7015d7eab4fd7cfe28a0e1675228",
+      "sha256": "f0e4ec2a7239519417442769fe8ba128dab718e67eea4f8ded5e64cda30599c5",
+      "bytes": 4376
+    },
+    "phase_d_plan.json": {
+      "digest": "23a26ffc87d27e4c8fa5de86d7ec446c260bfd65442dc5b1dfd2651cd62222b7",
+      "sha256": "df67d54e0e4dd4c7d3ec9527a0ebb2b91baa36bcf222081a20af277c01c0f198",
+      "bytes": 128699
+    },
+    "phase_p_parent_binding.json": {
+      "digest": "de27e2a56f83970a91f9f3224b3bad7cefc977018612522679838ebd15b61559",
+      "sha256": "bcd9fb06de7ac98cdc2512280553883dc66cef926210f309d0c39f0371dfd077",
+      "bytes": 6028
+    },
+    "scientific_adoption.json": {
+      "digest": "4a2de146e53b4a21f1596f1f3518d0a12f5fec2b5760bfab20fd3eabcdea2cba",
+      "sha256": "88425c38d33f12b443932b28f00b195964f6125898bea6ef6eefc834b71103d5",
+      "bytes": 3621
+    },
+    "verification.json": {
+      "digest": "6c68478bff86ccc824365460ad28e1604a944cebce496e1189608958b9a33884",
+      "sha256": "43f3efe239128105141176825faf409a01585d18a5ca7944d5d05ce6f5a44150",
+      "bytes": 2258
+    },
+    "phase_d_dry_plan.json": {
+      "digest": "ee82125d1b0d2b6d0a6c420144910db954659d5b757283d39123ddc3d0080356",
+      "sha256": "8e5c3b5bd555281c8d610390c401f0ef65f8bdea8e239fb4680dffaa69ab0a9f",
+      "bytes": 124373
+    }
+  },
+  "phase_p_artifact_bindings": {
+    "artifact_manifest.json": {
+      "bytes": 10629,
+      "digest": "1bb6bad6e3690758c005e260c272eac3c0adcb6d040fde960a502d0ced90d7fe",
+      "sha256": "68015e229e27ea715c08dd977c83c8b20da00d66334434f6adf0767ee7118f33"
+    },
+    "m_phase_p_layout.json": {
+      "bytes": 144028,
+      "digest": "2c9f2f79448e1bb1d59b57f1ddec276dcd05bc79dddaea4014c9942a340d340a",
+      "sha256": "3bcafccb81737694d731dad9cda4949b5e221c51ca9cde4f69102b087267f5e4"
+    },
+    "payload/M-00-footer.bin": {
+      "bytes": 203276,
+      "sha256": "eec4e65e7307c3c12c1366f20500e7b0a3e26ac2bd0ee59f8f7d9b1bd1b970a9"
+    },
+    "payload/M-01-footer.bin": {
+      "bytes": 198790,
+      "sha256": "4d1fa59f5c245aa387a69201812ae79eefdc2250921e387cdbb7454a5a8fdd95"
+    },
+    "payload/M-02-footer.bin": {
+      "bytes": 150099,
+      "sha256": "73808b5e2a4db3b32a7241f06cd1922f37d50f82b80b6f5fa829789f85f48088"
+    },
+    "payload/M-03-footer.bin": {
+      "bytes": 199231,
+      "sha256": "71b329616d53118a4af33065aff31e96020eb0195c9bfeb9f4304867a54f2537"
+    },
+    "payload/M-04-footer.bin": {
+      "bytes": 163182,
+      "sha256": "8de5d9aad30890c88c723216eed274b52378b0b4f0c72b3ee3a65219b3f9ed97"
+    },
+    "payload/M-05-footer.bin": {
+      "bytes": 155751,
+      "sha256": "0ea78bf3262e3ab8f2981448ee6d3770708af49eee075dff825c84eedd73d3a1"
+    },
+    "payload/M-06-footer.bin": {
+      "bytes": 166247,
+      "sha256": "147e23096e4f6781b606ea5a066c2e554bb964fa9923ba8ea021e7750e2bae69"
+    },
+    "payload/M-07-footer.bin": {
+      "bytes": 161808,
+      "sha256": "e829ac281553a31ed91914841671a2b17028aefb94b3d9a64cc0c768c1bef16f"
+    },
+    "payload/T-00-footer.bin": {
+      "bytes": 171187,
+      "sha256": "4358891cd976e2ce88ef7613777aba568559df3033f15185dee81f1b409ad50f"
+    },
+    "payload/T-00-trailer.bin": {
+      "bytes": 8,
+      "sha256": "e776471102ff32ee415da82c3135e204f62f57caaf4e2c9dc673d902f32c3191"
+    },
+    "payload/T-01-footer.bin": {
+      "bytes": 198491,
+      "sha256": "1cf48d9b9a910c72825402d7314b2289ae03b164599d2792b711099c587ccc7b"
+    },
+    "payload/T-01-trailer.bin": {
+      "bytes": 8,
+      "sha256": "74cf994db10e5e39239d42850c774bfe7d556e911e1b9c936627efbc886e5515"
+    },
+    "payload/T-02-footer.bin": {
+      "bytes": 203745,
+      "sha256": "611ff68b3ddf3c51e164739a03293635692028490489ee90b60d172b500edbe6"
+    },
+    "payload/T-02-trailer.bin": {
+      "bytes": 8,
+      "sha256": "7c4c883496b3d1c838b15a87dd38442be010378746835a7b1ee54d5e6cb2abe7"
+    },
+    "payload/T-03-footer.bin": {
+      "bytes": 169224,
+      "sha256": "d6c6b590b65806bf24908acf36a3e3fa4f78b9f83e8ba3e2d6654bbfe9f6ed31"
+    },
+    "payload/T-03-trailer.bin": {
+      "bytes": 8,
+      "sha256": "e31326dcd33147e99b6f7b3247f95b058a2436530bbf45fbab75b1695cb72e9d"
+    },
+    "payload/T-04-footer.bin": {
+      "bytes": 216880,
+      "sha256": "f09ec1e962c7be56d6f7cf291014e6785bbb264bc21bd9eff3c615d2cfc8ea7b"
+    },
+    "payload/T-04-trailer.bin": {
+      "bytes": 8,
+      "sha256": "a48b9093e3a59d8b91439d87afbf95de7ca4f8e7b893bcc55901ab9617af08c6"
+    },
+    "payload/T-05-footer.bin": {
+      "bytes": 159394,
+      "sha256": "6ee9b8a7ac068d7459566a7b08368eb90e948e95132e0bb2797d6d2d48789fb1"
+    },
+    "payload/T-05-trailer.bin": {
+      "bytes": 8,
+      "sha256": "2e1bd0892cf1a4f724cce4e27a37722d3f8d4e5cf68274dfaeb723d5e3d61dee"
+    },
+    "payload/T-06-footer.bin": {
+      "bytes": 192639,
+      "sha256": "087dbd647369399787a42833939e879f94ecd68d0686a3c0c555afecf432ff3e"
+    },
+    "payload/T-06-trailer.bin": {
+      "bytes": 8,
+      "sha256": "26b4340ee642ce1d8a7460b7693088a2d1ef90c3f997992857f7e1ba815fe0bb"
+    },
+    "payload/T-07-footer.bin": {
+      "bytes": 158885,
+      "sha256": "7ebc8b9d9602b2d2933030ef1e41c86c878790e9338a71ec29ec664a3df2068f"
+    },
+    "payload/T-07-trailer.bin": {
+      "bytes": 8,
+      "sha256": "ba394027db64ca8763f24c89c52372392ccf23221a6256b6bdbb217968c3380c"
+    },
+    "phase_p_receipt.json": {
+      "bytes": 20755,
+      "digest": "ebd5704be8a871034ef8048c0641e9d735d017f458003b4efc50ab124c8bd965",
+      "sha256": "a9c9b68d81660cf37e3adff651954be3bb57673435c81b29c12dfa1a4910381b"
+    },
+    "request_receipt.jsonl": {
+      "bytes": 51254,
+      "sha256": "167a80228649ba93282fe5ff8bd9f5478d5ea5c454a7c7d7395bd23ad3b18f4f"
+    },
+    "state.sqlite": {
+      "bytes": 90112,
+      "sha256": "e9546a31dd05055b2cf27539c1f584be5373a82c154eb9868df8fa086c9e2fb0"
+    },
+    "t_phase_p_layout.json": {
+      "bytes": 12149,
+      "digest": "364bda46c766e8f9fdebd5732408743420cbe5c6f0b00fbd6a10d09a8bd53274",
+      "sha256": "42398f8df279a7994909df3f2ad45863ad402f6263ab7c68103ee72ff8d53d8e"
+    }
+  },
+  "parent_root": "G:\\Project\\xlm-evidence-v4.1\\essential-web",
+  "parent_unchanged": true,
+  "parent_inventory_entries_including_root": 89,
+  "parent_inventory_sha256": "afc34680972b9fe265b94dca7be6841f15a2380735c6e25dcfdf4321fc053b24",
+  "parent_file_bytes": 3241704,
+  "parent_complete_operations": 40,
+  "phase_d_root_exists": false,
+  "scientific_identity": {
+    "scientific_namespace": "essential-web-evidence-v2.0",
+    "selection_digest": "975ba3dee4af0598e665ea05c69bbe49336c3e3a35fca777a863073190b78474",
+    "policy_digest": "f4357f61f434d5105d823266153dac6372e122f12767187631e8796b4899dd07",
+    "source": {
+      "host": "huggingface.co",
+      "repository": "EssentialAI/essential-web-v1.0",
+      "repository_type": "datasets",
+      "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d"
+    }
+  },
+  "M": {
+    "operations": 8,
+    "payload_bytes": 11692530,
+    "frozen_rows": 4096
+  },
+  "T": {
+    "operations": 47,
+    "payload_bytes": 179963169,
+    "frozen_locators": 118,
+    "pieces_per_file": [
+      6,
+      6,
+      5,
+      6,
+      6,
+      6,
+      6,
+      6
+    ]
+  },
+  "blockers": {
+    "B01_parent_drift": {
+      "synthetic_only": true,
+      "mutation": "append one space to copied parent manifest after acquisition before decoding",
+      "result": "COMPLETE",
+      "run_status": "COMPLETE",
+      "M_status": "COMPLETE",
+      "T_status": "COMPLETE",
+      "expected": "STOPPED / INCOMPLETE"
+    },
+    "B02_whole_root_cap": {
+      "simulation": "constant pre-existing occupancy added to measured root bytes at decode boundary",
+      "cap": 1073741824,
+      "final_accounted_bytes": 1073737540,
+      "excess_bytes": -4284,
+      "result": "COMPLETE",
+      "run_status": "COMPLETE",
+      "decoded_output_bytes": 28741,
+      "after_exports_before_store_close": 1073758572
+    }
+  },
+  "tests": {
+    "prescribed_focused": {
+      "passed": 412,
+      "failed": 0,
+      "exit": 0,
+      "pytest_seconds": 43.72
+    },
+    "scientific_regressions": {
+      "passed": 69,
+      "failed": 0,
+      "exit": 0,
+      "pytest_seconds": 1.4
+    },
+    "independent_final": {
+      "passed": 20,
+      "failed": 2,
+      "exit": 1,
+      "pytest_seconds": 3.83,
+      "measured_seconds": 4.012,
+      "peak_working_set_bytes": 139292672
+    },
+    "skipped": 0,
+    "xfail": 0
+  },
+  "environment": {
+    "python": "3.12.13 (main, Aug  7 2026, 02:26:41) [MSC v.1944 64 bit (AMD64)]",
+    "pyarrow": "25.0.1",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "current_G_free_bytes": 999665057792
+  },
+  "network_requests": 0,
+  "live_phase_d": "NOT RUN",
+  "real_column_decoding": "NOT RUN",
+  "full_acceptance": "NOT RUN",
+  "cuda": "NOT RUN",
+  "live_performance": "NOT RUN",
+  "phase_p_redesign": "OUT OF SCOPE",
+  "implementation_changes": false,
+  "review_commit": null,
+  "commit_reason": "user made review commit conditional on PASS",
+  "next_operator_action": "Offline repair of B01/B02 only, preserving frozen identity and Phase-P bytes; repeat narrow authorization review. Do not run live Phase D."
+}

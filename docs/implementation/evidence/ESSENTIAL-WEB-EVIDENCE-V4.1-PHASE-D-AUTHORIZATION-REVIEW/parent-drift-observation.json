@@ -1,0 +1,9 @@
+{
+  "synthetic_only": true,
+  "mutation": "append one space to copied parent manifest after acquisition before decoding",
+  "result": "COMPLETE",
+  "run_status": "COMPLETE",
+  "M_status": "COMPLETE",
+  "T_status": "COMPLETE",
+  "expected": "STOPPED / INCOMPLETE"
+}
