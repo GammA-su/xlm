@@ -3,12 +3,12 @@
     {
       "bytes": 15378,
       "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/admission-decisions.json",
-      "sha256": "4f33f18a292926bcab2d5c77ce93a160453a45274e82367260f2452eed6104fc"
+      "sha256": "0c038d94b2c5e9579d13f4eacf5b39449af5daccfd3b994a517943134524ba7b"
     },
     {
       "bytes": 706,
       "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/admission-decisions.seal.json",
-      "sha256": "d0c9027ee538d36de21a037c67f1c27891c0e14aa9f3f5932c810f815aedfc33"
+      "sha256": "06b094bf94d15add33770a356df0cc2952b50ea1fa148fd8bd8f2fa1e17ef5db"
     },
     {
       "bytes": 1590,
@@ -39,6 +39,11 @@
       "bytes": 863,
       "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/future-admit.ps1",
       "sha256": "3ea96c310846b3953d7a1e2f3d3e621db94708983ae92ac072374e52c3e3185e"
+    },
+    {
+      "bytes": 1477,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/future-readmit-after-adapter-fix.ps1",
+      "sha256": "21533ae65864f94eb910a03544f19dc665f7e97c547c28808df9c4f53ad3c678"
     },
     {
       "bytes": 763,
@@ -141,5 +146,14 @@
   ],
   "kind": "essential_web_admission_bootstrap_artifact_manifest",
   "self_hash": "excluded to avoid self-reference",
+  "adapter_fix_reseal": {
+    "adapter_code_sha256": "3651ff2af4fcb46c207404e052caa59e1ec42f2ac5a429e5dec752f7e83a7ef6",
+    "parent": "5fb37c96b4bf8bcd661d7d0e11a8dd11d801dde7:docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/artifact-manifest.json",
+    "previous_adapter_code_sha256": "56ca4fb26e88b57409f9ba0e0743095a1ff552a83e702722a948c2115d3c42f8",
+    "resealed": [
+      "admission-decisions.json",
+      "admission-decisions.seal.json"
+    ]
+  },
   "supersedes": "5b0cf7ae78325463533ae0957f9c03914b0ee1d6:docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/artifact-manifest.json"
 }

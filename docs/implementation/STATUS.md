@@ -1,3 +1,18 @@
+> **ESSENTIAL-WEB POST-FIX BINDINGS (2026-09-30, offline): BLOCKED BY ONE OPERATOR ACTION.**
+> Adapter code hash changed `56ca4fb2…` → `3651ff2a…`. The enforced C04 gate still
+> admits all three views (it does not persist a code hash), but the approved
+> prepared package bound the old hash, so a superseding operator admission is
+> required. Prepared decisions are resealed to the current hash; attempt 1 stays.
+> Probe plan, authorization, fetch receipt and raw (`a1c2b807…a9f5`) remain valid.
+> Offline resume ran: science 0, practical 5, prose 26, malformed 0; selector
+> totals 223/26/5/2/0 unchanged; `measurement.json` written. Calibration digest
+> `a6cab8cd…89b0` and its eight authorization hashes bind no adapter code and are
+> unchanged. Focused tests 326 + 35 passed; ruff/format/strict mypy clean.
+> No network, fetch, calibration or push.
+> [Report and exact commands](reports/ESSENTIAL-WEB-POST-FIX-BINDINGS.md).
+> Next: `. .\scripts\operator_storage.ps1; & .\docs\implementation\evidence\ESSENTIAL-WEB-ADMISSION-BOOTSTRAP\future-readmit-after-adapter-fix.ps1 -Operator $env:USERNAME`,
+> then `future-calibration.ps1` (live, not run).
+
 > **ESSENTIAL-WEB OPTIONAL FDC FIX (2026-09-30, offline): READY TO RESUME PROBE OFFLINE.**
 > Reused the existing 256-row raw probe; no source fetch. Empty optional hierarchy
 > labels caused all 108 malformed rows. Scoped renderer repair gives 256/256 base

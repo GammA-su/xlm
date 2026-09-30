@@ -1,6 +1,6 @@
 {
   "contract_version": "c04-benchmark-risk-v2",
-  "decisions_sha256": "4f33f18a292926bcab2d5c77ce93a160453a45274e82367260f2452eed6104fc",
+  "decisions_sha256": "0c038d94b2c5e9579d13f4eacf5b39449af5daccfd3b994a517943134524ba7b",
   "live_receipt_sha256": "c34d74301720088fcdb28724492d7aaa2d55f9ff54cde754059f884a93cab313",
   "real_store_admission_published": false,
   "reviews_sha256": {

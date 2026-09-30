@@ -1,0 +1,119 @@
+{
+  "binding": {
+    "adapter_id": "essential_web_bnormal",
+    "canonicalization": "EssentialWebSelectedAdapter -> EssentialWebAdapter -> CanonicalDocument",
+    "repository": "EssentialAI/essential-web-v1.0",
+    "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+    "selector": {
+      "condition": "B-normal",
+      "evaluator_sha256": "5a63e78560ea9e12b0ec03b5e7e63204b5c75554bee02192c12bb4ab0853bf9c",
+      "freeze_digest": "c6f32a65f083c99b64245e25151f2cc73275093e1013d68b625c6d6f63d10a0c",
+      "freeze_version": "essential-web-selector-fasttrack-v1",
+      "policy_digest": "f4357f61f434d5105d823266153dac6372e122f12767187631e8796b4899dd07",
+      "selector_id": "essential-web-b-normal"
+    },
+    "source_id": "essential_web"
+  },
+  "cost_per_component": "each component bears full shared transfer for bottleneck sizing",
+  "crawls": 1,
+  "decompressed_bytes": 1924727,
+  "elapsed_wall_seconds_including_restart_downtime": 33.615578,
+  "files": 1,
+  "input_rows": 256,
+  "malformed_rows": 0,
+  "peak_process_memory": null,
+  "peak_process_memory_status": "NOT MEASURED by journal; use runtime performance artifact",
+  "physical_response_body_bytes": 9511581,
+  "retention_and_cost": {
+    "essential_practical": {
+      "canonical_bytes": 16620,
+      "characters": 16501,
+      "documents": 5,
+      "estimated_tokens": 4155.0,
+      "estimated_tokens_low_high": [
+        3324.0,
+        5540.0
+      ],
+      "scanned_rows_per_retained_document": 51.2,
+      "transfer_bytes_per_canonical_byte": 572.2972924187726,
+      "transfer_bytes_per_estimated_token": 2289.1891696750904,
+      "transfer_bytes_per_retained_document": 1902316.2
+    },
+    "essential_prose": {
+      "canonical_bytes": 517179,
+      "characters": 502911,
+      "documents": 26,
+      "estimated_tokens": 129294.75,
+      "estimated_tokens_low_high": [
+        103435.8,
+        172393.0
+      ],
+      "scanned_rows_per_retained_document": 9.846153846153847,
+      "transfer_bytes_per_canonical_byte": 18.39127458771528,
+      "transfer_bytes_per_estimated_token": 73.56509835086112,
+      "transfer_bytes_per_retained_document": 365830.03846153844
+    },
+    "essential_science": {
+      "canonical_bytes": 0,
+      "characters": 0,
+      "documents": 0,
+      "estimated_tokens": 0.0,
+      "estimated_tokens_low_high": [
+        0.0,
+        0.0
+      ],
+      "scanned_rows_per_retained_document": null,
+      "transfer_bytes_per_canonical_byte": null,
+      "transfer_bytes_per_estimated_token": null,
+      "transfer_bytes_per_retained_document": null
+    }
+  },
+  "scanned_rows": 256,
+  "selector_counts": {
+    "essential_practical": 5,
+    "essential_prose": 26,
+    "essential_science": 0,
+    "rejected": 223,
+    "unassigned": 2
+  },
+  "shared_transfer_counted_once": true,
+  "stage": "probe",
+  "token_method": "mix01_inventory: assumed UTF-8 bytes/token 3/4/5; estimated tokens only",
+  "total_canonical_bytes": 533799,
+  "total_retained_documents": 31,
+  "units": [
+    {
+      "crawl": "crawl=CC-MAIN-2014-15",
+      "file": "data/crawl=CC-MAIN-2014-15/train-01860-of-02772.parquet",
+      "plan_hash": "04db5c763959ebf7187ba69d23a4f99b5d4e2e77c2f07bc4350e4b427f52b04c",
+      "raw_sha256": "a1c2b8078b662af59d0a4f56a131710b8654c6ab5e9103d4d4760cb462b0a9f5",
+      "resource_account": {
+        "consumed": {
+          "decompressed": 1924727,
+          "records_scanned": 256,
+          "requests": 105,
+          "transfer": 9511581
+        },
+        "deadline_at": 1790771904.5121653,
+        "limits": {
+          "decompressed": 536870912,
+          "output": 2147483648,
+          "temp": 1073741824,
+          "transfer": 134217728
+        },
+        "occupancy": {
+          "output": 2793802,
+          "published": 2796711,
+          "temp": 0
+        },
+        "reservations": {
+          "decompressed": {},
+          "output": {},
+          "records_scanned": {},
+          "temp": {},
+          "transfer": {}
+        }
+      }
+    }
+  ]
+}

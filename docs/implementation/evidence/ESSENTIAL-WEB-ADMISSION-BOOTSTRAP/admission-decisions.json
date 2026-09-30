@@ -29,7 +29,7 @@
         "version": "c04-benchmark-risk-v2"
       },
       "contract_version": "c04-benchmark-risk-v2",
-      "decision_timestamp": "2026-09-30T12:22:53.491327+00:00",
+      "decision_timestamp": "2026-09-30T13:12:58.377094+00:00",
       "immutable_revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
       "legal_disclaimer": "The software records evidence and policy status; it must not purport to certify legal rights.",
       "license_review": "approved",
@@ -77,7 +77,7 @@
     },
     "production_plan_hash": "04db5c763959ebf7187ba69d23a4f99b5d4e2e77c2f07bc4350e4b427f52b04c",
     "source_binding": {
-      "adapter_code_sha256": "56ca4fb26e88b57409f9ba0e0743095a1ff552a83e702722a948c2115d3c42f8",
+      "adapter_code_sha256": "3651ff2af4fcb46c207404e052caa59e1ec42f2ac5a429e5dec752f7e83a7ef6",
       "adapter_id": "essential_web_bnormal",
       "canonicalization": "EssentialWebSelectedAdapter -> EssentialWebAdapter -> CanonicalDocument",
       "repository": "EssentialAI/essential-web-v1.0",
@@ -123,7 +123,7 @@
         "version": "c04-benchmark-risk-v2"
       },
       "contract_version": "c04-benchmark-risk-v2",
-      "decision_timestamp": "2026-09-30T12:22:53.544256+00:00",
+      "decision_timestamp": "2026-09-30T13:12:58.423411+00:00",
       "immutable_revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
       "legal_disclaimer": "The software records evidence and policy status; it must not purport to certify legal rights.",
       "license_review": "approved",
@@ -171,7 +171,7 @@
     },
     "production_plan_hash": "04db5c763959ebf7187ba69d23a4f99b5d4e2e77c2f07bc4350e4b427f52b04c",
     "source_binding": {
-      "adapter_code_sha256": "56ca4fb26e88b57409f9ba0e0743095a1ff552a83e702722a948c2115d3c42f8",
+      "adapter_code_sha256": "3651ff2af4fcb46c207404e052caa59e1ec42f2ac5a429e5dec752f7e83a7ef6",
       "adapter_id": "essential_web_bnormal",
       "canonicalization": "EssentialWebSelectedAdapter -> EssentialWebAdapter -> CanonicalDocument",
       "repository": "EssentialAI/essential-web-v1.0",
@@ -217,7 +217,7 @@
         "version": "c04-benchmark-risk-v2"
       },
       "contract_version": "c04-benchmark-risk-v2",
-      "decision_timestamp": "2026-09-30T12:22:53.586136+00:00",
+      "decision_timestamp": "2026-09-30T13:12:58.467330+00:00",
       "immutable_revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
       "legal_disclaimer": "The software records evidence and policy status; it must not purport to certify legal rights.",
       "license_review": "approved",
@@ -265,7 +265,7 @@
     },
     "production_plan_hash": "04db5c763959ebf7187ba69d23a4f99b5d4e2e77c2f07bc4350e4b427f52b04c",
     "source_binding": {
-      "adapter_code_sha256": "56ca4fb26e88b57409f9ba0e0743095a1ff552a83e702722a948c2115d3c42f8",
+      "adapter_code_sha256": "3651ff2af4fcb46c207404e052caa59e1ec42f2ac5a429e5dec752f7e83a7ef6",
       "adapter_id": "essential_web_bnormal",
       "canonicalization": "EssentialWebSelectedAdapter -> EssentialWebAdapter -> CanonicalDocument",
       "repository": "EssentialAI/essential-web-v1.0",
