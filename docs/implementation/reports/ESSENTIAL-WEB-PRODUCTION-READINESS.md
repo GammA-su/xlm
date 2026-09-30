@@ -1,6 +1,41 @@
 # Essential-Web production readiness — 2026-09-30
 
-**READY FOR LIVE ESSENTIAL-WEB PROBE AND CALIBRATION**
+**READY FOR OPERATOR ADMISSION**
+
+## Admission-contract correction (2026-09-30, offline)
+
+The existing live schema probe passed: receipt
+`G:\XLM\calib\essential-web-production\schema-probe\schema-probe-20260930T115739Z.receipt.json`,
+`ACCESSIBLE`, `real_observed`, 8 requests, 238,373 response-body bytes. Its three
+stored fingerprints were verified offline. The schema probe requirement is
+satisfied; do not repeat the historical schema-probe command below.
+
+`clean` was not contractually defined as absence of deliberate benchmark blends.
+The old prepared decision was therefore ambiguous. Amendment
+`c04-benchmark-risk-v2` requires `suspect_with_mitigation` for all three Essential
+views, with explicit review hashes, the existing `xlm.data.exclusion` mechanism,
+frozen-pool scope and a fail-closed benchmark-claim gate. Contamination remains
+possible. No corpus-wide decontamination or zero-contamination proof exists.
+
+The three decisions are resealed with the real fingerprints and unchanged
+source/revision/B-normal/resource bindings. C04 verification passed in a temporary
+store with simulated approval. Real operator admission is still **false**, and
+the prepared decisions say `operator_approved=false`. C05 screening of the
+eventually frozen Essential/Mix-01 canonical training pool remains outstanding;
+it is required before tokenizer/gradient training and official benchmark claims.
+
+Next operator command, from the repository root:
+
+```powershell
+. .\scripts\operator_storage.ps1
+& .\docs\implementation\evidence\ESSENTIAL-WEB-ADMISSION-BOOTSTRAP\future-admit.ps1 -Operator $env:USERNAME
+```
+
+This offline command checks the prepared seal, current reviews and stored probe
+identities before recording approval. It was not executed against the real store.
+See [the correction report](ESSENTIAL-WEB-ADMISSION-CONTRACT-V2.md) for the exact
+amendment, test outcomes, remaining C05 limitations and changed files. The earlier
+readiness material below is historical and superseded by this correction.
 
 ## Admission bootstrap update (2026-09-30, offline)
 
@@ -90,14 +125,11 @@ Two limits are recorded. The matcher holds its documents in memory and has not
 been run or sized for the Mix-01 pool, and no command applies it during pool
 freeze, so a pool frozen today would record `none_declared`.
 
-**Judgment call to confirm.** The gate field `benchmark_risk` has three values
-and admits only `clean`; there is no risk-accepted-with-mitigation value and
-none was added. The field's stated purpose is to disable benchmark-containing
-blends pending a component audit. Essential-Web is not such a blend, so the
-prepared decision records `clean` in that sense only, and the decision notes
-say so in words. If you read `clean` as a statement about the corpus itself,
-the honest value is `suspect`, the gate refuses, and admission needs a versioned
-contract amendment first.
+**Resolved by `c04-benchmark-risk-v2`.** The original three-value field did not
+define the narrow blend-only meaning. The versioned amendment above replaces
+the Essential prepared `clean` decisions with `suspect_with_mitigation` and
+binds the separate C05 receipt requirement. Neither risk state certifies zero
+contamination.
 
 ### Bootstrap: the contradiction and the route taken
 

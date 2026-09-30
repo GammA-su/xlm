@@ -1,9 +1,14 @@
 {
   "artifacts": [
     {
-      "bytes": 12855,
+      "bytes": 15378,
       "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/admission-decisions.json",
-      "sha256": "566a0402f28fbcebf1297a4574f13776079b0e6be3e404587123fc1f2ee5c6a5"
+      "sha256": "4f33f18a292926bcab2d5c77ce93a160453a45274e82367260f2452eed6104fc"
+    },
+    {
+      "bytes": 706,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/admission-decisions.seal.json",
+      "sha256": "d0c9027ee538d36de21a037c67f1c27891c0e14aa9f3f5932c810f815aedfc33"
     },
     {
       "bytes": 1590,
@@ -11,9 +16,9 @@
       "sha256": "ecd0b45091debfc435d8090f07a45972e0c4ccf7b093318b4cff6aa8f0139535"
     },
     {
-      "bytes": 3624,
+      "bytes": 4012,
       "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/benchmark-risk-review.json",
-      "sha256": "e898e8c99244b42df6317ec639e6f8a45149e7a5b0a284350b1e4dc84e5b0be3"
+      "sha256": "f1dc3fda3cca4d04802540f4667aaee1f0bd07de11b7c201c041498ecb250dea"
     },
     {
       "bytes": 277,
@@ -31,9 +36,9 @@
       "sha256": "dc11530035d9036c06473bb8cf5ebe3463d753ae6a594468dc9c2ccecc6aac0c"
     },
     {
-      "bytes": 822,
+      "bytes": 863,
       "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/future-admit.ps1",
-      "sha256": "75b31da207e7290635e9779428ed31477a854d64c059ba772accdb70d93d295c"
+      "sha256": "3ea96c310846b3953d7a1e2f3d3e621db94708983ae92ac072374e52c3e3185e"
     },
     {
       "bytes": 763,
@@ -86,9 +91,9 @@
       "sha256": "aa89e5b14a68899f7ad56cdd6b574f0b11c0fd2db1a2804e8a9c80d2816d7b25"
     },
     {
-      "bytes": 1303,
+      "bytes": 1350,
       "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/review-manifest.json",
-      "sha256": "dd95bd535ddab6da1fd1723a7a3e674ffabdf8504318bfc24bcf610a125f88ae"
+      "sha256": "228dd5d280d47fa1b24f18e5ea0e84f6e69264da5a4e3406f91ca8800bcc9216"
     },
     {
       "bytes": 2889,
@@ -128,6 +133,13 @@
       "sha256": "23d46c925e3b799efb68a5a25b32f2c1985de2e04c6689994f206a391dbaf1cb"
     }
   ],
+  "contract_version": "c04-benchmark-risk-v2",
+  "historical_artifacts": [
+    "readiness.json",
+    "COMMANDS.md",
+    "logs/*"
+  ],
   "kind": "essential_web_admission_bootstrap_artifact_manifest",
-  "self_hash": "excluded to avoid self-reference"
+  "self_hash": "excluded to avoid self-reference",
+  "supersedes": "5b0cf7ae78325463533ae0957f9c03914b0ee1d6:docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/artifact-manifest.json"
 }

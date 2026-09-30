@@ -39,7 +39,7 @@ from xlm.data.evidence_v2 import canonical
 from xlm.data.evidence_v2 import frozen as evidence_frozen
 from xlm.data.evidence_v2.footer import FooterError, LiveFooterTransport, RangeEvidence
 from xlm.data.sources import essential_web_readiness as ready
-from xlm.data.sources.admission import AdmissionDecision
+from xlm.data.sources.admission import AdmissionDecision, essential_contamination_mitigation
 from xlm.data.sources.policy import (
     BenchmarkContaminationRisk,
     LicenseReviewStatus,
@@ -550,9 +550,15 @@ def check_reviews(reviews: Mapping[str, Mapping[str, Any]]) -> None:
         risk.get("zero_contamination_claimed") is not False
         or risk.get("contamination_possible") is not True
         or risk.get("permission_to_claim_uncontaminated_benchmark_results") is not False
+        or risk.get("permission_to_acquire_and_pretrain") is not True
     ):
         raise ReviewRefusal("benchmark review must not claim an uncontaminated corpus")
-    if risk.get("gate_value") != BenchmarkContaminationRisk.CLEAN or not risk.get("mitigation"):
+    if (
+        risk.get("gate_value") != BenchmarkContaminationRisk.SUSPECT_WITH_MITIGATION
+        or not risk.get("mitigation")
+        or risk.get("mitigation_binding")
+        != essential_contamination_mitigation().model_dump(mode="json")
+    ):
         raise ReviewRefusal("benchmark review lacks the gate value or its mitigation")
     if not reviews["external_evidence"].get("sources"):
         raise ReviewRefusal("external evidence manifest lists no source")
@@ -564,11 +570,11 @@ def decision_notes(review_sha256: Mapping[str, str], operator: str) -> str:
         raise ReviewRefusal("decision needs every review hash and a named operator")
     hashes = " ".join(f"{name}={review_sha256[name]}" for name in sorted(review_sha256))
     return (
-        f"essential-web admission review v1; operator={operator.strip()}; "
+        f"essential-web admission review v2; operator={operator.strip()}; "
         f"review sha256 {hashes}; "
         "license_review approves research pretraining use of the ODC-By database only and "
-        "clears no underlying page rights; benchmark_risk=clean means not a "
-        "benchmark-containing blend, not zero contamination; a C05 exclusion receipt over the "
+        "clears no underlying page rights; benchmark_risk=suspect_with_mitigation records "
+        "possible contamination, not zero contamination; a C05 exclusion receipt over the "
         "frozen pool is required before any uncontaminated benchmark claim"
     )
 
@@ -578,6 +584,7 @@ def build_decision(
 ) -> AdmissionDecision:
     """Approved production decision for one view, bound to evidence, selector and reviews."""
     return AdmissionDecision(
+        contract_version="c04-benchmark-risk-v2",
         source_id=evidence.source_id,
         view_id=evidence.view_id,
         provider=evidence.provider,
@@ -588,7 +595,10 @@ def build_decision(
         probe_fingerprint=evidence.probe_fingerprint or "",
         license_review=LicenseReviewStatus.APPROVED,
         provenance_review="approved",
-        benchmark_risk=BenchmarkContaminationRisk.CLEAN,
+        benchmark_risk=BenchmarkContaminationRisk.SUSPECT_WITH_MITIGATION,
+        reviews_sha256=dict(review_sha256),
+        contamination_mitigation=essential_contamination_mitigation(),
+        resource_contract="C04/C13; exact limits and matching authorization required",
         usage_policy=LicenseUsagePolicy.STRICT_RESEARCH,
         operator_approved=True,
         operator_notes=decision_notes(review_sha256, operator),

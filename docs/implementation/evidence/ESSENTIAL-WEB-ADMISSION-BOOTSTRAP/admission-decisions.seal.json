@@ -1,0 +1,13 @@
+{
+  "contract_version": "c04-benchmark-risk-v2",
+  "decisions_sha256": "4f33f18a292926bcab2d5c77ce93a160453a45274e82367260f2452eed6104fc",
+  "live_receipt_sha256": "c34d74301720088fcdb28724492d7aaa2d55f9ff54cde754059f884a93cab313",
+  "real_store_admission_published": false,
+  "reviews_sha256": {
+    "attribution": "ecd0b45091debfc435d8090f07a45972e0c4ccf7b093318b4cff6aa8f0139535",
+    "benchmark_risk": "f1dc3fda3cca4d04802540f4667aaee1f0bd07de11b7c201c041498ecb250dea",
+    "external_evidence": "dc11530035d9036c06473bb8cf5ebe3463d753ae6a594468dc9c2ccecc6aac0c",
+    "source_rights": "a45b8bcae4f602d866596d02daaf43c31dea7e476de6fe41270438e444ea1f7e"
+  },
+  "verdict": "READY FOR OPERATOR ADMISSION"
+}

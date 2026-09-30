@@ -35,6 +35,7 @@ from xlm.data.evidence_v2.footer import RangeEvidence
 from xlm.data.sources import essential_web_bootstrap as boot
 from xlm.data.sources import essential_web_readiness as ready
 from xlm.data.sources.admission import (
+    AdmissionDecision,
     AdmissionGate,
     load_admission_decision,
     load_probe_evidence,
@@ -201,7 +202,8 @@ def bootstrap_script(output: Path) -> dict[str, str]:
         "param([Parameter(Mandatory = $true)][string]$Operator)",
         *head,
         "uv @U python scripts/essential_web_bootstrap.py admit --reviews $B "
-        '--operator $Operator --operator-approve --output "$R/admission-record.json"',
+        '--operator $Operator --operator-approve --prepared "$B/admission-decisions.json" '
+        '--output "$R/admission-record.json"',
         "if ($LASTEXITCODE -ne 0) { throw 'admission refused' }",
         "uv @U python scripts/essential_web_bootstrap.py status",
         "if ($LASTEXITCODE -ne 0) { throw 'views are not admitted' }",
@@ -434,10 +436,109 @@ def gate_status(store: ArtifactStore) -> dict[str, Any]:
     }
 
 
+def prepare_admission(args: argparse.Namespace) -> int:
+    """Reseal decisions using existing live records; verify only in a temporary store."""
+    _, hashes = load_reviews(args.reviews)
+    binding = ready.source_binding()
+    binding["adapter_code_sha256"] = sha256_file(REPO / "src/xlm/data/adapters/mix01_adapters.py")
+    store = ArtifactStore(ArtifactPaths(root=args.store.resolve()))
+    receipt = read_json(args.receipt)
+    body = {
+        key: value
+        for key, value in receipt.items()
+        if key not in {"digest", "published", "resource_metrics"}
+    }
+    if (
+        canonical.digest(body) != receipt["digest"]
+        or receipt["status"] != "ACCESSIBLE"
+        or receipt["evidence_type"] != "real_observed"
+        or receipt["observed"]["repository"] != ready.REPOSITORY
+        or receipt["observed"]["revision"] != selector.SOURCE_REVISION
+    ):
+        raise ValueError("existing live schema receipt failed identity/integrity verification")
+    prepared = []
+    with tempfile.TemporaryDirectory(prefix="ew-c04-") as scratch:
+        copy_store = ArtifactStore(ArtifactPaths(root=Path(scratch) / "store"))
+        for view in selector.ADMITTED_COMPONENTS:
+            evidence = load_probe_evidence(boot.SOURCE_ID, view, store)
+            if (
+                evidence is None
+                or evidence.evidence_type != EvidenceType.REAL_OBSERVED
+                or evidence.probe_fingerprint != receipt["published"][view]["probe_fingerprint"]
+                or evidence.resource_metrics.get("receipt_digest") != receipt["digest"]
+            ):
+                raise ValueError(f"{view}: stored evidence differs from the live receipt")
+            decision = boot.build_decision(evidence, hashes, "offline-verifier-only")
+            gate = AdmissionGate.evaluate(evidence, decision)
+            if not gate.admitted:
+                raise ValueError(f"{view}: " + "; ".join(gate.reasons))
+            save_probe_evidence(evidence, copy_store, Path(scratch) / "probe" / view)
+            save_admission_decision(decision, copy_store, Path(scratch) / "decision" / view)
+            plan = load_acquisition_plan(REPO / READINESS / "probe-00.plan.json")
+            # Same bounded plan, exercising the verifier for each exact source view.
+            resolve_verified_production_admission(
+                plan.model_copy(update={"view_id": view}), copy_store
+            )
+            decision.operator_approved = False
+            decision.operator_notes = boot.decision_notes(hashes, "pending operator approval")
+            prepared.append(
+                {
+                    "component": view,
+                    "decision": "PREPARED; NOT RECORDED",
+                    "prepared_decision": decision.model_dump(mode="json"),
+                    "source_binding": binding,
+                    "live_receipt_sha256": sha256_file(args.receipt),
+                    "live_receipt_digest": receipt["digest"],
+                    "production_plan_hash": plan.plan_hash,
+                    "production_limits": plan.limits.model_dump(mode="json"),
+                    "offline_verifier": "PASS in temporary store with simulated operator approval",
+                    "production_admission_ok": False,
+                    "official_benchmark_claims_allowed": False,
+                    "pending": ["explicit operator approval", "later frozen-pool C05 exclusion"],
+                }
+            )
+    write_json(args.output, prepared)
+    write_json(
+        args.output.with_suffix(".seal.json"),
+        {
+            "contract_version": "c04-benchmark-risk-v2",
+            "decisions_sha256": sha256_file(args.output),
+            "reviews_sha256": hashes,
+            "live_receipt_sha256": sha256_file(args.receipt),
+            "real_store_admission_published": False,
+            "verdict": "READY FOR OPERATOR ADMISSION",
+        },
+    )
+    print(json.dumps({"views_verified": len(prepared), "real_admission_published": False}))
+    return 0
+
+
 def admit(args: argparse.Namespace) -> int:
     if not args.operator_approve:
         raise ValueError("admission is an operator decision; pass --operator-approve")
     _, hashes = load_reviews(args.reviews)
+    prepared: dict[str, AdmissionDecision] | None = None
+    if args.prepared is not None:
+        seal = read_json(args.prepared.with_suffix(".seal.json"))
+        if (
+            seal["decisions_sha256"] != sha256_file(args.prepared)
+            or seal["reviews_sha256"] != hashes
+            or seal["contract_version"] != "c04-benchmark-risk-v2"
+        ):
+            raise ValueError("prepared admission seal or review hashes differ")
+        rows = read_json(args.prepared)
+        binding = ready.source_binding()
+        binding["adapter_code_sha256"] = sha256_file(
+            REPO / "src/xlm/data/adapters/mix01_adapters.py"
+        )
+        if any(row["source_binding"] != binding for row in rows):
+            raise ValueError("prepared source/adapter binding differs from current code")
+        prepared = {
+            row["component"]: AdmissionDecision.model_validate(row["prepared_decision"])
+            for row in rows
+        }
+        if len(rows) != 3 or set(prepared) != set(selector.ADMITTED_COMPONENTS):
+            raise ValueError("prepared admission must bind exactly the three Essential views")
     store = ArtifactStore(ArtifactPaths.from_env())
     decisions = {}
     for view in selector.ADMITTED_COMPONENTS:
@@ -445,6 +546,10 @@ def admit(args: argparse.Namespace) -> int:
         if evidence is None or evidence.outcome != ProbeOutcome.ACCESSIBLE:
             raise ValueError(f"{view}: no accessible probe evidence; run the schema probe first")
         decision = boot.build_decision(evidence, hashes, args.operator)
+        if prepared is not None:
+            exclude = {"decision_timestamp", "operator_notes", "operator_approved"}
+            if prepared[view].model_dump(exclude=exclude) != decision.model_dump(exclude=exclude):
+                raise ValueError(f"{view}: prepared decision differs from current evidence/reviews")
         gate = AdmissionGate.evaluate(evidence, decision)
         if not gate.admitted:
             raise ValueError(f"{view}: gate refuses: " + "; ".join(gate.reasons))
@@ -494,8 +599,15 @@ def main(argv: list[str] | None = None) -> int:
     command.add_argument("--reviews", type=Path, required=True)
     command.add_argument("--operator", required=True)
     command.add_argument("--operator-approve", action="store_true")
+    command.add_argument("--prepared", type=Path)
     command.add_argument("--output", type=Path, required=True)
     command.set_defaults(run=admit)
+    command = commands.add_parser("prepare-admission")
+    command.add_argument("--reviews", type=Path, required=True)
+    command.add_argument("--store", type=Path, required=True)
+    command.add_argument("--receipt", type=Path, required=True)
+    command.add_argument("--output", type=Path, required=True)
+    command.set_defaults(run=prepare_admission)
     command = commands.add_parser("status")
     command.set_defaults(run=status)
     args = parser.parse_args(argv)

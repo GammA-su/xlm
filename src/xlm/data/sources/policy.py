@@ -43,10 +43,15 @@ class LicenseReviewStatus(StrEnum):
 
 
 class BenchmarkContaminationRisk(StrEnum):
-    """Contamination status regarding standard evaluation benchmarks."""
+    """C04 source risk, never proof of benchmark cleanliness (C04 risk v2).
+
+    CLEAN is the legacy acquisition classification; it makes no zero-
+    contamination claim. Known possible contamination uses SUSPECT_WITH_MITIGATION.
+    """
 
     CLEAN = "clean"
     SUSPECT = "suspect"
+    SUSPECT_WITH_MITIGATION = "suspect_with_mitigation"
     DISABLED_PENDING_AUDIT = "disabled_pending_audit"
 
 

@@ -47,6 +47,20 @@ A same-user process, hidden directory, encrypted file whose key the agent can re
 
 Decontamination is done in the isolated preparation environment when it requires final examples. It returns opaque receipt IDs and kept corpus membership, plus bounded aggregate counts. Do not give an adaptive arbitrary-text membership oracle to the idea generator; finalize/cap submitted corpus batches and audit queries. Hashes of public benchmark strings alone are not confidentiality protection.
 
+Under `c04-benchmark-risk-v2`, acquisition admission (including legacy `clean`)
+never authorizes an uncontaminated or official benchmark claim. The
+`xlm.operator.final.verify_receipt` result separates evaluation receipt integrity
+(`valid`) from `official_benchmark_claims_allowed`. The latter stays false unless
+`xlm.data.exclusion.receipt.verify_benchmark_claim` verifies a protected, trusted
+receipt against independently supplied frozen training/evaluation lineage:
+checkpoint, suite, input corpus, kept membership, policy and exclusion index.
+That index/policy must cover all benchmark splits of the suite. Development
+receipts, receipt IDs alone, `none_declared`, mismatched pools and acquisition
+decisions cannot satisfy the gate. Success is `screened_with_limitations`, never
+proof of zero contamination. The CLI currently supplies no frozen-pool receipt,
+so its integrity check does not enable official claims. Mix-01 freeze integration
+remains outstanding; admission does not claim that exclusion has run.
+
 For final evaluation of custom code, export a reviewed scoring bundle, run it in a sandbox with read-only model artifacts, denied network, controlled outputs and a trusted scorer/adapter boundary. Merely placing code in another process is not a security guarantee. Where robust isolation is unavailable, run as development-exposed and say so rather than claiming a sealed result.
 
 ## Statistical output

@@ -1,54 +1,51 @@
 [
   {
-    "binding": {
-      "adapter_code_sha256": "56ca4fb26e88b57409f9ba0e0743095a1ff552a83e702722a948c2115d3c42f8",
-      "adapter_id": "essential_web_bnormal",
-      "canonicalization": "EssentialWebSelectedAdapter -> EssentialWebAdapter -> CanonicalDocument",
-      "repository": "EssentialAI/essential-web-v1.0",
-      "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
-      "selector": {
-        "condition": "B-normal",
-        "evaluator_sha256": "5a63e78560ea9e12b0ec03b5e7e63204b5c75554bee02192c12bb4ab0853bf9c",
-        "freeze_digest": "c6f32a65f083c99b64245e25151f2cc73275093e1013d68b625c6d6f63d10a0c",
-        "freeze_version": "essential-web-selector-fasttrack-v1",
-        "policy_digest": "f4357f61f434d5105d823266153dac6372e122f12767187631e8796b4899dd07",
-        "selector_id": "essential-web-b-normal"
-      },
-      "source_id": "essential_web"
-    },
-    "canonicalization": "EssentialWebSelectedAdapter -> EssentialWebAdapter -> CanonicalDocument",
     "component": "essential_science",
-    "component_semantics": "frozen final == essential_science",
     "decision": "PREPARED; NOT RECORDED",
-    "expected_probe_fingerprint_if_live_equals_plan": "2f64b00d35446dc3623d168edcb053a0131c43938b309a74f57110f541317ea9",
-    "offline_gate_check": {
-      "every_other_criterion_passes": true,
-      "evidence": "replay of the retained real footer with an authored card; labeled synthetic_fixture and never stored",
-      "gate_on_replay": {
-        "admitted": false,
-        "reasons": [
-          "Synthetic fixture evidence is strictly prohibited from satisfying production admission gates."
-        ]
-      },
-      "note": "the second evaluation relabels the replay in memory only, to show that nothing but live evidence is missing"
-    },
+    "live_receipt_digest": "6e7a7594dd6f126e870c2b360c0f1bea2121cd620947e8ac56323972c6d5bc68",
+    "live_receipt_sha256": "c34d74301720088fcdb28724492d7aaa2d55f9ff54cde754059f884a93cab313",
+    "official_benchmark_claims_allowed": false,
+    "offline_verifier": "PASS in temporary store with simulated operator approval",
     "pending": [
-      "live schema probe evidence (future-schema-probe.ps1)",
-      "operator approval (future-admit.ps1)"
+      "explicit operator approval",
+      "later frozen-pool C05 exclusion"
     ],
     "prepared_decision": {
       "adapter_id": "essential_web_bnormal",
       "adapter_version": "1",
-      "benchmark_risk": "clean",
+      "benchmark_risk": "suspect_with_mitigation",
+      "contamination_mitigation": {
+        "before_official_benchmark_claims": true,
+        "before_training": true,
+        "benchmarks": [
+          "BLiMP",
+          "ARC-Easy",
+          "HellaSwag",
+          "PIQA"
+        ],
+        "mechanism": "xlm.data.exclusion",
+        "receipt_verifier": "xlm.data.exclusion.receipt.verify_benchmark_claim",
+        "scope": "eventually_frozen_essential_mix01_canonical_training_pool",
+        "version": "c04-benchmark-risk-v2"
+      },
+      "contract_version": "c04-benchmark-risk-v2",
+      "decision_timestamp": "2026-09-30T12:22:53.491327+00:00",
       "immutable_revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
       "legal_disclaimer": "The software records evidence and policy status; it must not purport to certify legal rights.",
       "license_review": "approved",
-      "operator_approved": true,
-      "operator_notes": "essential-web admission review v1; operator=<operator>; review sha256 attribution=ecd0b45091debfc435d8090f07a45972e0c4ccf7b093318b4cff6aa8f0139535 benchmark_risk=e898e8c99244b42df6317ec639e6f8a45149e7a5b0a284350b1e4dc84e5b0be3 external_evidence=dc11530035d9036c06473bb8cf5ebe3463d753ae6a594468dc9c2ccecc6aac0c source_rights=a45b8bcae4f602d866596d02daaf43c31dea7e476de6fe41270438e444ea1f7e; license_review approves research pretraining use of the ODC-By database only and clears no underlying page rights; benchmark_risk=clean means not a benchmark-containing blend, not zero contamination; a C05 exclusion receipt over the frozen pool is required before any uncontaminated benchmark claim",
-      "probe_fingerprint": null,
+      "operator_approved": false,
+      "operator_notes": "essential-web admission review v2; operator=pending operator approval; review sha256 attribution=ecd0b45091debfc435d8090f07a45972e0c4ccf7b093318b4cff6aa8f0139535 benchmark_risk=f1dc3fda3cca4d04802540f4667aaee1f0bd07de11b7c201c041498ecb250dea external_evidence=dc11530035d9036c06473bb8cf5ebe3463d753ae6a594468dc9c2ccecc6aac0c source_rights=a45b8bcae4f602d866596d02daaf43c31dea7e476de6fe41270438e444ea1f7e; license_review approves research pretraining use of the ODC-By database only and clears no underlying page rights; benchmark_risk=suspect_with_mitigation records possible contamination, not zero contamination; a C05 exclusion receipt over the frozen pool is required before any uncontaminated benchmark claim",
+      "probe_fingerprint": "2f64b00d35446dc3623d168edcb053a0131c43938b309a74f57110f541317ea9",
       "provenance_review": "approved",
       "provider": "huggingface",
       "repository": "EssentialAI/essential-web-v1.0",
+      "resource_contract": "C04/C13; exact limits and matching authorization required",
+      "reviews_sha256": {
+        "attribution": "ecd0b45091debfc435d8090f07a45972e0c4ccf7b093318b4cff6aa8f0139535",
+        "benchmark_risk": "f1dc3fda3cca4d04802540f4667aaee1f0bd07de11b7c201c041498ecb250dea",
+        "external_evidence": "dc11530035d9036c06473bb8cf5ebe3463d753ae6a594468dc9c2ccecc6aac0c",
+        "source_rights": "a45b8bcae4f602d866596d02daaf43c31dea7e476de6fe41270438e444ea1f7e"
+      },
       "selector_binding": {
         "condition": "B-normal",
         "evaluator_sha256": "5a63e78560ea9e12b0ec03b5e7e63204b5c75554bee02192c12bb4ab0853bf9c",
@@ -62,16 +59,24 @@
       "view_id": "essential_science"
     },
     "production_admission_ok": false,
-    "resource_contract": "C04/C13; exact limits and matching authorization required",
-    "reviews_sha256": {
-      "attribution": "ecd0b45091debfc435d8090f07a45972e0c4ccf7b093318b4cff6aa8f0139535",
-      "benchmark_risk": "e898e8c99244b42df6317ec639e6f8a45149e7a5b0a284350b1e4dc84e5b0be3",
-      "external_evidence": "dc11530035d9036c06473bb8cf5ebe3463d753ae6a594468dc9c2ccecc6aac0c",
-      "source_rights": "a45b8bcae4f602d866596d02daaf43c31dea7e476de6fe41270438e444ea1f7e"
-    }
-  },
-  {
-    "binding": {
+    "production_limits": {
+      "max_decompressed_bytes": 536870912,
+      "max_decompression_ratio": 15.0,
+      "max_output_disk_bytes": 2147483648,
+      "max_parser_bytes": 33554432,
+      "max_record_bytes": 1048576,
+      "max_records": 256,
+      "max_requests": 330,
+      "max_retries": 1,
+      "max_scanned_records": 2048,
+      "max_temp_disk_bytes": 1073741824,
+      "max_transferred_bytes": 134217728,
+      "max_workers": 1,
+      "overall_deadline_seconds": 600.0,
+      "per_request_timeout_seconds": 15.0
+    },
+    "production_plan_hash": "04db5c763959ebf7187ba69d23a4f99b5d4e2e77c2f07bc4350e4b427f52b04c",
+    "source_binding": {
       "adapter_code_sha256": "56ca4fb26e88b57409f9ba0e0743095a1ff552a83e702722a948c2115d3c42f8",
       "adapter_id": "essential_web_bnormal",
       "canonicalization": "EssentialWebSelectedAdapter -> EssentialWebAdapter -> CanonicalDocument",
@@ -86,40 +91,55 @@
         "selector_id": "essential-web-b-normal"
       },
       "source_id": "essential_web"
-    },
-    "canonicalization": "EssentialWebSelectedAdapter -> EssentialWebAdapter -> CanonicalDocument",
+    }
+  },
+  {
     "component": "essential_practical",
-    "component_semantics": "frozen final == essential_practical",
     "decision": "PREPARED; NOT RECORDED",
-    "expected_probe_fingerprint_if_live_equals_plan": "73035aa5727ff54ecebcf3eca372c13216f46566dde0497b8ac79b3eb0bd3840",
-    "offline_gate_check": {
-      "every_other_criterion_passes": true,
-      "evidence": "replay of the retained real footer with an authored card; labeled synthetic_fixture and never stored",
-      "gate_on_replay": {
-        "admitted": false,
-        "reasons": [
-          "Synthetic fixture evidence is strictly prohibited from satisfying production admission gates."
-        ]
-      },
-      "note": "the second evaluation relabels the replay in memory only, to show that nothing but live evidence is missing"
-    },
+    "live_receipt_digest": "6e7a7594dd6f126e870c2b360c0f1bea2121cd620947e8ac56323972c6d5bc68",
+    "live_receipt_sha256": "c34d74301720088fcdb28724492d7aaa2d55f9ff54cde754059f884a93cab313",
+    "official_benchmark_claims_allowed": false,
+    "offline_verifier": "PASS in temporary store with simulated operator approval",
     "pending": [
-      "live schema probe evidence (future-schema-probe.ps1)",
-      "operator approval (future-admit.ps1)"
+      "explicit operator approval",
+      "later frozen-pool C05 exclusion"
     ],
     "prepared_decision": {
       "adapter_id": "essential_web_bnormal",
       "adapter_version": "1",
-      "benchmark_risk": "clean",
+      "benchmark_risk": "suspect_with_mitigation",
+      "contamination_mitigation": {
+        "before_official_benchmark_claims": true,
+        "before_training": true,
+        "benchmarks": [
+          "BLiMP",
+          "ARC-Easy",
+          "HellaSwag",
+          "PIQA"
+        ],
+        "mechanism": "xlm.data.exclusion",
+        "receipt_verifier": "xlm.data.exclusion.receipt.verify_benchmark_claim",
+        "scope": "eventually_frozen_essential_mix01_canonical_training_pool",
+        "version": "c04-benchmark-risk-v2"
+      },
+      "contract_version": "c04-benchmark-risk-v2",
+      "decision_timestamp": "2026-09-30T12:22:53.544256+00:00",
       "immutable_revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
       "legal_disclaimer": "The software records evidence and policy status; it must not purport to certify legal rights.",
       "license_review": "approved",
-      "operator_approved": true,
-      "operator_notes": "essential-web admission review v1; operator=<operator>; review sha256 attribution=ecd0b45091debfc435d8090f07a45972e0c4ccf7b093318b4cff6aa8f0139535 benchmark_risk=e898e8c99244b42df6317ec639e6f8a45149e7a5b0a284350b1e4dc84e5b0be3 external_evidence=dc11530035d9036c06473bb8cf5ebe3463d753ae6a594468dc9c2ccecc6aac0c source_rights=a45b8bcae4f602d866596d02daaf43c31dea7e476de6fe41270438e444ea1f7e; license_review approves research pretraining use of the ODC-By database only and clears no underlying page rights; benchmark_risk=clean means not a benchmark-containing blend, not zero contamination; a C05 exclusion receipt over the frozen pool is required before any uncontaminated benchmark claim",
-      "probe_fingerprint": null,
+      "operator_approved": false,
+      "operator_notes": "essential-web admission review v2; operator=pending operator approval; review sha256 attribution=ecd0b45091debfc435d8090f07a45972e0c4ccf7b093318b4cff6aa8f0139535 benchmark_risk=f1dc3fda3cca4d04802540f4667aaee1f0bd07de11b7c201c041498ecb250dea external_evidence=dc11530035d9036c06473bb8cf5ebe3463d753ae6a594468dc9c2ccecc6aac0c source_rights=a45b8bcae4f602d866596d02daaf43c31dea7e476de6fe41270438e444ea1f7e; license_review approves research pretraining use of the ODC-By database only and clears no underlying page rights; benchmark_risk=suspect_with_mitigation records possible contamination, not zero contamination; a C05 exclusion receipt over the frozen pool is required before any uncontaminated benchmark claim",
+      "probe_fingerprint": "73035aa5727ff54ecebcf3eca372c13216f46566dde0497b8ac79b3eb0bd3840",
       "provenance_review": "approved",
       "provider": "huggingface",
       "repository": "EssentialAI/essential-web-v1.0",
+      "resource_contract": "C04/C13; exact limits and matching authorization required",
+      "reviews_sha256": {
+        "attribution": "ecd0b45091debfc435d8090f07a45972e0c4ccf7b093318b4cff6aa8f0139535",
+        "benchmark_risk": "f1dc3fda3cca4d04802540f4667aaee1f0bd07de11b7c201c041498ecb250dea",
+        "external_evidence": "dc11530035d9036c06473bb8cf5ebe3463d753ae6a594468dc9c2ccecc6aac0c",
+        "source_rights": "a45b8bcae4f602d866596d02daaf43c31dea7e476de6fe41270438e444ea1f7e"
+      },
       "selector_binding": {
         "condition": "B-normal",
         "evaluator_sha256": "5a63e78560ea9e12b0ec03b5e7e63204b5c75554bee02192c12bb4ab0853bf9c",
@@ -133,16 +153,24 @@
       "view_id": "essential_practical"
     },
     "production_admission_ok": false,
-    "resource_contract": "C04/C13; exact limits and matching authorization required",
-    "reviews_sha256": {
-      "attribution": "ecd0b45091debfc435d8090f07a45972e0c4ccf7b093318b4cff6aa8f0139535",
-      "benchmark_risk": "e898e8c99244b42df6317ec639e6f8a45149e7a5b0a284350b1e4dc84e5b0be3",
-      "external_evidence": "dc11530035d9036c06473bb8cf5ebe3463d753ae6a594468dc9c2ccecc6aac0c",
-      "source_rights": "a45b8bcae4f602d866596d02daaf43c31dea7e476de6fe41270438e444ea1f7e"
-    }
-  },
-  {
-    "binding": {
+    "production_limits": {
+      "max_decompressed_bytes": 536870912,
+      "max_decompression_ratio": 15.0,
+      "max_output_disk_bytes": 2147483648,
+      "max_parser_bytes": 33554432,
+      "max_record_bytes": 1048576,
+      "max_records": 256,
+      "max_requests": 330,
+      "max_retries": 1,
+      "max_scanned_records": 2048,
+      "max_temp_disk_bytes": 1073741824,
+      "max_transferred_bytes": 134217728,
+      "max_workers": 1,
+      "overall_deadline_seconds": 600.0,
+      "per_request_timeout_seconds": 15.0
+    },
+    "production_plan_hash": "04db5c763959ebf7187ba69d23a4f99b5d4e2e77c2f07bc4350e4b427f52b04c",
+    "source_binding": {
       "adapter_code_sha256": "56ca4fb26e88b57409f9ba0e0743095a1ff552a83e702722a948c2115d3c42f8",
       "adapter_id": "essential_web_bnormal",
       "canonicalization": "EssentialWebSelectedAdapter -> EssentialWebAdapter -> CanonicalDocument",
@@ -157,40 +185,55 @@
         "selector_id": "essential-web-b-normal"
       },
       "source_id": "essential_web"
-    },
-    "canonicalization": "EssentialWebSelectedAdapter -> EssentialWebAdapter -> CanonicalDocument",
+    }
+  },
+  {
     "component": "essential_prose",
-    "component_semantics": "frozen final == essential_prose",
     "decision": "PREPARED; NOT RECORDED",
-    "expected_probe_fingerprint_if_live_equals_plan": "7448f2f1f7ac8309f77b1d3e14bded496756400065187b5b09cb8e1a56e0286d",
-    "offline_gate_check": {
-      "every_other_criterion_passes": true,
-      "evidence": "replay of the retained real footer with an authored card; labeled synthetic_fixture and never stored",
-      "gate_on_replay": {
-        "admitted": false,
-        "reasons": [
-          "Synthetic fixture evidence is strictly prohibited from satisfying production admission gates."
-        ]
-      },
-      "note": "the second evaluation relabels the replay in memory only, to show that nothing but live evidence is missing"
-    },
+    "live_receipt_digest": "6e7a7594dd6f126e870c2b360c0f1bea2121cd620947e8ac56323972c6d5bc68",
+    "live_receipt_sha256": "c34d74301720088fcdb28724492d7aaa2d55f9ff54cde754059f884a93cab313",
+    "official_benchmark_claims_allowed": false,
+    "offline_verifier": "PASS in temporary store with simulated operator approval",
     "pending": [
-      "live schema probe evidence (future-schema-probe.ps1)",
-      "operator approval (future-admit.ps1)"
+      "explicit operator approval",
+      "later frozen-pool C05 exclusion"
     ],
     "prepared_decision": {
       "adapter_id": "essential_web_bnormal",
       "adapter_version": "1",
-      "benchmark_risk": "clean",
+      "benchmark_risk": "suspect_with_mitigation",
+      "contamination_mitigation": {
+        "before_official_benchmark_claims": true,
+        "before_training": true,
+        "benchmarks": [
+          "BLiMP",
+          "ARC-Easy",
+          "HellaSwag",
+          "PIQA"
+        ],
+        "mechanism": "xlm.data.exclusion",
+        "receipt_verifier": "xlm.data.exclusion.receipt.verify_benchmark_claim",
+        "scope": "eventually_frozen_essential_mix01_canonical_training_pool",
+        "version": "c04-benchmark-risk-v2"
+      },
+      "contract_version": "c04-benchmark-risk-v2",
+      "decision_timestamp": "2026-09-30T12:22:53.586136+00:00",
       "immutable_revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
       "legal_disclaimer": "The software records evidence and policy status; it must not purport to certify legal rights.",
       "license_review": "approved",
-      "operator_approved": true,
-      "operator_notes": "essential-web admission review v1; operator=<operator>; review sha256 attribution=ecd0b45091debfc435d8090f07a45972e0c4ccf7b093318b4cff6aa8f0139535 benchmark_risk=e898e8c99244b42df6317ec639e6f8a45149e7a5b0a284350b1e4dc84e5b0be3 external_evidence=dc11530035d9036c06473bb8cf5ebe3463d753ae6a594468dc9c2ccecc6aac0c source_rights=a45b8bcae4f602d866596d02daaf43c31dea7e476de6fe41270438e444ea1f7e; license_review approves research pretraining use of the ODC-By database only and clears no underlying page rights; benchmark_risk=clean means not a benchmark-containing blend, not zero contamination; a C05 exclusion receipt over the frozen pool is required before any uncontaminated benchmark claim",
-      "probe_fingerprint": null,
+      "operator_approved": false,
+      "operator_notes": "essential-web admission review v2; operator=pending operator approval; review sha256 attribution=ecd0b45091debfc435d8090f07a45972e0c4ccf7b093318b4cff6aa8f0139535 benchmark_risk=f1dc3fda3cca4d04802540f4667aaee1f0bd07de11b7c201c041498ecb250dea external_evidence=dc11530035d9036c06473bb8cf5ebe3463d753ae6a594468dc9c2ccecc6aac0c source_rights=a45b8bcae4f602d866596d02daaf43c31dea7e476de6fe41270438e444ea1f7e; license_review approves research pretraining use of the ODC-By database only and clears no underlying page rights; benchmark_risk=suspect_with_mitigation records possible contamination, not zero contamination; a C05 exclusion receipt over the frozen pool is required before any uncontaminated benchmark claim",
+      "probe_fingerprint": "7448f2f1f7ac8309f77b1d3e14bded496756400065187b5b09cb8e1a56e0286d",
       "provenance_review": "approved",
       "provider": "huggingface",
       "repository": "EssentialAI/essential-web-v1.0",
+      "resource_contract": "C04/C13; exact limits and matching authorization required",
+      "reviews_sha256": {
+        "attribution": "ecd0b45091debfc435d8090f07a45972e0c4ccf7b093318b4cff6aa8f0139535",
+        "benchmark_risk": "f1dc3fda3cca4d04802540f4667aaee1f0bd07de11b7c201c041498ecb250dea",
+        "external_evidence": "dc11530035d9036c06473bb8cf5ebe3463d753ae6a594468dc9c2ccecc6aac0c",
+        "source_rights": "a45b8bcae4f602d866596d02daaf43c31dea7e476de6fe41270438e444ea1f7e"
+      },
       "selector_binding": {
         "condition": "B-normal",
         "evaluator_sha256": "5a63e78560ea9e12b0ec03b5e7e63204b5c75554bee02192c12bb4ab0853bf9c",
@@ -204,12 +247,38 @@
       "view_id": "essential_prose"
     },
     "production_admission_ok": false,
-    "resource_contract": "C04/C13; exact limits and matching authorization required",
-    "reviews_sha256": {
-      "attribution": "ecd0b45091debfc435d8090f07a45972e0c4ccf7b093318b4cff6aa8f0139535",
-      "benchmark_risk": "e898e8c99244b42df6317ec639e6f8a45149e7a5b0a284350b1e4dc84e5b0be3",
-      "external_evidence": "dc11530035d9036c06473bb8cf5ebe3463d753ae6a594468dc9c2ccecc6aac0c",
-      "source_rights": "a45b8bcae4f602d866596d02daaf43c31dea7e476de6fe41270438e444ea1f7e"
+    "production_limits": {
+      "max_decompressed_bytes": 536870912,
+      "max_decompression_ratio": 15.0,
+      "max_output_disk_bytes": 2147483648,
+      "max_parser_bytes": 33554432,
+      "max_record_bytes": 1048576,
+      "max_records": 256,
+      "max_requests": 330,
+      "max_retries": 1,
+      "max_scanned_records": 2048,
+      "max_temp_disk_bytes": 1073741824,
+      "max_transferred_bytes": 134217728,
+      "max_workers": 1,
+      "overall_deadline_seconds": 600.0,
+      "per_request_timeout_seconds": 15.0
+    },
+    "production_plan_hash": "04db5c763959ebf7187ba69d23a4f99b5d4e2e77c2f07bc4350e4b427f52b04c",
+    "source_binding": {
+      "adapter_code_sha256": "56ca4fb26e88b57409f9ba0e0743095a1ff552a83e702722a948c2115d3c42f8",
+      "adapter_id": "essential_web_bnormal",
+      "canonicalization": "EssentialWebSelectedAdapter -> EssentialWebAdapter -> CanonicalDocument",
+      "repository": "EssentialAI/essential-web-v1.0",
+      "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+      "selector": {
+        "condition": "B-normal",
+        "evaluator_sha256": "5a63e78560ea9e12b0ec03b5e7e63204b5c75554bee02192c12bb4ab0853bf9c",
+        "freeze_digest": "c6f32a65f083c99b64245e25151f2cc73275093e1013d68b625c6d6f63d10a0c",
+        "freeze_version": "essential-web-selector-fasttrack-v1",
+        "policy_digest": "f4357f61f434d5105d823266153dac6372e122f12767187631e8796b4899dd07",
+        "selector_id": "essential-web-b-normal"
+      },
+      "source_id": "essential_web"
     }
   }
 ]

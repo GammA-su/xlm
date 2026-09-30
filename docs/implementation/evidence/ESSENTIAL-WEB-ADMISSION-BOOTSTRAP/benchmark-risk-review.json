@@ -1,15 +1,24 @@
 {
   "kind": "essential_web_benchmark_risk_review",
-  "version": 1,
+  "version": 2,
   "legal_advice": false,
   "binding": {
     "repository": "EssentialAI/essential-web-v1.0",
     "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
-    "views": ["essential_science", "essential_practical", "essential_prose"]
+    "views": [
+      "essential_science",
+      "essential_practical",
+      "essential_prose"
+    ]
   },
   "review_date": "2026-09-30",
   "reviewer": "Claude Opus 5.5 coding agent, drafted on operator instruction. The operator confirms or rejects this review when recording the admission decision.",
-  "benchmarks": ["BLiMP", "ARC-Easy", "HellaSwag", "PIQA"],
+  "benchmarks": [
+    "BLiMP",
+    "ARC-Easy",
+    "HellaSwag",
+    "PIQA"
+  ],
   "source_kind": "web crawl (Common Crawl derived); not a blend that packages benchmark datasets",
   "contamination_possible": true,
   "zero_contamination_claimed": false,
@@ -21,8 +30,8 @@
     "PIQA": "Derived from instructables-style how-to content, which is ordinary crawl content and matches the essential_practical view."
   },
   "sample_measurement": "none: no Essential-Web text has been scanned against benchmark text",
-  "gate_value": "clean",
-  "gate_value_meaning": "The C04 gate field benchmark_risk has three values and admits only 'clean'. Its stated purpose is to disable benchmark-containing blends pending a component audit (prompts/07_source_discovery_admission.md; gate message in xlm.data.sources.admission). Essential-Web is not such a blend, so 'clean' is recorded in that sense only. It is not a statement that the corpus contains no benchmark text. The gate has no risk-accepted-with-mitigation value and none was added.",
+  "gate_value": "suspect_with_mitigation",
+  "gate_value_meaning": "Acquisition and pretraining eligibility with possible contamination and a bound C05 obligation. No zero-contamination claim. C05 screening is required before tokenizer/gradient training; official benchmark claims require a protected receipt matching the frozen canonical training pool and reported matcher limitations.",
   "existing_mechanism": {
     "contract": "C05: exclude all benchmark splits from gradient and tokenizer training, matching full examples and sufficiently informative spans; EVALUATION_POLICY.md: isolated final exclusion with opaque receipts.",
     "code": "xlm.data.exclusion (BenchmarkExclusionMatcher, ExclusionConfig, FinalExclusionReceipt); pool manifests record exclusion_policy_identity.",
@@ -39,5 +48,20 @@
   ],
   "permission_to_acquire_and_pretrain": true,
   "permission_to_claim_uncontaminated_benchmark_results": false,
-  "condition_for_uncontaminated_claim": "A C05 exclusion receipt over the frozen training pool, with the stated matcher limits reported alongside the result."
+  "condition_for_uncontaminated_claim": "A C05 exclusion receipt over the frozen training pool, with the stated matcher limits reported alongside the result.",
+  "contract_version": "c04-benchmark-risk-v2",
+  "mitigation_binding": {
+    "version": "c04-benchmark-risk-v2",
+    "mechanism": "xlm.data.exclusion",
+    "scope": "eventually_frozen_essential_mix01_canonical_training_pool",
+    "benchmarks": [
+      "BLiMP",
+      "ARC-Easy",
+      "HellaSwag",
+      "PIQA"
+    ],
+    "before_training": true,
+    "before_official_benchmark_claims": true,
+    "receipt_verifier": "xlm.data.exclusion.receipt.verify_benchmark_claim"
+  }
 }

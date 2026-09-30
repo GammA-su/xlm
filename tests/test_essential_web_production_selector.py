@@ -730,19 +730,15 @@ def _store(tmp_path: Path, *, outcome: str = "accessible", adapter: str | None =
         (evidence_dir / "probe_evidence.json").write_text(json.dumps(evidence), encoding="utf-8")
         if adapter is None:
             continue
-        decision = {
-            "source_id": "essential_web",
-            "view_id": component,
-            "provider": "huggingface",
-            "repository": production.REPOSITORY,
-            "immutable_revision": REVISION,
-            "adapter_id": adapter,
-            "selector_binding": selector.selector_identity(),
-            "probe_fingerprint": "authored-fingerprint",
-            "license_review": "approved",
-            "benchmark_risk": "clean",
-            "operator_approved": True,
-        }
+        from xlm.data.sources.essential_web_bootstrap import REVIEW_FILES, build_decision
+        from xlm.data.sources.prober import ProbeEvidenceRecord
+
+        decision = build_decision(
+            ProbeEvidenceRecord.model_validate(evidence),
+            dict.fromkeys(REVIEW_FILES, "0" * 64),
+            "authored operator",
+        ).model_dump(mode="json")
+        decision["adapter_id"] = adapter
         decision_dir = home / "admission_decision" / f"admission_essential_web_{component}"
         decision_dir.mkdir(parents=True)
         (decision_dir / "admission_decision.json").write_text(

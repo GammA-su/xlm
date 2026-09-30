@@ -15,10 +15,11 @@
     "source_id": "essential_web"
   },
   "check": "xlm.data.sources.essential_web_bootstrap.check_reviews passed",
+  "contract_version": "c04-benchmark-risk-v2",
   "kind": "essential_web_admission_review_manifest",
   "sha256": {
     "attribution-plan.json": "ecd0b45091debfc435d8090f07a45972e0c4ccf7b093318b4cff6aa8f0139535",
-    "benchmark-risk-review.json": "e898e8c99244b42df6317ec639e6f8a45149e7a5b0a284350b1e4dc84e5b0be3",
+    "benchmark-risk-review.json": "f1dc3fda3cca4d04802540f4667aaee1f0bd07de11b7c201c041498ecb250dea",
     "external-source-evidence.json": "dc11530035d9036c06473bb8cf5ebe3463d753ae6a594468dc9c2ccecc6aac0c",
     "source-rights-review.json": "a45b8bcae4f602d866596d02daaf43c31dea7e476de6fe41270438e444ea1f7e"
   }

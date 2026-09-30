@@ -1,0 +1,36 @@
+.................................................F...................... [ 53%]
+..............................................................           [100%]
+================================== FAILURES ===================================
+_______________________ test_committed_bootstrap_freeze _______________________
+
+tool = <module 'essential_web_bootstrap' from 'F:\\Project\\xlm-data-ultrax\\scripts\\essential_web_bootstrap.py'>
+
+    def test_committed_bootstrap_freeze(tool: Any) -> None:
+        plan = json.loads((BOOTSTRAP / "schema-probe-plan.json").read_bytes())
+        boot.check_probe_plan(plan)
+        calibration = json.loads((READINESS / "calibration-plan.json").read_bytes())
+        first = calibration["windows"][0]
+        assert plan["file"]["file"] == first["file"]
+        assert plan["file"]["strong_etag"] == first["strong_etag"]
+        assert plan["file"]["footer_and_trailer_sha256"] == first["footer_sha256"]
+        assert plan["planning_evidence"]["calibration_digest"] == calibration["digest"]
+        assert plan["live_run"] is False
+        assert tool.calibration_unchanged(READINESS)["unchanged"] is True
+        dry = tool.production_probe_dry(READINESS)
+        assert dry["classification"] == "production" and dry["executed"] is False
+        assert dry["future_script_carries_matching_authorization_hash"] is True
+        assert all(dry["refused_when"].values())
+        readiness = json.loads((BOOTSTRAP / "readiness.json").read_bytes())
+        assert readiness["vector"]["probe_plan_ready"] is True
+        assert readiness["vector"]["calibration_plan_ready"] is True
+        assert readiness["vector"]["production_admission_ok"] is False
+        assert readiness["live_schema_probe_run"] is False
+        for entry in json.loads((BOOTSTRAP / "admission-decisions.json").read_bytes()):
+            assert entry["production_admission_ok"] is False
+>           assert entry["prepared_decision"]["probe_fingerprint"] is None
+E           AssertionError: assert '2f64b00d35446dc3623d168edcb053a0131c43938b309a74f57110f541317ea9' is None
+
+tests\test_essential_web_bootstrap.py:696: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_essential_web_bootstrap.py::test_committed_bootstrap_freeze
+1 failed, 133 passed in 12.60s

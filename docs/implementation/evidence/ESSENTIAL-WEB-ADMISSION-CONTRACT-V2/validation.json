@@ -1,0 +1,60 @@
+{
+  "focused-final": {
+    "command": [
+      "uv",
+      "run",
+      "--offline",
+      "--locked",
+      "--no-sync",
+      "--extra",
+      "cpu",
+      "--extra",
+      "eval",
+      "python",
+      "-m",
+      "pytest",
+      "tests/test_essential_web_bootstrap.py",
+      "tests/test_essential_web_readiness.py",
+      "tests/test_exclusion_receipt.py",
+      "tests/test_operator.py",
+      "-n",
+      "0",
+      "-q",
+      "--basetemp=.bt-c04",
+      "-o",
+      "cache_dir=.bt-c04-cache"
+    ],
+    "exit_status": 1,
+    "elapsed_seconds": 13.157,
+    "sampled_peak_process_tree_rss_bytes": 246935552,
+    "sampling_seconds": 0.1
+  },
+  "prepare-admission": {
+    "command": [
+      "uv",
+      "run",
+      "--offline",
+      "--locked",
+      "--no-sync",
+      "--extra",
+      "cpu",
+      "--extra",
+      "eval",
+      "python",
+      "scripts/essential_web_bootstrap.py",
+      "prepare-admission",
+      "--reviews",
+      "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP",
+      "--store",
+      "G:/XLM/xlm-home",
+      "--receipt",
+      "G:/XLM/calib/essential-web-production/schema-probe/schema-probe-20260930T115739Z.receipt.json",
+      "--output",
+      "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/admission-decisions.json"
+    ],
+    "exit_status": 0,
+    "elapsed_seconds": 0.656,
+    "sampled_peak_process_tree_rss_bytes": 87638016,
+    "sampling_seconds": 0.1
+  }
+}

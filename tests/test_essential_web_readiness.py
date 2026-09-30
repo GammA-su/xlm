@@ -21,7 +21,8 @@ from xlm.data.acquisition.progress import AcquisitionState, FileProgress, Resour
 from xlm.data.adapters import essential_web_selector as selector
 from xlm.data.adapters.malformed import MalformedCounter, MalformedLimitError
 from xlm.data.sources import essential_web_readiness as ready
-from xlm.data.sources.admission import AdmissionDecision, AdmissionGate
+from xlm.data.sources.admission import AdmissionGate
+from xlm.data.sources.essential_web_bootstrap import REVIEW_FILES, build_decision
 from xlm.data.sources.prober import EvidenceType, ProbeEvidenceRecord, ProbeOutcome
 from xlm.data.sources.schema import FieldDescriptor, ViewSchema
 
@@ -72,19 +73,7 @@ def test_admission_binds_every_view(view: str, drift: str | None) -> None:
         ),
         declared_license="odc-by",
     )
-    decision = AdmissionDecision(
-        source_id=evidence.source_id,
-        view_id=view,
-        provider=evidence.provider,
-        repository=evidence.repository,
-        immutable_revision=selector.SOURCE_REVISION,
-        adapter_id="essential_web_bnormal",
-        selector_binding=selector.selector_identity(),
-        probe_fingerprint="authored",
-        license_review="approved",
-        provenance_review="approved",
-        operator_approved=True,
-    )
+    decision = build_decision(evidence, dict.fromkeys(REVIEW_FILES, "0" * 64), "authored operator")
     if drift == "policy":
         assert decision.selector_binding is not None
         decision.selector_binding["policy_digest"] = "0" * 64

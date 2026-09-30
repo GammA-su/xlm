@@ -1,3 +1,18 @@
+> **ESSENTIAL-WEB ADMISSION CONTRACT V2 (2026-09-30, offline): READY FOR OPERATOR ADMISSION.**
+> Existing real schema probe verified; no new probe. The previously ambiguous
+> `clean` classification is replaced by `suspect_with_mitigation` for all three
+> Essential views under `c04-benchmark-risk-v2`, with review hashes and a bound
+> C05 obligation. All three resealed decisions pass the actual offline C04
+> verifier in a temporary store; real operator approval remains pending.
+> Official benchmark claims stay blocked until a protected exclusion receipt
+> matches the frozen training pool. C05 pool integration/screening is NOT RUN.
+> Focused contract checks pass after fixture migrations; an extra reports CLI
+> test is blocked by Windows application-control policy on the PyTorch DLL.
+> Ruff/format and strict mypy pass. No network, calibration, acquisition or push.
+> [Correction report and exact checks](reports/ESSENTIAL-WEB-ADMISSION-CONTRACT-V2.md).
+> Next: dot-source `scripts/operator_storage.ps1`, then run
+> `docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/future-admit.ps1 -Operator $env:USERNAME`.
+
 > **ESSENTIAL-WEB ADMISSION BOOTSTRAP (2026-09-30, offline): READY FOR LIVE
 > ESSENTIAL-WEB PROBE AND CALIBRATION.** The C04 rights/provenance/attribution
 > and benchmark-risk reviews are written and bound to revision `ce4eccc…`. A

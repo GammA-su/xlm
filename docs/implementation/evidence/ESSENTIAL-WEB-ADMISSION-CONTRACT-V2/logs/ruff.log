@@ -1,0 +1,12 @@
+E501 Line too long (102 > 100)
+   --> tests\test_essential_web_bootstrap.py:701:101
+    |
+699 |         assert not decision.operator_approved
+700 |         assert entry["official_benchmark_claims_allowed"] is False
+701 |         assert entry["offline_verifier"] == "PASS in temporary store with simulated operator approval"
+    |                                                                                                     ^^
+702 |     seal = json.loads((BOOTSTRAP / "admission-decisions.seal.json").read_bytes())
+703 |     assert seal["decisions_sha256"] == tool.sha256_file(BOOTSTRAP / "admission-decisions.json")
+    |
+
+Found 1 error.

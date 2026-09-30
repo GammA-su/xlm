@@ -1,0 +1,12 @@
+{
+  "prepared_decision_seal_valid": true,
+  "bootstrap_manifest_valid": true,
+  "live_receipt_copy_exact": true,
+  "byte_identical_adapter_files": {
+    "src/xlm/data/adapters/essential_web_selector.py": "fd891e16b0ef6cca0ccf0d1b5a38ad41fab82689094f73c5c7d01c10064a46ac",
+    "src/xlm/data/adapters/mix01_adapters.py": "56ca4fb26e88b57409f9ba0e0743095a1ff552a83e702722a948c2115d3c42f8"
+  },
+  "configuration_git_diff_empty": true,
+  "resource_note": "RSS sampled every 100 ms; scratch disk peak not instrumented; no GPU work.",
+  "review_manifest_valid": true
+}

@@ -101,6 +101,7 @@ from xlm.data.sources.admission import (
 from xlm.data.sources.catalog import load_catalog
 from xlm.data.sources.policy import (
     LEGAL_DISCLAIMER,
+    BenchmarkContaminationRisk,
     is_denied_source,
 )
 from xlm.data.sources.prober import EvidenceType, SourceProber
@@ -629,12 +630,12 @@ def admit_source_view(
         typer.Option("--license-review", help="License review status: approved/pending/rejected."),
     ] = "pending",
     benchmark_risk: Annotated[
-        str,
+        BenchmarkContaminationRisk,
         typer.Option(
             "--benchmark-risk",
-            help="Benchmark contamination risk: clean/suspect/disabled_pending_audit.",
+            help="C04 risk; mitigated Essential decisions require the bootstrap review workflow.",
         ),
-    ] = "clean",
+    ] = BenchmarkContaminationRisk.CLEAN,
     catalog_path: Annotated[
         Path,
         typer.Option("--catalog", "-c", help="Path to dataset catalog YAML."),

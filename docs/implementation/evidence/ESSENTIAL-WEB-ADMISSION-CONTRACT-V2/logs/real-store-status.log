@@ -1,0 +1,23 @@
+{
+  "production_admission_ok": false,
+  "views": {
+    "essential_science": {
+      "admitted": false,
+      "reasons": [
+        "No operator admission decision recorded."
+      ]
+    },
+    "essential_practical": {
+      "admitted": false,
+      "reasons": [
+        "No operator admission decision recorded."
+      ]
+    },
+    "essential_prose": {
+      "admitted": false,
+      "reasons": [
+        "No operator admission decision recorded."
+      ]
+    }
+  }
+}

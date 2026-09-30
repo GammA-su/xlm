@@ -17,6 +17,7 @@ from typing import Any
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
+from pydantic import ValidationError
 from typer.testing import CliRunner
 
 from xlm.artifacts.store import ArtifactConflictError, ArtifactStore
@@ -36,6 +37,7 @@ from xlm.data.evidence_v2.footer import RangeEvidence
 from xlm.data.sources import essential_web_bootstrap as boot
 from xlm.data.sources import essential_web_readiness as ready
 from xlm.data.sources.admission import (
+    AdmissionDecision,
     AdmissionGate,
     attempt_artifact_id,
     latest_attempt,
@@ -43,6 +45,7 @@ from xlm.data.sources.admission import (
     load_probe_evidence,
     next_attempt,
     resolve_verified_production_admission,
+    save_admission_decision,
     save_probe_evidence,
 )
 from xlm.data.sources.prober import EvidenceType, ProbeEvidenceRecord, ProbeOutcome
@@ -344,6 +347,70 @@ def test_decision_binds_fingerprint_selector_and_reviews() -> None:
         boot.build_decision(records["essential_science"], {"source_rights": "0" * 64}, "x")
 
 
+@pytest.mark.parametrize(
+    ("changes", "reason"),
+    [
+        ({"contamination_mitigation": None}, "mitigation"),
+        ({"reviews_sha256": {"source_rights": "0" * 64}}, "Benchmark-risk review"),
+        ({"reviews_sha256": {"benchmark_risk": "0" * 64}}, "provenance review"),
+        ({"contract_version": "1"}, "versioned"),
+        ({"resource_contract": None}, "resource contract"),
+        ({"benchmark_risk": "clean"}, "possible contamination"),
+        ({"benchmark_risk": "suspect"}, "risk status"),
+        ({"probe_fingerprint": "f" * 64}, "fingerprint"),
+        ({"immutable_revision": "wrong"}, "revision"),
+    ],
+)
+def test_mitigated_admission_fails_closed(
+    tmp_path: Path, changes: dict[str, Any], reason: str
+) -> None:
+    content = image()
+    record = real_shaped(
+        boot.run_schema_probe(plan_for(content), FakeTransport(content))["records"][
+            "essential_science"
+        ]
+    )
+    payload = boot.build_decision(record, HASHES, "authored").model_dump()
+    decision = AdmissionDecision.model_validate({**payload, **changes})
+    gate = AdmissionGate.evaluate(record, decision)
+    assert not gate.admitted and any(reason in item for item in gate.reasons)
+    store = store_at(tmp_path / "store")
+    save_probe_evidence(record, store, tmp_path / "probe")
+    save_admission_decision(decision, store, tmp_path / "decision")
+    plan = load_acquisition_plan(READINESS / "probe-00.plan.json")
+    with pytest.raises(AuthorizationRequiredError, match=reason):
+        resolve_verified_production_admission(plan, store)
+
+
+@pytest.mark.parametrize("value", ["unknown", "risk_accepted", "", "CLEAN"])
+def test_arbitrary_risk_values_refuse(value: str) -> None:
+    content = image()
+    record = boot.run_schema_probe(plan_for(content), FakeTransport(content))["records"][
+        "essential_science"
+    ]
+    payload = boot.build_decision(record, HASHES, "authored").model_dump()
+    with pytest.raises(ValidationError):
+        AdmissionDecision.model_validate({**payload, "benchmark_risk": value})
+
+
+def test_mitigation_cannot_disable_later_c05_gate() -> None:
+    content = image()
+    record = boot.run_schema_probe(plan_for(content), FakeTransport(content))["records"][
+        "essential_science"
+    ]
+    payload = boot.build_decision(record, HASHES, "authored").model_dump()
+    for field, value in (
+        ("mechanism", "arbitrary.module"),
+        ("before_official_benchmark_claims", False),
+        ("before_training", False),
+        ("benchmarks", ["BLiMP"]),
+    ):
+        modified = copy.deepcopy(payload)
+        modified["contamination_mitigation"][field] = value
+        with pytest.raises(ValidationError):
+            AdmissionDecision.model_validate(modified)
+
+
 def committed_reviews() -> dict[str, Any]:
     return {
         name: json.loads((BOOTSTRAP / file).read_bytes())
@@ -375,6 +442,7 @@ def test_committed_reviews_are_bound_and_do_not_overclaim(tool: Any) -> None:
         ("benchmark_risk", ("zero_contamination_claimed",), True),
         ("benchmark_risk", ("contamination_possible",), False),
         ("benchmark_risk", ("permission_to_claim_uncontaminated_benchmark_results",), True),
+        ("benchmark_risk", ("permission_to_acquire_and_pretrain",), False),
         ("benchmark_risk", ("benchmarks",), ["BLiMP"]),
         ("benchmark_risk", ("mitigation",), []),
         ("benchmark_risk", ("gate_value",), "suspect"),
@@ -439,6 +507,63 @@ def publish_views(home: Path, staging: Path, real: bool) -> None:
         save_probe_evidence(
             real_shaped(record) if real else record, store, staging_dir=staging / view
         )
+
+
+def test_prepare_and_sealed_operator_admission(
+    tmp_path: Path, tool: Any, isolated_xlm_home: Path
+) -> None:
+    content = image()
+    result = boot.run_schema_probe(plan_for(content), FakeTransport(content))
+    # Authored real-shaped schema receipt for exercising offline validation only.
+    receipt = result["receipt"]
+    receipt["evidence_type"] = "real_observed"
+    receipt = redigest(receipt)
+    published = {}
+    store = store_at(isolated_xlm_home)
+    for view, record in result["records"].items():
+        record = real_shaped(record)
+        record.resource_metrics["receipt_digest"] = receipt["digest"]
+        save_probe_evidence(record, store, tmp_path / "staging" / view)
+        published[view] = {"probe_fingerprint": record.probe_fingerprint}
+    receipt["published"] = published
+    receipt_path = tmp_path / "authored-receipt.json"
+    receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
+    output = tmp_path / "prepared.json"
+    argv = [
+        "prepare-admission",
+        "--reviews",
+        str(BOOTSTRAP),
+        "--store",
+        str(isolated_xlm_home),
+        "--receipt",
+        str(receipt_path),
+        "--output",
+        str(output),
+    ]
+    assert tool.main(argv) == 0
+    rows = json.loads(output.read_bytes())
+    assert len(rows) == 3
+    assert all(not row["prepared_decision"]["operator_approved"] for row in rows)
+    assert not (isolated_xlm_home / "admission_decision").exists()
+    admit = [
+        "admit",
+        "--reviews",
+        str(BOOTSTRAP),
+        "--operator",
+        "authored",
+        "--operator-approve",
+        "--prepared",
+        str(output),
+        "--output",
+        str(tmp_path / "recorded.json"),
+    ]
+    original = output.read_bytes()
+    rows[0]["prepared_decision"]["probe_fingerprint"] = "f" * 64
+    output.write_text(json.dumps(rows), encoding="utf-8")
+    assert tool.main(admit) == 1  # seal mismatch
+    assert not (isolated_xlm_home / "admission_decision").exists()
+    output.write_bytes(original)
+    assert tool.main(admit) == 0
 
 
 def test_operator_admission_then_production_probe_authorization(
@@ -569,6 +694,13 @@ def test_committed_bootstrap_freeze(tool: Any) -> None:
     assert readiness["live_schema_probe_run"] is False
     for entry in json.loads((BOOTSTRAP / "admission-decisions.json").read_bytes()):
         assert entry["production_admission_ok"] is False
-        assert entry["prepared_decision"]["probe_fingerprint"] is None
-        assert entry["offline_gate_check"]["gate_on_replay"]["admitted"] is False
-        assert entry["offline_gate_check"]["every_other_criterion_passes"] is True
+        decision = AdmissionDecision.model_validate(entry["prepared_decision"])
+        assert len(decision.probe_fingerprint) == 64
+        assert decision.benchmark_risk == "suspect_with_mitigation"
+        assert not decision.operator_approved
+        assert entry["official_benchmark_claims_allowed"] is False
+        assert (
+            entry["offline_verifier"] == "PASS in temporary store with simulated operator approval"
+        )
+    seal = json.loads((BOOTSTRAP / "admission-decisions.seal.json").read_bytes())
+    assert seal["decisions_sha256"] == tool.sha256_file(BOOTSTRAP / "admission-decisions.json")

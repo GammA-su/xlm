@@ -9,6 +9,7 @@ policy. Everything here runs against synthetic fixtures only.
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -25,6 +26,7 @@ from xlm.data.exclusion import (
     sign_receipt,
     verify_receipt,
 )
+from xlm.data.exclusion.receipt import BenchmarkClaimBinding, verify_benchmark_claim
 
 TRUSTED_ISSUER = "operator_holdout_service"
 TRUSTED_KEY = b"synthetic-operator-key-for-tests-only"
@@ -59,6 +61,51 @@ def protected_receipt(**overrides: object) -> FinalExclusionReceipt:
 def test_signed_receipt_from_a_trusted_issuer_verifies() -> None:
     signed = sign_receipt(protected_receipt(), TRUSTED_KEY)
     verify_receipt(signed, {TRUSTED_ISSUER: TRUSTED_KEY}, policy="protected")
+
+
+def claim_binding(receipt: FinalExclusionReceipt) -> BenchmarkClaimBinding:
+    return BenchmarkClaimBinding(
+        checkpoint_hash="authored-checkpoint",
+        suite_fingerprint="authored-suite",
+        corpus_input_digest=receipt.corpus_input_digest,
+        output_membership_digest=receipt.output_membership_digest,
+        exclusion_policy_identity=receipt.exclusion_policy_identity,
+        exclusion_index_identity=receipt.exclusion_index_identity,
+    )
+
+
+def test_acquisition_admission_never_substitutes_for_c05() -> None:
+    signed = sign_receipt(protected_receipt(), TRUSTED_KEY)
+    binding = claim_binding(signed)
+    trusted = {TRUSTED_ISSUER: TRUSTED_KEY}
+    with pytest.raises(ReceiptValidationError, match="bound C05 receipt"):
+        verify_benchmark_claim(None, binding, trusted)
+    with pytest.raises(ReceiptValidationError, match="bound C05 receipt"):
+        verify_benchmark_claim(signed, None, trusted)
+    verify_benchmark_claim(signed, binding, trusted)
+    with pytest.raises(ReceiptValidationError, match="development"):
+        verify_benchmark_claim(
+            sign_receipt(protected_receipt(mode="development"), TRUSTED_KEY), binding, trusted
+        )
+
+
+@pytest.mark.parametrize(
+    "field",
+    [
+        "corpus_input_digest",
+        "output_membership_digest",
+        "exclusion_policy_identity",
+        "exclusion_index_identity",
+    ],
+)
+def test_c05_claim_requires_exact_frozen_pool(field: str) -> None:
+    signed = sign_receipt(protected_receipt(), TRUSTED_KEY)
+    binding = claim_binding(signed)
+    for value in ("foreign", "none_declared", ""):
+        with pytest.raises(ReceiptValidationError):
+            verify_benchmark_claim(
+                signed, replace(binding, **{field: value}), {TRUSTED_ISSUER: TRUSTED_KEY}
+            )
 
 
 def test_unsigned_receipt_is_rejected_under_protected_policy() -> None:

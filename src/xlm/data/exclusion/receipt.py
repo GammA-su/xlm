@@ -204,6 +204,52 @@ def verify_receipt(
         raise ReceiptValidationError("receipt signature does not verify; contents were altered")
 
 
+@dataclass(frozen=True)
+class BenchmarkClaimBinding:
+    """Expected identities from frozen training/evaluation lineage, not admission.
+
+    The policy and index must cover all benchmark splits in the named suite.
+    A trusted operator supplies these expectations independently of the receipt.
+    """
+
+    checkpoint_hash: str
+    suite_fingerprint: str
+    corpus_input_digest: str
+    output_membership_digest: str
+    exclusion_policy_identity: str
+    exclusion_index_identity: str
+
+
+def verify_benchmark_claim(
+    receipt: FinalExclusionReceipt | None,
+    binding: BenchmarkClaimBinding | None,
+    trusted_issuers: dict[str, bytes],
+) -> None:
+    """Require protected C05 evidence for the exact frozen training membership.
+
+    Success establishes a screening receipt, never universal zero contamination.
+    Acquisition approval, a development receipt and receipt IDs alone cannot pass.
+    """
+    if receipt is None or binding is None:
+        raise ReceiptValidationError("official benchmark claims require a bound C05 receipt")
+    for key, value in asdict(binding).items():
+        if not value.strip() or value.lower() in {"none_declared", "unknown", "pending"}:
+            raise ReceiptValidationError(f"frozen training-pool binding lacks {key}")
+    verify_receipt(
+        receipt,
+        trusted_issuers,
+        policy="protected",
+        expected_corpus_digest=binding.corpus_input_digest,
+    )
+    for key in (
+        "output_membership_digest",
+        "exclusion_policy_identity",
+        "exclusion_index_identity",
+    ):
+        if getattr(receipt, key) != getattr(binding, key):
+            raise ReceiptValidationError(f"C05 receipt {key} differs from frozen training pool")
+
+
 def issue_development_receipt(
     corpus_doc_ids: list[str],
     dropped_doc_ids: list[str],

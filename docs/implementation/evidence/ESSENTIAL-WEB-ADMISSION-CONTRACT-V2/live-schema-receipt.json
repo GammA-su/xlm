@@ -1,0 +1,81 @@
+{
+  "digest": "6e7a7594dd6f126e870c2b360c0f1bea2121cd620947e8ac56323972c6d5bc68",
+  "evidence_type": "real_observed",
+  "kind": "essential_web_schema_probe_receipt",
+  "not_established": [
+    "row decode through the production reader",
+    "selector yield, retained bytes or tokens",
+    "transfer cost per input row"
+  ],
+  "observed": {
+    "card": {
+      "bytes": 31500,
+      "declared_license": "odc-by",
+      "etag": "\"c853ea839fa13d7a594303cdd1b4506cacbd0d1a\"",
+      "file": "README.md",
+      "repo_commit_header": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+      "sha256": "297d5dd31fd7d962efad96b432ce4aedffd30a5afd924986063463af904ca27d"
+    },
+    "created_by": "parquet-cpp-arrow version 20.0.0",
+    "file": {
+      "file": "data/crawl=CC-MAIN-2014-15/train-01860-of-02772.parquet",
+      "footer_and_trailer_bytes": 203276,
+      "footer_and_trailer_sha256": "eec4e65e7307c3c12c1366f20500e7b0a3e26ac2bd0ee59f8f7d9b1bd1b970a9",
+      "remote_length": 290684578,
+      "strong_etag": "\"a898462fb164d7eea3e8248a28cb1f855843d72bd55cfd126f537653c4eae323\""
+    },
+    "file_rows": 93417,
+    "group0_codecs": [
+      "SNAPPY"
+    ],
+    "group0_rows": 10000,
+    "physical_leaves": 103,
+    "projected_physical_leaves": 101,
+    "repository": "EssentialAI/essential-web-v1.0",
+    "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+    "row_groups": 10,
+    "schema_digest": "e6219f02e11c98e9841047084accfea7181e1c7663233662af902b90370b1a74",
+    "top_level_fields": [
+      "id",
+      "text",
+      "metadata",
+      "line_start_n_end_idx",
+      "quality_signals",
+      "eai_taxonomy",
+      "pid"
+    ]
+  },
+  "plan_digest": "0b887739d5bac0a321d5b312a9f4d7a955e1851baaec7f8dcfede5a5bdedd3b4",
+  "producer": "xlm.data.sources.essential_web_bootstrap/1",
+  "published": {
+    "essential_practical": {
+      "artifact": "G:\\XLM\\xlm-home\\probe_evidence\\probe_essential_web_essential_practical",
+      "attempt": 1,
+      "probe_fingerprint": "73035aa5727ff54ecebcf3eca372c13216f46566dde0497b8ac79b3eb0bd3840"
+    },
+    "essential_prose": {
+      "artifact": "G:\\XLM\\xlm-home\\probe_evidence\\probe_essential_web_essential_prose",
+      "attempt": 1,
+      "probe_fingerprint": "7448f2f1f7ac8309f77b1d3e14bded496756400065187b5b09cb8e1a56e0286d"
+    },
+    "essential_science": {
+      "artifact": "G:\\XLM\\xlm-home\\probe_evidence\\probe_essential_web_essential_science.attempt02",
+      "attempt": 2,
+      "probe_fingerprint": "2f64b00d35446dc3623d168edcb053a0131c43938b309a74f57110f541317ea9"
+    }
+  },
+  "resource_metrics": {
+    "bytes_transferred": 238373,
+    "decompressed_bytes": 0,
+    "elapsed_seconds": 2.438,
+    "measurement": "application response-body bytes; no TCP/TLS wire accounting",
+    "outstanding_reservations": {
+      "response_body_bytes": 0
+    },
+    "requests_made": 8
+  },
+  "role": "c04_admission_bootstrap_schema_and_source_identity",
+  "rows_decoded": 0,
+  "status": "ACCESSIBLE",
+  "text_bytes_read": 0
+}

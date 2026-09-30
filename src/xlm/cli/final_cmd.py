@@ -167,6 +167,11 @@ def final_verify_receipt_cmd(
         )
         for finding in verdict["findings"]:
             typer.echo(f"  - {finding}")
+        typer.echo(
+            f"Official benchmark claims allowed: {verdict['official_benchmark_claims_allowed']}"
+        )
+        for finding in verdict["benchmark_claim_findings"]:
+            typer.echo(f"  - {finding}")
     if not verdict["valid"]:
         raise typer.Exit(code=1)
 

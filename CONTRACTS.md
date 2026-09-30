@@ -45,6 +45,30 @@ No implicit FineWeb or FineWeb-Edu fallback. Maintain direct-source denylists an
 
 Acquisition is resumable, host-allowlisted and bounded by transferred bytes, cache/scratch disk, record size, documents, requests, duration and output size. Prefer selected immutable shards/row groups over entire repository snapshots. Record selected files and row ranges before a production run. A streaming sample describes its sampling frame and bias; do not call the first N rows a uniform sample of a trillion-token corpus. Deny remote code and executable archives; guard traversal and decompression bombs. Never accept access terms on the user’s behalf.
 
+**C04 benchmark-risk amendment `c04-benchmark-risk-v2` (2026-09-30).**
+Source admission is acquisition/pretraining eligibility, never evidence of zero
+benchmark contamination. The legacy `clean` value had no precise contamination
+definition; retaining it for legacy decisions does not retroactively certify a
+corpus. Known possible contamination in the three Essential-Web views must use
+`suspect_with_mitigation`, with this contract version, SHA-256 bindings to the
+benchmark-risk and source/license/provenance reviews, an explicit C05 mitigation
+binding, the unchanged resource contract and operator approval. `suspect`,
+`disabled_pending_audit`, arbitrary strings, missing review and missing mitigation
+do not admit. Old Essential `clean` decisions require resealing; other legacy
+decision defaults and historical checkpoint identities are unchanged.
+
+The bound mechanism is `xlm.data.exclusion`: full-example and informative-span
+screening of the eventually frozen Essential/Mix-01 canonical training pool
+against all BLiMP, ARC-Easy, HellaSwag and PIQA splits. C05 still requires exclusion
+before tokenizer fitting and gradient training. Admission is not proof that this
+step ran. Official benchmark claims additionally require a protected, trusted C05
+receipt matching frozen input and kept membership, exclusion policy/index, and
+the evaluation's checkpoint/suite lineage. Receipt verification establishes only
+screening under that policy, with its limitations; never universal zero
+contamination. Missing final-pool integration or receipt leaves benchmark claims
+blocked. This amendment changes admission lineage only: no source, selector,
+tokenizer, mixture, quota or scoring changes.
+
 ## C05 — Duplicate clusters, exclusions and splits
 
 Deduplicate across all selected source families before assigning final train/validation splits. Implement exact hashes and a scalable near-duplicate method such as shingled MinHash/LSH with bounded candidate verification; do not use an all-pairs comparison. Algorithm, seeds, thresholds and deterministic survivor selection are frozen. Retain all source aliases and provenance of the surviving document.

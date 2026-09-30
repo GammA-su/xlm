@@ -8,11 +8,17 @@ from __future__ import annotations
 
 import hashlib
 import json
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
 import pytest
 
+from xlm.data.exclusion.receipt import (
+    BenchmarkClaimBinding,
+    issue_development_receipt,
+    sign_receipt,
+)
 from xlm.operator.final import (
     AccessLog,
     FinalEvaluationError,
@@ -196,8 +202,66 @@ def test_execute_happy_path_returns_aggregates_only(tmp_path: Path) -> None:
     )
     verdict = verify_receipt(receipt.to_dict(), sealed["root"])
     assert verdict["valid"] is True, verdict["findings"]
+    assert verdict["official_benchmark_claims_allowed"] is False
+    assert verdict["benchmark_contamination_status"] == "possibly_contaminated"
+    assert verdict["zero_contamination_proven"] is False
     log = AccessLog(sealed["root"] / "access.log.jsonl").entries()
     assert log and log[-1]["action"] == "final_execute"
+
+
+def test_official_claim_gate_requires_matching_c05_and_evaluation(tmp_path: Path) -> None:
+    sealed = _sealed_tree(tmp_path)
+    request = _request()
+    result = execute_final_request(
+        request,
+        _auth(request),
+        sealed["root"],
+        sealed["bundle"],
+        sealed["reviewed"],
+        sealed["quota"],
+        _supplier,
+        "operator_1",
+        "code_hash_1",
+        "rolling",
+        "fp32",
+    )
+    # Synthetic protected-shaped receipt: no real benchmark content or operator key.
+    exclusion = issue_development_receipt(["authored-doc"], [], "policy", "index")
+    exclusion.mode = "protected"
+    exclusion = sign_receipt(exclusion, b"authored-key")
+    binding = BenchmarkClaimBinding(
+        checkpoint_hash=request.checkpoint_hash,
+        suite_fingerprint=request.suite_fingerprint,
+        corpus_input_digest=exclusion.corpus_input_digest,
+        output_membership_digest=exclusion.output_membership_digest,
+        exclusion_policy_identity="policy",
+        exclusion_index_identity="index",
+    )
+    for candidate, allowed in (
+        (binding, True),
+        (replace(binding, checkpoint_hash="foreign"), False),
+        (replace(binding, suite_fingerprint="foreign"), False),
+        (replace(binding, output_membership_digest="foreign"), False),
+    ):
+        verdict = verify_receipt(
+            result.to_dict(),
+            sealed["root"],
+            exclusion_receipt=exclusion,
+            training_pool=candidate,
+            trusted_exclusion_issuers={exclusion.issuer_id: b"authored-key"},
+        )
+        assert verdict["valid"] is True
+        assert verdict["official_benchmark_claims_allowed"] is allowed
+        assert verdict["zero_contamination_proven"] is False
+    tampered = {**result.to_dict(), "items_scored": 999}
+    verdict = verify_receipt(
+        tampered,
+        sealed["root"],
+        exclusion_receipt=exclusion,
+        training_pool=binding,
+        trusted_exclusion_issuers={exclusion.issuer_id: b"authored-key"},
+    )
+    assert not verdict["valid"] and not verdict["official_benchmark_claims_allowed"]
 
 
 def test_replay_revocation_mismatch_and_quota_are_refused(tmp_path: Path) -> None:

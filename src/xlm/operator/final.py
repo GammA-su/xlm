@@ -17,6 +17,13 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from xlm.data.exclusion.receipt import (
+    BenchmarkClaimBinding,
+    FinalExclusionReceipt,
+    ReceiptValidationError,
+    verify_benchmark_claim,
+)
+
 FINAL_PROTOCOL_VERSION = "1"
 
 # Per-item prediction keys are forbidden in receipts. Anything shaped like
@@ -414,8 +421,16 @@ def execute_final_request(
 def verify_receipt(
     receipt: Mapping[str, Any],
     sealed_root: Path | str,
+    *,
+    exclusion_receipt: FinalExclusionReceipt | None = None,
+    training_pool: BenchmarkClaimBinding | None = None,
+    trusted_exclusion_issuers: dict[str, bytes] | None = None,
 ) -> dict[str, Any]:
-    """Verify a receipt against sealed records without exposing protected data."""
+    """Verify evaluation integrity and separately gate official benchmark claims.
+
+    ``valid`` establishes evaluation receipt integrity only. C04 admission and
+    final-protected exposure never establish training-corpus cleanliness.
+    """
     root = Path(sealed_root)
     findings: list[str] = []
     ok = True
@@ -457,7 +472,31 @@ def verify_receipt(
         ok = False
         findings.append("request hash was never consumed by a recorded execution")
 
-    return {"receipt_id": receipt.get("receipt_id"), "valid": ok, "findings": findings}
+    claim_findings: list[str] = []
+    try:
+        verify_benchmark_claim(exclusion_receipt, training_pool, trusted_exclusion_issuers or {})
+        if training_pool is None:
+            raise ReceiptValidationError("frozen training-pool binding is missing")
+        if training_pool.checkpoint_hash != receipt.get(
+            "checkpoint_hash"
+        ) or training_pool.suite_fingerprint != receipt.get("suite_fingerprint"):
+            raise ReceiptValidationError(
+                "C05 frozen lineage differs from evaluation checkpoint/suite"
+            )
+    except ReceiptValidationError as exc:
+        claim_findings.append(str(exc))
+    claim_allowed = ok and not claim_findings
+    return {
+        "receipt_id": receipt.get("receipt_id"),
+        "valid": ok,
+        "findings": findings,
+        "official_benchmark_claims_allowed": claim_allowed,
+        "benchmark_contamination_status": (
+            "screened_with_limitations" if claim_allowed else "possibly_contaminated"
+        ),
+        "benchmark_claim_findings": claim_findings,
+        "zero_contamination_proven": False,
+    }
 
 
 @dataclass(frozen=True)

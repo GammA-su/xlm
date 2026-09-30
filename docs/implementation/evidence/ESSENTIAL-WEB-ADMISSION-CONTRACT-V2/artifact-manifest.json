@@ -1,0 +1,81 @@
+{
+  "contract_version": "c04-benchmark-risk-v2",
+  "starting_commit": "5b0cf7ae78325463533ae0957f9c03914b0ee1d6",
+  "artifacts": [
+    {
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-CONTRACT-V2/artifact-verification.json",
+      "bytes": 562,
+      "sha256": "27387e64243442d133a058075cc970235eea9afddd90563c3b69dca3ebbdb07f"
+    },
+    {
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-CONTRACT-V2/COMMANDS.md",
+      "bytes": 6073,
+      "sha256": "93fa355a72a197a34e734f0444b27db4180913d689f29f2a35fcb5abc61cb5e7"
+    },
+    {
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-CONTRACT-V2/live-schema-receipt.json",
+      "bytes": 2972,
+      "sha256": "c34d74301720088fcdb28724492d7aaa2d55f9ff54cde754059f884a93cab313"
+    },
+    {
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-CONTRACT-V2/logs/bootstrap-final.log",
+      "bytes": 99,
+      "sha256": "3428c99f00edf5b2b2ca012e0b32106f9e624c9de8ca4ed771f9da6ef3d9ca0d"
+    },
+    {
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-CONTRACT-V2/logs/focused-final.log",
+      "bytes": 2363,
+      "sha256": "384c9ae43cc82512e487a8a629ea2dda99b33d391f410b8ffdf4807af23c27e6"
+    },
+    {
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-CONTRACT-V2/logs/format-final.log",
+      "bytes": 27,
+      "sha256": "04eb0d6e6734823dcd2b2b704729e976f683df7a8f334da7216520ef1cb319bf"
+    },
+    {
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-CONTRACT-V2/logs/format.log",
+      "bytes": 575,
+      "sha256": "a6a318e6d258aae06275f679129e1ac54cdaccb4ced480f2a36f23564cdd14aa"
+    },
+    {
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-CONTRACT-V2/logs/mypy.log",
+      "bytes": 119,
+      "sha256": "4d8d16f36c5ca055ec9dae5cd391b75fec76ac870f12b6324e4486e94f649ccc"
+    },
+    {
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-CONTRACT-V2/logs/prepare-admission.log",
+      "bytes": 58,
+      "sha256": "7f0785cdc779bf02178e79dd7db28e478147f92b1a259fcb6e1dc946ed90e0fa"
+    },
+    {
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-CONTRACT-V2/logs/prepare-final.log",
+      "bytes": 57,
+      "sha256": "230fa1d95e8a90df22ba088509f7b8e829fe2360081cf0ce657877fad9112dc4"
+    },
+    {
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-CONTRACT-V2/logs/real-store-status.log",
+      "bytes": 467,
+      "sha256": "aeea6a37ad26d240c7c9ac3366afd308d11bafb83d4311aaaac13f244d22daa5"
+    },
+    {
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-CONTRACT-V2/logs/resealed-package-tests.log",
+      "bytes": 98,
+      "sha256": "355d583096898400ff1643fe30852895cda708d83caf4db3d5eadae37184c8d1"
+    },
+    {
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-CONTRACT-V2/logs/ruff-final.log",
+      "bytes": 19,
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-CONTRACT-V2/logs/ruff.log",
+      "bytes": 645,
+      "sha256": "5430a8a2eabd2b50c683bcf9ed59a8862591857f34082b558d07a4185e7e605a"
+    },
+    {
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-CONTRACT-V2/validation.json",
+      "bytes": 1493,
+      "sha256": "1c97624e26c492f35308131f70428fb9fadf40e833f69bac90ddec68cff30413"
+    }
+  ]
+}

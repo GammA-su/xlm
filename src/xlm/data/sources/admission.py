@@ -7,7 +7,7 @@ import json
 from datetime import UTC, datetime
 from enum import StrEnum
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -34,11 +34,42 @@ class AdmissionStatus(StrEnum):
     PENDING_REVIEW = "pending_review"
 
 
+ReviewDigest = Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
+
+
+class ContaminationMitigation(BaseModel):
+    """Data-only C05 obligation, not an executed exclusion receipt."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    version: Literal["c04-benchmark-risk-v2"]
+    mechanism: Literal["xlm.data.exclusion"]
+    scope: Literal["eventually_frozen_essential_mix01_canonical_training_pool"]
+    benchmarks: tuple[Literal["BLiMP"], Literal["ARC-Easy"], Literal["HellaSwag"], Literal["PIQA"]]
+    before_training: Literal[True]
+    before_official_benchmark_claims: Literal[True]
+    receipt_verifier: Literal["xlm.data.exclusion.receipt.verify_benchmark_claim"]
+
+
+def essential_contamination_mitigation() -> ContaminationMitigation:
+    """The versioned obligation; does not assert that screening has run."""
+    return ContaminationMitigation(
+        version="c04-benchmark-risk-v2",
+        mechanism="xlm.data.exclusion",
+        scope="eventually_frozen_essential_mix01_canonical_training_pool",
+        benchmarks=("BLiMP", "ARC-Easy", "HellaSwag", "PIQA"),
+        before_training=True,
+        before_official_benchmark_claims=True,
+        receipt_verifier="xlm.data.exclusion.receipt.verify_benchmark_claim",
+    )
+
+
 class AdmissionDecision(BaseModel):
     """Auditable record of operator review and admission decisions."""
 
     model_config = ConfigDict(extra="forbid", validate_assignment=True)
 
+    contract_version: Literal["1", "c04-benchmark-risk-v2"] = "1"
     source_id: str
     view_id: str = "default"
     provider: str
@@ -50,7 +81,12 @@ class AdmissionDecision(BaseModel):
     probe_fingerprint: str
     license_review: str = LicenseReviewStatus.PENDING
     provenance_review: str = "pending"
-    benchmark_risk: str = BenchmarkContaminationRisk.CLEAN
+    benchmark_risk: BenchmarkContaminationRisk = BenchmarkContaminationRisk.CLEAN
+    reviews_sha256: dict[str, ReviewDigest] = Field(default_factory=dict)
+    contamination_mitigation: ContaminationMitigation | None = None
+    resource_contract: (
+        Literal["C04/C13; exact limits and matching authorization required"] | None
+    ) = None
     usage_policy: str = LicenseUsagePolicy.STRICT_RESEARCH
     operator_approved: bool = False
     operator_notes: str = ""
@@ -152,6 +188,8 @@ class AdmissionGate:
             )
 
             if evidence.view_id in ADMITTED_COMPONENTS:
+                if decision.benchmark_risk != BenchmarkContaminationRisk.SUSPECT_WITH_MITIGATION:
+                    reasons.append("Essential-Web possible contamination requires mitigation.")
                 if evidence.repository != "EssentialAI/essential-web-v1.0":
                     reasons.append("Essential-Web repository differs from the production source.")
                 if evidence.immutable_revision != SOURCE_REVISION:
@@ -185,7 +223,23 @@ class AdmissionGate:
             reasons.append(lic_msg)
 
         # 9. Benchmark contamination check
-        if decision.benchmark_risk != BenchmarkContaminationRisk.CLEAN:
+        if decision.benchmark_risk == BenchmarkContaminationRisk.SUSPECT_WITH_MITIGATION:
+            if decision.contract_version != "c04-benchmark-risk-v2":
+                reasons.append("Mitigated risk requires the versioned C04 benchmark-risk contract.")
+            if not decision.reviews_sha256.get("benchmark_risk"):
+                reasons.append("Benchmark-risk review binding is missing.")
+            if decision.contamination_mitigation is None:
+                reasons.append("C05 contamination mitigation binding is missing.")
+            if evidence.source_id == "essential_web":
+                if not {"source_rights", "attribution", "external_evidence"}.issubset(
+                    decision.reviews_sha256
+                ):
+                    reasons.append("Essential-Web source/license/provenance review is missing.")
+                if decision.provenance_review != "approved":
+                    reasons.append("Essential-Web provenance review is not approved.")
+                if decision.resource_contract is None:
+                    reasons.append("Essential-Web resource contract binding is missing.")
+        elif decision.benchmark_risk != BenchmarkContaminationRisk.CLEAN:
             reasons.append(
                 f"Benchmark risk status is '{decision.benchmark_risk}'. "
                 "Benchmark-containing blends are disabled pending component audit."
