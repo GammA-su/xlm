@@ -1,3 +1,11 @@
+> **Essential-Web existing probe resume (2026-09-30):** after the optional FDC
+> renderer repair, run from the repository root:
+> `powershell -NoProfile -ExecutionPolicy Bypass -File .\docs\implementation\evidence\ESSENTIAL-WEB-PRODUCTION-READINESS\resume-probe-adaptation.ps1`.
+> This uses the existing verified 256-row raw probe and plan for local
+> verification/adaptation/measurement. Do not rerun `future-probe.ps1`.
+> Completed measurement is never overwritten; incompatible partial output is
+> retained for review. [Evidence and limitations](../implementation/reports/ESSENTIAL-WEB-OPTIONAL-FDC-FIX.md).
+
 # XLM runbook — Windows (PowerShell)
 
 For the Mix-01 operator checkout, first dot-source `scripts/operator_storage.ps1`.

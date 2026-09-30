@@ -234,6 +234,25 @@ def _optional_nonempty_str(mapping: Mapping[str, Any], key: str, adapter_id: str
     return value
 
 
+def _optional_fdc_taxonomy_label(
+    labels: Mapping[str, Any], level: str, adapter_id: str
+) -> str | None:
+    """Omit unavailable FDC hierarchy labels; preserve strings without coercion.
+
+    The live source uses empty strings for unavailable optional levels. Null
+    and absent labels retain their existing omission semantics. Other types
+    remain malformed; nonblank strings are preserved verbatim.
+    """
+    value = labels.get(level)
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        raise MissingFieldError(
+            f"adapter '{adapter_id}' requires upstream field '{level}' to be a string when present."
+        )
+    return value if value.strip() else None
+
+
 def _optional_number(mapping: Mapping[str, Any], key: str, adapter_id: str) -> int | float | None:
     """Keep a bounded scalar number, or refuse it when malformed (never coerce)."""
     if key not in mapping or mapping[key] is None:
@@ -423,7 +442,7 @@ class EssentialWebAdapter:
             )
             if labels is not None:
                 for level in ("level_1", "level_2", "level_3"):
-                    value = _optional_nonempty_str(labels, level, self.ADAPTER_ID)
+                    value = _optional_fdc_taxonomy_label(labels, level, self.ADAPTER_ID)
                     if value is not None:
                         source_metadata[f"fdc_{level}"] = value
         elif fdc is not None:

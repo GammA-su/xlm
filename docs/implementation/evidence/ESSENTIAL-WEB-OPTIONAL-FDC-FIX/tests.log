@@ -1,0 +1,69 @@
+bringing up nodes...
+bringing up nodes...
+
+........................................................................ [ 19%]
+........................................................................ [ 38%]
+........................................................................ [ 57%]
+........................................................................ [ 77%]
+........................................................................ [ 96%]
+F.......F.....                                                           [100%]
+================================== FAILURES ===================================
+________________ test_production_fetch_with_verified_admission ________________
+[gw11] win32 -- Python 3.12.13 F:\Project\xlm-data-ultrax\.venv\Scripts\python.exe
+
+server = ('http://127.0.0.1:55895', [], {'/rows.jsonl': b'{"text":"authored A"}\n{"text":"authored B"}\n', '/rows.parquet': b'P...00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00|+w<<`\xa2\x8f\xac\x86\x01\x00"})
+tmp_path = WindowsPath('F:/Project/xlm-data-ultrax/.bt-fdc/popen-gw11/test_production_fetch_with_ver0')
+
+>   ???
+
+G:\Project\xlm-data-ultrax\tests\test_acquisition_bounds.py:993:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+home = WindowsPath('F:/Project/xlm-data-ultrax/.bt-fdc/popen-gw11/test_production_fetch_with_ver0/home')
+success = True
+args = ('data', 'fetch', '--plan', 'F:\\Project\\xlm-data-ultrax\\.bt-fdc\\popen-gw11\\test_production_fetch_with_ver0\\plan.json')
+
+>   ???
+E   AssertionError: <frozen runpy>:128: RuntimeWarning: 'xlm.cli.main' found in sys.modules after import of package 'xlm.cli', but prior to execution of 'xlm.cli.main'; this may result in unpredictable behaviour
+E     Acquisition failed: [Errno 2] No such file or directory: 'F:\\Project\\xlm-data-ultrax\\.bt-fdc\\popen-gw11\\test_production_fetch_with_ver0\\home\\acquisition\\plan_authored_default_https_135490134f20fb006cd7\\scratch\\journals\\plan_authored_default_https_135490134f20fb006cd7.progress.json.a17a61f30c6b4f4693a7ffb79b5dbd5f.tmp'
+E
+E   assert (1 == 0) == True
+E    +  where 1 = CompletedProcess(args=['F:\\Project\\xlm-data-ultrax\\.venv\\Scripts\\python.exe', '-m', 'xlm.cli.main', 'data', 'fetc...\\\journals\\\\plan_authored_default_https_135490134f20fb006cd7.progress.json.a17a61f30c6b4f4693a7ffb79b5dbd5f.tmp'\n").returncode
+
+G:\Project\xlm-data-ultrax\tests\test_acquisition_bounds.py:863: AssertionError
+________________ test_public_plan_fetch_status_verify_prepare _________________
+[gw15] win32 -- Python 3.12.13 F:\Project\xlm-data-ultrax\.venv\Scripts\python.exe
+
+server = ('http://127.0.0.1:55928', [], {'/rows.jsonl': b'{"text":"authored A"}\n{"text":"authored B"}\n', '/rows.parquet': b'P...00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00|+w<<`\xa2\x8f\xac\x86\x01\x00"})
+tmp_path = WindowsPath('F:/Project/xlm-data-ultrax/.bt-fdc/popen-gw15/test_public_plan_fetch_status_0')
+
+>   ???
+
+G:\Project\xlm-data-ultrax\tests\test_acquisition_bounds.py:527:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+success = True
+args = ('data', 'fetch', '--plan', 'F:\\Project\\xlm-data-ultrax\\.bt-fdc\\popen-gw15\\test_public_plan_fetch_status_0\\plan.json', '--pilot-approved')
+
+>   ???
+E   AssertionError: <frozen runpy>:128: RuntimeWarning: 'xlm.cli.main' found in sys.modules after import of package 'xlm.cli', but prior to execution of 'xlm.cli.main'; this may result in unpredictable behaviour
+E     Acquisition failed: [Errno 2] No such file or directory: 'F:\\Project\\xlm-data-ultrax\\.bt-fdc\\popen-gw15\\test_public_plan_fetch_status_0\\home\\acquisition\\plan_authored_default_https_6804177c7fcd52931ae9\\scratch\\journals\\plan_authored_default_https_6804177c7fcd52931ae9.progress.json.6c707543c4ab4c23b82ca2b242f57816.tmp'
+E
+E   assert (1 == 0) == True
+E    +  where 1 = CompletedProcess(args=['F:\\Project\\xlm-data-ultrax\\.venv\\Scripts\\python.exe', '-m', 'xlm.cli.main', 'data', 'fetc...\\\journals\\\\plan_authored_default_https_6804177c7fcd52931ae9.progress.json.6c707543c4ab4c23b82ca2b242f57816.tmp'\n").returncode
+
+G:\Project\xlm-data-ultrax\tests\test_acquisition_bounds.py:480: AssertionError
+============================== warnings summary ===============================
+.venv\Lib\site-packages\_pytest\cacheprovider.py:469
+  F:\Project\xlm-data-ultrax\.venv\Lib\site-packages\_pytest\cacheprovider.py:469: PytestCacheWarning: could not create cache path F:\Project\xlm-data-ultrax\.pytest_cache\v\cache\nodeids: [WinError 5] �A�N�Z�X�����ۂ���܂����B: 'F:\\Project\\xlm-data-ultrax\\.pytest_cache\\v\\cache'
+    config.cache.set("cache/nodeids", sorted(self.cached_nodeids))
+
+.venv\Lib\site-packages\_pytest\cacheprovider.py:423
+  F:\Project\xlm-data-ultrax\.venv\Lib\site-packages\_pytest\cacheprovider.py:423: PytestCacheWarning: could not create cache path F:\Project\xlm-data-ultrax\.pytest_cache\v\cache\lastfailed: [WinError 5] �A�N�Z�X�����ۂ���܂����B: 'F:\\Project\\xlm-data-ultrax\\.pytest_cache\\v\\cache'
+    config.cache.set("cache/lastfailed", self.lastfailed)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_acquisition_bounds.py::test_production_fetch_with_verified_admission
+FAILED tests/test_acquisition_bounds.py::test_public_plan_fetch_status_verify_prepare
+2 failed, 372 passed, 2 warnings in 14.75s

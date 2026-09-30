@@ -1,3 +1,13 @@
+> **Current update, 2026-09-30: ADAPTER FIXED; RESUME THE EXISTING PROBE OFFLINE.**
+> Operator admission and the 256-row probe fetch have already completed (operator
+> context); do not repeat the historical admission/probe instructions below.
+> Empty optional FDC labels caused all 108 renderer failures. All 256 now render,
+> with frozen selector counts unchanged. Existing raw passes local verification.
+> [Repair evidence, checks and exact resume command](ESSENTIAL-WEB-OPTIONAL-FDC-FIX.md).
+> Use `resume-probe-adaptation.ps1` in the readiness evidence directory; it reuses
+> raw/plan, runs no fetch, and produces measurement.json. Script execution and
+> production canonical outputs remain NOT RUN in this repair task.
+
 # Essential-Web production readiness — 2026-09-30
 
 **READY FOR OPERATOR ADMISSION**

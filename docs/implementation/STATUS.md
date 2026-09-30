@@ -1,3 +1,15 @@
+> **ESSENTIAL-WEB OPTIONAL FDC FIX (2026-09-30, offline): READY TO RESUME PROBE OFFLINE.**
+> Reused the existing 256-row raw probe; no source fetch. Empty optional hierarchy
+> labels caused all 108 malformed rows. Scoped renderer repair gives 256/256 base
+> renders, prose 26/26 and practical 5/5, zero malformed in all three production
+> passes. Frozen B-normal totals/order/thresholds and mixture are unchanged.
+> Raw verifies against its existing plan/journal. Focused checks: 383 distinct
+> passes across runs; initial two Windows path-length failures are retained in
+> evidence and pass with shorter serial paths. Ruff/format/strict mypy pass.
+> Resume script parsed, NOT EXECUTED; canonical outputs/measurement remain pending.
+> [Report and exact commands](reports/ESSENTIAL-WEB-OPTIONAL-FDC-FIX.md).
+> Next: `powershell -NoProfile -ExecutionPolicy Bypass -File .\docs\implementation\evidence\ESSENTIAL-WEB-PRODUCTION-READINESS\resume-probe-adaptation.ps1`.
+
 > **ESSENTIAL-WEB ADMISSION CONTRACT V2 (2026-09-30, offline): READY FOR OPERATOR ADMISSION.**
 > Existing real schema probe verified; no new probe. The previously ambiguous
 > `clean` classification is replaced by `suspect_with_mitigation` for all three

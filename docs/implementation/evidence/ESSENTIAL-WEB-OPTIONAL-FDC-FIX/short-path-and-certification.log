@@ -1,0 +1,8 @@
+...........                                                              [100%]
+============================== warnings summary ===============================
+.venv\Lib\site-packages\_pytest\cacheprovider.py:469
+  F:\Project\xlm-data-ultrax\.venv\Lib\site-packages\_pytest\cacheprovider.py:469: PytestCacheWarning: could not create cache path F:\Project\xlm-data-ultrax\.pytest_cache\v\cache\nodeids: [WinError 5] �A�N�Z�X�����ۂ���܂����B: 'F:\\Project\\xlm-data-ultrax\\.pytest_cache\\v\\cache'
+    config.cache.set("cache/nodeids", sorted(self.cached_nodeids))
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+11 passed, 1 warning in 15.98s

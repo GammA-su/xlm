@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "receipt_id": "receipt_plan_essential_web_essential_science_huggingface_31f7dfe17490f2ff9edb",
+  "plan_id": "plan_essential_web_essential_science_huggingface_31f7dfe17490f2ff9edb",
+  "plan_hash": "04db5c763959ebf7187ba69d23a4f99b5d4e2e77c2f07bc4350e4b427f52b04c",
+  "source_id": "essential_web",
+  "view_id": "essential_science",
+  "provider": "huggingface",
+  "repository": "EssentialAI/essential-web-v1.0",
+  "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+  "mode": "selected_records",
+  "eligibility": "admission_required",
+  "files": [
+    {
+      "relative_path": "selected_records.jsonl",
+      "size_bytes": 2793802,
+      "locally_computed_sha256": "a1c2b8078b662af59d0a4f56a131710b8654c6ab5e9103d4d4760cb462b0a9f5",
+      "provider_declared_checksum": null,
+      "independent_expected_sha256": null,
+      "independent_checksum_verified": false,
+      "record_count": 256
+    }
+  ],
+  "resource_metrics": {
+    "transferred_bytes": 9511581,
+    "decompressed_bytes": 1924727,
+    "requests_made": 105,
+    "records_acquired": 256
+  },
+  "created_at": "2026-09-30T12:28:24.476788+00:00",
+  "is_verified": true,
+  "verification_notes": [
+    "Transfer counts response-body bytes; wire/TLS overhead is not measured.",
+    "Opaque files have unknown record counts; metadata is not corpus admission.",
+    "Selected-row hashes do not verify an untransferred full-file expected digest."
+  ]
+}

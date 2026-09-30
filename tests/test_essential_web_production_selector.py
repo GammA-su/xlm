@@ -42,6 +42,7 @@ from xlm.data.adapters.mix01_adapters import (
     EssentialWebSelectorOtherComponentError,
     EssentialWebSelectorRejectedError,
     EssentialWebSelectorUnassignedError,
+    MissingFieldError,
     RecordRejectedError,
 )
 from xlm.data.adapters.rejections import is_recordable_rejection, rejection_code
@@ -138,6 +139,77 @@ def _reference_final(record: dict[str, Any], spec: dict[str, Any]) -> str:
 
 def _adapt(adapter: Any, record: dict[str, Any], row: int = 0) -> Any:
     return adapter.adapt(record, source_file=SOURCE_FILE, source_row=row, source_revision=REVISION)
+
+
+@pytest.mark.parametrize("level", ["level_1", "level_2", "level_3"])
+@pytest.mark.parametrize("shape", ["absent", "null", "empty", "whitespace", "nonempty"])
+def test_optional_fdc_labels_preserve_selector_and_text(
+    level: str, shape: str, frozen: selector.FrozenEssentialWebSelector
+) -> None:
+    record = _row()
+    record["text"] = " Authored paragraph.\nSecond\u0085part\u2028end.\t "
+    primary = record["eai_taxonomy"]["free_decimal_correspondence"]["primary"]
+    labels = {"level_1": "Science", "level_2": "Mathematics", "level_3": "Topology"}
+    primary["labels"] = labels
+    before = frozen.decide(record)
+    if shape == "absent":
+        del labels[level]
+    else:
+        primary["labels"][level] = {
+            "null": None,
+            "empty": "",
+            "whitespace": " \t\n\u2028",
+            "nonempty": "  Preserved label \t",
+        }[shape]
+    original = copy.deepcopy(record)
+    base = _adapt(EssentialWebAdapter(SCIENCE), record)
+    selected = _adapt(EssentialWebSelectedAdapter(SCIENCE), record)
+    assert frozen.decide(record) == before
+    assert selected.text == base.text == record["text"]
+    assert base.source_metadata["fdc_primary_code"] == primary["code"] == "510.2"
+    for document in (base, selected):
+        if shape == "nonempty":
+            assert document.source_metadata[f"fdc_{level}"] == "  Preserved label \t"
+        else:
+            assert f"fdc_{level}" not in document.source_metadata
+        for other in set(labels) - {level}:
+            assert document.source_metadata[f"fdc_{other}"] == labels[other]
+    assert record == original
+
+
+@pytest.mark.parametrize("level", ["level_1", "level_2", "level_3"])
+@pytest.mark.parametrize("value", [0, 1.5, False, [], {}])
+def test_nonstring_optional_fdc_label_remains_malformed(level: str, value: Any) -> None:
+    record = _row()
+    record["eai_taxonomy"]["free_decimal_correspondence"]["primary"]["labels"] = {level: value}
+    with pytest.raises(MissingFieldError, match=level):
+        _adapt(EssentialWebAdapter(SCIENCE), record)
+    with pytest.raises(EssentialWebMalformedRowError, match="essential_web_unusable_record"):
+        _adapt(EssentialWebSelectedAdapter(SCIENCE), record)
+
+
+def test_authored_live_shape_empty_fdc_levels() -> None:
+    record = _row(f="005.4", d="Tutorial", k="Procedural")
+    record["eai_taxonomy"]["free_decimal_correspondence"]["primary"]["labels"] = {
+        "level_1": "Computer science",
+        "level_2": "",
+        "level_3": "",
+    }
+    document = _adapt(EssentialWebSelectedAdapter(PRACTICAL), record)
+    assert document.text == AUTHORED_TEXT
+    assert document.source_metadata["fdc_primary_code"] == "005.4"
+    assert document.source_metadata["fdc_level_1"] == "Computer science"
+    assert "fdc_level_2" not in document.source_metadata
+    assert "fdc_level_3" not in document.source_metadata
+
+
+def test_other_optional_strings_and_render_before_policy_remain_strict() -> None:
+    record = _row(e=0.1)
+    record["metadata"]["source_domain"] = ""
+    with pytest.raises(MissingFieldError, match="source_domain"):
+        _adapt(EssentialWebAdapter(SCIENCE), record)
+    with pytest.raises(EssentialWebMalformedRowError):
+        _adapt(EssentialWebSelectedAdapter(SCIENCE), record)
 
 
 # --------------------------------------------------------------------------
