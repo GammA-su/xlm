@@ -1,0 +1,12 @@
+{
+  "plan_digest": "23a26ffc87d27e4c8fa5de86d7ec446c260bfd65442dc5b1dfd2651cd62222b7",
+  "dry_plan_digest": "ee82125d1b0d2b6d0a6c420144910db954659d5b757283d39123ddc3d0080356",
+  "phase_p_root": "G:\\Project\\xlm-evidence-v4.1\\essential-web",
+  "parent_artifacts_verified": 30,
+  "layouts_equal_plan": true,
+  "parent_inventory_entries": 88,
+  "parent_inventory_sha256": "838bdcb49afa185fa2bb9ae0c1c38ef5c786951a7dfce86fec3ace7d315596cf",
+  "parent_unchanged": true,
+  "phase_d_root_exists": false,
+  "network_requests": 0
+}

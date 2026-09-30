@@ -1,0 +1,23 @@
+{
+  "protocol_version": "essential-web-evidence-v4.1-phase-d",
+  "protocol_sha256": "bb2bca6f571c9e02b02536bc518cdc1b61fdf0f56b0c6970eaa257c8d198769f",
+  "freeze_digest": "9c4612fe860ef49c26ff09b25f8fdaf00f0a7015d7eab4fd7cfe28a0e1675228",
+  "plan_digest": "23a26ffc87d27e4c8fa5de86d7ec446c260bfd65442dc5b1dfd2651cd62222b7",
+  "dry_plan_digest": "ee82125d1b0d2b6d0a6c420144910db954659d5b757283d39123ddc3d0080356",
+  "phase_p_parent_binding_digest": "de27e2a56f83970a91f9f3224b3bad7cefc977018612522679838ebd15b61559",
+  "scientific_adoption_digest": "4a2de146e53b4a21f1596f1f3518d0a12f5fec2b5760bfab20fd3eabcdea2cba",
+  "parent_v4_1": {
+    "protocol_sha256": "3d667a263b92696a2d7a266f896e460b10a81ae38097f788c8b885ce768079cf",
+    "freeze_digest": "285015604d30e1699b5f63fa4f25ec9c747c778be2f372bb87119adc0e455f80",
+    "plan_digest": "762cef78051011d518c4918a41aa87cf81fbb3224bf438af8cc1c499cfca7711"
+  },
+  "phase_p_root": "G:\\Project\\xlm-evidence-v4.1\\essential-web",
+  "M_operations": 8,
+  "M_success_payload_bytes": 11692530,
+  "M_rows": 4096,
+  "T_operations": 47,
+  "T_success_payload_bytes": 179963169,
+  "T_locators": 118,
+  "execution_root": "G:\\Project\\xlm-evidence-v4.1\\essential-web-phase-d",
+  "execution_root_exists": false
+}

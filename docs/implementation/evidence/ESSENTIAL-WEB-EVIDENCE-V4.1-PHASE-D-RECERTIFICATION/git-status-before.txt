@@ -1,0 +1,9 @@
+﻿ M docs/implementation/STATUS.md
+?? docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-PHASE-D-RECERTIFICATION/
+?? docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-REVIEW/
+?? docs/implementation/evidence/ESSENTIAL-WEB-SELECTOR-SWEEP-REVIEW/
+?? docs/implementation/reports/ESSENTIAL-WEB-EVIDENCE-V3.0-REVALIDATION.md
+?? docs/implementation/reports/ESSENTIAL-WEB-EVIDENCE-V4.1-REVIEW.md
+?? docs/implementation/reports/ESSENTIAL-WEB-SELECTOR-POLICY-REVIEW.md
+?? docs/implementation/reports/ESSENTIAL-WEB-SELECTOR-SWEEP-REVIEW-AUDIT.md
+?? docs/implementation/reports/ESSENTIAL-WEB-SELECTOR-SWEEP-REVIEW.md

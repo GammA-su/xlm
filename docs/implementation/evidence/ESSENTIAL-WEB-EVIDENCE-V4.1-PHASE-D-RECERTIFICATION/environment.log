@@ -1,0 +1,7 @@
+3.12.13 (main, Aug  7 2026, 02:26:41) [MSC v.1944 64 bit (AMD64)]
+Windows-11-10.0.26200-SP0
+SQLite 3.53.1
+{'pyarrow': '25.0.1', 'mypy': '2.3.1', 'ruff': '0.16.8', 'pytest': '9.1.1'}
+locked mypy 2.3.1
+Python pin 3.12.13
+
