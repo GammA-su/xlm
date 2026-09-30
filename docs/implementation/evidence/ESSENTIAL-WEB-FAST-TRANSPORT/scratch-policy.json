@@ -1,0 +1,21 @@
+{
+  "cap_bytes": 68719476736,
+  "cap_counts": "every file under <scratch>/ew-fast, including partial downloads, benchmark files, replay work and leftovers no running unit owns",
+  "cleanup": "a scratch copy is removed only after its durable copy reproduced the verified SHA-256 and its canonical unit with receipt is published",
+  "disjoint_from_durable_root": true,
+  "flow": [
+    "network -> <scratch>/ew-fast/bNNNN/fRRRRR.parquet.part (one sequential stream)",
+    "verify: length, strong ETag, SHA-256, Parquet magic, footer layout",
+    "exclusive hashed copy -> <data root>/acq-raw/ew-fast/source/<source path>",
+    "local PyArrow decode and the frozen adapters, reading the scratch copy",
+    "publish canonical unit + receipt on the durable volume (one rename)",
+    "remove the scratch copy and its state"
+  ],
+  "max_in_flight_files": 32,
+  "min_free_bytes": 34359738368,
+  "never_deleted": "retained source files, receipts, canonical units, files of other owners under the scratch root",
+  "relative": "ew-fast",
+  "reservation": "a file reserves the per-file byte bound before its first byte and shrinks to its declared length; a file that does not fit waits",
+  "restart": "a verified prefix resumes by Range/If-Range from the last fsynced checkpoint; a completed scratch file is rehashed and reused; a retained durable source is rehashed and processed without a new transfer",
+  "root": "XLM_SCRATCH_ROOT (recipes/operator/storage.json 'scratch_root') or --scratch-root"
+}

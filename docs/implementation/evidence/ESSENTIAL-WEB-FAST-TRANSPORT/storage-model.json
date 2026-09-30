@@ -1,0 +1,119 @@
+{
+  "basis": "measured bytes per input row, linear; source Parquet from the eight real footers, ledgers and documents from the sealed calibration outputs",
+  "bytes_per_input_row": {
+    "current": {
+      "canonical_documents": 880.0206298828125,
+      "raw_selected_records": 9154.003601074219,
+      "rejection_ledgers": 1606.3434448242188
+    },
+    "fast": {
+      "canonical_documents": 880.0206298828125,
+      "compressed_rejection_ledgers": 126.51416015625,
+      "retained_source_parquet": 3159.95303112144
+    }
+  },
+  "durable_peak_note": "the durable peak equals the steady state: a raw copy and a canonical unit are written under temporary names and then linked or renamed, so no second durable copy of finished data exists",
+  "guards": {
+    "durable_footprint_cap_bytes": 429496729600,
+    "durable_min_free_bytes": 68719476736,
+    "scratch_cap_bytes": 68719476736,
+    "scratch_min_free_bytes": 34359738368
+  },
+  "ledger_compression": {
+    "basis": "the 24 real calibration ledgers, each compressed on its own",
+    "codec": "zstd",
+    "compressed_bytes": 2072808,
+    "files": 24,
+    "level": 9,
+    "ratio": 12.69694588210775,
+    "uncompressed_bytes": 26318331,
+    "uncompressed_equals_sealed_ledger_bytes": true
+  },
+  "measured_volumes": {
+    "durable": {
+      "free_bytes": 999105929216,
+      "total_bytes": 1000203087872,
+      "volume": "G:\\"
+    },
+    "scratch": {
+      "free_bytes": 863101288448,
+      "total_bytes": 999210086400,
+      "volume": "C:\\"
+    }
+  },
+  "raw_retention": "one authoritative raw representation: the immutable source Parquet; selected-record JSONL is never written to disk",
+  "scenarios": {
+    "final_quota_if_exact_bytes_per_token_is_5": {
+      "current": {
+        "canonical_documents": 64425993507,
+        "raw_selected_records": 670161308194,
+        "rejection_ledgers": 117599825312,
+        "steady_state_bytes": 852187127013
+      },
+      "durable_saving_fraction": 0.6420315104521095,
+      "estimated_files": 887,
+      "fast": {
+        "canonical_documents": 64425993507,
+        "compressed_rejection_ledgers": 9262056120,
+        "durable_peak_bytes": 305056138669,
+        "durable_steady_state_bytes": 305056138669,
+        "manifests_and_receipts": 29065216,
+        "retained_source_parquet": 231339023826,
+        "scratch_peak_bytes_bound": 17179869184,
+        "scratch_peak_bytes_expected": 8353993108,
+        "total_campaign_footprint_bytes": 313410131777
+      },
+      "input_rows": 73209640
+    },
+    "first_pass_target_central_4_bytes_per_token": {
+      "current": {
+        "canonical_documents": 56694874110,
+        "raw_selected_records": 589741949380,
+        "rejection_ledgers": 103487845954,
+        "steady_state_bytes": 749924669444
+      },
+      "durable_saving_fraction": 0.6420315349206601,
+      "estimated_files": 780,
+      "fast": {
+        "canonical_documents": 56694874110,
+        "compressed_rejection_ledgers": 8150609361,
+        "durable_peak_bytes": 268449382846,
+        "durable_steady_state_bytes": 268449382846,
+        "manifests_and_receipts": 25559040,
+        "retained_source_parquet": 203578340335,
+        "scratch_peak_bytes_bound": 17179869184,
+        "scratch_peak_bytes_expected": 8353993108,
+        "total_campaign_footprint_bytes": 276803375954
+      },
+      "input_rows": 64424483
+    },
+    "leave_one_crawl_out_maximum": {
+      "current": {
+        "canonical_documents": 64364860234,
+        "raw_selected_records": 669525397872,
+        "rejection_ledgers": 117488235846,
+        "steady_state_bytes": 851378493952
+      },
+      "durable_saving_fraction": 0.6420315165452342,
+      "estimated_files": 886,
+      "fast": {
+        "canonical_documents": 64364860234,
+        "compressed_rejection_ledgers": 9253267435,
+        "durable_peak_bytes": 304766668326,
+        "durable_steady_state_bytes": 304766668326,
+        "manifests_and_receipts": 29032448,
+        "retained_source_parquet": 231119508209,
+        "scratch_peak_bytes_bound": 17179869184,
+        "scratch_peak_bytes_expected": 8353993108,
+        "total_campaign_footprint_bytes": 313120661434
+      },
+      "input_rows": 73140172
+    }
+  },
+  "scratch": {
+    "cap_bytes": 68719476736,
+    "max_file_bytes": 536870912,
+    "max_in_flight_files": 32,
+    "mean_file_bytes": 261062284.62499997
+  }
+}

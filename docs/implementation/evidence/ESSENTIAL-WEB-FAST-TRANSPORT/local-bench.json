@@ -1,0 +1,70 @@
+{
+  "evidence_class": "measured on this machine, offline, on real calibration rows repeated 16 times per file; repeats are for timing only and the rate on full upstream files is measured by the live benchmark",
+  "files": 48,
+  "includes_process_start": true,
+  "kind": "essential_web_fast_local_benchmark",
+  "machine": {
+    "logical_cpus": 16,
+    "physical_cpus": 8,
+    "pyarrow": "25.0.1",
+    "python": "3.12.13"
+  },
+  "rows_per_file": 32768,
+  "runs": {
+    "1": {
+      "cpu_percent_mean": 11.608255659121172,
+      "cpu_seconds": 760.9375,
+      "files": 48,
+      "peak_resident_bytes": 512716800,
+      "process_workers": 1,
+      "rows": 1572864,
+      "rows_per_core_second": 2067.008131416838,
+      "rows_per_second": 2047.250940736559,
+      "wall_seconds": 768.2809999999881
+    },
+    "12": {
+      "cpu_percent_mean": 82.4030303030303,
+      "cpu_seconds": 1186.765625,
+      "files": 48,
+      "peak_resident_bytes": 2646519808,
+      "process_workers": 12,
+      "rows": 1572864,
+      "rows_per_core_second": 1325.3366687293458,
+      "rows_per_second": 15413.133164127159,
+      "wall_seconds": 102.04700000002049
+    },
+    "16": {
+      "cpu_percent_mean": 97.78169014084507,
+      "cpu_seconds": 1336.921875,
+      "files": 48,
+      "peak_resident_bytes": 3343011840,
+      "process_workers": 16,
+      "rows": 1572864,
+      "rows_per_core_second": 1176.4816100417236,
+      "rows_per_second": 16685.37967029412,
+      "wall_seconds": 94.26600000000326
+    },
+    "4": {
+      "cpu_percent_mean": 29.42094861660079,
+      "cpu_seconds": 1021.328125,
+      "files": 48,
+      "peak_resident_bytes": 1105453056,
+      "process_workers": 4,
+      "rows": 1572864,
+      "rows_per_core_second": 1540.018297253882,
+      "rows_per_second": 6064.053975903615,
+      "wall_seconds": 259.375
+    },
+    "8": {
+      "cpu_percent_mean": 57.46287878787879,
+      "cpu_seconds": 1062.078125,
+      "files": 48,
+      "peak_resident_bytes": 1871601664,
+      "process_workers": 8,
+      "rows": 1572864,
+      "rows_per_core_second": 1480.9306047989644,
+      "rows_per_second": 11573.175577235741,
+      "wall_seconds": 135.90600000001723
+    }
+  }
+}

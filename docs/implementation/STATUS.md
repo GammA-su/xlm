@@ -1,3 +1,28 @@
+> **ESSENTIAL-WEB FAST TRANSPORT (2026-09-30, offline): READY FOR HIGH-THROUGHPUT
+> ESSENTIAL-WEB BENCHMARK. NO BULK FETCH, NO LIVE REQUEST.** The range-reader
+> campaign `644be917…0ce9` was stopped before any fetch and is kept as history;
+> fast campaign `d7b1a503…5822` supersedes it with identical science (source,
+> revision, inventory order, batch membership, B-normal selector, adapters,
+> quotas, stop targets, C04/C05), checked on every load. Root cause of 3.71 h per
+> batch: 30,280 range requests, 62% of the time is request latency. Prepare
+> failed because 32 footers were read serially under one 60 s budget (2.7 s
+> each); Prepare is now offline. Whole files cost 1.1205 times the projected
+> bytes (eight real footers) for 2 requests per file instead of 946. Raw artifact
+> is now the verified source Parquet (ETag, length, SHA-256), C04 amendment
+> `essential-web-raw-artifact-v2`; no `selected_records.jsonl`, nothing deleted.
+> Ledgers zstd level 9, 12.70x on the real calibration ledgers. Durable estimate
+> 268.4 GB against 749.9 GB; scratch on `C:\XLM-scratch` capped at 64 GiB.
+> Local processing reproduces the sealed calibration byte for byte on 16,384
+> real rows and equals the certified range reader on authored files; 15,413
+> rows/s at 12 processes. Batch stays 32 files; modeled 3 to 11 min by network
+> rate, which is UNMEASURED. Focused tests 708 passed (28 new); ruff/format/
+> strict mypy clean; fast/full selections NOT RUN. Live benchmark, real-byte
+> parity and bulk fetch NOT RUN; the gate refuses batch 0 until the benchmark
+> passes. No selector, mixture or quota change; no push.
+> [Transport report](reports/ESSENTIAL-WEB-FAST-TRANSPORT.md),
+> [bulk plan and commands](reports/ESSENTIAL-WEB-FAST-BULK-PLAN.md).
+> Next: `. .\scripts\operator_storage.ps1; .\scripts\operator_essential_web_fast.ps1 -Stage Benchmark -Authorize 5f865608bb75a6272200c73d4a912d58182b7d991c65fff6ab5ed866aa308115`
+
 > **ESSENTIAL-WEB BULK ACQUISITION (2026-09-30, offline): READY FOR FULL
 > ESSENTIAL-WEB ACQUISITION. NO BULK FETCH RAN.** Campaign `644be917…0ce9`
 > frozen from the sealed calibration. Batches of 32 whole files in frozen

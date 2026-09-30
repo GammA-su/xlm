@@ -6,6 +6,15 @@
 > Completed measurement is never overwritten; incompatible partial output is
 > retained for review. [Evidence and limitations](../implementation/reports/ESSENTIAL-WEB-OPTIONAL-FDC-FIX.md).
 
+> **Essential-Web fast transport (2026-09-30):** the range-reader campaign below is
+> superseded and its driver refuses to fetch. After dot-sourcing
+> `scripts/operator_storage.ps1` (which now also sets `XLM_SCRATCH_ROOT` from
+> `scratch_root` in `recipes/operator/storage.json`), run the live benchmark first:
+> `.\scripts\operator_essential_web_fast.ps1 -Stage Benchmark -Authorize <benchmark digest>`,
+> then per batch `-Batch N -Stage Prepare` (offline) and
+> `-Batch N -Stage Run -Authorize <digest>`. Digests, limits, resume and disk use are in the
+> [fast bulk plan](../implementation/reports/ESSENTIAL-WEB-FAST-BULK-PLAN.md).
+
 > **Essential-Web bulk acquisition (2026-09-30):** the calibration is sealed and
 > the campaign is frozen. One batch at a time, from the repository root after
 > dot-sourcing `scripts/operator_storage.ps1`:

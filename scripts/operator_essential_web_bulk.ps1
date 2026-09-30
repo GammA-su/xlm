@@ -46,6 +46,11 @@ if ($env:XLM_DATA_ROOT -ne $storage.data_root) { throw 'Unexpected operator root
 if ($env:XLM_HOME -ne (Join-Path $env:XLM_DATA_ROOT $storage.artifact_store_relative)) {
     throw 'Unexpected artifact store'
 }
+# HISTORICAL campaign: stopped before any bulk fetch and superseded by the fast
+# whole-file campaign. Its offline stages stay usable; its network stages do not.
+if (@('Layout', 'Prepare', 'Run') -contains $Stage) {
+    throw 'Superseded campaign: no fetch. Use scripts/operator_essential_web_fast.ps1'
+}
 
 $U = @('run', '--offline', '--locked', '--no-sync', '--extra', 'cpu', '--extra', 'eval')
 $Tool = 'scripts/essential_web_bulk.py'

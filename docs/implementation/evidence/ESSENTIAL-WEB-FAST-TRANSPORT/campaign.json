@@ -1,0 +1,213 @@
+{
+  "adapt": {
+    "adapter_id": "essential_web_bnormal",
+    "malformed_policy": "frozen",
+    "on_reject": "record"
+  },
+  "adapter_code_sha256": {
+    "src/xlm/data/adapters/essential_web_selector.py": "fd891e16b0ef6cca0ccf0d1b5a38ad41fab82689094f73c5c7d01c10064a46ac",
+    "src/xlm/data/adapters/malformed.py": "0b93dfb44d79e4493bf6ef9760b2d604544ec79dedf27156eada5472f647bcf6",
+    "src/xlm/data/adapters/mix01_adapters.py": "3651ff2af4fcb46c207404e052caa59e1ec42f2ac5a429e5dec752f7e83a7ef6",
+    "src/xlm/data/adapters/rejections.py": "f23b9a767220731423419e1961fb3fbada6d1e0f4b6650c569cb410707990c8b"
+  },
+  "batch": {
+    "files": 32,
+    "membership": "inventory files [index*files, (index+1)*files) in frozen order",
+    "unit": "one whole source file: download, verify, retain, adapt, receipt"
+  },
+  "benchmark": {
+    "plan_digest": "5f865608bb75a6272200c73d4a912d58182b7d991c65fff6ab5ed866aa308115",
+    "required_before_first_batch": true,
+    "why": "source-identity behaviour and parity on real upstream bytes cannot be proved offline"
+  },
+  "binding": {
+    "adapter_id": "essential_web_bnormal",
+    "canonicalization": "EssentialWebSelectedAdapter -> EssentialWebAdapter -> CanonicalDocument",
+    "repository": "EssentialAI/essential-web-v1.0",
+    "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+    "selector": {
+      "condition": "B-normal",
+      "evaluator_sha256": "5a63e78560ea9e12b0ec03b5e7e63204b5c75554bee02192c12bb4ab0853bf9c",
+      "freeze_digest": "c6f32a65f083c99b64245e25151f2cc73275093e1013d68b625c6d6f63d10a0c",
+      "freeze_version": "essential-web-selector-fasttrack-v1",
+      "policy_digest": "f4357f61f434d5105d823266153dac6372e122f12767187631e8796b4899dd07",
+      "selector_id": "essential-web-b-normal"
+    },
+    "source_id": "essential_web"
+  },
+  "c05": {
+    "obligation": {
+      "before_official_benchmark_claims": true,
+      "before_training": true,
+      "benchmarks": [
+        "BLiMP",
+        "ARC-Easy",
+        "HellaSwag",
+        "PIQA"
+      ],
+      "mechanism": "xlm.data.exclusion",
+      "receipt_verifier": "xlm.data.exclusion.receipt.verify_benchmark_claim",
+      "scope": "eventually_frozen_essential_mix01_canonical_training_pool",
+      "version": "c04-benchmark-risk-v2"
+    },
+    "required_before": [
+      "tokenizer_fit",
+      "training",
+      "official_benchmark_claims"
+    ],
+    "runs": "on the frozen canonical pool, before tokenizer fitting and gradient training; again on the final pool after any top-up",
+    "status": "NOT RUN"
+  },
+  "calibration_freeze_digest": "a6cab8cd58a127b77dd130249147f3541ac4575f3ea8369bf248879fd52e89b0",
+  "calibration_seal_digest": "149f3eb48e047e6545314dcb40cc01fe2b0e8853898a83a2060f0e8c9032e2a1",
+  "ceiling": {
+    "max_batches": 33,
+    "meaning": "execution contingency, not a quota: beyond it a new reviewed campaign version is required"
+  },
+  "concurrency": {
+    "download_workers": 8,
+    "download_workers_max": 16,
+    "process_threads": 1,
+    "process_workers": 12,
+    "process_workers_max": 16
+  },
+  "digest": "d7b1a503055d72e7082e74b1c58eaa9c1c52ed5282ec2f12df4876979cf45822",
+  "disk": {
+    "footprint_cap_bytes": 429496729600,
+    "min_free_bytes": 68719476736
+  },
+  "excluded_progress": "benchmark, probe and calibration transfers are never counted; progress is defined only by sealed unit receipts of this campaign",
+  "inventory": {
+    "digest": "4bbd5517e760971405d9aed56bba5b84877a6325d10f5a10a05b50f5a8d763d8",
+    "file_count": 23200,
+    "order": "SHA-256(seed|repository|revision|file) ascending, filename tiebreak",
+    "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/production.inventory.json",
+    "seed": 20260930
+  },
+  "kind": "essential_web_fast_campaign",
+  "limits": {
+    "batch_deadline_seconds": 14400.0,
+    "deadline_basis": "a stalled stream fails after the request timeout and resumes; the file deadline bounds one file at about 0.3 MiB/s and the batch deadline one run",
+    "file_deadline_seconds": 1800.0,
+    "max_decoded_bytes_per_file": 2147483648,
+    "max_decompression_ratio": 15.0,
+    "max_durable_bytes_per_file": 1073741824,
+    "max_file_bytes": 536870912,
+    "max_ledger_bytes": 536870912,
+    "max_parser_bytes": 33554432,
+    "max_record_bytes": 8388608,
+    "max_requests_per_file": 16,
+    "max_retries": 5,
+    "max_rows_per_file": 250000,
+    "observed_max_file_bytes": 316724715,
+    "observed_max_rows_per_file": 97828,
+    "request_timeout_seconds": 30.0,
+    "require_etag_sha256": true,
+    "transfer_factor": 1.5
+  },
+  "plan": {
+    "catalog": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/production-catalog.json",
+    "catalog_sha256": "007cf500e8279bce2db22f9bcb65c5329dd10397332604c147fee30befb2281c",
+    "mode": "whole_file",
+    "projection": "essential_web_bnormal:essential_science",
+    "seed": 20260930,
+    "source_id": "essential_web",
+    "view_id": "essential_science"
+  },
+  "quotas": {
+    "changed": false,
+    "path": "recipes/mixtures/mix01_quotas_6b.yaml",
+    "quota_id": "mix01_6b_v1",
+    "sha256": "9b16db765c4dbb3fc3a366b1c2a8acc88e3ca8bc81f344d0a082ee00d8c78fdf"
+  },
+  "raw_contract": {
+    "amends": "C04 bounded acquisition, raw artifact of source 'essential_web' only",
+    "authoritative_raw": {
+      "file": "the unmodified upstream Parquet file",
+      "identity": [
+        "repository",
+        "immutable revision in the request URL",
+        "source path",
+        "strong ETag",
+        "remote length",
+        "locally computed SHA-256 of every byte"
+      ],
+      "immutability": "linked exclusively under its final name after its copy reproduced the verified SHA-256; an existing file is never replaced",
+      "stronger_than_before": "the historical raw artifact hashed a derived projection of selected rows and stated that it could not verify a full-file digest; this one hashes the complete original and, where the strong ETag is a 64-hex digest, requires it to equal that hash"
+    },
+    "contract_id": "essential-web-raw-artifact-v2",
+    "derived_lineage_kept_per_file": [
+      "deterministic campaign membership (inventory rank and batch)",
+      "row accounting: every row of the file has exactly one outcome per view",
+      "SHA-256 and size of the selected-record stream the certified reader would write",
+      "per view: documents hash, canonical bytes, rejection counts by code, ledger hash",
+      "acquisition receipt with transfer, request and retry counts"
+    ],
+    "existing_basis": "AcquisitionMode.WHOLE_FILE already makes whole immutable originals a valid raw acquisition ('Whole original identity retained'); C04 prefers 'selected immutable shards' over repository snapshots, and a batch is 32 selected shards",
+    "not_permitted": [
+      "deleting or replacing a retained source file, a ledger or a receipt",
+      "keeping a second raw representation",
+      "any selector, mixture, quota or stop-target change"
+    ],
+    "representation": "verified_source_parquet",
+    "reproducibility": "canonical outputs are reproducible offline from the retained source Parquet, the pinned code identity and the receipt; no network is needed",
+    "scope": "this campaign and source only; the historical selected_records contract and every other source are unchanged",
+    "what_is_new": [
+      "the whole-file executor: one sequential stream per file with a resumable verified prefix, instead of the fetcher whose per-row inspection refuses these row groups",
+      "adaptation reads the verified source Parquet directly; the selected-record stream is produced in memory and never written to disk",
+      "the immutable rejection ledger is stored zstd-compressed and identified by the SHA-256 of its uncompressed version-1 JSONL bytes"
+    ]
+  },
+  "roots": {
+    "canonical": "canonical/ew-fast",
+    "plans": "plans/ew-fast",
+    "raw": "acq-raw/ew-fast/source",
+    "scratch": "ew-fast"
+  },
+  "scratch": {
+    "cap_bytes": 68719476736,
+    "max_in_flight_files": 32,
+    "min_free_bytes": 34359738368,
+    "relative": "ew-fast"
+  },
+  "stop": {
+    "assumed_bytes_per_token": 4,
+    "evaluated": "at batch boundaries, over complete batches only",
+    "exactness": "estimated tokens only; exact sufficiency needs the frozen tokenizer",
+    "mechanism": "scripts/mix01_inventory.py estimate + sufficiency",
+    "targets": {
+      "essential_practical": {
+        "final_exact_token_quota": 600000000,
+        "first_pass_estimated_token_target": 660000000,
+        "required_canonical_bytes": 2640000000
+      },
+      "essential_prose": {
+        "final_exact_token_quota": 300000000,
+        "first_pass_estimated_token_target": 330000000,
+        "required_canonical_bytes": 1320000000
+      },
+      "essential_science": {
+        "final_exact_token_quota": 600000000,
+        "first_pass_estimated_token_target": 660000000,
+        "required_canonical_bytes": 2640000000
+      }
+    }
+  },
+  "supersedes": {
+    "digest": "644be917fc40c124f3682eed0852101e1b66c8862adab73b65513cb2686b0ce9",
+    "kind": "essential_web_bulk_campaign",
+    "path": "docs/implementation/evidence/ESSENTIAL-WEB-BULK-ACQUISITION/bulk-campaign.json",
+    "status": "historical; preserved unmodified; it executed no bulk fetch"
+  },
+  "transport_code_sha256": {
+    "src/xlm/data/acquisition/source_parquet.py": "5107c10d7e4b73f2466970ee51c842baf2ff316693f28cfbfb53af354f3d00f5",
+    "src/xlm/data/adapters/columns.py": "3e594f755eea797ac0d29d819c28b4ccf8e387cfc7889470dfc58e8657e58db1",
+    "src/xlm/data/sources/essential_web_local.py": "05cb36e81c550528af56aa98f8d5c73c15f1f65141429e0ec4e7a33502183bad"
+  },
+  "version": 1,
+  "views": [
+    "essential_science",
+    "essential_practical",
+    "essential_prose"
+  ]
+}

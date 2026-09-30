@@ -1,0 +1,97 @@
+{
+  "binding": {
+    "adapter_id": "essential_web_bnormal",
+    "canonicalization": "EssentialWebSelectedAdapter -> EssentialWebAdapter -> CanonicalDocument",
+    "repository": "EssentialAI/essential-web-v1.0",
+    "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+    "selector": {
+      "condition": "B-normal",
+      "evaluator_sha256": "5a63e78560ea9e12b0ec03b5e7e63204b5c75554bee02192c12bb4ab0853bf9c",
+      "freeze_digest": "c6f32a65f083c99b64245e25151f2cc73275093e1013d68b625c6d6f63d10a0c",
+      "freeze_version": "essential-web-selector-fasttrack-v1",
+      "policy_digest": "f4357f61f434d5105d823266153dac6372e122f12767187631e8796b4899dd07",
+      "selector_id": "essential-web-b-normal"
+    },
+    "source_id": "essential_web"
+  },
+  "counts_as_campaign_progress": false,
+  "digest": "5f865608bb75a6272200c73d4a912d58182b7d991c65fff6ab5ed866aa308115",
+  "files": 13,
+  "kind": "essential_web_fast_benchmark",
+  "limits": {
+    "deadline_seconds": 3600.0,
+    "file_deadline_seconds": 1800.0,
+    "max_file_bytes": 536870912,
+    "max_requests": 224,
+    "max_retries": 5,
+    "max_transferred_bytes": 7516192768,
+    "request_timeout_seconds": 30.0
+  },
+  "parity": {
+    "crawl": "crawl=CC-MAIN-2016-50",
+    "etag": "\"87b6c7d4142774d0e716ed48826151f9a7e9d13ffe98c239feb7980cd06af746\"",
+    "file": "data/crawl=CC-MAIN-2016-50/train-02156-of-03132.parquet",
+    "length": 207246017,
+    "plan_hash": "99eaabeb14c5b8b0a1beb3c7e4a398c5829cee0c36c5ca61e50096f2eb8b32da",
+    "plan_id": "plan_essential_web_essential_science_huggingface_02d5507eecf175c769d0",
+    "raw_bytes": 18230056,
+    "raw_sha256": "7cbf2b91b30f4173ebd9f4cc2f5f488e66b0ada713fe31a2b3e07591d2be657b",
+    "row_range": [
+      0,
+      2048
+    ],
+    "selection_hash": "929767ca261c16e6731531206372a2070e8bdc79886a241e2fadc7573f9ddbeb",
+    "views": {
+      "essential_practical": {
+        "documents_sha256": "c5545494f19beab35ac696740c0b3dba4d0344176d4e6e09610362e557369afc",
+        "rejections_sha256": "1bba69485484841eec75435789bb187676889e864fc6b75f914ed69b4de70e1d"
+      },
+      "essential_prose": {
+        "documents_sha256": "cf2e5aa430e2ceaedc84b955b54efdd7dbf8fd97e719007c8aad8d3e25ea3067",
+        "rejections_sha256": "a5a959f0676d942777dbfb4da32341613837f1f39130d242fad667f4ab0d71d3"
+      },
+      "essential_science": {
+        "documents_sha256": "8c3dc61dad54e43d17c98cca93b5b5f53161cbc8b2f7c2a8b975c671a6d538a4",
+        "rejections_sha256": "879e59339ab0c49a5e3e78eac2004a5aaa5a21323de384ea10d8f5f03b61d1cb"
+      }
+    },
+    "why_this_file": "smallest of the eight sealed calibration files; outside the campaign's execution ceiling, so it can never be campaign progress"
+  },
+  "retention": "nothing is retained: every benchmark file and output lives under the scratch root and is removed at the end; only the metrics report is kept",
+  "tiers": [
+    {
+      "download_workers": 1,
+      "files": [
+        "data/crawl=CC-MAIN-2019-09/train-02494-of-02577.parquet"
+      ]
+    },
+    {
+      "download_workers": 4,
+      "files": [
+        "data/crawl=CC-MAIN-2016-50/train-01413-of-03132.parquet",
+        "data/crawl=CC-MAIN-2024-26/train-02180-of-03168.parquet",
+        "data/crawl=CC-MAIN-2021-49/train-01693-of-02895.parquet",
+        "data/crawl=CC-MAIN-2024-26/train-03096-of-03168.parquet"
+      ]
+    },
+    {
+      "download_workers": 8,
+      "files": [
+        "data/crawl=CC-MAIN-2024-26/train-02938-of-03168.parquet",
+        "data/crawl=CC-MAIN-2018-05/train-00835-of-03429.parquet",
+        "data/crawl=CC-MAIN-2018-05/train-02803-of-03429.parquet",
+        "data/crawl=CC-MAIN-2016-50/train-02839-of-03132.parquet",
+        "data/crawl=CC-MAIN-2024-26/train-01913-of-03168.parquet",
+        "data/crawl=CC-MAIN-2019-09/train-01483-of-02577.parquet",
+        "data/crawl=CC-MAIN-2018-05/train-03158-of-03429.parquet",
+        "data/crawl=CC-MAIN-2021-04/train-01454-of-03315.parquet"
+      ]
+    }
+  ],
+  "transport_code_sha256": {
+    "src/xlm/data/acquisition/source_parquet.py": "5107c10d7e4b73f2466970ee51c842baf2ff316693f28cfbfb53af354f3d00f5",
+    "src/xlm/data/adapters/columns.py": "3e594f755eea797ac0d29d819c28b4ccf8e387cfc7889470dfc58e8657e58db1",
+    "src/xlm/data/sources/essential_web_local.py": "05cb36e81c550528af56aa98f8d5c73c15f1f65141429e0ec4e7a33502183bad"
+  },
+  "version": 1
+}

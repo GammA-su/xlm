@@ -1,0 +1,4 @@
+{
+  "expected_transfer_basis": "mean of the eight known file sizes; batch-0 file sizes are not known before the transfer",
+  "expected_transfer_bytes": 3601055717
+}

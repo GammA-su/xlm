@@ -1,0 +1,56 @@
+{
+  "batch_files": 32,
+  "estimated_rows": 2643708,
+  "fast_whole_file": {
+    "durable_copy": "sequential copy to the durable volume, measured by the benchmark",
+    "http_requests": 64,
+    "local_basis": "measured on this machine, offline, on real calibration rows repeated 16 times per file; repeats are for timing only and the rate on full upstream files is measured by the live benchmark",
+    "local_processing_seconds": 171.52307527927027,
+    "local_rows_per_second": 15413.133164127159,
+    "network_rate": "UNKNOWN until the live benchmark; the scenarios are not claims",
+    "network_scenarios": [
+      {
+        "aggregate_network_bytes_per_second": 12500000,
+        "aggregate_network_megabits_per_second": 100.0,
+        "batch_seconds_pipelined": 668.3194486399999,
+        "limited_by": "network",
+        "network_seconds": 668.3194486399999
+      },
+      {
+        "aggregate_network_bytes_per_second": 25000000,
+        "aggregate_network_megabits_per_second": 200.0,
+        "batch_seconds_pipelined": 334.15972431999995,
+        "limited_by": "network",
+        "network_seconds": 334.15972431999995
+      },
+      {
+        "aggregate_network_bytes_per_second": 125000000,
+        "aggregate_network_megabits_per_second": 1000.0,
+        "batch_seconds_pipelined": 171.52307527927027,
+        "limited_by": "local processing",
+        "network_seconds": 66.831944864
+      },
+      {
+        "aggregate_network_bytes_per_second": 500000000,
+        "aggregate_network_megabits_per_second": 4000.0,
+        "batch_seconds_pipelined": 171.52307527927027,
+        "limited_by": "local processing",
+        "network_seconds": 16.707986216
+      }
+    ],
+    "process_workers": 12,
+    "transfer_bytes": 8353993108
+  },
+  "historical_range_reader": {
+    "basis": "sum over the eight prefix windows, one worker: request open latency, body time and the remaining wall time; an ESTIMATE, not measured on full row groups",
+    "components": {
+      "body_seconds": 3452.9928530028483,
+      "request_latency_seconds": 8289.474428580963,
+      "row_seconds": 1613.591308621927
+    },
+    "http_requests": 30280,
+    "request_latency_share": 0.6206527451854137,
+    "seconds_one_worker": 13356.058589742588,
+    "transfer_bytes": 7455456241
+  }
+}

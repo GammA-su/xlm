@@ -1,0 +1,56 @@
+{
+  "chosen_files_per_batch": 32,
+  "historical_files_per_batch": 32,
+  "historical_policy": {
+    "chosen_files_per_batch": 32,
+    "restart_unit": "one row-group slice of 32 files"
+  },
+  "membership_unchanged": true,
+  "network_floor_kind": "planning assumption, not a measured endpoint rate",
+  "options": {
+    "16": {
+      "batch_seconds_at_network_floor": 167.07986215999998,
+      "batches_to_science_target": 49,
+      "estimated_rows": 1321854,
+      "estimated_transfer_bytes": 4176996554,
+      "files": 16,
+      "local_processing_seconds": 85.76153763963514,
+      "stop_overshoot_fraction_of_science_target": 0.02051788292969305,
+      "within_limits": true
+    },
+    "32": {
+      "batch_seconds_at_network_floor": 334.15972431999995,
+      "batches_to_science_target": 25,
+      "estimated_rows": 2643708,
+      "estimated_transfer_bytes": 8353993108,
+      "files": 32,
+      "local_processing_seconds": 171.52307527927027,
+      "stop_overshoot_fraction_of_science_target": 0.0410357658593861,
+      "within_limits": true
+    },
+    "64": {
+      "batch_seconds_at_network_floor": 668.3194486399999,
+      "batches_to_science_target": 13,
+      "estimated_rows": 5287416,
+      "estimated_transfer_bytes": 16707986216,
+      "files": 64,
+      "local_processing_seconds": 343.04615055854055,
+      "stop_overshoot_fraction_of_science_target": 0.0820715317187722,
+      "within_limits": false
+    },
+    "8": {
+      "batch_seconds_at_network_floor": 83.53993107999999,
+      "batches_to_science_target": 98,
+      "estimated_rows": 660927,
+      "estimated_transfer_bytes": 2088498277,
+      "files": 8,
+      "local_processing_seconds": 42.88076881981757,
+      "stop_overshoot_fraction_of_science_target": 0.010258941464846525,
+      "within_limits": true
+    }
+  },
+  "process_workers": 12,
+  "rule": "largest assessed size whose batch stays within 900 s at a 25000000 B/s aggregate network floor and the measured local rate, and whose stop overshoot stays within 5% of the science target",
+  "uncertainty": "rows and bytes are estimates from eight footers; the network rate is unmeasured; the local rate is measured on calibration rows",
+  "unit": "whole files in frozen inventory order; the restart unit is ONE FILE"
+}

@@ -1,0 +1,179 @@
+{
+  "chosen_transport": "whole_file_stream",
+  "evidence": "the eight real retained footers (sizes only) and the sealed calibration timing; no file was transferred for this comparison",
+  "files": [
+    {
+      "file": "data/crawl=CC-MAIN-2014-15/train-01860-of-02772.parquet",
+      "projected_range_reader": {
+        "http_requests": 1096,
+        "request_latency_seconds": 300.041742857488,
+        "transfer_bytes": 257174977
+      },
+      "row_groups": 10,
+      "rows": 93417,
+      "whole_file_stream": {
+        "http_requests": 2,
+        "request_latency_seconds": 0.5475214285720583,
+        "scratch_bytes": 290684578,
+        "transfer_bytes": 290684578
+      },
+      "whole_over_projected": 1.1302988392995947
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2015-32/train-01682-of-01920.parquet",
+      "projected_range_reader": {
+        "http_requests": 1099,
+        "request_latency_seconds": 300.86302500034606,
+        "transfer_bytes": 279134596
+      },
+      "row_groups": 10,
+      "rows": 97828,
+      "whole_file_stream": {
+        "http_requests": 2,
+        "request_latency_seconds": 0.5475214285720583,
+        "scratch_bytes": 316724715,
+        "transfer_bytes": 316724715
+      },
+      "whole_over_projected": 1.134666643041266
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2016-50/train-02156-of-03132.parquet",
+      "projected_range_reader": {
+        "http_requests": 766,
+        "request_latency_seconds": 209.70070714309833,
+        "transfer_bytes": 181823486
+      },
+      "row_groups": 7,
+      "rows": 69622,
+      "whole_file_stream": {
+        "http_requests": 2,
+        "request_latency_seconds": 0.5475214285720583,
+        "scratch_bytes": 207246017,
+        "transfer_bytes": 207246017
+      },
+      "whole_over_projected": 1.1398198415357628
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2018-05/train-03378-of-03429.parquet",
+      "projected_range_reader": {
+        "http_requests": 1095,
+        "request_latency_seconds": 299.76798214320195,
+        "transfer_bytes": 255098974
+      },
+      "row_groups": 10,
+      "rows": 91199,
+      "whole_file_stream": {
+        "http_requests": 2,
+        "request_latency_seconds": 0.5475214285720583,
+        "scratch_bytes": 285464583,
+        "transfer_bytes": 285464583
+      },
+      "whole_over_projected": 1.1190346183046584
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2019-09/train-00153-of-02577.parquet",
+      "projected_range_reader": {
+        "http_requests": 878,
+        "request_latency_seconds": 240.3619071431336,
+        "transfer_bytes": 223010572
+      },
+      "row_groups": 8,
+      "rows": 75980,
+      "whole_file_stream": {
+        "http_requests": 2,
+        "request_latency_seconds": 0.5475214285720583,
+        "scratch_bytes": 247450105,
+        "transfer_bytes": 247450105
+      },
+      "whole_over_projected": 1.1095891229766452
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2021-04/train-00179-of-03315.parquet",
+      "projected_range_reader": {
+        "http_requests": 879,
+        "request_latency_seconds": 240.63566785741963,
+        "transfer_bytes": 221131590
+      },
+      "row_groups": 8,
+      "rows": 78036,
+      "whole_file_stream": {
+        "http_requests": 2,
+        "request_latency_seconds": 0.5475214285720583,
+        "scratch_bytes": 246957884,
+        "transfer_bytes": 246957884
+      },
+      "whole_over_projected": 1.1167915176660197
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2021-49/train-00408-of-02895.parquet",
+      "projected_range_reader": {
+        "http_requests": 878,
+        "request_latency_seconds": 240.3619071431336,
+        "transfer_bytes": 223575195
+      },
+      "row_groups": 8,
+      "rows": 76695,
+      "whole_file_stream": {
+        "http_requests": 2,
+        "request_latency_seconds": 0.5475214285720583,
+        "scratch_bytes": 247477157,
+        "transfer_bytes": 247477157
+      },
+      "whole_over_projected": 1.106907933145267
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2024-26/train-01127-of-03168.parquet",
+      "projected_range_reader": {
+        "http_requests": 879,
+        "request_latency_seconds": 240.63566785741963,
+        "transfer_bytes": 222914670
+      },
+      "row_groups": 8,
+      "rows": 78150,
+      "whole_file_stream": {
+        "http_requests": 2,
+        "request_latency_seconds": 0.5475214285720583,
+        "scratch_bytes": 246493238,
+        "transfer_bytes": 246493238
+      },
+      "whole_over_projected": 1.1057739627454757
+    }
+  ],
+  "known_layout_files": 8,
+  "preference_threshold": 1.35,
+  "projected_range_reader": {
+    "http_requests": 7570,
+    "http_requests_per_file": 946.25,
+    "latency_sensitivity": "one round trip per 4 MiB range and four metadata requests per row group; wall time is dominated by request count, not by bytes",
+    "local_read_cost": "none; decode happens inside the fetch",
+    "raw_jsonl_bytes_per_row": 9154.003601074219,
+    "request_latency_seconds_per_file": 259.0460758931551,
+    "temporary_disk": "selected-record JSONL staging, twice the slice output",
+    "transfer_bytes": 1863864060,
+    "transfer_bytes_per_row": 2820.075530277928
+  },
+  "request_reduction_factor": 473.125,
+  "seconds_per_request_measured": 0.27376071428602916,
+  "threshold_kind": "operational heuristic, not a scientific rule",
+  "whole_file_overhead_fraction": 0.12052070846840612,
+  "whole_file_stream": {
+    "http_requests": 16,
+    "http_requests_per_file": 2,
+    "latency_sensitivity": "two round trips per file; wall time follows bytes and the endpoint's per-stream rate",
+    "local_read_cost": {
+      "basis": "measured on this machine, offline, on real calibration rows repeated 16 times per file; repeats are for timing only and the rate on full upstream files is measured by the live benchmark",
+      "core_seconds_per_file": 39.96881954371929,
+      "rows_per_core_second": 2067.008131416838
+    },
+    "request_latency_seconds_per_file": 0.5475214285720583,
+    "scratch_bytes_per_file": 261062284.625,
+    "temporary_disk": "the compressed source file on fast scratch until its canonical outputs are published",
+    "transfer_bytes": 2088498277,
+    "transfer_bytes_per_row": 3159.95303112144
+  },
+  "whole_over_projected": 1.1205207084684061,
+  "whole_over_projected_min_max_file": [
+    1.1057739627454757,
+    1.1398198415357628
+  ]
+}

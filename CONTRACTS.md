@@ -69,6 +69,25 @@ contamination. Missing final-pool integration or receipt leaves benchmark claims
 blocked. This amendment changes admission lineage only: no source, selector,
 tokenizer, mixture, quota or scoring changes.
 
+**C04 raw-artifact amendment `essential-web-raw-artifact-v2` (2026-09-30).**
+For source `essential_web` only, the raw acquisition artifact may be the
+`verified_source_parquet`: the unmodified upstream Parquet file of a selected
+shard, identified by repository, immutable revision, source path, strong ETag,
+remote length and the locally computed SHA-256 of every byte, stored once and
+never replaced. Where the strong ETag is a 64-hex digest it must equal that
+SHA-256. Adaptation then reads the retained file directly; the selected-record
+stream is produced in memory with the certified serialization and its SHA-256 is
+recorded per file, so it is reproducible offline and is not stored. Immutable
+rejection ledgers may be stored zstd-compressed and stay identified by the
+SHA-256 of their uncompressed version-1 JSONL bytes. Row accounting, campaign
+membership and an acquisition receipt are kept per file. Transfer stays
+resumable, host-allowlisted and bounded as above, now including a byte cap on
+fast scratch that counts partial downloads. Nothing retained may be deleted; a
+second raw representation is not kept. The historical `selected_records`
+artifact and every other source are unchanged. This amendment changes physical
+transport and storage only: no source, revision, selector, membership, mixture,
+quota or stop-target changes.
+
 ## C05 — Duplicate clusters, exclusions and splits
 
 Deduplicate across all selected source families before assigning final train/validation splits. Implement exact hashes and a scalable near-duplicate method such as shingled MinHash/LSH with bounded candidate verification; do not use an all-pairs comparison. Algorithm, seeds, thresholds and deterministic survivor selection are frozen. Retain all source aliases and provenance of the surviving document.

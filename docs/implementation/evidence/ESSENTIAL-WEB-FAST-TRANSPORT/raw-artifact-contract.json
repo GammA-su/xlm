@@ -1,0 +1,38 @@
+{
+  "amends": "C04 bounded acquisition, raw artifact of source 'essential_web' only",
+  "authoritative_raw": {
+    "file": "the unmodified upstream Parquet file",
+    "identity": [
+      "repository",
+      "immutable revision in the request URL",
+      "source path",
+      "strong ETag",
+      "remote length",
+      "locally computed SHA-256 of every byte"
+    ],
+    "immutability": "linked exclusively under its final name after its copy reproduced the verified SHA-256; an existing file is never replaced",
+    "stronger_than_before": "the historical raw artifact hashed a derived projection of selected rows and stated that it could not verify a full-file digest; this one hashes the complete original and, where the strong ETag is a 64-hex digest, requires it to equal that hash"
+  },
+  "contract_id": "essential-web-raw-artifact-v2",
+  "derived_lineage_kept_per_file": [
+    "deterministic campaign membership (inventory rank and batch)",
+    "row accounting: every row of the file has exactly one outcome per view",
+    "SHA-256 and size of the selected-record stream the certified reader would write",
+    "per view: documents hash, canonical bytes, rejection counts by code, ledger hash",
+    "acquisition receipt with transfer, request and retry counts"
+  ],
+  "existing_basis": "AcquisitionMode.WHOLE_FILE already makes whole immutable originals a valid raw acquisition ('Whole original identity retained'); C04 prefers 'selected immutable shards' over repository snapshots, and a batch is 32 selected shards",
+  "not_permitted": [
+    "deleting or replacing a retained source file, a ledger or a receipt",
+    "keeping a second raw representation",
+    "any selector, mixture, quota or stop-target change"
+  ],
+  "representation": "verified_source_parquet",
+  "reproducibility": "canonical outputs are reproducible offline from the retained source Parquet, the pinned code identity and the receipt; no network is needed",
+  "scope": "this campaign and source only; the historical selected_records contract and every other source are unchanged",
+  "what_is_new": [
+    "the whole-file executor: one sequential stream per file with a resumable verified prefix, instead of the fetcher whose per-row inspection refuses these row groups",
+    "adaptation reads the verified source Parquet directly; the selected-record stream is produced in memory and never written to disk",
+    "the immutable rejection ledger is stored zstd-compressed and identified by the SHA-256 of its uncompressed version-1 JSONL bytes"
+  ]
+}

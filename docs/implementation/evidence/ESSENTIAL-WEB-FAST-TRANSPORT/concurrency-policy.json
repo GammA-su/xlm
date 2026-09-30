@@ -1,0 +1,31 @@
+{
+  "benchmark_tiers": [
+    1,
+    4,
+    8
+  ],
+  "download_stream": "one sequential HTTP stream per file",
+  "download_workers": 8,
+  "download_workers_max": 16,
+  "machine": {
+    "logical_cpus": 16,
+    "physical_cpus": 8,
+    "pyarrow": "25.0.1",
+    "python": "3.12.13"
+  },
+  "output_independence": "worker counts are execution-only: they are normalized out of the selection hash and no output byte depends on completion order",
+  "pipeline": "downloads continue while finished files are processed; at most 32 files hold scratch at once",
+  "process_threads": 1,
+  "process_worker_basis": {
+    "1": 2047.250940736559,
+    "12": 15413.133164127159,
+    "16": 16685.37967029412,
+    "4": 6064.053975903615,
+    "8": 11573.175577235741
+  },
+  "process_worker_rule": "largest measured process count that still adds 10% over the previous measured count, never above logical CPUs minus 4 (kept for the download streams, hashing, sealing and the system)",
+  "process_workers": 12,
+  "process_workers_max": 16,
+  "sixteen_workers": "permitted by the resource contract (max 16); not a default and not benchmarked here",
+  "unit": "files; never column or range requests"
+}

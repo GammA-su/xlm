@@ -1,0 +1,218 @@
+{
+  "all_identical": true,
+  "contains_document_text": false,
+  "evidence_class": "REAL calibration rows, offline; the Parquet container is rebuilt locally under the real upstream schema because the calibration never transferred a whole file. Parity on real upstream file bytes is the live benchmark's parity phase.",
+  "kind": "essential_web_fast_local_replay",
+  "ledger": {
+    "basis": "the 24 real calibration ledgers, each compressed on its own",
+    "codec": "zstd",
+    "compressed_bytes": 2072808,
+    "files": 24,
+    "level": 9,
+    "ratio": 12.69694588210775,
+    "uncompressed_bytes": 26318331,
+    "uncompressed_equals_sealed_ledger_bytes": true
+  },
+  "rows": 16384,
+  "seal_digest": "149f3eb48e047e6545314dcb40cc01fe2b0e8853898a83a2060f0e8c9032e2a1",
+  "summary_bytes_per_unit": 4851.375,
+  "transport_code_sha256": {
+    "src/xlm/data/acquisition/source_parquet.py": "5107c10d7e4b73f2466970ee51c842baf2ff316693f28cfbfb53af354f3d00f5",
+    "src/xlm/data/adapters/columns.py": "3e594f755eea797ac0d29d819c28b4ccf8e387cfc7889470dfc58e8657e58db1",
+    "src/xlm/data/sources/essential_web_local.py": "05cb36e81c550528af56aa98f8d5c73c15f1f65141429e0ec4e7a33502183bad"
+  },
+  "units": [
+    {
+      "file": "data/crawl=CC-MAIN-2014-15/train-01860-of-02772.parquet",
+      "one_row_group": {
+        "canonical_and_ledger_identical_per_view": {
+          "essential_practical": true,
+          "essential_prose": true,
+          "essential_science": true
+        },
+        "row_groups": 1
+      },
+      "rows": 2048,
+      "sealed_raw_sha256": "e903e610c41e91b933d4f2d96a11dcf874615982164f2555289ab6cd6ddaa145",
+      "selected_records_identical": true,
+      "selected_records_sha256": "e903e610c41e91b933d4f2d96a11dcf874615982164f2555289ab6cd6ddaa145",
+      "three_row_groups": {
+        "canonical_and_ledger_identical_per_view": {
+          "essential_practical": true,
+          "essential_prose": true,
+          "essential_science": true
+        },
+        "row_groups": 3
+      },
+      "unit": "calibration-00"
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2015-32/train-01682-of-01920.parquet",
+      "one_row_group": {
+        "canonical_and_ledger_identical_per_view": {
+          "essential_practical": true,
+          "essential_prose": true,
+          "essential_science": true
+        },
+        "row_groups": 1
+      },
+      "rows": 2048,
+      "sealed_raw_sha256": "81909e42ce772c86357fe0657f82054b132afb21ea660aac0a1837096858e364",
+      "selected_records_identical": true,
+      "selected_records_sha256": "81909e42ce772c86357fe0657f82054b132afb21ea660aac0a1837096858e364",
+      "three_row_groups": {
+        "canonical_and_ledger_identical_per_view": {
+          "essential_practical": true,
+          "essential_prose": true,
+          "essential_science": true
+        },
+        "row_groups": 3
+      },
+      "unit": "calibration-01"
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2016-50/train-02156-of-03132.parquet",
+      "one_row_group": {
+        "canonical_and_ledger_identical_per_view": {
+          "essential_practical": true,
+          "essential_prose": true,
+          "essential_science": true
+        },
+        "row_groups": 1
+      },
+      "rows": 2048,
+      "sealed_raw_sha256": "7cbf2b91b30f4173ebd9f4cc2f5f488e66b0ada713fe31a2b3e07591d2be657b",
+      "selected_records_identical": true,
+      "selected_records_sha256": "7cbf2b91b30f4173ebd9f4cc2f5f488e66b0ada713fe31a2b3e07591d2be657b",
+      "three_row_groups": {
+        "canonical_and_ledger_identical_per_view": {
+          "essential_practical": true,
+          "essential_prose": true,
+          "essential_science": true
+        },
+        "row_groups": 3
+      },
+      "unit": "calibration-02"
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2018-05/train-03378-of-03429.parquet",
+      "one_row_group": {
+        "canonical_and_ledger_identical_per_view": {
+          "essential_practical": true,
+          "essential_prose": true,
+          "essential_science": true
+        },
+        "row_groups": 1
+      },
+      "rows": 2048,
+      "sealed_raw_sha256": "89274d54327fc66beaddc8f46ea7ccb46ccc3aabaa9facd3bef76ac35eee1e32",
+      "selected_records_identical": true,
+      "selected_records_sha256": "89274d54327fc66beaddc8f46ea7ccb46ccc3aabaa9facd3bef76ac35eee1e32",
+      "three_row_groups": {
+        "canonical_and_ledger_identical_per_view": {
+          "essential_practical": true,
+          "essential_prose": true,
+          "essential_science": true
+        },
+        "row_groups": 3
+      },
+      "unit": "calibration-03"
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2019-09/train-00153-of-02577.parquet",
+      "one_row_group": {
+        "canonical_and_ledger_identical_per_view": {
+          "essential_practical": true,
+          "essential_prose": true,
+          "essential_science": true
+        },
+        "row_groups": 1
+      },
+      "rows": 2048,
+      "sealed_raw_sha256": "bdab0a310179aa1752665ae906e06f518a1781a36de709b6f8fa2f39982c9a9e",
+      "selected_records_identical": true,
+      "selected_records_sha256": "bdab0a310179aa1752665ae906e06f518a1781a36de709b6f8fa2f39982c9a9e",
+      "three_row_groups": {
+        "canonical_and_ledger_identical_per_view": {
+          "essential_practical": true,
+          "essential_prose": true,
+          "essential_science": true
+        },
+        "row_groups": 3
+      },
+      "unit": "calibration-04"
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2021-04/train-00179-of-03315.parquet",
+      "one_row_group": {
+        "canonical_and_ledger_identical_per_view": {
+          "essential_practical": true,
+          "essential_prose": true,
+          "essential_science": true
+        },
+        "row_groups": 1
+      },
+      "rows": 2048,
+      "sealed_raw_sha256": "cb77ab1d15f1571a0c57a1ac8b9ef670ebb67aa2a371581b5471b8881855047c",
+      "selected_records_identical": true,
+      "selected_records_sha256": "cb77ab1d15f1571a0c57a1ac8b9ef670ebb67aa2a371581b5471b8881855047c",
+      "three_row_groups": {
+        "canonical_and_ledger_identical_per_view": {
+          "essential_practical": true,
+          "essential_prose": true,
+          "essential_science": true
+        },
+        "row_groups": 3
+      },
+      "unit": "calibration-05"
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2021-49/train-00408-of-02895.parquet",
+      "one_row_group": {
+        "canonical_and_ledger_identical_per_view": {
+          "essential_practical": true,
+          "essential_prose": true,
+          "essential_science": true
+        },
+        "row_groups": 1
+      },
+      "rows": 2048,
+      "sealed_raw_sha256": "d14df19b15893fca5338ed9e976e93623c7a512a95fca535355d103108777221",
+      "selected_records_identical": true,
+      "selected_records_sha256": "d14df19b15893fca5338ed9e976e93623c7a512a95fca535355d103108777221",
+      "three_row_groups": {
+        "canonical_and_ledger_identical_per_view": {
+          "essential_practical": true,
+          "essential_prose": true,
+          "essential_science": true
+        },
+        "row_groups": 3
+      },
+      "unit": "calibration-06"
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2024-26/train-01127-of-03168.parquet",
+      "one_row_group": {
+        "canonical_and_ledger_identical_per_view": {
+          "essential_practical": true,
+          "essential_prose": true,
+          "essential_science": true
+        },
+        "row_groups": 1
+      },
+      "rows": 2048,
+      "sealed_raw_sha256": "40e5d71eee67a1b9a61bc69c5e26114cd83db25fcea4a84ce9e599b0b33373d2",
+      "selected_records_identical": true,
+      "selected_records_sha256": "40e5d71eee67a1b9a61bc69c5e26114cd83db25fcea4a84ce9e599b0b33373d2",
+      "three_row_groups": {
+        "canonical_and_ledger_identical_per_view": {
+          "essential_practical": true,
+          "essential_prose": true,
+          "essential_science": true
+        },
+        "row_groups": 3
+      },
+      "unit": "calibration-07"
+    }
+  ]
+}

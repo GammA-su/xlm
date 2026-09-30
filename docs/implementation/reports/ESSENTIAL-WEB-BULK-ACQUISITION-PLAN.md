@@ -1,5 +1,9 @@
 # Essential-Web bulk acquisition plan — 2026-09-30
 
+> **HISTORICAL (2026-09-30).** This campaign was stopped before any bulk fetch and is
+> superseded by the [fast bulk plan](ESSENTIAL-WEB-FAST-BULK-PLAN.md). Its driver no
+> longer fetches. The text below is preserved as written.
+
 **READY FOR FULL ESSENTIAL-WEB ACQUISITION**
 
 The campaign is frozen, planned and tested offline. **No bulk fetch ran.** The
