@@ -1,0 +1,16 @@
+{
+  "max_decompressed_bytes": 536870912,
+  "max_decompression_ratio": 15.0,
+  "max_output_disk_bytes": 2147483648,
+  "max_parser_bytes": 33554432,
+  "max_record_bytes": 1048576,
+  "max_records": 256,
+  "max_requests": 330,
+  "max_retries": 1,
+  "max_scanned_records": 2048,
+  "max_temp_disk_bytes": 1073741824,
+  "max_transferred_bytes": 134217728,
+  "max_workers": 1,
+  "overall_deadline_seconds": 600.0,
+  "per_request_timeout_seconds": 15.0
+}

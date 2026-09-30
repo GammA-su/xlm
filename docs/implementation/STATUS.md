@@ -1,3 +1,20 @@
+> **ESSENTIAL-WEB PRODUCTION READINESS (2026-09-30, offline): BLOCKED.**
+> B-normal remains frozen and reproduces both 4,096-row metadata replicates
+> exactly, with no overlap. Production admission now binds the exact selector;
+> isolated malformed rows are counted/quarantined and stop above 1% after 100
+> rows (early bound: two). Adopted 23,200 revision-bound paths from eight crawls;
+> froze 8 × 2,048 new calibration rows. Full-text-first stays: 228,862,655 modeled
+> whole-group bytes either way, 0% expected metadata-first saving. Operator root
+> is centrally configured as G:\XLM; stale Essential driver defaults are disabled.
+> Admission remains false (license/provenance/benchmark review and accessible
+> schema probe missing). The shared dry probe needs 330 requests, exceeding
+> the C13 pilot ceiling; no admission/authorization bypass was introduced.
+> Calibration design is frozen, but live probe/calibration and science capacity
+> are NOT RUN. No network, T text access, selector/mixture change or push.
+> [Report and exact commands](reports/ESSENTIAL-WEB-PRODUCTION-READINESS.md).
+> Next: resolve the exact missing admission artifacts and C04 schema-probe
+> bootstrap before executing the conditional live scripts.
+
 > **ESSENTIAL-WEB FROZEN SELECTOR PRODUCTION INTEGRATION (2026-09-30):
 > ESSENTIAL-WEB SELECTOR FROZEN — READY FOR PRODUCTION ACQUISITION REVIEW.**
 > Production admission now uses exact frozen B-normal (freeze `c6f32a65…`).

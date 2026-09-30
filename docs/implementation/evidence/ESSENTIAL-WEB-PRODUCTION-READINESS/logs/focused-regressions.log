@@ -1,0 +1,117 @@
+..............................F......................................... [ 23%]
+........................................................................ [ 47%]
+........................................................................ [ 71%]
+........................................................................ [ 95%]
+..............                                                           [100%]
+================================== FAILURES ===================================
+_____ test_shared_measurement_counts_transfer_once_and_allows_empty_views _____
+
+tmp_path = WindowsPath('C:/Users/gamma/AppData/Local/Temp/pytest-of-gamma/pytest-123/test_shared_measurement_counts0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000025BC6523650>
+
+    def test_shared_measurement_counts_transfer_once_and_allows_empty_views(
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        monkeypatch.syspath_prepend(str(Path(__file__).resolve().parents[1] / "scripts"))
+        tool = importlib.import_module("essential_web_measure")
+        root, freeze = tmp_path / "run", tmp_path / "freeze"
+        freeze.mkdir()
+        unit = root / "probe-00"
+        raw_dir = unit / "raw"
+        raw_dir.mkdir(parents=True)
+        file = "data/authored.parquet"
+        plan = AcquisitionPlan(
+            plan_id="authored_measure",
+            source_id="essential_web",
+            view_id="essential_science",
+            provider="huggingface",
+            repository=ready.REPOSITORY,
+            revision=selector.SOURCE_REVISION,
+            mode=AcquisitionMode.SELECTED_RECORDS,
+            selected_files=[file],
+            row_ranges={file: (0, 256)},
+            output_artifact_id="authored_raw",
+        ).with_computed_hash()
+        for parent in (root, freeze):
+            save_acquisition_plan(plan, parent / "probe-00.plan.json")
+        (freeze / "calibration-plan.json").write_text(
+            json.dumps({"windows": [{"file": file, "crawl": "authored"}]}), encoding="utf-8"
+        )
+        records = [
+            {
+                **row(),
+                "_xlm_acquisition": {
+                    "source_id": "essential_web",
+                    "source_file": file,
+                    "row_index": i,
+                    "revision": plan.revision,
+                    "selection_hash": plan.compute_selection_hash(),
+                },
+            }
+            for i in range(256)
+        ]
+        raw = raw_dir / "selected_records.jsonl"
+        raw.write_text("\n".join(json.dumps(r) for r in records) + "\n", encoding="utf-8")
+        state = AcquisitionState(
+            plan_id=plan.plan_id,
+            plan_hash=plan.plan_hash,
+            status="COMPLETED",
+            transferred_bytes=500000,
+            decompressed_bytes=1000000,
+            records_acquired=256,
+            accounting=ResourceAccount(consumed={"records_scanned": 256}),
+            file_progress={
+                "selected_records.jsonl": FileProgress(
+                    file_path="selected_records.jsonl",
+                    status="completed",
+                    record_count=256,
+                    content_sha256=hashlib.sha256(raw.read_bytes()).hexdigest(),
+                )
+            },
+        )
+        journal = unit / "scratch/journals" / f"{plan.plan_id}.progress.json"
+        journal.parent.mkdir(parents=True)
+        journal.write_text(state.model_dump_json(), encoding="utf-8")
+        for view in selector.ADMITTED_COMPONENTS:
+            result = CliRunner().invoke(
+                app,
+                [
+                    "adapt",
+                    "--plan",
+                    str(root / "probe-00.plan.json"),
+                    "--adapter",
+                    "essential_web_bnormal",
+                    "--adapter-config",
+                    view,
+                    "--input",
+                    str(raw),
+                    "--output-dir",
+                    str(unit / view),
+                    "--on-reject",
+                    "record",
+                ],
+            )
+            assert result.exit_code == 0, result.output
+>       result = tool.measure(root, freeze, "probe")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_essential_web_readiness.py:353:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+root = WindowsPath('C:/Users/gamma/AppData/Local/Temp/pytest-of-gamma/pytest-123/test_shared_measurement_counts0/run')
+freeze = WindowsPath('C:/Users/gamma/AppData/Local/Temp/pytest-of-gamma/pytest-123/test_shared_measurement_counts0/freeze')
+stage = 'probe'
+
+    def measure(root: Path, freeze: Path, stage: str) -> dict[str, Any]:
+        windows = bounded_json(freeze / "calibration-plan.json")["windows"]
+        if stage == "probe":
+            windows = windows[:1]
+>       selector = selector.FrozenEssentialWebSelector.load()
+                   ^^^^^^^^
+E       UnboundLocalError: cannot access local variable 'selector' where it is not associated with a value
+
+scripts\essential_web_measure.py:39: UnboundLocalError
+=========================== short test summary info ===========================
+FAILED tests/test_essential_web_readiness.py::test_shared_measurement_counts_transfer_once_and_allows_empty_views
+1 failed, 301 passed in 103.90s (0:01:43)

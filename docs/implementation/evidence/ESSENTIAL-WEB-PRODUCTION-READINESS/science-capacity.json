@@ -1,0 +1,21 @@
+{
+  "blocker": "B-normal retained science bytes and physical bytes/input row not measured",
+  "expected_transferred_bytes": null,
+  "extrapolated_inventory_file_bytes": 6056645003300.0,
+  "extrapolated_inventory_rows": 1916688300.0,
+  "extrapolation_is_capacity_proof": false,
+  "final_science_exact_token_quota": 600000000,
+  "first_pass_science_estimated_token_target": 660000000,
+  "formula": "rows = 660000000 / measured(science retained bytes / 4 / input rows); files = ceil(rows / mean file rows)",
+  "headroom_ratio": 1.1,
+  "inventory_files": 23200,
+  "mean_observed_file_bytes": 261062284.625,
+  "mean_observed_file_rows": 82615.875,
+  "minimum_estimated_tokens_per_science_document_for_headroom": 58.76803233994802,
+  "required_files": null,
+  "required_rows": null,
+  "scanned_rows_per_admitted_science_row": 170.66666666666666,
+  "science_admission_per_input_row": 0.005859375,
+  "source_capacity_sufficient": null,
+  "token_sizing": "mix01_inventory: assumed bytes/token 3/4/5; estimated tokens only"
+}

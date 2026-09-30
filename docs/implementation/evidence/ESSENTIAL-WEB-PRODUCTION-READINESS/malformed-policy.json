@@ -1,0 +1,8 @@
+{
+  "early_max_bad_rows": 2,
+  "max_fraction": 0.01,
+  "minimum_fraction_rows": 100,
+  "row_action": "drop with text-free ledger reason; continue",
+  "selector_unchanged": true,
+  "structural_action": "STOP"
+}

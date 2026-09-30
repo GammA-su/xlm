@@ -1,0 +1,69 @@
+{
+  "schema_version": 2,
+  "plan_id": "plan_essential_web_essential_science_huggingface_e84c9c5b4677273a9d53",
+  "source_id": "essential_web",
+  "view_id": "essential_science",
+  "provider": "huggingface",
+  "repository": "EssentialAI/essential-web-v1.0",
+  "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+  "mode": "selected_records",
+  "selected_files": [
+    "data/crawl=CC-MAIN-2018-05/train-03378-of-03429.parquet"
+  ],
+  "row_ranges": {
+    "data/crawl=CC-MAIN-2018-05/train-03378-of-03429.parquet": [
+      0,
+      2048
+    ]
+  },
+  "projected_fields": [
+    "text",
+    "eai_taxonomy",
+    "quality_signals",
+    "id",
+    "pid",
+    "metadata"
+  ],
+  "range_coalesce_bytes": null,
+  "parquet_window": {
+    "policy_version": 2,
+    "stream_buffer_bytes": 4194304,
+    "max_window_scan_rows": 2048,
+    "batch_rows": 256,
+    "ratio_exempt_bytes": 16777216
+  },
+  "sampling_frame": {
+    "total_remote_files": null,
+    "selected_files": [
+      "data/crawl=CC-MAIN-2018-05/train-03378-of-03429.parquet"
+    ],
+    "selection_seed": 20260930,
+    "sampling_method": "explicit_file_list",
+    "coverage_notes": "",
+    "selection_bias_warning": "Warning: Selected subset is not a uniform random sample of the full corpus. Domain, temporal, and shard clustering effects apply."
+  },
+  "expected_bytes": null,
+  "expected_file_digests": {},
+  "limits": {
+    "max_transferred_bytes": 134217728,
+    "max_decompressed_bytes": 536870912,
+    "max_records": 2048,
+    "max_temp_disk_bytes": 1073741824,
+    "max_output_disk_bytes": 2147483648,
+    "max_requests": 330,
+    "max_retries": 1,
+    "per_request_timeout_seconds": 15.0,
+    "overall_deadline_seconds": 600.0,
+    "max_decompression_ratio": 15.0,
+    "max_workers": 1,
+    "max_record_bytes": 1048576,
+    "max_parser_bytes": 33554432,
+    "max_scanned_records": 2048
+  },
+  "output_artifact_id": "raw_essential_web_essential_science_e84c9c5b4677273a9d53",
+  "admitted_source_reference": null,
+  "is_pilot": false,
+  "attempt": 1,
+  "authorization": null,
+  "plan_hash": "753a5fbe4f16ee1d9c5dadd09e84d7767c9ac64b170194cbb3a1717f4100b2bb"
+}

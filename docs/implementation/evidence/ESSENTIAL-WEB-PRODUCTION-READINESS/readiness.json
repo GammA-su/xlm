@@ -1,0 +1,18 @@
+{
+  "dry_plan_exists_does_not_mean_executable": true,
+  "live_calibration_run": false,
+  "live_probe_run": false,
+  "vector": {
+    "acquisition_plan_ready": false,
+    "calibration_plan_ready": true,
+    "inventory_ready": true,
+    "malformed_policy_ready": true,
+    "probe_plan_ready": false,
+    "production_admission_ok": false,
+    "selector_frozen": true,
+    "selector_integration_ok": true,
+    "source_revision_ok": true,
+    "transfer_strategy_ready": true
+  },
+  "verdict": "ESSENTIAL-WEB PRODUCTION READINESS BLOCKED"
+}

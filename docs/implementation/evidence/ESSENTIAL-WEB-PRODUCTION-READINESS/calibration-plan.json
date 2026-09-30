@@ -1,0 +1,145 @@
+{
+  "bias": "eight clustered crawl/file/prefix windows; not unbiased corpus estimates",
+  "binding": {
+    "adapter_id": "essential_web_bnormal",
+    "canonicalization": "EssentialWebSelectedAdapter -> EssentialWebAdapter -> CanonicalDocument",
+    "repository": "EssentialAI/essential-web-v1.0",
+    "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+    "selector": {
+      "condition": "B-normal",
+      "evaluator_sha256": "5a63e78560ea9e12b0ec03b5e7e63204b5c75554bee02192c12bb4ab0853bf9c",
+      "freeze_digest": "c6f32a65f083c99b64245e25151f2cc73275093e1013d68b625c6d6f63d10a0c",
+      "freeze_version": "essential-web-selector-fasttrack-v1",
+      "policy_digest": "f4357f61f434d5105d823266153dac6372e122f12767187631e8796b4899dd07",
+      "selector_id": "essential-web-b-normal"
+    },
+    "source_id": "essential_web"
+  },
+  "digest": "a6cab8cd58a127b77dd130249147f3541ac4575f3ea8369bf248879fd52e89b0",
+  "expected_rows": 16384,
+  "expected_yields_not_required": {
+    "essential_practical": 468,
+    "essential_prose": 1488,
+    "essential_science": 96
+  },
+  "files_selection": "reuse eight footer-certified M files, historical frozen hash rank",
+  "kind": "essential_web_operational_calibration",
+  "live_run": false,
+  "replacement": "NONE; missing file, changed footer or short window stops",
+  "seed": 20260930,
+  "selector": {
+    "condition": "B-normal",
+    "evaluator_sha256": "5a63e78560ea9e12b0ec03b5e7e63204b5c75554bee02192c12bb4ab0853bf9c",
+    "freeze_digest": "c6f32a65f083c99b64245e25151f2cc73275093e1013d68b625c6d6f63d10a0c",
+    "freeze_version": "essential-web-selector-fasttrack-v1",
+    "policy_digest": "f4357f61f434d5105d823266153dac6372e122f12767187631e8796b4899dd07",
+    "selector_id": "essential-web-b-normal"
+  },
+  "window_rule": "first 2048 rows of group 0; disjoint from development files and confirmation windows",
+  "windows": [
+    {
+      "crawl": "crawl=CC-MAIN-2014-15",
+      "file": "data/crawl=CC-MAIN-2014-15/train-01860-of-02772.parquet",
+      "footer_sha256": "eec4e65e7307c3c12c1366f20500e7b0a3e26ac2bd0ee59f8f7d9b1bd1b970a9",
+      "range": [
+        0,
+        2048
+      ],
+      "remote_length": 290684578,
+      "row_group": 0,
+      "rows": 2048,
+      "strong_etag": "\"a898462fb164d7eea3e8248a28cb1f855843d72bd55cfd126f537653c4eae323\""
+    },
+    {
+      "crawl": "crawl=CC-MAIN-2015-32",
+      "file": "data/crawl=CC-MAIN-2015-32/train-01682-of-01920.parquet",
+      "footer_sha256": "4d1fa59f5c245aa387a69201812ae79eefdc2250921e387cdbb7454a5a8fdd95",
+      "range": [
+        0,
+        2048
+      ],
+      "remote_length": 316724715,
+      "row_group": 0,
+      "rows": 2048,
+      "strong_etag": "\"d25ba04f1376333b6706e0becc19aa92f9540219aa4df5e96360fce324851975\""
+    },
+    {
+      "crawl": "crawl=CC-MAIN-2016-50",
+      "file": "data/crawl=CC-MAIN-2016-50/train-02156-of-03132.parquet",
+      "footer_sha256": "73808b5e2a4db3b32a7241f06cd1922f37d50f82b80b6f5fa829789f85f48088",
+      "range": [
+        0,
+        2048
+      ],
+      "remote_length": 207246017,
+      "row_group": 0,
+      "rows": 2048,
+      "strong_etag": "\"87b6c7d4142774d0e716ed48826151f9a7e9d13ffe98c239feb7980cd06af746\""
+    },
+    {
+      "crawl": "crawl=CC-MAIN-2018-05",
+      "file": "data/crawl=CC-MAIN-2018-05/train-03378-of-03429.parquet",
+      "footer_sha256": "71b329616d53118a4af33065aff31e96020eb0195c9bfeb9f4304867a54f2537",
+      "range": [
+        0,
+        2048
+      ],
+      "remote_length": 285464583,
+      "row_group": 0,
+      "rows": 2048,
+      "strong_etag": "\"d2c33e6f97b7cd8a0a1ff9eb419be453a3e6d4658445f86d2265bb0dc6ecd6ef\""
+    },
+    {
+      "crawl": "crawl=CC-MAIN-2019-09",
+      "file": "data/crawl=CC-MAIN-2019-09/train-00153-of-02577.parquet",
+      "footer_sha256": "8de5d9aad30890c88c723216eed274b52378b0b4f0c72b3ee3a65219b3f9ed97",
+      "range": [
+        0,
+        2048
+      ],
+      "remote_length": 247450105,
+      "row_group": 0,
+      "rows": 2048,
+      "strong_etag": "\"9d0c7824df33063587958afb535fa097d8c5af423c172e63714f725aa3003f1b\""
+    },
+    {
+      "crawl": "crawl=CC-MAIN-2021-04",
+      "file": "data/crawl=CC-MAIN-2021-04/train-00179-of-03315.parquet",
+      "footer_sha256": "0ea78bf3262e3ab8f2981448ee6d3770708af49eee075dff825c84eedd73d3a1",
+      "range": [
+        0,
+        2048
+      ],
+      "remote_length": 246957884,
+      "row_group": 0,
+      "rows": 2048,
+      "strong_etag": "\"6b46903d378381f127814c1d81e741d8b7616e5d39abee5524ac22ded871461e\""
+    },
+    {
+      "crawl": "crawl=CC-MAIN-2021-49",
+      "file": "data/crawl=CC-MAIN-2021-49/train-00408-of-02895.parquet",
+      "footer_sha256": "147e23096e4f6781b606ea5a066c2e554bb964fa9923ba8ea021e7750e2bae69",
+      "range": [
+        0,
+        2048
+      ],
+      "remote_length": 247477157,
+      "row_group": 0,
+      "rows": 2048,
+      "strong_etag": "\"852e5570ccf4c5f762c0300f8d8b6f9e691f50b01fdf590d2b987fa09d18542e\""
+    },
+    {
+      "crawl": "crawl=CC-MAIN-2024-26",
+      "file": "data/crawl=CC-MAIN-2024-26/train-01127-of-03168.parquet",
+      "footer_sha256": "e829ac281553a31ed91914841671a2b17028aefb94b3d9a64cc0c768c1bef16f",
+      "range": [
+        0,
+        2048
+      ],
+      "remote_length": 246493238,
+      "row_group": 0,
+      "rows": 2048,
+      "strong_etag": "\"bdc91792cb54687e353f7aa5b2ddb70eabdfe9bd3b8e781f6c564aa60a0b3b90\""
+    }
+  ]
+}

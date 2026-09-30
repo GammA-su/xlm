@@ -1,0 +1,36 @@
+{
+  "binding": {
+    "adapter_code_sha256": "56ca4fb26e88b57409f9ba0e0743095a1ff552a83e702722a948c2115d3c42f8",
+    "adapter_id": "essential_web_bnormal",
+    "b_normal_semantics_digest": "56f86d728852b724f22b9d53b65f1566692efdc43a6e5e14d1bf02261249a5ac",
+    "canonicalization": "EssentialWebSelectedAdapter -> EssentialWebAdapter -> CanonicalDocument",
+    "repository": "EssentialAI/essential-web-v1.0",
+    "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+    "selector": {
+      "condition": "B-normal",
+      "evaluator_sha256": "5a63e78560ea9e12b0ec03b5e7e63204b5c75554bee02192c12bb4ab0853bf9c",
+      "freeze_digest": "c6f32a65f083c99b64245e25151f2cc73275093e1013d68b625c6d6f63d10a0c",
+      "freeze_version": "essential-web-selector-fasttrack-v1",
+      "policy_digest": "f4357f61f434d5105d823266153dac6372e122f12767187631e8796b4899dd07",
+      "selector_id": "essential-web-b-normal"
+    },
+    "source_id": "essential_web"
+  },
+  "blocker": "nested leaf requests exceed C13 pilot 100-request ceiling; production fetch needs prior accessible schema-verified probe/admission; generic data probe does not verify this schema",
+  "body_budget_bytes": 134217728,
+  "budget_basis": "max(128 MiB, 2 x projected group + footer/read-ahead), rounded to MiB",
+  "calibration_overlap": "probe is subset of first calibration window; do not add probe rows to calibration totals",
+  "file": "data/crawl=CC-MAIN-2014-15/train-01860-of-02772.parquet",
+  "live_run": false,
+  "nominal_requests_one_redirect": 220,
+  "range": [
+    0,
+    256
+  ],
+  "rows": 256,
+  "shared_by": [
+    "essential_science",
+    "essential_practical",
+    "essential_prose"
+  ]
+}

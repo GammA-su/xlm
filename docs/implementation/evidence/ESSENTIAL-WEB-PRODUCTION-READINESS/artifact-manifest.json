@@ -1,0 +1,389 @@
+{
+  "artifacts": [
+    {
+      "bytes": 4848,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/admission-decisions.json",
+      "sha256": "c9f1c4ee150f2ecb7f7691b7c441a6961f02c7b9a0bf6fe6d3f4bec4202a46a1"
+    },
+    {
+      "bytes": 447,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/calibration-00.limits.json",
+      "sha256": "85c6316b32894b87f868e8f5263f01bda5762f0b5fd0b966dd0628065aef44fb"
+    },
+    {
+      "bytes": 2179,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/calibration-00.plan.json",
+      "sha256": "e4cb34848a066c3ac2e5103bd582730cfde677db5a2cdcb6f767c5ceccdf3ada"
+    },
+    {
+      "bytes": 87,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/calibration-00.rows.json",
+      "sha256": "388f7197a4200818e94d287173f680aace97b23c57ad253f6c4ee1568b445bb2"
+    },
+    {
+      "bytes": 447,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/calibration-01.limits.json",
+      "sha256": "85c6316b32894b87f868e8f5263f01bda5762f0b5fd0b966dd0628065aef44fb"
+    },
+    {
+      "bytes": 2179,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/calibration-01.plan.json",
+      "sha256": "d27067aed60835b18ffb823b1403d83157e8c06572ee8d635b456f2abb3c62f9"
+    },
+    {
+      "bytes": 87,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/calibration-01.rows.json",
+      "sha256": "0ac6ad23d0b8b89ef8b9c592b40ccac9e711665407f455776ab2193465864208"
+    },
+    {
+      "bytes": 447,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/calibration-02.limits.json",
+      "sha256": "85c6316b32894b87f868e8f5263f01bda5762f0b5fd0b966dd0628065aef44fb"
+    },
+    {
+      "bytes": 2179,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/calibration-02.plan.json",
+      "sha256": "2f5170bd74df8ad3f76c9813754be5bad43183c3c7fa45525a079ef0f85f9345"
+    },
+    {
+      "bytes": 87,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/calibration-02.rows.json",
+      "sha256": "5545b0367f126d80f2e25275324245c1dc21939bc3d55a5d228b9c5dad5bb6e5"
+    },
+    {
+      "bytes": 447,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/calibration-03.limits.json",
+      "sha256": "85c6316b32894b87f868e8f5263f01bda5762f0b5fd0b966dd0628065aef44fb"
+    },
+    {
+      "bytes": 2179,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/calibration-03.plan.json",
+      "sha256": "3a2f1e95796a38cbf6393faf4795ea9679d5a90bb4d8bf208754462299ec6cab"
+    },
+    {
+      "bytes": 87,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/calibration-03.rows.json",
+      "sha256": "21999767c4f10ec77ebba7609662e219137f36da41bacdc169d3fd6b8abb9896"
+    },
+    {
+      "bytes": 447,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/calibration-04.limits.json",
+      "sha256": "85c6316b32894b87f868e8f5263f01bda5762f0b5fd0b966dd0628065aef44fb"
+    },
+    {
+      "bytes": 2179,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/calibration-04.plan.json",
+      "sha256": "53a8eb63cf60eee09eb1a9ed0241742a7130a662aa8b48f8ebfd35b32c71df1f"
+    },
+    {
+      "bytes": 87,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/calibration-04.rows.json",
+      "sha256": "4988d0a2b725adefc8376f3a8ae4abafd4fa9eead21e7ee64e3c57bd0f5b4bda"
+    },
+    {
+      "bytes": 447,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/calibration-05.limits.json",
+      "sha256": "85c6316b32894b87f868e8f5263f01bda5762f0b5fd0b966dd0628065aef44fb"
+    },
+    {
+      "bytes": 2179,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/calibration-05.plan.json",
+      "sha256": "f8120f975916baf824679a9545bfe72891aca14db4f57dcbd3ae7a64c91cff6c"
+    },
+    {
+      "bytes": 87,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/calibration-05.rows.json",
+      "sha256": "f75cce90a06da357e79e49a8f68452da8c1499765369089e9502fc88a50e6758"
+    },
+    {
+      "bytes": 447,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/calibration-06.limits.json",
+      "sha256": "85c6316b32894b87f868e8f5263f01bda5762f0b5fd0b966dd0628065aef44fb"
+    },
+    {
+      "bytes": 2179,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/calibration-06.plan.json",
+      "sha256": "1a085c558569d683845df3b54f96852b24d0ab605c6752dfe77611af46b9b67f"
+    },
+    {
+      "bytes": 87,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/calibration-06.rows.json",
+      "sha256": "6f913560ff7910391acdac96e08f9808907612d0272d80f581f9c73e4fdcb1d8"
+    },
+    {
+      "bytes": 447,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/calibration-07.limits.json",
+      "sha256": "85c6316b32894b87f868e8f5263f01bda5762f0b5fd0b966dd0628065aef44fb"
+    },
+    {
+      "bytes": 2179,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/calibration-07.plan.json",
+      "sha256": "f0168b1adccbdf9eabc0fda8613cfd9695c90013f07c04af5ca6d6345b62ff40"
+    },
+    {
+      "bytes": 87,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/calibration-07.rows.json",
+      "sha256": "e6281cfae6d65f1749a01f1ed05934fba66df624e2e30a7ec8a54bb197c38b91"
+    },
+    {
+      "bytes": 5361,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/calibration-plan.json",
+      "sha256": "6140b26a7e86fb41461117c26c0aeafd1a176fd34c62c237ed5663cc0f91ad36"
+    },
+    {
+      "bytes": 9756,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/COMMANDS.md",
+      "sha256": "d0582bdf8d3e6bc6428b5dfd7cfe4ead0a79856b1ee7f18ec261e24895e340c1"
+    },
+    {
+      "bytes": 2844,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/confirmation-reproduction.json",
+      "sha256": "21b38a8c0ced8b8224117407460f712115ac0b9c890ff571b3017af27972f67c"
+    },
+    {
+      "bytes": 2937,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/development-reproduction.json",
+      "sha256": "bf39176bb1f885e63389dd611a0e4389eb0ca470c9a0dd035fdb573808d943e5"
+    },
+    {
+      "bytes": 2306,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/dry-acquisition-plan.json",
+      "sha256": "7583221151d275d6097bb543e43d2043797c0b2671bd0cfe5f16008527601d38"
+    },
+    {
+      "bytes": 20525,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/future-calibration.ps1",
+      "sha256": "4de77aaffe23f01ec6a6bff8aa29f2c4f6e4d58788dfc647a330894f90c99a4e"
+    },
+    {
+      "bytes": 3418,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/future-probe.ps1",
+      "sha256": "fdca17c40797cc8d8bd72b8313dc77f738254ed2ead18081a70eeff7f8640b2f"
+    },
+    {
+      "bytes": 1482,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/inventory-adoption.json",
+      "sha256": "4421179882ef0e329ddf917dd26175a371aaa5b7a936a44dd2ee28feaf01b2e8"
+    },
+    {
+      "bytes": 110,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/logs/driver.log",
+      "sha256": "5cd8cf4b5c00ea037f6e705214aa23de43f3301c4e057fce7c961a8126d8b79d"
+    },
+    {
+      "bytes": 190,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/logs/final-repairs.log",
+      "sha256": "0749a62194a012394495e27e4e9495dedcaaba0a7710d406300e0e04a6e45297"
+    },
+    {
+      "bytes": 5321,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/logs/focused-regressions.log",
+      "sha256": "564e51451ee28e124c87405a6d90f04ece1863e08e10a9fff3f51df8bfa042db"
+    },
+    {
+      "bytes": 1914,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/logs/freeze-final.log",
+      "sha256": "cb0c407e09c98c8fc2fa861549611d120572a5fb73cfbe04836547615cf2c8fd"
+    },
+    {
+      "bytes": 1914,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/logs/freeze.log",
+      "sha256": "cb0c407e09c98c8fc2fa861549611d120572a5fb73cfbe04836547615cf2c8fd"
+    },
+    {
+      "bytes": 505,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/logs/mypy.log",
+      "sha256": "15acc6e8c79900904ad839ebd33cdf89c4c7f79dcde2a1bb72db00e26a2b43dd"
+    },
+    {
+      "bytes": 179,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/logs/readiness-final.log",
+      "sha256": "0d6d1e8049c6bcb1a95e30c931bbd7087def32754e749eb776bc3084783d3647"
+    },
+    {
+      "bytes": 100,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/logs/root-final.log",
+      "sha256": "ce4044b94e7824890c4e10826d8874fdf9e81ca4349c29e29808b475a4d9dc4a"
+    },
+    {
+      "bytes": 210,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/malformed-policy.json",
+      "sha256": "5fb97c385bb7922efa01cfce2cb4ec77e6315bb5872a21313e892d69de3b421e"
+    },
+    {
+      "bytes": 186778,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/physical-inputs.json",
+      "sha256": "0f54729b3d729ed3dffb7ca6ae4cfce6bd54ecfa8839613c298c688fd31be47f"
+    },
+    {
+      "bytes": 446,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/probe-00.limits.json",
+      "sha256": "0727ec818dc17471c3f8bd2bfd5605923a459971e2af8b35fe36793e3449eb22"
+    },
+    {
+      "bytes": 2177,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/probe-00.plan.json",
+      "sha256": "4cdc9dce556a51f63cad4321bf4caeb1ceb850a70fe8b9d8b4970b3807de757b"
+    },
+    {
+      "bytes": 86,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/probe-00.rows.json",
+      "sha256": "8ff5dccf970eee5373ba7895ff0a194661b50cd82c0c25d18d913ae32470b4f7"
+    },
+    {
+      "bytes": 1658,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/probe-plan.json",
+      "sha256": "a7b277d2ea428416e757c8b8d7210edaa1d29170dec9f6f5ead846b66ecd9f59"
+    },
+    {
+      "bytes": 13003,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/production-catalog.json",
+      "sha256": "007cf500e8279bce2db22f9bcb65c5329dd10397332604c147fee30befb2281c"
+    },
+    {
+      "bytes": 4594073,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/production.inventory.json",
+      "sha256": "ad311eb2b4d3fb4a381c5f62a2720465eae9273f408ce31082e47f0d8b062804"
+    },
+    {
+      "bytes": 534,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/readiness.json",
+      "sha256": "50b8ca0ecdac4649136dd41f0195d7fc76ef89da4849e8f5020be9b2fc7b6684"
+    },
+    {
+      "bytes": 1016,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/science-capacity.json",
+      "sha256": "0883f77e611ef529ff158b89889a34181c5b1062d0b3c8292f1523f3a71bd3ac"
+    },
+    {
+      "bytes": 2283,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/seal_artifacts.py",
+      "sha256": "27aea46eb4742e6c6caccbd9bf7ffeb266ef550cd798f0b6188e7d85883fcaf8"
+    },
+    {
+      "bytes": 1523,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/source-provenance.json",
+      "sha256": "6a22f37790ace4dc9d80c9700091f98a3ca8e1582c8b4e1785c5a3de08e2a5e6"
+    },
+    {
+      "bytes": 1672,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/transfer-strategy.json",
+      "sha256": "319497e6aa317f7c57cbed5f93b6587b6038ba38200443e13e93c638f3858b40"
+    }
+  ],
+  "code_and_frozen_inputs": [
+    {
+      "bytes": 9,
+      "path": ".python-version",
+      "sha256": "50b10393ce287fb4af7616d016dd16ac1a56412af4d2c74cde7ddc5ad5c78761"
+    },
+    {
+      "bytes": 3177,
+      "path": "pyproject.toml",
+      "sha256": "d503fbd9c69bee626e387b0e230fdfcf762327993e73ab711e039550495ebe54"
+    },
+    {
+      "bytes": 864,
+      "path": "recipes/mixtures/mix01.yaml",
+      "sha256": "fa379e974bb1fb1c6ad1bca39b351843d2f16ea12a21c77fc0aa84f9354e0b9d"
+    },
+    {
+      "bytes": 2717,
+      "path": "recipes/mixtures/mix01_quotas_6b.yaml",
+      "sha256": "9b16db765c4dbb3fc3a366b1c2a8acc88e3ca8bc81f344d0a082ee00d8c78fdf"
+    },
+    {
+      "bytes": 15226,
+      "path": "recipes/mixtures/mix01_views.yaml",
+      "sha256": "461cda0ed6d48e8f7d1d895a7a9eecc445e9bc499cc730a06c8531b141e13d88"
+    },
+    {
+      "bytes": 134,
+      "path": "recipes/operator/storage.json",
+      "sha256": "1d1846c8d9f620540ae6e201328d8c9e97d22fd666a7f456f15169cc9cb8d0b8"
+    },
+    {
+      "bytes": 5506,
+      "path": "recipes/selectors/essential_web_selector_sweep_v1.yaml",
+      "sha256": "c27a0aae8f63a1d9f80fdeb693a14d877b68298d386a3fc8679bbab34fa2a088"
+    },
+    {
+      "bytes": 8683,
+      "path": "scripts/essential_web_measure.py",
+      "sha256": "42b725de961334113c541040aa1c31a2c789a277ca80d460d9e4693a448ef186"
+    },
+    {
+      "bytes": 19316,
+      "path": "scripts/essential_web_readiness.py",
+      "sha256": "277071165ff50173c7d7853eaee1822a1ec8b291a17bcf89bf4997b81a6c9c11"
+    },
+    {
+      "bytes": 82158,
+      "path": "scripts/essential_web_selector_sweep.py",
+      "sha256": "5a63e78560ea9e12b0ec03b5e7e63204b5c75554bee02192c12bb4ab0853bf9c"
+    },
+    {
+      "bytes": 38304,
+      "path": "scripts/mix01_inventory.py",
+      "sha256": "5db33461e564e7eec1e1791f66d2cee706499e02c4d03c941b50f1a500923b84"
+    },
+    {
+      "bytes": 25398,
+      "path": "scripts/operator_calibrate_remaining.ps1",
+      "sha256": "81ef1737872148fc1dc824ccdf447d788d3c5c85d6ba127c8b779178ea0f7254"
+    },
+    {
+      "bytes": 900,
+      "path": "scripts/operator_storage.ps1",
+      "sha256": "a2a2680eb287c92320b1ef7be88c1214288a879e897acee35151fd56b1156f51"
+    },
+    {
+      "bytes": 163720,
+      "path": "src/xlm/cli/data_cmd.py",
+      "sha256": "975529e819f17ee7a972e967e89d3b6b76c1e6b6877e847892565daa71966a16"
+    },
+    {
+      "bytes": 712,
+      "path": "src/xlm/data/adapters/malformed.py",
+      "sha256": "0b93dfb44d79e4493bf6ef9760b2d604544ec79dedf27156eada5472f647bcf6"
+    },
+    {
+      "bytes": 69228,
+      "path": "src/xlm/data/adapters/mix01_adapters.py",
+      "sha256": "56ca4fb26e88b57409f9ba0e0743095a1ff552a83e702722a948c2115d3c42f8"
+    },
+    {
+      "bytes": 10248,
+      "path": "src/xlm/data/adapters/rejections.py",
+      "sha256": "f23b9a767220731423419e1961fb3fbada6d1e0f4b6650c569cb410707990c8b"
+    },
+    {
+      "bytes": 17706,
+      "path": "src/xlm/data/sources/admission.py",
+      "sha256": "8fb312ba09f6dcf5e2950c0dd51b85078ec3dbd97a53acf4db930fa2dd5e88c3"
+    },
+    {
+      "bytes": 8432,
+      "path": "src/xlm/data/sources/essential_web_readiness.py",
+      "sha256": "c9b3c0eb3b942e4f32ef565981fbbb126ad1789cfe3f99777d6ed4263a0f95b6"
+    },
+    {
+      "bytes": 36448,
+      "path": "tests/test_essential_web_production_selector.py",
+      "sha256": "c336231beae0ef42d44852f649614fbd882d6a93f9a020e61697bbf633b40697"
+    },
+    {
+      "bytes": 17732,
+      "path": "tests/test_essential_web_readiness.py",
+      "sha256": "cd829f3959bbeaf3a60eaede2789cb0f2a5e3044b7dc32f831b18c7fdd4d78bb"
+    },
+    {
+      "bytes": 236016,
+      "path": "uv.lock",
+      "sha256": "658f83d08e7003c0642223759736dcccfa983ce0bab4b75f8f2b234e7a114631"
+    }
+  ],
+  "code_commit": "57cb42f",
+  "kind": "essential_web_readiness_artifact_manifest",
+  "self_hash": "excluded to avoid self-reference"
+}

@@ -1,0 +1,53 @@
+{
+  "admission_probability": 0.125244140625,
+  "assumption": "independent admissions within a row group; clustering unmeasured",
+  "basis": "observed compressed row-group chunks; no retries; windows may cost less",
+  "expected_saving_fraction": 0.0,
+  "full_text_first_bytes": 228862655,
+  "granularity": "column chunk within a row group; sequential pages, no row seek",
+  "groups": [
+    {
+      "file": "data/crawl=CC-MAIN-2014-15/train-01860-of-02772.parquet",
+      "needed_text_chunk_fraction": 1.0,
+      "rows": 10000
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2015-32/train-01682-of-01920.parquet",
+      "needed_text_chunk_fraction": 1.0,
+      "rows": 10000
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2016-50/train-02156-of-03132.parquet",
+      "needed_text_chunk_fraction": 1.0,
+      "rows": 10000
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2018-05/train-03378-of-03429.parquet",
+      "needed_text_chunk_fraction": 1.0,
+      "rows": 10000
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2019-09/train-00153-of-02577.parquet",
+      "needed_text_chunk_fraction": 1.0,
+      "rows": 10000
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2021-04/train-00179-of-03315.parquet",
+      "needed_text_chunk_fraction": 1.0,
+      "rows": 10000
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2021-49/train-00408-of-02895.parquet",
+      "needed_text_chunk_fraction": 1.0,
+      "rows": 10000
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2024-26/train-01127-of-03168.parquet",
+      "needed_text_chunk_fraction": 1.0,
+      "rows": 10000
+    }
+  ],
+  "implementation_threshold": 0.25,
+  "metadata_first_bytes": 228862655,
+  "strategy": "full_text_first"
+}

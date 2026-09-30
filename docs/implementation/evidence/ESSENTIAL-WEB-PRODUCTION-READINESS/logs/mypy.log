@@ -1,0 +1,9 @@
+uv : interpreted mypy; compiled mypy modules loaded: 0
+At line:2 char:56
++ ... FFLINE='1'; uv run --offline --locked --no-sync --extra cpu --extra e ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (interpreted myp...dules loaded: 0:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+pyproject.toml: note: unused section(s): module = ['lm_eval', 'lm_eval.*']
+Success: no issues found in 11 source files

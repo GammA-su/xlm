@@ -1,0 +1,5834 @@
+[
+  {
+    "chunks": [
+      {
+        "compressed_bytes": 97631,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "id",
+        "uncompressed_bytes": 97616
+      },
+      {
+        "compressed_bytes": 22187656,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "text",
+        "uncompressed_bytes": 37887200
+      },
+      {
+        "compressed_bytes": 564375,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.url",
+        "uncompressed_bytes": 800194
+      },
+      {
+        "compressed_bytes": 101367,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.source_domain",
+        "uncompressed_bytes": 156419
+      },
+      {
+        "compressed_bytes": 125,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.snapshot_id",
+        "uncompressed_bytes": 121
+      },
+      {
+        "compressed_bytes": 73546,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.Content-Length",
+        "uncompressed_bytes": 105874
+      },
+      {
+        "compressed_bytes": 289,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.Content-Type",
+        "uncompressed_bytes": 320
+      },
+      {
+        "compressed_bytes": 358016,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Block-Digest",
+        "uncompressed_bytes": 426622
+      },
+      {
+        "compressed_bytes": 385296,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Concurrent-To",
+        "uncompressed_bytes": 526362
+      },
+      {
+        "compressed_bytes": 99732,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Date",
+        "uncompressed_bytes": 254568
+      },
+      {
+        "compressed_bytes": 69230,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-IP-Address",
+        "uncompressed_bytes": 108715
+      },
+      {
+        "compressed_bytes": 227,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Identified-Payload-Type",
+        "uncompressed_bytes": 240
+      },
+      {
+        "compressed_bytes": 358097,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Payload-Digest",
+        "uncompressed_bytes": 426622
+      },
+      {
+        "compressed_bytes": 384854,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Record-ID",
+        "uncompressed_bytes": 526362
+      },
+      {
+        "compressed_bytes": 562350,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Target-URI",
+        "uncompressed_bytes": 797249
+      },
+      {
+        "compressed_bytes": 2606,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Truncated",
+        "uncompressed_bytes": 2599
+      },
+      {
+        "compressed_bytes": 211,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Type",
+        "uncompressed_bytes": 242
+      },
+      {
+        "compressed_bytes": 348556,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Warcinfo-ID",
+        "uncompressed_bytes": 476382
+      },
+      {
+        "compressed_bytes": 3160,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_info",
+        "uncompressed_bytes": 13427
+      },
+      {
+        "compressed_bytes": 36940,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.ccnet_original_length",
+        "uncompressed_bytes": 36929
+      },
+      {
+        "compressed_bytes": 13395,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.ccnet_original_nlines",
+        "uncompressed_bytes": 13387
+      },
+      {
+        "compressed_bytes": 1932,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_curly_bracket",
+        "uncompressed_bytes": 2423
+      },
+      {
+        "compressed_bytes": 2657,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_ldnoobw_words",
+        "uncompressed_bytes": 3795
+      },
+      {
+        "compressed_bytes": 82,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_lorem_ipsum",
+        "uncompressed_bytes": 78
+      },
+      {
+        "compressed_bytes": 48084,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_stop_word_fraction",
+        "uncompressed_bytes": 48073
+      },
+      {
+        "compressed_bytes": 276,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_ut1_blacklist",
+        "uncompressed_bytes": 314
+      },
+      {
+        "compressed_bytes": 40372,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_all_caps_words",
+        "uncompressed_bytes": 40361
+      },
+      {
+        "compressed_bytes": 12257,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_lines_end_with_ellipsis",
+        "uncompressed_bytes": 15492
+      },
+      {
+        "compressed_bytes": 47360,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_no_alph_words",
+        "uncompressed_bytes": 47349
+      },
+      {
+        "compressed_bytes": 45976,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_unique_words",
+        "uncompressed_bytes": 45965
+      },
+      {
+        "compressed_bytes": 53388,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_mean_word_length",
+        "uncompressed_bytes": 53376
+      },
+      {
+        "compressed_bytes": 12817,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_num_sentences",
+        "uncompressed_bytes": 12807
+      },
+      {
+        "compressed_bytes": 25261,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_symbol_to_word_ratio",
+        "uncompressed_bytes": 27230
+      },
+      {
+        "compressed_bytes": 56980,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_unigram_entropy",
+        "uncompressed_bytes": 56968
+      },
+      {
+        "compressed_bytes": 21387,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_word_count",
+        "uncompressed_bytes": 21375
+      },
+      {
+        "compressed_bytes": 23586,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_10grams",
+        "uncompressed_bytes": 27450
+      },
+      {
+        "compressed_bytes": 42209,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_5grams",
+        "uncompressed_bytes": 42677
+      },
+      {
+        "compressed_bytes": 37310,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_6grams",
+        "uncompressed_bytes": 38655
+      },
+      {
+        "compressed_bytes": 33280,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_7grams",
+        "uncompressed_bytes": 35453
+      },
+      {
+        "compressed_bytes": 29839,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_8grams",
+        "uncompressed_bytes": 32819
+      },
+      {
+        "compressed_bytes": 26172,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_9grams",
+        "uncompressed_bytes": 29454
+      },
+      {
+        "compressed_bytes": 50672,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_top_2gram",
+        "uncompressed_bytes": 50660
+      },
+      {
+        "compressed_bytes": 48552,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_top_3gram",
+        "uncompressed_bytes": 48541
+      },
+      {
+        "compressed_bytes": 45503,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_top_4gram",
+        "uncompressed_bytes": 45489
+      },
+      {
+        "compressed_bytes": 57612,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_books_importance",
+        "uncompressed_bytes": 57600
+      },
+      {
+        "compressed_bytes": 57608,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_books_importance_length_correction",
+        "uncompressed_bytes": 57596
+      },
+      {
+        "compressed_bytes": 57612,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_openwebtext_importance",
+        "uncompressed_bytes": 57600
+      },
+      {
+        "compressed_bytes": 57608,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_openwebtext_importance_length_correction",
+        "uncompressed_bytes": 57596
+      },
+      {
+        "compressed_bytes": 57608,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_wikipedia_importance",
+        "uncompressed_bytes": 57596
+      },
+      {
+        "compressed_bytes": 57604,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_wikipedia_importance_length_correction",
+        "uncompressed_bytes": 57592
+      },
+      {
+        "compressed_bytes": 37752,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.dclm",
+        "uncompressed_bytes": 37741
+      },
+      {
+        "compressed_bytes": 57556,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.english",
+        "uncompressed_bytes": 57544
+      },
+      {
+        "compressed_bytes": 57592,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.fineweb_edu_approx",
+        "uncompressed_bytes": 57580
+      },
+      {
+        "compressed_bytes": 40272,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.eai_general_math",
+        "uncompressed_bytes": 40261
+      },
+      {
+        "compressed_bytes": 57336,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.eai_open_web_math",
+        "uncompressed_bytes": 57324
+      },
+      {
+        "compressed_bytes": 28862,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.eai_web_code",
+        "uncompressed_bytes": 28855
+      },
+      {
+        "compressed_bytes": 25452,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.primary.code",
+        "uncompressed_bytes": 33837
+      },
+      {
+        "compressed_bytes": 5359,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.primary.labels.level_1",
+        "uncompressed_bytes": 5380
+      },
+      {
+        "compressed_bytes": 9926,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.primary.labels.level_2",
+        "uncompressed_bytes": 10313
+      },
+      {
+        "compressed_bytes": 14733,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.primary.labels.level_3",
+        "uncompressed_bytes": 17074
+      },
+      {
+        "compressed_bytes": 26016,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.secondary.code",
+        "uncompressed_bytes": 34778
+      },
+      {
+        "compressed_bytes": 5354,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.secondary.labels.level_1",
+        "uncompressed_bytes": 5380
+      },
+      {
+        "compressed_bytes": 9928,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.secondary.labels.level_2",
+        "uncompressed_bytes": 10294
+      },
+      {
+        "compressed_bytes": 14602,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.secondary.labels.level_3",
+        "uncompressed_bytes": 16831
+      },
+      {
+        "compressed_bytes": 3845,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_cognitive_process.primary.code",
+        "uncompressed_bytes": 3842
+      },
+      {
+        "compressed_bytes": 3906,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_cognitive_process.primary.label",
+        "uncompressed_bytes": 3901
+      },
+      {
+        "compressed_bytes": 3860,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_cognitive_process.secondary.code",
+        "uncompressed_bytes": 3856
+      },
+      {
+        "compressed_bytes": 3918,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_cognitive_process.secondary.label",
+        "uncompressed_bytes": 3910
+      },
+      {
+        "compressed_bytes": 3838,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_knowledge_domain.primary.code",
+        "uncompressed_bytes": 3833
+      },
+      {
+        "compressed_bytes": 3892,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_knowledge_domain.primary.label",
+        "uncompressed_bytes": 3890
+      },
+      {
+        "compressed_bytes": 3858,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_knowledge_domain.secondary.code",
+        "uncompressed_bytes": 3850
+      },
+      {
+        "compressed_bytes": 3913,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_knowledge_domain.secondary.label",
+        "uncompressed_bytes": 3907
+      },
+      {
+        "compressed_bytes": 5150,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v1.primary.code",
+        "uncompressed_bytes": 5157
+      },
+      {
+        "compressed_bytes": 5458,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v1.primary.label",
+        "uncompressed_bytes": 5449
+      },
+      {
+        "compressed_bytes": 4911,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v1.secondary.code",
+        "uncompressed_bytes": 5119
+      },
+      {
+        "compressed_bytes": 5193,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v1.secondary.label",
+        "uncompressed_bytes": 5389
+      },
+      {
+        "compressed_bytes": 2602,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.extraction_artifacts.primary.code",
+        "uncompressed_bytes": 2595
+      },
+      {
+        "compressed_bytes": 2670,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.extraction_artifacts.primary.label",
+        "uncompressed_bytes": 2663
+      },
+      {
+        "compressed_bytes": 3859,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.extraction_artifacts.secondary.code",
+        "uncompressed_bytes": 3853
+      },
+      {
+        "compressed_bytes": 3967,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.extraction_artifacts.secondary.label",
+        "uncompressed_bytes": 3959
+      },
+      {
+        "compressed_bytes": 3859,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.missing_content.primary.code",
+        "uncompressed_bytes": 3857
+      },
+      {
+        "compressed_bytes": 3998,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.missing_content.primary.label",
+        "uncompressed_bytes": 4012
+      },
+      {
+        "compressed_bytes": 3841,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.missing_content.secondary.code",
+        "uncompressed_bytes": 3839
+      },
+      {
+        "compressed_bytes": 3985,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.missing_content.secondary.label",
+        "uncompressed_bytes": 3994
+      },
+      {
+        "compressed_bytes": 6436,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v2.primary.code",
+        "uncompressed_bytes": 6461
+      },
+      {
+        "compressed_bytes": 6710,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v2.primary.label",
+        "uncompressed_bytes": 6755
+      },
+      {
+        "compressed_bytes": 6436,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v2.secondary.code",
+        "uncompressed_bytes": 6467
+      },
+      {
+        "compressed_bytes": 6719,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v2.secondary.label",
+        "uncompressed_bytes": 6769
+      },
+      {
+        "compressed_bytes": 3486,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.reasoning_depth.primary.code",
+        "uncompressed_bytes": 3801
+      },
+      {
+        "compressed_bytes": 3573,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.reasoning_depth.primary.label",
+        "uncompressed_bytes": 3906
+      },
+      {
+        "compressed_bytes": 3449,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.reasoning_depth.secondary.code",
+        "uncompressed_bytes": 3784
+      },
+      {
+        "compressed_bytes": 3537,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.reasoning_depth.secondary.label",
+        "uncompressed_bytes": 3889
+      },
+      {
+        "compressed_bytes": 2823,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.technical_correctness.primary.code",
+        "uncompressed_bytes": 3447
+      },
+      {
+        "compressed_bytes": 2930,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.technical_correctness.primary.label",
+        "uncompressed_bytes": 3565
+      },
+      {
+        "compressed_bytes": 3800,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.technical_correctness.secondary.code",
+        "uncompressed_bytes": 3796
+      },
+      {
+        "compressed_bytes": 3923,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.technical_correctness.secondary.label",
+        "uncompressed_bytes": 3941
+      },
+      {
+        "compressed_bytes": 2569,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.education_level.primary.code",
+        "uncompressed_bytes": 3196
+      },
+      {
+        "compressed_bytes": 2683,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.education_level.primary.label",
+        "uncompressed_bytes": 3312
+      },
+      {
+        "compressed_bytes": 2579,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.education_level.secondary.code",
+        "uncompressed_bytes": 3099
+      },
+      {
+        "compressed_bytes": 2688,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.education_level.secondary.label",
+        "uncompressed_bytes": 3215
+      },
+      {
+        "compressed_bytes": 158,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "pid",
+        "uncompressed_bytes": 154
+      }
+    ],
+    "confirmation_window": [
+      90023,
+      90535
+    ],
+    "crawl": "crawl=CC-MAIN-2014-15",
+    "file": "data/crawl=CC-MAIN-2014-15/train-01860-of-02772.parquet",
+    "file_row_groups": 10,
+    "file_rows": 93417,
+    "footer_bytes": 203276,
+    "footer_sha256": "eec4e65e7307c3c12c1366f20500e7b0a3e26ac2bd0ee59f8f7d9b1bd1b970a9",
+    "group_rows": 10000,
+    "nominal_requests_one_redirect": 220,
+    "projected_compressed_bytes": 27235025,
+    "projected_uncompressed_bytes": 44293458,
+    "remote_length": 290684578,
+    "selector_compressed_bytes": 1637543,
+    "strong_etag": "\"a898462fb164d7eea3e8248a28cb1f855843d72bd55cfd126f537653c4eae323\"",
+    "text_compressed_bytes": 22187656
+  },
+  {
+    "chunks": [
+      {
+        "compressed_bytes": 97631,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "id",
+        "uncompressed_bytes": 97616
+      },
+      {
+        "compressed_bytes": 23023187,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "text",
+        "uncompressed_bytes": 39936152
+      },
+      {
+        "compressed_bytes": 553380,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.url",
+        "uncompressed_bytes": 790021
+      },
+      {
+        "compressed_bytes": 87547,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.source_domain",
+        "uncompressed_bytes": 134899
+      },
+      {
+        "compressed_bytes": 125,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.snapshot_id",
+        "uncompressed_bytes": 121
+      },
+      {
+        "compressed_bytes": 74589,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.Content-Length",
+        "uncompressed_bytes": 106973
+      },
+      {
+        "compressed_bytes": 266,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.Content-Type",
+        "uncompressed_bytes": 282
+      },
+      {
+        "compressed_bytes": 358167,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Block-Digest",
+        "uncompressed_bytes": 426803
+      },
+      {
+        "compressed_bytes": 384929,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Concurrent-To",
+        "uncompressed_bytes": 526593
+      },
+      {
+        "compressed_bytes": 98781,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Date",
+        "uncompressed_bytes": 253416
+      },
+      {
+        "compressed_bytes": 64408,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-IP-Address",
+        "uncompressed_bytes": 100514
+      },
+      {
+        "compressed_bytes": 137,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Identified-Payload-Type",
+        "uncompressed_bytes": 133
+      },
+      {
+        "compressed_bytes": 358252,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Payload-Digest",
+        "uncompressed_bytes": 426803
+      },
+      {
+        "compressed_bytes": 384975,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Record-ID",
+        "uncompressed_bytes": 526593
+      },
+      {
+        "compressed_bytes": 551204,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Target-URI",
+        "uncompressed_bytes": 787283
+      },
+      {
+        "compressed_bytes": 2607,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Truncated",
+        "uncompressed_bytes": 2600
+      },
+      {
+        "compressed_bytes": 188,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Type",
+        "uncompressed_bytes": 204
+      },
+      {
+        "compressed_bytes": 334425,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Warcinfo-ID",
+        "uncompressed_bytes": 456621
+      },
+      {
+        "compressed_bytes": 2109,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_info",
+        "uncompressed_bytes": 4899
+      },
+      {
+        "compressed_bytes": 37640,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.ccnet_original_length",
+        "uncompressed_bytes": 37629
+      },
+      {
+        "compressed_bytes": 14771,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.ccnet_original_nlines",
+        "uncompressed_bytes": 14761
+      },
+      {
+        "compressed_bytes": 2671,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_curly_bracket",
+        "uncompressed_bytes": 3275
+      },
+      {
+        "compressed_bytes": 2561,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_ldnoobw_words",
+        "uncompressed_bytes": 3631
+      },
+      {
+        "compressed_bytes": 90,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_lorem_ipsum",
+        "uncompressed_bytes": 86
+      },
+      {
+        "compressed_bytes": 48500,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_stop_word_fraction",
+        "uncompressed_bytes": 48489
+      },
+      {
+        "compressed_bytes": 285,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_ut1_blacklist",
+        "uncompressed_bytes": 359
+      },
+      {
+        "compressed_bytes": 41288,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_all_caps_words",
+        "uncompressed_bytes": 41277
+      },
+      {
+        "compressed_bytes": 12912,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_lines_end_with_ellipsis",
+        "uncompressed_bytes": 16001
+      },
+      {
+        "compressed_bytes": 48120,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_no_alph_words",
+        "uncompressed_bytes": 48109
+      },
+      {
+        "compressed_bytes": 46852,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_unique_words",
+        "uncompressed_bytes": 46841
+      },
+      {
+        "compressed_bytes": 53868,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_mean_word_length",
+        "uncompressed_bytes": 53856
+      },
+      {
+        "compressed_bytes": 12948,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_num_sentences",
+        "uncompressed_bytes": 12939
+      },
+      {
+        "compressed_bytes": 26301,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_symbol_to_word_ratio",
+        "uncompressed_bytes": 28017
+      },
+      {
+        "compressed_bytes": 57080,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_unigram_entropy",
+        "uncompressed_bytes": 57068
+      },
+      {
+        "compressed_bytes": 21817,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_word_count",
+        "uncompressed_bytes": 21807
+      },
+      {
+        "compressed_bytes": 25258,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_10grams",
+        "uncompressed_bytes": 28756
+      },
+      {
+        "compressed_bytes": 43841,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_5grams",
+        "uncompressed_bytes": 43825
+      },
+      {
+        "compressed_bytes": 38905,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_6grams",
+        "uncompressed_bytes": 39815
+      },
+      {
+        "compressed_bytes": 34643,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_7grams",
+        "uncompressed_bytes": 36374
+      },
+      {
+        "compressed_bytes": 31088,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_8grams",
+        "uncompressed_bytes": 33796
+      },
+      {
+        "compressed_bytes": 27480,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_9grams",
+        "uncompressed_bytes": 30461
+      },
+      {
+        "compressed_bytes": 50888,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_top_2gram",
+        "uncompressed_bytes": 50876
+      },
+      {
+        "compressed_bytes": 48772,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_top_3gram",
+        "uncompressed_bytes": 48761
+      },
+      {
+        "compressed_bytes": 46264,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_top_4gram",
+        "uncompressed_bytes": 46253
+      },
+      {
+        "compressed_bytes": 57604,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_books_importance",
+        "uncompressed_bytes": 57592
+      },
+      {
+        "compressed_bytes": 57604,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_books_importance_length_correction",
+        "uncompressed_bytes": 57592
+      },
+      {
+        "compressed_bytes": 57600,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_openwebtext_importance",
+        "uncompressed_bytes": 57588
+      },
+      {
+        "compressed_bytes": 57604,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_openwebtext_importance_length_correction",
+        "uncompressed_bytes": 57592
+      },
+      {
+        "compressed_bytes": 57612,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_wikipedia_importance",
+        "uncompressed_bytes": 57600
+      },
+      {
+        "compressed_bytes": 57612,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_wikipedia_importance_length_correction",
+        "uncompressed_bytes": 57600
+      },
+      {
+        "compressed_bytes": 37768,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.dclm",
+        "uncompressed_bytes": 37757
+      },
+      {
+        "compressed_bytes": 57588,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.english",
+        "uncompressed_bytes": 57576
+      },
+      {
+        "compressed_bytes": 57596,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.fineweb_edu_approx",
+        "uncompressed_bytes": 57584
+      },
+      {
+        "compressed_bytes": 40340,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.eai_general_math",
+        "uncompressed_bytes": 40329
+      },
+      {
+        "compressed_bytes": 57332,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.eai_open_web_math",
+        "uncompressed_bytes": 57320
+      },
+      {
+        "compressed_bytes": 28633,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.eai_web_code",
+        "uncompressed_bytes": 28623
+      },
+      {
+        "compressed_bytes": 25268,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.primary.code",
+        "uncompressed_bytes": 33645
+      },
+      {
+        "compressed_bytes": 5355,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.primary.labels.level_1",
+        "uncompressed_bytes": 5379
+      },
+      {
+        "compressed_bytes": 9972,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.primary.labels.level_2",
+        "uncompressed_bytes": 10319
+      },
+      {
+        "compressed_bytes": 14690,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.primary.labels.level_3",
+        "uncompressed_bytes": 16987
+      },
+      {
+        "compressed_bytes": 26184,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.secondary.code",
+        "uncompressed_bytes": 35042
+      },
+      {
+        "compressed_bytes": 5353,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.secondary.labels.level_1",
+        "uncompressed_bytes": 5380
+      },
+      {
+        "compressed_bytes": 9932,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.secondary.labels.level_2",
+        "uncompressed_bytes": 10307
+      },
+      {
+        "compressed_bytes": 14725,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.secondary.labels.level_3",
+        "uncompressed_bytes": 17189
+      },
+      {
+        "compressed_bytes": 3851,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_cognitive_process.primary.code",
+        "uncompressed_bytes": 3848
+      },
+      {
+        "compressed_bytes": 3912,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_cognitive_process.primary.label",
+        "uncompressed_bytes": 3907
+      },
+      {
+        "compressed_bytes": 3859,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_cognitive_process.secondary.code",
+        "uncompressed_bytes": 3855
+      },
+      {
+        "compressed_bytes": 3913,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_cognitive_process.secondary.label",
+        "uncompressed_bytes": 3909
+      },
+      {
+        "compressed_bytes": 3842,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_knowledge_domain.primary.code",
+        "uncompressed_bytes": 3838
+      },
+      {
+        "compressed_bytes": 3894,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_knowledge_domain.primary.label",
+        "uncompressed_bytes": 3894
+      },
+      {
+        "compressed_bytes": 3856,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_knowledge_domain.secondary.code",
+        "uncompressed_bytes": 3850
+      },
+      {
+        "compressed_bytes": 3913,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_knowledge_domain.secondary.label",
+        "uncompressed_bytes": 3907
+      },
+      {
+        "compressed_bytes": 6402,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v1.primary.code",
+        "uncompressed_bytes": 6420
+      },
+      {
+        "compressed_bytes": 6717,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v1.primary.label",
+        "uncompressed_bytes": 6721
+      },
+      {
+        "compressed_bytes": 4968,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v1.secondary.code",
+        "uncompressed_bytes": 5132
+      },
+      {
+        "compressed_bytes": 5261,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v1.secondary.label",
+        "uncompressed_bytes": 5418
+      },
+      {
+        "compressed_bytes": 2607,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.extraction_artifacts.primary.code",
+        "uncompressed_bytes": 2600
+      },
+      {
+        "compressed_bytes": 2709,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.extraction_artifacts.primary.label",
+        "uncompressed_bytes": 2701
+      },
+      {
+        "compressed_bytes": 3862,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.extraction_artifacts.secondary.code",
+        "uncompressed_bytes": 3856
+      },
+      {
+        "compressed_bytes": 3970,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.extraction_artifacts.secondary.label",
+        "uncompressed_bytes": 3962
+      },
+      {
+        "compressed_bytes": 3859,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.missing_content.primary.code",
+        "uncompressed_bytes": 3857
+      },
+      {
+        "compressed_bytes": 4009,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.missing_content.primary.label",
+        "uncompressed_bytes": 4012
+      },
+      {
+        "compressed_bytes": 3843,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.missing_content.secondary.code",
+        "uncompressed_bytes": 3842
+      },
+      {
+        "compressed_bytes": 3997,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.missing_content.secondary.label",
+        "uncompressed_bytes": 3997
+      },
+      {
+        "compressed_bytes": 6433,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v2.primary.code",
+        "uncompressed_bytes": 6461
+      },
+      {
+        "compressed_bytes": 6700,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v2.primary.label",
+        "uncompressed_bytes": 6747
+      },
+      {
+        "compressed_bytes": 6440,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v2.secondary.code",
+        "uncompressed_bytes": 6467
+      },
+      {
+        "compressed_bytes": 6720,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v2.secondary.label",
+        "uncompressed_bytes": 6769
+      },
+      {
+        "compressed_bytes": 3491,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.reasoning_depth.primary.code",
+        "uncompressed_bytes": 3798
+      },
+      {
+        "compressed_bytes": 3578,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.reasoning_depth.primary.label",
+        "uncompressed_bytes": 3903
+      },
+      {
+        "compressed_bytes": 3637,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.reasoning_depth.secondary.code",
+        "uncompressed_bytes": 3740
+      },
+      {
+        "compressed_bytes": 3724,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.reasoning_depth.secondary.label",
+        "uncompressed_bytes": 3845
+      },
+      {
+        "compressed_bytes": 2956,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.technical_correctness.primary.code",
+        "uncompressed_bytes": 3551
+      },
+      {
+        "compressed_bytes": 3063,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.technical_correctness.primary.label",
+        "uncompressed_bytes": 3669
+      },
+      {
+        "compressed_bytes": 3835,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.technical_correctness.secondary.code",
+        "uncompressed_bytes": 3828
+      },
+      {
+        "compressed_bytes": 3959,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.technical_correctness.secondary.label",
+        "uncompressed_bytes": 3973
+      },
+      {
+        "compressed_bytes": 2722,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.education_level.primary.code",
+        "uncompressed_bytes": 3258
+      },
+      {
+        "compressed_bytes": 2831,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.education_level.primary.label",
+        "uncompressed_bytes": 3379
+      },
+      {
+        "compressed_bytes": 2696,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.education_level.secondary.code",
+        "uncompressed_bytes": 3202
+      },
+      {
+        "compressed_bytes": 2805,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.education_level.secondary.label",
+        "uncompressed_bytes": 3318
+      },
+      {
+        "compressed_bytes": 158,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "pid",
+        "uncompressed_bytes": 154
+      }
+    ],
+    "confirmation_window": [
+      92096,
+      92608
+    ],
+    "crawl": "crawl=CC-MAIN-2015-32",
+    "file": "data/crawl=CC-MAIN-2015-32/train-01682-of-01920.parquet",
+    "file_row_groups": 10,
+    "file_rows": 97828,
+    "footer_bytes": 198790,
+    "footer_sha256": "4d1fa59f5c245aa387a69201812ae79eefdc2250921e387cdbb7454a5a8fdd95",
+    "group_rows": 10000,
+    "nominal_requests_one_redirect": 220,
+    "projected_compressed_bytes": 28037114,
+    "projected_uncompressed_bytes": 46284177,
+    "remote_length": 316724715,
+    "selector_compressed_bytes": 1660049,
+    "strong_etag": "\"d25ba04f1376333b6706e0becc19aa92f9540219aa4df5e96360fce324851975\"",
+    "text_compressed_bytes": 23023187
+  },
+  {
+    "chunks": [
+      {
+        "compressed_bytes": 97631,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "id",
+        "uncompressed_bytes": 97616
+      },
+      {
+        "compressed_bytes": 21856064,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "text",
+        "uncompressed_bytes": 38062731
+      },
+      {
+        "compressed_bytes": 560701,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.url",
+        "uncompressed_bytes": 787502
+      },
+      {
+        "compressed_bytes": 94415,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.source_domain",
+        "uncompressed_bytes": 144533
+      },
+      {
+        "compressed_bytes": 125,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.snapshot_id",
+        "uncompressed_bytes": 121
+      },
+      {
+        "compressed_bytes": 75038,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.Content-Length",
+        "uncompressed_bytes": 107860
+      },
+      {
+        "compressed_bytes": 223,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.Content-Type",
+        "uncompressed_bytes": 231
+      },
+      {
+        "compressed_bytes": 358659,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Block-Digest",
+        "uncompressed_bytes": 427217
+      },
+      {
+        "compressed_bytes": 385429,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Concurrent-To",
+        "uncompressed_bytes": 527117
+      },
+      {
+        "compressed_bytes": 97606,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Date",
+        "uncompressed_bytes": 253547
+      },
+      {
+        "compressed_bytes": 69702,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-IP-Address",
+        "uncompressed_bytes": 110013
+      },
+      {
+        "compressed_bytes": 194,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Identified-Payload-Type",
+        "uncompressed_bytes": 213
+      },
+      {
+        "compressed_bytes": 358594,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Payload-Digest",
+        "uncompressed_bytes": 427217
+      },
+      {
+        "compressed_bytes": 385623,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Record-ID",
+        "uncompressed_bytes": 527117
+      },
+      {
+        "compressed_bytes": 559908,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Target-URI",
+        "uncompressed_bytes": 786565
+      },
+      {
+        "compressed_bytes": 2604,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Truncated",
+        "uncompressed_bytes": 2596
+      },
+      {
+        "compressed_bytes": 145,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Type",
+        "uncompressed_bytes": 153
+      },
+      {
+        "compressed_bytes": 353126,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Warcinfo-ID",
+        "uncompressed_bytes": 482441
+      },
+      {
+        "compressed_bytes": 2558,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_info",
+        "uncompressed_bytes": 8686
+      },
+      {
+        "compressed_bytes": 36504,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.ccnet_original_length",
+        "uncompressed_bytes": 36493
+      },
+      {
+        "compressed_bytes": 14659,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.ccnet_original_nlines",
+        "uncompressed_bytes": 14649
+      },
+      {
+        "compressed_bytes": 2882,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_curly_bracket",
+        "uncompressed_bytes": 3973
+      },
+      {
+        "compressed_bytes": 2527,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_ldnoobw_words",
+        "uncompressed_bytes": 3593
+      },
+      {
+        "compressed_bytes": 82,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_lorem_ipsum",
+        "uncompressed_bytes": 78
+      },
+      {
+        "compressed_bytes": 47816,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_stop_word_fraction",
+        "uncompressed_bytes": 47805
+      },
+      {
+        "compressed_bytes": 480,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_ut1_blacklist",
+        "uncompressed_bytes": 695
+      },
+      {
+        "compressed_bytes": 39756,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_all_caps_words",
+        "uncompressed_bytes": 39745
+      },
+      {
+        "compressed_bytes": 12386,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_lines_end_with_ellipsis",
+        "uncompressed_bytes": 15498
+      },
+      {
+        "compressed_bytes": 47420,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_no_alph_words",
+        "uncompressed_bytes": 47409
+      },
+      {
+        "compressed_bytes": 45880,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_unique_words",
+        "uncompressed_bytes": 45869
+      },
+      {
+        "compressed_bytes": 53360,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_mean_word_length",
+        "uncompressed_bytes": 53348
+      },
+      {
+        "compressed_bytes": 12765,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_num_sentences",
+        "uncompressed_bytes": 12755
+      },
+      {
+        "compressed_bytes": 24387,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_symbol_to_word_ratio",
+        "uncompressed_bytes": 26495
+      },
+      {
+        "compressed_bytes": 57112,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_unigram_entropy",
+        "uncompressed_bytes": 57100
+      },
+      {
+        "compressed_bytes": 21121,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_word_count",
+        "uncompressed_bytes": 21107
+      },
+      {
+        "compressed_bytes": 24790,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_10grams",
+        "uncompressed_bytes": 28295
+      },
+      {
+        "compressed_bytes": 43253,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_5grams",
+        "uncompressed_bytes": 43389
+      },
+      {
+        "compressed_bytes": 38966,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_6grams",
+        "uncompressed_bytes": 39873
+      },
+      {
+        "compressed_bytes": 34575,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_7grams",
+        "uncompressed_bytes": 36521
+      },
+      {
+        "compressed_bytes": 30870,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_8grams",
+        "uncompressed_bytes": 33554
+      },
+      {
+        "compressed_bytes": 27175,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_9grams",
+        "uncompressed_bytes": 30115
+      },
+      {
+        "compressed_bytes": 50748,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_top_2gram",
+        "uncompressed_bytes": 50736
+      },
+      {
+        "compressed_bytes": 48440,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_top_3gram",
+        "uncompressed_bytes": 48429
+      },
+      {
+        "compressed_bytes": 45744,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_top_4gram",
+        "uncompressed_bytes": 45733
+      },
+      {
+        "compressed_bytes": 57612,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_books_importance",
+        "uncompressed_bytes": 57600
+      },
+      {
+        "compressed_bytes": 57608,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_books_importance_length_correction",
+        "uncompressed_bytes": 57596
+      },
+      {
+        "compressed_bytes": 57608,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_openwebtext_importance",
+        "uncompressed_bytes": 57596
+      },
+      {
+        "compressed_bytes": 57604,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_openwebtext_importance_length_correction",
+        "uncompressed_bytes": 57592
+      },
+      {
+        "compressed_bytes": 57608,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_wikipedia_importance",
+        "uncompressed_bytes": 57596
+      },
+      {
+        "compressed_bytes": 57604,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_wikipedia_importance_length_correction",
+        "uncompressed_bytes": 57592
+      },
+      {
+        "compressed_bytes": 37360,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.dclm",
+        "uncompressed_bytes": 37349
+      },
+      {
+        "compressed_bytes": 57552,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.english",
+        "uncompressed_bytes": 57540
+      },
+      {
+        "compressed_bytes": 57584,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.fineweb_edu_approx",
+        "uncompressed_bytes": 57572
+      },
+      {
+        "compressed_bytes": 39416,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.eai_general_math",
+        "uncompressed_bytes": 39405
+      },
+      {
+        "compressed_bytes": 57164,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.eai_open_web_math",
+        "uncompressed_bytes": 57152
+      },
+      {
+        "compressed_bytes": 28699,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.eai_web_code",
+        "uncompressed_bytes": 28719
+      },
+      {
+        "compressed_bytes": 25477,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.primary.code",
+        "uncompressed_bytes": 34197
+      },
+      {
+        "compressed_bytes": 5356,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.primary.labels.level_1",
+        "uncompressed_bytes": 5380
+      },
+      {
+        "compressed_bytes": 9923,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.primary.labels.level_2",
+        "uncompressed_bytes": 10333
+      },
+      {
+        "compressed_bytes": 14544,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.primary.labels.level_3",
+        "uncompressed_bytes": 16682
+      },
+      {
+        "compressed_bytes": 26227,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.secondary.code",
+        "uncompressed_bytes": 34914
+      },
+      {
+        "compressed_bytes": 5358,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.secondary.labels.level_1",
+        "uncompressed_bytes": 5379
+      },
+      {
+        "compressed_bytes": 9976,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.secondary.labels.level_2",
+        "uncompressed_bytes": 10364
+      },
+      {
+        "compressed_bytes": 14718,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.secondary.labels.level_3",
+        "uncompressed_bytes": 17371
+      },
+      {
+        "compressed_bytes": 3833,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_cognitive_process.primary.code",
+        "uncompressed_bytes": 3828
+      },
+      {
+        "compressed_bytes": 3888,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_cognitive_process.primary.label",
+        "uncompressed_bytes": 3883
+      },
+      {
+        "compressed_bytes": 3866,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_cognitive_process.secondary.code",
+        "uncompressed_bytes": 3861
+      },
+      {
+        "compressed_bytes": 3923,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_cognitive_process.secondary.label",
+        "uncompressed_bytes": 3920
+      },
+      {
+        "compressed_bytes": 2598,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_knowledge_domain.primary.code",
+        "uncompressed_bytes": 2591
+      },
+      {
+        "compressed_bytes": 2639,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_knowledge_domain.primary.label",
+        "uncompressed_bytes": 2633
+      },
+      {
+        "compressed_bytes": 3856,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_knowledge_domain.secondary.code",
+        "uncompressed_bytes": 3850
+      },
+      {
+        "compressed_bytes": 3911,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_knowledge_domain.secondary.label",
+        "uncompressed_bytes": 3907
+      },
+      {
+        "compressed_bytes": 5146,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v1.primary.code",
+        "uncompressed_bytes": 5157
+      },
+      {
+        "compressed_bytes": 5443,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v1.primary.label",
+        "uncompressed_bytes": 5449
+      },
+      {
+        "compressed_bytes": 4996,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v1.secondary.code",
+        "uncompressed_bytes": 5147
+      },
+      {
+        "compressed_bytes": 5306,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v1.secondary.label",
+        "uncompressed_bytes": 5433
+      },
+      {
+        "compressed_bytes": 2613,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.extraction_artifacts.primary.code",
+        "uncompressed_bytes": 2605
+      },
+      {
+        "compressed_bytes": 2715,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.extraction_artifacts.primary.label",
+        "uncompressed_bytes": 2706
+      },
+      {
+        "compressed_bytes": 3860,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.extraction_artifacts.secondary.code",
+        "uncompressed_bytes": 3854
+      },
+      {
+        "compressed_bytes": 3968,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.extraction_artifacts.secondary.label",
+        "uncompressed_bytes": 3960
+      },
+      {
+        "compressed_bytes": 3856,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.missing_content.primary.code",
+        "uncompressed_bytes": 3852
+      },
+      {
+        "compressed_bytes": 4016,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.missing_content.primary.label",
+        "uncompressed_bytes": 4017
+      },
+      {
+        "compressed_bytes": 3853,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.missing_content.secondary.code",
+        "uncompressed_bytes": 3848
+      },
+      {
+        "compressed_bytes": 4004,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.missing_content.secondary.label",
+        "uncompressed_bytes": 4003
+      },
+      {
+        "compressed_bytes": 6440,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v2.primary.code",
+        "uncompressed_bytes": 6467
+      },
+      {
+        "compressed_bytes": 6722,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v2.primary.label",
+        "uncompressed_bytes": 6769
+      },
+      {
+        "compressed_bytes": 6437,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v2.secondary.code",
+        "uncompressed_bytes": 6467
+      },
+      {
+        "compressed_bytes": 6719,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v2.secondary.label",
+        "uncompressed_bytes": 6769
+      },
+      {
+        "compressed_bytes": 3601,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.reasoning_depth.primary.code",
+        "uncompressed_bytes": 3779
+      },
+      {
+        "compressed_bytes": 3688,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.reasoning_depth.primary.label",
+        "uncompressed_bytes": 3884
+      },
+      {
+        "compressed_bytes": 3381,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.reasoning_depth.secondary.code",
+        "uncompressed_bytes": 3736
+      },
+      {
+        "compressed_bytes": 3468,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.reasoning_depth.secondary.label",
+        "uncompressed_bytes": 3841
+      },
+      {
+        "compressed_bytes": 3071,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.technical_correctness.primary.code",
+        "uncompressed_bytes": 3640
+      },
+      {
+        "compressed_bytes": 3178,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.technical_correctness.primary.label",
+        "uncompressed_bytes": 3758
+      },
+      {
+        "compressed_bytes": 3826,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.technical_correctness.secondary.code",
+        "uncompressed_bytes": 3820
+      },
+      {
+        "compressed_bytes": 3957,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.technical_correctness.secondary.label",
+        "uncompressed_bytes": 3965
+      },
+      {
+        "compressed_bytes": 2709,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.education_level.primary.code",
+        "uncompressed_bytes": 3219
+      },
+      {
+        "compressed_bytes": 2822,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.education_level.primary.label",
+        "uncompressed_bytes": 3337
+      },
+      {
+        "compressed_bytes": 2722,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.education_level.secondary.code",
+        "uncompressed_bytes": 3198
+      },
+      {
+        "compressed_bytes": 2836,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.education_level.secondary.label",
+        "uncompressed_bytes": 3314
+      },
+      {
+        "compressed_bytes": 158,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "pid",
+        "uncompressed_bytes": 154
+      }
+    ],
+    "confirmation_window": [
+      67173,
+      67685
+    ],
+    "crawl": "crawl=CC-MAIN-2016-50",
+    "file": "data/crawl=CC-MAIN-2016-50/train-02156-of-03132.parquet",
+    "file_row_groups": 7,
+    "file_rows": 69622,
+    "footer_bytes": 150099,
+    "footer_sha256": "73808b5e2a4db3b32a7241f06cd1922f37d50f82b80b6f5fa829789f85f48088",
+    "group_rows": 10000,
+    "nominal_requests_one_redirect": 220,
+    "projected_compressed_bytes": 26901066,
+    "projected_uncompressed_bytes": 44443283,
+    "remote_length": 207246017,
+    "selector_compressed_bytes": 1642563,
+    "strong_etag": "\"87b6c7d4142774d0e716ed48826151f9a7e9d13ffe98c239feb7980cd06af746\"",
+    "text_compressed_bytes": 21856064
+  },
+  {
+    "chunks": [
+      {
+        "compressed_bytes": 97631,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "id",
+        "uncompressed_bytes": 97616
+      },
+      {
+        "compressed_bytes": 22595416,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "text",
+        "uncompressed_bytes": 38948453
+      },
+      {
+        "compressed_bytes": 561098,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.url",
+        "uncompressed_bytes": 780206
+      },
+      {
+        "compressed_bytes": 145253,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.source_domain",
+        "uncompressed_bytes": 213618
+      },
+      {
+        "compressed_bytes": 125,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.snapshot_id",
+        "uncompressed_bytes": 121
+      },
+      {
+        "compressed_bytes": 74847,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.Content-Length",
+        "uncompressed_bytes": 107200
+      },
+      {
+        "compressed_bytes": 204,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.Content-Type",
+        "uncompressed_bytes": 203
+      },
+      {
+        "compressed_bytes": 358667,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Block-Digest",
+        "uncompressed_bytes": 427355
+      },
+      {
+        "compressed_bytes": 385322,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Concurrent-To",
+        "uncompressed_bytes": 527295
+      },
+      {
+        "compressed_bytes": 99547,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Date",
+        "uncompressed_bytes": 254985
+      },
+      {
+        "compressed_bytes": 84771,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-IP-Address",
+        "uncompressed_bytes": 137542
+      },
+      {
+        "compressed_bytes": 3119,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Identified-Payload-Type",
+        "uncompressed_bytes": 5277
+      },
+      {
+        "compressed_bytes": 358646,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Payload-Digest",
+        "uncompressed_bytes": 427355
+      },
+      {
+        "compressed_bytes": 385122,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Record-ID",
+        "uncompressed_bytes": 527295
+      },
+      {
+        "compressed_bytes": 560423,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Target-URI",
+        "uncompressed_bytes": 779349
+      },
+      {
+        "compressed_bytes": 2605,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Truncated",
+        "uncompressed_bytes": 2598
+      },
+      {
+        "compressed_bytes": 126,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Type",
+        "uncompressed_bytes": 125
+      },
+      {
+        "compressed_bytes": 363357,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Warcinfo-ID",
+        "uncompressed_bytes": 496593
+      },
+      {
+        "compressed_bytes": 10160,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_info",
+        "uncompressed_bytes": 20555
+      },
+      {
+        "compressed_bytes": 36932,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.ccnet_original_length",
+        "uncompressed_bytes": 36921
+      },
+      {
+        "compressed_bytes": 13385,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.ccnet_original_nlines",
+        "uncompressed_bytes": 13375
+      },
+      {
+        "compressed_bytes": 2263,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_curly_bracket",
+        "uncompressed_bytes": 2796
+      },
+      {
+        "compressed_bytes": 2487,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_ldnoobw_words",
+        "uncompressed_bytes": 3548
+      },
+      {
+        "compressed_bytes": 135,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_lorem_ipsum",
+        "uncompressed_bytes": 131
+      },
+      {
+        "compressed_bytes": 48193,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_stop_word_fraction",
+        "uncompressed_bytes": 48181
+      },
+      {
+        "compressed_bytes": 282,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_ut1_blacklist",
+        "uncompressed_bytes": 325
+      },
+      {
+        "compressed_bytes": 40084,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_all_caps_words",
+        "uncompressed_bytes": 40073
+      },
+      {
+        "compressed_bytes": 11208,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_lines_end_with_ellipsis",
+        "uncompressed_bytes": 14523
+      },
+      {
+        "compressed_bytes": 47816,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_no_alph_words",
+        "uncompressed_bytes": 47805
+      },
+      {
+        "compressed_bytes": 46144,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_unique_words",
+        "uncompressed_bytes": 46133
+      },
+      {
+        "compressed_bytes": 53520,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_mean_word_length",
+        "uncompressed_bytes": 53508
+      },
+      {
+        "compressed_bytes": 12809,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_num_sentences",
+        "uncompressed_bytes": 12799
+      },
+      {
+        "compressed_bytes": 22864,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_symbol_to_word_ratio",
+        "uncompressed_bytes": 25615
+      },
+      {
+        "compressed_bytes": 57116,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_unigram_entropy",
+        "uncompressed_bytes": 57104
+      },
+      {
+        "compressed_bytes": 21354,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_word_count",
+        "uncompressed_bytes": 21343
+      },
+      {
+        "compressed_bytes": 22743,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_10grams",
+        "uncompressed_bytes": 26758
+      },
+      {
+        "compressed_bytes": 42747,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_5grams",
+        "uncompressed_bytes": 42981
+      },
+      {
+        "compressed_bytes": 37974,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_6grams",
+        "uncompressed_bytes": 39025
+      },
+      {
+        "compressed_bytes": 32300,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_7grams",
+        "uncompressed_bytes": 34707
+      },
+      {
+        "compressed_bytes": 27933,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_8grams",
+        "uncompressed_bytes": 30775
+      },
+      {
+        "compressed_bytes": 25035,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_9grams",
+        "uncompressed_bytes": 28493
+      },
+      {
+        "compressed_bytes": 50528,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_top_2gram",
+        "uncompressed_bytes": 50516
+      },
+      {
+        "compressed_bytes": 48568,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_top_3gram",
+        "uncompressed_bytes": 48557
+      },
+      {
+        "compressed_bytes": 45488,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_top_4gram",
+        "uncompressed_bytes": 45477
+      },
+      {
+        "compressed_bytes": 57608,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_books_importance",
+        "uncompressed_bytes": 57596
+      },
+      {
+        "compressed_bytes": 57608,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_books_importance_length_correction",
+        "uncompressed_bytes": 57596
+      },
+      {
+        "compressed_bytes": 57608,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_openwebtext_importance",
+        "uncompressed_bytes": 57596
+      },
+      {
+        "compressed_bytes": 57604,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_openwebtext_importance_length_correction",
+        "uncompressed_bytes": 57592
+      },
+      {
+        "compressed_bytes": 57608,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_wikipedia_importance",
+        "uncompressed_bytes": 57596
+      },
+      {
+        "compressed_bytes": 57608,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_wikipedia_importance_length_correction",
+        "uncompressed_bytes": 57596
+      },
+      {
+        "compressed_bytes": 40604,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.dclm",
+        "uncompressed_bytes": 40593
+      },
+      {
+        "compressed_bytes": 57572,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.english",
+        "uncompressed_bytes": 57560
+      },
+      {
+        "compressed_bytes": 57588,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.fineweb_edu_approx",
+        "uncompressed_bytes": 57576
+      },
+      {
+        "compressed_bytes": 42112,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.eai_general_math",
+        "uncompressed_bytes": 42101
+      },
+      {
+        "compressed_bytes": 57356,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.eai_open_web_math",
+        "uncompressed_bytes": 57344
+      },
+      {
+        "compressed_bytes": 31381,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.eai_web_code",
+        "uncompressed_bytes": 31371
+      },
+      {
+        "compressed_bytes": 25951,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.primary.code",
+        "uncompressed_bytes": 34812
+      },
+      {
+        "compressed_bytes": 5361,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.primary.labels.level_1",
+        "uncompressed_bytes": 5380
+      },
+      {
+        "compressed_bytes": 9939,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.primary.labels.level_2",
+        "uncompressed_bytes": 10315
+      },
+      {
+        "compressed_bytes": 14692,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.primary.labels.level_3",
+        "uncompressed_bytes": 16903
+      },
+      {
+        "compressed_bytes": 27767,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.secondary.code",
+        "uncompressed_bytes": 36946
+      },
+      {
+        "compressed_bytes": 5368,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.secondary.labels.level_1",
+        "uncompressed_bytes": 5380
+      },
+      {
+        "compressed_bytes": 9962,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.secondary.labels.level_2",
+        "uncompressed_bytes": 10345
+      },
+      {
+        "compressed_bytes": 15019,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.secondary.labels.level_3",
+        "uncompressed_bytes": 17481
+      },
+      {
+        "compressed_bytes": 3857,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_cognitive_process.primary.code",
+        "uncompressed_bytes": 3854
+      },
+      {
+        "compressed_bytes": 3916,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_cognitive_process.primary.label",
+        "uncompressed_bytes": 3913
+      },
+      {
+        "compressed_bytes": 3871,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_cognitive_process.secondary.code",
+        "uncompressed_bytes": 3866
+      },
+      {
+        "compressed_bytes": 3928,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_cognitive_process.secondary.label",
+        "uncompressed_bytes": 3925
+      },
+      {
+        "compressed_bytes": 3831,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_knowledge_domain.primary.code",
+        "uncompressed_bytes": 3841
+      },
+      {
+        "compressed_bytes": 3883,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_knowledge_domain.primary.label",
+        "uncompressed_bytes": 3897
+      },
+      {
+        "compressed_bytes": 3861,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_knowledge_domain.secondary.code",
+        "uncompressed_bytes": 3855
+      },
+      {
+        "compressed_bytes": 3916,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_knowledge_domain.secondary.label",
+        "uncompressed_bytes": 3912
+      },
+      {
+        "compressed_bytes": 6412,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v1.primary.code",
+        "uncompressed_bytes": 6426
+      },
+      {
+        "compressed_bytes": 6725,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v1.primary.label",
+        "uncompressed_bytes": 6728
+      },
+      {
+        "compressed_bytes": 4792,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v1.secondary.code",
+        "uncompressed_bytes": 5144
+      },
+      {
+        "compressed_bytes": 5101,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v1.secondary.label",
+        "uncompressed_bytes": 5430
+      },
+      {
+        "compressed_bytes": 2611,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.extraction_artifacts.primary.code",
+        "uncompressed_bytes": 2604
+      },
+      {
+        "compressed_bytes": 2713,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.extraction_artifacts.primary.label",
+        "uncompressed_bytes": 2705
+      },
+      {
+        "compressed_bytes": 3867,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.extraction_artifacts.secondary.code",
+        "uncompressed_bytes": 3860
+      },
+      {
+        "compressed_bytes": 3975,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.extraction_artifacts.secondary.label",
+        "uncompressed_bytes": 3966
+      },
+      {
+        "compressed_bytes": 3852,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.missing_content.primary.code",
+        "uncompressed_bytes": 3848
+      },
+      {
+        "compressed_bytes": 4011,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.missing_content.primary.label",
+        "uncompressed_bytes": 4013
+      },
+      {
+        "compressed_bytes": 3849,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.missing_content.secondary.code",
+        "uncompressed_bytes": 3848
+      },
+      {
+        "compressed_bytes": 3998,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.missing_content.secondary.label",
+        "uncompressed_bytes": 4003
+      },
+      {
+        "compressed_bytes": 6446,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v2.primary.code",
+        "uncompressed_bytes": 6473
+      },
+      {
+        "compressed_bytes": 6730,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v2.primary.label",
+        "uncompressed_bytes": 6775
+      },
+      {
+        "compressed_bytes": 6450,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v2.secondary.code",
+        "uncompressed_bytes": 6479
+      },
+      {
+        "compressed_bytes": 6723,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v2.secondary.label",
+        "uncompressed_bytes": 6782
+      },
+      {
+        "compressed_bytes": 3821,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.reasoning_depth.primary.code",
+        "uncompressed_bytes": 3824
+      },
+      {
+        "compressed_bytes": 3907,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.reasoning_depth.primary.label",
+        "uncompressed_bytes": 3929
+      },
+      {
+        "compressed_bytes": 3618,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.reasoning_depth.secondary.code",
+        "uncompressed_bytes": 3797
+      },
+      {
+        "compressed_bytes": 3710,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.reasoning_depth.secondary.label",
+        "uncompressed_bytes": 3902
+      },
+      {
+        "compressed_bytes": 3058,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.technical_correctness.primary.code",
+        "uncompressed_bytes": 3611
+      },
+      {
+        "compressed_bytes": 3165,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.technical_correctness.primary.label",
+        "uncompressed_bytes": 3729
+      },
+      {
+        "compressed_bytes": 3805,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.technical_correctness.secondary.code",
+        "uncompressed_bytes": 3833
+      },
+      {
+        "compressed_bytes": 3939,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.technical_correctness.secondary.label",
+        "uncompressed_bytes": 3978
+      },
+      {
+        "compressed_bytes": 2978,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.education_level.primary.code",
+        "uncompressed_bytes": 3278
+      },
+      {
+        "compressed_bytes": 3086,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.education_level.primary.label",
+        "uncompressed_bytes": 3394
+      },
+      {
+        "compressed_bytes": 2817,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.education_level.secondary.code",
+        "uncompressed_bytes": 3260
+      },
+      {
+        "compressed_bytes": 2931,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.education_level.secondary.label",
+        "uncompressed_bytes": 3376
+      },
+      {
+        "compressed_bytes": 158,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "pid",
+        "uncompressed_bytes": 154
+      }
+    ],
+    "confirmation_window": [
+      11728,
+      12240
+    ],
+    "crawl": "crawl=CC-MAIN-2018-05",
+    "file": "data/crawl=CC-MAIN-2018-05/train-03378-of-03429.parquet",
+    "file_row_groups": 10,
+    "file_rows": 91199,
+    "footer_bytes": 199231,
+    "footer_sha256": "71b329616d53118a4af33065aff31e96020eb0195c9bfeb9f4304867a54f2537",
+    "group_rows": 10000,
+    "nominal_requests_one_redirect": 220,
+    "projected_compressed_bytes": 27732974,
+    "projected_uncompressed_bytes": 45449101,
+    "remote_length": 285464583,
+    "selector_compressed_bytes": 1646377,
+    "strong_etag": "\"d2c33e6f97b7cd8a0a1ff9eb419be453a3e6d4658445f86d2265bb0dc6ecd6ef\"",
+    "text_compressed_bytes": 22595416
+  },
+  {
+    "chunks": [
+      {
+        "compressed_bytes": 97631,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "id",
+        "uncompressed_bytes": 97616
+      },
+      {
+        "compressed_bytes": 24369706,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "text",
+        "uncompressed_bytes": 41968018
+      },
+      {
+        "compressed_bytes": 562246,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.url",
+        "uncompressed_bytes": 784133
+      },
+      {
+        "compressed_bytes": 162622,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.source_domain",
+        "uncompressed_bytes": 234742
+      },
+      {
+        "compressed_bytes": 125,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.snapshot_id",
+        "uncompressed_bytes": 121
+      },
+      {
+        "compressed_bytes": 74742,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.Content-Length",
+        "uncompressed_bytes": 107213
+      },
+      {
+        "compressed_bytes": 185,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.Content-Type",
+        "uncompressed_bytes": 183
+      },
+      {
+        "compressed_bytes": 358849,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Block-Digest",
+        "uncompressed_bytes": 427513
+      },
+      {
+        "compressed_bytes": 385827,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Concurrent-To",
+        "uncompressed_bytes": 527493
+      },
+      {
+        "compressed_bytes": 100437,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Date",
+        "uncompressed_bytes": 255579
+      },
+      {
+        "compressed_bytes": 94786,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-IP-Address",
+        "uncompressed_bytes": 154440
+      },
+      {
+        "compressed_bytes": 2871,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Identified-Payload-Type",
+        "uncompressed_bytes": 4915
+      },
+      {
+        "compressed_bytes": 358763,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Payload-Digest",
+        "uncompressed_bytes": 427513
+      },
+      {
+        "compressed_bytes": 385577,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Record-ID",
+        "uncompressed_bytes": 527493
+      },
+      {
+        "compressed_bytes": 562164,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Target-URI",
+        "uncompressed_bytes": 783770
+      },
+      {
+        "compressed_bytes": 167,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Truncated",
+        "uncompressed_bytes": 174
+      },
+      {
+        "compressed_bytes": 107,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Type",
+        "uncompressed_bytes": 105
+      },
+      {
+        "compressed_bytes": 358132,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Warcinfo-ID",
+        "uncompressed_bytes": 489039
+      },
+      {
+        "compressed_bytes": 10588,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_info",
+        "uncompressed_bytes": 27123
+      },
+      {
+        "compressed_bytes": 37540,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.ccnet_original_length",
+        "uncompressed_bytes": 37529
+      },
+      {
+        "compressed_bytes": 13249,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.ccnet_original_nlines",
+        "uncompressed_bytes": 13239
+      },
+      {
+        "compressed_bytes": 2099,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_curly_bracket",
+        "uncompressed_bytes": 2609
+      },
+      {
+        "compressed_bytes": 2222,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_ldnoobw_words",
+        "uncompressed_bytes": 3233
+      },
+      {
+        "compressed_bytes": 160,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_lorem_ipsum",
+        "uncompressed_bytes": 155
+      },
+      {
+        "compressed_bytes": 48594,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_stop_word_fraction",
+        "uncompressed_bytes": 48581
+      },
+      {
+        "compressed_bytes": 229,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_ut1_blacklist",
+        "uncompressed_bytes": 263
+      },
+      {
+        "compressed_bytes": 40028,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_all_caps_words",
+        "uncompressed_bytes": 40017
+      },
+      {
+        "compressed_bytes": 9797,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_lines_end_with_ellipsis",
+        "uncompressed_bytes": 13479
+      },
+      {
+        "compressed_bytes": 47592,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_no_alph_words",
+        "uncompressed_bytes": 47581
+      },
+      {
+        "compressed_bytes": 46268,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_unique_words",
+        "uncompressed_bytes": 46257
+      },
+      {
+        "compressed_bytes": 53432,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_mean_word_length",
+        "uncompressed_bytes": 53420
+      },
+      {
+        "compressed_bytes": 12845,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_num_sentences",
+        "uncompressed_bytes": 12835
+      },
+      {
+        "compressed_bytes": 21523,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_symbol_to_word_ratio",
+        "uncompressed_bytes": 24616
+      },
+      {
+        "compressed_bytes": 57132,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_unigram_entropy",
+        "uncompressed_bytes": 57120
+      },
+      {
+        "compressed_bytes": 21773,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_word_count",
+        "uncompressed_bytes": 21763
+      },
+      {
+        "compressed_bytes": 22684,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_10grams",
+        "uncompressed_bytes": 26522
+      },
+      {
+        "compressed_bytes": 42470,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_5grams",
+        "uncompressed_bytes": 42725
+      },
+      {
+        "compressed_bytes": 37290,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_6grams",
+        "uncompressed_bytes": 38680
+      },
+      {
+        "compressed_bytes": 32181,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_7grams",
+        "uncompressed_bytes": 34668
+      },
+      {
+        "compressed_bytes": 27822,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_8grams",
+        "uncompressed_bytes": 30705
+      },
+      {
+        "compressed_bytes": 24979,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_9grams",
+        "uncompressed_bytes": 28371
+      },
+      {
+        "compressed_bytes": 51308,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_top_2gram",
+        "uncompressed_bytes": 51296
+      },
+      {
+        "compressed_bytes": 48832,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_top_3gram",
+        "uncompressed_bytes": 48821
+      },
+      {
+        "compressed_bytes": 45789,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_top_4gram",
+        "uncompressed_bytes": 45777
+      },
+      {
+        "compressed_bytes": 57612,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_books_importance",
+        "uncompressed_bytes": 57600
+      },
+      {
+        "compressed_bytes": 57612,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_books_importance_length_correction",
+        "uncompressed_bytes": 57600
+      },
+      {
+        "compressed_bytes": 57612,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_openwebtext_importance",
+        "uncompressed_bytes": 57600
+      },
+      {
+        "compressed_bytes": 57608,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_openwebtext_importance_length_correction",
+        "uncompressed_bytes": 57596
+      },
+      {
+        "compressed_bytes": 57608,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_wikipedia_importance",
+        "uncompressed_bytes": 57596
+      },
+      {
+        "compressed_bytes": 57604,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_wikipedia_importance_length_correction",
+        "uncompressed_bytes": 57592
+      },
+      {
+        "compressed_bytes": 40756,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.dclm",
+        "uncompressed_bytes": 40745
+      },
+      {
+        "compressed_bytes": 57568,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.english",
+        "uncompressed_bytes": 57556
+      },
+      {
+        "compressed_bytes": 57608,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.fineweb_edu_approx",
+        "uncompressed_bytes": 57596
+      },
+      {
+        "compressed_bytes": 42916,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.eai_general_math",
+        "uncompressed_bytes": 42905
+      },
+      {
+        "compressed_bytes": 57360,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.eai_open_web_math",
+        "uncompressed_bytes": 57348
+      },
+      {
+        "compressed_bytes": 33654,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.eai_web_code",
+        "uncompressed_bytes": 33641
+      },
+      {
+        "compressed_bytes": 25704,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.primary.code",
+        "uncompressed_bytes": 34395
+      },
+      {
+        "compressed_bytes": 5357,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.primary.labels.level_1",
+        "uncompressed_bytes": 5380
+      },
+      {
+        "compressed_bytes": 9891,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.primary.labels.level_2",
+        "uncompressed_bytes": 10240
+      },
+      {
+        "compressed_bytes": 14732,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.primary.labels.level_3",
+        "uncompressed_bytes": 16979
+      },
+      {
+        "compressed_bytes": 27737,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.secondary.code",
+        "uncompressed_bytes": 37027
+      },
+      {
+        "compressed_bytes": 5367,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.secondary.labels.level_1",
+        "uncompressed_bytes": 5380
+      },
+      {
+        "compressed_bytes": 9930,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.secondary.labels.level_2",
+        "uncompressed_bytes": 10264
+      },
+      {
+        "compressed_bytes": 14746,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.secondary.labels.level_3",
+        "uncompressed_bytes": 16924
+      },
+      {
+        "compressed_bytes": 3834,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_cognitive_process.primary.code",
+        "uncompressed_bytes": 3828
+      },
+      {
+        "compressed_bytes": 3889,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_cognitive_process.primary.label",
+        "uncompressed_bytes": 3883
+      },
+      {
+        "compressed_bytes": 3858,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_cognitive_process.secondary.code",
+        "uncompressed_bytes": 3854
+      },
+      {
+        "compressed_bytes": 3914,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_cognitive_process.secondary.label",
+        "uncompressed_bytes": 3908
+      },
+      {
+        "compressed_bytes": 2605,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_knowledge_domain.primary.code",
+        "uncompressed_bytes": 2598
+      },
+      {
+        "compressed_bytes": 2654,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_knowledge_domain.primary.label",
+        "uncompressed_bytes": 2652
+      },
+      {
+        "compressed_bytes": 3856,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_knowledge_domain.secondary.code",
+        "uncompressed_bytes": 3850
+      },
+      {
+        "compressed_bytes": 3911,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_knowledge_domain.secondary.label",
+        "uncompressed_bytes": 3907
+      },
+      {
+        "compressed_bytes": 5143,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v1.primary.code",
+        "uncompressed_bytes": 5156
+      },
+      {
+        "compressed_bytes": 5445,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v1.primary.label",
+        "uncompressed_bytes": 5449
+      },
+      {
+        "compressed_bytes": 4938,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v1.secondary.code",
+        "uncompressed_bytes": 5139
+      },
+      {
+        "compressed_bytes": 5222,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v1.secondary.label",
+        "uncompressed_bytes": 5408
+      },
+      {
+        "compressed_bytes": 2604,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.extraction_artifacts.primary.code",
+        "uncompressed_bytes": 2597
+      },
+      {
+        "compressed_bytes": 2706,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.extraction_artifacts.primary.label",
+        "uncompressed_bytes": 2698
+      },
+      {
+        "compressed_bytes": 3859,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.extraction_artifacts.secondary.code",
+        "uncompressed_bytes": 3853
+      },
+      {
+        "compressed_bytes": 3967,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.extraction_artifacts.secondary.label",
+        "uncompressed_bytes": 3959
+      },
+      {
+        "compressed_bytes": 3843,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.missing_content.primary.code",
+        "uncompressed_bytes": 3839
+      },
+      {
+        "compressed_bytes": 4000,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.missing_content.primary.label",
+        "uncompressed_bytes": 4004
+      },
+      {
+        "compressed_bytes": 3855,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.missing_content.secondary.code",
+        "uncompressed_bytes": 3850
+      },
+      {
+        "compressed_bytes": 3995,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.missing_content.secondary.label",
+        "uncompressed_bytes": 4005
+      },
+      {
+        "compressed_bytes": 6440,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v2.primary.code",
+        "uncompressed_bytes": 6467
+      },
+      {
+        "compressed_bytes": 6714,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v2.primary.label",
+        "uncompressed_bytes": 6769
+      },
+      {
+        "compressed_bytes": 6433,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v2.secondary.code",
+        "uncompressed_bytes": 6467
+      },
+      {
+        "compressed_bytes": 6725,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v2.secondary.label",
+        "uncompressed_bytes": 6769
+      },
+      {
+        "compressed_bytes": 3569,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.reasoning_depth.primary.code",
+        "uncompressed_bytes": 3829
+      },
+      {
+        "compressed_bytes": 3656,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.reasoning_depth.primary.label",
+        "uncompressed_bytes": 3934
+      },
+      {
+        "compressed_bytes": 3609,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.reasoning_depth.secondary.code",
+        "uncompressed_bytes": 3794
+      },
+      {
+        "compressed_bytes": 3701,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.reasoning_depth.secondary.label",
+        "uncompressed_bytes": 3899
+      },
+      {
+        "compressed_bytes": 3154,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.technical_correctness.primary.code",
+        "uncompressed_bytes": 3605
+      },
+      {
+        "compressed_bytes": 3260,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.technical_correctness.primary.label",
+        "uncompressed_bytes": 3723
+      },
+      {
+        "compressed_bytes": 3833,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.technical_correctness.secondary.code",
+        "uncompressed_bytes": 3828
+      },
+      {
+        "compressed_bytes": 3966,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.technical_correctness.secondary.label",
+        "uncompressed_bytes": 3973
+      },
+      {
+        "compressed_bytes": 2732,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.education_level.primary.code",
+        "uncompressed_bytes": 3322
+      },
+      {
+        "compressed_bytes": 2846,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.education_level.primary.label",
+        "uncompressed_bytes": 3438
+      },
+      {
+        "compressed_bytes": 2546,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.education_level.secondary.code",
+        "uncompressed_bytes": 3118
+      },
+      {
+        "compressed_bytes": 2660,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.education_level.secondary.label",
+        "uncompressed_bytes": 3234
+      },
+      {
+        "compressed_bytes": 158,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "pid",
+        "uncompressed_bytes": 154
+      }
+    ],
+    "confirmation_window": [
+      26634,
+      27146
+    ],
+    "crawl": "crawl=CC-MAIN-2019-09",
+    "file": "data/crawl=CC-MAIN-2019-09/train-00153-of-02577.parquet",
+    "file_row_groups": 8,
+    "file_rows": 75980,
+    "footer_bytes": 163182,
+    "footer_sha256": "8de5d9aad30890c88c723216eed274b52378b0b4f0c72b3ee3a65219b3f9ed97",
+    "group_rows": 10000,
+    "nominal_requests_one_redirect": 220,
+    "projected_compressed_bytes": 29526445,
+    "projected_uncompressed_bytes": 48508169,
+    "remote_length": 247450105,
+    "selector_compressed_bytes": 1640762,
+    "strong_etag": "\"9d0c7824df33063587958afb535fa097d8c5af423c172e63714f725aa3003f1b\"",
+    "text_compressed_bytes": 24369706
+  },
+  {
+    "chunks": [
+      {
+        "compressed_bytes": 97631,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "id",
+        "uncompressed_bytes": 97616
+      },
+      {
+        "compressed_bytes": 22484253,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "text",
+        "uncompressed_bytes": 38603984
+      },
+      {
+        "compressed_bytes": 576416,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.url",
+        "uncompressed_bytes": 805620
+      },
+      {
+        "compressed_bytes": 163860,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.source_domain",
+        "uncompressed_bytes": 235306
+      },
+      {
+        "compressed_bytes": 125,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.snapshot_id",
+        "uncompressed_bytes": 121
+      },
+      {
+        "compressed_bytes": 76313,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.Content-Length",
+        "uncompressed_bytes": 109405
+      },
+      {
+        "compressed_bytes": 190,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.Content-Type",
+        "uncompressed_bytes": 189
+      },
+      {
+        "compressed_bytes": 358908,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Block-Digest",
+        "uncompressed_bytes": 427478
+      },
+      {
+        "compressed_bytes": 385548,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Concurrent-To",
+        "uncompressed_bytes": 527448
+      },
+      {
+        "compressed_bytes": 101597,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Date",
+        "uncompressed_bytes": 256377
+      },
+      {
+        "compressed_bytes": 91122,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-IP-Address",
+        "uncompressed_bytes": 150128
+      },
+      {
+        "compressed_bytes": 2402,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Identified-Payload-Type",
+        "uncompressed_bytes": 4128
+      },
+      {
+        "compressed_bytes": 358714,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Payload-Digest",
+        "uncompressed_bytes": 427478
+      },
+      {
+        "compressed_bytes": 385654,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Record-ID",
+        "uncompressed_bytes": 527448
+      },
+      {
+        "compressed_bytes": 576157,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Target-URI",
+        "uncompressed_bytes": 805128
+      },
+      {
+        "compressed_bytes": 284,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Truncated",
+        "uncompressed_bytes": 332
+      },
+      {
+        "compressed_bytes": 112,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Type",
+        "uncompressed_bytes": 111
+      },
+      {
+        "compressed_bytes": 364175,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Warcinfo-ID",
+        "uncompressed_bytes": 497511
+      },
+      {
+        "compressed_bytes": 10586,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_info",
+        "uncompressed_bytes": 31079
+      },
+      {
+        "compressed_bytes": 37188,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.ccnet_original_length",
+        "uncompressed_bytes": 37177
+      },
+      {
+        "compressed_bytes": 13189,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.ccnet_original_nlines",
+        "uncompressed_bytes": 13179
+      },
+      {
+        "compressed_bytes": 2111,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_curly_bracket",
+        "uncompressed_bytes": 2621
+      },
+      {
+        "compressed_bytes": 2171,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_ldnoobw_words",
+        "uncompressed_bytes": 3249
+      },
+      {
+        "compressed_bytes": 226,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_lorem_ipsum",
+        "uncompressed_bytes": 222
+      },
+      {
+        "compressed_bytes": 47868,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_stop_word_fraction",
+        "uncompressed_bytes": 47857
+      },
+      {
+        "compressed_bytes": 170,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_ut1_blacklist",
+        "uncompressed_bytes": 177
+      },
+      {
+        "compressed_bytes": 40008,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_all_caps_words",
+        "uncompressed_bytes": 39997
+      },
+      {
+        "compressed_bytes": 9429,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_lines_end_with_ellipsis",
+        "uncompressed_bytes": 12973
+      },
+      {
+        "compressed_bytes": 46992,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_no_alph_words",
+        "uncompressed_bytes": 46981
+      },
+      {
+        "compressed_bytes": 45740,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_unique_words",
+        "uncompressed_bytes": 45729
+      },
+      {
+        "compressed_bytes": 53404,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_mean_word_length",
+        "uncompressed_bytes": 53392
+      },
+      {
+        "compressed_bytes": 12769,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_num_sentences",
+        "uncompressed_bytes": 12759
+      },
+      {
+        "compressed_bytes": 20631,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_symbol_to_word_ratio",
+        "uncompressed_bytes": 24036
+      },
+      {
+        "compressed_bytes": 57152,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_unigram_entropy",
+        "uncompressed_bytes": 57140
+      },
+      {
+        "compressed_bytes": 21609,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_word_count",
+        "uncompressed_bytes": 21599
+      },
+      {
+        "compressed_bytes": 22609,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_10grams",
+        "uncompressed_bytes": 26537
+      },
+      {
+        "compressed_bytes": 41971,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_5grams",
+        "uncompressed_bytes": 42296
+      },
+      {
+        "compressed_bytes": 36967,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_6grams",
+        "uncompressed_bytes": 38390
+      },
+      {
+        "compressed_bytes": 32307,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_7grams",
+        "uncompressed_bytes": 34721
+      },
+      {
+        "compressed_bytes": 27972,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_8grams",
+        "uncompressed_bytes": 30770
+      },
+      {
+        "compressed_bytes": 24860,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_9grams",
+        "uncompressed_bytes": 28314
+      },
+      {
+        "compressed_bytes": 50816,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_top_2gram",
+        "uncompressed_bytes": 50804
+      },
+      {
+        "compressed_bytes": 48568,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_top_3gram",
+        "uncompressed_bytes": 48557
+      },
+      {
+        "compressed_bytes": 45229,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_top_4gram",
+        "uncompressed_bytes": 45217
+      },
+      {
+        "compressed_bytes": 57612,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_books_importance",
+        "uncompressed_bytes": 57600
+      },
+      {
+        "compressed_bytes": 57608,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_books_importance_length_correction",
+        "uncompressed_bytes": 57596
+      },
+      {
+        "compressed_bytes": 57612,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_openwebtext_importance",
+        "uncompressed_bytes": 57600
+      },
+      {
+        "compressed_bytes": 57612,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_openwebtext_importance_length_correction",
+        "uncompressed_bytes": 57600
+      },
+      {
+        "compressed_bytes": 57604,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_wikipedia_importance",
+        "uncompressed_bytes": 57592
+      },
+      {
+        "compressed_bytes": 57604,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_wikipedia_importance_length_correction",
+        "uncompressed_bytes": 57592
+      },
+      {
+        "compressed_bytes": 42280,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.dclm",
+        "uncompressed_bytes": 42269
+      },
+      {
+        "compressed_bytes": 57568,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.english",
+        "uncompressed_bytes": 57556
+      },
+      {
+        "compressed_bytes": 57608,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.fineweb_edu_approx",
+        "uncompressed_bytes": 57596
+      },
+      {
+        "compressed_bytes": 44608,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.eai_general_math",
+        "uncompressed_bytes": 44597
+      },
+      {
+        "compressed_bytes": 57504,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.eai_open_web_math",
+        "uncompressed_bytes": 57492
+      },
+      {
+        "compressed_bytes": 35104,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.eai_web_code",
+        "uncompressed_bytes": 35093
+      },
+      {
+        "compressed_bytes": 26062,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.primary.code",
+        "uncompressed_bytes": 35155
+      },
+      {
+        "compressed_bytes": 5363,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.primary.labels.level_1",
+        "uncompressed_bytes": 5379
+      },
+      {
+        "compressed_bytes": 9966,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.primary.labels.level_2",
+        "uncompressed_bytes": 10380
+      },
+      {
+        "compressed_bytes": 14824,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.primary.labels.level_3",
+        "uncompressed_bytes": 17167
+      },
+      {
+        "compressed_bytes": 27508,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.secondary.code",
+        "uncompressed_bytes": 36473
+      },
+      {
+        "compressed_bytes": 5363,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.secondary.labels.level_1",
+        "uncompressed_bytes": 5380
+      },
+      {
+        "compressed_bytes": 10006,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.secondary.labels.level_2",
+        "uncompressed_bytes": 10349
+      },
+      {
+        "compressed_bytes": 14851,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.secondary.labels.level_3",
+        "uncompressed_bytes": 17313
+      },
+      {
+        "compressed_bytes": 3796,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_cognitive_process.primary.code",
+        "uncompressed_bytes": 3791
+      },
+      {
+        "compressed_bytes": 3858,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_cognitive_process.primary.label",
+        "uncompressed_bytes": 3850
+      },
+      {
+        "compressed_bytes": 3853,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_cognitive_process.secondary.code",
+        "uncompressed_bytes": 3847
+      },
+      {
+        "compressed_bytes": 3906,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_cognitive_process.secondary.label",
+        "uncompressed_bytes": 3901
+      },
+      {
+        "compressed_bytes": 3840,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_knowledge_domain.primary.code",
+        "uncompressed_bytes": 3835
+      },
+      {
+        "compressed_bytes": 3896,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_knowledge_domain.primary.label",
+        "uncompressed_bytes": 3892
+      },
+      {
+        "compressed_bytes": 3856,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_knowledge_domain.secondary.code",
+        "uncompressed_bytes": 3849
+      },
+      {
+        "compressed_bytes": 3913,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_knowledge_domain.secondary.label",
+        "uncompressed_bytes": 3906
+      },
+      {
+        "compressed_bytes": 6405,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v1.primary.code",
+        "uncompressed_bytes": 6419
+      },
+      {
+        "compressed_bytes": 6747,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v1.primary.label",
+        "uncompressed_bytes": 6742
+      },
+      {
+        "compressed_bytes": 4831,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v1.secondary.code",
+        "uncompressed_bytes": 5150
+      },
+      {
+        "compressed_bytes": 5118,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v1.secondary.label",
+        "uncompressed_bytes": 5436
+      },
+      {
+        "compressed_bytes": 2605,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.extraction_artifacts.primary.code",
+        "uncompressed_bytes": 2598
+      },
+      {
+        "compressed_bytes": 2707,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.extraction_artifacts.primary.label",
+        "uncompressed_bytes": 2699
+      },
+      {
+        "compressed_bytes": 3858,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.extraction_artifacts.secondary.code",
+        "uncompressed_bytes": 3852
+      },
+      {
+        "compressed_bytes": 3966,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.extraction_artifacts.secondary.label",
+        "uncompressed_bytes": 3958
+      },
+      {
+        "compressed_bytes": 3816,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.missing_content.primary.code",
+        "uncompressed_bytes": 3831
+      },
+      {
+        "compressed_bytes": 3970,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.missing_content.primary.label",
+        "uncompressed_bytes": 3996
+      },
+      {
+        "compressed_bytes": 3854,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.missing_content.secondary.code",
+        "uncompressed_bytes": 3847
+      },
+      {
+        "compressed_bytes": 4000,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.missing_content.secondary.label",
+        "uncompressed_bytes": 4002
+      },
+      {
+        "compressed_bytes": 6432,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v2.primary.code",
+        "uncompressed_bytes": 6459
+      },
+      {
+        "compressed_bytes": 6693,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v2.primary.label",
+        "uncompressed_bytes": 6745
+      },
+      {
+        "compressed_bytes": 6441,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v2.secondary.code",
+        "uncompressed_bytes": 6462
+      },
+      {
+        "compressed_bytes": 6705,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v2.secondary.label",
+        "uncompressed_bytes": 6749
+      },
+      {
+        "compressed_bytes": 3650,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.reasoning_depth.primary.code",
+        "uncompressed_bytes": 3833
+      },
+      {
+        "compressed_bytes": 3737,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.reasoning_depth.primary.label",
+        "uncompressed_bytes": 3938
+      },
+      {
+        "compressed_bytes": 3816,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.reasoning_depth.secondary.code",
+        "uncompressed_bytes": 3811
+      },
+      {
+        "compressed_bytes": 3902,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.reasoning_depth.secondary.label",
+        "uncompressed_bytes": 3916
+      },
+      {
+        "compressed_bytes": 3176,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.technical_correctness.primary.code",
+        "uncompressed_bytes": 3683
+      },
+      {
+        "compressed_bytes": 3283,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.technical_correctness.primary.label",
+        "uncompressed_bytes": 3801
+      },
+      {
+        "compressed_bytes": 3635,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.technical_correctness.secondary.code",
+        "uncompressed_bytes": 3819
+      },
+      {
+        "compressed_bytes": 3767,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.technical_correctness.secondary.label",
+        "uncompressed_bytes": 3964
+      },
+      {
+        "compressed_bytes": 2935,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.education_level.primary.code",
+        "uncompressed_bytes": 3474
+      },
+      {
+        "compressed_bytes": 3058,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.education_level.primary.label",
+        "uncompressed_bytes": 3592
+      },
+      {
+        "compressed_bytes": 2787,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.education_level.secondary.code",
+        "uncompressed_bytes": 3316
+      },
+      {
+        "compressed_bytes": 2896,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.education_level.secondary.label",
+        "uncompressed_bytes": 3432
+      },
+      {
+        "compressed_bytes": 158,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "pid",
+        "uncompressed_bytes": 154
+      }
+    ],
+    "confirmation_window": [
+      46415,
+      46927
+    ],
+    "crawl": "crawl=CC-MAIN-2021-04",
+    "file": "data/crawl=CC-MAIN-2021-04/train-00179-of-03315.parquet",
+    "file_row_groups": 8,
+    "file_rows": 78036,
+    "footer_bytes": 155751,
+    "footer_sha256": "0ea78bf3262e3ab8f2981448ee6d3770708af49eee075dff825c84eedd73d3a1",
+    "group_rows": 10000,
+    "nominal_requests_one_redirect": 220,
+    "projected_compressed_bytes": 27680136,
+    "projected_uncompressed_bytes": 45203909,
+    "remote_length": 246957884,
+    "selector_compressed_bytes": 1645931,
+    "strong_etag": "\"6b46903d378381f127814c1d81e741d8b7616e5d39abee5524ac22ded871461e\"",
+    "text_compressed_bytes": 22484253
+  },
+  {
+    "chunks": [
+      {
+        "compressed_bytes": 97631,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "id",
+        "uncompressed_bytes": 97616
+      },
+      {
+        "compressed_bytes": 24764878,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "text",
+        "uncompressed_bytes": 42803168
+      },
+      {
+        "compressed_bytes": 595598,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.url",
+        "uncompressed_bytes": 825289
+      },
+      {
+        "compressed_bytes": 164471,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.source_domain",
+        "uncompressed_bytes": 233834
+      },
+      {
+        "compressed_bytes": 125,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.snapshot_id",
+        "uncompressed_bytes": 121
+      },
+      {
+        "compressed_bytes": 76457,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.Content-Length",
+        "uncompressed_bytes": 109519
+      },
+      {
+        "compressed_bytes": 194,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.Content-Type",
+        "uncompressed_bytes": 194
+      },
+      {
+        "compressed_bytes": 358796,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Block-Digest",
+        "uncompressed_bytes": 427442
+      },
+      {
+        "compressed_bytes": 385943,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Concurrent-To",
+        "uncompressed_bytes": 527402
+      },
+      {
+        "compressed_bytes": 101035,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Date",
+        "uncompressed_bytes": 255878
+      },
+      {
+        "compressed_bytes": 89868,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-IP-Address",
+        "uncompressed_bytes": 148857
+      },
+      {
+        "compressed_bytes": 2802,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Identified-Payload-Type",
+        "uncompressed_bytes": 4853
+      },
+      {
+        "compressed_bytes": 358758,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Payload-Digest",
+        "uncompressed_bytes": 427442
+      },
+      {
+        "compressed_bytes": 385503,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Record-ID",
+        "uncompressed_bytes": 527402
+      },
+      {
+        "compressed_bytes": 595157,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Target-URI",
+        "uncompressed_bytes": 824688
+      },
+      {
+        "compressed_bytes": 446,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Truncated",
+        "uncompressed_bytes": 555
+      },
+      {
+        "compressed_bytes": 116,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Type",
+        "uncompressed_bytes": 116
+      },
+      {
+        "compressed_bytes": 357558,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Warcinfo-ID",
+        "uncompressed_bytes": 488642
+      },
+      {
+        "compressed_bytes": 10418,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_info",
+        "uncompressed_bytes": 27085
+      },
+      {
+        "compressed_bytes": 37652,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.ccnet_original_length",
+        "uncompressed_bytes": 37641
+      },
+      {
+        "compressed_bytes": 13235,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.ccnet_original_nlines",
+        "uncompressed_bytes": 13227
+      },
+      {
+        "compressed_bytes": 2423,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_curly_bracket",
+        "uncompressed_bytes": 2946
+      },
+      {
+        "compressed_bytes": 2155,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_ldnoobw_words",
+        "uncompressed_bytes": 3113
+      },
+      {
+        "compressed_bytes": 239,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_lorem_ipsum",
+        "uncompressed_bytes": 235
+      },
+      {
+        "compressed_bytes": 48256,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_stop_word_fraction",
+        "uncompressed_bytes": 48245
+      },
+      {
+        "compressed_bytes": 211,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_ut1_blacklist",
+        "uncompressed_bytes": 215
+      },
+      {
+        "compressed_bytes": 40384,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_all_caps_words",
+        "uncompressed_bytes": 40373
+      },
+      {
+        "compressed_bytes": 9050,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_lines_end_with_ellipsis",
+        "uncompressed_bytes": 12590
+      },
+      {
+        "compressed_bytes": 47076,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_no_alph_words",
+        "uncompressed_bytes": 47065
+      },
+      {
+        "compressed_bytes": 46252,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_unique_words",
+        "uncompressed_bytes": 46241
+      },
+      {
+        "compressed_bytes": 53576,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_mean_word_length",
+        "uncompressed_bytes": 53564
+      },
+      {
+        "compressed_bytes": 12901,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_num_sentences",
+        "uncompressed_bytes": 12891
+      },
+      {
+        "compressed_bytes": 19992,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_symbol_to_word_ratio",
+        "uncompressed_bytes": 23689
+      },
+      {
+        "compressed_bytes": 57156,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_unigram_entropy",
+        "uncompressed_bytes": 57144
+      },
+      {
+        "compressed_bytes": 21945,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_word_count",
+        "uncompressed_bytes": 21935
+      },
+      {
+        "compressed_bytes": 23794,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_10grams",
+        "uncompressed_bytes": 27515
+      },
+      {
+        "compressed_bytes": 42241,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_5grams",
+        "uncompressed_bytes": 42565
+      },
+      {
+        "compressed_bytes": 37472,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_6grams",
+        "uncompressed_bytes": 38691
+      },
+      {
+        "compressed_bytes": 33167,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_7grams",
+        "uncompressed_bytes": 35317
+      },
+      {
+        "compressed_bytes": 30086,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_8grams",
+        "uncompressed_bytes": 32867
+      },
+      {
+        "compressed_bytes": 26317,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_9grams",
+        "uncompressed_bytes": 29519
+      },
+      {
+        "compressed_bytes": 50748,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_top_2gram",
+        "uncompressed_bytes": 50736
+      },
+      {
+        "compressed_bytes": 48492,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_top_3gram",
+        "uncompressed_bytes": 48481
+      },
+      {
+        "compressed_bytes": 45772,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_top_4gram",
+        "uncompressed_bytes": 45761
+      },
+      {
+        "compressed_bytes": 57612,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_books_importance",
+        "uncompressed_bytes": 57600
+      },
+      {
+        "compressed_bytes": 57612,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_books_importance_length_correction",
+        "uncompressed_bytes": 57600
+      },
+      {
+        "compressed_bytes": 57608,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_openwebtext_importance",
+        "uncompressed_bytes": 57596
+      },
+      {
+        "compressed_bytes": 57608,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_openwebtext_importance_length_correction",
+        "uncompressed_bytes": 57596
+      },
+      {
+        "compressed_bytes": 57592,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_wikipedia_importance",
+        "uncompressed_bytes": 57580
+      },
+      {
+        "compressed_bytes": 57604,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_wikipedia_importance_length_correction",
+        "uncompressed_bytes": 57592
+      },
+      {
+        "compressed_bytes": 42953,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.dclm",
+        "uncompressed_bytes": 42941
+      },
+      {
+        "compressed_bytes": 57560,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.english",
+        "uncompressed_bytes": 57548
+      },
+      {
+        "compressed_bytes": 57596,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.fineweb_edu_approx",
+        "uncompressed_bytes": 57584
+      },
+      {
+        "compressed_bytes": 45476,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.eai_general_math",
+        "uncompressed_bytes": 45465
+      },
+      {
+        "compressed_bytes": 57500,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.eai_open_web_math",
+        "uncompressed_bytes": 57488
+      },
+      {
+        "compressed_bytes": 36008,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.eai_web_code",
+        "uncompressed_bytes": 35997
+      },
+      {
+        "compressed_bytes": 26169,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.primary.code",
+        "uncompressed_bytes": 35214
+      },
+      {
+        "compressed_bytes": 5361,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.primary.labels.level_1",
+        "uncompressed_bytes": 5379
+      },
+      {
+        "compressed_bytes": 9946,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.primary.labels.level_2",
+        "uncompressed_bytes": 10297
+      },
+      {
+        "compressed_bytes": 14785,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.primary.labels.level_3",
+        "uncompressed_bytes": 17154
+      },
+      {
+        "compressed_bytes": 28208,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.secondary.code",
+        "uncompressed_bytes": 37707
+      },
+      {
+        "compressed_bytes": 5358,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.secondary.labels.level_1",
+        "uncompressed_bytes": 5380
+      },
+      {
+        "compressed_bytes": 9921,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.secondary.labels.level_2",
+        "uncompressed_bytes": 10273
+      },
+      {
+        "compressed_bytes": 14957,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.secondary.labels.level_3",
+        "uncompressed_bytes": 17372
+      },
+      {
+        "compressed_bytes": 3781,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_cognitive_process.primary.code",
+        "uncompressed_bytes": 3811
+      },
+      {
+        "compressed_bytes": 3839,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_cognitive_process.primary.label",
+        "uncompressed_bytes": 3866
+      },
+      {
+        "compressed_bytes": 3855,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_cognitive_process.secondary.code",
+        "uncompressed_bytes": 3852
+      },
+      {
+        "compressed_bytes": 3911,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_cognitive_process.secondary.label",
+        "uncompressed_bytes": 3906
+      },
+      {
+        "compressed_bytes": 2604,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_knowledge_domain.primary.code",
+        "uncompressed_bytes": 2597
+      },
+      {
+        "compressed_bytes": 2655,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_knowledge_domain.primary.label",
+        "uncompressed_bytes": 2651
+      },
+      {
+        "compressed_bytes": 3854,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_knowledge_domain.secondary.code",
+        "uncompressed_bytes": 3848
+      },
+      {
+        "compressed_bytes": 3911,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_knowledge_domain.secondary.label",
+        "uncompressed_bytes": 3905
+      },
+      {
+        "compressed_bytes": 5149,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v1.primary.code",
+        "uncompressed_bytes": 5157
+      },
+      {
+        "compressed_bytes": 5441,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v1.primary.label",
+        "uncompressed_bytes": 5449
+      },
+      {
+        "compressed_bytes": 4877,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v1.secondary.code",
+        "uncompressed_bytes": 5138
+      },
+      {
+        "compressed_bytes": 5176,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v1.secondary.label",
+        "uncompressed_bytes": 5424
+      },
+      {
+        "compressed_bytes": 2611,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.extraction_artifacts.primary.code",
+        "uncompressed_bytes": 2603
+      },
+      {
+        "compressed_bytes": 2713,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.extraction_artifacts.primary.label",
+        "uncompressed_bytes": 2704
+      },
+      {
+        "compressed_bytes": 3857,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.extraction_artifacts.secondary.code",
+        "uncompressed_bytes": 3851
+      },
+      {
+        "compressed_bytes": 3965,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.extraction_artifacts.secondary.label",
+        "uncompressed_bytes": 3957
+      },
+      {
+        "compressed_bytes": 3816,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.missing_content.primary.code",
+        "uncompressed_bytes": 3812
+      },
+      {
+        "compressed_bytes": 3975,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.missing_content.primary.label",
+        "uncompressed_bytes": 3977
+      },
+      {
+        "compressed_bytes": 3851,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.missing_content.secondary.code",
+        "uncompressed_bytes": 3847
+      },
+      {
+        "compressed_bytes": 3994,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.missing_content.secondary.label",
+        "uncompressed_bytes": 4002
+      },
+      {
+        "compressed_bytes": 6437,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v2.primary.code",
+        "uncompressed_bytes": 6467
+      },
+      {
+        "compressed_bytes": 6719,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v2.primary.label",
+        "uncompressed_bytes": 6769
+      },
+      {
+        "compressed_bytes": 6444,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v2.secondary.code",
+        "uncompressed_bytes": 6467
+      },
+      {
+        "compressed_bytes": 6728,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v2.secondary.label",
+        "uncompressed_bytes": 6769
+      },
+      {
+        "compressed_bytes": 3838,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.reasoning_depth.primary.code",
+        "uncompressed_bytes": 3832
+      },
+      {
+        "compressed_bytes": 3925,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.reasoning_depth.primary.label",
+        "uncompressed_bytes": 3937
+      },
+      {
+        "compressed_bytes": 3816,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.reasoning_depth.secondary.code",
+        "uncompressed_bytes": 3810
+      },
+      {
+        "compressed_bytes": 3902,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.reasoning_depth.secondary.label",
+        "uncompressed_bytes": 3915
+      },
+      {
+        "compressed_bytes": 3262,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.technical_correctness.primary.code",
+        "uncompressed_bytes": 3729
+      },
+      {
+        "compressed_bytes": 3369,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.technical_correctness.primary.label",
+        "uncompressed_bytes": 3847
+      },
+      {
+        "compressed_bytes": 3835,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.technical_correctness.secondary.code",
+        "uncompressed_bytes": 3830
+      },
+      {
+        "compressed_bytes": 3960,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.technical_correctness.secondary.label",
+        "uncompressed_bytes": 3975
+      },
+      {
+        "compressed_bytes": 3178,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.education_level.primary.code",
+        "uncompressed_bytes": 3509
+      },
+      {
+        "compressed_bytes": 3284,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.education_level.primary.label",
+        "uncompressed_bytes": 3625
+      },
+      {
+        "compressed_bytes": 2935,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.education_level.secondary.code",
+        "uncompressed_bytes": 3386
+      },
+      {
+        "compressed_bytes": 3043,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.education_level.secondary.label",
+        "uncompressed_bytes": 3502
+      },
+      {
+        "compressed_bytes": 158,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "pid",
+        "uncompressed_bytes": 154
+      }
+    ],
+    "confirmation_window": [
+      58279,
+      58791
+    ],
+    "crawl": "crawl=CC-MAIN-2021-49",
+    "file": "data/crawl=CC-MAIN-2021-49/train-00408-of-02895.parquet",
+    "file_row_groups": 8,
+    "file_rows": 76695,
+    "footer_bytes": 166247,
+    "footer_sha256": "147e23096e4f6781b606ea5a066c2e554bb964fa9923ba8ea021e7750e2bae69",
+    "group_rows": 10000,
+    "nominal_requests_one_redirect": 220,
+    "projected_compressed_bytes": 30000448,
+    "projected_uncompressed_bytes": 49433912,
+    "remote_length": 247477157,
+    "selector_compressed_bytes": 1654536,
+    "strong_etag": "\"852e5570ccf4c5f762c0300f8d8b6f9e691f50b01fdf590d2b987fa09d18542e\"",
+    "text_compressed_bytes": 24764878
+  },
+  {
+    "chunks": [
+      {
+        "compressed_bytes": 97631,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "id",
+        "uncompressed_bytes": 97616
+      },
+      {
+        "compressed_bytes": 24628813,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "text",
+        "uncompressed_bytes": 42924301
+      },
+      {
+        "compressed_bytes": 574832,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.url",
+        "uncompressed_bytes": 807066
+      },
+      {
+        "compressed_bytes": 166704,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.source_domain",
+        "uncompressed_bytes": 236130
+      },
+      {
+        "compressed_bytes": 107,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.snapshot_id",
+        "uncompressed_bytes": 103
+      },
+      {
+        "compressed_bytes": 77158,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.Content-Length",
+        "uncompressed_bytes": 110534
+      },
+      {
+        "compressed_bytes": 176,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.Content-Type",
+        "uncompressed_bytes": 172
+      },
+      {
+        "compressed_bytes": 358915,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Block-Digest",
+        "uncompressed_bytes": 427584
+      },
+      {
+        "compressed_bytes": 385698,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Concurrent-To",
+        "uncompressed_bytes": 527584
+      },
+      {
+        "compressed_bytes": 101085,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Date",
+        "uncompressed_bytes": 255904
+      },
+      {
+        "compressed_bytes": 84549,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-IP-Address",
+        "uncompressed_bytes": 141181
+      },
+      {
+        "compressed_bytes": 2151,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Identified-Payload-Type",
+        "uncompressed_bytes": 3810
+      },
+      {
+        "compressed_bytes": 358938,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Payload-Digest",
+        "uncompressed_bytes": 427584
+      },
+      {
+        "compressed_bytes": 385897,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Record-ID",
+        "uncompressed_bytes": 527584
+      },
+      {
+        "compressed_bytes": 574797,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Target-URI",
+        "uncompressed_bytes": 806905
+      },
+      {
+        "compressed_bytes": 861,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Truncated",
+        "uncompressed_bytes": 1174
+      },
+      {
+        "compressed_bytes": 98,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Type",
+        "uncompressed_bytes": 94
+      },
+      {
+        "compressed_bytes": 363474,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_metadata.WARC-Warcinfo-ID",
+        "uncompressed_bytes": 496933
+      },
+      {
+        "compressed_bytes": 8258,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "metadata.warc_info",
+        "uncompressed_bytes": 16092
+      },
+      {
+        "compressed_bytes": 37516,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.ccnet_original_length",
+        "uncompressed_bytes": 37505
+      },
+      {
+        "compressed_bytes": 13285,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.ccnet_original_nlines",
+        "uncompressed_bytes": 13275
+      },
+      {
+        "compressed_bytes": 2541,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_curly_bracket",
+        "uncompressed_bytes": 3105
+      },
+      {
+        "compressed_bytes": 1911,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_ldnoobw_words",
+        "uncompressed_bytes": 2757
+      },
+      {
+        "compressed_bytes": 200,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_lorem_ipsum",
+        "uncompressed_bytes": 197
+      },
+      {
+        "compressed_bytes": 47868,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_stop_word_fraction",
+        "uncompressed_bytes": 47857
+      },
+      {
+        "compressed_bytes": 222,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_ut1_blacklist",
+        "uncompressed_bytes": 247
+      },
+      {
+        "compressed_bytes": 39920,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_all_caps_words",
+        "uncompressed_bytes": 39909
+      },
+      {
+        "compressed_bytes": 8367,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_lines_end_with_ellipsis",
+        "uncompressed_bytes": 11712
+      },
+      {
+        "compressed_bytes": 46964,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_no_alph_words",
+        "uncompressed_bytes": 46953
+      },
+      {
+        "compressed_bytes": 46188,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_unique_words",
+        "uncompressed_bytes": 46177
+      },
+      {
+        "compressed_bytes": 53692,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_mean_word_length",
+        "uncompressed_bytes": 53680
+      },
+      {
+        "compressed_bytes": 12873,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_num_sentences",
+        "uncompressed_bytes": 12863
+      },
+      {
+        "compressed_bytes": 18328,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_symbol_to_word_ratio",
+        "uncompressed_bytes": 21061
+      },
+      {
+        "compressed_bytes": 57128,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_unigram_entropy",
+        "uncompressed_bytes": 57116
+      },
+      {
+        "compressed_bytes": 21749,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_word_count",
+        "uncompressed_bytes": 21739
+      },
+      {
+        "compressed_bytes": 23190,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_10grams",
+        "uncompressed_bytes": 27056
+      },
+      {
+        "compressed_bytes": 42214,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_5grams",
+        "uncompressed_bytes": 42725
+      },
+      {
+        "compressed_bytes": 37710,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_6grams",
+        "uncompressed_bytes": 39015
+      },
+      {
+        "compressed_bytes": 33468,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_7grams",
+        "uncompressed_bytes": 35610
+      },
+      {
+        "compressed_bytes": 29979,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_8grams",
+        "uncompressed_bytes": 32871
+      },
+      {
+        "compressed_bytes": 26093,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_dupe_9grams",
+        "uncompressed_bytes": 29318
+      },
+      {
+        "compressed_bytes": 51040,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_top_2gram",
+        "uncompressed_bytes": 51028
+      },
+      {
+        "compressed_bytes": 48820,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_top_3gram",
+        "uncompressed_bytes": 48809
+      },
+      {
+        "compressed_bytes": 45660,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_frac_chars_top_4gram",
+        "uncompressed_bytes": 45649
+      },
+      {
+        "compressed_bytes": 57608,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_books_importance",
+        "uncompressed_bytes": 57596
+      },
+      {
+        "compressed_bytes": 57608,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_books_importance_length_correction",
+        "uncompressed_bytes": 57596
+      },
+      {
+        "compressed_bytes": 57612,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_openwebtext_importance",
+        "uncompressed_bytes": 57600
+      },
+      {
+        "compressed_bytes": 57612,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_openwebtext_importance_length_correction",
+        "uncompressed_bytes": 57600
+      },
+      {
+        "compressed_bytes": 57608,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_wikipedia_importance",
+        "uncompressed_bytes": 57596
+      },
+      {
+        "compressed_bytes": 57604,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.red_pajama_v2.rps_doc_wikipedia_importance_length_correction",
+        "uncompressed_bytes": 57592
+      },
+      {
+        "compressed_bytes": 43980,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.dclm",
+        "uncompressed_bytes": 43969
+      },
+      {
+        "compressed_bytes": 57556,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.english",
+        "uncompressed_bytes": 57544
+      },
+      {
+        "compressed_bytes": 57600,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.fineweb_edu_approx",
+        "uncompressed_bytes": 57588
+      },
+      {
+        "compressed_bytes": 45844,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.eai_general_math",
+        "uncompressed_bytes": 45833
+      },
+      {
+        "compressed_bytes": 57428,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.eai_open_web_math",
+        "uncompressed_bytes": 57416
+      },
+      {
+        "compressed_bytes": 37452,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "quality_signals.fasttext.eai_web_code",
+        "uncompressed_bytes": 37441
+      },
+      {
+        "compressed_bytes": 27441,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.primary.code",
+        "uncompressed_bytes": 36636
+      },
+      {
+        "compressed_bytes": 5361,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.primary.labels.level_1",
+        "uncompressed_bytes": 5380
+      },
+      {
+        "compressed_bytes": 9898,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.primary.labels.level_2",
+        "uncompressed_bytes": 10248
+      },
+      {
+        "compressed_bytes": 14676,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.primary.labels.level_3",
+        "uncompressed_bytes": 16952
+      },
+      {
+        "compressed_bytes": 27992,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.secondary.code",
+        "uncompressed_bytes": 37338
+      },
+      {
+        "compressed_bytes": 5362,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.secondary.labels.level_1",
+        "uncompressed_bytes": 5379
+      },
+      {
+        "compressed_bytes": 9921,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.secondary.labels.level_2",
+        "uncompressed_bytes": 10275
+      },
+      {
+        "compressed_bytes": 14859,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.free_decimal_correspondence.secondary.labels.level_3",
+        "uncompressed_bytes": 17273
+      },
+      {
+        "compressed_bytes": 3649,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_cognitive_process.primary.code",
+        "uncompressed_bytes": 3805
+      },
+      {
+        "compressed_bytes": 3713,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_cognitive_process.primary.label",
+        "uncompressed_bytes": 3864
+      },
+      {
+        "compressed_bytes": 3854,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_cognitive_process.secondary.code",
+        "uncompressed_bytes": 3850
+      },
+      {
+        "compressed_bytes": 3912,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_cognitive_process.secondary.label",
+        "uncompressed_bytes": 3904
+      },
+      {
+        "compressed_bytes": 3841,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_knowledge_domain.primary.code",
+        "uncompressed_bytes": 3836
+      },
+      {
+        "compressed_bytes": 3896,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_knowledge_domain.primary.label",
+        "uncompressed_bytes": 3893
+      },
+      {
+        "compressed_bytes": 3854,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_knowledge_domain.secondary.code",
+        "uncompressed_bytes": 3848
+      },
+      {
+        "compressed_bytes": 3912,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.bloom_knowledge_domain.secondary.label",
+        "uncompressed_bytes": 3905
+      },
+      {
+        "compressed_bytes": 5148,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v1.primary.code",
+        "uncompressed_bytes": 5164
+      },
+      {
+        "compressed_bytes": 5443,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v1.primary.label",
+        "uncompressed_bytes": 5450
+      },
+      {
+        "compressed_bytes": 5150,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v1.secondary.code",
+        "uncompressed_bytes": 5160
+      },
+      {
+        "compressed_bytes": 5442,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v1.secondary.label",
+        "uncompressed_bytes": 5446
+      },
+      {
+        "compressed_bytes": 2605,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.extraction_artifacts.primary.code",
+        "uncompressed_bytes": 2598
+      },
+      {
+        "compressed_bytes": 2707,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.extraction_artifacts.primary.label",
+        "uncompressed_bytes": 2699
+      },
+      {
+        "compressed_bytes": 3859,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.extraction_artifacts.secondary.code",
+        "uncompressed_bytes": 3851
+      },
+      {
+        "compressed_bytes": 3967,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.extraction_artifacts.secondary.label",
+        "uncompressed_bytes": 3957
+      },
+      {
+        "compressed_bytes": 3793,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.missing_content.primary.code",
+        "uncompressed_bytes": 3789
+      },
+      {
+        "compressed_bytes": 3948,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.missing_content.primary.label",
+        "uncompressed_bytes": 3954
+      },
+      {
+        "compressed_bytes": 3844,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.missing_content.secondary.code",
+        "uncompressed_bytes": 3840
+      },
+      {
+        "compressed_bytes": 3983,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.missing_content.secondary.label",
+        "uncompressed_bytes": 3995
+      },
+      {
+        "compressed_bytes": 6441,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v2.primary.code",
+        "uncompressed_bytes": 6467
+      },
+      {
+        "compressed_bytes": 6719,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v2.primary.label",
+        "uncompressed_bytes": 6769
+      },
+      {
+        "compressed_bytes": 6436,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v2.secondary.code",
+        "uncompressed_bytes": 6467
+      },
+      {
+        "compressed_bytes": 6721,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.document_type_v2.secondary.label",
+        "uncompressed_bytes": 6769
+      },
+      {
+        "compressed_bytes": 3838,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.reasoning_depth.primary.code",
+        "uncompressed_bytes": 3832
+      },
+      {
+        "compressed_bytes": 3925,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.reasoning_depth.primary.label",
+        "uncompressed_bytes": 3937
+      },
+      {
+        "compressed_bytes": 3821,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.reasoning_depth.secondary.code",
+        "uncompressed_bytes": 3815
+      },
+      {
+        "compressed_bytes": 3909,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.reasoning_depth.secondary.label",
+        "uncompressed_bytes": 3920
+      },
+      {
+        "compressed_bytes": 3330,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.technical_correctness.primary.code",
+        "uncompressed_bytes": 3734
+      },
+      {
+        "compressed_bytes": 3443,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.technical_correctness.primary.label",
+        "uncompressed_bytes": 3852
+      },
+      {
+        "compressed_bytes": 3658,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.technical_correctness.secondary.code",
+        "uncompressed_bytes": 3823
+      },
+      {
+        "compressed_bytes": 3789,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.technical_correctness.secondary.label",
+        "uncompressed_bytes": 3968
+      },
+      {
+        "compressed_bytes": 3024,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.education_level.primary.code",
+        "uncompressed_bytes": 3452
+      },
+      {
+        "compressed_bytes": 3133,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.education_level.primary.label",
+        "uncompressed_bytes": 3568
+      },
+      {
+        "compressed_bytes": 2840,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.education_level.secondary.code",
+        "uncompressed_bytes": 3332
+      },
+      {
+        "compressed_bytes": 2948,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "eai_taxonomy.education_level.secondary.label",
+        "uncompressed_bytes": 3448
+      },
+      {
+        "compressed_bytes": 158,
+        "has_column_index": false,
+        "has_offset_index": false,
+        "path": "pid",
+        "uncompressed_bytes": 154
+      }
+    ],
+    "confirmation_window": [
+      19154,
+      19666
+    ],
+    "crawl": "crawl=CC-MAIN-2024-26",
+    "file": "data/crawl=CC-MAIN-2024-26/train-01127-of-03168.parquet",
+    "file_row_groups": 8,
+    "file_rows": 78150,
+    "footer_bytes": 161808,
+    "footer_sha256": "e829ac281553a31ed91914841671a2b17028aefb94b3d9a64cc0c768c1bef16f",
+    "group_rows": 10000,
+    "nominal_requests_one_redirect": 220,
+    "projected_compressed_bytes": 29826743,
+    "projected_uncompressed_bytes": 49513552,
+    "remote_length": 246493238,
+    "selector_compressed_bytes": 1656443,
+    "strong_etag": "\"bdc91792cb54687e353f7aa5b2ddb70eabdfe9bd3b8e781f6c564aa60a0b3b90\"",
+    "text_compressed_bytes": 24628813
+  }
+]

@@ -1,5 +1,18 @@
 # XLM runbook — Windows (PowerShell)
 
+For the Mix-01 operator checkout, first dot-source `scripts/operator_storage.ps1`.
+It reads `recipes/operator/storage.json` (operator data root `G:\XLM`) and derives
+`XLM_HOME=G:\XLM\xlm-home`, cache and temporary paths. If the default PowerShell
+execution policy disables scripts, start an operator shell with
+`powershell -NoProfile -ExecutionPolicy Bypass`; this affects only that process.
+The remaining-component calibration driver requires `XLM_DATA_ROOT` or an explicit
+`-DataRoot` and resolves the checkout from its script location. Essential-Web uses
+the frozen shared 16,384-row commands in the
+[production-readiness report](../implementation/reports/ESSENTIAL-WEB-PRODUCTION-READINESS.md),
+whose admission/probe blockers must be resolved before live execution. The legacy
+1,000-row Essential driver path is disabled. Historical evidence paths describe
+past runs and are not current operator defaults.
+
 Use mutually exclusive `--extra cpu` or `--extra cuda`; add `--extra eval` for
 local harness fixtures. Python is pinned to 3.12.13 in `.python-version`; use
 `uv sync --locked` to preserve the tested dependency graph. `--offline` requires

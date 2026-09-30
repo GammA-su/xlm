@@ -1,0 +1,53 @@
+{
+  "binding": {
+    "adapter_code_sha256": "56ca4fb26e88b57409f9ba0e0743095a1ff552a83e702722a948c2115d3c42f8",
+    "adapter_id": "essential_web_bnormal",
+    "b_normal_semantics_digest": "56f86d728852b724f22b9d53b65f1566692efdc43a6e5e14d1bf02261249a5ac",
+    "canonicalization": "EssentialWebSelectedAdapter -> EssentialWebAdapter -> CanonicalDocument",
+    "repository": "EssentialAI/essential-web-v1.0",
+    "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+    "selector": {
+      "condition": "B-normal",
+      "evaluator_sha256": "5a63e78560ea9e12b0ec03b5e7e63204b5c75554bee02192c12bb4ab0853bf9c",
+      "freeze_digest": "c6f32a65f083c99b64245e25151f2cc73275093e1013d68b625c6d6f63d10a0c",
+      "freeze_version": "essential-web-selector-fasttrack-v1",
+      "policy_digest": "f4357f61f434d5105d823266153dac6372e122f12767187631e8796b4899dd07",
+      "selector_id": "essential-web-b-normal"
+    },
+    "source_id": "essential_web"
+  },
+  "blockers": [
+    "missing license/provenance/attribution and benchmark-risk review at this revision",
+    "missing accessible schema-verified production ProbeEvidenceRecord and fingerprint (existing probe budget_exhausted)",
+    "science retained-byte yield and source capacity unmeasured",
+    "physical probe cannot use current pilot request ceiling"
+  ],
+  "bulk_authorized": false,
+  "bulk_limits": null,
+  "components": {
+    "essential_practical": {
+      "final_quota": 600000000,
+      "first_pass_estimated_target": 660000000
+    },
+    "essential_prose": {
+      "final_quota": 300000000,
+      "first_pass_estimated_target": 330000000
+    },
+    "essential_science": {
+      "final_quota": 600000000,
+      "first_pass_estimated_target": 660000000
+    }
+  },
+  "quotas_sha256": "9b16db765c4dbb3fc3a366b1c2a8acc88e3ca8bc81f344d0a082ee00d8c78fdf",
+  "science_controls_scan": true,
+  "stages": [
+    "resolve C04 license/provenance and bound probe admission",
+    "adopt frozen eight-crawl inventory",
+    "shared source/B-normal probe",
+    "16384-row frozen calibration",
+    "measure science yield/cost and capacity",
+    "mix01_inventory estimate; acquire canonical pool in frozen inventory order",
+    "later freeze training tokenizer; exact count",
+    "mix01_inventory sufficiency; next inventory prefix top-up of deficient views only"
+  ]
+}
