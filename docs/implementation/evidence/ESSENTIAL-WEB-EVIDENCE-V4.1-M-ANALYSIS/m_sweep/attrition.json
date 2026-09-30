@@ -1,0 +1,853 @@
+{
+  "A-normal": {
+    "validity_reasons": {
+      "all": {},
+      "crawl=CC-MAIN-2014-15": {},
+      "crawl=CC-MAIN-2015-32": {},
+      "crawl=CC-MAIN-2016-50": {},
+      "crawl=CC-MAIN-2018-05": {},
+      "crawl=CC-MAIN-2019-09": {},
+      "crawl=CC-MAIN-2021-04": {},
+      "crawl=CC-MAIN-2021-49": {},
+      "crawl=CC-MAIN-2024-26": {}
+    },
+    "waterfall": {
+      "all": {
+        "gate_artifacts": 1474,
+        "gate_correctness": 1366,
+        "gate_doctype": 558,
+        "gate_english": 3125,
+        "gate_missing": 1367,
+        "input": 4096,
+        "joint": 558,
+        "valid": 4096
+      },
+      "crawl=CC-MAIN-2014-15": {
+        "gate_artifacts": 118,
+        "gate_correctness": 112,
+        "gate_doctype": 52,
+        "gate_english": 379,
+        "gate_missing": 112,
+        "input": 512,
+        "joint": 52,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2015-32": {
+        "gate_artifacts": 116,
+        "gate_correctness": 106,
+        "gate_doctype": 50,
+        "gate_english": 395,
+        "gate_missing": 106,
+        "input": 512,
+        "joint": 50,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2016-50": {
+        "gate_artifacts": 129,
+        "gate_correctness": 115,
+        "gate_doctype": 49,
+        "gate_english": 362,
+        "gate_missing": 115,
+        "input": 512,
+        "joint": 49,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2018-05": {
+        "gate_artifacts": 185,
+        "gate_correctness": 168,
+        "gate_doctype": 67,
+        "gate_english": 385,
+        "gate_missing": 168,
+        "input": 512,
+        "joint": 67,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2019-09": {
+        "gate_artifacts": 209,
+        "gate_correctness": 190,
+        "gate_doctype": 73,
+        "gate_english": 393,
+        "gate_missing": 190,
+        "input": 512,
+        "joint": 73,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2021-04": {
+        "gate_artifacts": 243,
+        "gate_correctness": 228,
+        "gate_doctype": 97,
+        "gate_english": 411,
+        "gate_missing": 229,
+        "input": 512,
+        "joint": 97,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2021-49": {
+        "gate_artifacts": 229,
+        "gate_correctness": 215,
+        "gate_doctype": 95,
+        "gate_english": 397,
+        "gate_missing": 215,
+        "input": 512,
+        "joint": 95,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2024-26": {
+        "gate_artifacts": 245,
+        "gate_correctness": 232,
+        "gate_doctype": 75,
+        "gate_english": 403,
+        "gate_missing": 232,
+        "input": 512,
+        "joint": 75,
+        "valid": 512
+      }
+    }
+  },
+  "A-strict": {
+    "validity_reasons": {
+      "all": {},
+      "crawl=CC-MAIN-2014-15": {},
+      "crawl=CC-MAIN-2015-32": {},
+      "crawl=CC-MAIN-2016-50": {},
+      "crawl=CC-MAIN-2018-05": {},
+      "crawl=CC-MAIN-2019-09": {},
+      "crawl=CC-MAIN-2021-04": {},
+      "crawl=CC-MAIN-2021-49": {},
+      "crawl=CC-MAIN-2024-26": {}
+    },
+    "waterfall": {
+      "all": {
+        "gate_artifacts": 948,
+        "gate_correctness": 852,
+        "gate_doctype": 457,
+        "gate_english": 1835,
+        "gate_missing": 853,
+        "input": 4096,
+        "joint": 457,
+        "valid": 4096
+      },
+      "crawl=CC-MAIN-2014-15": {
+        "gate_artifacts": 79,
+        "gate_correctness": 71,
+        "gate_doctype": 45,
+        "gate_english": 203,
+        "gate_missing": 71,
+        "input": 512,
+        "joint": 45,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2015-32": {
+        "gate_artifacts": 75,
+        "gate_correctness": 65,
+        "gate_doctype": 40,
+        "gate_english": 229,
+        "gate_missing": 65,
+        "input": 512,
+        "joint": 40,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2016-50": {
+        "gate_artifacts": 64,
+        "gate_correctness": 55,
+        "gate_doctype": 35,
+        "gate_english": 179,
+        "gate_missing": 55,
+        "input": 512,
+        "joint": 35,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2018-05": {
+        "gate_artifacts": 130,
+        "gate_correctness": 111,
+        "gate_doctype": 56,
+        "gate_english": 232,
+        "gate_missing": 111,
+        "input": 512,
+        "joint": 56,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2019-09": {
+        "gate_artifacts": 139,
+        "gate_correctness": 124,
+        "gate_doctype": 59,
+        "gate_english": 242,
+        "gate_missing": 124,
+        "input": 512,
+        "joint": 59,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2021-04": {
+        "gate_artifacts": 160,
+        "gate_correctness": 147,
+        "gate_doctype": 82,
+        "gate_english": 252,
+        "gate_missing": 148,
+        "input": 512,
+        "joint": 82,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2021-49": {
+        "gate_artifacts": 154,
+        "gate_correctness": 141,
+        "gate_doctype": 78,
+        "gate_english": 259,
+        "gate_missing": 141,
+        "input": 512,
+        "joint": 78,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2024-26": {
+        "gate_artifacts": 147,
+        "gate_correctness": 138,
+        "gate_doctype": 62,
+        "gate_english": 239,
+        "gate_missing": 138,
+        "input": 512,
+        "joint": 62,
+        "valid": 512
+      }
+    }
+  },
+  "B-normal": {
+    "validity_reasons": {
+      "all": {},
+      "crawl=CC-MAIN-2014-15": {},
+      "crawl=CC-MAIN-2015-32": {},
+      "crawl=CC-MAIN-2016-50": {},
+      "crawl=CC-MAIN-2018-05": {},
+      "crawl=CC-MAIN-2019-09": {},
+      "crawl=CC-MAIN-2021-04": {},
+      "crawl=CC-MAIN-2021-49": {},
+      "crawl=CC-MAIN-2024-26": {}
+    },
+    "waterfall": {
+      "all": {
+        "gate_artifacts": 1474,
+        "gate_correctness": 1366,
+        "gate_doctype": 558,
+        "gate_english": 3125,
+        "gate_missing": 1367,
+        "input": 4096,
+        "joint": 558,
+        "valid": 4096
+      },
+      "crawl=CC-MAIN-2014-15": {
+        "gate_artifacts": 118,
+        "gate_correctness": 112,
+        "gate_doctype": 52,
+        "gate_english": 379,
+        "gate_missing": 112,
+        "input": 512,
+        "joint": 52,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2015-32": {
+        "gate_artifacts": 116,
+        "gate_correctness": 106,
+        "gate_doctype": 50,
+        "gate_english": 395,
+        "gate_missing": 106,
+        "input": 512,
+        "joint": 50,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2016-50": {
+        "gate_artifacts": 129,
+        "gate_correctness": 115,
+        "gate_doctype": 49,
+        "gate_english": 362,
+        "gate_missing": 115,
+        "input": 512,
+        "joint": 49,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2018-05": {
+        "gate_artifacts": 185,
+        "gate_correctness": 168,
+        "gate_doctype": 67,
+        "gate_english": 385,
+        "gate_missing": 168,
+        "input": 512,
+        "joint": 67,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2019-09": {
+        "gate_artifacts": 209,
+        "gate_correctness": 190,
+        "gate_doctype": 73,
+        "gate_english": 393,
+        "gate_missing": 190,
+        "input": 512,
+        "joint": 73,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2021-04": {
+        "gate_artifacts": 243,
+        "gate_correctness": 228,
+        "gate_doctype": 97,
+        "gate_english": 411,
+        "gate_missing": 229,
+        "input": 512,
+        "joint": 97,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2021-49": {
+        "gate_artifacts": 229,
+        "gate_correctness": 215,
+        "gate_doctype": 95,
+        "gate_english": 397,
+        "gate_missing": 215,
+        "input": 512,
+        "joint": 95,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2024-26": {
+        "gate_artifacts": 245,
+        "gate_correctness": 232,
+        "gate_doctype": 75,
+        "gate_english": 403,
+        "gate_missing": 232,
+        "input": 512,
+        "joint": 75,
+        "valid": 512
+      }
+    }
+  },
+  "B-strict": {
+    "validity_reasons": {
+      "all": {},
+      "crawl=CC-MAIN-2014-15": {},
+      "crawl=CC-MAIN-2015-32": {},
+      "crawl=CC-MAIN-2016-50": {},
+      "crawl=CC-MAIN-2018-05": {},
+      "crawl=CC-MAIN-2019-09": {},
+      "crawl=CC-MAIN-2021-04": {},
+      "crawl=CC-MAIN-2021-49": {},
+      "crawl=CC-MAIN-2024-26": {}
+    },
+    "waterfall": {
+      "all": {
+        "gate_artifacts": 948,
+        "gate_correctness": 852,
+        "gate_doctype": 457,
+        "gate_english": 1835,
+        "gate_missing": 853,
+        "input": 4096,
+        "joint": 457,
+        "valid": 4096
+      },
+      "crawl=CC-MAIN-2014-15": {
+        "gate_artifacts": 79,
+        "gate_correctness": 71,
+        "gate_doctype": 45,
+        "gate_english": 203,
+        "gate_missing": 71,
+        "input": 512,
+        "joint": 45,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2015-32": {
+        "gate_artifacts": 75,
+        "gate_correctness": 65,
+        "gate_doctype": 40,
+        "gate_english": 229,
+        "gate_missing": 65,
+        "input": 512,
+        "joint": 40,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2016-50": {
+        "gate_artifacts": 64,
+        "gate_correctness": 55,
+        "gate_doctype": 35,
+        "gate_english": 179,
+        "gate_missing": 55,
+        "input": 512,
+        "joint": 35,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2018-05": {
+        "gate_artifacts": 130,
+        "gate_correctness": 111,
+        "gate_doctype": 56,
+        "gate_english": 232,
+        "gate_missing": 111,
+        "input": 512,
+        "joint": 56,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2019-09": {
+        "gate_artifacts": 139,
+        "gate_correctness": 124,
+        "gate_doctype": 59,
+        "gate_english": 242,
+        "gate_missing": 124,
+        "input": 512,
+        "joint": 59,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2021-04": {
+        "gate_artifacts": 160,
+        "gate_correctness": 147,
+        "gate_doctype": 82,
+        "gate_english": 252,
+        "gate_missing": 148,
+        "input": 512,
+        "joint": 82,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2021-49": {
+        "gate_artifacts": 154,
+        "gate_correctness": 141,
+        "gate_doctype": 78,
+        "gate_english": 259,
+        "gate_missing": 141,
+        "input": 512,
+        "joint": 78,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2024-26": {
+        "gate_artifacts": 147,
+        "gate_correctness": 138,
+        "gate_doctype": 62,
+        "gate_english": 239,
+        "gate_missing": 138,
+        "input": 512,
+        "joint": 62,
+        "valid": 512
+      }
+    }
+  },
+  "C-normal": {
+    "validity_reasons": {
+      "all": {},
+      "crawl=CC-MAIN-2014-15": {},
+      "crawl=CC-MAIN-2015-32": {},
+      "crawl=CC-MAIN-2016-50": {},
+      "crawl=CC-MAIN-2018-05": {},
+      "crawl=CC-MAIN-2019-09": {},
+      "crawl=CC-MAIN-2021-04": {},
+      "crawl=CC-MAIN-2021-49": {},
+      "crawl=CC-MAIN-2024-26": {}
+    },
+    "waterfall": {
+      "all": {
+        "gate_artifacts": 1474,
+        "gate_correctness": 1366,
+        "gate_doctype": 558,
+        "gate_english": 3125,
+        "gate_missing": 1367,
+        "input": 4096,
+        "joint": 558,
+        "valid": 4096
+      },
+      "crawl=CC-MAIN-2014-15": {
+        "gate_artifacts": 118,
+        "gate_correctness": 112,
+        "gate_doctype": 52,
+        "gate_english": 379,
+        "gate_missing": 112,
+        "input": 512,
+        "joint": 52,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2015-32": {
+        "gate_artifacts": 116,
+        "gate_correctness": 106,
+        "gate_doctype": 50,
+        "gate_english": 395,
+        "gate_missing": 106,
+        "input": 512,
+        "joint": 50,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2016-50": {
+        "gate_artifacts": 129,
+        "gate_correctness": 115,
+        "gate_doctype": 49,
+        "gate_english": 362,
+        "gate_missing": 115,
+        "input": 512,
+        "joint": 49,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2018-05": {
+        "gate_artifacts": 185,
+        "gate_correctness": 168,
+        "gate_doctype": 67,
+        "gate_english": 385,
+        "gate_missing": 168,
+        "input": 512,
+        "joint": 67,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2019-09": {
+        "gate_artifacts": 209,
+        "gate_correctness": 190,
+        "gate_doctype": 73,
+        "gate_english": 393,
+        "gate_missing": 190,
+        "input": 512,
+        "joint": 73,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2021-04": {
+        "gate_artifacts": 243,
+        "gate_correctness": 228,
+        "gate_doctype": 97,
+        "gate_english": 411,
+        "gate_missing": 229,
+        "input": 512,
+        "joint": 97,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2021-49": {
+        "gate_artifacts": 229,
+        "gate_correctness": 215,
+        "gate_doctype": 95,
+        "gate_english": 397,
+        "gate_missing": 215,
+        "input": 512,
+        "joint": 95,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2024-26": {
+        "gate_artifacts": 245,
+        "gate_correctness": 232,
+        "gate_doctype": 75,
+        "gate_english": 403,
+        "gate_missing": 232,
+        "input": 512,
+        "joint": 75,
+        "valid": 512
+      }
+    }
+  },
+  "C-strict": {
+    "validity_reasons": {
+      "all": {},
+      "crawl=CC-MAIN-2014-15": {},
+      "crawl=CC-MAIN-2015-32": {},
+      "crawl=CC-MAIN-2016-50": {},
+      "crawl=CC-MAIN-2018-05": {},
+      "crawl=CC-MAIN-2019-09": {},
+      "crawl=CC-MAIN-2021-04": {},
+      "crawl=CC-MAIN-2021-49": {},
+      "crawl=CC-MAIN-2024-26": {}
+    },
+    "waterfall": {
+      "all": {
+        "gate_artifacts": 948,
+        "gate_correctness": 852,
+        "gate_doctype": 457,
+        "gate_english": 1835,
+        "gate_missing": 853,
+        "input": 4096,
+        "joint": 457,
+        "valid": 4096
+      },
+      "crawl=CC-MAIN-2014-15": {
+        "gate_artifacts": 79,
+        "gate_correctness": 71,
+        "gate_doctype": 45,
+        "gate_english": 203,
+        "gate_missing": 71,
+        "input": 512,
+        "joint": 45,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2015-32": {
+        "gate_artifacts": 75,
+        "gate_correctness": 65,
+        "gate_doctype": 40,
+        "gate_english": 229,
+        "gate_missing": 65,
+        "input": 512,
+        "joint": 40,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2016-50": {
+        "gate_artifacts": 64,
+        "gate_correctness": 55,
+        "gate_doctype": 35,
+        "gate_english": 179,
+        "gate_missing": 55,
+        "input": 512,
+        "joint": 35,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2018-05": {
+        "gate_artifacts": 130,
+        "gate_correctness": 111,
+        "gate_doctype": 56,
+        "gate_english": 232,
+        "gate_missing": 111,
+        "input": 512,
+        "joint": 56,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2019-09": {
+        "gate_artifacts": 139,
+        "gate_correctness": 124,
+        "gate_doctype": 59,
+        "gate_english": 242,
+        "gate_missing": 124,
+        "input": 512,
+        "joint": 59,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2021-04": {
+        "gate_artifacts": 160,
+        "gate_correctness": 147,
+        "gate_doctype": 82,
+        "gate_english": 252,
+        "gate_missing": 148,
+        "input": 512,
+        "joint": 82,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2021-49": {
+        "gate_artifacts": 154,
+        "gate_correctness": 141,
+        "gate_doctype": 78,
+        "gate_english": 259,
+        "gate_missing": 141,
+        "input": 512,
+        "joint": 78,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2024-26": {
+        "gate_artifacts": 147,
+        "gate_correctness": 138,
+        "gate_doctype": 62,
+        "gate_english": 239,
+        "gate_missing": 138,
+        "input": 512,
+        "joint": 62,
+        "valid": 512
+      }
+    }
+  },
+  "D-normal": {
+    "validity_reasons": {
+      "all": {},
+      "crawl=CC-MAIN-2014-15": {},
+      "crawl=CC-MAIN-2015-32": {},
+      "crawl=CC-MAIN-2016-50": {},
+      "crawl=CC-MAIN-2018-05": {},
+      "crawl=CC-MAIN-2019-09": {},
+      "crawl=CC-MAIN-2021-04": {},
+      "crawl=CC-MAIN-2021-49": {},
+      "crawl=CC-MAIN-2024-26": {}
+    },
+    "waterfall": {
+      "all": {
+        "gate_artifacts": 3108,
+        "gate_correctness": 2587,
+        "gate_doctype": 1148,
+        "gate_english": 3125,
+        "gate_missing": 2595,
+        "input": 4096,
+        "joint": 1148,
+        "valid": 4096
+      },
+      "crawl=CC-MAIN-2014-15": {
+        "gate_artifacts": 378,
+        "gate_correctness": 315,
+        "gate_doctype": 146,
+        "gate_english": 379,
+        "gate_missing": 315,
+        "input": 512,
+        "joint": 146,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2015-32": {
+        "gate_artifacts": 391,
+        "gate_correctness": 324,
+        "gate_doctype": 166,
+        "gate_english": 395,
+        "gate_missing": 325,
+        "input": 512,
+        "joint": 166,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2016-50": {
+        "gate_artifacts": 358,
+        "gate_correctness": 296,
+        "gate_doctype": 143,
+        "gate_english": 362,
+        "gate_missing": 297,
+        "input": 512,
+        "joint": 143,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2018-05": {
+        "gate_artifacts": 379,
+        "gate_correctness": 302,
+        "gate_doctype": 122,
+        "gate_english": 385,
+        "gate_missing": 304,
+        "input": 512,
+        "joint": 122,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2019-09": {
+        "gate_artifacts": 393,
+        "gate_correctness": 327,
+        "gate_doctype": 138,
+        "gate_english": 393,
+        "gate_missing": 328,
+        "input": 512,
+        "joint": 138,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2021-04": {
+        "gate_artifacts": 410,
+        "gate_correctness": 347,
+        "gate_doctype": 151,
+        "gate_english": 411,
+        "gate_missing": 349,
+        "input": 512,
+        "joint": 151,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2021-49": {
+        "gate_artifacts": 397,
+        "gate_correctness": 326,
+        "gate_doctype": 151,
+        "gate_english": 397,
+        "gate_missing": 327,
+        "input": 512,
+        "joint": 151,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2024-26": {
+        "gate_artifacts": 402,
+        "gate_correctness": 350,
+        "gate_doctype": 131,
+        "gate_english": 403,
+        "gate_missing": 350,
+        "input": 512,
+        "joint": 131,
+        "valid": 512
+      }
+    }
+  },
+  "D-strict": {
+    "validity_reasons": {
+      "all": {},
+      "crawl=CC-MAIN-2014-15": {},
+      "crawl=CC-MAIN-2015-32": {},
+      "crawl=CC-MAIN-2016-50": {},
+      "crawl=CC-MAIN-2018-05": {},
+      "crawl=CC-MAIN-2019-09": {},
+      "crawl=CC-MAIN-2021-04": {},
+      "crawl=CC-MAIN-2021-49": {},
+      "crawl=CC-MAIN-2024-26": {}
+    },
+    "waterfall": {
+      "all": {
+        "gate_artifacts": 948,
+        "gate_correctness": 852,
+        "gate_doctype": 457,
+        "gate_english": 1835,
+        "gate_missing": 853,
+        "input": 4096,
+        "joint": 457,
+        "valid": 4096
+      },
+      "crawl=CC-MAIN-2014-15": {
+        "gate_artifacts": 79,
+        "gate_correctness": 71,
+        "gate_doctype": 45,
+        "gate_english": 203,
+        "gate_missing": 71,
+        "input": 512,
+        "joint": 45,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2015-32": {
+        "gate_artifacts": 75,
+        "gate_correctness": 65,
+        "gate_doctype": 40,
+        "gate_english": 229,
+        "gate_missing": 65,
+        "input": 512,
+        "joint": 40,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2016-50": {
+        "gate_artifacts": 64,
+        "gate_correctness": 55,
+        "gate_doctype": 35,
+        "gate_english": 179,
+        "gate_missing": 55,
+        "input": 512,
+        "joint": 35,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2018-05": {
+        "gate_artifacts": 130,
+        "gate_correctness": 111,
+        "gate_doctype": 56,
+        "gate_english": 232,
+        "gate_missing": 111,
+        "input": 512,
+        "joint": 56,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2019-09": {
+        "gate_artifacts": 139,
+        "gate_correctness": 124,
+        "gate_doctype": 59,
+        "gate_english": 242,
+        "gate_missing": 124,
+        "input": 512,
+        "joint": 59,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2021-04": {
+        "gate_artifacts": 160,
+        "gate_correctness": 147,
+        "gate_doctype": 82,
+        "gate_english": 252,
+        "gate_missing": 148,
+        "input": 512,
+        "joint": 82,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2021-49": {
+        "gate_artifacts": 154,
+        "gate_correctness": 141,
+        "gate_doctype": 78,
+        "gate_english": 259,
+        "gate_missing": 141,
+        "input": 512,
+        "joint": 78,
+        "valid": 512
+      },
+      "crawl=CC-MAIN-2024-26": {
+        "gate_artifacts": 147,
+        "gate_correctness": 138,
+        "gate_doctype": 62,
+        "gate_english": 239,
+        "gate_missing": 138,
+        "input": 512,
+        "joint": 62,
+        "valid": 512
+      }
+    }
+  },
+  "note": "sequential; stops at first failure",
+  "stages": [
+    "input",
+    "valid",
+    "gate_english",
+    "gate_artifacts",
+    "gate_missing",
+    "gate_correctness",
+    "gate_doctype",
+    "joint"
+  ]
+}

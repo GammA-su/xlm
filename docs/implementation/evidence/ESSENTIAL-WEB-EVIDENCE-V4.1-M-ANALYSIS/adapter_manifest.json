@@ -1,0 +1,49 @@
+{
+  "adapter": {
+    "code_sha256": "fdf21328933840bcc3be4e7b40f43c49ad58d9d212147d8b17a77e6bbe6c66ab",
+    "id": "essential-web-phase-d-m-derived-input-adapter",
+    "version": "1"
+  },
+  "evaluator_binding_view": {
+    "bundle": {
+      "combined_bytes": 13838037,
+      "combined_sha256": "839e1296940154e70e91cc15c1059a7708d4f1833da329ebb6146739ef625676",
+      "kind": "derived_analysis_input",
+      "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d"
+    },
+    "crawls": [
+      "crawl=CC-MAIN-2014-15",
+      "crawl=CC-MAIN-2015-32",
+      "crawl=CC-MAIN-2016-50",
+      "crawl=CC-MAIN-2018-05",
+      "crawl=CC-MAIN-2019-09",
+      "crawl=CC-MAIN-2021-04",
+      "crawl=CC-MAIN-2021-49",
+      "crawl=CC-MAIN-2024-26"
+    ],
+    "repository": "EssentialAI/essential-web-v1.0",
+    "total_records": 4096
+  },
+  "evaluator_entry_point": "run_sweep (frozen legacy load_binding is not used)",
+  "kind": "essential_web_m_adapter_manifest",
+  "mapping": "_xlm_acquisition.row -> _xlm_acquisition.row_index (added; row kept)",
+  "marker": "_xlm_acquisition.analysis_input_kind = derived_analysis_input",
+  "not_invented": [
+    "legacy bundle.json",
+    "legacy execution.json",
+    "plan hashes",
+    "historical requests",
+    "historical execution receipts",
+    "old acquisition IDs",
+    "old transport history"
+  ],
+  "output_kind": "derived_analysis_input",
+  "refuses": [
+    "count != 4096",
+    "duplicate row identity",
+    "missing row identity",
+    "order drift",
+    "source hash mismatch",
+    "unsupported input shape"
+  ]
+}

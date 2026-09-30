@@ -1,3 +1,20 @@
+> **ESSENTIAL-WEB V4.1 M SELECTOR EVIDENCE SEALED (2026-09-30).**
+> The unchanged frozen evaluator and policy (A/B/C/D, normal/strict) ran on the
+> verified 4,096-row Phase-D M replicate through a checked
+> `derived_analysis_input` adapter (`row` -> `row_index`; metadata, order and
+> provenance preserved; no legacy receipts invented). B-normal
+> science/practical/prose/unassigned/rejected: 24/117/372/45/3538 (development
+> 29/108/371/36/3552); B-strict 11/68/342/36/3639 (development
+> 20/62/329/25/3660). Aggregate shares within 0.54 points of development;
+> science is sparse and fell at strict; prose genre mix shifted. Descriptive
+> only: no ranking, tuning, confidence intervals or selector decision.
+> Seal `afc972ccf570a5587bf7bd3b6b8d1d728a09f2230c49f1b0a19c1c74cda0b9bc`,
+> verified by full recomputation. Focused tests 29, frozen-evaluator
+> regressions 60, identity tests 5 passed; fast/full selections NOT RUN.
+> Both G: roots unchanged; no network, T access, human review or push.
+> [M analysis report and exact next prompt](reports/ESSENTIAL-WEB-EVIDENCE-V4.1-M-ANALYSIS.md).
+> Next: materialize the blinded T reviewer package externally; M must not change.
+
 # Implementation status
 
 > **ESSENTIAL-WEB EVIDENCE V4.1 HOST AMENDMENT (2026-09-29, offline): READY FOR

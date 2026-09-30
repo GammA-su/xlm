@@ -1,0 +1,311 @@
+{
+  "artifacts_known": [
+    "No Artifacts",
+    "Irrelevant Content",
+    "Leftover HTML",
+    "Text Extraction Errors"
+  ],
+  "caps": {
+    "max_input_bytes": 33554432,
+    "max_line_bytes": 1048576,
+    "max_output_bytes": 67108864,
+    "max_records": 5000,
+    "max_runtime_seconds": 120,
+    "max_scratch_bytes": 67108864
+  },
+  "correctness_allowed": [
+    "Highly Correct",
+    "Mostly Correct",
+    "Not Applicable/Indeterminate"
+  ],
+  "correctness_rejected": [
+    "Partially Correct",
+    "Technically Flawed"
+  ],
+  "doctype_known_excluded": [
+    "Product Page",
+    "Content Listing",
+    "Structured Data",
+    "Spam / Ads",
+    "Truncated",
+    "News (Org.)",
+    "About (Org.)",
+    "About (Personal)",
+    "Comment Section",
+    "User Review",
+    "Legal Notices",
+    "Audio Transcript",
+    "Listicle",
+    "Other/Unclassified"
+  ],
+  "doctype_union": [
+    "Academic Writing",
+    "Knowledge Article",
+    "Nonfiction Writing",
+    "Documentation",
+    "Tutorial",
+    "News Article",
+    "FAQ",
+    "Customer Support",
+    "Q&A Forum",
+    "Personal Blog",
+    "Creative Writing"
+  ],
+  "english_bands": [
+    [
+      0.0,
+      0.65
+    ],
+    [
+      0.65,
+      0.8
+    ],
+    [
+      0.8,
+      0.9
+    ],
+    [
+      0.9,
+      0.95
+    ],
+    [
+      0.95,
+      1.0
+    ]
+  ],
+  "english_max": 1.0,
+  "english_min": 0.0,
+  "fdc_syntax": "[0-9]{3}(?:[.][0-9]+)?",
+  "final_components": [
+    "essential_science",
+    "essential_practical",
+    "essential_prose",
+    "unassigned",
+    "rejected"
+  ],
+  "gates": {
+    "GD": {
+      "artifacts": [
+        "No Artifacts",
+        "Irrelevant Content"
+      ],
+      "english_min": 0.8,
+      "missing": [
+        "No missing content",
+        "Missing Images or Figures"
+      ]
+    },
+    "GN": {
+      "artifacts": [
+        "No Artifacts"
+      ],
+      "english_min": 0.8,
+      "missing": [
+        "No missing content",
+        "Missing Images or Figures"
+      ]
+    },
+    "GS": {
+      "artifacts": [
+        "No Artifacts"
+      ],
+      "english_min": 0.9,
+      "missing": [
+        "No missing content"
+      ]
+    }
+  },
+  "kind": "essential_web_selector_sweep",
+  "knowledge_labels": [
+    "Factual",
+    "Conceptual",
+    "Procedural"
+  ],
+  "missing_known": [
+    "No missing content",
+    "Missing Images or Figures",
+    "Truncated Snippets",
+    "Click Here References",
+    "Incoherent Flow",
+    "Missing Referenced Data",
+    "Indeterminate"
+  ],
+  "policies": {
+    "A": {
+      "normal": "GN",
+      "practical": {
+        "all": [
+          "P"
+        ]
+      },
+      "prose": {
+        "all": [
+          "R"
+        ]
+      },
+      "science": {
+        "any": [
+          "S5"
+        ]
+      },
+      "strict": "GS"
+    },
+    "B": {
+      "normal": "GN",
+      "practical": {
+        "all": [
+          "P"
+        ]
+      },
+      "prose": {
+        "all": [
+          "R"
+        ]
+      },
+      "science": {
+        "any": [
+          "S5",
+          "S61"
+        ]
+      },
+      "strict": "GS"
+    },
+    "C": {
+      "normal": "GN",
+      "practical": {
+        "all": [
+          "F6",
+          "P"
+        ]
+      },
+      "prose": {
+        "all": [
+          "F789",
+          "R"
+        ]
+      },
+      "science": {
+        "any": [
+          "S5",
+          "S61"
+        ]
+      },
+      "strict": "GS"
+    },
+    "D": {
+      "normal": "GD",
+      "practical": {
+        "all": [
+          "P"
+        ]
+      },
+      "prose": {
+        "all": [
+          "R"
+        ]
+      },
+      "science": {
+        "any": [
+          "S5",
+          "S61"
+        ]
+      },
+      "strict": "GS"
+    }
+  },
+  "policy_spec_version": "essential-web-selector-sweep-v1",
+  "precedence": [
+    "science",
+    "practical",
+    "prose"
+  ],
+  "predicates": {
+    "practical_conditional_genres": [
+      "Q&A Forum",
+      "Knowledge Article",
+      "Personal Blog"
+    ],
+    "practical_genres": [
+      "Tutorial",
+      "Documentation",
+      "FAQ",
+      "Customer Support"
+    ],
+    "practical_knowledge": [
+      "Procedural"
+    ],
+    "prose_genres": [
+      "Creative Writing",
+      "Nonfiction Writing",
+      "Personal Blog",
+      "News Article",
+      "Knowledge Article"
+    ],
+    "prose_knowledge": [
+      "Factual",
+      "Conceptual"
+    ],
+    "s5_genres": [
+      "Academic Writing",
+      "Knowledge Article",
+      "Nonfiction Writing",
+      "Documentation",
+      "Tutorial",
+      "News Article"
+    ],
+    "s61_correctness": [
+      "Highly Correct",
+      "Mostly Correct"
+    ],
+    "s61_genres": [
+      "Academic Writing",
+      "Knowledge Article"
+    ],
+    "s61_knowledge": [
+      "Conceptual"
+    ],
+    "s61_prefixes": [
+      "610",
+      "612",
+      "613",
+      "614",
+      "615",
+      "616",
+      "617",
+      "618"
+    ]
+  },
+  "schema_version": 1,
+  "sensitivity": {
+    "artifact_options": [
+      [
+        "No Artifacts"
+      ],
+      [
+        "No Artifacts",
+        "Irrelevant Content"
+      ]
+    ],
+    "english_thresholds": [
+      0.65,
+      0.8,
+      0.9,
+      0.95
+    ],
+    "missing_options": [
+      [
+        "No missing content"
+      ],
+      [
+        "No missing content",
+        "Missing Images or Figures"
+      ]
+    ]
+  },
+  "temporal_flags": {
+    "fold_threshold": 2.0,
+    "min_cell_count": 20,
+    "pp_threshold": 10.0,
+    "s61_fraction": 0.5
+  }
+}

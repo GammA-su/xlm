@@ -1,0 +1,62 @@
+{
+  "artifacts": {
+    "adapted_input_manifest.json": {
+      "bytes": 6074,
+      "sha256": "42f13e7c3cadce08ca70c3fbf334df23e8f3798c0c76b5c2e5fd722363d8bb36"
+    },
+    "adapter_manifest.json": {
+      "bytes": 1548,
+      "sha256": "a275968f4a86f52b57235539bc9f6f53a5e3cb86deae321653029d5752ef0459"
+    },
+    "development_binding.json": {
+      "bytes": 1806,
+      "sha256": "b236af1a1f3d747640b0381df986ad976014e3d54e7e6441bb6826418da61c53"
+    },
+    "m_comparison.json": {
+      "bytes": 334587,
+      "sha256": "eeec86fe6d8a4ce1c3834dc21592b132ab3d565bb66afccb6237c5d9d2198b9a"
+    },
+    "m_comparison.md": {
+      "bytes": 24446,
+      "sha256": "1450cd19507347c5a2813ff88ce80570569ae20e616c89a9a02067e2a8e79a07"
+    },
+    "m_sweep/attrition.json": {
+      "bytes": 21528,
+      "sha256": "635f9b0a7152f1850cda409c841a5bea3eaac9880fff1837c7fd2e78daf9d598"
+    },
+    "m_sweep/crosstabs.json": {
+      "bytes": 704262,
+      "sha256": "4525201254ebab6454e4227a63c974d5e477ca88140243328b1fff6de784457e"
+    },
+    "m_sweep/diagnostics.json": {
+      "bytes": 79031,
+      "sha256": "d195e17b0e5f3fa7f3bd8cf38b4a6394eff43449623bed53a5e1d83c35bdb573"
+    },
+    "m_sweep/overlaps.json": {
+      "bytes": 23429,
+      "sha256": "1cc8eaf742baf804fb0ac3fda1c4714c1f1968307a1a168f05f0825f46ee2ed0"
+    },
+    "m_sweep/per_crawl.json": {
+      "bytes": 28858,
+      "sha256": "f389f139f4a9b42a551664c2114bd33b66473046a91edc799e099c972350c7ea"
+    },
+    "m_sweep/policy_spec.json": {
+      "bytes": 5346,
+      "sha256": "04005393158b01b5cc6433994142fa61f4d0679eda565b425ac82084acf3035b"
+    },
+    "m_sweep/summary.json": {
+      "bytes": 3438,
+      "sha256": "75845b345792fa929b671c668e3688e94e24463703883f65fddb9c1cbfc5b069"
+    },
+    "m_sweep/summary.md": {
+      "bytes": 6447,
+      "sha256": "cb9dbd672c85ad8cc2baa90fba072bfeb93f52f6bd879dc66e1133e1ed0db1bf"
+    },
+    "m_sweep_results.json": {
+      "bytes": 32571,
+      "sha256": "65aef7f67fe87d8c23ad08b3ea4471a025122775cdae6affea9faa79ba8f07ce"
+    }
+  },
+  "digest": "4e14c7bfc8b5f5109a9befdf479e7543518fcf04986e1684ad64709bca43c2be",
+  "kind": "essential_web_m_analysis_artifact_manifest"
+}

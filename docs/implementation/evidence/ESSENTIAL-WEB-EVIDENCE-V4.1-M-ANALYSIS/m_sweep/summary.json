@@ -1,0 +1,124 @@
+{
+  "combos": {
+    "A-normal": {
+      "conservation_ok": true,
+      "final": {
+        "essential_practical": 117,
+        "essential_prose": 374,
+        "essential_science": 17,
+        "rejected": 3538,
+        "unassigned": 50
+      }
+    },
+    "A-strict": {
+      "conservation_ok": true,
+      "final": {
+        "essential_practical": 68,
+        "essential_prose": 344,
+        "essential_science": 7,
+        "rejected": 3639,
+        "unassigned": 38
+      }
+    },
+    "B-normal": {
+      "conservation_ok": true,
+      "final": {
+        "essential_practical": 117,
+        "essential_prose": 372,
+        "essential_science": 24,
+        "rejected": 3538,
+        "unassigned": 45
+      }
+    },
+    "B-strict": {
+      "conservation_ok": true,
+      "final": {
+        "essential_practical": 68,
+        "essential_prose": 342,
+        "essential_science": 11,
+        "rejected": 3639,
+        "unassigned": 36
+      }
+    },
+    "C-normal": {
+      "conservation_ok": true,
+      "final": {
+        "essential_practical": 46,
+        "essential_prose": 127,
+        "essential_science": 24,
+        "rejected": 3538,
+        "unassigned": 361
+      }
+    },
+    "C-strict": {
+      "conservation_ok": true,
+      "final": {
+        "essential_practical": 30,
+        "essential_prose": 111,
+        "essential_science": 11,
+        "rejected": 3639,
+        "unassigned": 305
+      }
+    },
+    "D-normal": {
+      "conservation_ok": true,
+      "final": {
+        "essential_practical": 257,
+        "essential_prose": 717,
+        "essential_science": 56,
+        "rejected": 2948,
+        "unassigned": 118
+      }
+    },
+    "D-strict": {
+      "conservation_ok": true,
+      "final": {
+        "essential_practical": 68,
+        "essential_prose": 342,
+        "essential_science": 11,
+        "rejected": 3639,
+        "unassigned": 36
+      }
+    }
+  },
+  "crawls": [
+    "crawl=CC-MAIN-2014-15",
+    "crawl=CC-MAIN-2015-32",
+    "crawl=CC-MAIN-2016-50",
+    "crawl=CC-MAIN-2018-05",
+    "crawl=CC-MAIN-2019-09",
+    "crawl=CC-MAIN-2021-04",
+    "crawl=CC-MAIN-2021-49",
+    "crawl=CC-MAIN-2024-26"
+  ],
+  "identity_invariants": {
+    "A_strict_subset_essential_practical": 0,
+    "A_strict_subset_essential_prose": 0,
+    "A_strict_subset_essential_science": 0,
+    "B_strict_subset_essential_practical": 0,
+    "B_strict_subset_essential_prose": 0,
+    "B_strict_subset_essential_science": 0,
+    "C_strict_subset_essential_practical": 0,
+    "C_strict_subset_essential_prose": 0,
+    "C_strict_subset_essential_science": 0,
+    "C_subset_B_practical_normal": 0,
+    "C_subset_B_practical_strict": 0,
+    "C_subset_B_prose_normal": 0,
+    "C_subset_B_prose_strict": 0,
+    "D_strict_subset_essential_practical": 0,
+    "D_strict_subset_essential_prose": 0,
+    "D_strict_subset_essential_science": 0,
+    "b_c_science_agreement_normal": 4096,
+    "b_final_preserved_in_d_final_essential_practical_normal": 0,
+    "b_final_preserved_in_d_final_essential_practical_strict": 0,
+    "b_final_preserved_in_d_final_essential_prose_normal": 0,
+    "b_final_preserved_in_d_final_essential_prose_strict": 0,
+    "b_final_preserved_in_d_final_essential_science_normal": 0,
+    "b_final_preserved_in_d_final_essential_science_strict": 0,
+    "b_strict_d_strict_agreement": 4096,
+    "d_gate_superset_b_gate_normal": 0,
+    "d_gate_superset_b_gate_strict": 0
+  },
+  "input_records": 4096,
+  "multi_final_violations": 0
+}

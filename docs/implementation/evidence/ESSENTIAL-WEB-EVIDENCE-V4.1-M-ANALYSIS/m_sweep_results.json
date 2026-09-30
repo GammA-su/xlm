@@ -1,0 +1,1055 @@
+{
+  "conditions": {
+    "A-normal": {
+      "by_crawl": {
+        "crawl=CC-MAIN-2014-15": {
+          "essential_practical": 4,
+          "essential_prose": 39,
+          "essential_science": 4,
+          "rejected": 460,
+          "unassigned": 5
+        },
+        "crawl=CC-MAIN-2015-32": {
+          "essential_practical": 10,
+          "essential_prose": 35,
+          "essential_science": 0,
+          "rejected": 462,
+          "unassigned": 5
+        },
+        "crawl=CC-MAIN-2016-50": {
+          "essential_practical": 10,
+          "essential_prose": 32,
+          "essential_science": 3,
+          "rejected": 463,
+          "unassigned": 4
+        },
+        "crawl=CC-MAIN-2018-05": {
+          "essential_practical": 16,
+          "essential_prose": 49,
+          "essential_science": 1,
+          "rejected": 445,
+          "unassigned": 1
+        },
+        "crawl=CC-MAIN-2019-09": {
+          "essential_practical": 18,
+          "essential_prose": 48,
+          "essential_science": 0,
+          "rejected": 439,
+          "unassigned": 7
+        },
+        "crawl=CC-MAIN-2021-04": {
+          "essential_practical": 19,
+          "essential_prose": 63,
+          "essential_science": 1,
+          "rejected": 415,
+          "unassigned": 14
+        },
+        "crawl=CC-MAIN-2021-49": {
+          "essential_practical": 20,
+          "essential_prose": 65,
+          "essential_science": 4,
+          "rejected": 417,
+          "unassigned": 6
+        },
+        "crawl=CC-MAIN-2024-26": {
+          "essential_practical": 20,
+          "essential_prose": 43,
+          "essential_science": 4,
+          "rejected": 437,
+          "unassigned": 8
+        }
+      },
+      "final": {
+        "essential_practical": 117,
+        "essential_prose": 374,
+        "essential_science": 17,
+        "rejected": 3538,
+        "unassigned": 50
+      }
+    },
+    "A-strict": {
+      "by_crawl": {
+        "crawl=CC-MAIN-2014-15": {
+          "essential_practical": 3,
+          "essential_prose": 39,
+          "essential_science": 2,
+          "rejected": 467,
+          "unassigned": 1
+        },
+        "crawl=CC-MAIN-2015-32": {
+          "essential_practical": 7,
+          "essential_prose": 30,
+          "essential_science": 0,
+          "rejected": 472,
+          "unassigned": 3
+        },
+        "crawl=CC-MAIN-2016-50": {
+          "essential_practical": 3,
+          "essential_prose": 27,
+          "essential_science": 1,
+          "rejected": 477,
+          "unassigned": 4
+        },
+        "crawl=CC-MAIN-2018-05": {
+          "essential_practical": 9,
+          "essential_prose": 45,
+          "essential_science": 1,
+          "rejected": 456,
+          "unassigned": 1
+        },
+        "crawl=CC-MAIN-2019-09": {
+          "essential_practical": 11,
+          "essential_prose": 43,
+          "essential_science": 0,
+          "rejected": 453,
+          "unassigned": 5
+        },
+        "crawl=CC-MAIN-2021-04": {
+          "essential_practical": 9,
+          "essential_prose": 59,
+          "essential_science": 1,
+          "rejected": 430,
+          "unassigned": 13
+        },
+        "crawl=CC-MAIN-2021-49": {
+          "essential_practical": 12,
+          "essential_prose": 61,
+          "essential_science": 0,
+          "rejected": 434,
+          "unassigned": 5
+        },
+        "crawl=CC-MAIN-2024-26": {
+          "essential_practical": 14,
+          "essential_prose": 40,
+          "essential_science": 2,
+          "rejected": 450,
+          "unassigned": 6
+        }
+      },
+      "final": {
+        "essential_practical": 68,
+        "essential_prose": 344,
+        "essential_science": 7,
+        "rejected": 3639,
+        "unassigned": 38
+      }
+    },
+    "B-normal": {
+      "by_crawl": {
+        "crawl=CC-MAIN-2014-15": {
+          "essential_practical": 4,
+          "essential_prose": 39,
+          "essential_science": 5,
+          "rejected": 460,
+          "unassigned": 4
+        },
+        "crawl=CC-MAIN-2015-32": {
+          "essential_practical": 10,
+          "essential_prose": 35,
+          "essential_science": 0,
+          "rejected": 462,
+          "unassigned": 5
+        },
+        "crawl=CC-MAIN-2016-50": {
+          "essential_practical": 10,
+          "essential_prose": 31,
+          "essential_science": 4,
+          "rejected": 463,
+          "unassigned": 4
+        },
+        "crawl=CC-MAIN-2018-05": {
+          "essential_practical": 16,
+          "essential_prose": 49,
+          "essential_science": 1,
+          "rejected": 445,
+          "unassigned": 1
+        },
+        "crawl=CC-MAIN-2019-09": {
+          "essential_practical": 18,
+          "essential_prose": 47,
+          "essential_science": 1,
+          "rejected": 439,
+          "unassigned": 7
+        },
+        "crawl=CC-MAIN-2021-04": {
+          "essential_practical": 19,
+          "essential_prose": 63,
+          "essential_science": 3,
+          "rejected": 415,
+          "unassigned": 12
+        },
+        "crawl=CC-MAIN-2021-49": {
+          "essential_practical": 20,
+          "essential_prose": 65,
+          "essential_science": 5,
+          "rejected": 417,
+          "unassigned": 5
+        },
+        "crawl=CC-MAIN-2024-26": {
+          "essential_practical": 20,
+          "essential_prose": 43,
+          "essential_science": 5,
+          "rejected": 437,
+          "unassigned": 7
+        }
+      },
+      "final": {
+        "essential_practical": 117,
+        "essential_prose": 372,
+        "essential_science": 24,
+        "rejected": 3538,
+        "unassigned": 45
+      }
+    },
+    "B-strict": {
+      "by_crawl": {
+        "crawl=CC-MAIN-2014-15": {
+          "essential_practical": 3,
+          "essential_prose": 39,
+          "essential_science": 2,
+          "rejected": 467,
+          "unassigned": 1
+        },
+        "crawl=CC-MAIN-2015-32": {
+          "essential_practical": 7,
+          "essential_prose": 30,
+          "essential_science": 0,
+          "rejected": 472,
+          "unassigned": 3
+        },
+        "crawl=CC-MAIN-2016-50": {
+          "essential_practical": 3,
+          "essential_prose": 26,
+          "essential_science": 2,
+          "rejected": 477,
+          "unassigned": 4
+        },
+        "crawl=CC-MAIN-2018-05": {
+          "essential_practical": 9,
+          "essential_prose": 45,
+          "essential_science": 1,
+          "rejected": 456,
+          "unassigned": 1
+        },
+        "crawl=CC-MAIN-2019-09": {
+          "essential_practical": 11,
+          "essential_prose": 42,
+          "essential_science": 1,
+          "rejected": 453,
+          "unassigned": 5
+        },
+        "crawl=CC-MAIN-2021-04": {
+          "essential_practical": 9,
+          "essential_prose": 59,
+          "essential_science": 2,
+          "rejected": 430,
+          "unassigned": 12
+        },
+        "crawl=CC-MAIN-2021-49": {
+          "essential_practical": 12,
+          "essential_prose": 61,
+          "essential_science": 1,
+          "rejected": 434,
+          "unassigned": 4
+        },
+        "crawl=CC-MAIN-2024-26": {
+          "essential_practical": 14,
+          "essential_prose": 40,
+          "essential_science": 2,
+          "rejected": 450,
+          "unassigned": 6
+        }
+      },
+      "final": {
+        "essential_practical": 68,
+        "essential_prose": 342,
+        "essential_science": 11,
+        "rejected": 3639,
+        "unassigned": 36
+      }
+    },
+    "C-normal": {
+      "by_crawl": {
+        "crawl=CC-MAIN-2014-15": {
+          "essential_practical": 1,
+          "essential_prose": 9,
+          "essential_science": 5,
+          "rejected": 460,
+          "unassigned": 37
+        },
+        "crawl=CC-MAIN-2015-32": {
+          "essential_practical": 4,
+          "essential_prose": 11,
+          "essential_science": 0,
+          "rejected": 462,
+          "unassigned": 35
+        },
+        "crawl=CC-MAIN-2016-50": {
+          "essential_practical": 4,
+          "essential_prose": 11,
+          "essential_science": 4,
+          "rejected": 463,
+          "unassigned": 30
+        },
+        "crawl=CC-MAIN-2018-05": {
+          "essential_practical": 6,
+          "essential_prose": 17,
+          "essential_science": 1,
+          "rejected": 445,
+          "unassigned": 43
+        },
+        "crawl=CC-MAIN-2019-09": {
+          "essential_practical": 10,
+          "essential_prose": 20,
+          "essential_science": 1,
+          "rejected": 439,
+          "unassigned": 42
+        },
+        "crawl=CC-MAIN-2021-04": {
+          "essential_practical": 7,
+          "essential_prose": 24,
+          "essential_science": 3,
+          "rejected": 415,
+          "unassigned": 63
+        },
+        "crawl=CC-MAIN-2021-49": {
+          "essential_practical": 7,
+          "essential_prose": 23,
+          "essential_science": 5,
+          "rejected": 417,
+          "unassigned": 60
+        },
+        "crawl=CC-MAIN-2024-26": {
+          "essential_practical": 7,
+          "essential_prose": 12,
+          "essential_science": 5,
+          "rejected": 437,
+          "unassigned": 51
+        }
+      },
+      "final": {
+        "essential_practical": 46,
+        "essential_prose": 127,
+        "essential_science": 24,
+        "rejected": 3538,
+        "unassigned": 361
+      }
+    },
+    "C-strict": {
+      "by_crawl": {
+        "crawl=CC-MAIN-2014-15": {
+          "essential_practical": 1,
+          "essential_prose": 9,
+          "essential_science": 2,
+          "rejected": 467,
+          "unassigned": 33
+        },
+        "crawl=CC-MAIN-2015-32": {
+          "essential_practical": 2,
+          "essential_prose": 8,
+          "essential_science": 0,
+          "rejected": 472,
+          "unassigned": 30
+        },
+        "crawl=CC-MAIN-2016-50": {
+          "essential_practical": 1,
+          "essential_prose": 8,
+          "essential_science": 2,
+          "rejected": 477,
+          "unassigned": 24
+        },
+        "crawl=CC-MAIN-2018-05": {
+          "essential_practical": 4,
+          "essential_prose": 14,
+          "essential_science": 1,
+          "rejected": 456,
+          "unassigned": 37
+        },
+        "crawl=CC-MAIN-2019-09": {
+          "essential_practical": 7,
+          "essential_prose": 19,
+          "essential_science": 1,
+          "rejected": 453,
+          "unassigned": 32
+        },
+        "crawl=CC-MAIN-2021-04": {
+          "essential_practical": 5,
+          "essential_prose": 23,
+          "essential_science": 2,
+          "rejected": 430,
+          "unassigned": 52
+        },
+        "crawl=CC-MAIN-2021-49": {
+          "essential_practical": 5,
+          "essential_prose": 20,
+          "essential_science": 1,
+          "rejected": 434,
+          "unassigned": 52
+        },
+        "crawl=CC-MAIN-2024-26": {
+          "essential_practical": 5,
+          "essential_prose": 10,
+          "essential_science": 2,
+          "rejected": 450,
+          "unassigned": 45
+        }
+      },
+      "final": {
+        "essential_practical": 30,
+        "essential_prose": 111,
+        "essential_science": 11,
+        "rejected": 3639,
+        "unassigned": 305
+      }
+    },
+    "D-normal": {
+      "by_crawl": {
+        "crawl=CC-MAIN-2014-15": {
+          "essential_practical": 16,
+          "essential_prose": 98,
+          "essential_science": 7,
+          "rejected": 366,
+          "unassigned": 25
+        },
+        "crawl=CC-MAIN-2015-32": {
+          "essential_practical": 40,
+          "essential_prose": 102,
+          "essential_science": 2,
+          "rejected": 346,
+          "unassigned": 22
+        },
+        "crawl=CC-MAIN-2016-50": {
+          "essential_practical": 48,
+          "essential_prose": 68,
+          "essential_science": 9,
+          "rejected": 369,
+          "unassigned": 18
+        },
+        "crawl=CC-MAIN-2018-05": {
+          "essential_practical": 26,
+          "essential_prose": 87,
+          "essential_science": 3,
+          "rejected": 390,
+          "unassigned": 6
+        },
+        "crawl=CC-MAIN-2019-09": {
+          "essential_practical": 33,
+          "essential_prose": 88,
+          "essential_science": 7,
+          "rejected": 374,
+          "unassigned": 10
+        },
+        "crawl=CC-MAIN-2021-04": {
+          "essential_practical": 30,
+          "essential_prose": 97,
+          "essential_science": 7,
+          "rejected": 361,
+          "unassigned": 17
+        },
+        "crawl=CC-MAIN-2021-49": {
+          "essential_practical": 33,
+          "essential_prose": 100,
+          "essential_science": 9,
+          "rejected": 361,
+          "unassigned": 9
+        },
+        "crawl=CC-MAIN-2024-26": {
+          "essential_practical": 31,
+          "essential_prose": 77,
+          "essential_science": 12,
+          "rejected": 381,
+          "unassigned": 11
+        }
+      },
+      "final": {
+        "essential_practical": 257,
+        "essential_prose": 717,
+        "essential_science": 56,
+        "rejected": 2948,
+        "unassigned": 118
+      }
+    },
+    "D-strict": {
+      "by_crawl": {
+        "crawl=CC-MAIN-2014-15": {
+          "essential_practical": 3,
+          "essential_prose": 39,
+          "essential_science": 2,
+          "rejected": 467,
+          "unassigned": 1
+        },
+        "crawl=CC-MAIN-2015-32": {
+          "essential_practical": 7,
+          "essential_prose": 30,
+          "essential_science": 0,
+          "rejected": 472,
+          "unassigned": 3
+        },
+        "crawl=CC-MAIN-2016-50": {
+          "essential_practical": 3,
+          "essential_prose": 26,
+          "essential_science": 2,
+          "rejected": 477,
+          "unassigned": 4
+        },
+        "crawl=CC-MAIN-2018-05": {
+          "essential_practical": 9,
+          "essential_prose": 45,
+          "essential_science": 1,
+          "rejected": 456,
+          "unassigned": 1
+        },
+        "crawl=CC-MAIN-2019-09": {
+          "essential_practical": 11,
+          "essential_prose": 42,
+          "essential_science": 1,
+          "rejected": 453,
+          "unassigned": 5
+        },
+        "crawl=CC-MAIN-2021-04": {
+          "essential_practical": 9,
+          "essential_prose": 59,
+          "essential_science": 2,
+          "rejected": 430,
+          "unassigned": 12
+        },
+        "crawl=CC-MAIN-2021-49": {
+          "essential_practical": 12,
+          "essential_prose": 61,
+          "essential_science": 1,
+          "rejected": 434,
+          "unassigned": 4
+        },
+        "crawl=CC-MAIN-2024-26": {
+          "essential_practical": 14,
+          "essential_prose": 40,
+          "essential_science": 2,
+          "rejected": 450,
+          "unassigned": 6
+        }
+      },
+      "final": {
+        "essential_practical": 68,
+        "essential_prose": 342,
+        "essential_science": 11,
+        "rejected": 3639,
+        "unassigned": 36
+      }
+    }
+  },
+  "crawls": [
+    "crawl=CC-MAIN-2014-15",
+    "crawl=CC-MAIN-2015-32",
+    "crawl=CC-MAIN-2016-50",
+    "crawl=CC-MAIN-2018-05",
+    "crawl=CC-MAIN-2019-09",
+    "crawl=CC-MAIN-2021-04",
+    "crawl=CC-MAIN-2021-49",
+    "crawl=CC-MAIN-2024-26"
+  ],
+  "identity_invariants": {
+    "A_strict_subset_essential_practical": 0,
+    "A_strict_subset_essential_prose": 0,
+    "A_strict_subset_essential_science": 0,
+    "B_strict_subset_essential_practical": 0,
+    "B_strict_subset_essential_prose": 0,
+    "B_strict_subset_essential_science": 0,
+    "C_strict_subset_essential_practical": 0,
+    "C_strict_subset_essential_prose": 0,
+    "C_strict_subset_essential_science": 0,
+    "C_subset_B_practical_normal": 0,
+    "C_subset_B_practical_strict": 0,
+    "C_subset_B_prose_normal": 0,
+    "C_subset_B_prose_strict": 0,
+    "D_strict_subset_essential_practical": 0,
+    "D_strict_subset_essential_prose": 0,
+    "D_strict_subset_essential_science": 0,
+    "b_c_science_agreement_normal": 4096,
+    "b_final_preserved_in_d_final_essential_practical_normal": 0,
+    "b_final_preserved_in_d_final_essential_practical_strict": 0,
+    "b_final_preserved_in_d_final_essential_prose_normal": 0,
+    "b_final_preserved_in_d_final_essential_prose_strict": 0,
+    "b_final_preserved_in_d_final_essential_science_normal": 0,
+    "b_final_preserved_in_d_final_essential_science_strict": 0,
+    "b_strict_d_strict_agreement": 4096,
+    "d_gate_superset_b_gate_normal": 0,
+    "d_gate_superset_b_gate_strict": 0
+  },
+  "input_records": 4096,
+  "invalid_rows": 0,
+  "kind": "essential_web_m_sweep_results",
+  "multi_final_violations": 0,
+  "policy_ranking": "NOT PERFORMED",
+  "precedence": [
+    "science",
+    "practical",
+    "prose"
+  ],
+  "replicate": "M (Phase-D confirmation replicate)",
+  "row_level_tables": {
+    "b_normal_to_strict_loss_by_gs_reason": {
+      "essential_practical": {
+        "gate_english": 41,
+        "gate_english+gate_missing_content": 3,
+        "gate_missing_content": 5
+      },
+      "essential_prose": {
+        "gate_english": 17,
+        "gate_english+gate_missing_content": 1,
+        "gate_missing_content": 12
+      },
+      "essential_science": {
+        "gate_english": 10,
+        "gate_english+gate_missing_content": 2,
+        "gate_missing_content": 1
+      },
+      "unassigned": {
+        "gate_english": 9
+      }
+    },
+    "b_to_c_losses": {
+      "normal|essential_practical->unassigned": {
+        "branch=conditional": 21,
+        "branch=explicit": 50,
+        "fdc_digit1=0": 32,
+        "fdc_digit1=2": 2,
+        "fdc_digit1=3": 19,
+        "fdc_digit1=5": 1,
+        "fdc_digit1=7": 15,
+        "fdc_digit1=9": 2,
+        "genre=Customer Support": 3,
+        "genre=Documentation": 25,
+        "genre=FAQ": 4,
+        "genre=Knowledge Article": 2,
+        "genre=Personal Blog": 10,
+        "genre=Q&A Forum": 9,
+        "genre=Tutorial": 18,
+        "rows": 71
+      },
+      "normal|essential_prose->unassigned": {
+        "fdc_digit1=0": 18,
+        "fdc_digit1=1": 8,
+        "fdc_digit1=2": 18,
+        "fdc_digit1=3": 131,
+        "fdc_digit1=4": 1,
+        "fdc_digit1=5": 2,
+        "fdc_digit1=6": 67,
+        "genre=Creative Writing": 1,
+        "genre=Knowledge Article": 37,
+        "genre=News Article": 112,
+        "genre=Nonfiction Writing": 6,
+        "genre=Personal Blog": 89,
+        "rows": 245
+      },
+      "strict|essential_practical->unassigned": {
+        "branch=conditional": 15,
+        "branch=explicit": 23,
+        "fdc_digit1=0": 13,
+        "fdc_digit1=2": 1,
+        "fdc_digit1=3": 17,
+        "fdc_digit1=5": 1,
+        "fdc_digit1=7": 5,
+        "fdc_digit1=9": 1,
+        "genre=Customer Support": 2,
+        "genre=Documentation": 10,
+        "genre=FAQ": 4,
+        "genre=Knowledge Article": 2,
+        "genre=Personal Blog": 7,
+        "genre=Q&A Forum": 6,
+        "genre=Tutorial": 7,
+        "rows": 38
+      },
+      "strict|essential_prose->unassigned": {
+        "fdc_digit1=0": 15,
+        "fdc_digit1=1": 8,
+        "fdc_digit1=2": 17,
+        "fdc_digit1=3": 125,
+        "fdc_digit1=4": 1,
+        "fdc_digit1=5": 2,
+        "fdc_digit1=6": 63,
+        "genre=Creative Writing": 1,
+        "genre=Knowledge Article": 31,
+        "genre=News Article": 108,
+        "genre=Nonfiction Writing": 6,
+        "genre=Personal Blog": 85,
+        "rows": 231
+      }
+    },
+    "d_only_normal": {
+      "essential_practical": {
+        "artifact=Irrelevant Content": 140,
+        "correctness=Highly Correct": 36,
+        "correctness=Mostly Correct": 44,
+        "correctness=Not Applicable/Indeterminate": 60,
+        "english_band=2": 58,
+        "english_band=3": 64,
+        "english_band=4": 18,
+        "genre=Customer Support": 4,
+        "genre=Documentation": 24,
+        "genre=FAQ": 1,
+        "genre=Knowledge Article": 5,
+        "genre=Personal Blog": 18,
+        "genre=Q&A Forum": 56,
+        "genre=Tutorial": 32,
+        "missing=Missing Images or Figures": 46,
+        "missing=No missing content": 94,
+        "rows": 140
+      },
+      "essential_prose": {
+        "artifact=Irrelevant Content": 345,
+        "correctness=Highly Correct": 29,
+        "correctness=Mostly Correct": 17,
+        "correctness=Not Applicable/Indeterminate": 299,
+        "english_band=2": 59,
+        "english_band=3": 127,
+        "english_band=4": 159,
+        "genre=Creative Writing": 10,
+        "genre=Knowledge Article": 63,
+        "genre=News Article": 190,
+        "genre=Nonfiction Writing": 3,
+        "genre=Personal Blog": 79,
+        "missing=Missing Images or Figures": 120,
+        "missing=No missing content": 225,
+        "rows": 345
+      },
+      "essential_science": {
+        "artifact=Irrelevant Content": 32,
+        "correctness=Highly Correct": 18,
+        "correctness=Mostly Correct": 7,
+        "correctness=Not Applicable/Indeterminate": 7,
+        "english_band=2": 14,
+        "english_band=3": 11,
+        "english_band=4": 7,
+        "genre=Academic Writing": 15,
+        "genre=Documentation": 2,
+        "genre=Knowledge Article": 9,
+        "genre=News Article": 4,
+        "genre=Tutorial": 2,
+        "missing=Missing Images or Figures": 16,
+        "missing=No missing content": 16,
+        "rows": 32
+      }
+    },
+    "gate_denominator": "valid_rows",
+    "gate_failure_sets": {
+      "GD": {
+        "gate_artifacts": 10,
+        "gate_artifacts+gate_doctype": 5,
+        "gate_artifacts+gate_missing_content": 1,
+        "gate_artifacts+gate_missing_content+gate_doctype": 1,
+        "gate_correctness": 5,
+        "gate_correctness+gate_doctype": 3,
+        "gate_doctype": 1439,
+        "gate_english": 140,
+        "gate_english+gate_artifacts": 2,
+        "gate_english+gate_artifacts+gate_doctype": 14,
+        "gate_english+gate_artifacts+gate_missing_content": 2,
+        "gate_english+gate_artifacts+gate_missing_content+gate_doctype": 1,
+        "gate_english+gate_correctness": 1,
+        "gate_english+gate_correctness+gate_doctype": 1,
+        "gate_english+gate_doctype": 669,
+        "gate_english+gate_missing_content": 24,
+        "gate_english+gate_missing_content+gate_doctype": 117,
+        "gate_missing_content": 203,
+        "gate_missing_content+gate_correctness": 3,
+        "gate_missing_content+gate_correctness+gate_doctype": 2,
+        "gate_missing_content+gate_doctype": 305,
+        "pass": 1148
+      },
+      "GN": {
+        "gate_artifacts": 600,
+        "gate_artifacts+gate_correctness": 5,
+        "gate_artifacts+gate_correctness+gate_doctype": 2,
+        "gate_artifacts+gate_doctype": 636,
+        "gate_artifacts+gate_missing_content": 153,
+        "gate_artifacts+gate_missing_content+gate_correctness": 3,
+        "gate_artifacts+gate_missing_content+gate_correctness+gate_doctype": 2,
+        "gate_artifacts+gate_missing_content+gate_doctype": 250,
+        "gate_correctness+gate_doctype": 1,
+        "gate_doctype": 808,
+        "gate_english": 49,
+        "gate_english+gate_artifacts": 93,
+        "gate_english+gate_artifacts+gate_correctness": 1,
+        "gate_english+gate_artifacts+gate_correctness+gate_doctype": 1,
+        "gate_english+gate_artifacts+gate_doctype": 381,
+        "gate_english+gate_artifacts+gate_missing_content": 22,
+        "gate_english+gate_artifacts+gate_missing_content+gate_doctype": 109,
+        "gate_english+gate_doctype": 302,
+        "gate_english+gate_missing_content": 4,
+        "gate_english+gate_missing_content+gate_doctype": 9,
+        "gate_missing_content": 51,
+        "gate_missing_content+gate_doctype": 56,
+        "pass": 558
+      },
+      "GS": {
+        "gate_artifacts": 303,
+        "gate_artifacts+gate_correctness": 4,
+        "gate_artifacts+gate_doctype": 152,
+        "gate_artifacts+gate_missing_content": 230,
+        "gate_artifacts+gate_missing_content+gate_correctness": 3,
+        "gate_artifacts+gate_missing_content+gate_correctness+gate_doctype": 3,
+        "gate_artifacts+gate_missing_content+gate_doctype": 192,
+        "gate_correctness+gate_doctype": 1,
+        "gate_doctype": 395,
+        "gate_english": 119,
+        "gate_english+gate_artifacts": 147,
+        "gate_english+gate_artifacts+gate_correctness": 2,
+        "gate_english+gate_artifacts+gate_doctype": 244,
+        "gate_english+gate_artifacts+gate_missing_content": 188,
+        "gate_english+gate_artifacts+gate_missing_content+gate_correctness+gate_doctype": 2,
+        "gate_english+gate_artifacts+gate_missing_content+gate_doctype": 788,
+        "gate_english+gate_doctype": 631,
+        "gate_english+gate_missing_content": 32,
+        "gate_english+gate_missing_content+gate_doctype": 108,
+        "gate_missing_content": 54,
+        "gate_missing_content+gate_doctype": 41,
+        "pass": 457
+      }
+    },
+    "gate_marginal_failures": {
+      "GD": {
+        "gate_artifacts": 36,
+        "gate_correctness": 15,
+        "gate_doctype": 2557,
+        "gate_english": 971,
+        "gate_missing_content": 659
+      },
+      "GN": {
+        "gate_artifacts": 2258,
+        "gate_correctness": 15,
+        "gate_doctype": 2557,
+        "gate_english": 971,
+        "gate_missing_content": 659
+      },
+      "GS": {
+        "gate_artifacts": 2258,
+        "gate_correctness": 15,
+        "gate_doctype": 2557,
+        "gate_english": 2261,
+        "gate_missing_content": 1641
+      }
+    },
+    "gate_sole_failures": {
+      "GD": {
+        "gate_artifacts": 10,
+        "gate_correctness": 5,
+        "gate_doctype": 1439,
+        "gate_english": 140,
+        "gate_missing_content": 203
+      },
+      "GN": {
+        "gate_artifacts": 600,
+        "gate_doctype": 808,
+        "gate_english": 49,
+        "gate_missing_content": 51
+      },
+      "GS": {
+        "gate_artifacts": 303,
+        "gate_doctype": 395,
+        "gate_english": 119,
+        "gate_missing_content": 54
+      }
+    },
+    "invalid_rows": 0,
+    "multi_final_violations": 0,
+    "rows": 4096,
+    "science_predicates": {
+      "B-normal": {
+        "S5|genre=Academic Writing": 5,
+        "S5|genre=Documentation": 2,
+        "S5|genre=Knowledge Article": 4,
+        "S5|genre=News Article": 5,
+        "S5|genre=Tutorial": 1,
+        "S5|prefix3=500": 1,
+        "S5|prefix3=512": 1,
+        "S5|prefix3=514": 1,
+        "S5|prefix3=519": 1,
+        "S5|prefix3=523": 1,
+        "S5|prefix3=551": 4,
+        "S5|prefix3=572": 2,
+        "S5|prefix3=581": 2,
+        "S5|prefix3=595": 1,
+        "S5|prefix3=597": 3,
+        "S61|genre=Academic Writing": 5,
+        "S61|genre=Knowledge Article": 2,
+        "S61|prefix3=613": 1,
+        "S61|prefix3=616": 3,
+        "S61|prefix3=617": 2,
+        "S61|prefix3=618": 1,
+        "predicate=S5": 17,
+        "predicate=S61": 7
+      },
+      "B-strict": {
+        "S5|genre=Knowledge Article": 1,
+        "S5|genre=News Article": 5,
+        "S5|genre=Tutorial": 1,
+        "S5|prefix3=500": 1,
+        "S5|prefix3=512": 1,
+        "S5|prefix3=519": 1,
+        "S5|prefix3=523": 1,
+        "S5|prefix3=572": 1,
+        "S5|prefix3=597": 2,
+        "S61|genre=Academic Writing": 2,
+        "S61|genre=Knowledge Article": 2,
+        "S61|prefix3=613": 1,
+        "S61|prefix3=616": 2,
+        "S61|prefix3=617": 1,
+        "predicate=S5": 7,
+        "predicate=S61": 4
+      },
+      "D-normal": {
+        "S5|genre=Academic Writing": 11,
+        "S5|genre=Documentation": 4,
+        "S5|genre=Knowledge Article": 5,
+        "S5|genre=News Article": 9,
+        "S5|genre=Tutorial": 3,
+        "S5|prefix3=500": 1,
+        "S5|prefix3=512": 1,
+        "S5|prefix3=514": 1,
+        "S5|prefix3=519": 1,
+        "S5|prefix3=523": 2,
+        "S5|prefix3=531": 1,
+        "S5|prefix3=547": 1,
+        "S5|prefix3=548": 1,
+        "S5|prefix3=551": 10,
+        "S5|prefix3=572": 2,
+        "S5|prefix3=576": 1,
+        "S5|prefix3=577": 1,
+        "S5|prefix3=580": 1,
+        "S5|prefix3=581": 2,
+        "S5|prefix3=595": 1,
+        "S5|prefix3=597": 4,
+        "S5|prefix3=599": 1,
+        "S61|genre=Academic Writing": 14,
+        "S61|genre=Knowledge Article": 10,
+        "S61|prefix3=612": 1,
+        "S61|prefix3=613": 5,
+        "S61|prefix3=615": 2,
+        "S61|prefix3=616": 11,
+        "S61|prefix3=617": 4,
+        "S61|prefix3=618": 1,
+        "predicate=S5": 32,
+        "predicate=S61": 24
+      },
+      "D-strict": {
+        "S5|genre=Knowledge Article": 1,
+        "S5|genre=News Article": 5,
+        "S5|genre=Tutorial": 1,
+        "S5|prefix3=500": 1,
+        "S5|prefix3=512": 1,
+        "S5|prefix3=519": 1,
+        "S5|prefix3=523": 1,
+        "S5|prefix3=572": 1,
+        "S5|prefix3=597": 2,
+        "S61|genre=Academic Writing": 2,
+        "S61|genre=Knowledge Article": 2,
+        "S61|prefix3=613": 1,
+        "S61|prefix3=616": 2,
+        "S61|prefix3=617": 1,
+        "predicate=S5": 7,
+        "predicate=S61": 4
+      }
+    },
+    "transition_matrices": {
+      "A->B/normal": {
+        "essential_practical->essential_practical": 117,
+        "essential_prose->essential_prose": 372,
+        "essential_prose->essential_science": 2,
+        "essential_science->essential_science": 17,
+        "rejected->rejected": 3538,
+        "unassigned->essential_science": 5,
+        "unassigned->unassigned": 45
+      },
+      "A->B/strict": {
+        "essential_practical->essential_practical": 68,
+        "essential_prose->essential_prose": 342,
+        "essential_prose->essential_science": 2,
+        "essential_science->essential_science": 7,
+        "rejected->rejected": 3639,
+        "unassigned->essential_science": 2,
+        "unassigned->unassigned": 36
+      },
+      "A/normal->strict": {
+        "essential_practical->essential_practical": 68,
+        "essential_practical->rejected": 49,
+        "essential_prose->essential_prose": 344,
+        "essential_prose->rejected": 30,
+        "essential_science->essential_science": 7,
+        "essential_science->rejected": 10,
+        "rejected->rejected": 3538,
+        "unassigned->rejected": 12,
+        "unassigned->unassigned": 38
+      },
+      "B->C/normal": {
+        "essential_practical->essential_practical": 46,
+        "essential_practical->unassigned": 71,
+        "essential_prose->essential_prose": 127,
+        "essential_prose->unassigned": 245,
+        "essential_science->essential_science": 24,
+        "rejected->rejected": 3538,
+        "unassigned->unassigned": 45
+      },
+      "B->C/strict": {
+        "essential_practical->essential_practical": 30,
+        "essential_practical->unassigned": 38,
+        "essential_prose->essential_prose": 111,
+        "essential_prose->unassigned": 231,
+        "essential_science->essential_science": 11,
+        "rejected->rejected": 3639,
+        "unassigned->unassigned": 36
+      },
+      "B->D/normal": {
+        "essential_practical->essential_practical": 117,
+        "essential_prose->essential_prose": 372,
+        "essential_science->essential_science": 24,
+        "rejected->essential_practical": 140,
+        "rejected->essential_prose": 345,
+        "rejected->essential_science": 32,
+        "rejected->rejected": 2948,
+        "rejected->unassigned": 73,
+        "unassigned->unassigned": 45
+      },
+      "B->D/strict": {
+        "essential_practical->essential_practical": 68,
+        "essential_prose->essential_prose": 342,
+        "essential_science->essential_science": 11,
+        "rejected->rejected": 3639,
+        "unassigned->unassigned": 36
+      },
+      "B/normal->strict": {
+        "essential_practical->essential_practical": 68,
+        "essential_practical->rejected": 49,
+        "essential_prose->essential_prose": 342,
+        "essential_prose->rejected": 30,
+        "essential_science->essential_science": 11,
+        "essential_science->rejected": 13,
+        "rejected->rejected": 3538,
+        "unassigned->rejected": 9,
+        "unassigned->unassigned": 36
+      },
+      "C/normal->strict": {
+        "essential_practical->essential_practical": 30,
+        "essential_practical->rejected": 16,
+        "essential_prose->essential_prose": 111,
+        "essential_prose->rejected": 16,
+        "essential_science->essential_science": 11,
+        "essential_science->rejected": 13,
+        "rejected->rejected": 3538,
+        "unassigned->rejected": 56,
+        "unassigned->unassigned": 305
+      },
+      "D/normal->strict": {
+        "essential_practical->essential_practical": 68,
+        "essential_practical->rejected": 189,
+        "essential_prose->essential_prose": 342,
+        "essential_prose->rejected": 375,
+        "essential_science->essential_science": 11,
+        "essential_science->rejected": 45,
+        "rejected->rejected": 2948,
+        "unassigned->rejected": 82,
+        "unassigned->unassigned": 36
+      }
+    }
+  },
+  "selector_decision": "NOT MADE"
+}

@@ -1,0 +1,51 @@
+{
+  "artifacts": {
+    "attrition.json": {
+      "bytes": 22144,
+      "sha256": "7ed63a682bd8a918fa3c5b4410ae1c8ffafbf7d62f968f764d1590970f98d7ad"
+    },
+    "crosstabs.json": {
+      "bytes": 690521,
+      "sha256": "5fa6d0ac84adb75e0b1ea7ea6bdb0a440ac0d66363043125eeb376b58e4e1720"
+    },
+    "diagnostics.json": {
+      "bytes": 82797,
+      "sha256": "01fa05e3a0859cafb74c47d8e16b06267dca15a5a89def64ffb4ab551ea68f1a"
+    },
+    "overlaps.json": {
+      "bytes": 23200,
+      "sha256": "edc367578fea52c42cb6d3fe21ed7cfa9efce052b981670be5ad70be7e7a4be1"
+    },
+    "per_crawl.json": {
+      "bytes": 28845,
+      "sha256": "b5171045d684be812dd242fbfb60e110045e6a0ad510ede706ef642e969198a2"
+    },
+    "policy_spec.json": {
+      "bytes": 5346,
+      "sha256": "04005393158b01b5cc6433994142fa61f4d0679eda565b425ac82084acf3035b"
+    },
+    "summary.json": {
+      "bytes": 3439,
+      "sha256": "0925c3708461feaa399a3f9c19e28d69cd338d7dd72d9e8837da115e4e9a60ed"
+    },
+    "summary.md": {
+      "bytes": 6496,
+      "sha256": "71396004a981c75afa699569a491b02098c89f66e441f3eb144cc627cf1f8096"
+    }
+  },
+  "binding": {
+    "bundle_digest": "ac1c13b656d9dc3bc506726bfe3f1db925444efb899733052496be0425c58eb3",
+    "combined_sha256": "42e07c350d849c608ef202348971e3f7ea48aa80775d413a39dd3373628c58e1",
+    "execution_digest": "5065bcf6001ee38b63ca783f20a625af0256f2788ce9a0034edfba34c125bc23",
+    "parts": 8,
+    "records": 4096,
+    "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d"
+  },
+  "manifest": {
+    "bytes": 2044,
+    "digest": "e13c9c98efdf07fcc7c1375c4c8b62d918d77aa39c158171aa090c8695ac4087",
+    "sha256": "0d550a2d871f737c8bc46f82a8de38fd817b50bb1bffee46f2c3c07a129e26bc"
+  },
+  "raw_bundle_reevaluated": false,
+  "resolved_path": "F:\\Project\\xlm-selector-sweeps\\essential-web-v2"
+}

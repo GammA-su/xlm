@@ -1,0 +1,1082 @@
+{
+  "crawl=CC-MAIN-2014-15": {
+    "combos": {
+      "A-normal": {
+        "final": {
+          "essential_practical": 4,
+          "essential_prose": 39,
+          "essential_science": 4,
+          "rejected": 460,
+          "unassigned": 5
+        },
+        "retention": {
+          "essential_practical": 0.007812,
+          "essential_prose": 0.076172,
+          "essential_science": 0.007812,
+          "rejected": 0.898438,
+          "unassigned": 0.009766
+        }
+      },
+      "A-strict": {
+        "final": {
+          "essential_practical": 3,
+          "essential_prose": 39,
+          "essential_science": 2,
+          "rejected": 467,
+          "unassigned": 1
+        },
+        "retention": {
+          "essential_practical": 0.005859,
+          "essential_prose": 0.076172,
+          "essential_science": 0.003906,
+          "rejected": 0.912109,
+          "unassigned": 0.001953
+        }
+      },
+      "B-normal": {
+        "final": {
+          "essential_practical": 4,
+          "essential_prose": 39,
+          "essential_science": 5,
+          "rejected": 460,
+          "unassigned": 4
+        },
+        "retention": {
+          "essential_practical": 0.007812,
+          "essential_prose": 0.076172,
+          "essential_science": 0.009766,
+          "rejected": 0.898438,
+          "unassigned": 0.007812
+        }
+      },
+      "B-strict": {
+        "final": {
+          "essential_practical": 3,
+          "essential_prose": 39,
+          "essential_science": 2,
+          "rejected": 467,
+          "unassigned": 1
+        },
+        "retention": {
+          "essential_practical": 0.005859,
+          "essential_prose": 0.076172,
+          "essential_science": 0.003906,
+          "rejected": 0.912109,
+          "unassigned": 0.001953
+        }
+      },
+      "C-normal": {
+        "final": {
+          "essential_practical": 1,
+          "essential_prose": 9,
+          "essential_science": 5,
+          "rejected": 460,
+          "unassigned": 37
+        },
+        "retention": {
+          "essential_practical": 0.001953,
+          "essential_prose": 0.017578,
+          "essential_science": 0.009766,
+          "rejected": 0.898438,
+          "unassigned": 0.072266
+        }
+      },
+      "C-strict": {
+        "final": {
+          "essential_practical": 1,
+          "essential_prose": 9,
+          "essential_science": 2,
+          "rejected": 467,
+          "unassigned": 33
+        },
+        "retention": {
+          "essential_practical": 0.001953,
+          "essential_prose": 0.017578,
+          "essential_science": 0.003906,
+          "rejected": 0.912109,
+          "unassigned": 0.064453
+        }
+      },
+      "D-normal": {
+        "final": {
+          "essential_practical": 16,
+          "essential_prose": 98,
+          "essential_science": 7,
+          "rejected": 366,
+          "unassigned": 25
+        },
+        "retention": {
+          "essential_practical": 0.03125,
+          "essential_prose": 0.191406,
+          "essential_science": 0.013672,
+          "rejected": 0.714844,
+          "unassigned": 0.048828
+        }
+      },
+      "D-strict": {
+        "final": {
+          "essential_practical": 3,
+          "essential_prose": 39,
+          "essential_science": 2,
+          "rejected": 467,
+          "unassigned": 1
+        },
+        "retention": {
+          "essential_practical": 0.005859,
+          "essential_prose": 0.076172,
+          "essential_science": 0.003906,
+          "rejected": 0.912109,
+          "unassigned": 0.001953
+        }
+      }
+    },
+    "input": 512,
+    "invalid": 0,
+    "validity_reasons": {}
+  },
+  "crawl=CC-MAIN-2015-32": {
+    "combos": {
+      "A-normal": {
+        "final": {
+          "essential_practical": 10,
+          "essential_prose": 35,
+          "essential_science": 0,
+          "rejected": 462,
+          "unassigned": 5
+        },
+        "retention": {
+          "essential_practical": 0.019531,
+          "essential_prose": 0.068359,
+          "essential_science": 0.0,
+          "rejected": 0.902344,
+          "unassigned": 0.009766
+        }
+      },
+      "A-strict": {
+        "final": {
+          "essential_practical": 7,
+          "essential_prose": 30,
+          "essential_science": 0,
+          "rejected": 472,
+          "unassigned": 3
+        },
+        "retention": {
+          "essential_practical": 0.013672,
+          "essential_prose": 0.058594,
+          "essential_science": 0.0,
+          "rejected": 0.921875,
+          "unassigned": 0.005859
+        }
+      },
+      "B-normal": {
+        "final": {
+          "essential_practical": 10,
+          "essential_prose": 35,
+          "essential_science": 0,
+          "rejected": 462,
+          "unassigned": 5
+        },
+        "retention": {
+          "essential_practical": 0.019531,
+          "essential_prose": 0.068359,
+          "essential_science": 0.0,
+          "rejected": 0.902344,
+          "unassigned": 0.009766
+        }
+      },
+      "B-strict": {
+        "final": {
+          "essential_practical": 7,
+          "essential_prose": 30,
+          "essential_science": 0,
+          "rejected": 472,
+          "unassigned": 3
+        },
+        "retention": {
+          "essential_practical": 0.013672,
+          "essential_prose": 0.058594,
+          "essential_science": 0.0,
+          "rejected": 0.921875,
+          "unassigned": 0.005859
+        }
+      },
+      "C-normal": {
+        "final": {
+          "essential_practical": 4,
+          "essential_prose": 11,
+          "essential_science": 0,
+          "rejected": 462,
+          "unassigned": 35
+        },
+        "retention": {
+          "essential_practical": 0.007812,
+          "essential_prose": 0.021484,
+          "essential_science": 0.0,
+          "rejected": 0.902344,
+          "unassigned": 0.068359
+        }
+      },
+      "C-strict": {
+        "final": {
+          "essential_practical": 2,
+          "essential_prose": 8,
+          "essential_science": 0,
+          "rejected": 472,
+          "unassigned": 30
+        },
+        "retention": {
+          "essential_practical": 0.003906,
+          "essential_prose": 0.015625,
+          "essential_science": 0.0,
+          "rejected": 0.921875,
+          "unassigned": 0.058594
+        }
+      },
+      "D-normal": {
+        "final": {
+          "essential_practical": 40,
+          "essential_prose": 102,
+          "essential_science": 2,
+          "rejected": 346,
+          "unassigned": 22
+        },
+        "retention": {
+          "essential_practical": 0.078125,
+          "essential_prose": 0.199219,
+          "essential_science": 0.003906,
+          "rejected": 0.675781,
+          "unassigned": 0.042969
+        }
+      },
+      "D-strict": {
+        "final": {
+          "essential_practical": 7,
+          "essential_prose": 30,
+          "essential_science": 0,
+          "rejected": 472,
+          "unassigned": 3
+        },
+        "retention": {
+          "essential_practical": 0.013672,
+          "essential_prose": 0.058594,
+          "essential_science": 0.0,
+          "rejected": 0.921875,
+          "unassigned": 0.005859
+        }
+      }
+    },
+    "input": 512,
+    "invalid": 0,
+    "validity_reasons": {}
+  },
+  "crawl=CC-MAIN-2016-50": {
+    "combos": {
+      "A-normal": {
+        "final": {
+          "essential_practical": 10,
+          "essential_prose": 32,
+          "essential_science": 3,
+          "rejected": 463,
+          "unassigned": 4
+        },
+        "retention": {
+          "essential_practical": 0.019531,
+          "essential_prose": 0.0625,
+          "essential_science": 0.005859,
+          "rejected": 0.904297,
+          "unassigned": 0.007812
+        }
+      },
+      "A-strict": {
+        "final": {
+          "essential_practical": 3,
+          "essential_prose": 27,
+          "essential_science": 1,
+          "rejected": 477,
+          "unassigned": 4
+        },
+        "retention": {
+          "essential_practical": 0.005859,
+          "essential_prose": 0.052734,
+          "essential_science": 0.001953,
+          "rejected": 0.931641,
+          "unassigned": 0.007812
+        }
+      },
+      "B-normal": {
+        "final": {
+          "essential_practical": 10,
+          "essential_prose": 31,
+          "essential_science": 4,
+          "rejected": 463,
+          "unassigned": 4
+        },
+        "retention": {
+          "essential_practical": 0.019531,
+          "essential_prose": 0.060547,
+          "essential_science": 0.007812,
+          "rejected": 0.904297,
+          "unassigned": 0.007812
+        }
+      },
+      "B-strict": {
+        "final": {
+          "essential_practical": 3,
+          "essential_prose": 26,
+          "essential_science": 2,
+          "rejected": 477,
+          "unassigned": 4
+        },
+        "retention": {
+          "essential_practical": 0.005859,
+          "essential_prose": 0.050781,
+          "essential_science": 0.003906,
+          "rejected": 0.931641,
+          "unassigned": 0.007812
+        }
+      },
+      "C-normal": {
+        "final": {
+          "essential_practical": 4,
+          "essential_prose": 11,
+          "essential_science": 4,
+          "rejected": 463,
+          "unassigned": 30
+        },
+        "retention": {
+          "essential_practical": 0.007812,
+          "essential_prose": 0.021484,
+          "essential_science": 0.007812,
+          "rejected": 0.904297,
+          "unassigned": 0.058594
+        }
+      },
+      "C-strict": {
+        "final": {
+          "essential_practical": 1,
+          "essential_prose": 8,
+          "essential_science": 2,
+          "rejected": 477,
+          "unassigned": 24
+        },
+        "retention": {
+          "essential_practical": 0.001953,
+          "essential_prose": 0.015625,
+          "essential_science": 0.003906,
+          "rejected": 0.931641,
+          "unassigned": 0.046875
+        }
+      },
+      "D-normal": {
+        "final": {
+          "essential_practical": 48,
+          "essential_prose": 68,
+          "essential_science": 9,
+          "rejected": 369,
+          "unassigned": 18
+        },
+        "retention": {
+          "essential_practical": 0.09375,
+          "essential_prose": 0.132812,
+          "essential_science": 0.017578,
+          "rejected": 0.720703,
+          "unassigned": 0.035156
+        }
+      },
+      "D-strict": {
+        "final": {
+          "essential_practical": 3,
+          "essential_prose": 26,
+          "essential_science": 2,
+          "rejected": 477,
+          "unassigned": 4
+        },
+        "retention": {
+          "essential_practical": 0.005859,
+          "essential_prose": 0.050781,
+          "essential_science": 0.003906,
+          "rejected": 0.931641,
+          "unassigned": 0.007812
+        }
+      }
+    },
+    "input": 512,
+    "invalid": 0,
+    "validity_reasons": {}
+  },
+  "crawl=CC-MAIN-2018-05": {
+    "combos": {
+      "A-normal": {
+        "final": {
+          "essential_practical": 16,
+          "essential_prose": 49,
+          "essential_science": 1,
+          "rejected": 445,
+          "unassigned": 1
+        },
+        "retention": {
+          "essential_practical": 0.03125,
+          "essential_prose": 0.095703,
+          "essential_science": 0.001953,
+          "rejected": 0.869141,
+          "unassigned": 0.001953
+        }
+      },
+      "A-strict": {
+        "final": {
+          "essential_practical": 9,
+          "essential_prose": 45,
+          "essential_science": 1,
+          "rejected": 456,
+          "unassigned": 1
+        },
+        "retention": {
+          "essential_practical": 0.017578,
+          "essential_prose": 0.087891,
+          "essential_science": 0.001953,
+          "rejected": 0.890625,
+          "unassigned": 0.001953
+        }
+      },
+      "B-normal": {
+        "final": {
+          "essential_practical": 16,
+          "essential_prose": 49,
+          "essential_science": 1,
+          "rejected": 445,
+          "unassigned": 1
+        },
+        "retention": {
+          "essential_practical": 0.03125,
+          "essential_prose": 0.095703,
+          "essential_science": 0.001953,
+          "rejected": 0.869141,
+          "unassigned": 0.001953
+        }
+      },
+      "B-strict": {
+        "final": {
+          "essential_practical": 9,
+          "essential_prose": 45,
+          "essential_science": 1,
+          "rejected": 456,
+          "unassigned": 1
+        },
+        "retention": {
+          "essential_practical": 0.017578,
+          "essential_prose": 0.087891,
+          "essential_science": 0.001953,
+          "rejected": 0.890625,
+          "unassigned": 0.001953
+        }
+      },
+      "C-normal": {
+        "final": {
+          "essential_practical": 6,
+          "essential_prose": 17,
+          "essential_science": 1,
+          "rejected": 445,
+          "unassigned": 43
+        },
+        "retention": {
+          "essential_practical": 0.011719,
+          "essential_prose": 0.033203,
+          "essential_science": 0.001953,
+          "rejected": 0.869141,
+          "unassigned": 0.083984
+        }
+      },
+      "C-strict": {
+        "final": {
+          "essential_practical": 4,
+          "essential_prose": 14,
+          "essential_science": 1,
+          "rejected": 456,
+          "unassigned": 37
+        },
+        "retention": {
+          "essential_practical": 0.007812,
+          "essential_prose": 0.027344,
+          "essential_science": 0.001953,
+          "rejected": 0.890625,
+          "unassigned": 0.072266
+        }
+      },
+      "D-normal": {
+        "final": {
+          "essential_practical": 26,
+          "essential_prose": 87,
+          "essential_science": 3,
+          "rejected": 390,
+          "unassigned": 6
+        },
+        "retention": {
+          "essential_practical": 0.050781,
+          "essential_prose": 0.169922,
+          "essential_science": 0.005859,
+          "rejected": 0.761719,
+          "unassigned": 0.011719
+        }
+      },
+      "D-strict": {
+        "final": {
+          "essential_practical": 9,
+          "essential_prose": 45,
+          "essential_science": 1,
+          "rejected": 456,
+          "unassigned": 1
+        },
+        "retention": {
+          "essential_practical": 0.017578,
+          "essential_prose": 0.087891,
+          "essential_science": 0.001953,
+          "rejected": 0.890625,
+          "unassigned": 0.001953
+        }
+      }
+    },
+    "input": 512,
+    "invalid": 0,
+    "validity_reasons": {}
+  },
+  "crawl=CC-MAIN-2019-09": {
+    "combos": {
+      "A-normal": {
+        "final": {
+          "essential_practical": 18,
+          "essential_prose": 48,
+          "essential_science": 0,
+          "rejected": 439,
+          "unassigned": 7
+        },
+        "retention": {
+          "essential_practical": 0.035156,
+          "essential_prose": 0.09375,
+          "essential_science": 0.0,
+          "rejected": 0.857422,
+          "unassigned": 0.013672
+        }
+      },
+      "A-strict": {
+        "final": {
+          "essential_practical": 11,
+          "essential_prose": 43,
+          "essential_science": 0,
+          "rejected": 453,
+          "unassigned": 5
+        },
+        "retention": {
+          "essential_practical": 0.021484,
+          "essential_prose": 0.083984,
+          "essential_science": 0.0,
+          "rejected": 0.884766,
+          "unassigned": 0.009766
+        }
+      },
+      "B-normal": {
+        "final": {
+          "essential_practical": 18,
+          "essential_prose": 47,
+          "essential_science": 1,
+          "rejected": 439,
+          "unassigned": 7
+        },
+        "retention": {
+          "essential_practical": 0.035156,
+          "essential_prose": 0.091797,
+          "essential_science": 0.001953,
+          "rejected": 0.857422,
+          "unassigned": 0.013672
+        }
+      },
+      "B-strict": {
+        "final": {
+          "essential_practical": 11,
+          "essential_prose": 42,
+          "essential_science": 1,
+          "rejected": 453,
+          "unassigned": 5
+        },
+        "retention": {
+          "essential_practical": 0.021484,
+          "essential_prose": 0.082031,
+          "essential_science": 0.001953,
+          "rejected": 0.884766,
+          "unassigned": 0.009766
+        }
+      },
+      "C-normal": {
+        "final": {
+          "essential_practical": 10,
+          "essential_prose": 20,
+          "essential_science": 1,
+          "rejected": 439,
+          "unassigned": 42
+        },
+        "retention": {
+          "essential_practical": 0.019531,
+          "essential_prose": 0.039062,
+          "essential_science": 0.001953,
+          "rejected": 0.857422,
+          "unassigned": 0.082031
+        }
+      },
+      "C-strict": {
+        "final": {
+          "essential_practical": 7,
+          "essential_prose": 19,
+          "essential_science": 1,
+          "rejected": 453,
+          "unassigned": 32
+        },
+        "retention": {
+          "essential_practical": 0.013672,
+          "essential_prose": 0.037109,
+          "essential_science": 0.001953,
+          "rejected": 0.884766,
+          "unassigned": 0.0625
+        }
+      },
+      "D-normal": {
+        "final": {
+          "essential_practical": 33,
+          "essential_prose": 88,
+          "essential_science": 7,
+          "rejected": 374,
+          "unassigned": 10
+        },
+        "retention": {
+          "essential_practical": 0.064453,
+          "essential_prose": 0.171875,
+          "essential_science": 0.013672,
+          "rejected": 0.730469,
+          "unassigned": 0.019531
+        }
+      },
+      "D-strict": {
+        "final": {
+          "essential_practical": 11,
+          "essential_prose": 42,
+          "essential_science": 1,
+          "rejected": 453,
+          "unassigned": 5
+        },
+        "retention": {
+          "essential_practical": 0.021484,
+          "essential_prose": 0.082031,
+          "essential_science": 0.001953,
+          "rejected": 0.884766,
+          "unassigned": 0.009766
+        }
+      }
+    },
+    "input": 512,
+    "invalid": 0,
+    "validity_reasons": {}
+  },
+  "crawl=CC-MAIN-2021-04": {
+    "combos": {
+      "A-normal": {
+        "final": {
+          "essential_practical": 19,
+          "essential_prose": 63,
+          "essential_science": 1,
+          "rejected": 415,
+          "unassigned": 14
+        },
+        "retention": {
+          "essential_practical": 0.037109,
+          "essential_prose": 0.123047,
+          "essential_science": 0.001953,
+          "rejected": 0.810547,
+          "unassigned": 0.027344
+        }
+      },
+      "A-strict": {
+        "final": {
+          "essential_practical": 9,
+          "essential_prose": 59,
+          "essential_science": 1,
+          "rejected": 430,
+          "unassigned": 13
+        },
+        "retention": {
+          "essential_practical": 0.017578,
+          "essential_prose": 0.115234,
+          "essential_science": 0.001953,
+          "rejected": 0.839844,
+          "unassigned": 0.025391
+        }
+      },
+      "B-normal": {
+        "final": {
+          "essential_practical": 19,
+          "essential_prose": 63,
+          "essential_science": 3,
+          "rejected": 415,
+          "unassigned": 12
+        },
+        "retention": {
+          "essential_practical": 0.037109,
+          "essential_prose": 0.123047,
+          "essential_science": 0.005859,
+          "rejected": 0.810547,
+          "unassigned": 0.023438
+        }
+      },
+      "B-strict": {
+        "final": {
+          "essential_practical": 9,
+          "essential_prose": 59,
+          "essential_science": 2,
+          "rejected": 430,
+          "unassigned": 12
+        },
+        "retention": {
+          "essential_practical": 0.017578,
+          "essential_prose": 0.115234,
+          "essential_science": 0.003906,
+          "rejected": 0.839844,
+          "unassigned": 0.023438
+        }
+      },
+      "C-normal": {
+        "final": {
+          "essential_practical": 7,
+          "essential_prose": 24,
+          "essential_science": 3,
+          "rejected": 415,
+          "unassigned": 63
+        },
+        "retention": {
+          "essential_practical": 0.013672,
+          "essential_prose": 0.046875,
+          "essential_science": 0.005859,
+          "rejected": 0.810547,
+          "unassigned": 0.123047
+        }
+      },
+      "C-strict": {
+        "final": {
+          "essential_practical": 5,
+          "essential_prose": 23,
+          "essential_science": 2,
+          "rejected": 430,
+          "unassigned": 52
+        },
+        "retention": {
+          "essential_practical": 0.009766,
+          "essential_prose": 0.044922,
+          "essential_science": 0.003906,
+          "rejected": 0.839844,
+          "unassigned": 0.101562
+        }
+      },
+      "D-normal": {
+        "final": {
+          "essential_practical": 30,
+          "essential_prose": 97,
+          "essential_science": 7,
+          "rejected": 361,
+          "unassigned": 17
+        },
+        "retention": {
+          "essential_practical": 0.058594,
+          "essential_prose": 0.189453,
+          "essential_science": 0.013672,
+          "rejected": 0.705078,
+          "unassigned": 0.033203
+        }
+      },
+      "D-strict": {
+        "final": {
+          "essential_practical": 9,
+          "essential_prose": 59,
+          "essential_science": 2,
+          "rejected": 430,
+          "unassigned": 12
+        },
+        "retention": {
+          "essential_practical": 0.017578,
+          "essential_prose": 0.115234,
+          "essential_science": 0.003906,
+          "rejected": 0.839844,
+          "unassigned": 0.023438
+        }
+      }
+    },
+    "input": 512,
+    "invalid": 0,
+    "validity_reasons": {}
+  },
+  "crawl=CC-MAIN-2021-49": {
+    "combos": {
+      "A-normal": {
+        "final": {
+          "essential_practical": 20,
+          "essential_prose": 65,
+          "essential_science": 4,
+          "rejected": 417,
+          "unassigned": 6
+        },
+        "retention": {
+          "essential_practical": 0.039062,
+          "essential_prose": 0.126953,
+          "essential_science": 0.007812,
+          "rejected": 0.814453,
+          "unassigned": 0.011719
+        }
+      },
+      "A-strict": {
+        "final": {
+          "essential_practical": 12,
+          "essential_prose": 61,
+          "essential_science": 0,
+          "rejected": 434,
+          "unassigned": 5
+        },
+        "retention": {
+          "essential_practical": 0.023438,
+          "essential_prose": 0.119141,
+          "essential_science": 0.0,
+          "rejected": 0.847656,
+          "unassigned": 0.009766
+        }
+      },
+      "B-normal": {
+        "final": {
+          "essential_practical": 20,
+          "essential_prose": 65,
+          "essential_science": 5,
+          "rejected": 417,
+          "unassigned": 5
+        },
+        "retention": {
+          "essential_practical": 0.039062,
+          "essential_prose": 0.126953,
+          "essential_science": 0.009766,
+          "rejected": 0.814453,
+          "unassigned": 0.009766
+        }
+      },
+      "B-strict": {
+        "final": {
+          "essential_practical": 12,
+          "essential_prose": 61,
+          "essential_science": 1,
+          "rejected": 434,
+          "unassigned": 4
+        },
+        "retention": {
+          "essential_practical": 0.023438,
+          "essential_prose": 0.119141,
+          "essential_science": 0.001953,
+          "rejected": 0.847656,
+          "unassigned": 0.007812
+        }
+      },
+      "C-normal": {
+        "final": {
+          "essential_practical": 7,
+          "essential_prose": 23,
+          "essential_science": 5,
+          "rejected": 417,
+          "unassigned": 60
+        },
+        "retention": {
+          "essential_practical": 0.013672,
+          "essential_prose": 0.044922,
+          "essential_science": 0.009766,
+          "rejected": 0.814453,
+          "unassigned": 0.117188
+        }
+      },
+      "C-strict": {
+        "final": {
+          "essential_practical": 5,
+          "essential_prose": 20,
+          "essential_science": 1,
+          "rejected": 434,
+          "unassigned": 52
+        },
+        "retention": {
+          "essential_practical": 0.009766,
+          "essential_prose": 0.039062,
+          "essential_science": 0.001953,
+          "rejected": 0.847656,
+          "unassigned": 0.101562
+        }
+      },
+      "D-normal": {
+        "final": {
+          "essential_practical": 33,
+          "essential_prose": 100,
+          "essential_science": 9,
+          "rejected": 361,
+          "unassigned": 9
+        },
+        "retention": {
+          "essential_practical": 0.064453,
+          "essential_prose": 0.195312,
+          "essential_science": 0.017578,
+          "rejected": 0.705078,
+          "unassigned": 0.017578
+        }
+      },
+      "D-strict": {
+        "final": {
+          "essential_practical": 12,
+          "essential_prose": 61,
+          "essential_science": 1,
+          "rejected": 434,
+          "unassigned": 4
+        },
+        "retention": {
+          "essential_practical": 0.023438,
+          "essential_prose": 0.119141,
+          "essential_science": 0.001953,
+          "rejected": 0.847656,
+          "unassigned": 0.007812
+        }
+      }
+    },
+    "input": 512,
+    "invalid": 0,
+    "validity_reasons": {}
+  },
+  "crawl=CC-MAIN-2024-26": {
+    "combos": {
+      "A-normal": {
+        "final": {
+          "essential_practical": 20,
+          "essential_prose": 43,
+          "essential_science": 4,
+          "rejected": 437,
+          "unassigned": 8
+        },
+        "retention": {
+          "essential_practical": 0.039062,
+          "essential_prose": 0.083984,
+          "essential_science": 0.007812,
+          "rejected": 0.853516,
+          "unassigned": 0.015625
+        }
+      },
+      "A-strict": {
+        "final": {
+          "essential_practical": 14,
+          "essential_prose": 40,
+          "essential_science": 2,
+          "rejected": 450,
+          "unassigned": 6
+        },
+        "retention": {
+          "essential_practical": 0.027344,
+          "essential_prose": 0.078125,
+          "essential_science": 0.003906,
+          "rejected": 0.878906,
+          "unassigned": 0.011719
+        }
+      },
+      "B-normal": {
+        "final": {
+          "essential_practical": 20,
+          "essential_prose": 43,
+          "essential_science": 5,
+          "rejected": 437,
+          "unassigned": 7
+        },
+        "retention": {
+          "essential_practical": 0.039062,
+          "essential_prose": 0.083984,
+          "essential_science": 0.009766,
+          "rejected": 0.853516,
+          "unassigned": 0.013672
+        }
+      },
+      "B-strict": {
+        "final": {
+          "essential_practical": 14,
+          "essential_prose": 40,
+          "essential_science": 2,
+          "rejected": 450,
+          "unassigned": 6
+        },
+        "retention": {
+          "essential_practical": 0.027344,
+          "essential_prose": 0.078125,
+          "essential_science": 0.003906,
+          "rejected": 0.878906,
+          "unassigned": 0.011719
+        }
+      },
+      "C-normal": {
+        "final": {
+          "essential_practical": 7,
+          "essential_prose": 12,
+          "essential_science": 5,
+          "rejected": 437,
+          "unassigned": 51
+        },
+        "retention": {
+          "essential_practical": 0.013672,
+          "essential_prose": 0.023438,
+          "essential_science": 0.009766,
+          "rejected": 0.853516,
+          "unassigned": 0.099609
+        }
+      },
+      "C-strict": {
+        "final": {
+          "essential_practical": 5,
+          "essential_prose": 10,
+          "essential_science": 2,
+          "rejected": 450,
+          "unassigned": 45
+        },
+        "retention": {
+          "essential_practical": 0.009766,
+          "essential_prose": 0.019531,
+          "essential_science": 0.003906,
+          "rejected": 0.878906,
+          "unassigned": 0.087891
+        }
+      },
+      "D-normal": {
+        "final": {
+          "essential_practical": 31,
+          "essential_prose": 77,
+          "essential_science": 12,
+          "rejected": 381,
+          "unassigned": 11
+        },
+        "retention": {
+          "essential_practical": 0.060547,
+          "essential_prose": 0.150391,
+          "essential_science": 0.023438,
+          "rejected": 0.744141,
+          "unassigned": 0.021484
+        }
+      },
+      "D-strict": {
+        "final": {
+          "essential_practical": 14,
+          "essential_prose": 40,
+          "essential_science": 2,
+          "rejected": 450,
+          "unassigned": 6
+        },
+        "retention": {
+          "essential_practical": 0.027344,
+          "essential_prose": 0.078125,
+          "essential_science": 0.003906,
+          "rejected": 0.878906,
+          "unassigned": 0.011719
+        }
+      }
+    },
+    "input": 512,
+    "invalid": 0,
+    "validity_reasons": {}
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "artifact_manifest_digest": "4e14c7bfc8b5f5109a9befdf479e7543518fcf04986e1684ad64709bca43c2be",
+  "derived_input_bytes": 13838037,
+  "derived_input_sha256": "839e1296940154e70e91cc15c1059a7708d4f1833da329ebb6146739ef625676",
+  "endpoint_rss_bytes": 98328576,
+  "evaluator_wall_seconds": 2.703,
+  "output_bytes": 1284049,
+  "records": 4096,
+  "row_identity_digest": "3d164fa9fe5988e6743f4659a75e5a5f1c39143a9163b47d6cd96590fa059711",
+  "seal_digest": "afc972ccf570a5587bf7bd3b6b8d1d728a09f2230c49f1b0a19c1c74cda0b9bc",
+  "source_files_unchanged": true,
+  "source_sha256": "4d268f8d4ac3fcfe6cfea6184c8bcce5b7cb797dc1c627ca83a91371e3070e02",
+  "wall_seconds": 4.937
+}
+exit=0

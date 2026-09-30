@@ -1,0 +1,965 @@
+{
+  "component_overlaps": {
+    "A-normal": {
+      "all": {
+        "component_matches": {
+          "practical": 393,
+          "prose": 935,
+          "science": 43
+        },
+        "transfers": {
+          "practical&science->essential_science": 3,
+          "practical&science->rejected": 12,
+          "prose&science->essential_science": 9,
+          "prose&science->rejected": 6
+        }
+      },
+      "crawl=CC-MAIN-2014-15": {
+        "component_matches": {
+          "practical": 32,
+          "prose": 123,
+          "science": 5
+        },
+        "transfers": {
+          "practical&science->rejected": 1,
+          "prose&science->essential_science": 3
+        }
+      },
+      "crawl=CC-MAIN-2015-32": {
+        "component_matches": {
+          "practical": 50,
+          "prose": 131,
+          "science": 5
+        },
+        "transfers": {
+          "practical&science->rejected": 1,
+          "prose&science->rejected": 3
+        }
+      },
+      "crawl=CC-MAIN-2016-50": {
+        "component_matches": {
+          "practical": 68,
+          "prose": 90,
+          "science": 8
+        },
+        "transfers": {
+          "practical&science->essential_science": 1,
+          "practical&science->rejected": 2,
+          "prose&science->essential_science": 2,
+          "prose&science->rejected": 1
+        }
+      },
+      "crawl=CC-MAIN-2018-05": {
+        "component_matches": {
+          "practical": 45,
+          "prose": 127,
+          "science": 5
+        },
+        "transfers": {
+          "practical&science->essential_science": 1,
+          "practical&science->rejected": 2,
+          "prose&science->rejected": 1
+        }
+      },
+      "crawl=CC-MAIN-2019-09": {
+        "component_matches": {
+          "practical": 47,
+          "prose": 116,
+          "science": 2
+        },
+        "transfers": {
+          "practical&science->rejected": 2
+        }
+      },
+      "crawl=CC-MAIN-2021-04": {
+        "component_matches": {
+          "practical": 46,
+          "prose": 118,
+          "science": 3
+        },
+        "transfers": {
+          "prose&science->essential_science": 1
+        }
+      },
+      "crawl=CC-MAIN-2021-49": {
+        "component_matches": {
+          "practical": 56,
+          "prose": 124,
+          "science": 5
+        },
+        "transfers": {
+          "practical&science->essential_science": 1,
+          "practical&science->rejected": 1
+        }
+      },
+      "crawl=CC-MAIN-2024-26": {
+        "component_matches": {
+          "practical": 49,
+          "prose": 106,
+          "science": 10
+        },
+        "transfers": {
+          "practical&science->rejected": 3,
+          "prose&science->essential_science": 3,
+          "prose&science->rejected": 1
+        }
+      }
+    },
+    "A-strict": {
+      "all": {
+        "component_matches": {
+          "practical": 393,
+          "prose": 935,
+          "science": 43
+        },
+        "transfers": {
+          "practical&science->essential_science": 1,
+          "practical&science->rejected": 14,
+          "prose&science->essential_science": 6,
+          "prose&science->rejected": 9
+        }
+      },
+      "crawl=CC-MAIN-2014-15": {
+        "component_matches": {
+          "practical": 32,
+          "prose": 123,
+          "science": 5
+        },
+        "transfers": {
+          "practical&science->rejected": 1,
+          "prose&science->essential_science": 2,
+          "prose&science->rejected": 1
+        }
+      },
+      "crawl=CC-MAIN-2015-32": {
+        "component_matches": {
+          "practical": 50,
+          "prose": 131,
+          "science": 5
+        },
+        "transfers": {
+          "practical&science->rejected": 1,
+          "prose&science->rejected": 3
+        }
+      },
+      "crawl=CC-MAIN-2016-50": {
+        "component_matches": {
+          "practical": 68,
+          "prose": 90,
+          "science": 8
+        },
+        "transfers": {
+          "practical&science->rejected": 3,
+          "prose&science->essential_science": 1,
+          "prose&science->rejected": 2
+        }
+      },
+      "crawl=CC-MAIN-2018-05": {
+        "component_matches": {
+          "practical": 45,
+          "prose": 127,
+          "science": 5
+        },
+        "transfers": {
+          "practical&science->essential_science": 1,
+          "practical&science->rejected": 2,
+          "prose&science->rejected": 1
+        }
+      },
+      "crawl=CC-MAIN-2019-09": {
+        "component_matches": {
+          "practical": 47,
+          "prose": 116,
+          "science": 2
+        },
+        "transfers": {
+          "practical&science->rejected": 2
+        }
+      },
+      "crawl=CC-MAIN-2021-04": {
+        "component_matches": {
+          "practical": 46,
+          "prose": 118,
+          "science": 3
+        },
+        "transfers": {
+          "prose&science->essential_science": 1
+        }
+      },
+      "crawl=CC-MAIN-2021-49": {
+        "component_matches": {
+          "practical": 56,
+          "prose": 124,
+          "science": 5
+        },
+        "transfers": {
+          "practical&science->rejected": 2
+        }
+      },
+      "crawl=CC-MAIN-2024-26": {
+        "component_matches": {
+          "practical": 49,
+          "prose": 106,
+          "science": 10
+        },
+        "transfers": {
+          "practical&science->rejected": 3,
+          "prose&science->essential_science": 2,
+          "prose&science->rejected": 2
+        }
+      }
+    },
+    "B-normal": {
+      "all": {
+        "component_matches": {
+          "practical": 393,
+          "prose": 935,
+          "science": 67
+        },
+        "transfers": {
+          "practical&science->essential_science": 3,
+          "practical&science->rejected": 12,
+          "prose&science->essential_science": 11,
+          "prose&science->rejected": 14
+        }
+      },
+      "crawl=CC-MAIN-2014-15": {
+        "component_matches": {
+          "practical": 32,
+          "prose": 123,
+          "science": 8
+        },
+        "transfers": {
+          "practical&science->rejected": 1,
+          "prose&science->essential_science": 3
+        }
+      },
+      "crawl=CC-MAIN-2015-32": {
+        "component_matches": {
+          "practical": 50,
+          "prose": 131,
+          "science": 5
+        },
+        "transfers": {
+          "practical&science->rejected": 1,
+          "prose&science->rejected": 3
+        }
+      },
+      "crawl=CC-MAIN-2016-50": {
+        "component_matches": {
+          "practical": 68,
+          "prose": 90,
+          "science": 12
+        },
+        "transfers": {
+          "practical&science->essential_science": 1,
+          "practical&science->rejected": 2,
+          "prose&science->essential_science": 3,
+          "prose&science->rejected": 2
+        }
+      },
+      "crawl=CC-MAIN-2018-05": {
+        "component_matches": {
+          "practical": 45,
+          "prose": 127,
+          "science": 5
+        },
+        "transfers": {
+          "practical&science->essential_science": 1,
+          "practical&science->rejected": 2,
+          "prose&science->rejected": 1
+        }
+      },
+      "crawl=CC-MAIN-2019-09": {
+        "component_matches": {
+          "practical": 47,
+          "prose": 116,
+          "science": 7
+        },
+        "transfers": {
+          "practical&science->rejected": 2,
+          "prose&science->essential_science": 1,
+          "prose&science->rejected": 2
+        }
+      },
+      "crawl=CC-MAIN-2021-04": {
+        "component_matches": {
+          "practical": 46,
+          "prose": 118,
+          "science": 7
+        },
+        "transfers": {
+          "prose&science->essential_science": 1,
+          "prose&science->rejected": 2
+        }
+      },
+      "crawl=CC-MAIN-2021-49": {
+        "component_matches": {
+          "practical": 56,
+          "prose": 124,
+          "science": 10
+        },
+        "transfers": {
+          "practical&science->essential_science": 1,
+          "practical&science->rejected": 1,
+          "prose&science->rejected": 1
+        }
+      },
+      "crawl=CC-MAIN-2024-26": {
+        "component_matches": {
+          "practical": 49,
+          "prose": 106,
+          "science": 13
+        },
+        "transfers": {
+          "practical&science->rejected": 3,
+          "prose&science->essential_science": 3,
+          "prose&science->rejected": 3
+        }
+      }
+    },
+    "B-strict": {
+      "all": {
+        "component_matches": {
+          "practical": 393,
+          "prose": 935,
+          "science": 67
+        },
+        "transfers": {
+          "practical&science->essential_science": 1,
+          "practical&science->rejected": 14,
+          "prose&science->essential_science": 8,
+          "prose&science->rejected": 17
+        }
+      },
+      "crawl=CC-MAIN-2014-15": {
+        "component_matches": {
+          "practical": 32,
+          "prose": 123,
+          "science": 8
+        },
+        "transfers": {
+          "practical&science->rejected": 1,
+          "prose&science->essential_science": 2,
+          "prose&science->rejected": 1
+        }
+      },
+      "crawl=CC-MAIN-2015-32": {
+        "component_matches": {
+          "practical": 50,
+          "prose": 131,
+          "science": 5
+        },
+        "transfers": {
+          "practical&science->rejected": 1,
+          "prose&science->rejected": 3
+        }
+      },
+      "crawl=CC-MAIN-2016-50": {
+        "component_matches": {
+          "practical": 68,
+          "prose": 90,
+          "science": 12
+        },
+        "transfers": {
+          "practical&science->rejected": 3,
+          "prose&science->essential_science": 2,
+          "prose&science->rejected": 3
+        }
+      },
+      "crawl=CC-MAIN-2018-05": {
+        "component_matches": {
+          "practical": 45,
+          "prose": 127,
+          "science": 5
+        },
+        "transfers": {
+          "practical&science->essential_science": 1,
+          "practical&science->rejected": 2,
+          "prose&science->rejected": 1
+        }
+      },
+      "crawl=CC-MAIN-2019-09": {
+        "component_matches": {
+          "practical": 47,
+          "prose": 116,
+          "science": 7
+        },
+        "transfers": {
+          "practical&science->rejected": 2,
+          "prose&science->essential_science": 1,
+          "prose&science->rejected": 2
+        }
+      },
+      "crawl=CC-MAIN-2021-04": {
+        "component_matches": {
+          "practical": 46,
+          "prose": 118,
+          "science": 7
+        },
+        "transfers": {
+          "prose&science->essential_science": 1,
+          "prose&science->rejected": 2
+        }
+      },
+      "crawl=CC-MAIN-2021-49": {
+        "component_matches": {
+          "practical": 56,
+          "prose": 124,
+          "science": 10
+        },
+        "transfers": {
+          "practical&science->rejected": 2,
+          "prose&science->rejected": 1
+        }
+      },
+      "crawl=CC-MAIN-2024-26": {
+        "component_matches": {
+          "practical": 49,
+          "prose": 106,
+          "science": 13
+        },
+        "transfers": {
+          "practical&science->rejected": 3,
+          "prose&science->essential_science": 2,
+          "prose&science->rejected": 4
+        }
+      }
+    },
+    "C-normal": {
+      "all": {
+        "component_matches": {
+          "practical": 137,
+          "prose": 333,
+          "science": 67
+        },
+        "transfers": {}
+      },
+      "crawl=CC-MAIN-2014-15": {
+        "component_matches": {
+          "practical": 6,
+          "prose": 43,
+          "science": 8
+        },
+        "transfers": {}
+      },
+      "crawl=CC-MAIN-2015-32": {
+        "component_matches": {
+          "practical": 25,
+          "prose": 49,
+          "science": 5
+        },
+        "transfers": {}
+      },
+      "crawl=CC-MAIN-2016-50": {
+        "component_matches": {
+          "practical": 19,
+          "prose": 34,
+          "science": 12
+        },
+        "transfers": {}
+      },
+      "crawl=CC-MAIN-2018-05": {
+        "component_matches": {
+          "practical": 15,
+          "prose": 49,
+          "science": 5
+        },
+        "transfers": {}
+      },
+      "crawl=CC-MAIN-2019-09": {
+        "component_matches": {
+          "practical": 19,
+          "prose": 44,
+          "science": 7
+        },
+        "transfers": {}
+      },
+      "crawl=CC-MAIN-2021-04": {
+        "component_matches": {
+          "practical": 18,
+          "prose": 40,
+          "science": 7
+        },
+        "transfers": {}
+      },
+      "crawl=CC-MAIN-2021-49": {
+        "component_matches": {
+          "practical": 19,
+          "prose": 46,
+          "science": 10
+        },
+        "transfers": {}
+      },
+      "crawl=CC-MAIN-2024-26": {
+        "component_matches": {
+          "practical": 16,
+          "prose": 28,
+          "science": 13
+        },
+        "transfers": {}
+      }
+    },
+    "C-strict": {
+      "all": {
+        "component_matches": {
+          "practical": 137,
+          "prose": 333,
+          "science": 67
+        },
+        "transfers": {}
+      },
+      "crawl=CC-MAIN-2014-15": {
+        "component_matches": {
+          "practical": 6,
+          "prose": 43,
+          "science": 8
+        },
+        "transfers": {}
+      },
+      "crawl=CC-MAIN-2015-32": {
+        "component_matches": {
+          "practical": 25,
+          "prose": 49,
+          "science": 5
+        },
+        "transfers": {}
+      },
+      "crawl=CC-MAIN-2016-50": {
+        "component_matches": {
+          "practical": 19,
+          "prose": 34,
+          "science": 12
+        },
+        "transfers": {}
+      },
+      "crawl=CC-MAIN-2018-05": {
+        "component_matches": {
+          "practical": 15,
+          "prose": 49,
+          "science": 5
+        },
+        "transfers": {}
+      },
+      "crawl=CC-MAIN-2019-09": {
+        "component_matches": {
+          "practical": 19,
+          "prose": 44,
+          "science": 7
+        },
+        "transfers": {}
+      },
+      "crawl=CC-MAIN-2021-04": {
+        "component_matches": {
+          "practical": 18,
+          "prose": 40,
+          "science": 7
+        },
+        "transfers": {}
+      },
+      "crawl=CC-MAIN-2021-49": {
+        "component_matches": {
+          "practical": 19,
+          "prose": 46,
+          "science": 10
+        },
+        "transfers": {}
+      },
+      "crawl=CC-MAIN-2024-26": {
+        "component_matches": {
+          "practical": 16,
+          "prose": 28,
+          "science": 13
+        },
+        "transfers": {}
+      }
+    },
+    "D-normal": {
+      "all": {
+        "component_matches": {
+          "practical": 393,
+          "prose": 935,
+          "science": 67
+        },
+        "transfers": {
+          "practical&science->essential_science": 7,
+          "practical&science->rejected": 8,
+          "prose&science->essential_science": 24,
+          "prose&science->rejected": 1
+        }
+      },
+      "crawl=CC-MAIN-2014-15": {
+        "component_matches": {
+          "practical": 32,
+          "prose": 123,
+          "science": 8
+        },
+        "transfers": {
+          "practical&science->rejected": 1,
+          "prose&science->essential_science": 3
+        }
+      },
+      "crawl=CC-MAIN-2015-32": {
+        "component_matches": {
+          "practical": 50,
+          "prose": 131,
+          "science": 5
+        },
+        "transfers": {
+          "practical&science->rejected": 1,
+          "prose&science->essential_science": 2,
+          "prose&science->rejected": 1
+        }
+      },
+      "crawl=CC-MAIN-2016-50": {
+        "component_matches": {
+          "practical": 68,
+          "prose": 90,
+          "science": 12
+        },
+        "transfers": {
+          "practical&science->essential_science": 1,
+          "practical&science->rejected": 2,
+          "prose&science->essential_science": 5
+        }
+      },
+      "crawl=CC-MAIN-2018-05": {
+        "component_matches": {
+          "practical": 45,
+          "prose": 127,
+          "science": 5
+        },
+        "transfers": {
+          "practical&science->essential_science": 1,
+          "practical&science->rejected": 2,
+          "prose&science->essential_science": 1
+        }
+      },
+      "crawl=CC-MAIN-2019-09": {
+        "component_matches": {
+          "practical": 47,
+          "prose": 116,
+          "science": 7
+        },
+        "transfers": {
+          "practical&science->essential_science": 2,
+          "prose&science->essential_science": 3
+        }
+      },
+      "crawl=CC-MAIN-2021-04": {
+        "component_matches": {
+          "practical": 46,
+          "prose": 118,
+          "science": 7
+        },
+        "transfers": {
+          "prose&science->essential_science": 3
+        }
+      },
+      "crawl=CC-MAIN-2021-49": {
+        "component_matches": {
+          "practical": 56,
+          "prose": 124,
+          "science": 10
+        },
+        "transfers": {
+          "practical&science->essential_science": 1,
+          "practical&science->rejected": 1,
+          "prose&science->essential_science": 1
+        }
+      },
+      "crawl=CC-MAIN-2024-26": {
+        "component_matches": {
+          "practical": 49,
+          "prose": 106,
+          "science": 13
+        },
+        "transfers": {
+          "practical&science->essential_science": 2,
+          "practical&science->rejected": 1,
+          "prose&science->essential_science": 6
+        }
+      }
+    },
+    "D-strict": {
+      "all": {
+        "component_matches": {
+          "practical": 393,
+          "prose": 935,
+          "science": 67
+        },
+        "transfers": {
+          "practical&science->essential_science": 1,
+          "practical&science->rejected": 14,
+          "prose&science->essential_science": 8,
+          "prose&science->rejected": 17
+        }
+      },
+      "crawl=CC-MAIN-2014-15": {
+        "component_matches": {
+          "practical": 32,
+          "prose": 123,
+          "science": 8
+        },
+        "transfers": {
+          "practical&science->rejected": 1,
+          "prose&science->essential_science": 2,
+          "prose&science->rejected": 1
+        }
+      },
+      "crawl=CC-MAIN-2015-32": {
+        "component_matches": {
+          "practical": 50,
+          "prose": 131,
+          "science": 5
+        },
+        "transfers": {
+          "practical&science->rejected": 1,
+          "prose&science->rejected": 3
+        }
+      },
+      "crawl=CC-MAIN-2016-50": {
+        "component_matches": {
+          "practical": 68,
+          "prose": 90,
+          "science": 12
+        },
+        "transfers": {
+          "practical&science->rejected": 3,
+          "prose&science->essential_science": 2,
+          "prose&science->rejected": 3
+        }
+      },
+      "crawl=CC-MAIN-2018-05": {
+        "component_matches": {
+          "practical": 45,
+          "prose": 127,
+          "science": 5
+        },
+        "transfers": {
+          "practical&science->essential_science": 1,
+          "practical&science->rejected": 2,
+          "prose&science->rejected": 1
+        }
+      },
+      "crawl=CC-MAIN-2019-09": {
+        "component_matches": {
+          "practical": 47,
+          "prose": 116,
+          "science": 7
+        },
+        "transfers": {
+          "practical&science->rejected": 2,
+          "prose&science->essential_science": 1,
+          "prose&science->rejected": 2
+        }
+      },
+      "crawl=CC-MAIN-2021-04": {
+        "component_matches": {
+          "practical": 46,
+          "prose": 118,
+          "science": 7
+        },
+        "transfers": {
+          "prose&science->essential_science": 1,
+          "prose&science->rejected": 2
+        }
+      },
+      "crawl=CC-MAIN-2021-49": {
+        "component_matches": {
+          "practical": 56,
+          "prose": 124,
+          "science": 10
+        },
+        "transfers": {
+          "practical&science->rejected": 2,
+          "prose&science->rejected": 1
+        }
+      },
+      "crawl=CC-MAIN-2024-26": {
+        "component_matches": {
+          "practical": 49,
+          "prose": 106,
+          "science": 13
+        },
+        "transfers": {
+          "practical&science->rejected": 3,
+          "prose&science->essential_science": 2,
+          "prose&science->rejected": 4
+        }
+      }
+    }
+  },
+  "predicate_overlaps": {
+    "all": {
+      "P&F6": 137,
+      "P&F789": 70,
+      "R&F6": 161,
+      "R&F789": 333,
+      "S5&P": 15,
+      "S5&R": 15,
+      "S61&F6": 24,
+      "S61&R": 10,
+      "triple_or_more": 10
+    },
+    "crawl=CC-MAIN-2014-15": {
+      "P&F6": 6,
+      "P&F789": 7,
+      "R&F6": 19,
+      "R&F789": 43,
+      "S5&P": 1,
+      "S5&R": 3,
+      "S61&F6": 3
+    },
+    "crawl=CC-MAIN-2015-32": {
+      "P&F6": 25,
+      "P&F789": 12,
+      "R&F6": 15,
+      "R&F789": 49,
+      "S5&P": 1,
+      "S5&R": 3
+    },
+    "crawl=CC-MAIN-2016-50": {
+      "P&F6": 19,
+      "P&F789": 16,
+      "R&F6": 13,
+      "R&F789": 34,
+      "S5&P": 3,
+      "S5&R": 3,
+      "S61&F6": 4,
+      "S61&R": 2,
+      "triple_or_more": 2
+    },
+    "crawl=CC-MAIN-2018-05": {
+      "P&F6": 15,
+      "P&F789": 12,
+      "R&F6": 21,
+      "R&F789": 49,
+      "S5&P": 3,
+      "S5&R": 1
+    },
+    "crawl=CC-MAIN-2019-09": {
+      "P&F6": 19,
+      "P&F789": 5,
+      "R&F6": 28,
+      "R&F789": 44,
+      "S5&P": 2,
+      "S61&F6": 5,
+      "S61&R": 3,
+      "triple_or_more": 3
+    },
+    "crawl=CC-MAIN-2021-04": {
+      "P&F6": 18,
+      "P&F789": 3,
+      "R&F6": 22,
+      "R&F789": 40,
+      "S5&R": 1,
+      "S61&F6": 4,
+      "S61&R": 2,
+      "triple_or_more": 2
+    },
+    "crawl=CC-MAIN-2021-49": {
+      "P&F6": 19,
+      "P&F789": 8,
+      "R&F6": 15,
+      "R&F789": 46,
+      "S5&P": 2,
+      "S61&F6": 5,
+      "S61&R": 1,
+      "triple_or_more": 1
+    },
+    "crawl=CC-MAIN-2024-26": {
+      "P&F6": 16,
+      "P&F789": 7,
+      "R&F6": 28,
+      "R&F789": 28,
+      "S5&P": 3,
+      "S5&R": 4,
+      "S61&F6": 3,
+      "S61&R": 2,
+      "triple_or_more": 2
+    }
+  },
+  "transitions": {
+    "A->B/normal": {
+      "additions": 5,
+      "reassignments": 2,
+      "removals": 0
+    },
+    "A->B/strict": {
+      "additions": 2,
+      "reassignments": 2,
+      "removals": 0
+    },
+    "A->C/normal": {
+      "additions": 5,
+      "reassignments": 2,
+      "removals": 316
+    },
+    "A->C/strict": {
+      "additions": 2,
+      "reassignments": 2,
+      "removals": 269
+    },
+    "A->D/normal": {
+      "additions": 522,
+      "reassignments": 2,
+      "removals": 0
+    },
+    "A->D/strict": {
+      "additions": 2,
+      "reassignments": 2,
+      "removals": 0
+    },
+    "A/normal->strict": {
+      "additions": 0,
+      "reassignments": 0,
+      "removals": 89
+    },
+    "B->C/normal": {
+      "additions": 0,
+      "reassignments": 0,
+      "removals": 316
+    },
+    "B->C/strict": {
+      "additions": 0,
+      "reassignments": 0,
+      "removals": 269
+    },
+    "B->D/normal": {
+      "additions": 517,
+      "reassignments": 0,
+      "removals": 0
+    },
+    "B->D/strict": {
+      "additions": 0,
+      "reassignments": 0,
+      "removals": 0
+    },
+    "B/normal->strict": {
+      "additions": 0,
+      "reassignments": 0,
+      "removals": 92
+    },
+    "C->D/normal": {
+      "additions": 833,
+      "reassignments": 0,
+      "removals": 0
+    },
+    "C->D/strict": {
+      "additions": 269,
+      "reassignments": 0,
+      "removals": 0
+    },
+    "C/normal->strict": {
+      "additions": 0,
+      "reassignments": 0,
+      "removals": 45
+    },
+    "D/normal->strict": {
+      "additions": 0,
+      "reassignments": 0,
+      "removals": 609
+    }
+  }
+}

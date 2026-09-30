@@ -1,0 +1,215 @@
+{
+  "adapted_input": {
+    "bytes": 13838037,
+    "kind": "derived_analysis_input",
+    "manifest_digest": "0c095074967c5cc27ead6c6b5c3fb68dd862362c9eca04a02917f4dc2666669b",
+    "metadata_digest": "82b2adde202628ee7050cbe63aa5a7694321193ab5d6942fe524586d5c9b0f62",
+    "path": "F:\\Project\\xlm-selector-sweeps\\essential-web-v4.1-m-analysis\\m_derived_analysis_input.jsonl",
+    "records": 4096,
+    "row_identity_digest": "3d164fa9fe5988e6743f4659a75e5a5f1c39143a9163b47d6cd96590fa059711",
+    "sha256": "839e1296940154e70e91cc15c1059a7708d4f1833da329ebb6146739ef625676"
+  },
+  "adapter": {
+    "code_sha256": "fdf21328933840bcc3be4e7b40f43c49ad58d9d212147d8b17a77e6bbe6c66ab",
+    "id": "essential-web-phase-d-m-derived-input-adapter",
+    "version": "1"
+  },
+  "analysis_code": {
+    "scripts/essential_web_m_analysis.py": {
+      "bytes": 12752,
+      "sha256": "b0e6758f68fcd5ef95f0abb321e1f0b72445e755a822e2f1f7baee57a615fdc8"
+    },
+    "src/xlm/data/evidence_v2/canonical.py": {
+      "bytes": 6013,
+      "sha256": "2a2f80d65844337bfcd33fc77f469fcfea3155e66b75c275f4478e9e810f9680"
+    },
+    "src/xlm/data/evidence_v2/m_analysis.py": {
+      "bytes": 48012,
+      "sha256": "15a09e30682221a08c07d8e354803bae22bd9cc667ebd38e0604d22a564fae98"
+    },
+    "src/xlm/data/evidence_v2/m_input_adapter.py": {
+      "bytes": 18485,
+      "sha256": "fdf21328933840bcc3be4e7b40f43c49ad58d9d212147d8b17a77e6bbe6c66ab"
+    }
+  },
+  "arm": "M",
+  "artifact_manifest_digest": "4e14c7bfc8b5f5109a9befdf479e7543518fcf04986e1684ad64709bca43c2be",
+  "commands": [
+    "uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/essential_web_m_analysis.py run --preparation docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-PHASE-D-RESULT-REVIEW/m-analysis-preparation.json --phase-d-root G:/Project/xlm-evidence-v4.1/essential-web-phase-d --development-dir F:/Project/xlm-selector-sweeps/essential-web-v2 --work-dir F:/Project/xlm-selector-sweeps/essential-web-v4.1-m-analysis --output-dir docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-M-ANALYSIS"
+  ],
+  "conditions": [
+    "A-normal",
+    "A-strict",
+    "B-normal",
+    "B-strict",
+    "C-normal",
+    "C-strict",
+    "D-normal",
+    "D-strict"
+  ],
+  "development": {
+    "artifacts": {
+      "attrition.json": {
+        "bytes": 22144,
+        "sha256": "7ed63a682bd8a918fa3c5b4410ae1c8ffafbf7d62f968f764d1590970f98d7ad"
+      },
+      "crosstabs.json": {
+        "bytes": 690521,
+        "sha256": "5fa6d0ac84adb75e0b1ea7ea6bdb0a440ac0d66363043125eeb376b58e4e1720"
+      },
+      "diagnostics.json": {
+        "bytes": 82797,
+        "sha256": "01fa05e3a0859cafb74c47d8e16b06267dca15a5a89def64ffb4ab551ea68f1a"
+      },
+      "overlaps.json": {
+        "bytes": 23200,
+        "sha256": "edc367578fea52c42cb6d3fe21ed7cfa9efce052b981670be5ad70be7e7a4be1"
+      },
+      "per_crawl.json": {
+        "bytes": 28845,
+        "sha256": "b5171045d684be812dd242fbfb60e110045e6a0ad510ede706ef642e969198a2"
+      },
+      "policy_spec.json": {
+        "bytes": 5346,
+        "sha256": "04005393158b01b5cc6433994142fa61f4d0679eda565b425ac82084acf3035b"
+      },
+      "summary.json": {
+        "bytes": 3439,
+        "sha256": "0925c3708461feaa399a3f9c19e28d69cd338d7dd72d9e8837da115e4e9a60ed"
+      },
+      "summary.md": {
+        "bytes": 6496,
+        "sha256": "71396004a981c75afa699569a491b02098c89f66e441f3eb144cc627cf1f8096"
+      }
+    },
+    "binding": {
+      "bundle_digest": "ac1c13b656d9dc3bc506726bfe3f1db925444efb899733052496be0425c58eb3",
+      "combined_sha256": "42e07c350d849c608ef202348971e3f7ea48aa80775d413a39dd3373628c58e1",
+      "execution_digest": "5065bcf6001ee38b63ca783f20a625af0256f2788ce9a0034edfba34c125bc23",
+      "parts": 8,
+      "records": 4096,
+      "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d"
+    },
+    "manifest": {
+      "bytes": 2044,
+      "digest": "e13c9c98efdf07fcc7c1375c4c8b62d918d77aa39c158171aa090c8695ac4087",
+      "sha256": "0d550a2d871f737c8bc46f82a8de38fd817b50bb1bffee46f2c3c07a129e26bc"
+    },
+    "raw_bundle_reevaluated": false,
+    "resolved_path": "F:\\Project\\xlm-selector-sweeps\\essential-web-v2"
+  },
+  "environment": {
+    "implementation": "CPython",
+    "machine": "AMD64",
+    "network": "none",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.12.13"
+  },
+  "evaluator": {
+    "bytes": 82158,
+    "path": "scripts/essential_web_selector_sweep.py",
+    "policy": {
+      "bytes": 5506,
+      "digest": "f4357f61f434d5105d823266153dac6372e122f12767187631e8796b4899dd07",
+      "sha256": "c27a0aae8f63a1d9f80fdeb693a14d877b68298d386a3fc8679bbab34fa2a088"
+    },
+    "report_schema_version": 2,
+    "sha256": "5a63e78560ea9e12b0ec03b5e7e63204b5c75554bee02192c12bb4ab0853bf9c",
+    "tool_version": "2"
+  },
+  "kind": "essential_web_m_selector_evidence_seal",
+  "other_arm_material_bound": false,
+  "phase_d_plan_digest": "23a26ffc87d27e4c8fa5de86d7ec446c260bfd65442dc5b1dfd2651cd62222b7",
+  "policy_digest": "f4357f61f434d5105d823266153dac6372e122f12767187631e8796b4899dd07",
+  "policy_ranking": "NOT PERFORMED",
+  "post_seal_rule": "M analysis must not change in response to later semantic review",
+  "preparation": {
+    "bytes": 5760,
+    "digest": "925ed40b6709519863eb6c0069386da5a0f9ae3f649beb63205f9b0694a0a246",
+    "sha256": "13947c0b7724f4dca011ed1f4fd830c5ed32e10264c5c8cd9b19718dff871b82"
+  },
+  "results": {
+    "adapted_input_manifest.json": {
+      "bytes": 6074,
+      "sha256": "42f13e7c3cadce08ca70c3fbf334df23e8f3798c0c76b5c2e5fd722363d8bb36"
+    },
+    "adapter_manifest.json": {
+      "bytes": 1548,
+      "sha256": "a275968f4a86f52b57235539bc9f6f53a5e3cb86deae321653029d5752ef0459"
+    },
+    "development_binding.json": {
+      "bytes": 1806,
+      "sha256": "b236af1a1f3d747640b0381df986ad976014e3d54e7e6441bb6826418da61c53"
+    },
+    "m_comparison.json": {
+      "bytes": 334587,
+      "sha256": "eeec86fe6d8a4ce1c3834dc21592b132ab3d565bb66afccb6237c5d9d2198b9a"
+    },
+    "m_comparison.md": {
+      "bytes": 24446,
+      "sha256": "1450cd19507347c5a2813ff88ce80570569ae20e616c89a9a02067e2a8e79a07"
+    },
+    "m_sweep/attrition.json": {
+      "bytes": 21528,
+      "sha256": "635f9b0a7152f1850cda409c841a5bea3eaac9880fff1837c7fd2e78daf9d598"
+    },
+    "m_sweep/crosstabs.json": {
+      "bytes": 704262,
+      "sha256": "4525201254ebab6454e4227a63c974d5e477ca88140243328b1fff6de784457e"
+    },
+    "m_sweep/diagnostics.json": {
+      "bytes": 79031,
+      "sha256": "d195e17b0e5f3fa7f3bd8cf38b4a6394eff43449623bed53a5e1d83c35bdb573"
+    },
+    "m_sweep/overlaps.json": {
+      "bytes": 23429,
+      "sha256": "1cc8eaf742baf804fb0ac3fda1c4714c1f1968307a1a168f05f0825f46ee2ed0"
+    },
+    "m_sweep/per_crawl.json": {
+      "bytes": 28858,
+      "sha256": "f389f139f4a9b42a551664c2114bd33b66473046a91edc799e099c972350c7ea"
+    },
+    "m_sweep/policy_spec.json": {
+      "bytes": 5346,
+      "sha256": "04005393158b01b5cc6433994142fa61f4d0679eda565b425ac82084acf3035b"
+    },
+    "m_sweep/summary.json": {
+      "bytes": 3438,
+      "sha256": "75845b345792fa929b671c668e3688e94e24463703883f65fddb9c1cbfc5b069"
+    },
+    "m_sweep/summary.md": {
+      "bytes": 6447,
+      "sha256": "cb9dbd672c85ad8cc2baa90fba072bfeb93f52f6bd879dc66e1133e1ed0db1bf"
+    },
+    "m_sweep_results.json": {
+      "bytes": 32571,
+      "sha256": "65aef7f67fe87d8c23ad08b3ea4471a025122775cdae6affea9faa79ba8f07ce"
+    }
+  },
+  "scientific_namespace": "essential-web-evidence-v2.0",
+  "seal_digest": "afc972ccf570a5587bf7bd3b6b8d1d728a09f2230c49f1b0a19c1c74cda0b9bc",
+  "sealed_before_other_arm_unblinding": true,
+  "selection_digest": "975ba3dee4af0598e665ea05c69bbe49336c3e3a35fca777a863073190b78474",
+  "selector_decision": "NOT MADE",
+  "source": {
+    "m_manifest": {
+      "bytes": 6395,
+      "digest": "e9bbb26283d11727df275b23875fe45fdf71f3ed9aa75a3b0e24a4dfcbaeadc6",
+      "sha256": "9923e434b42188b978b0c3b3b976abd17c5b09f66f0d1e9bfad779aaf55aadb9"
+    },
+    "phase_d_receipt": {
+      "bytes": 27314,
+      "digest": "76d9cb7c6c359704adfc7ab46aed668ccb283c1d63016b67745332d3ac105e83",
+      "sha256": "7e8c37e183d546cb43c5cc3deae1c8b6267969500e8af025ceeba67c149320e3"
+    },
+    "records": {
+      "bytes": 13571797,
+      "sha256": "4d268f8d4ac3fcfe6cfea6184c8bcce5b7cb797dc1c627ca83a91371e3070e02"
+    },
+    "repository": "EssentialAI/essential-web-v1.0",
+    "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+    "synthetic": false
+  },
+  "source_revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+  "status": "SEALED"
+}

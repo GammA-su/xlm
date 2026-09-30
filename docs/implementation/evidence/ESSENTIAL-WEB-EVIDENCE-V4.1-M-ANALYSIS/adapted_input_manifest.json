@@ -1,0 +1,174 @@
+{
+  "adapter": {
+    "code_sha256": "fdf21328933840bcc3be4e7b40f43c49ad58d9d212147d8b17a77e6bbe6c66ab",
+    "id": "essential-web-phase-d-m-derived-input-adapter",
+    "version": "1"
+  },
+  "derived_file": {
+    "bytes": 13838037,
+    "path": "F:\\Project\\xlm-selector-sweeps\\essential-web-v4.1-m-analysis\\m_derived_analysis_input.jsonl",
+    "sha256": "839e1296940154e70e91cc15c1059a7708d4f1833da329ebb6146739ef625676"
+  },
+  "digest": "0c095074967c5cc27ead6c6b5c3fb68dd862362c9eca04a02917f4dc2666669b",
+  "files": [
+    {
+      "crawl": "crawl=CC-MAIN-2014-15",
+      "derived_records_sha256": "4d2897e9a323459ec8976430168ff10b60595386d45d929fb99fcc2bc7c9993c",
+      "file": "data/crawl=CC-MAIN-2014-15/train-01860-of-02772.parquet",
+      "ordinal": 0,
+      "records": 512,
+      "row_group": 9,
+      "source_records_sha256": "c7c2a9ca100738d22b22aa546dadbcfd6d5cbeb266307037fa21748b072a806c",
+      "window": [
+        90023,
+        90535
+      ]
+    },
+    {
+      "crawl": "crawl=CC-MAIN-2015-32",
+      "derived_records_sha256": "1b8ed3f11773c8c12e5982c77b915d4b7d2a42c5668d387ba84152877b08c140",
+      "file": "data/crawl=CC-MAIN-2015-32/train-01682-of-01920.parquet",
+      "ordinal": 1,
+      "records": 512,
+      "row_group": 9,
+      "source_records_sha256": "022914fabd4686c0b4aa620ff3c5bbf61d63bb6249639d3ca992cd8fa5de8c69",
+      "window": [
+        92096,
+        92608
+      ]
+    },
+    {
+      "crawl": "crawl=CC-MAIN-2016-50",
+      "derived_records_sha256": "24097bba54660b194672722a6e73bda02b4a04dfbbaa4637cc523ff82d07ca2d",
+      "file": "data/crawl=CC-MAIN-2016-50/train-02156-of-03132.parquet",
+      "ordinal": 2,
+      "records": 512,
+      "row_group": 6,
+      "source_records_sha256": "24ca2d8b6866f327e6ea9be3529ce959db3b21b750db03f3fef7c43568f12a13",
+      "window": [
+        67173,
+        67685
+      ]
+    },
+    {
+      "crawl": "crawl=CC-MAIN-2018-05",
+      "derived_records_sha256": "b138efeb7f8517d35ce6b735cb15ab605ef9ae298a8e2a67fbd520fe90616e9e",
+      "file": "data/crawl=CC-MAIN-2018-05/train-03378-of-03429.parquet",
+      "ordinal": 3,
+      "records": 512,
+      "row_group": 1,
+      "source_records_sha256": "6ef1a9ae5396cd8851222cf4ca8a63069d662b5afafc0e8d0509bae374d30bb2",
+      "window": [
+        11728,
+        12240
+      ]
+    },
+    {
+      "crawl": "crawl=CC-MAIN-2019-09",
+      "derived_records_sha256": "f64c2354e1fda706d631463147a9fcb768c1054617f83d20163c41f4ee060d35",
+      "file": "data/crawl=CC-MAIN-2019-09/train-00153-of-02577.parquet",
+      "ordinal": 4,
+      "records": 512,
+      "row_group": 2,
+      "source_records_sha256": "7e32ebf506df73e9093c7380626691c814bf22427849a7e229821eef37853eb6",
+      "window": [
+        26634,
+        27146
+      ]
+    },
+    {
+      "crawl": "crawl=CC-MAIN-2021-04",
+      "derived_records_sha256": "cd51c53587fb4dcaa569c6812acc64ff1adec0624ae772356b708e5c1de42d42",
+      "file": "data/crawl=CC-MAIN-2021-04/train-00179-of-03315.parquet",
+      "ordinal": 5,
+      "records": 512,
+      "row_group": 4,
+      "source_records_sha256": "89c4bd2d2dc84ed89a1617de8aecd69566cb57f74a5d0086996a2436b7195dca",
+      "window": [
+        46415,
+        46927
+      ]
+    },
+    {
+      "crawl": "crawl=CC-MAIN-2021-49",
+      "derived_records_sha256": "31813b906209a9b380ad673aa64e9c0cbe788bcf99e01c624107dff98e4bf535",
+      "file": "data/crawl=CC-MAIN-2021-49/train-00408-of-02895.parquet",
+      "ordinal": 6,
+      "records": 512,
+      "row_group": 5,
+      "source_records_sha256": "6b9078b9f19392851d783f3c4cce8a192dd3cba601b540f9fc8ddabb90ce911e",
+      "window": [
+        58279,
+        58791
+      ]
+    },
+    {
+      "crawl": "crawl=CC-MAIN-2024-26",
+      "derived_records_sha256": "8c6bb57368fa272ac251c3722e3081f60a8333b3031be41a985911d45651bdc6",
+      "file": "data/crawl=CC-MAIN-2024-26/train-01127-of-03168.parquet",
+      "ordinal": 7,
+      "records": 512,
+      "row_group": 1,
+      "source_records_sha256": "f5b703a11da8ac0a5cab7412519f6651347c4506ebe3fd2f9eb5aa2a1e9c6997",
+      "window": [
+        19154,
+        19666
+      ]
+    }
+  ],
+  "identity": {
+    "phase_d_plan_digest": "23a26ffc87d27e4c8fa5de86d7ec446c260bfd65442dc5b1dfd2651cd62222b7",
+    "policy_digest": "f4357f61f434d5105d823266153dac6372e122f12767187631e8796b4899dd07",
+    "scientific_namespace": "essential-web-evidence-v2.0",
+    "selection_digest": "975ba3dee4af0598e665ea05c69bbe49336c3e3a35fca777a863073190b78474"
+  },
+  "kind": "derived_analysis_input",
+  "mapping": "_xlm_acquisition.row -> _xlm_acquisition.row_index (added; row kept)",
+  "marker": "_xlm_acquisition.analysis_input_kind = derived_analysis_input",
+  "metadata_digest": "82b2adde202628ee7050cbe63aa5a7694321193ab5d6942fe524586d5c9b0f62",
+  "not_invented": [
+    "legacy bundle.json",
+    "legacy execution.json",
+    "plan hashes",
+    "historical requests",
+    "historical execution receipts",
+    "old acquisition IDs",
+    "old transport history"
+  ],
+  "output": {
+    "bytes": 13838037,
+    "sha256": "839e1296940154e70e91cc15c1059a7708d4f1833da329ebb6146739ef625676"
+  },
+  "projection": [
+    "eai_taxonomy",
+    "quality_signals"
+  ],
+  "records": 4096,
+  "row_identity_digest": "3d164fa9fe5988e6743f4659a75e5a5f1c39143a9163b47d6cd96590fa059711",
+  "row_identity_fields": [
+    "source_file",
+    "row",
+    "row_group",
+    "row_in_group",
+    "m_ordinal"
+  ],
+  "source": {
+    "m_manifest": {
+      "bytes": 6395,
+      "digest": "e9bbb26283d11727df275b23875fe45fdf71f3ed9aa75a3b0e24a4dfcbaeadc6",
+      "sha256": "9923e434b42188b978b0c3b3b976abd17c5b09f66f0d1e9bfad779aaf55aadb9"
+    },
+    "phase_d_receipt": {
+      "bytes": 27314,
+      "digest": "76d9cb7c6c359704adfc7ab46aed668ccb283c1d63016b67745332d3ac105e83",
+      "sha256": "7e8c37e183d546cb43c5cc3deae1c8b6267969500e8af025ceeba67c149320e3"
+    },
+    "records": {
+      "bytes": 13571797,
+      "sha256": "4d268f8d4ac3fcfe6cfea6184c8bcce5b7cb797dc1c627ca83a91371e3070e02"
+    },
+    "repository": "EssentialAI/essential-web-v1.0",
+    "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+    "synthetic": false
+  }
+}
