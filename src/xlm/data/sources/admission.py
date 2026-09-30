@@ -301,10 +301,62 @@ class CatalogAuditor:
 # -------------------------------------------------------------------------
 
 
+#: Later attempts supersede earlier ones; every attempt stays in the store.
+MAX_EVIDENCE_ATTEMPTS = 16
+
+
+def attempt_artifact_id(base_id: str, attempt: int) -> str:
+    """Artifact id of one attempt. Attempt 1 keeps the original id."""
+    if not 1 <= attempt <= MAX_EVIDENCE_ATTEMPTS:
+        raise ValueError(f"attempt must be in [1, {MAX_EVIDENCE_ATTEMPTS}]")
+    return base_id if attempt == 1 else f"{base_id}.attempt{attempt:02d}"
+
+
+def latest_attempt(store: ArtifactStore, kind: str, base_id: str) -> int:
+    """Highest attempt with a directory in the store; 0 when there is none.
+
+    The store never replaces a published artifact, so a renewed probe or
+    decision is published under the next attempt and the older record is
+    preserved. Existence alone selects the attempt: an incomplete or corrupt
+    newest attempt is never skipped in favor of older evidence.
+    """
+    for attempt in range(MAX_EVIDENCE_ATTEMPTS, 0, -1):
+        if (store.paths.root / kind / attempt_artifact_id(base_id, attempt)).exists():
+            return attempt
+    return 0
+
+
+def next_attempt(store: ArtifactStore, kind: str, base_id: str) -> int:
+    """First unused attempt for a renewed record."""
+    attempt = latest_attempt(store, kind, base_id) + 1
+    if attempt > MAX_EVIDENCE_ATTEMPTS:
+        raise ValueError(f"'{base_id}' already has {MAX_EVIDENCE_ATTEMPTS} attempts")
+    return attempt
+
+
+def _load_latest(store: ArtifactStore, kind: str, base_id: str, filename: str) -> Any | None:
+    attempt = latest_attempt(store, kind, base_id)
+    if attempt == 0:
+        return None
+    artifact_dir = store.paths.root / kind / attempt_artifact_id(base_id, attempt)
+    if not artifact_dir.is_dir() or not (artifact_dir / "_COMPLETED").is_file():
+        return None
+    payload = artifact_dir / filename
+    if not payload.is_file():
+        return None
+    try:
+        store.verify_artifact(artifact_dir)
+        return json.loads(payload.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+
+
 def save_probe_evidence(
     evidence: ProbeEvidenceRecord,
     store: ArtifactStore,
     staging_dir: Path | None = None,
+    *,
+    attempt: int = 1,
 ) -> str:
     """Persist probe evidence as an immutable P01 artifact."""
     scratch = staging_dir or (Path(".staging") / f"probe_{evidence.source_id}_{evidence.view_id}")
@@ -315,7 +367,7 @@ def save_probe_evidence(
 
     dep_hash = hashlib.sha256(b"uv.lock").hexdigest()[:16]
     producer_hash = hashlib.sha256(b"xlm.data.sources.prober").hexdigest()[:16]
-    artifact_id = f"probe_{evidence.source_id}_{evidence.view_id}"
+    artifact_id = attempt_artifact_id(f"probe_{evidence.source_id}_{evidence.view_id}", attempt)
     published_dir = store.publish_artifact(
         artifact_id=artifact_id,
         kind="probe_evidence",
@@ -336,26 +388,27 @@ def save_probe_evidence(
 def load_probe_evidence(
     source_id: str, view_id: str, store: ArtifactStore
 ) -> ProbeEvidenceRecord | None:
-    """Load persisted probe evidence from P01 artifact store."""
-    artifact_id = f"probe_{source_id}_{view_id}"
-    artifact_dir = store.paths.root / "probe_evidence" / artifact_id
-    if not artifact_dir.is_dir() or not (artifact_dir / "_COMPLETED").is_file():
-        return None
-    evidence_file = artifact_dir / "probe_evidence.json"
-    if not evidence_file.is_file():
+    """Load the latest persisted probe evidence attempt from the P01 artifact store."""
+    raw = _load_latest(
+        store, "probe_evidence", f"probe_{source_id}_{view_id}", "probe_evidence.json"
+    )
+    if raw is None:
         return None
     try:
-        store.verify_artifact(artifact_dir)
-        raw = json.loads(evidence_file.read_text(encoding="utf-8"))
-        return ProbeEvidenceRecord.model_validate(raw)
+        record = ProbeEvidenceRecord.model_validate(raw)
     except Exception:
         return None
+    if (record.source_id, record.view_id) != (source_id, view_id):
+        return None
+    return record
 
 
 def save_admission_decision(
     decision: AdmissionDecision,
     store: ArtifactStore,
     staging_dir: Path | None = None,
+    *,
+    attempt: int = 1,
 ) -> str:
     """Persist an admission decision as an immutable P01 artifact."""
     scratch = staging_dir or (
@@ -368,7 +421,7 @@ def save_admission_decision(
 
     dep_hash = hashlib.sha256(b"uv.lock").hexdigest()[:16]
     producer_hash = hashlib.sha256(b"xlm.data.sources.admission").hexdigest()[:16]
-    artifact_id = f"admission_{decision.source_id}_{decision.view_id}"
+    artifact_id = attempt_artifact_id(f"admission_{decision.source_id}_{decision.view_id}", attempt)
     published_dir = store.publish_artifact(
         artifact_id=artifact_id,
         kind="admission_decision",
@@ -388,20 +441,19 @@ def save_admission_decision(
 def load_admission_decision(
     source_id: str, view_id: str, store: ArtifactStore
 ) -> AdmissionDecision | None:
-    """Load persisted admission decision from P01 artifact store."""
-    artifact_id = f"admission_{source_id}_{view_id}"
-    artifact_dir = store.paths.root / "admission_decision" / artifact_id
-    if not artifact_dir.is_dir() or not (artifact_dir / "_COMPLETED").is_file():
-        return None
-    decision_file = artifact_dir / "admission_decision.json"
-    if not decision_file.is_file():
+    """Load the latest persisted admission decision attempt from the P01 artifact store."""
+    raw = _load_latest(
+        store, "admission_decision", f"admission_{source_id}_{view_id}", "admission_decision.json"
+    )
+    if raw is None:
         return None
     try:
-        store.verify_artifact(artifact_dir)
-        raw = json.loads(decision_file.read_text(encoding="utf-8"))
-        return AdmissionDecision.model_validate(raw)
+        decision = AdmissionDecision.model_validate(raw)
     except Exception:
         return None
+    if (decision.source_id, decision.view_id) != (source_id, view_id):
+        return None
+    return decision
 
 
 def resolve_verified_production_admission(plan: AcquisitionPlan, store: ArtifactStore) -> None:

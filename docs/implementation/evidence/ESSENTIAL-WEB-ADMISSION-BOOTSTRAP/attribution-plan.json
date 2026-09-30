@@ -1,0 +1,35 @@
+{
+  "kind": "essential_web_attribution_plan",
+  "version": 1,
+  "legal_advice": false,
+  "binding": {
+    "repository": "EssentialAI/essential-web-v1.0",
+    "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d"
+  },
+  "attributions": [
+    {
+      "to": "Essential AI",
+      "work": "Essential-Web v1.0",
+      "license": "ODC-By 1.0 (contributions of Essential AI)",
+      "citation": "Essential AI: Andrew Hojel et al. Essential-Web v1.0: 24T tokens of organized web data. arXiv:2506.14111, 2025.",
+      "url": "https://huggingface.co/datasets/EssentialAI/essential-web-v1.0",
+      "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d"
+    },
+    {
+      "to": "Common Crawl Foundation",
+      "work": "Common Crawl snapshots CC-MAIN-2013-20 to CC-MAIN-2024-38 underlying Essential-Web",
+      "license": "Common Crawl Terms of Use; underlying pages keep their owners' rights",
+      "url": "https://commoncrawl.org/terms-of-use"
+    }
+  ],
+  "where_attribution_appears": [
+    "any report, model card or dataset documentation that names the Mix-01 sources",
+    "docs/implementation/reports/ESSENTIAL-WEB-PRODUCTION-READINESS.md"
+  ],
+  "statement_to_include": "Contains text selected from Essential-Web v1.0 (Essential AI, ODC-By 1.0), derived from Common Crawl. Underlying web content remains subject to the rights of its owners.",
+  "changes_disclosed": "XLM selects rows with the frozen B-normal selector and canonicalizes text (NFC and newline normalization).",
+  "not_claimed": [
+    "ownership of corpus text",
+    "that ODC-By applies to individual source documents"
+  ]
+}

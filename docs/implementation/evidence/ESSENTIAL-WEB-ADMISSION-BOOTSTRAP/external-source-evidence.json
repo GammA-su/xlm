@@ -1,0 +1,91 @@
+{
+  "kind": "essential_web_external_source_evidence",
+  "version": 1,
+  "legal_advice": false,
+  "binding": {
+    "repository": "EssentialAI/essential-web-v1.0",
+    "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d"
+  },
+  "observed_date": "2026-09-30",
+  "observation_method": {
+    "web": "Pages were read through the agent's WebFetch tool, which converts a page to markdown and answers a prompt with a small model. Quotations below are as returned by that tool. No page bytes were stored locally, so no SHA-256 exists for the web observations. No page was copied wholesale.",
+    "local": "Local files were read and hashed by the agent.",
+    "pending_live_hash": "The live schema probe fetches README.md at the pinned revision and records its byte count and SHA-256 in its receipt. That hash is the byte-level binding for the dataset card."
+  },
+  "sources": [
+    {
+      "id": "dataset_card",
+      "url": "https://huggingface.co/datasets/EssentialAI/essential-web-v1.0/raw/ce4eccc7e9604667b6d7f32cb6274b8b41f3113d/README.md",
+      "title": "Essential-Web v1.0 dataset card (README.md at the pinned revision)",
+      "observed_by": "agent WebFetch",
+      "sha256": null,
+      "facts": [
+        "YAML front matter declares license: odc-by.",
+        "\"Essential-Web-v1.0 contributions are made available under the ODC attribution license\" (linked to the ODC-By 1.0 text).",
+        "\"users should also abide by the Common Crawl - Terms of Use\".",
+        "\"We do not alter the license of any of the underlying data.\"",
+        "DCLM pool: 89 resiliparse-extracted Common Crawl WARC snapshots, CC-MAIN-2013-20 to CC-MAIN-2022-49.",
+        "12 additional snapshots, CC-MAIN-2023-06 to CC-MAIN-2024-38; 101 Common Crawl snapshots processed.",
+        "Hash-based deduplication across all 101 snapshots; MinHash LSH deduplication (Jaccard threshold 0.7 as returned by the tool).",
+        "Quality filtering retaining English documents; every document classified with EAI-Taxonomy-0.5b.",
+        "The card states nothing about benchmark decontamination, evaluation-set removal, or removal of personal information."
+      ],
+      "reviewer_conclusion": "Matches the operator-provided facts. The card licenses Essential AI's contributions and explicitly does not relicense underlying web content."
+    },
+    {
+      "id": "repository_metadata",
+      "url": "https://huggingface.co/datasets/EssentialAI/essential-web-v1.0",
+      "title": "Hugging Face repository metadata snapshot (local file)",
+      "observed_by": "local file D:\\Project\\xlm-operator-pilot\\adapter-cert-essential-web01\\repository-meta.json, produced by an earlier operator pilot",
+      "sha256": "see ../ESSENTIAL-WEB-PRODUCTION-READINESS/source-provenance.json (repository_metadata_sha256)",
+      "facts": [
+        "repository EssentialAI/essential-web-v1.0, sha ce4eccc7e9604667b6d7f32cb6274b8b41f3113d, license odc-by, private false, gated false."
+      ],
+      "reviewer_conclusion": "Repository, revision and license tag agree with the dataset card. The repository is public and ungated, so no access terms were accepted."
+    },
+    {
+      "id": "common_crawl_terms",
+      "url": "https://commoncrawl.org/terms-of-use",
+      "title": "Common Crawl Terms of Use (page states last updated March 7, 2024)",
+      "observed_by": "agent WebFetch",
+      "sha256": null,
+      "facts": [
+        "Crawled content \"may be subject to separate terms of use or terms of service from the owners of such Crawled Content\".",
+        "\"BY USING THE CRAWLED CONTENT, YOU AGREE TO RESPECT THE COPYRIGHTS AND OTHER APPLICABLE RIGHTS OF THIRD PARTIES\".",
+        "The tool found no attribution requirement on this page.",
+        "The terms include a user indemnification covering use of crawled content for developing, training or deploying AI systems."
+      ],
+      "reviewer_conclusion": "Common Crawl grants no rights in the underlying pages; third-party rights stay with their owners and the user carries that responsibility. The operator should read the full terms; this summary is not a substitute."
+    },
+    {
+      "id": "paper",
+      "url": "https://arxiv.org/abs/2506.14111",
+      "title": "Essential-Web v1.0: 24T tokens of organized web data (arXiv:2506.14111)",
+      "observed_by": "agent WebFetch",
+      "sha256": null,
+      "facts": [
+        "Authors Andrew Hojel et al. (Essential AI); submitted 17 June 2025, revised 19 June 2025.",
+        "The dataset card's BibTeX entry cites this paper (eprint 2506.14111, primaryClass cs.CL).",
+        "The abstract does not mention benchmark decontamination."
+      ],
+      "reviewer_conclusion": "This is the citation to use for attribution. Only the abstract page was read, not the full paper."
+    },
+    {
+      "id": "operator_provided_facts",
+      "url": null,
+      "title": "Facts supplied by the operator in the task instruction of 2026-09-30",
+      "observed_by": "operator statement",
+      "sha256": null,
+      "facts": [
+        "License metadata odc-by; ODC attribution license for Essential-Web contributions; Common Crawl Terms of Use apply; Essential AI does not alter the licenses of the underlying data.",
+        "89 DCLM-pool snapshots plus 12 additional snapshots, 101 in total; global hash deduplication, per-snapshot MinHash LSH deduplication, quality annotation and filtering, taxonomy labeling."
+      ],
+      "reviewer_conclusion": "Each statement was found again in the agent's own reading of the card and the Common Crawl terms."
+    }
+  ],
+  "not_observed": [
+    "The full ODC-By 1.0 license text was not fetched or reviewed here.",
+    "The full paper body was not read.",
+    "No per-document license or robots metadata exists in the reviewed material."
+  ]
+}

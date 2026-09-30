@@ -1,0 +1,78 @@
+{
+  "kind": "essential_web_source_rights_review",
+  "version": 1,
+  "legal_advice": false,
+  "disclaimer": "Engineering and data-governance review. The software records evidence and policy status; it must not purport to certify legal rights.",
+  "binding": {
+    "repository": "EssentialAI/essential-web-v1.0",
+    "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+    "views": ["essential_science", "essential_practical", "essential_prose"],
+    "adapter_id": "essential_web_bnormal",
+    "selector_policy_digest": "f4357f61f434d5105d823266153dac6372e122f12767187631e8796b4899dd07"
+  },
+  "review_date": "2026-09-30",
+  "reviewer": "Claude Opus 5.5 coding agent, drafted on operator instruction. The operator confirms or rejects this review when recording the admission decision.",
+  "evidence": "external-source-evidence.json",
+  "source_identity": {
+    "provider": "huggingface",
+    "repository": "EssentialAI/essential-web-v1.0",
+    "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+    "public": true,
+    "gated": false,
+    "access_terms_accepted_on_operator_behalf": false
+  },
+  "dataset_license_metadata": {
+    "license": "odc-by",
+    "where": "dataset card YAML front matter and repository metadata at the pinned revision",
+    "covers": "Essential AI's contributions: the database, its annotations and taxonomy labels"
+  },
+  "attribution_obligations": {
+    "essential_web": "Attribute Essential-Web v1.0 under ODC-By and cite arXiv:2506.14111 in any public use or redistribution of the database or of works produced from it, to the extent ODC-By requires.",
+    "common_crawl": "Abide by the Common Crawl Terms of Use. No separate attribution clause was found on the terms page; Common Crawl is named as the upstream source in the attribution plan regardless.",
+    "plan": "attribution-plan.json"
+  },
+  "underlying_content_caveat": {
+    "statement": "Essential AI does not alter the license of any underlying data. ODC-By applies to Essential AI's contributions, not to each crawled page. Individual pages keep whatever copyright, terms of service or other rights their owners hold.",
+    "per_document_rights": "unknown",
+    "consequence": "Unknown upstream rights stay unknown (C04). This review does not resolve them."
+  },
+  "provenance": {
+    "chain": [
+      "Common Crawl WARC snapshots",
+      "DCLM pool: 89 resiliparse-extracted snapshots, CC-MAIN-2013-20 to CC-MAIN-2022-49",
+      "12 additional snapshots, CC-MAIN-2023-06 to CC-MAIN-2024-38 (101 in total)",
+      "global hash deduplication, per-snapshot MinHash LSH deduplication, quality annotation and filtering, taxonomy labeling",
+      "Essential-Web v1.0 at the pinned revision",
+      "XLM frozen B-normal selector over eai_taxonomy and quality_signals"
+    ],
+    "fineweb_lineage": "Essential-Web is not FineWeb or FineWeb-Edu and is not on the direct-source denylist. All of them derive from Common Crawl, so indirect document overlap with other Common-Crawl-derived sources cannot be excluded; C05 cross-source deduplication applies.",
+    "xlm_scope": "23,200 files in eight crawl strata (inventory digest 4bbd5517e760971405d9aed56bba5b84877a6325d10f5a10a05b50f5a8d763d8), not all 101 snapshots"
+  },
+  "privacy_and_third_party_risk": {
+    "statement": "Web-crawled text can contain personal information, copyrighted material and otherwise restricted content. The dataset card documents no removal of personal information.",
+    "project_controls": "C03 cleaning and basic secret/PII detection are not a certification that the corpus is free of personal information."
+  },
+  "intended_use": {
+    "use": "pretraining research corpus for XLM Mix-01 under the strict_research usage policy",
+    "not_covered": ["redistribution of corpus text", "publication of weights", "commercial use"]
+  },
+  "mitigation": [
+    "Canonical documents keep source id, pinned revision, source file and row locator, plus the upstream id, pid and metadata fields, so a document can be traced and removed.",
+    "No claim of ownership of corpus text is made downstream.",
+    "No corpus text or derived weights are published or uploaded without separate authorization (AGENTS.md).",
+    "A removal request is handled by excluding the affected locators and refreezing the pool; the project has no automated takedown service.",
+    "Rejected examples stay in the restricted rejection ledger without text."
+  ],
+  "claims": {
+    "every_source_document_is_odc_by": false,
+    "underlying_content_rights_cleared": false,
+    "legal_certification": false
+  },
+  "open_risk_accepted_by_operator_decision": "Training on crawled web text whose per-page rights are unknown. Recording license_review=approved accepts this for research pretraining only; it is an operator policy decision, not a legal finding.",
+  "outcome": {
+    "license_review": "approved",
+    "provenance_review": "approved",
+    "usage_policy": "strict_research",
+    "conditions": ["attribution plan followed", "mitigations above kept", "revision unchanged"]
+  }
+}

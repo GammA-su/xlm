@@ -1,0 +1,25 @@
+{
+  "binding": {
+    "adapter_id": "essential_web_bnormal",
+    "canonicalization": "EssentialWebSelectedAdapter -> EssentialWebAdapter -> CanonicalDocument",
+    "repository": "EssentialAI/essential-web-v1.0",
+    "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+    "selector": {
+      "condition": "B-normal",
+      "evaluator_sha256": "5a63e78560ea9e12b0ec03b5e7e63204b5c75554bee02192c12bb4ab0853bf9c",
+      "freeze_digest": "c6f32a65f083c99b64245e25151f2cc73275093e1013d68b625c6d6f63d10a0c",
+      "freeze_version": "essential-web-selector-fasttrack-v1",
+      "policy_digest": "f4357f61f434d5105d823266153dac6372e122f12767187631e8796b4899dd07",
+      "selector_id": "essential-web-b-normal"
+    },
+    "source_id": "essential_web"
+  },
+  "check": "xlm.data.sources.essential_web_bootstrap.check_reviews passed",
+  "kind": "essential_web_admission_review_manifest",
+  "sha256": {
+    "attribution-plan.json": "ecd0b45091debfc435d8090f07a45972e0c4ccf7b093318b4cff6aa8f0139535",
+    "benchmark-risk-review.json": "e898e8c99244b42df6317ec639e6f8a45149e7a5b0a284350b1e4dc84e5b0be3",
+    "external-source-evidence.json": "dc11530035d9036c06473bb8cf5ebe3463d753ae6a594468dc9c2ccecc6aac0c",
+    "source-rights-review.json": "a45b8bcae4f602d866596d02daaf43c31dea7e476de6fe41270438e444ea1f7e"
+  }
+}

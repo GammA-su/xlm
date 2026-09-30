@@ -1,0 +1,32 @@
+{
+  "accepted_when": "stored admission verified by the fetch gate and authorization hash equal to the plan hash",
+  "classification": "production",
+  "executed": false,
+  "future_script_carries_matching_authorization_hash": true,
+  "is_pilot": false,
+  "limits": {
+    "max_decompressed_bytes": 536870912,
+    "max_decompression_ratio": 15.0,
+    "max_output_disk_bytes": 2147483648,
+    "max_parser_bytes": 33554432,
+    "max_record_bytes": 1048576,
+    "max_records": 256,
+    "max_requests": 330,
+    "max_retries": 1,
+    "max_scanned_records": 2048,
+    "max_temp_disk_bytes": 1073741824,
+    "max_transferred_bytes": 134217728,
+    "max_workers": 1,
+    "overall_deadline_seconds": 600.0,
+    "per_request_timeout_seconds": 15.0
+  },
+  "plan": "probe-00.plan.json",
+  "plan_hash": "04db5c763959ebf7187ba69d23a4f99b5d4e2e77c2f07bc4350e4b427f52b04c",
+  "plan_hash_verified": true,
+  "reason": "max_requests 330 exceeds the pilot ceiling 100",
+  "refused_when": {
+    "admitted_but_not_authorized": "Production acquisition for plan 'plan_essential_web_essential_science_huggingface_31f7dfe17490f2ff9edb' requires an explicit PlanAuthorization matching the plan's behavioral hash and full resolved limits.",
+    "authorized_but_not_admitted": "Production acquisition for 'essential_web:essential_science' requires prior operator admission verified by the caller; an unresolved admission reference is insufficient."
+  },
+  "rows": 256
+}

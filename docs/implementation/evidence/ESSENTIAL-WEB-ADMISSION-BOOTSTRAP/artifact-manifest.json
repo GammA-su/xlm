@@ -1,0 +1,133 @@
+{
+  "artifacts": [
+    {
+      "bytes": 12855,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/admission-decisions.json",
+      "sha256": "566a0402f28fbcebf1297a4574f13776079b0e6be3e404587123fc1f2ee5c6a5"
+    },
+    {
+      "bytes": 1590,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/attribution-plan.json",
+      "sha256": "ecd0b45091debfc435d8090f07a45972e0c4ccf7b093318b4cff6aa8f0139535"
+    },
+    {
+      "bytes": 3624,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/benchmark-risk-review.json",
+      "sha256": "e898e8c99244b42df6317ec639e6f8a45149e7a5b0a284350b1e4dc84e5b0be3"
+    },
+    {
+      "bytes": 277,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/calibration-unchanged.json",
+      "sha256": "8f0f8747563c564bf1229e650f6082d45decfbd17734ff3a21d3357b1764a783"
+    },
+    {
+      "bytes": 4148,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/COMMANDS.md",
+      "sha256": "cc1cadbfa56c2ce94b1643b9854ebec24becc09394bc544e7207728b209bb5e6"
+    },
+    {
+      "bytes": 5758,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/external-source-evidence.json",
+      "sha256": "dc11530035d9036c06473bb8cf5ebe3463d753ae6a594468dc9c2ccecc6aac0c"
+    },
+    {
+      "bytes": 822,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/future-admit.ps1",
+      "sha256": "75b31da207e7290635e9779428ed31477a854d64c059ba772accdb70d93d295c"
+    },
+    {
+      "bytes": 763,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/future-schema-probe.ps1",
+      "sha256": "b0c31f0030a929b44ea1cdc6310d543d59c0d2bf079a5c8127bd8b5deed397e6"
+    },
+    {
+      "bytes": 4088,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/logs/acquisition-bounds-serial.log",
+      "sha256": "0777b23ae787efe0c3877197abee791b96ed9c4e5d2a7234441e8c93ef747bfb"
+    },
+    {
+      "bytes": 101,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/logs/acquisition-bounds-short-basetemp.log",
+      "sha256": "a5280adbaba4c12d54fb3cb7c1240416956f95bb95d7fb95f79c22a464d3bfa3"
+    },
+    {
+      "bytes": 101,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/logs/bootstrap-tests.log",
+      "sha256": "aa187a0383ea0f736a51e3d6a3a63a36c61ccd49e28a057ebeccc774faf7bcaf"
+    },
+    {
+      "bytes": 265,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/logs/final-focused.log",
+      "sha256": "1640cb31853a03e8cb00504ea302e19e1a20966abe1f69a036dd0fb377eecf39"
+    },
+    {
+      "bytes": 4792,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/logs/focused-regressions.log",
+      "sha256": "b4378da4305cab8d00a4e4e4943c44f51e05c1f4c666a2d933216b02672faebe"
+    },
+    {
+      "bytes": 120,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/logs/freeze.log",
+      "sha256": "f9dafb3c97bf37aefd5f7fd87a6a1714e867c02803c32634f042b38884464808"
+    },
+    {
+      "bytes": 536,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/logs/operator-store-status.log",
+      "sha256": "9f046f1051605b0a0f3de84872438e94f868a7645c2aad15cf101f815eed1380"
+    },
+    {
+      "bytes": 1438,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/production-probe-authorization-dry.json",
+      "sha256": "6a332a56e4af8414d5672b2d1fb9f56d5896691f68e0d573a3988d5adaa0ec20"
+    },
+    {
+      "bytes": 1929,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/readiness.json",
+      "sha256": "aa89e5b14a68899f7ad56cdd6b574f0b11c0fd2db1a2804e8a9c80d2816d7b25"
+    },
+    {
+      "bytes": 1303,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/review-manifest.json",
+      "sha256": "dd95bd535ddab6da1fd1723a7a3e674ffabdf8504318bfc24bcf610a125f88ae"
+    },
+    {
+      "bytes": 2889,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/schema-probe-plan.json",
+      "sha256": "a9f23d2b15616a8057fb3363effda58aad5f63b23bcf32ab8ddd50b412dcecc4"
+    },
+    {
+      "bytes": 5019,
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/source-rights-review.json",
+      "sha256": "a45b8bcae4f602d866596d02daaf43c31dea7e476de6fe41270438e444ea1f7e"
+    }
+  ],
+  "code": [
+    {
+      "bytes": 25656,
+      "path": "src/xlm/data/sources/essential_web_bootstrap.py",
+      "sha256": "838559e3448118bfa2e62588b378d07df5bbafdbab1c9dc868a972d9057c79eb"
+    },
+    {
+      "bytes": 19533,
+      "path": "src/xlm/data/sources/admission.py",
+      "sha256": "d17e17e255440f3dbca58fccbd55292a4a5910349a02d6ab7e331c72b7df2a9a"
+    },
+    {
+      "bytes": 20551,
+      "path": "src/xlm/data/sources/essential_web_production.py",
+      "sha256": "0ad2ce1c1760ff8caacbdff668ce573864102d57fed210055d3744e6f347966d"
+    },
+    {
+      "bytes": 22182,
+      "path": "scripts/essential_web_bootstrap.py",
+      "sha256": "e36e982a98b8c34ea5dfee830b9dc6a88363b219863e1674bf2b2d27bab55275"
+    },
+    {
+      "bytes": 24832,
+      "path": "tests/test_essential_web_bootstrap.py",
+      "sha256": "23d46c925e3b799efb68a5a25b32f2c1985de2e04c6689994f206a391dbaf1cb"
+    }
+  ],
+  "kind": "essential_web_admission_bootstrap_artifact_manifest",
+  "self_hash": "excluded to avoid self-reference"
+}

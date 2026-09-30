@@ -22,9 +22,16 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any, Protocol
 
+from xlm.artifacts.store import ArtifactStore
+from xlm.core.paths import ArtifactPaths
 from xlm.data.adapters import essential_web_selector as selector
 from xlm.data.adapters.columns import columns_for
-from xlm.data.sources.admission import AdmissionDecision, AdmissionGate
+from xlm.data.sources.admission import (
+    AdmissionDecision,
+    AdmissionGate,
+    attempt_artifact_id,
+    latest_attempt,
+)
 from xlm.data.sources.mix01 import Mix01ViewRegistry
 from xlm.data.sources.prober import ProbeEvidenceRecord
 
@@ -317,20 +324,22 @@ def _load_json(path: Path) -> Any:
     return json.loads(path.read_bytes().decode("utf-8"))
 
 
+def _latest_record(xlm_home: Path, kind: str, base_id: str) -> Path:
+    """Record file of the newest attempt, as the fetch gate would resolve it."""
+    store = ArtifactStore(ArtifactPaths(root=xlm_home))
+    attempt = max(1, latest_attempt(store, kind, base_id))
+    return xlm_home / kind / attempt_artifact_id(base_id, attempt) / f"{kind}.json"
+
+
 def _admission_check(xlm_home: Path | None, views: Sequence[Any]) -> list[str]:
     if xlm_home is None:
         return ["no operator store was given, so no admission evidence exists to read"]
     reasons: list[str] = []
     for view in views:
         name = view.component_id
-        evidence_path = (
-            xlm_home / "probe_evidence" / f"probe_{SOURCE_ID}_{name}" / "probe_evidence.json"
-        )
-        decision_path = (
-            xlm_home
-            / "admission_decision"
-            / f"admission_{SOURCE_ID}_{name}"
-            / "admission_decision.json"
+        evidence_path = _latest_record(xlm_home, "probe_evidence", f"probe_{SOURCE_ID}_{name}")
+        decision_path = _latest_record(
+            xlm_home, "admission_decision", f"admission_{SOURCE_ID}_{name}"
         )
         if not evidence_path.is_file():
             reasons.append(f"{name}: no probe evidence in the operator store")

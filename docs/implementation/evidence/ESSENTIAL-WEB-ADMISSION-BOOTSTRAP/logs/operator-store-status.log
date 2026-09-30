@@ -1,0 +1,23 @@
+{
+  "production_admission_ok": false,
+  "views": {
+    "essential_science": {
+      "admitted": false,
+      "reasons": [
+        "Discovery probe outcome is 'budget_exhausted', not 'accessible'. Reason: response exceeds its allocated body limit"
+      ]
+    },
+    "essential_practical": {
+      "admitted": false,
+      "reasons": [
+        "no verified probe evidence"
+      ]
+    },
+    "essential_prose": {
+      "admitted": false,
+      "reasons": [
+        "no verified probe evidence"
+      ]
+    }
+  }
+}

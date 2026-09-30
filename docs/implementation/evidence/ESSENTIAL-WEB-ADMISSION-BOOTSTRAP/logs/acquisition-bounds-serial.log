@@ -1,0 +1,49 @@
+FF                                                                       [100%]
+================================== FAILURES ===================================
+________________ test_production_fetch_with_verified_admission ________________
+
+server = ('http://127.0.0.1:63844', [], {'/rows.jsonl': b'{"text":"authored A"}\n{"text":"authored B"}\n', '/rows.parquet': b'P...00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00|+w<<`\xa2\x8f\xac\x86\x01\x00"})
+tmp_path = WindowsPath('C:/Users/gamma/AppData/Local/Temp/pytest-of-gamma/pytest-132/test_production_fetch_with_ver0')
+
+>   ???
+
+G:\Project\xlm-data-ultrax\tests\test_acquisition_bounds.py:993: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+home = WindowsPath('C:/Users/gamma/AppData/Local/Temp/pytest-of-gamma/pytest-132/test_production_fetch_with_ver0/home')
+success = True
+args = ('data', 'fetch', '--plan', 'C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-132\\test_production_fetch_with_ver0\\plan.json')
+
+>   ???
+E   AssertionError: <frozen runpy>:128: RuntimeWarning: 'xlm.cli.main' found in sys.modules after import of package 'xlm.cli', but prior to execution of 'xlm.cli.main'; this may result in unpredictable behaviour
+E     Acquisition failed: [Errno 2] No such file or directory: 'C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-132\\test_production_fetch_with_ver0\\home\\acquisition\\plan_authored_default_https_2dde78950616ec6ac3d9\\scratch\\journals\\plan_authored_default_https_2dde78950616ec6ac3d9.progress.json.cae828b2c1704c5eab6acceefc3c3e0a.tmp'
+E     
+E   assert (1 == 0) == True
+E    +  where 1 = CompletedProcess(args=['F:\\Project\\xlm-data-ultrax\\.venv\\Scripts\\python.exe', '-m', 'xlm.cli.main', 'data', 'fetc...\\\journals\\\\plan_authored_default_https_2dde78950616ec6ac3d9.progress.json.cae828b2c1704c5eab6acceefc3c3e0a.tmp'\n").returncode
+
+G:\Project\xlm-data-ultrax\tests\test_acquisition_bounds.py:863: AssertionError
+________________ test_public_plan_fetch_status_verify_prepare _________________
+
+server = ('http://127.0.0.1:63847', [], {'/rows.jsonl': b'{"text":"authored A"}\n{"text":"authored B"}\n', '/rows.parquet': b'P...00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00|+w<<`\xa2\x8f\xac\x86\x01\x00"})
+tmp_path = WindowsPath('C:/Users/gamma/AppData/Local/Temp/pytest-of-gamma/pytest-132/test_public_plan_fetch_status_0')
+
+>   ???
+
+G:\Project\xlm-data-ultrax\tests\test_acquisition_bounds.py:527: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+success = True
+args = ('data', 'fetch', '--plan', 'C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-132\\test_public_plan_fetch_status_0\\plan.json', '--pilot-approved')
+
+>   ???
+E   AssertionError: <frozen runpy>:128: RuntimeWarning: 'xlm.cli.main' found in sys.modules after import of package 'xlm.cli', but prior to execution of 'xlm.cli.main'; this may result in unpredictable behaviour
+E     Acquisition failed: [Errno 2] No such file or directory: 'C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-132\\test_public_plan_fetch_status_0\\home\\acquisition\\plan_authored_default_https_94f58c2856861dae0301\\scratch\\journals\\plan_authored_default_https_94f58c2856861dae0301.progress.json.f733d6fde49446ac9b7a90ebbc7fb4ad.tmp'
+E     
+E   assert (1 == 0) == True
+E    +  where 1 = CompletedProcess(args=['F:\\Project\\xlm-data-ultrax\\.venv\\Scripts\\python.exe', '-m', 'xlm.cli.main', 'data', 'fetc...\\\journals\\\\plan_authored_default_https_94f58c2856861dae0301.progress.json.f733d6fde49446ac9b7a90ebbc7fb4ad.tmp'\n").returncode
+
+G:\Project\xlm-data-ultrax\tests\test_acquisition_bounds.py:480: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_acquisition_bounds.py::test_production_fetch_with_verified_admission
+FAILED tests/test_acquisition_bounds.py::test_public_plan_fetch_status_verify_prepare
+2 failed in 6.43s

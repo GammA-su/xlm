@@ -1,0 +1,95 @@
+{
+  "binding": {
+    "adapter_id": "essential_web_bnormal",
+    "canonicalization": "EssentialWebSelectedAdapter -> EssentialWebAdapter -> CanonicalDocument",
+    "repository": "EssentialAI/essential-web-v1.0",
+    "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+    "selector": {
+      "condition": "B-normal",
+      "evaluator_sha256": "5a63e78560ea9e12b0ec03b5e7e63204b5c75554bee02192c12bb4ab0853bf9c",
+      "freeze_digest": "c6f32a65f083c99b64245e25151f2cc73275093e1013d68b625c6d6f63d10a0c",
+      "freeze_version": "essential-web-selector-fasttrack-v1",
+      "policy_digest": "f4357f61f434d5105d823266153dac6372e122f12767187631e8796b4899dd07",
+      "selector_id": "essential-web-b-normal"
+    },
+    "source_id": "essential_web"
+  },
+  "digest": "0b887739d5bac0a321d5b312a9f4d7a955e1851baaec7f8dcfede5a5bdedd3b4",
+  "expected": {
+    "license": "odc-by",
+    "min_group0_rows": 2048,
+    "physical_leaves": 103,
+    "projected_physical_leaves": 101,
+    "schema_digest": "e6219f02e11c98e9841047084accfea7181e1c7663233662af902b90370b1a74",
+    "top_level_fields": [
+      "id",
+      "text",
+      "metadata",
+      "line_start_n_end_idx",
+      "quality_signals",
+      "eai_taxonomy",
+      "pid"
+    ]
+  },
+  "file": {
+    "file": "data/crawl=CC-MAIN-2014-15/train-01860-of-02772.parquet",
+    "footer_and_trailer_bytes": 203276,
+    "footer_and_trailer_sha256": "eec4e65e7307c3c12c1366f20500e7b0a3e26ac2bd0ee59f8f7d9b1bd1b970a9",
+    "remote_length": 290684578,
+    "strong_etag": "\"a898462fb164d7eea3e8248a28cb1f855843d72bd55cfd126f537653c4eae323\""
+  },
+  "kind": "essential_web_schema_probe_plan",
+  "limits": {
+    "card_bytes_max": 1048576,
+    "footer_bytes_max": 4194296,
+    "max_physical_requests": 24,
+    "max_response_body_bytes": 8388608,
+    "overall_deadline_seconds": 120.0,
+    "per_request_timeout_seconds": 15.0,
+    "workers": 1
+  },
+  "live_run": false,
+  "nominal_physical_requests": 8,
+  "pilot_request_ceiling": 100,
+  "planning_evidence": {
+    "calibration_digest": "a6cab8cd58a127b77dd130249147f3541ac4575f3ea8369bf248879fd52e89b0",
+    "footer": "retained v4.1 Phase-P M footer payload; real bytes, hash-checked",
+    "status": "planning only; every value is observed again by the live probe"
+  },
+  "role": "c04_admission_bootstrap_schema_and_source_identity",
+  "schedule": [
+    {
+      "bytes_max": 1048576,
+      "file": "README.md",
+      "op": "card"
+    },
+    {
+      "op": "magic",
+      "range": [
+        0,
+        3
+      ]
+    },
+    {
+      "op": "trailer",
+      "range": [
+        290684570,
+        290684577
+      ]
+    },
+    {
+      "op": "footer",
+      "range": [
+        290481302,
+        290684569
+      ]
+    }
+  ],
+  "scope": "schema and source identity only; no row decode, no text, no yield or cost",
+  "version": 1,
+  "views": [
+    "essential_science",
+    "essential_practical",
+    "essential_prose"
+  ]
+}

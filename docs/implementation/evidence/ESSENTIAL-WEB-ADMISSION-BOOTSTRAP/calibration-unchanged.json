@@ -1,0 +1,12 @@
+{
+  "digest": "a6cab8cd58a127b77dd130249147f3541ac4575f3ea8369bf248879fd52e89b0",
+  "digest_recomputed_equal": true,
+  "files_changed": [],
+  "files_compared_with_sealed_manifest": 26,
+  "rows": 16384,
+  "rows_per_window": [
+    2048
+  ],
+  "unchanged": true,
+  "windows": 8
+}

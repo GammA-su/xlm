@@ -1,0 +1,47 @@
+{
+  "admission_reviews_complete": true,
+  "live_calibration_run": false,
+  "live_probe_run": false,
+  "live_schema_probe_run": false,
+  "next_live_sequence": [
+    "future-schema-probe.ps1",
+    "future-admit.ps1 -Operator <name>",
+    "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/future-probe.ps1",
+    "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/future-calibration.ps1"
+  ],
+  "operator_scripts_sha256": {
+    "future-admit.ps1": "75b31da207e7290635e9779428ed31477a854d64c059ba772accdb70d93d295c",
+    "future-schema-probe.ps1": "b0c31f0030a929b44ea1cdc6310d543d59c0d2bf079a5c8127bd8b5deed397e6"
+  },
+  "reasons": {
+    "acquisition_plan_ready": [
+      "admission not yet recorded",
+      "science retained-byte yield and source capacity unmeasured"
+    ],
+    "production_admission_ok": [
+      "reviews complete; admission needs the live schema probe record and the operator's approval, neither of which can be produced offline"
+    ]
+  },
+  "schema_probe": {
+    "logical_operations": 4,
+    "max_physical_requests": 24,
+    "nominal_physical_requests": 8,
+    "pilot_request_ceiling": 100,
+    "plan_digest": "0b887739d5bac0a321d5b312a9f4d7a955e1851baaec7f8dcfede5a5bdedd3b4"
+  },
+  "supersedes": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/readiness.json (kept unchanged)",
+  "vector": {
+    "acquisition_plan_ready": false,
+    "calibration_plan_ready": true,
+    "inventory_ready": true,
+    "malformed_policy_ready": true,
+    "probe_plan_ready": true,
+    "production_admission_ok": false,
+    "selector_frozen": true,
+    "selector_integration_ok": true,
+    "source_revision_ok": true,
+    "transfer_strategy_ready": true
+  },
+  "verdict": "READY FOR LIVE ESSENTIAL-WEB PROBE AND CALIBRATION",
+  "verdict_scope": "the live sequence starts with the schema probe and the operator admission; the fetch gate refuses the production probe until both exist"
+}

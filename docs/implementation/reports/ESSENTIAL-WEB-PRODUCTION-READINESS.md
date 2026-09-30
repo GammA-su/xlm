@@ -1,5 +1,243 @@
 # Essential-Web production readiness — 2026-09-30
 
+**READY FOR LIVE ESSENTIAL-WEB PROBE AND CALIBRATION**
+
+## Admission bootstrap update (2026-09-30, offline)
+
+Everything that can be closed offline is closed. Production admission itself is
+**still false**, because it needs two things that cannot be produced offline: a
+live schema probe record and the operator's approval. The live sequence
+therefore starts with a small schema probe and an admission step, and the fetch
+gate refuses the 330-request production probe until both exist.
+
+Starting HEAD `9aab98a1afa8cec778710f15cd1adc5cbeb1a506`; `57cb42f` and `9aab98a`
+are ancestors. The project pipeline made no network request. No probe,
+calibration or acquisition ran; selector, mixture, inventory and calibration are
+unchanged; nothing was pushed. Commands, exit statuses and the fixture/live
+distinction are in
+[COMMANDS.md](../evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/COMMANDS.md).
+
+### What C04 requires
+
+C04 (CONTRACTS.md) requires: real repository, immutable revision,
+subset/files/split, actual schema, tested adapter, source license/provenance
+review and explicit operator approval. The gate that enforces it
+(`AdmissionGate.evaluate`) needs:
+
+| Requirement | Source | State |
+|---|---|---|
+| Probe evidence `accessible`, `real_observed`, with revision, verified schema and fingerprint | live probe | **missing**; stored record is `budget_exhausted` |
+| Declared license known | probe | missing until the probe reads the card |
+| Decision matches evidence source, view, provider, repository, revision, fingerprint | decision | prepared |
+| Essential views: pinned revision, `essential_web_bnormal`, exact B-normal selector binding | decision | prepared |
+| `license_review = approved` | review + operator | review written |
+| `benchmark_risk = clean` | review + operator | review written |
+| `operator_approved = true` | operator | pending |
+
+C04 asks the probe for schema and source identity only. Yield and cost are not
+admission fields; they belong to the production probe and calibration.
+
+### Source, license and provenance review
+
+[source-rights-review.json](../evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/source-rights-review.json),
+[attribution-plan.json](../evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/attribution-plan.json) and
+[external-source-evidence.json](../evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/external-source-evidence.json).
+This is an engineering and data-governance review, not legal advice.
+
+- **Identity**: `EssentialAI/essential-web-v1.0` at
+  `ce4eccc7e9604667b6d7f32cb6274b8b41f3113d`; public, ungated; no access terms
+  were accepted.
+- **License metadata**: `odc-by` in the dataset card front matter and in the
+  local repository metadata snapshot. It covers Essential AI's contributions.
+- **Attribution**: Essential-Web v1.0 under ODC-By with the arXiv:2506.14111
+  citation; Common Crawl named as upstream, with its Terms of Use.
+- **Underlying content**: the card says "We do not alter the license of any of
+  the underlying data." Per-page rights are unknown and this review does not
+  resolve them. No claim is made that every document is ODC-By.
+- **Provenance**: Common Crawl → DCLM pool (89 snapshots, 2013-20 to 2022-49)
+  plus 12 snapshots (2023-06 to 2024-38) → deduplication, quality filtering,
+  taxonomy labeling → Essential-Web → frozen B-normal selector.
+- **Privacy and third-party risk**: crawled text can hold personal, copyrighted
+  or restricted material; the card documents no removal of personal information.
+- **Use**: research pretraining corpus under `strict_research`. Redistribution,
+  weight publication and commercial use are not covered.
+- **Mitigation**: locators and upstream ids are kept so documents can be traced
+  and removed; no ownership claim; removal means excluding locators and
+  refreezing the pool (there is no automated takedown service).
+
+The agent read the card, the Common Crawl terms and the arXiv abstract through
+its WebFetch tool. That tool returns a model-made summary, so those
+observations carry no byte hash. The live schema probe records the card's
+SHA-256 at the pinned revision. The Common Crawl terms also contain a user
+indemnification covering AI training; the operator should read the full terms.
+
+### Benchmark contamination review
+
+[benchmark-risk-review.json](../evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/benchmark-risk-review.json).
+Contamination with BLiMP, ARC-Easy, HellaSwag and PIQA is **possible**; nothing
+shows the source was decontaminated, and no Essential-Web text has been scanned
+against benchmark text. Zero contamination is not claimed.
+
+The existing mechanism is C05 benchmark exclusion (`xlm.data.exclusion`:
+full-example hash and informative-span matching, with receipts). The review
+binds it as the mitigation and separates two permissions:
+
+- acquire and pretrain: **yes**;
+- claim uncontaminated benchmark results: **no**, until a C05 exclusion receipt
+  exists over the frozen pool.
+
+Two limits are recorded. The matcher holds its documents in memory and has not
+been run or sized for the Mix-01 pool, and no command applies it during pool
+freeze, so a pool frozen today would record `none_declared`.
+
+**Judgment call to confirm.** The gate field `benchmark_risk` has three values
+and admits only `clean`; there is no risk-accepted-with-mitigation value and
+none was added. The field's stated purpose is to disable benchmark-containing
+blends pending a component audit. Essential-Web is not such a blend, so the
+prepared decision records `clean` in that sense only, and the decision notes
+say so in words. If you read `clean` as a statement about the corpus itself,
+the honest value is `suspect`, the gate refuses, and admission needs a versioned
+contract amendment first.
+
+### Bootstrap: the contradiction and the route taken
+
+The shared production probe needs about 330 requests, so it is a production
+plan and needs prior admission; admission needs accessible probe evidence. The
+generic `data probe` cannot supply it: it never verifies a schema without card
+metadata, and for this repository its metadata request exceeds the body limit.
+This is a circular dependency in the tooling, not in C04 or C13.
+
+A second blocker was found. The artifact store never replaces a destination,
+and `probe_essential_web_essential_science` already holds the
+`budget_exhausted` record. No new evidence for that view could be published at
+all.
+
+Route 1 (adopting Phase-P evidence) was **not** taken: neither C04 nor
+`ProbeEvidenceRecord` has an adoption or equivalence mechanism. Route 3 (a
+contract amendment) was not needed; the pilot ceiling stays at 100.
+
+**Route 2 was implemented**: a dedicated schema and source-identity probe.
+
+| Operation | Bytes | Establishes |
+|---|---:|---|
+| `README.md` at the pinned revision | ≤ 1 MiB | card SHA-256, license, commit header when served |
+| file bytes 0–3 | 4 | Parquet header, remote length, ETag |
+| last 8 bytes | 8 | footer length |
+| footer | 203,268 | schema, row groups, codecs |
+
+Four logical operations, about 8 physical requests with one redirect each; hard
+cap **24 requests**, 8 MiB, 15 s per request, 120 s overall, one worker. The
+probe decodes no row and never reads the text column.
+
+It refuses on: altered plan, wrong repository, revision, adapter or selector
+binding; a card served from another commit; a license other than `odc-by`;
+changed file length, ETag or footer bytes; a schema digest other than the one
+the selector was frozen on; missing `text`, `eai_taxonomy` or `quality_signals`;
+a non-string `text`; a projection the production reader cannot decode; a first
+row group shorter than 2,048 rows.
+
+Expected values come from the retained Phase-P footer of the first calibration
+file (`data/crawl=CC-MAIN-2014-15/train-01860-of-02772.parquet`). All eight
+retained footers share one schema. These are planning evidence; the live probe
+observes each value again.
+[schema-probe-plan.json](../evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/schema-probe-plan.json),
+digest `0b887739d5bac0a321d5b312a9f4d7a955e1851baaec7f8dcfede5a5bdedd3b4`.
+
+Not established by this probe, and left to the production probe: row decode
+through the production reader, selector yield, retained bytes and transfer cost.
+A row-level check under 100 requests would need a second, coalescing reader;
+the certified reader issues at least one request per leaf (101 leaves).
+
+**Supersession.** Probe evidence and decisions can now be published as
+`<id>.attemptNN`. The loaders resolve the newest attempt, check that the record
+names the requested source and view, and return nothing when the newest attempt
+is damaged (they never fall back to older evidence). The `budget_exhausted`
+record stays in the store untouched.
+
+### Admission decisions
+
+[admission-decisions.json](../evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/admission-decisions.json)
+holds one **prepared, not recorded** decision per view. Each binds repository,
+revision, adapter and its code hash, the B-normal selector identity, component,
+canonicalization path, resource contract and the SHA-256 of all four review
+files. The fingerprint is empty until the live probe supplies it.
+
+The gate was run offline on a replay of the retained real footer with an
+authored card. It refuses that evidence as `synthetic_fixture`, as it should.
+Relabeling the replay in memory shows every other criterion passes, so nothing
+but live evidence and approval is missing. Nothing was written to `G:\XLM`.
+
+The earlier refusal records in
+`ESSENTIAL-WEB-PRODUCTION-READINESS/admission-decisions.json` are unchanged.
+
+### Production probe and calibration
+
+The shared probe keeps its frozen plan: 256 rows, 128 MiB, 330 requests, one
+worker, 15 s requests, 600 s deadline, plan hash `04db5c76…52b04c`. It
+classifies as **production** and is refused without stored admission or
+without a matching authorization hash
+([dry result](../evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/production-probe-authorization-dry.json)).
+An authored-store test shows that after admission the fetch gate resolves it
+and the operator script's own `data plan` command reproduces the same hash.
+
+Calibration is unchanged: 16,384 rows, 8 × 2,048, digest
+`a6cab8cd58a127b77dd130249147f3541ac4575f3ea8369bf248879fd52e89b0`. All 26
+calibration files hash-match the manifest sealed at `57cb42f`
+([proof](../evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP/calibration-unchanged.json)).
+
+### Next operator commands
+
+Not executed. Run from the authoritative checkout.
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass
+Set-Location -LiteralPath 'F:\Project\xlm-data-ultrax'
+. .\scripts\operator_storage.ps1
+$B = 'docs/implementation/evidence/ESSENTIAL-WEB-ADMISSION-BOOTSTRAP'
+$E = 'docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS'
+& "$B/future-schema-probe.ps1"                 # live, about 8 requests
+# Read the four review files in $B, then approve as the operator:
+& "$B/future-admit.ps1" -Operator '<your name>'
+& "$E/future-probe.ps1"                        # live, bounded production probe
+& "$E/future-calibration.ps1"                  # live, 16,384 rows
+```
+
+If the schema probe refuses, it writes a refusal receipt under
+`G:\XLM\calib\essential-web-production\schema-probe` and publishes nothing.
+
+### Readiness and requirement ledger
+
+| Check | Value | Status |
+|---|---|---|
+| selector_frozen | true | VERIFIED |
+| selector_integration_ok | true | VERIFIED |
+| source_revision_ok | true | VERIFIED |
+| admission reviews complete | true | IMPLEMENTED, VERIFIED by `check_reviews` |
+| production_admission_ok | **false** | BLOCKED on live schema probe and operator approval |
+| inventory_ready | true | VERIFIED |
+| malformed_policy_ready | true | VERIFIED |
+| transfer_strategy_ready | true | VERIFIED model |
+| probe_plan_ready | true | IMPLEMENTED, VERIFIED offline; live NOT RUN |
+| calibration_plan_ready | true | VERIFIED unchanged |
+| acquisition_plan_ready | false | BLOCKED: admission, then measured science capacity |
+| live schema probe / live probe / live calibration | false | NOT RUN |
+| full and fast repository selections, CUDA | — | NOT RUN, OUT OF SCOPE |
+
+Remaining live-only items: the schema probe record, the operator approval, and
+the measured science retained bytes, tokens per input row and transfer per
+input row.
+
+Open limitations: the probe's live behavior is untested (ETag form, redirect
+count and the commit header are assumptions checked fail-closed); two existing
+acquisition tests fail under this machine's long `TEMP` path and pass with a
+short one; the C05 matcher is not yet wired or sized for the Mix-01 pool.
+
+---
+
+## Previous state at commit 57cb42f (preserved)
+
+The text below is the earlier report, unchanged. Its blockers A and B are addressed above; its verdict and readiness table describe that earlier state.
+
 **ESSENTIAL-WEB PRODUCTION READINESS BLOCKED**
 
 Offline hardening and the calibration freeze are implemented. Live execution is

@@ -1,3 +1,18 @@
+> **ESSENTIAL-WEB ADMISSION BOOTSTRAP (2026-09-30, offline): READY FOR LIVE
+> ESSENTIAL-WEB PROBE AND CALIBRATION.** The C04 rights/provenance/attribution
+> and benchmark-risk reviews are written and bound to revision `ce4eccc…`. A
+> footer-only schema probe (4 operations, about 8 physical requests, cap 24)
+> replaces the 330-request probe as the admission bootstrap; C13's 100-request
+> pilot ceiling is unchanged. Probe evidence and decisions now supersede by
+> attempt, because the store never replaces the stored `budget_exhausted`
+> record. **Admission is still false**: it needs the live schema probe record
+> and the operator's approval. Calibration freeze is byte-identical
+> (`a6cab8cd…`). No project network request, probe, calibration, acquisition,
+> selector or mixture change, or push.
+> [Report and exact commands](reports/ESSENTIAL-WEB-PRODUCTION-READINESS.md).
+> Next: `future-schema-probe.ps1`, then `future-admit.ps1 -Operator <name>`,
+> then the frozen shared probe and calibration scripts.
+
 > **ESSENTIAL-WEB PRODUCTION READINESS (2026-09-30, offline): BLOCKED.**
 > B-normal remains frozen and reproduces both 4,096-row metadata replicates
 > exactly, with no overlap. Production admission now binds the exact selector;
