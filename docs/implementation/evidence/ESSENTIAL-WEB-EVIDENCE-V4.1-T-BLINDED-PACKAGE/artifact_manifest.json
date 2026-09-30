@@ -1,0 +1,35 @@
+{
+  "artifacts": {
+    "custodian_commitment.json": {
+      "bytes": 615,
+      "sha256": "b08994defdf73354b1802cff5d3b84d3299e4f1449d7ed5dd35cf4c104041170"
+    },
+    "leakage_audit.json": {
+      "bytes": 5011,
+      "sha256": "093a7083dd48bbfba8cbce41a68bd306792451ff65407d997dc88b51d686c88e"
+    },
+    "m_seal_parent.json": {
+      "bytes": 659,
+      "sha256": "796d5b7f12214c895c3526fa87870c93b7325080367300bae015c7f91253927c"
+    },
+    "package_manifest.json": {
+      "bytes": 9809,
+      "sha256": "35a330201cd9d26b9a9788150366ff21d1fb954ebc28b1e7d3cd00709a327fd1"
+    },
+    "reviewer1_commitment.json": {
+      "bytes": 515,
+      "sha256": "3b64865e6f6b170ca382e5da4b29979904ef801165bf1b8d91090685a349cd4d"
+    },
+    "reviewer2_commitment.json": {
+      "bytes": 515,
+      "sha256": "d161f73a56d7255e87ce84e87dd0ff34f5bec5a9c29b19b7c81b6587d10ce5ba"
+    },
+    "rubric_binding.json": {
+      "bytes": 1325,
+      "sha256": "d56e1c0b14bcd2d113b090d93b52b7fe0fe329dec58e4ce91099ae2c5be3e0b1"
+    }
+  },
+  "digest": "78eaad3b1c533cf1d894effcd9ff75777c37072f922f1442288aa76790d96848",
+  "kind": "essential_web_t_package_artifact_manifest",
+  "package_digest": "18c95b95699922db325626fd8776c2317231c51666f9bcc42898f5811dabc58d"
+}

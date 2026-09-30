@@ -1,0 +1,17 @@
+{
+  "bytes": 305524,
+  "files": 8,
+  "key_bytes": 32,
+  "key_commitment": "884214cfdd3b9db3ec21503acb3bda80f50b5ddc18fac502d5d9b4611e2e01e9",
+  "master_ledger": {
+    "bytes": 145102,
+    "sha256": "72eadb834b523e26844caceb976dc77276f6e3fcf666edcf40c5cc1faa0aeb3a"
+  },
+  "materialization": "first_materialization",
+  "sealed_mapping": {
+    "bytes": 32827,
+    "sha256": "ad7e3306f223fa37b9a38570655cde99cc46339b66200ccdea3433f8a453687e"
+  },
+  "tree_digest": "915c782f61c5b9577aa88aa5d50c16c24a76cacddcfea613064face6d72fc2a3",
+  "tree_scope": "custodian files except the key file and the package manifest copy"
+}

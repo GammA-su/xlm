@@ -1,0 +1,164 @@
+{
+ "reviewer-1": {
+  "files": 356,
+  "bytes": 2268558,
+  "exact_value_hits": {
+   "key_raw": 0,
+   "key_hex": 0,
+   "key_b64": 0,
+   "repository": 0,
+   "revision": 0,
+   "crawl_id": 0,
+   "parquet": 0,
+   "condition": 0,
+   "ownership": 0,
+   "source_file": 0,
+   "text_sha256": 0,
+   "selection_digest": 0,
+   "unreviewable_id": 0,
+   "custodian_path": 0
+  },
+  "names_other_reviewer": 0,
+  "generic_words_outside_document_text": {
+   "selector": 0,
+   "locator": 0,
+   "stratum": 0,
+   "provenance": 0,
+   "crawl": 0,
+   "census": 0,
+   "hypothesis": 0,
+   "sha256": 0,
+   "hmac": 0,
+   "custodian": 0,
+   "policy": 0
+  },
+  "generic_words_in_files_holding_document_text": {
+   "selector": 0,
+   "locator": 0,
+   "stratum": 0,
+   "provenance": 0,
+   "crawl": 0,
+   "census": 0,
+   "hypothesis": 3,
+   "sha256": 0,
+   "hmac": 0,
+   "custodian": 0,
+   "policy": 144
+  },
+  "items": 117,
+  "unique_ids": 117,
+  "package_top_keys": [
+   "forms",
+   "key_commitment",
+   "kind",
+   "order",
+   "order_digest",
+   "protocol_version",
+   "reviewer",
+   "rubric_version"
+  ],
+  "form_keys": [
+   "labels",
+   "review_id",
+   "reviewer",
+   "rubric_version",
+   "text"
+  ],
+  "subdirs": [
+   "forms",
+   "reviewer-1",
+   "texts",
+   "view"
+  ]
+ },
+ "reviewer-2": {
+  "files": 356,
+  "bytes": 2268558,
+  "exact_value_hits": {
+   "key_raw": 0,
+   "key_hex": 0,
+   "key_b64": 0,
+   "repository": 0,
+   "revision": 0,
+   "crawl_id": 0,
+   "parquet": 0,
+   "condition": 0,
+   "ownership": 0,
+   "source_file": 0,
+   "text_sha256": 0,
+   "selection_digest": 0,
+   "unreviewable_id": 0,
+   "custodian_path": 0
+  },
+  "names_other_reviewer": 0,
+  "generic_words_outside_document_text": {
+   "selector": 0,
+   "locator": 0,
+   "stratum": 0,
+   "provenance": 0,
+   "crawl": 0,
+   "census": 0,
+   "hypothesis": 0,
+   "sha256": 0,
+   "hmac": 0,
+   "custodian": 0,
+   "policy": 0
+  },
+  "generic_words_in_files_holding_document_text": {
+   "selector": 0,
+   "locator": 0,
+   "stratum": 0,
+   "provenance": 0,
+   "crawl": 0,
+   "census": 0,
+   "hypothesis": 3,
+   "sha256": 0,
+   "hmac": 0,
+   "custodian": 0,
+   "policy": 144
+  },
+  "items": 117,
+  "unique_ids": 117,
+  "package_top_keys": [
+   "forms",
+   "key_commitment",
+   "kind",
+   "order",
+   "order_digest",
+   "protocol_version",
+   "reviewer",
+   "rubric_version"
+  ],
+  "form_keys": [
+   "labels",
+   "review_id",
+   "reviewer",
+   "rubric_version",
+   "text"
+  ],
+  "subdirs": [
+   "forms",
+   "reviewer-2",
+   "texts",
+   "view"
+  ]
+ },
+ "same_membership": true,
+ "ledger": {
+  "entries": 118,
+  "reviewable": 117,
+  "unreviewable": [
+   [
+    "unreviewable_full_document_due_to_size",
+    109974,
+    null,
+    {
+     "reviewer-1": null,
+     "reviewer-2": null
+    }
+   ]
+  ]
+ },
+ "structural_clean": true
+}
+exit=0

@@ -1,0 +1,28 @@
+{
+  "code_digest": "b8f9a31a5ae049c89e9daf3a3a3d3c9b77f98a36846f8212b2f15d80d44e38e0",
+  "counts": {
+    "master_entries": 118,
+    "max_reviewable_document_bytes": 38893,
+    "missing_or_invalid": 0,
+    "oversized_document_bytes": [
+      109974
+    ],
+    "retained_text_bytes": 671351,
+    "reviewable": 117,
+    "unreviewable_oversized": 1
+  },
+  "key_commitment": "884214cfdd3b9db3ec21503acb3bda80f50b5ddc18fac502d5d9b4611e2e01e9",
+  "leakage_content_level_hits": {},
+  "leakage_structural_hits": 0,
+  "m_seal_digest": "afc972ccf570a5587bf7bd3b6b8d1d728a09f2230c49f1b0a19c1c74cda0b9bc",
+  "materialization": "first_materialization",
+  "order_digests": {
+    "reviewer-1": "3e7b52dd85342ad1380273c46843262f5971399e2e18feff8e31a71c266ab378",
+    "reviewer-2": "d1c901f1ff7d48e271bf19800098aa184b91beb2415cef7f85132dd9f29fa876"
+  },
+  "package_digest": "18c95b95699922db325626fd8776c2317231c51666f9bcc42898f5811dabc58d",
+  "package_root": "F:\\XLM-Review\\essential-web-v4.1-t",
+  "payload_bytes": 4842672,
+  "verified": true
+}
+exit=0

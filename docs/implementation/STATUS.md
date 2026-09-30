@@ -1,3 +1,23 @@
+> **ESSENTIAL-WEB V4.1 T BLINDED PACKAGE SEALED (2026-09-30).**
+> The frozen 118-locator Arm-T selection is materialized as a custodian master
+> ledger plus two blinded reviewer packages in the access-restricted external
+> root `F:\XLM-Review\essential-web-v4.1-t` (722 files, 4,852,481 bytes),
+> outside Git and both G: roots. M seal `afc972cc…` verified before and after
+> and bound as parent. No prior K/IDs/orders existed: first materialization,
+> not a reselection; frozen `ew2-` IDs, namespace v2.0, order seed 20260928.
+> Ledger 118 = 117 reviewable + 1 oversized (no text, no excerpt, absent from
+> reviewer material). Each reviewer: 117 items, frozen order, verbatim
+> 18-dimension rubric, blank forms. Leakage audit over 712 reviewer files and
+> an independent scan: 0 structural hits. Package digest
+> `18c95b95699922db325626fd8776c2317231c51666f9bcc42898f5811dabc58d`, verified
+> by full recomputation. Git holds hashes and counts only: no text, K, review
+> ID or mapping. Focused tests 39, identity 5, blinding/rubric 7, M analysis
+> 29 passed; fast/full selections NOT RUN. Both G: roots unchanged; no
+> network, labels, unblinding, selector decision or push. Reviewers must not
+> have repository access (committed entry bindings map text hashes to source).
+> [T package report and next action](reports/ESSENTIAL-WEB-EVIDENCE-V4.1-T-BLINDED-PACKAGE.md).
+> Next: two independent human reviewers label their own directory only.
+
 > **ESSENTIAL-WEB V4.1 M SELECTOR EVIDENCE SEALED (2026-09-30).**
 > The unchanged frozen evaluator and policy (A/B/C/D, normal/strict) ran on the
 > verified 4,096-row Phase-D M replicate through a checked

@@ -1,0 +1,43 @@
+{
+  "blank_form_digest": "240b646438c6a24761f1004cb73f14c6b22dc1a4e3bbd39cb9635a3e66fa6ec5",
+  "dimension_names": [
+    "english_predominance",
+    "english_fluency",
+    "boilerplate_fraction",
+    "boilerplate_severity",
+    "standalone_completeness",
+    "figure_dependency",
+    "external_link_dependency",
+    "actual_genre",
+    "component_fit",
+    "promotion",
+    "science_substance",
+    "apparent_errors",
+    "checkability",
+    "practical_actionability",
+    "qa_answer",
+    "prose_coherence",
+    "fragmentation",
+    "overall_disposition"
+  ],
+  "dimensions": 18,
+  "protocol_section_8": {
+    "bytes": 8358,
+    "sha256": "2afa915de92597e66f214a5dea89f76af04387773cabd62c87639eb2aa57b56d"
+  },
+  "rubric_code": {
+    "bytes": 18134,
+    "sha256": "47bbcbb3da52d61683977c8d32af545036605764566a0ba9e572ba80eacd045b"
+  },
+  "rubric_json": {
+    "bytes": 12606,
+    "sha256": "7fb5d7b2d81d0511bc53ae1ca765f2ccbd27a8fdc2f2d330fe6ebfda10a69d42"
+  },
+  "rubric_version": "essential-web-evidence-v2.0-rubric-1",
+  "scientific_protocol": {
+    "bytes": 48628,
+    "sha256": "c32dff47dc6faeb3733a391a79744ba7a887e26ade157c399e806f0f47a99618"
+  },
+  "structure_digest": "383490213881a276b0faa1ad4411a32df35cb8d7d8a9c7a9c2924b47de222355",
+  "wording": "verbatim protocol section 8; no modernization or simplification"
+}

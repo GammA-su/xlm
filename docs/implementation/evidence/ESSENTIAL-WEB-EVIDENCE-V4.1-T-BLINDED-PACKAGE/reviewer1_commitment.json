@@ -1,0 +1,13 @@
+{
+  "bytes": 2268558,
+  "files": 356,
+  "order_digest": "3e7b52dd85342ad1380273c46843262f5971399e2e18feff8e31a71c266ab378",
+  "order_rule": "ascending H([essential-web-evidence-v2.0,review-order,20260928,reviewer-1,review_id]), tie by review ID",
+  "package_json": {
+    "bytes": 711867,
+    "sha256": "6123d546f76707404b717c3723b2da459dff15dbb4e7b192f88f7aadfaef8d63"
+  },
+  "reviewable_items": 117,
+  "reviewer": "reviewer-1",
+  "tree_digest": "e7a3aecf32e48097d5d601f80141905ed2f3d56ba57e830a27dd14be5fac4761"
+}
