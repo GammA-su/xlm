@@ -60,6 +60,8 @@ from xlm.data.sources import essential_web_bulk as bulk
 from xlm.data.sources import essential_web_calibration as calibration
 from xlm.data.sources import essential_web_fast as fast
 from xlm.data.sources import essential_web_local as local
+from xlm.data.sources import essential_web_recovery as recovery
+from xlm.data.sources.essential_web_monitor import Monitor
 
 REPO = Path(__file__).resolve().parents[1]
 #: The checkout that holds the executing code, even when tests relocate REPO.
@@ -91,6 +93,7 @@ class Campaign:
     root: Path
     scratch_root: Path | None
     repo: Path
+    recovery: dict[str, Any] | None = None
 
     @property
     def plans(self) -> Path:
@@ -164,7 +167,11 @@ def load_campaign(
     historical_path = repo / config["supersedes"]["path"]
     historical = historical_tool.load_campaign(historical_path, data_root, repo)
     fast.check_same_science(config, historical.config)
-    if fast.transport_code_identity(CODE_REPO) != config["transport_code_sha256"]:
+    amendment = recovery.load_manifest(CODE_REPO, config)
+    if (
+        fast.transport_code_identity(CODE_REPO) != config["transport_code_sha256"]
+        and amendment is None
+    ):
         raise bulk.BulkError("transport or local-processing code changed since the freeze")
     check_roots(data_root, scratch_root)
     return Campaign(
@@ -173,6 +180,7 @@ def load_campaign(
         root=data_root,
         scratch_root=scratch_root,
         repo=repo,
+        recovery=amendment,
     )
 
 
@@ -572,6 +580,9 @@ def cmd_status(args: argparse.Namespace) -> int:
 
 
 def unit_job(campaign: Campaign, plan: AcquisitionPlan, name: str, staging: Path) -> dict[str, Any]:
+    limits = campaign.process_limits()
+    if campaign.recovery is not None and name == campaign.recovery["file"]:
+        limits["max_record_bytes"] = campaign.recovery["max_record_bytes"]
     return {
         "source_file": name,
         "staging_dir": str(staging),
@@ -582,7 +593,7 @@ def unit_job(campaign: Campaign, plan: AcquisitionPlan, name: str, staging: Path
         "plan_id": plan.plan_id,
         "plan_hash": plan.plan_hash,
         "selection_hash": plan.compute_selection_hash(),
-        "limits": campaign.process_limits(),
+        "limits": limits,
         "row_range": None,
     }
 
@@ -598,7 +609,14 @@ def seal_unit(
 ) -> dict[str, Any]:
     """Cross-check one adapted unit, write its receipt and publish it atomically."""
     staging = Path(str(result["staging_dir"]))
-    limit = int(campaign.config["limits"]["max_record_bytes"]) + 65536
+    limit = (
+        int(
+            unit.job["limits"]["max_record_bytes"]
+            if unit.job
+            else campaign.config["limits"]["max_record_bytes"]
+        )
+        + 65536
+    )
     for view in calibration.VIEWS:
         documents = staging / view / "documents.jsonl"
         worker = result["views"][view]
@@ -620,6 +638,17 @@ def seal_unit(
             "accounting": "source reused from the durable store; its transfer belongs to an "
             "earlier interrupted run whose scratch state no longer exists",
         }
+        if unit.state.is_file():
+            previous = read_json(unit.state)
+            metrics.update(
+                {
+                    "transferred_bytes": int(previous["charged_bytes"]),
+                    "requests": int(previous["requests"]),
+                    "retries": int(previous["retries"]),
+                    "accounting": "retained source reused; prior transfer charged from "
+                    "the identity-matched interrupted checkpoint",
+                }
+            )
     else:
         metrics = {
             key: value for key, value in asdict(transfer).items() if key not in ("identity", "path")
@@ -647,6 +676,14 @@ def seal_unit(
         + identity_path(durable).stat().st_size,
         sealed_at=datetime.now(UTC).isoformat(),
     )
+    if campaign.recovery is not None:
+        receipt["recovery"] = {
+            "digest": campaign.recovery["digest"],
+            "effective_max_record_bytes": unit.job["limits"]["max_record_bytes"]
+            if unit.job
+            else None,
+        }
+        receipt = self_digest(receipt)
     write_json(staging / local.RECEIPT_FILENAME, receipt)
     final = campaign.unit_dir(batch, rank)
     if final.exists():
@@ -676,6 +713,10 @@ def cmd_run(args: argparse.Namespace) -> int:
     if gate["decision"] != "RUN":
         return EXIT_REFUSED
     record = batch_record(campaign, args.batch)
+    if campaign.recovery is not None:
+        if args.batch != campaign.recovery["batch"]:
+            raise bulk.BulkError("this recovery amendment authorizes Batch 0 only")
+        recovery.check_authorization(campaign.recovery, campaign.batch_dir(args.batch))
     directory = campaign.batch_dir(args.batch)
     if not (directory / "batch.plan.json").is_file():
         raise bulk.BulkError("batch is not authorized: run authorize with the printed digest")
@@ -701,46 +742,61 @@ def cmd_run(args: argparse.Namespace) -> int:
     scratch_dir.mkdir(parents=True, exist_ok=True)
     try:
         with FileLock(str(campaign.plans / "run.lock"), timeout=1):
-            return execute_batch(campaign, plan, record, scratch_dir, downloads, processes)
+            return execute_batch(
+                campaign, plan, record, scratch_dir, downloads, processes, offline=args.offline
+            )
     except Timeout as exc:
         raise bulk.BulkError("another run of this campaign is active") from exc
 
 
-def execute_batch(
+def prepare_units(
     campaign: Campaign,
     plan: AcquisitionPlan,
     record: dict[str, Any],
     scratch_dir: Path,
-    downloads: int,
-    processes: int,
-) -> int:
+    resume: dict[str, Any],
+) -> tuple[list[local.Unit], dict[str, int], int]:
     batch = int(record["batch"])
     staging = campaign.staging(batch)
-    # Private staging of an interrupted run is never evidence: no receipt names it.
-    shutil.rmtree(staging, ignore_errors=True)
     units: list[local.Unit] = []
     ranks: dict[str, int] = {}
-    charged = 0
-    for position, name in enumerate(record["files"]):
-        rank = campaign.rank(batch, position)
+    charged = sum(int(r["transferred_bytes"]) for r in resume["receipts"])
+    for pending in resume["remaining"]:
+        name, rank = pending["file"], pending["rank"]
         key = f"f{rank:05d}"
         partial, state = scratch_dir / f"{key}.parquet.part", scratch_dir / f"{key}.state.json"
-        final = campaign.unit_dir(batch, rank)
-        if (final / local.RECEIPT_FILENAME).is_file():
-            charged += int(
-                load_receipt(final / local.RECEIPT_FILENAME, campaign)["transferred_bytes"]
-            )
-            partial.unlink(missing_ok=True)
-            state.unlink(missing_ok=True)
-            continue
-        if final.exists():
-            raise bulk.BulkError(f"unit {key} exists without a receipt; review before rerunning")
         ranks[key] = rank
         job = unit_job(campaign, plan, name, staging / key)
+        job["progress_path"] = str(staging / f"{key}.progress.json")
         durable = campaign.raw_path(name)
         if state.is_file():
             charged += int(read_json(state).get("charged_bytes", 0))
-        retained = None if state.is_file() else load_durable_source(durable)
+        retained = load_durable_source(durable)
+        if retained is not None and (
+            retained["source_file"] != name
+            or retained["revision"] != plan.revision
+            or retained["repository"] != plan.repository
+        ):
+            raise bulk.BulkError(f"retained source identity differs for {key}")
+        if retained is not None and state.is_file():
+            previous = read_json(state)
+            if (
+                previous.get("name") != name
+                or previous.get("url") != source_url(plan, name)
+                or previous.get("sha256") != retained["sha256"]
+                or previous.get("length") != retained["length"]
+                or previous.get("etag") != retained["etag"]
+                or not previous.get("complete")
+            ):
+                raise bulk.BulkError(f"retained source checkpoint identity differs for {key}")
+        if campaign.recovery is not None and name == campaign.recovery["file"]:
+            if retained is None or retained["sha256"] != campaign.recovery["source_sha256"]:
+                raise bulk.BulkError(
+                    "recovery requires its exact retained source; download refused"
+                )
+        if retained is not None and not state.is_file():
+            # A promoted file still counts against the original transfer ceiling.
+            charged += int(retained["length"])
         if retained is not None:
             units.append(
                 local.Unit(
@@ -765,6 +821,81 @@ def execute_batch(
                     expected_sha256=plan.expected_file_digests.get(name),
                 )
             )
+    return units, ranks, charged
+
+
+def cmd_resume_check(args: argparse.Namespace) -> int:
+    """Read-only verification using the exact executor's scheduling path."""
+    campaign = load_campaign(args.campaign, args.data_root, args.scratch_root)
+    record = batch_record(campaign, args.batch)
+    plan = load_acquisition_plan(campaign.batch_dir(args.batch) / "batch.plan.json")
+    if plan.plan_hash != record["plan_hash"] or plan.selected_files != record["files"]:
+        raise bulk.BulkError("authorized plan differs from batch")
+    resume = recovery.resume_state(campaign, record)
+    units, _, _ = prepare_units(
+        campaign, plan, record, campaign.scratch(f"b{args.batch:04d}"), resume
+    )
+    result = {k: v for k, v in resume.items() if k != "receipts"}
+    result["network_units"] = sum(u.url is not None for u in units)
+    result["scheduled_keys"] = [u.key for u in units]
+    result["recovery_digest"] = None if campaign.recovery is None else campaign.recovery["digest"]
+    result["recovery_authorized"] = campaign.recovery is None
+    if campaign.recovery is not None:
+        try:
+            recovery.check_authorization(campaign.recovery, campaign.batch_dir(args.batch))
+            result["recovery_authorized"] = True
+        except bulk.BulkError:
+            pass
+    if args.output is not None:
+        write_json(args.output, result)
+    print(json.dumps(result, indent=2))
+    return 0
+
+
+def cmd_authorize_recovery(args: argparse.Namespace) -> int:
+    campaign = load_campaign(args.campaign, args.data_root, args.scratch_root)
+    amendment = campaign.recovery
+    if amendment is None or args.digest != amendment["digest"] or not args.operator.strip():
+        raise bulk.BulkError("recovery digest/operator does not match the frozen amendment")
+    record = batch_record(campaign, int(amendment["batch"]))
+    if record["digest"] != amendment["batch_digest"]:
+        raise bulk.BulkError("recovery batch identity differs")
+    write_once(
+        campaign.batch_dir(int(amendment["batch"])) / "recovery-authorization.json",
+        {"digest": args.digest, "operator": args.operator},
+    )
+    print(f"authorized recovery {args.digest}")
+    return 0
+
+
+def execute_batch(
+    campaign: Campaign,
+    plan: AcquisitionPlan,
+    record: dict[str, Any],
+    scratch_dir: Path,
+    downloads: int,
+    processes: int,
+    *,
+    offline: bool = False,
+) -> int:
+    batch = int(record["batch"])
+    resume = recovery.resume_state(campaign, record)
+    if campaign.recovery is not None:
+        if (
+            batch != campaign.recovery["batch"]
+            or record["digest"] != campaign.recovery["batch_digest"]
+        ):
+            raise bulk.BulkError("recovery is bound to another batch plan")
+        recovery.check_authorization(campaign.recovery, campaign.batch_dir(batch))
+    units, ranks, charged = prepare_units(campaign, plan, record, scratch_dir, resume)
+    if offline and any(unit.url is not None for unit in units):
+        raise bulk.BulkError("offline resume requires every remaining source to be retained")
+    staging = campaign.staging(batch)
+    # Only private interrupted staging, never sealed output. Guard the deletion root.
+    expected = (campaign.root / str(campaign.config["roots"]["canonical"]) / ".staging").resolve()
+    if not staging.resolve().is_relative_to(expected):
+        raise bulk.BulkError("staging deletion escapes the campaign staging root")
+    shutil.rmtree(staging, ignore_errors=True)
     limits = campaign.transfer_limits()
     scratch = ScratchBudget(
         campaign.scratch(),
@@ -776,6 +907,17 @@ def execute_batch(
     )
     transfers: list[TransferResult] = []
     sealed: list[dict[str, Any]] = []
+    cumulative, _ = campaign_state(campaign)
+    monitor = Monitor(
+        campaign,
+        batch,
+        resume,
+        units,
+        scratch,
+        meter,
+        sys.stdout,
+        cumulative["sealed_including_incomplete_batch"]["views"],
+    )
 
     def on_done(
         unit: local.Unit, transfer: TransferResult | None, result: dict[str, Any] | None
@@ -786,19 +928,8 @@ def execute_batch(
             transfers.append(transfer)
         receipt = seal_unit(campaign, plan, batch, ranks[unit.key], unit, transfer, result)
         sealed.append(receipt)
-        print(
-            f"sealed {unit.key} rows={receipt['rows']:,} "
-            f"science/practical/prose="
-            f"{'/'.join(str(receipt['views'][v]['documents']) for v in calibration.VIEWS)} "
-            f"{unit.source_file}",
-            flush=True,
-        )
+        monitor.sealed(unit.key, receipt)
 
-    print(
-        f"batch {batch}: {len(units)} unit(s) to do, {len(record['files']) - len(units)} sealed; "
-        f"download workers {downloads}, process workers {processes}",
-        flush=True,
-    )
     sampler = Sampler()
     sampler.start()
     stats: dict[str, Any] = {}
@@ -820,8 +951,13 @@ def execute_batch(
                     revision=plan.revision,
                 ),
                 on_done=on_done,
+                on_progress=monitor.update,
             )
+        monitor.update(
+            {"downloading": [], "processing": [], "process_workers": 0, "backlog": 0}, force=True
+        )
     finally:
+        monitor.dashboard.clear()
         system = sampler.stop()
         wall = float(stats.get("wall_seconds", system.get("seconds", 0.0)) or 0.0)
         rows = sum(int(receipt["rows"]) for receipt in sealed)
@@ -1803,10 +1939,16 @@ def build_parser() -> argparse.ArgumentParser:
         ("show", cmd_show, "Show one batch's deterministic membership (offline)."),
         ("plan", cmd_plan, "Bind membership and ceilings; print the digest (offline)."),
         ("status", cmd_status, "Batch unit states, cumulative yield and stop decision."),
+        ("resume-check", cmd_resume_check, "OFFLINE: hash receipts and dry-plan remaining units."),
     ):
         command = sub.add_parser(name, help=text)
         command.add_argument("--batch", type=int, required=True)
         command.set_defaults(func=func)
+    sub.choices["resume-check"].add_argument("--output", type=Path, default=None)
+    recover = sub.add_parser("authorize-recovery", help="OFFLINE: authorize the frozen recovery.")
+    recover.add_argument("--digest", required=True)
+    recover.add_argument("--operator", required=True)
+    recover.set_defaults(func=cmd_authorize_recovery)
     authorize = sub.add_parser("authorize", help="Record operator authorization; mint the plan.")
     authorize.add_argument("--batch", type=int, required=True)
     authorize.add_argument("--digest", required=True)
@@ -1822,6 +1964,7 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--workers", type=int, default=None)
     run.add_argument("--process-workers", type=int, default=None)
     run.add_argument("--top-up-reason", default="")
+    run.add_argument("--offline", action="store_true", help="Refuse all download work.")
     run.set_defaults(func=cmd_run)
     account_parser = sub.add_parser("account", help="Cumulative yield and the stop decision.")
     account_parser.set_defaults(func=cmd_account)

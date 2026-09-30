@@ -154,6 +154,7 @@ def adapt_source_file(
     identity: Mapping[str, Any],
     limits: Mapping[str, Any],
     row_range: tuple[int, int] | None = None,
+    progress_path: Path | None = None,
 ) -> dict[str, Any]:
     """Adapt one verified local source Parquet into every view under ``output_dir``.
 
@@ -180,6 +181,33 @@ def adapt_source_file(
     raw_bytes = rows = max_record = 0
     counters: dict[str, int] = {}
     ledger_bound = int(limits["max_ledger_bytes"])
+    last_progress = 0.0
+
+    def progress() -> None:
+        nonlocal last_progress
+        if progress_path is None:
+            return
+        now = time.monotonic()
+        if now - last_progress < 1 and rows != stop - start:
+            return
+        last_progress = now
+        value = {
+            "rows": rows,
+            "total": stop - start,
+            "views": {
+                s.name: {"documents": s.accepted, "canonical_bytes": s.canonical_bytes}
+                for s in states
+            },
+            "malformed": max(
+                (s.codes.get("EssentialWebMalformedRowError", 0) for s in states), default=0
+            ),
+        }
+        progress_path.parent.mkdir(parents=True, exist_ok=True)
+        temporary = progress_path.with_suffix(".tmp")
+        temporary.write_text(json.dumps(value), encoding="utf-8")
+        os.replace(temporary, progress_path)
+
+    progress()
     try:
         for row_index, payload in selected_payloads(
             path,
@@ -241,6 +269,7 @@ def adapt_source_file(
                 state.documents.write_line(serialize_document(document).encode("utf-8") + b"\n")
                 state.accepted += 1
                 state.canonical_bytes += document.utf8_byte_count
+            progress()
     except BaseException:
         for state in states:
             try:
@@ -364,6 +393,7 @@ def process_unit(job: Mapping[str, Any]) -> dict[str, Any]:
         identity=dict(job["identity_record"]),
         limits=dict(job["limits"]),
         row_range=None if job.get("row_range") is None else tuple(job["row_range"]),
+        progress_path=Path(str(job["progress_path"])) if job.get("progress_path") else None,
     )
     result.update(
         staging_dir=str(staging),
@@ -407,6 +437,7 @@ def run_pipeline(
     on_done: Callable[[Unit, TransferResult | None, dict[str, Any] | None], None],
     process: Callable[[Mapping[str, Any]], dict[str, Any]] = process_unit,
     max_in_flight: int | None = None,
+    on_progress: Callable[[dict[str, Any]], None] | None = None,
 ) -> dict[str, Any]:
     """Download files concurrently while finished ones are processed in parallel.
 
@@ -434,15 +465,17 @@ def run_pipeline(
         "processed": 0,
     }
 
-    def fail(error: BaseException) -> None:
+    def fail(error: BaseException, key: str = "pipeline") -> None:
         failures.append(error)
         cancel.set()
+        if on_progress is not None:
+            on_progress({"failed": key, "exception": type(error).__name__})
 
     def finish(unit: Unit, transfer: TransferResult | None, result: dict[str, Any] | None) -> None:
         try:
             on_done(unit, transfer, result)
         except BaseException as exc:
-            fail(exc)
+            fail(exc, unit.key)
         if unit.key in held and not unit.partial.exists():
             scratch.release(unit.key)
             held.discard(unit.key)
@@ -463,7 +496,7 @@ def run_pipeline(
         try:
             result = process(job)
         except BaseException as exc:
-            fail(exc)
+            fail(exc, unit.key)
             return
         stats["processed"] += 1
         finish(unit, transfer, result)
@@ -506,6 +539,15 @@ def run_pipeline(
                 if not downloads and not processes:
                     break
                 pending: list[Future[Any]] = [*downloads, *processes]
+                if on_progress is not None:
+                    on_progress(
+                        {
+                            "downloading": [u.source_file for u in downloads.values()],
+                            "processing": [u.source_file for u, _ in processes.values()],
+                            "process_workers": min(process_workers, len(processes)),
+                            "backlog": max(0, len(processes) - process_workers),
+                        }
+                    )
                 done, _ = wait(pending, timeout=1.0, return_when=FIRST_COMPLETED)
                 if not failures and time.monotonic() - started > deadline_seconds:
                     fail(SourceTransferError("batch deadline exceeded; rerun to resume"))
@@ -514,7 +556,7 @@ def run_pipeline(
                     try:
                         transfer = stream.result()
                     except BaseException as exc:
-                        fail(exc)
+                        fail(exc, unit.key)
                         continue
                     if unit.job is None:
                         finish(unit, transfer, None)
@@ -525,7 +567,7 @@ def run_pipeline(
                     try:
                         result = worker.result()
                     except BaseException as exc:
-                        fail(exc)
+                        fail(exc, unit.key)
                         continue
                     stats["processed"] += 1
                     finish(unit, prior, result)

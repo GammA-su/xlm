@@ -1,5 +1,10 @@
 # Essential-Web fast bulk plan — 2026-09-30
 
+> **2026-09-30 recovery update:** Batch 0 has 31/32 verified seals. One retained
+> source needs a reviewed, file-specific record-bound amendment. Use the
+> [recovery report's offline-only restart command](ESSENTIAL-WEB-BATCH0-RECOVERY.md);
+> do not Prepare again or redownload. The original plan below is historical.
+
 **READY FOR HIGH-THROUGHPUT ESSENTIAL-WEB BATCH 0**
 
 > **Update, same day.** The live benchmark ran. Its only failure was the ETag rule described

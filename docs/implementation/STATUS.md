@@ -1,3 +1,21 @@
+> **ESSENTIAL-WEB BATCH-0 RECOVERY (2026-09-30, offline): READY TO RESUME
+> ESSENTIAL-WEB BATCH 0.** Authoritative receipts and hashes verify 31/32 sealed
+> (96.875%), only `f00026` remaining; its full source is retained. Row 58,327 is
+> structurally valid and B-normal practical: 11,494,172 encoded bytes exceed
+> the old 8,388,608 bound. An additive, hash-bound amendment permits exactly
+> 11,494,172 bytes for that file only. Original campaign, plan, authorization,
+> science and all 31 seals stay intact. Dry resume schedules one unit and zero
+> downloads; 341 sealed artifact sizes/mtimes are unchanged. Private offline
+> replay passes all 69,697 remaining rows in 47.5 s, sampled RSS 358.6 MB;
+> production remains 31/32. Focused regressions: 733 passed, zero skipped;
+> ruff/format/strict mypy clean. Full acceptance and CUDA NOT RUN.
+> Dashboard, durable events, smoothed overlap ETA
+> and sealed campaign target progress added without dependencies. Exact checks,
+> limitations and the new operator authorization digest are in the
+> [recovery report](reports/ESSENTIAL-WEB-BATCH0-RECOVERY.md). No external network,
+> redownload, production restart or push. Next: review the amendment and run the
+> report's `-Stage Resume -RecoveryAuthorize <digest>` command (offline-only).
+
 > **ESSENTIAL-WEB FAST TRANSPORT IDENTITY FIX (2026-09-30, offline): READY FOR
 > HIGH-THROUGHPUT ESSENTIAL-WEB BATCH 0. NO NETWORK, NO REDOWNLOAD.** The live
 > benchmark (operator) measured 22.7 / 26.0 / 142.7 MB/s at 1 / 4 / 8 streams,

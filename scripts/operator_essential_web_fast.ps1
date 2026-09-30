@@ -15,6 +15,9 @@
                          seal a receipt; finally the cumulative yield and the
                          stop decision
     Status     offline   unit states, cumulative yield and the stop decision
+    ResumeCheck offline  verify sealed hashes; dry-plan only remaining units
+    Resume     offline   same executor as Run, but refuses all download work;
+                         -RecoveryAuthorize binds the reviewed amendment
     Benchmark  NETWORK   small transport benchmark on a frozen prefix of batch 0
                          plus a real-byte parity check; retains nothing and is
                          never campaign progress
@@ -32,9 +35,10 @@
 param(
     [ValidateRange(0, 9999)][int]$Batch = 0,
     [Parameter(Mandatory = $true)]
-    [ValidateSet('Show', 'Prepare', 'Run', 'Status', 'Benchmark')]
+    [ValidateSet('Show', 'Prepare', 'Run', 'Resume', 'ResumeCheck', 'Status', 'Benchmark')]
     [string]$Stage,
     [string]$Authorize = '',
+    [string]$RecoveryAuthorize = '',
     [string]$Operator = $env:USERNAME,
     # 0 keeps the campaign default.
     [ValidateRange(0, 16)][int]$Workers = 0,
@@ -81,11 +85,18 @@ function Invoke-Run {
     if ($Authorize -ne '') {
         Invoke-Tool @('authorize', '--batch', "$Batch", '--digest', $Authorize, '--operator', $Operator) | Out-Null
     }
+    if ($RecoveryAuthorize -ne '') {
+        Invoke-Tool @('authorize-recovery', '--digest', $RecoveryAuthorize, '--operator', $Operator) | Out-Null
+    }
     $run = @('run', '--batch', "$Batch")
+    if ($Stage -eq 'Resume') { $run += '--offline' }
     if ($Workers -gt 0) { $run += @('--workers', "$Workers") }
     if ($ProcessWorkers -gt 0) { $run += @('--process-workers', "$ProcessWorkers") }
     if ($TopUpReason -ne '') { $run += @('--top-up-reason', $TopUpReason) }
-    $code = Invoke-Tool $run @(0, 3)
+    # Inherit the terminal for the live dashboard; don't pipe native output to Out-Host.
+    uv @U python $Tool @run
+    $code = $LASTEXITCODE
+    if (@(0, 3, 4) -notcontains $code) { throw "essential_web_fast run failed (exit $code)" }
     if ($code -eq 3) {
         'STOP: first-pass targets are met. Do not run another batch without a top-up reason.' | Out-Host
     }
@@ -101,6 +112,8 @@ switch ($Stage) {
         Invoke-Tool @('plan', '--batch', "$Batch") | Out-Null
     }
     'Run' { Invoke-Run }
+    'Resume' { Invoke-Run }
+    'ResumeCheck' { Invoke-Tool @('resume-check', '--batch', "$Batch") | Out-Null }
     'Status' { Invoke-Tool @('status', '--batch', "$Batch") @(0, 3) | Out-Null }
     'Benchmark' {
         if ($Authorize -eq '') { throw 'Benchmark needs -Authorize <frozen benchmark plan digest>' }

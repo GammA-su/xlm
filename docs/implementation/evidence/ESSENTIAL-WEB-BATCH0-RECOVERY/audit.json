@@ -1,0 +1,1993 @@
+{
+  "campaign": "8e42ba31b0ef9fcbae1079cebf88d2449b88a9b37ec52b68c7a408eb2546bb8c",
+  "completion_percent": 96.875,
+  "diagnostics": [
+    {
+      "decoded_bytes": 374386372,
+      "file": "data/crawl=CC-MAIN-2016-50/train-02164-of-03132.parquet",
+      "footer_rows": 69697,
+      "key": "f00026",
+      "maximum_raw_bytes": 11494172,
+      "oversized": [
+        {
+          "adapter_outcomes": {
+            "essential_practical": "accepted",
+            "essential_prose": "EssentialWebSelectorOtherComponentError",
+            "essential_science": "EssentialWebSelectorOtherComponentError"
+          },
+          "fields": {
+            "eai_taxonomy": {
+              "encoded_bytes": 1450,
+              "type": "dict"
+            },
+            "id": {
+              "encoded_bytes": 20,
+              "type": "int"
+            },
+            "metadata": {
+              "encoded_bytes": 1112,
+              "type": "dict"
+            },
+            "pid": {
+              "encoded_bytes": 34,
+              "type": "str"
+            },
+            "quality_signals": {
+              "encoded_bytes": 1686,
+              "type": "dict"
+            },
+            "text": {
+              "encoded_bytes": 11489800,
+              "type": "str"
+            }
+          },
+          "limit": 8388608,
+          "raw_bytes": 11494172,
+          "row_index_zero_based": 58327,
+          "selector": {
+            "final": "essential_practical",
+            "reasons": [],
+            "stage": "component"
+          },
+          "text_utf8_bytes": 11476241
+        }
+      ],
+      "rows": 69697,
+      "sampled_peak_rss_bytes": 231383040,
+      "source_sha256": "06dfd85a171f7a1a155fa34493b9f61b3de0ff16b46f0765d29c2631fbf02ad1"
+    }
+  ],
+  "failed_incomplete": 1,
+  "remaining": [
+    {
+      "file": "data/crawl=CC-MAIN-2016-50/train-02164-of-03132.parquet",
+      "key": "f00026"
+    }
+  ],
+  "sealed": 31,
+  "seconds": 38.71799999999348,
+  "total": 32,
+  "verified_units": [
+    {
+      "artifacts": [
+        {
+          "bytes": 5745,
+          "mtime_ns": 1790787662747322500,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00000\\receipt.json"
+        },
+        {
+          "bytes": 318869507,
+          "mtime_ns": 1790787584141399500,
+          "path": "G:\\XLM\\acq-raw\\ew-fast\\source\\data\\crawl=CC-MAIN-2019-09\\train-02494-of-02577.parquet"
+        },
+        {
+          "bytes": 23923990,
+          "mtime_ns": 1790787658667846200,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00000\\essential_practical\\documents.jsonl"
+        },
+        {
+          "bytes": 4482549,
+          "mtime_ns": 1790787659256307700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00000\\essential_practical\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1708,
+          "mtime_ns": 1790787659370891300,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00000\\essential_practical\\adaptation_summary.json"
+        },
+        {
+          "bytes": 62801745,
+          "mtime_ns": 1790787659375946100,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00000\\essential_prose\\documents.jsonl"
+        },
+        {
+          "bytes": 4201232,
+          "mtime_ns": 1790787659905298200,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00000\\essential_prose\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787660033144200,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00000\\essential_prose\\adaptation_summary.json"
+        },
+        {
+          "bytes": 6212615,
+          "mtime_ns": 1790787657984067000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00000\\essential_science\\documents.jsonl"
+        },
+        {
+          "bytes": 4596251,
+          "mtime_ns": 1790787658534585600,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00000\\essential_science\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1705,
+          "mtime_ns": 1790787658661466500,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00000\\essential_science\\adaptation_summary.json"
+        }
+      ],
+      "key": "f00000",
+      "receipt": "c49f1e5c54b3d3526562a752ad917412e3e62402f2f2d0f4ae5c502a43666aec"
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 5745,
+          "mtime_ns": 1790787674239604800,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00001\\receipt.json"
+        },
+        {
+          "bytes": 267039095,
+          "mtime_ns": 1790787598375329900,
+          "path": "G:\\XLM\\acq-raw\\ew-fast\\source\\data\\crawl=CC-MAIN-2016-50\\train-01413-of-03132.parquet"
+        },
+        {
+          "bytes": 11337340,
+          "mtime_ns": 1790787669928937600,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00001\\essential_practical\\documents.jsonl"
+        },
+        {
+          "bytes": 4239605,
+          "mtime_ns": 1790787670461782500,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00001\\essential_practical\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1708,
+          "mtime_ns": 1790787670567427000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00001\\essential_practical\\adaptation_summary.json"
+        },
+        {
+          "bytes": 36465934,
+          "mtime_ns": 1790787670572480700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00001\\essential_prose\\documents.jsonl"
+        },
+        {
+          "bytes": 4049425,
+          "mtime_ns": 1790787671105875600,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00001\\essential_prose\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787671231239600,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00001\\essential_prose\\adaptation_summary.json"
+        },
+        {
+          "bytes": 5181800,
+          "mtime_ns": 1790787669279167200,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00001\\essential_science\\documents.jsonl"
+        },
+        {
+          "bytes": 4306391,
+          "mtime_ns": 1790787669817352000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00001\\essential_science\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787669924147500,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00001\\essential_science\\adaptation_summary.json"
+        }
+      ],
+      "key": "f00001",
+      "receipt": "a95382f307aa095689719299ff16bef51cb7d2eed8141842c2c11a22d348dde1"
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 5748,
+          "mtime_ns": 1790787668804722800,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00002\\receipt.json"
+        },
+        {
+          "bytes": 301669526,
+          "mtime_ns": 1790787587087427400,
+          "path": "G:\\XLM\\acq-raw\\ew-fast\\source\\data\\crawl=CC-MAIN-2024-26\\train-02180-of-03168.parquet"
+        },
+        {
+          "bytes": 25018514,
+          "mtime_ns": 1790787661219277300,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00002\\essential_practical\\documents.jsonl"
+        },
+        {
+          "bytes": 4326784,
+          "mtime_ns": 1790787661750497600,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00002\\essential_practical\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1708,
+          "mtime_ns": 1790787661852921400,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00002\\essential_practical\\adaptation_summary.json"
+        },
+        {
+          "bytes": 59745341,
+          "mtime_ns": 1790787661858039600,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00002\\essential_prose\\documents.jsonl"
+        },
+        {
+          "bytes": 4080443,
+          "mtime_ns": 1790787662342938200,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00002\\essential_prose\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787662438550300,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00002\\essential_prose\\adaptation_summary.json"
+        },
+        {
+          "bytes": 9172359,
+          "mtime_ns": 1790787660323703800,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00002\\essential_science\\documents.jsonl"
+        },
+        {
+          "bytes": 4433636,
+          "mtime_ns": 1790787661105364500,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00002\\essential_science\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1705,
+          "mtime_ns": 1790787661214187900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00002\\essential_science\\adaptation_summary.json"
+        }
+      ],
+      "key": "f00002",
+      "receipt": "6ce6874fbdbf6ff56be7743d2b710211698b5fc340765b7f708bda7f4415bd4e"
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 5758,
+          "mtime_ns": 1790787645943170900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00003\\receipt.json"
+        },
+        {
+          "bytes": 247433535,
+          "mtime_ns": 1790787584437641800,
+          "path": "G:\\XLM\\acq-raw\\ew-fast\\source\\data\\crawl=CC-MAIN-2021-49\\train-01693-of-02895.parquet"
+        },
+        {
+          "bytes": 18823156,
+          "mtime_ns": 1790787642937048300,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00003\\essential_practical\\documents.jsonl"
+        },
+        {
+          "bytes": 3524596,
+          "mtime_ns": 1790787643413018000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00003\\essential_practical\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1708,
+          "mtime_ns": 1790787643509269000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00003\\essential_practical\\adaptation_summary.json"
+        },
+        {
+          "bytes": 53720849,
+          "mtime_ns": 1790787643513776300,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00003\\essential_prose\\documents.jsonl"
+        },
+        {
+          "bytes": 3269145,
+          "mtime_ns": 1790787643942023600,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00003\\essential_prose\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787644030802900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00003\\essential_prose\\adaptation_summary.json"
+        },
+        {
+          "bytes": 8621469,
+          "mtime_ns": 1790787642377840800,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00003\\essential_science\\documents.jsonl"
+        },
+        {
+          "bytes": 3606011,
+          "mtime_ns": 1790787642836993000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00003\\essential_science\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1705,
+          "mtime_ns": 1790787642932503900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00003\\essential_science\\adaptation_summary.json"
+        }
+      ],
+      "key": "f00003",
+      "receipt": "5868c74f48020c7f2cd61378ac00a3a3937edefec8e5ece17015267726f3432f"
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 5761,
+          "mtime_ns": 1790787660066561600,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00004\\receipt.json"
+        },
+        {
+          "bytes": 293679049,
+          "mtime_ns": 1790787585221888800,
+          "path": "G:\\XLM\\acq-raw\\ew-fast\\source\\data\\crawl=CC-MAIN-2024-26\\train-03096-of-03168.parquet"
+        },
+        {
+          "bytes": 23672767,
+          "mtime_ns": 1790787656643378600,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00004\\essential_practical\\documents.jsonl"
+        },
+        {
+          "bytes": 4278547,
+          "mtime_ns": 1790787657192963000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00004\\essential_practical\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1708,
+          "mtime_ns": 1790787657296743500,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00004\\essential_practical\\adaptation_summary.json"
+        },
+        {
+          "bytes": 56954115,
+          "mtime_ns": 1790787657302792700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00004\\essential_prose\\documents.jsonl"
+        },
+        {
+          "bytes": 4036416,
+          "mtime_ns": 1790787657823030000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00004\\essential_prose\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787657930166700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00004\\essential_prose\\adaptation_summary.json"
+        },
+        {
+          "bytes": 9856045,
+          "mtime_ns": 1790787655989649700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00004\\essential_science\\documents.jsonl"
+        },
+        {
+          "bytes": 4378505,
+          "mtime_ns": 1790787656529966400,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00004\\essential_science\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1707,
+          "mtime_ns": 1790787656638770400,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00004\\essential_science\\adaptation_summary.json"
+        }
+      ],
+      "key": "f00004",
+      "receipt": "d6728f7516ad4ff1f50b273d45a6d26982893c6591325c22f6340e7d1e21c42c"
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 5761,
+          "mtime_ns": 1790787724011338100,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00005\\receipt.json"
+        },
+        {
+          "bytes": 295411638,
+          "mtime_ns": 1790787644504700000,
+          "path": "G:\\XLM\\acq-raw\\ew-fast\\source\\data\\crawl=CC-MAIN-2024-26\\train-02938-of-03168.parquet"
+        },
+        {
+          "bytes": 24377951,
+          "mtime_ns": 1790787719514284600,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00005\\essential_practical\\documents.jsonl"
+        },
+        {
+          "bytes": 4260431,
+          "mtime_ns": 1790787720061583700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00005\\essential_practical\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1708,
+          "mtime_ns": 1790787720172669500,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00005\\essential_practical\\adaptation_summary.json"
+        },
+        {
+          "bytes": 59599941,
+          "mtime_ns": 1790787720178472500,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00005\\essential_prose\\documents.jsonl"
+        },
+        {
+          "bytes": 4015259,
+          "mtime_ns": 1790787720748805600,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00005\\essential_prose\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787720863869900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00005\\essential_prose\\adaptation_summary.json"
+        },
+        {
+          "bytes": 9800262,
+          "mtime_ns": 1790787718855758000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00005\\essential_science\\documents.jsonl"
+        },
+        {
+          "bytes": 4364081,
+          "mtime_ns": 1790787719395327900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00005\\essential_science\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1705,
+          "mtime_ns": 1790787719510253700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00005\\essential_science\\adaptation_summary.json"
+        }
+      ],
+      "key": "f00005",
+      "receipt": "85d574d92b39a007380a559840939383c05d06b4e09b71fd5e8b51e6f91b41e4"
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 5758,
+          "mtime_ns": 1790787647735451200,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00006\\receipt.json"
+        },
+        {
+          "bytes": 246099439,
+          "mtime_ns": 1790787585570081700,
+          "path": "G:\\XLM\\acq-raw\\ew-fast\\source\\data\\crawl=CC-MAIN-2018-05\\train-00835-of-03429.parquet"
+        },
+        {
+          "bytes": 14192422,
+          "mtime_ns": 1790787644798643200,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00006\\essential_practical\\documents.jsonl"
+        },
+        {
+          "bytes": 3629576,
+          "mtime_ns": 1790787645283238600,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00006\\essential_practical\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1708,
+          "mtime_ns": 1790787645378348100,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00006\\essential_practical\\adaptation_summary.json"
+        },
+        {
+          "bytes": 51461965,
+          "mtime_ns": 1790787645382878000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00006\\essential_prose\\documents.jsonl"
+        },
+        {
+          "bytes": 3359661,
+          "mtime_ns": 1790787645867716400,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00006\\essential_prose\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787645960303000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00006\\essential_prose\\adaptation_summary.json"
+        },
+        {
+          "bytes": 5412949,
+          "mtime_ns": 1790787644207793000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00006\\essential_science\\documents.jsonl"
+        },
+        {
+          "bytes": 3709894,
+          "mtime_ns": 1790787644685137300,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00006\\essential_science\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1705,
+          "mtime_ns": 1790787644791735800,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00006\\essential_science\\adaptation_summary.json"
+        }
+      ],
+      "key": "f00006",
+      "receipt": "a1bde4390a6afaa01466e9d0baebfedbeed1c66541dcf10901d6f3605ebab8d2"
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 5748,
+          "mtime_ns": 1790787670949750400,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00007\\receipt.json"
+        },
+        {
+          "bytes": 290107777,
+          "mtime_ns": 1790787594167761200,
+          "path": "G:\\XLM\\acq-raw\\ew-fast\\source\\data\\crawl=CC-MAIN-2018-05\\train-02803-of-03429.parquet"
+        },
+        {
+          "bytes": 16407281,
+          "mtime_ns": 1790787667675071100,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00007\\essential_practical\\documents.jsonl"
+        },
+        {
+          "bytes": 4295589,
+          "mtime_ns": 1790787668189180800,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00007\\essential_practical\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1708,
+          "mtime_ns": 1790787668298818000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00007\\essential_practical\\adaptation_summary.json"
+        },
+        {
+          "bytes": 60484120,
+          "mtime_ns": 1790787667040247900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00007\\essential_prose\\documents.jsonl"
+        },
+        {
+          "bytes": 3965333,
+          "mtime_ns": 1790787668772850200,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00007\\essential_prose\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787668872929600,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00007\\essential_prose\\adaptation_summary.json"
+        },
+        {
+          "bytes": 5794811,
+          "mtime_ns": 1790787667051873500,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00007\\essential_science\\documents.jsonl"
+        },
+        {
+          "bytes": 4386456,
+          "mtime_ns": 1790787667564082500,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00007\\essential_science\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1705,
+          "mtime_ns": 1790787667670494300,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00007\\essential_science\\adaptation_summary.json"
+        }
+      ],
+      "key": "f00007",
+      "receipt": "a65ad080135bd2cebac0eaf8cdf2a137844fa571c862c57d59af0159296bf7bc"
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 5742,
+          "mtime_ns": 1790787640749390000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00008\\receipt.json"
+        },
+        {
+          "bytes": 199770150,
+          "mtime_ns": 1790787588186538000,
+          "path": "G:\\XLM\\acq-raw\\ew-fast\\source\\data\\crawl=CC-MAIN-2016-50\\train-02839-of-03132.parquet"
+        },
+        {
+          "bytes": 8716692,
+          "mtime_ns": 1790787638513322900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00008\\essential_practical\\documents.jsonl"
+        },
+        {
+          "bytes": 3133775,
+          "mtime_ns": 1790787638907105900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00008\\essential_practical\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1708,
+          "mtime_ns": 1790787638993330700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00008\\essential_practical\\adaptation_summary.json"
+        },
+        {
+          "bytes": 28001932,
+          "mtime_ns": 1790787638996415700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00008\\essential_prose\\documents.jsonl"
+        },
+        {
+          "bytes": 2991949,
+          "mtime_ns": 1790787639398211000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00008\\essential_prose\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787639478554500,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00008\\essential_prose\\adaptation_summary.json"
+        },
+        {
+          "bytes": 5434002,
+          "mtime_ns": 1790787638009404700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00008\\essential_science\\documents.jsonl"
+        },
+        {
+          "bytes": 3187758,
+          "mtime_ns": 1790787638424709500,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00008\\essential_science\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787638509168100,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00008\\essential_science\\adaptation_summary.json"
+        }
+      ],
+      "key": "f00008",
+      "receipt": "45f8899dbb202905981b0c597759c22b43d1a46cc15c13d0578b41bec792ed77"
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 5760,
+          "mtime_ns": 1790787664751134400,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00009\\receipt.json"
+        },
+        {
+          "bytes": 246304808,
+          "mtime_ns": 1790787595275527500,
+          "path": "G:\\XLM\\acq-raw\\ew-fast\\source\\data\\crawl=CC-MAIN-2024-26\\train-01913-of-03168.parquet"
+        },
+        {
+          "bytes": 20587401,
+          "mtime_ns": 1790787658116466900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00009\\essential_practical\\documents.jsonl"
+        },
+        {
+          "bytes": 3574579,
+          "mtime_ns": 1790787658602991200,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00009\\essential_practical\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1708,
+          "mtime_ns": 1790787658712944100,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00009\\essential_practical\\adaptation_summary.json"
+        },
+        {
+          "bytes": 49529458,
+          "mtime_ns": 1790787658720688000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00009\\essential_prose\\documents.jsonl"
+        },
+        {
+          "bytes": 3362651,
+          "mtime_ns": 1790787659151014300,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00009\\essential_prose\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787659236206400,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00009\\essential_prose\\adaptation_summary.json"
+        },
+        {
+          "bytes": 8041811,
+          "mtime_ns": 1790787657543957600,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00009\\essential_science\\documents.jsonl"
+        },
+        {
+          "bytes": 3661039,
+          "mtime_ns": 1790787658024099500,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00009\\essential_science\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1705,
+          "mtime_ns": 1790787658111174300,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00009\\essential_science\\adaptation_summary.json"
+        }
+      ],
+      "key": "f00009",
+      "receipt": "df905513ca963c64d98f08cd1fe5f5a89960cb8a5bc211734405eacca283fe59"
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 5758,
+          "mtime_ns": 1790787666543172700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00010\\receipt.json"
+        },
+        {
+          "bytes": 247845095,
+          "mtime_ns": 1790787597290247900,
+          "path": "G:\\XLM\\acq-raw\\ew-fast\\source\\data\\crawl=CC-MAIN-2019-09\\train-01483-of-02577.parquet"
+        },
+        {
+          "bytes": 18702339,
+          "mtime_ns": 1790787658331153000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00010\\essential_practical\\documents.jsonl"
+        },
+        {
+          "bytes": 3483500,
+          "mtime_ns": 1790787658772946700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00010\\essential_practical\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1708,
+          "mtime_ns": 1790787658864816200,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00010\\essential_practical\\adaptation_summary.json"
+        },
+        {
+          "bytes": 48135516,
+          "mtime_ns": 1790787658873257100,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00010\\essential_prose\\documents.jsonl"
+        },
+        {
+          "bytes": 3264297,
+          "mtime_ns": 1790787659305981500,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00010\\essential_prose\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787659387235000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00010\\essential_prose\\adaptation_summary.json"
+        },
+        {
+          "bytes": 3833473,
+          "mtime_ns": 1790787657760798200,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00010\\essential_science\\documents.jsonl"
+        },
+        {
+          "bytes": 3575980,
+          "mtime_ns": 1790787658227789700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00010\\essential_science\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787658326596500,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00010\\essential_science\\adaptation_summary.json"
+        }
+      ],
+      "key": "f00010",
+      "receipt": "7b78be1cd925186e90ccaba675a4ef1126d57201f3ca2045b56cb69d9ca0e5bc"
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 5748,
+          "mtime_ns": 1790787672937473100,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00011\\receipt.json"
+        },
+        {
+          "bytes": 288452887,
+          "mtime_ns": 1790787596064767900,
+          "path": "G:\\XLM\\acq-raw\\ew-fast\\source\\data\\crawl=CC-MAIN-2018-05\\train-03158-of-03429.parquet"
+        },
+        {
+          "bytes": 15981719,
+          "mtime_ns": 1790787669549360100,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00011\\essential_practical\\documents.jsonl"
+        },
+        {
+          "bytes": 4269708,
+          "mtime_ns": 1790787670092698200,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00011\\essential_practical\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1709,
+          "mtime_ns": 1790787670199847900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00011\\essential_practical\\adaptation_summary.json"
+        },
+        {
+          "bytes": 60901704,
+          "mtime_ns": 1790787670203952500,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00011\\essential_prose\\documents.jsonl"
+        },
+        {
+          "bytes": 3937062,
+          "mtime_ns": 1790787670706114700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00011\\essential_prose\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787670803008100,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00011\\essential_prose\\adaptation_summary.json"
+        },
+        {
+          "bytes": 5159607,
+          "mtime_ns": 1790787668807738300,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00011\\essential_science\\documents.jsonl"
+        },
+        {
+          "bytes": 4360307,
+          "mtime_ns": 1790787669421624100,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00011\\essential_science\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1705,
+          "mtime_ns": 1790787669542666900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00011\\essential_science\\adaptation_summary.json"
+        }
+      ],
+      "key": "f00011",
+      "receipt": "e43be8dc72c09f715b1628a0d1ebabca139d3f15929d7c36ff12c194ba9b519f"
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 5750,
+          "mtime_ns": 1790787705591583400,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00012\\receipt.json"
+        },
+        {
+          "bytes": 246699581,
+          "mtime_ns": 1790787639901386900,
+          "path": "G:\\XLM\\acq-raw\\ew-fast\\source\\data\\crawl=CC-MAIN-2021-04\\train-01454-of-03315.parquet"
+        },
+        {
+          "bytes": 18197874,
+          "mtime_ns": 1790787702811228300,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00012\\essential_practical\\documents.jsonl"
+        },
+        {
+          "bytes": 3602520,
+          "mtime_ns": 1790787703229407800,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00012\\essential_practical\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1708,
+          "mtime_ns": 1790787703335517100,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00012\\essential_practical\\adaptation_summary.json"
+        },
+        {
+          "bytes": 51775828,
+          "mtime_ns": 1790787703341616300,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00012\\essential_prose\\documents.jsonl"
+        },
+        {
+          "bytes": 3366850,
+          "mtime_ns": 1790787703776848500,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00012\\essential_prose\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787703860331600,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00012\\essential_prose\\adaptation_summary.json"
+        },
+        {
+          "bytes": 6393154,
+          "mtime_ns": 1790787702119193700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00012\\essential_science\\documents.jsonl"
+        },
+        {
+          "bytes": 3686059,
+          "mtime_ns": 1790787702716931000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00012\\essential_science\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1705,
+          "mtime_ns": 1790787702806935600,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00012\\essential_science\\adaptation_summary.json"
+        }
+      ],
+      "key": "f00012",
+      "receipt": "ad7ff365ea3c4a653c8ca40488b22892391f318b7335462d27fbfac22617780e"
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 5756,
+          "mtime_ns": 1790787655649326600,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00013\\receipt.json"
+        },
+        {
+          "bytes": 199317812,
+          "mtime_ns": 1790787600212424900,
+          "path": "G:\\XLM\\acq-raw\\ew-fast\\source\\data\\crawl=CC-MAIN-2016-50\\train-02904-of-03132.parquet"
+        },
+        {
+          "bytes": 8339933,
+          "mtime_ns": 1790787653692154800,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00013\\essential_practical\\documents.jsonl"
+        },
+        {
+          "bytes": 3151861,
+          "mtime_ns": 1790787654074453200,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00013\\essential_practical\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1708,
+          "mtime_ns": 1790787654158897100,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00013\\essential_practical\\adaptation_summary.json"
+        },
+        {
+          "bytes": 28323621,
+          "mtime_ns": 1790787654162018100,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00013\\essential_prose\\documents.jsonl"
+        },
+        {
+          "bytes": 3010890,
+          "mtime_ns": 1790787654555278900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00013\\essential_prose\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787654630405100,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00013\\essential_prose\\adaptation_summary.json"
+        },
+        {
+          "bytes": 5023341,
+          "mtime_ns": 1790787653200780900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00013\\essential_science\\documents.jsonl"
+        },
+        {
+          "bytes": 3205250,
+          "mtime_ns": 1790787653605872300,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00013\\essential_science\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787653688329900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00013\\essential_science\\adaptation_summary.json"
+        }
+      ],
+      "key": "f00013",
+      "receipt": "a2897abb22e7f495afc88a4fa96825a1530bab783c5b22e6a15d7fa2f844328e"
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 5748,
+          "mtime_ns": 1790787712258895100,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00014\\receipt.json"
+        },
+        {
+          "bytes": 246295477,
+          "mtime_ns": 1790787646356548600,
+          "path": "G:\\XLM\\acq-raw\\ew-fast\\source\\data\\crawl=CC-MAIN-2021-04\\train-00087-of-03315.parquet"
+        },
+        {
+          "bytes": 18088139,
+          "mtime_ns": 1790787709529241900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00014\\essential_practical\\documents.jsonl"
+        },
+        {
+          "bytes": 3604769,
+          "mtime_ns": 1790787709950596100,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00014\\essential_practical\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1708,
+          "mtime_ns": 1790787710043480400,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00014\\essential_practical\\adaptation_summary.json"
+        },
+        {
+          "bytes": 52574241,
+          "mtime_ns": 1790787710049013900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00014\\essential_prose\\documents.jsonl"
+        },
+        {
+          "bytes": 3361728,
+          "mtime_ns": 1790787710459080700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00014\\essential_prose\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787710540418800,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00014\\essential_prose\\adaptation_summary.json"
+        },
+        {
+          "bytes": 6425957,
+          "mtime_ns": 1790787708974881200,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00014\\essential_science\\documents.jsonl"
+        },
+        {
+          "bytes": 3685550,
+          "mtime_ns": 1790787709432324000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00014\\essential_science\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1705,
+          "mtime_ns": 1790787709524662900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00014\\essential_science\\adaptation_summary.json"
+        }
+      ],
+      "key": "f00014",
+      "receipt": "3d95522d161cc76b0321c014e0b387d4045eb344912ed78c01bf4d4ca4b3a93b"
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 5747,
+          "mtime_ns": 1790787726035575600,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00015\\receipt.json"
+        },
+        {
+          "bytes": 247119535,
+          "mtime_ns": 1790787658340535200,
+          "path": "G:\\XLM\\acq-raw\\ew-fast\\source\\data\\crawl=CC-MAIN-2021-49\\train-00092-of-02895.parquet"
+        },
+        {
+          "bytes": 19296809,
+          "mtime_ns": 1790787720934216200,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00015\\essential_practical\\documents.jsonl"
+        },
+        {
+          "bytes": 3548272,
+          "mtime_ns": 1790787721349722200,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00015\\essential_practical\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1708,
+          "mtime_ns": 1790787721449193700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00015\\essential_practical\\adaptation_summary.json"
+        },
+        {
+          "bytes": 55214382,
+          "mtime_ns": 1790787721459356100,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00015\\essential_prose\\documents.jsonl"
+        },
+        {
+          "bytes": 3290884,
+          "mtime_ns": 1790787721856671100,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00015\\essential_prose\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787721940212700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00015\\essential_prose\\adaptation_summary.json"
+        },
+        {
+          "bytes": 7392457,
+          "mtime_ns": 1790787720351255500,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00015\\essential_science\\documents.jsonl"
+        },
+        {
+          "bytes": 3632561,
+          "mtime_ns": 1790787720820246500,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00015\\essential_science\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1705,
+          "mtime_ns": 1790787720926624200,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00015\\essential_science\\adaptation_summary.json"
+        }
+      ],
+      "key": "f00015",
+      "receipt": "198fd9af363171ce94c6f5fcdf0e0d824ab9eb91e83cbcde5f5f2f7e20fc51ca"
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 5747,
+          "mtime_ns": 1790787721780059500,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00016\\receipt.json"
+        },
+        {
+          "bytes": 246313750,
+          "mtime_ns": 1790787655005522300,
+          "path": "G:\\XLM\\acq-raw\\ew-fast\\source\\data\\crawl=CC-MAIN-2024-26\\train-01050-of-03168.parquet"
+        },
+        {
+          "bytes": 20392686,
+          "mtime_ns": 1790787718963381000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00016\\essential_practical\\documents.jsonl"
+        },
+        {
+          "bytes": 3594353,
+          "mtime_ns": 1790787719403035200,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00016\\essential_practical\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1708,
+          "mtime_ns": 1790787719495960800,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00016\\essential_practical\\adaptation_summary.json"
+        },
+        {
+          "bytes": 50359473,
+          "mtime_ns": 1790787719500039300,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00016\\essential_prose\\documents.jsonl"
+        },
+        {
+          "bytes": 3386702,
+          "mtime_ns": 1790787719920879100,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00016\\essential_prose\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787720006619900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00016\\essential_prose\\adaptation_summary.json"
+        },
+        {
+          "bytes": 7463975,
+          "mtime_ns": 1790787718433519700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00016\\essential_science\\documents.jsonl"
+        },
+        {
+          "bytes": 3680073,
+          "mtime_ns": 1790787718869294600,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00016\\essential_science\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787718959314200,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00016\\essential_science\\adaptation_summary.json"
+        }
+      ],
+      "key": "f00016",
+      "receipt": "7801f73cdb35f5267b45e6a37fc1ff75f56f4d1b7ed9287e430a99b7e0907536"
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 5744,
+          "mtime_ns": 1790787775506044000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00017\\receipt.json"
+        },
+        {
+          "bytes": 257426709,
+          "mtime_ns": 1790787710928961800,
+          "path": "G:\\XLM\\acq-raw\\ew-fast\\source\\data\\crawl=CC-MAIN-2014-15\\train-01846-of-02772.parquet"
+        },
+        {
+          "bytes": 10812893,
+          "mtime_ns": 1790787773396245400,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00017\\essential_practical\\documents.jsonl"
+        },
+        {
+          "bytes": 3914756,
+          "mtime_ns": 1790787773837265200,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00017\\essential_practical\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1708,
+          "mtime_ns": 1790787773926645800,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00017\\essential_practical\\adaptation_summary.json"
+        },
+        {
+          "bytes": 42527995,
+          "mtime_ns": 1790787773930812500,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00017\\essential_prose\\documents.jsonl"
+        },
+        {
+          "bytes": 3699640,
+          "mtime_ns": 1790787774331826100,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00017\\essential_prose\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787774424491900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00017\\essential_prose\\adaptation_summary.json"
+        },
+        {
+          "bytes": 2642509,
+          "mtime_ns": 1790787772884089000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00017\\essential_science\\documents.jsonl"
+        },
+        {
+          "bytes": 3964270,
+          "mtime_ns": 1790787773301443300,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00017\\essential_science\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787773388154600,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00017\\essential_science\\adaptation_summary.json"
+        }
+      ],
+      "key": "f00017",
+      "receipt": "23b6545ffd2d8eb7a14cd3dc19f40b42044f525a8def6863cf093e9dffa6cdce"
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 5748,
+          "mtime_ns": 1790787727742037700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00018\\receipt.json"
+        },
+        {
+          "bytes": 246062357,
+          "mtime_ns": 1790787659769444400,
+          "path": "G:\\XLM\\acq-raw\\ew-fast\\source\\data\\crawl=CC-MAIN-2021-04\\train-02014-of-03315.parquet"
+        },
+        {
+          "bytes": 18210687,
+          "mtime_ns": 1790787723342330900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00018\\essential_practical\\documents.jsonl"
+        },
+        {
+          "bytes": 3603750,
+          "mtime_ns": 1790787723786444300,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00018\\essential_practical\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1708,
+          "mtime_ns": 1790787723882539900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00018\\essential_practical\\adaptation_summary.json"
+        },
+        {
+          "bytes": 52527134,
+          "mtime_ns": 1790787723887633200,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00018\\essential_prose\\documents.jsonl"
+        },
+        {
+          "bytes": 3360167,
+          "mtime_ns": 1790787724307573600,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00018\\essential_prose\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787724393618900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00018\\essential_prose\\adaptation_summary.json"
+        },
+        {
+          "bytes": 6680997,
+          "mtime_ns": 1790787722789154800,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00018\\essential_science\\documents.jsonl"
+        },
+        {
+          "bytes": 3688071,
+          "mtime_ns": 1790787723234001200,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00018\\essential_science\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1705,
+          "mtime_ns": 1790787723336249900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00018\\essential_science\\adaptation_summary.json"
+        }
+      ],
+      "key": "f00018",
+      "receipt": "90518f200b821de0922e0181764b99220665b96b4c0b5cd270e96e5b3ea04be8"
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 5758,
+          "mtime_ns": 1790787783616546500,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00019\\receipt.json"
+        },
+        {
+          "bytes": 250742482,
+          "mtime_ns": 1790787720393382900,
+          "path": "G:\\XLM\\acq-raw\\ew-fast\\source\\data\\crawl=CC-MAIN-2016-50\\train-00940-of-03132.parquet"
+        },
+        {
+          "bytes": 10314454,
+          "mtime_ns": 1790787781673623900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00019\\essential_practical\\documents.jsonl"
+        },
+        {
+          "bytes": 3872598,
+          "mtime_ns": 1790787782070594400,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00019\\essential_practical\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1708,
+          "mtime_ns": 1790787782161890900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00019\\essential_practical\\adaptation_summary.json"
+        },
+        {
+          "bytes": 34354613,
+          "mtime_ns": 1790787782165430000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00019\\essential_prose\\documents.jsonl"
+        },
+        {
+          "bytes": 3701192,
+          "mtime_ns": 1790787782570639700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00019\\essential_prose\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787782662299200,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00019\\essential_prose\\adaptation_summary.json"
+        },
+        {
+          "bytes": 6233918,
+          "mtime_ns": 1790787781160270700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00019\\essential_science\\documents.jsonl"
+        },
+        {
+          "bytes": 3938467,
+          "mtime_ns": 1790787781573680900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00019\\essential_science\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787781669083200,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00019\\essential_science\\adaptation_summary.json"
+        }
+      ],
+      "key": "f00019",
+      "receipt": "c61c65cd5cd5f0ceb757fdf7013477564beee2068eeae58287fb75ae23001070"
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 5758,
+          "mtime_ns": 1790787778991904400,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00020\\receipt.json"
+        },
+        {
+          "bytes": 249772605,
+          "mtime_ns": 1790787721248959200,
+          "path": "G:\\XLM\\acq-raw\\ew-fast\\source\\data\\crawl=CC-MAIN-2015-32\\train-00114-of-01920.parquet"
+        },
+        {
+          "bytes": 11982000,
+          "mtime_ns": 1790787777089263500,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00020\\essential_practical\\documents.jsonl"
+        },
+        {
+          "bytes": 3509145,
+          "mtime_ns": 1790787777470279700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00020\\essential_practical\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1708,
+          "mtime_ns": 1790787777550995900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00020\\essential_practical\\adaptation_summary.json"
+        },
+        {
+          "bytes": 37442722,
+          "mtime_ns": 1790787777556401400,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00020\\essential_prose\\documents.jsonl"
+        },
+        {
+          "bytes": 3320192,
+          "mtime_ns": 1790787777948289000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00020\\essential_prose\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787778026723700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00020\\essential_prose\\adaptation_summary.json"
+        },
+        {
+          "bytes": 2562656,
+          "mtime_ns": 1790787776609733700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00020\\essential_science\\documents.jsonl"
+        },
+        {
+          "bytes": 3557650,
+          "mtime_ns": 1790787776997391300,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00020\\essential_science\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787777084195800,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00020\\essential_science\\adaptation_summary.json"
+        }
+      ],
+      "key": "f00020",
+      "receipt": "b8d2955ed6dd9c84e80b17da53a083119e4e198fc01320878b559417d02dcd33"
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 5761,
+          "mtime_ns": 1790787729559133500,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00021\\receipt.json"
+        },
+        {
+          "bytes": 246562487,
+          "mtime_ns": 1790787660407188200,
+          "path": "G:\\XLM\\acq-raw\\ew-fast\\source\\data\\crawl=CC-MAIN-2021-04\\train-00817-of-03315.parquet"
+        },
+        {
+          "bytes": 17739986,
+          "mtime_ns": 1790787723614350400,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00021\\essential_practical\\documents.jsonl"
+        },
+        {
+          "bytes": 3596680,
+          "mtime_ns": 1790787724076640000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00021\\essential_practical\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1708,
+          "mtime_ns": 1790787724171819900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00021\\essential_practical\\adaptation_summary.json"
+        },
+        {
+          "bytes": 52330697,
+          "mtime_ns": 1790787724176868800,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00021\\essential_prose\\documents.jsonl"
+        },
+        {
+          "bytes": 3355057,
+          "mtime_ns": 1790787724640666000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00021\\essential_prose\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787724728982000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00021\\essential_prose\\adaptation_summary.json"
+        },
+        {
+          "bytes": 6316344,
+          "mtime_ns": 1790787723051917600,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00021\\essential_science\\documents.jsonl"
+        },
+        {
+          "bytes": 3681634,
+          "mtime_ns": 1790787723516600600,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00021\\essential_science\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1705,
+          "mtime_ns": 1790787723608799200,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00021\\essential_science\\adaptation_summary.json"
+        }
+      ],
+      "key": "f00021",
+      "receipt": "146ebb99e6bda884e69f5226143790fb9c31ad612b3d634072e58334e78287f4"
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 5745,
+          "mtime_ns": 1790787716577008000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00022\\receipt.json"
+        },
+        {
+          "bytes": 207032790,
+          "mtime_ns": 1790787659571004000,
+          "path": "G:\\XLM\\acq-raw\\ew-fast\\source\\data\\crawl=CC-MAIN-2016-50\\train-02135-of-03132.parquet"
+        },
+        {
+          "bytes": 8437661,
+          "mtime_ns": 1790787714521570700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00022\\essential_practical\\documents.jsonl"
+        },
+        {
+          "bytes": 3219885,
+          "mtime_ns": 1790787714900224300,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00022\\essential_practical\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1708,
+          "mtime_ns": 1790787714993369500,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00022\\essential_practical\\adaptation_summary.json"
+        },
+        {
+          "bytes": 29762173,
+          "mtime_ns": 1790787715005588900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00022\\essential_prose\\documents.jsonl"
+        },
+        {
+          "bytes": 3070465,
+          "mtime_ns": 1790787715421700700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00022\\essential_prose\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787715499988400,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00022\\essential_prose\\adaptation_summary.json"
+        },
+        {
+          "bytes": 7005296,
+          "mtime_ns": 1790787714030625400,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00022\\essential_science\\documents.jsonl"
+        },
+        {
+          "bytes": 3273627,
+          "mtime_ns": 1790787714436814700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00022\\essential_science\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787714518524300,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00022\\essential_science\\adaptation_summary.json"
+        }
+      ],
+      "key": "f00022",
+      "receipt": "fd02a3b24158a28e675ab0c296a2e37779b0cc1f23d00657c05616d9b68ac672"
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 5759,
+          "mtime_ns": 1790787731160878700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00023\\receipt.json"
+        },
+        {
+          "bytes": 246903216,
+          "mtime_ns": 1790787662824741300,
+          "path": "G:\\XLM\\acq-raw\\ew-fast\\source\\data\\crawl=CC-MAIN-2018-05\\train-01313-of-03429.parquet"
+        },
+        {
+          "bytes": 13465239,
+          "mtime_ns": 1790787725313683500,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00023\\essential_practical\\documents.jsonl"
+        },
+        {
+          "bytes": 3621716,
+          "mtime_ns": 1790787725771233900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00023\\essential_practical\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1708,
+          "mtime_ns": 1790787725855286400,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00023\\essential_practical\\adaptation_summary.json"
+        },
+        {
+          "bytes": 52340276,
+          "mtime_ns": 1790787725859888300,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00023\\essential_prose\\documents.jsonl"
+        },
+        {
+          "bytes": 3341341,
+          "mtime_ns": 1790787726265578300,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00023\\essential_prose\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787726349049500,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00023\\essential_prose\\adaptation_summary.json"
+        },
+        {
+          "bytes": 4319836,
+          "mtime_ns": 1790787724735288000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00023\\essential_science\\documents.jsonl"
+        },
+        {
+          "bytes": 3698711,
+          "mtime_ns": 1790787725185288700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00023\\essential_science\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1705,
+          "mtime_ns": 1790787725298857500,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00023\\essential_science\\adaptation_summary.json"
+        }
+      ],
+      "key": "f00023",
+      "receipt": "7b8c9913e44cb3baaa2c73b4afff68fe964c44e2144436cc595cca89f557ba4b"
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 5761,
+          "mtime_ns": 1790787736290518300,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00024\\receipt.json"
+        },
+        {
+          "bytes": 248516435,
+          "mtime_ns": 1790787671191000700,
+          "path": "G:\\XLM\\acq-raw\\ew-fast\\source\\data\\crawl=CC-MAIN-2021-49\\train-00868-of-02895.parquet"
+        },
+        {
+          "bytes": 19050462,
+          "mtime_ns": 1790787733530023900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00024\\essential_practical\\documents.jsonl"
+        },
+        {
+          "bytes": 3551700,
+          "mtime_ns": 1790787733968733500,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00024\\essential_practical\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1708,
+          "mtime_ns": 1790787734053862900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00024\\essential_practical\\adaptation_summary.json"
+        },
+        {
+          "bytes": 53466049,
+          "mtime_ns": 1790787734056430400,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00024\\essential_prose\\documents.jsonl"
+        },
+        {
+          "bytes": 3297094,
+          "mtime_ns": 1790787734483330900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00024\\essential_prose\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787734566834800,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00024\\essential_prose\\adaptation_summary.json"
+        },
+        {
+          "bytes": 7764931,
+          "mtime_ns": 1790787733000872900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00024\\essential_science\\documents.jsonl"
+        },
+        {
+          "bytes": 3634390,
+          "mtime_ns": 1790787733422149800,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00024\\essential_science\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1705,
+          "mtime_ns": 1790787733518884500,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00024\\essential_science\\adaptation_summary.json"
+        }
+      ],
+      "key": "f00024",
+      "receipt": "ffb88c578f554575f8794e4616f04774b7bd556bbd764205109871005899780a"
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 5745,
+          "mtime_ns": 1790787737365855700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00025\\receipt.json"
+        },
+        {
+          "bytes": 246243131,
+          "mtime_ns": 1790787671607380000,
+          "path": "G:\\XLM\\acq-raw\\ew-fast\\source\\data\\crawl=CC-MAIN-2014-15\\train-00949-of-02772.parquet"
+        },
+        {
+          "bytes": 9220459,
+          "mtime_ns": 1790787733616768100,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00025\\essential_practical\\documents.jsonl"
+        },
+        {
+          "bytes": 3688806,
+          "mtime_ns": 1790787734053862900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00025\\essential_practical\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1708,
+          "mtime_ns": 1790787734150187700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00025\\essential_practical\\adaptation_summary.json"
+        },
+        {
+          "bytes": 40681546,
+          "mtime_ns": 1790787734154736000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00025\\essential_prose\\documents.jsonl"
+        },
+        {
+          "bytes": 3484684,
+          "mtime_ns": 1790787734617258300,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00025\\essential_prose\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787734706294200,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00025\\essential_prose\\adaptation_summary.json"
+        },
+        {
+          "bytes": 3000713,
+          "mtime_ns": 1790787733094300500,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00025\\essential_science\\documents.jsonl"
+        },
+        {
+          "bytes": 3734633,
+          "mtime_ns": 1790787733516363400,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00025\\essential_science\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787733611998400,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00025\\essential_science\\adaptation_summary.json"
+        }
+      ],
+      "key": "f00025",
+      "receipt": "89d6d4ed50c9c285e3e2c6e89e558879b0a52cc559efb737d0462e41b7cbbb4a"
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 5760,
+          "mtime_ns": 1790787786082601800,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00027\\receipt.json"
+        },
+        {
+          "bytes": 288690952,
+          "mtime_ns": 1790787714629347100,
+          "path": "G:\\XLM\\acq-raw\\ew-fast\\source\\data\\crawl=CC-MAIN-2018-05\\train-03027-of-03429.parquet"
+        },
+        {
+          "bytes": 17812497,
+          "mtime_ns": 1790787783572991400,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00027\\essential_practical\\documents.jsonl"
+        },
+        {
+          "bytes": 4282692,
+          "mtime_ns": 1790787783982666800,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00027\\essential_practical\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1708,
+          "mtime_ns": 1790787784079822800,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00027\\essential_practical\\adaptation_summary.json"
+        },
+        {
+          "bytes": 61631127,
+          "mtime_ns": 1790787784088427300,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00027\\essential_prose\\documents.jsonl"
+        },
+        {
+          "bytes": 3961082,
+          "mtime_ns": 1790787784476815200,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00027\\essential_prose\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787784558415700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00027\\essential_prose\\adaptation_summary.json"
+        },
+        {
+          "bytes": 4628983,
+          "mtime_ns": 1790787782990405900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00027\\essential_science\\documents.jsonl"
+        },
+        {
+          "bytes": 4377719,
+          "mtime_ns": 1790787783462584000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00027\\essential_science\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1705,
+          "mtime_ns": 1790787783568292400,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00027\\essential_science\\adaptation_summary.json"
+        }
+      ],
+      "key": "f00027",
+      "receipt": "94039d7292b8a1836e943cafe3e5a1695e9273d7e3d5ce0f8fafca24ee1f3ab1"
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 5750,
+          "mtime_ns": 1790787766824523300,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00028\\receipt.json"
+        },
+        {
+          "bytes": 246912524,
+          "mtime_ns": 1790787704229411000,
+          "path": "G:\\XLM\\acq-raw\\ew-fast\\source\\data\\crawl=CC-MAIN-2021-04\\train-00021-of-03315.parquet"
+        },
+        {
+          "bytes": 19883123,
+          "mtime_ns": 1790787764173379700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00028\\essential_practical\\documents.jsonl"
+        },
+        {
+          "bytes": 3567415,
+          "mtime_ns": 1790787764573510800,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00028\\essential_practical\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1708,
+          "mtime_ns": 1790787764658625000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00028\\essential_practical\\adaptation_summary.json"
+        },
+        {
+          "bytes": 52846199,
+          "mtime_ns": 1790787764661998600,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00028\\essential_prose\\documents.jsonl"
+        },
+        {
+          "bytes": 3327897,
+          "mtime_ns": 1790787765096589600,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00028\\essential_prose\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787765180198000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00028\\essential_prose\\adaptation_summary.json"
+        },
+        {
+          "bytes": 6940898,
+          "mtime_ns": 1790787763666650300,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00028\\essential_science\\documents.jsonl"
+        },
+        {
+          "bytes": 3650711,
+          "mtime_ns": 1790787764081957400,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00028\\essential_science\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1705,
+          "mtime_ns": 1790787764169350700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00028\\essential_science\\adaptation_summary.json"
+        }
+      ],
+      "key": "f00028",
+      "receipt": "320cf1fbaa115dcc660f1bce6a4b9c2c9ee1cb5595c7ad155318703baab2bb26"
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 5760,
+          "mtime_ns": 1790787777989575000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00029\\receipt.json"
+        },
+        {
+          "bytes": 246495943,
+          "mtime_ns": 1790787715875976600,
+          "path": "G:\\XLM\\acq-raw\\ew-fast\\source\\data\\crawl=CC-MAIN-2024-26\\train-02092-of-03168.parquet"
+        },
+        {
+          "bytes": 22171144,
+          "mtime_ns": 1790787775521049800,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00029\\essential_practical\\documents.jsonl"
+        },
+        {
+          "bytes": 3572827,
+          "mtime_ns": 1790787775898406700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00029\\essential_practical\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1708,
+          "mtime_ns": 1790787775985920500,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00029\\essential_practical\\adaptation_summary.json"
+        },
+        {
+          "bytes": 49908539,
+          "mtime_ns": 1790787775990496800,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00029\\essential_prose\\documents.jsonl"
+        },
+        {
+          "bytes": 3367424,
+          "mtime_ns": 1790787776399651000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00029\\essential_prose\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787776476161700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00029\\essential_prose\\adaptation_summary.json"
+        },
+        {
+          "bytes": 7839228,
+          "mtime_ns": 1790787775017068800,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00029\\essential_science\\documents.jsonl"
+        },
+        {
+          "bytes": 3662739,
+          "mtime_ns": 1790787775426622000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00029\\essential_science\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1705,
+          "mtime_ns": 1790787775516172200,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00029\\essential_science\\adaptation_summary.json"
+        }
+      ],
+      "key": "f00029",
+      "receipt": "307ad6d3acc04750a58dc3f57341302ffea8450f44c78d67521576bbb18a6307"
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 5747,
+          "mtime_ns": 1790787782652850000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00030\\receipt.json"
+        },
+        {
+          "bytes": 248277975,
+          "mtime_ns": 1790787724788809500,
+          "path": "G:\\XLM\\acq-raw\\ew-fast\\source\\data\\crawl=CC-MAIN-2015-32\\train-00655-of-01920.parquet"
+        },
+        {
+          "bytes": 11469917,
+          "mtime_ns": 1790787780723653400,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00030\\essential_practical\\documents.jsonl"
+        },
+        {
+          "bytes": 3540832,
+          "mtime_ns": 1790787781118194400,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00030\\essential_practical\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1708,
+          "mtime_ns": 1790787781193062300,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00030\\essential_practical\\adaptation_summary.json"
+        },
+        {
+          "bytes": 36652606,
+          "mtime_ns": 1790787781201005900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00030\\essential_prose\\documents.jsonl"
+        },
+        {
+          "bytes": 3357252,
+          "mtime_ns": 1790787781573680900,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00030\\essential_prose\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787781664521300,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00030\\essential_prose\\adaptation_summary.json"
+        },
+        {
+          "bytes": 3190736,
+          "mtime_ns": 1790787780244473000,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00030\\essential_science\\documents.jsonl"
+        },
+        {
+          "bytes": 3588722,
+          "mtime_ns": 1790787780630638300,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00030\\essential_science\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787780718337400,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00030\\essential_science\\adaptation_summary.json"
+        }
+      ],
+      "key": "f00030",
+      "receipt": "c0b7fb8a5fab25f2baa982ce3aa818ffd3ad8f5b7491a8146e735101a24587a5"
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 5757,
+          "mtime_ns": 1790787790368373100,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00031\\receipt.json"
+        },
+        {
+          "bytes": 284083856,
+          "mtime_ns": 1790787722378950500,
+          "path": "G:\\XLM\\acq-raw\\ew-fast\\source\\data\\crawl=CC-MAIN-2018-05\\train-03380-of-03429.parquet"
+        },
+        {
+          "bytes": 15728250,
+          "mtime_ns": 1790787788463640700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00031\\essential_practical\\documents.jsonl"
+        },
+        {
+          "bytes": 4266450,
+          "mtime_ns": 1790787788838229200,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00031\\essential_practical\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1708,
+          "mtime_ns": 1790787788922717600,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00031\\essential_practical\\adaptation_summary.json"
+        },
+        {
+          "bytes": 59732807,
+          "mtime_ns": 1790787788927922600,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00031\\essential_prose\\documents.jsonl"
+        },
+        {
+          "bytes": 3942216,
+          "mtime_ns": 1790787789282787100,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00031\\essential_prose\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1704,
+          "mtime_ns": 1790787789353105700,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00031\\essential_prose\\adaptation_summary.json"
+        },
+        {
+          "bytes": 6517793,
+          "mtime_ns": 1790787788022932600,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00031\\essential_science\\documents.jsonl"
+        },
+        {
+          "bytes": 4356907,
+          "mtime_ns": 1790787788373088600,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00031\\essential_science\\adaptation_rejections.jsonl.zst"
+        },
+        {
+          "bytes": 1705,
+          "mtime_ns": 1790787788460115500,
+          "path": "G:\\XLM\\canonical\\ew-fast\\b0000\\f00031\\essential_science\\adaptation_summary.json"
+        }
+      ],
+      "key": "f00031",
+      "receipt": "f40b301cb5917632d77905fb589854a47e9dfa6502acaa17e5a7a730ea65e92d"
+    }
+  ],
+  "yield": {
+    "documents_file_bytes": 2225475358,
+    "files": 31,
+    "footprint_bytes": 10513422709,
+    "malformed_rate": 0.00047729533694289576,
+    "malformed_rows": 1210,
+    "raw_bytes": 7942152123,
+    "rejections_file_bytes": 345609949,
+    "requests": 62,
+    "rows": 2535118,
+    "slices": 31,
+    "transferred_bytes": 7942152123,
+    "views": {
+      "essential_practical": {
+        "canonical_bytes": 373280000,
+        "documents": 69985,
+        "estimated_tokens": 93320000.0
+      },
+      "essential_prose": {
+        "canonical_bytes": 1077626547,
+        "documents": 228755,
+        "estimated_tokens": 269406636.75
+      },
+      "essential_science": {
+        "canonical_bytes": 155936472,
+        "documents": 17486,
+        "estimated_tokens": 38984118.0
+      }
+    }
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "decoded_bytes": 374423634,
+  "file_rows": 69697,
+  "max_selected_record_bytes": 11494805,
+  "network_connections": 0,
+  "output_bytes": 63352737,
+  "process_cpu_seconds": 45.796875,
+  "process_seconds": 46.5,
+  "projected_compressed_bytes": 178694070,
+  "published": false,
+  "row_groups": 7,
+  "row_range": [
+    0,
+    69697
+  ],
+  "rows": 69697,
+  "sampled_peak_rss_bytes": 358625280,
+  "selected_records_bytes": 610751344,
+  "selected_records_sha256": "8aa75d51d924b2c2f65507c56a13fc3b3fadc8ea2bba69ae646a8bfdc38ab0bd",
+  "source_file": "data/crawl=CC-MAIN-2016-50/train-02164-of-03132.parquet",
+  "views": {
+    "essential_practical": {
+      "adaptation_summary_sha256": "c76c53309e7402d414acefcd27e713e9d5797f08557b1a74b6e7acf14b6673fb",
+      "canonical_bytes": 17794842,
+      "documents": 1427,
+      "documents_file_bytes": 20652469,
+      "documents_sha256": "899f57670a39453dadd34bae62d76cf8991211ae17d62ea1dbaa7fb6a4138389",
+      "rejection_counts_by_code": {
+        "EssentialWebMalformedRowError": 24,
+        "EssentialWebSelectorOtherComponentError": 4840,
+        "EssentialWebSelectorRejectedError": 62847,
+        "EssentialWebSelectorUnassignedError": 559
+      },
+      "rejections_file_bytes": 3231176,
+      "rejections_file_sha256": "2d953d992a92b989c14e1e70aa062a52ec6a85c9ac914946522cf70dd946fec7",
+      "rejections_sha256": "7827233edf404472bf2f6e5be7b088a21d0e9f56baca038b7735eadd76719af2",
+      "rejections_uncompressed_bytes": 38368036
+    },
+    "essential_prose": {
+      "adaptation_summary_sha256": "d1a3c9e1535e6f79642caeca76131ad3ca2237edd347ed9645d245577996fb34",
+      "canonical_bytes": 18924695,
+      "documents": 4571,
+      "documents_file_bytes": 27801533,
+      "documents_sha256": "43379ec142eb5f048b922f3dfa66e31e14f2d42a2d30a039b139d08516ea7df2",
+      "rejection_counts_by_code": {
+        "EssentialWebMalformedRowError": 24,
+        "EssentialWebSelectorOtherComponentError": 1696,
+        "EssentialWebSelectorRejectedError": 62847,
+        "EssentialWebSelectorUnassignedError": 559
+      },
+      "rejections_file_bytes": 3087259,
+      "rejections_file_sha256": "7951c1fdc93d2a6394f7bcd3c6b96205724a49d73bfb37b33986036175ba7413",
+      "rejections_sha256": "d187994c83d572cb7dc02dfec29daf06c96705cb1de6217e0e5d84aafad11fbc",
+      "rejections_uncompressed_bytes": 36516167
+    },
+    "essential_science": {
+      "adaptation_summary_sha256": "1a194722fce9ffed23d868279b85aea5590f5b089fb135a2746fcb2a78d912ed",
+      "canonical_bytes": 4734098,
+      "documents": 269,
+      "documents_file_bytes": 5289117,
+      "documents_sha256": "301ddb87bc320de6c5e679290795c7bbff321113816db0924754e725f1415066",
+      "rejection_counts_by_code": {
+        "EssentialWebMalformedRowError": 24,
+        "EssentialWebSelectorOtherComponentError": 5998,
+        "EssentialWebSelectorRejectedError": 62847,
+        "EssentialWebSelectorUnassignedError": 559
+      },
+      "rejections_file_bytes": 3286067,
+      "rejections_file_sha256": "bfa1be9ada69a4ac5b01902702c86f19e7645e91e0ed10eaf760fd7bb348c27a",
+      "rejections_sha256": "9e3a4bf333535daeb795ed40e1ed583c909e52f2a72e3a1e3e33a604493e1ce6",
+      "rejections_uncompressed_bytes": 39042887
+    }
+  },
+  "wall_seconds": 47.5
+}

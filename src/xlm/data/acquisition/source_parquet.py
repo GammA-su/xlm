@@ -150,6 +150,20 @@ class TransferMeter:
         self._lock = threading.Lock()
         self.max_bytes, self.max_requests = max_bytes, max_requests
         self.bytes, self.requests = bytes_used, 0
+        self.received_bytes = 0
+        self.retry_events: list[tuple[str, int]] = []
+
+    def received(self, amount: int) -> None:
+        with self._lock:
+            self.received_bytes += amount
+
+    def retry(self, name: str, attempt: int) -> None:
+        with self._lock:
+            self.retry_events.append((name, attempt))
+
+    def telemetry(self) -> tuple[int, list[tuple[str, int]]]:
+        with self._lock:
+            return self.received_bytes, list(self.retry_events)
 
     def charge(self, amount: int) -> None:
         with self._lock:
@@ -518,6 +532,8 @@ class _Download:
                     if len(chunk) > amount:
                         raise SourceTransferError("transport returned more bytes than requested")
                     self.transferred -= amount - len(chunk)
+                    if self.meter is not None:
+                        self.meter.received(len(chunk))
                     output.write(chunk)
                     self.digest.update(chunk)
                     self.offset += len(chunk)
@@ -559,6 +575,8 @@ class _Download:
                 f"'{self.name}': retry delay exceeds the bounded allowance"
             ) from error
         self.retries += 1
+        if self.meter is not None:
+            self.meter.retry(self.name, self.retries)
         self._save()
         self.sleep(delay)
         # Resume strictly from the last durable checkpoint.
@@ -888,7 +906,10 @@ def selected_payloads(
                             },
                         )
                         if len(raw) > max_record_bytes:
-                            raise RecordLimitError("Parquet record byte bound exceeded")
+                            raise RecordLimitError(
+                                f"Parquet record byte bound exceeded: row={base + local + offset} "
+                                f"encoded_bytes={len(raw)} limit={max_record_bytes}"
+                            )
                         if len(payload) > max_record_bytes + 8192:
                             raise RecordLimitError(
                                 "selected record plus locator exceeds bounded serialization"

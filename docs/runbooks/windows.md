@@ -1,3 +1,12 @@
+> **Essential-Web Batch-0 recovery (2026-09-30):** authoritative state is 31/32
+> sealed (96.875%), with only `f00026` remaining and its source already retained.
+> Do not run Prepare or download again. Review the
+> [recovery report and exact authorization/resume command](../implementation/reports/ESSENTIAL-WEB-BATCH0-RECOVERY.md).
+> `-Stage ResumeCheck` verifies hashes and dry-plans remaining work offline;
+> `-Stage Resume -RecoveryAuthorize <reviewed recovery digest>` authorizes the
+> amendment and refuses all download work. Existing seals and the original
+> Batch-0 authorization stay intact. Earlier instructions below are historical.
+
 > **Essential-Web existing probe resume (2026-09-30):** after the optional FDC
 > renderer repair, run from the repository root:
 > `powershell -NoProfile -ExecutionPolicy Bypass -File .\docs\implementation\evidence\ESSENTIAL-WEB-PRODUCTION-READINESS\resume-probe-adaptation.ps1`.

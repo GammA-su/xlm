@@ -1,0 +1,20 @@
+{
+  "already_sealed_scheduled": 0,
+  "completion_percent": 96.875,
+  "network_units": 0,
+  "recovery_authorized": false,
+  "recovery_digest": "51c09f0b15e6b19ebeb9854c6d65ec1994b473467b555723f0924606574c24db",
+  "remaining": [
+    {
+      "file": "data/crawl=CC-MAIN-2016-50/train-02164-of-03132.parquet",
+      "key": "f00026",
+      "rank": 26
+    }
+  ],
+  "scheduled": 1,
+  "scheduled_keys": [
+    "f00026"
+  ],
+  "sealed": 31,
+  "total": 32
+}
