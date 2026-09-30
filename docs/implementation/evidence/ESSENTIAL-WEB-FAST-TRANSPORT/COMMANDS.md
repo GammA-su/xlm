@@ -160,3 +160,60 @@ Set-Location -LiteralPath 'F:\Project\xlm-data-ultrax'
 
 `Benchmark` transfers about 3.6 GB (cap 7.0 GiB) and retains nothing. `Prepare`
 is offline. `Run` fetches. None was run here.
+
+## Identity fix and offline re-acceptance
+
+2026-09-30, starting HEAD `2642ee7639da8bf42370eeadff1c8041eb4a0eed`. The live
+benchmark was run by the operator before this section; **no network request was
+made here** and no file was downloaded again. Same setup as above.
+
+Saved live evidence, read-only: `G:\XLM\plans\ew-fast\benchmark\benchmark-20260930T160213Z.json`
+(SHA-256 `de372896e015109ba1e94f7532b32c895fde7a493e06ecb17b5c8f44703fef94`),
+copied unmodified to `live-benchmark.json`. Its scratch files no longer exist
+(`C:\XLM-scratch\ew-fast\benchmark` is empty), so no local SHA-256 was recomputed.
+
+```powershell
+uv @U python scripts/essential_web_fast.py replay @C
+uv @U python scripts/essential_web_fast.py model
+uv @U python scripts/essential_web_fast.py gate --batch 0
+uv @U python scripts/essential_web_fast.py benchmark-accept --report G:/XLM/plans/ew-fast/benchmark/benchmark-20260930T160213Z.json --evidence-dir docs/implementation/evidence/ESSENTIAL-WEB-FAST-TRANSPORT
+uv @U python scripts/essential_web_fast.py gate --batch 0
+uv @U python scripts/essential_web_fast.py dry-run
+```
+
+Exits **0 / 0 / 1 / 0 / 0 / 0**.
+
+- `replay IDENTICAL` with the corrected code.
+- `campaign: 8e42ba31b0ef9fcbae1079cebf88d2449b88a9b37ec52b68c7a408eb2546bb8c batch files: 32 process workers: 12 benchmark: f319a6f0cb7ccdf08f4b770f7d54c087169483bfaa15aeb3d22f25ed5802a316`.
+  The campaign and benchmark-plan digests changed because they bind the
+  transport code hash and the identity rule. Science fields are unchanged.
+- Gate before acceptance: `REFUSE the transport benchmark and real-byte parity
+  check have not passed`.
+- `benchmark PASS (offline re-acceptance)`. Writes `benchmark-accepted-20260930T165002Z.json`
+  and `benchmark.json` under `G:\XLM\plans\ew-fast\benchmark`, and
+  `live-benchmark-accepted.json` here. The original timestamped report is unchanged.
+- Gate after acceptance: `RUN`.
+
+`throughput-model.json` now carries a `live` block: the measured rates and the
+batch and campaign times modeled from them.
+
+```powershell
+uv @U python -m pytest tests/test_essential_web_fast.py -n 0 -q -p no:cacheprovider
+```
+
+Exit **0**, **33 passed**. The 28-module focused selection listed above, rerun:
+exit **0**, **713 passed**, 0 failed, 0 skipped, 225.29 s
+(`logs/focused-regressions-identity-fix.log`). Ruff check, ruff format and strict
+mypy on the same five files: exits **0 / 0 / 0**. Fast and full repository
+selections and CUDA tests **not run**.
+
+Failures during development: none in pytest after the fixture was changed to
+serve a 64-hex ETag that is not the SHA-256, as the live endpoint does.
+
+Next operator commands (NOT executed):
+
+```powershell
+. .\scripts\operator_storage.ps1
+.\scripts\operator_essential_web_fast.ps1 -Batch 0 -Stage Prepare
+.\scripts\operator_essential_web_fast.ps1 -Batch 0 -Stage Run -Authorize <digest printed by Prepare>
+```

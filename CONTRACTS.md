@@ -74,8 +74,11 @@ For source `essential_web` only, the raw acquisition artifact may be the
 `verified_source_parquet`: the unmodified upstream Parquet file of a selected
 shard, identified by repository, immutable revision, source path, strong ETag,
 remote length and the locally computed SHA-256 of every byte, stored once and
-never replaced. Where the strong ETag is a 64-hex digest it must equal that
-SHA-256. Adaptation then reads the retained file directly; the selected-record
+never replaced. The strong ETag is an opaque remote validator used for resume
+and drift detection; it is never assumed to be a content hash, whatever its
+shape. The local SHA-256 must equal the independent expected SHA-256 whenever
+the plan or the repository declares one for the pinned path; a storage hash
+such as `X-Xet-Hash` is kept as its own field and never substituted. Adaptation then reads the retained file directly; the selected-record
 stream is produced in memory with the certified serialization and its SHA-256 is
 recorded per file, so it is reproducible offline and is not stored. Immutable
 rejection ledgers may be stored zstd-compressed and stay identified by the

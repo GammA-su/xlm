@@ -79,7 +79,6 @@ FAST_LIMITS: dict[str, Any] = {
     "file_deadline_seconds": 60.0,
     "batch_deadline_seconds": 120.0,
     "max_durable_bytes_per_file": 8 * MIB,
-    "require_etag_sha256": True,
 }
 
 
@@ -104,6 +103,11 @@ class Served:
 
     files: dict[str, bytes] = field(default_factory=dict)
     etags: dict[str, str] = field(default_factory=dict)
+    #: Per name: the X-Linked-ETag of the resolve response; None omits the header.
+    linked: dict[str, str | None] = field(default_factory=dict)
+    linked_sizes: dict[str, int] = field(default_factory=dict)
+    #: Per name: an X-Xet-Hash on the object response.
+    xet: dict[str, str] = field(default_factory=dict)
     #: Per name: body byte counts after which the connection is cut, one per request.
     drops: dict[str, list[int]] = field(default_factory=dict)
     ignore_range: set[str] = field(default_factory=set)
@@ -115,7 +119,14 @@ class Served:
     lock: threading.Lock = field(default_factory=threading.Lock)
 
     def etag(self, name: str) -> str:
-        return self.etags.get(name, '"' + hashlib.sha256(self.files[name]).hexdigest() + '"')
+        """The storage validator: 64 hex like the live endpoint's, and NOT the SHA-256."""
+        opaque = hashlib.sha256(b"storage-hash:" + self.files[name]).hexdigest()
+        return self.etags.get(name, f'"{opaque}"')
+
+    def linked_etag(self, name: str) -> str | None:
+        """The repository's declared content digest: the real SHA-256 unless overridden."""
+        default = '"' + hashlib.sha256(self.files[name]).hexdigest() + '"'
+        return self.linked.get(name, default)
 
     def hits(self, kind: str, name: str | None = None) -> int:
         return sum(1 for k, n, _ in self.requests if k == kind and name in (None, n))
@@ -145,8 +156,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
             port = self.server.server_port  # type: ignore[attr-defined]
             location = f"http://127.0.0.1:{port}/object/{urllib.parse.quote(name)}"
             self.send_header("Location", location)
-            self.send_header("X-Linked-ETag", state.etag(name))
-            self.send_header("X-Linked-Size", str(len(payload)))
+            declared = state.linked_etag(name)
+            if declared is not None:
+                self.send_header("X-Linked-ETag", declared)
+            self.send_header("X-Linked-Size", str(state.linked_sizes.get(name, len(payload))))
             self.send_header("X-Repo-Commit", state.commit)
             self.send_header("Content-Length", "0")
             self.end_headers()
@@ -177,6 +190,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 body = payload
                 self.send_response(200)
             self.send_header("ETag", state.etag(name))
+            if name in state.xet:
+                self.send_header("X-Xet-Hash", state.xet[name])
             self.send_header("Content-Length", str(len(body)))
             self.end_headers()
             if cut is None:
@@ -302,8 +317,13 @@ def test_whole_file_is_one_stream_with_full_source_identity(served: Any, tmp_pat
     assert state.hits("resolve") == 1 and state.hits("object") == 1
     assert state.requests[-1][2] is None  # no Range: one sequential stream
     identity = result.identity
-    assert (identity.etag, identity.length, identity.sha256) == (f'"{digest}"', 300_000, digest)
-    assert identity.etag_is_content_sha256 is True
+    assert (identity.etag, identity.length, identity.sha256) == (
+        state.etag("data/a.parquet"),
+        300_000,
+        digest,
+    )
+    assert identity.expected_sha256 == digest and identity.sha256_independently_verified
+    assert identity.expected_sha256_source == sp.EXPECTED_FROM_REPOSITORY
     assert (identity.linked_size, identity.repo_commit) == (300_000, REVISION)
     assert result.transferred_bytes == 300_000 and not result.cache_hit
     # A completed scratch file is rehashed and reused without any request.
@@ -311,19 +331,116 @@ def test_whole_file_is_one_stream_with_full_source_identity(served: Any, tmp_pat
     assert again.cache_hit and again.identity == identity and state.hits("object") == 1
 
 
-def test_content_that_differs_from_its_digest_etag_is_refused(served: Any, tmp_path: Path) -> None:
+def test_a_64_hex_etag_is_an_opaque_validator_not_a_content_hash(
+    served: Any, tmp_path: Path
+) -> None:
     state, base = served
-    state.files["a.parquet"] = os.urandom(50_000)
-    state.etags["a.parquet"] = '"' + "0" * 64 + '"'
-    with pytest.raises(sp.SourceTransferError, match="64-hex strong ETag"):
+    payload = os.urandom(50_000)
+    state.files["a.parquet"] = payload
+    digest = hashlib.sha256(payload).hexdigest()
+    storage = "f0c954afd30a9b985ec4dbcb938498ea29e842210417680bdb6e809dd847d9ce"
+    state.etags["a.parquet"] = f'"{storage}"'  # 64 hex, and not the SHA-256 of the file
+    state.xet["a.parquet"] = "1" * 64
+    identity = fetch(base, tmp_path, "a.parquet").identity
+    # Four identities, each in its own field; none substituted for another.
+    assert identity.etag == f'"{storage}"' and storage != digest
+    assert identity.sha256 == digest  # always the hash of the received bytes
+    assert identity.expected_sha256 == digest  # the repository's declared digest
+    assert identity.linked_etag == f'"{digest}"'
+    assert identity.xet_hash == "1" * 64 and identity.xet_hash != identity.sha256
+    record = sp.identity_record(identity, source_file="a.parquet", repository="r", revision="v")
+    assert record["sha256"] == digest and record["etag"] == f'"{storage}"'
+    assert record["xet_hash"] == "1" * 64 and record["sha256_independently_verified"] is True
+    assert "etag_is_content_sha256" not in record
+    # An ETag of any other shape is accepted as a validator just the same.
+    state.etags["a.parquet"] = '"opaque-validator-7"'
+    other = fetch(base, tmp_path / "opaque", "a.parquet").identity
+    assert other.etag == '"opaque-validator-7"' and other.sha256 == digest
+    # Even an ETag that IS the SHA-256 earns no trust as a content hash.
+    state.etags["a.parquet"] = f'"{digest}"'
+    state.linked["a.parquet"] = None
+    alone = fetch(base, tmp_path / "alone", "a.parquet").identity
+    assert alone.sha256 == digest and alone.expected_sha256 is None
+    assert alone.expected_sha256_source is None and not alone.sha256_independently_verified
+
+
+def test_local_sha256_must_equal_the_independent_expected_digest(
+    served: Any, tmp_path: Path
+) -> None:
+    state, base = served
+    payload = os.urandom(50_000)
+    state.files["a.parquet"] = payload
+    digest = hashlib.sha256(payload).hexdigest()
+    # The repository declares another digest than the bytes that arrive: corruption.
+    state.linked["a.parquet"] = '"' + "0" * 64 + '"'
+    with pytest.raises(sp.SourceTransferError, match=r"independent expected SHA-256 \(x-linked"):
         fetch(base, tmp_path, "a.parquet")
     assert (tmp_path / "x.parquet.part").stat().st_size == 0  # nothing unverified is kept
-    recorded = fetch(base, tmp_path, "a.parquet", limits=transfer_limits(require_etag_sha256=False))
-    assert recorded.identity.etag_is_content_sha256 is False
-    state.etags["a.parquet"] = '"opaque-validator"'
-    other = tmp_path / "other"
-    other.mkdir()
-    assert fetch(base, other, "a.parquet").identity.etag_is_content_sha256 is None
+    del state.linked["a.parquet"]
+    # A reviewed digest in the plan is required the same way and takes precedence.
+    ok = fetch(base, tmp_path / "plan", "a.parquet", expected_sha256=digest.upper()).identity
+    assert ok.expected_sha256 == digest and ok.expected_sha256_source == sp.EXPECTED_FROM_PLAN
+    state.linked["a.parquet"] = None
+    with pytest.raises(sp.SourceTransferError, match=r"independent expected SHA-256 \(plan\)"):
+        fetch(base, tmp_path / "bad", "a.parquet", expected_sha256="1" * 64)
+    # The plan and the repository disagreeing about the same path is drift, not a retry.
+    del state.linked["a.parquet"]
+    before = state.hits("object")
+    with pytest.raises(SourceDriftDetectedError, match="differs from the plan"):
+        fetch(base, tmp_path / "both", "a.parquet", expected_sha256="1" * 64)
+    assert state.hits("object") == before + 1
+    # A 40-hex linked ETag (a Git blob id, not a SHA-256) is kept but never used as one.
+    state.linked["a.parquet"] = '"' + "a" * 40 + '"'
+    blob = fetch(base, tmp_path / "blob", "a.parquet").identity
+    assert blob.linked_etag == '"' + "a" * 40 + '"' and blob.expected_sha256 is None
+
+
+def test_wrong_length_path_or_corrupted_scratch_is_refused(
+    served: Any, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    state, base = served
+    payload = os.urandom(60_000)
+    state.files["a.parquet"] = payload
+    state.files["b.parquet"] = payload
+    state.linked_sizes["a.parquet"] = 59_999
+    with pytest.raises(SourceDriftDetectedError, match="linked size"):
+        fetch(base, tmp_path, "a.parquet")
+    del state.linked_sizes["a.parquet"]
+    done = fetch(base, tmp_path, "a.parquet")
+    # Transfer state belongs to one exact path: another path cannot adopt it.
+    with pytest.raises(sp.SourceTransferError, match="belongs to another source"):
+        fetch(base, tmp_path, "b.parquet")
+    # A completed scratch file that was corrupted afterwards is never reused.
+    damaged = bytearray(done.path.read_bytes())
+    damaged[100] ^= 0xFF
+    done.path.write_bytes(bytes(damaged))
+    hits = state.hits("object", "a.parquet")
+    again = fetch(base, tmp_path, "a.parquet")
+    assert not again.cache_hit and again.path.read_bytes() == payload
+    assert state.hits("object", "a.parquet") == hits + 1
+    # A body shorter than its declared length never completes.
+    state.drops["b.parquet"] = [10_000] * 8
+    with pytest.raises(sp.SourceTransferError, match="attempts exhausted"):
+        fetch(base, tmp_path / "short", "b.parquet", limits=transfer_limits(max_retries=1))
+    assert not json.loads((tmp_path / "short/x.state.json").read_bytes())["complete"]
+    # On a verified continuation both the validator and the repository digest must hold.
+    monkeypatch.setattr(sp, "READ_BYTES", 1024)
+    monkeypatch.setattr(sp, "CHECKPOINT_BYTES", 8192)
+    for change in ("etag", "linked"):
+        directory = tmp_path / change
+        state.etags.pop("b.parquet", None)
+        state.linked.pop("b.parquet", None)
+        state.drops["b.parquet"] = [30_000]
+        with pytest.raises(sp.SourceTransferError):
+            fetch(base, directory, "b.parquet", limits=transfer_limits(max_retries=0))
+        assert json.loads((directory / "x.state.json").read_bytes())["verified_bytes"] > 0
+        if change == "etag":
+            state.etags["b.parquet"] = '"' + "9" * 64 + '"'
+        else:
+            state.linked["b.parquet"] = '"' + "8" * 64 + '"'
+        with pytest.raises(SourceDriftDetectedError):
+            fetch(base, directory, "b.parquet")
+        assert state.requests[-1][2] is not None  # it was a Range/If-Range continuation
 
 
 def test_identity_and_bound_refusals(served: Any, tmp_path: Path) -> None:
@@ -516,7 +633,7 @@ def test_durable_raw_is_immutable_and_bound_to_its_identity(tmp_path: Path) -> N
     source = tmp_path / "scratch.part"
     source.write_bytes(b"PAR1" + os.urandom(5000) + b"PAR1")
     sha256, size = sp.file_sha256(source)
-    identity = sp.SourceIdentity('"' + sha256 + '"', size, sha256, True)
+    identity = sp.SourceIdentity('"opaque"', size, sha256, sha256, sp.EXPECTED_FROM_PLAN)
     record = sp.identity_record(
         identity, source_file="data/a.parquet", repository="r", revision="v"
     )
@@ -1058,8 +1175,10 @@ def test_campaign_runs_whole_files_to_a_deterministic_stop(world: World) -> None
         # The single raw representation is the unmodified upstream file.
         assert raw.read_bytes() == world.state.files[name]
         assert receipt["source"]["sha256"] == digest == receipt["raw"]["sha256"]
-        assert receipt["source"]["etag"] == f'"{digest}"'
-        assert receipt["source"]["etag_is_content_sha256"] is True
+        assert receipt["source"]["etag"] == world.state.etag(name) != f'"{digest}"'
+        assert receipt["source"]["expected_sha256"] == digest
+        assert receipt["source"]["expected_sha256_source"] == "x-linked-etag"
+        assert receipt["source"]["sha256_independently_verified"] is True
         assert receipt["source"]["revision"] == REVISION
         assert receipt["raw"]["representation"] == "verified_source_parquet"
         assert receipt["selected_records"]["stored"] is False
@@ -1143,7 +1262,7 @@ def test_retained_source_is_reused_after_a_crash_before_sealing(world: World) ->
         scratch,
         durable,
         sp.identity_record(
-            sp.SourceIdentity(f'"{sha256}"', size, sha256, True),
+            sp.SourceIdentity('"opaque"', size, sha256),
             source_file=first,
             repository=world.config["binding"]["repository"],
             revision=REVISION,
@@ -1248,7 +1367,7 @@ def test_benchmark_measures_transport_and_parity_and_retains_nothing(world: Worl
     for workers in (1,):
         transfer = phases[("download", workers)]["transfer"]
         assert transfer["requests_per_file"] == 2 and transfer["megabytes_per_second"] > 0
-        assert transfer["etag_is_content_sha256"]["true"] == transfer["files"]
+        assert transfer["sha256"] == {"independently_verified": 1, "local_only": 0}
     processing = phases[("local_processing", None)]
     assert processing["rows"] == 20 and processing["documents"][SCIENCE] == 4
     assert all(phases[("parity", None)]["checks"].values())
@@ -1397,6 +1516,175 @@ def test_process_workers_stop_where_more_processes_stop_helping(fast_tool: Any) 
     assert fast_tool.choose_process_workers(runs, 16) == 8
     assert fast_tool.choose_process_workers(runs, 4) == 1
     assert fast_tool.NETWORK_COMMANDS == {"run", "benchmark"}
+
+
+def test_saved_live_benchmark_is_reaccepted_offline_under_the_corrected_rule(
+    world: World, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    plan = world.historical.repo / "benchmark-plan.json"
+    digest = world.config["benchmark"]["plan_digest"]
+    assert world.run("benchmark", "--plan", str(plan), "--authorize", digest) == 0
+    directory = world.root / "plans/ew-fast/benchmark"
+    good = json.loads((directory / "benchmark.json").read_bytes())
+    bench = json.loads(plan.read_bytes())
+    code = world.config["transport_code_sha256"]
+    transport = fast.TRANSPORT_CODE_FILES[0]
+
+    def live(report: dict[str, Any]) -> dict[str, Any]:
+        """The report as the first identity rule left it: run by older transport code."""
+        old = {**code, transport: "5" * 64}
+        body = {k: v for k, v in bench.items() if k != "digest"}
+        body["transport_code_sha256"] = old
+        return {
+            **json.loads(json.dumps(report)),
+            "verdict": "FAIL",
+            "reasons": [f"{fast.SUPERSEDED_ETAG_REASON}: {name}" for name in report["files"]],
+            "transport_code_sha256": old,
+            "plan_digest": canonical.digest(body),
+        }
+
+    failed = live(good)
+    accepted = fast.reaccept_benchmark(failed, "a" * 64, bench, REVISION, code)
+    assert accepted["verdict"] == "PASS" and accepted["reasons"] == []
+    assert accepted["plan_digest"] == digest and accepted["transport_code_sha256"] == code
+    note = accepted["revalidation"]
+    assert note["network_requests"] == 0 and note["local_sha256_recomputed_now"] is False
+    assert note["files_with_repository_sha256_equal_to_local_sha256"] == 3
+    assert note["files_with_etag_equal_to_local_sha256"] == 0
+    assert note["code_changed_since_benchmark"] == [transport]
+    assert accepted["phases"] == failed["phases"]  # measurements are carried, not altered
+
+    def refused(change: Any, message: str) -> None:
+        report = live(good)
+        change(report)
+        with pytest.raises(bulk.BulkError, match=message):
+            fast.reaccept_benchmark(report, "a" * 64, bench, REVISION, code)
+
+    def rejected(change: Any, message: str) -> None:
+        report = live(good)
+        change(report)
+        result = fast.reaccept_benchmark(report, "a" * 64, bench, REVISION, code)
+        assert result["verdict"] == "FAIL" and any(message in r for r in result["reasons"])
+
+    name = next(iter(good["files"]))
+    refused(lambda r: r["reasons"].append("parity: selected_records"), "does not explain")
+    refused(lambda r: r["files"].pop(name), "exactly the planned")
+    refused(lambda r: r.update(plan_digest="0" * 64), "differs beyond its code identity")
+    rejected(lambda r: r["files"][name].update(sha256="0" * 64), "repository's SHA-256")
+    rejected(lambda r: r["files"][name].update(length=1), "declared size")
+    rejected(lambda r: r["files"][name].update(repo_commit="f" * 40), "another revision")
+    rejected(lambda r: r["files"][name].update(etag='W/"weak"'), "strong ETag")
+    rejected(lambda r: r["phases"][-1]["checks"].update(x=False), "parity")
+    # Parity is void if the code that processes records is not the code that ran it.
+    other = {**code, fast.TRANSPORT_CODE_FILES[1]: "0" * 64}
+    with pytest.raises(bulk.BulkError, match="parity is void"):
+        fast.reaccept_benchmark(failed, "a" * 64, bench, REVISION, other)
+    # Through the tool: offline, the original is kept, and the gate opens.
+    original = directory / "benchmark-live.json"
+    original.write_text(json.dumps(failed), encoding="utf-8")
+    (directory / "benchmark.json").write_text(json.dumps(failed), encoding="utf-8")
+    world.prepare(0)
+    assert world.run("gate", "--batch", "0") == 1
+    before = len(world.state.requests)
+
+    def refuse(*args: Any, **kwargs: Any) -> None:
+        raise AssertionError("re-acceptance attempted a network connection")
+
+    monkeypatch.setattr(socket.socket, "connect", refuse)
+    assert world.run("benchmark-accept", "--plan", str(plan), "--report", str(original)) == 0
+    assert len(world.state.requests) == before and not world.scratch_files()
+    assert json.loads(original.read_bytes()) == failed
+    assert world.run("gate", "--batch", "0") == 0
+    assert world.run("benchmark-accept", "--plan", str(plan)) == 1  # never re-accept twice
+
+
+def test_measured_batch_model_overlaps_transfer_and_processing() -> None:
+    footers, units, totals = historical_tests.physical_inputs()
+    physical = bulk.physical_cost(footers, units, totals)
+
+    def report(megabytes: float) -> dict[str, Any]:
+        tier = {
+            "megabytes_per_second": megabytes,
+            "megabits_per_second": megabytes * 8,
+            "files": 8,
+            "file_bytes": 1,
+            "wall_seconds": 1.0,
+            "requests_per_file": 2,
+            "retries": 0,
+        }
+        return {
+            "phases": [
+                {
+                    "phase": "download",
+                    "download_workers": 4,
+                    "transfer": {**tier, "megabytes_per_second": megabytes / 10},
+                },
+                {"phase": "download", "download_workers": 8, "transfer": tier},
+                {
+                    "phase": "local_processing",
+                    "rows_per_second": 10.0,
+                    "process_workers": 2,
+                    "rows": 100,
+                    "files": 2,
+                    "wall_seconds": 10.0,
+                    "system": {},
+                },
+                {"phase": "durable_copy", "megabytes_per_second": 1.0},
+            ]
+        }
+
+    rows, size = 32 * 25, 32 * 25 * 2000  # 25 rows and 50,000 bytes per file
+    fast_network = fast.measured_batch_model(physical, report(1.0), 32, 25)
+    central = fast_network["modeled_batch"]["central"]
+    assert central["limited_by"] == "local processing"
+    first, copy = size / 32 / (1e6 / 8), size / 1e6 / 2
+    assert central["batch_seconds"] == pytest.approx(first + rows / 10.0 + copy)
+    assert central["batch_seconds"] < central["download_seconds"] + central["processing_seconds"]
+    assert central["campaign_hours"] == pytest.approx(25 * central["batch_seconds"] / 3600)
+    slow = fast.measured_batch_model(physical, report(0.01), 32, 25)["modeled_batch"]["central"]
+    assert slow["limited_by"] == "network"
+    assert slow["batch_seconds"] == pytest.approx(size / 1e4 + 25 / (10.0 / 2) + copy)
+    assert "MODELED" in fast_network["modeled_campaign"]["class"]
+    assert "MEASURED" in fast_network["measured_benchmark"]["class"]
+
+
+def test_committed_live_benchmark_evidence_is_accepted_and_text_free(fast_tool: Any) -> None:
+    """The real saved live report and its offline re-acceptance (read-only)."""
+    evidence = REPO / fast_tool.FAST_DIR
+    config = json.loads((evidence / "campaign.json").read_bytes())
+    bench = json.loads((evidence / "benchmark-plan.json").read_bytes())
+    live_path = evidence / "live-benchmark.json"
+    live = json.loads(live_path.read_bytes())
+    accepted = json.loads((evidence / "live-benchmark-accepted.json").read_bytes())
+    assert live["verdict"] == "FAIL" and len(live["reasons"]) == 14
+    assert all(r.startswith(fast.SUPERSEDED_ETAG_REASON) for r in live["reasons"])
+    again = fast.reaccept_benchmark(
+        live,
+        hashlib.sha256(live_path.read_bytes()).hexdigest(),
+        bench,
+        REVISION,
+        config["transport_code_sha256"],
+    )
+    assert again["verdict"] == "PASS" == accepted["verdict"]
+    assert again["phases"] == accepted["phases"] == live["phases"]
+    assert accepted["plan_digest"] == config["benchmark"]["plan_digest"]
+    assert accepted["transport_code_sha256"] == config["transport_code_sha256"]
+    for entry in live["files"].values():
+        # The storage ETag is 64 hex and is not the content hash; the repository digest is.
+        assert len(entry["etag"].strip('"')) == 64 and entry["etag"].strip('"') != entry["sha256"]
+        assert entry["linked_etag"].strip('"') == entry["sha256"]
+        assert entry["linked_size"] == entry["length"] and entry["repo_commit"] == REVISION
+    phases = {(p["phase"], p.get("download_workers")): p for p in live["phases"]}
+    assert all(phases[("parity", None)]["checks"].values())
+    assert round(phases[("download", 8)]["transfer"]["megabytes_per_second"], 1) == 142.7
+    assert round(phases[("local_processing", None)]["rows_per_second"]) == 11363
+    model = json.loads((evidence / "throughput-model.json").read_bytes())["live"]
+    central = model["modeled_batch"]["central"]
+    assert 240 < central["batch_seconds"] < 260 and central["limited_by"] == "local processing"
+    assert 1.6 < model["modeled_campaign"]["central_hours"] < 1.8
+    assert '"text"' not in live_path.read_text(encoding="utf-8")
+    assert config["limits"]["identity_rule"] == fast.IDENTITY_RULE
+    assert "require_etag_sha256" not in config["limits"]
 
 
 def test_committed_fast_campaign_matches_the_historical_science(fast_tool: Any) -> None:

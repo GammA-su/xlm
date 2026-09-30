@@ -133,7 +133,7 @@ class Campaign:
             )
         }
 
-    def transfer_limits(self, *, enforce_etag: bool) -> TransferLimits:
+    def transfer_limits(self) -> TransferLimits:
         limits = self.config["limits"]
         return TransferLimits(
             max_file_bytes=int(limits["max_file_bytes"]),
@@ -142,7 +142,6 @@ class Campaign:
             max_retries=int(limits["max_retries"]),
             request_timeout_seconds=float(limits["request_timeout_seconds"]),
             deadline_seconds=float(limits["file_deadline_seconds"]),
-            require_etag_sha256=enforce_etag and bool(limits["require_etag_sha256"]),
         )
 
 
@@ -278,11 +277,13 @@ def transfer_summary(transfers: list[TransferResult], wall: float) -> dict[str, 
         "resumed_bytes": sum(t.resumed_bytes for t in transfers),
         "cache_hits": sum(1 for t in transfers if t.cache_hit),
         "per_file_megabytes_per_second_min_max": [min(rates), max(rates)] if rates else None,
-        "etag_is_content_sha256": {
-            "true": sum(1 for t in transfers if t.identity.etag_is_content_sha256 is True),
-            "false": sum(1 for t in transfers if t.identity.etag_is_content_sha256 is False),
-            "not_a_digest": sum(1 for t in transfers if t.identity.etag_is_content_sha256 is None),
+        "sha256": {
+            "independently_verified": sum(
+                1 for t in transfers if t.identity.sha256_independently_verified
+            ),
+            "local_only": sum(1 for t in transfers if not t.identity.sha256_independently_verified),
         },
+        "xet_hash_exposed": sum(1 for t in transfers if t.identity.xet_hash is not None),
     }
 
 
@@ -764,7 +765,7 @@ def execute_batch(
                     expected_sha256=plan.expected_file_digests.get(name),
                 )
             )
-    limits = campaign.transfer_limits(enforce_etag=True)
+    limits = campaign.transfer_limits()
     scratch = ScratchBudget(
         campaign.scratch(),
         int(campaign.config["scratch"]["cap_bytes"]),
@@ -910,7 +911,7 @@ def cmd_benchmark(args: argparse.Namespace) -> int:
         int(campaign.config["scratch"]["min_free_bytes"]),
     )
     meter = TransferMeter(limits.max_transferred_bytes, limits.max_requests)
-    transfer_limits = campaign.transfer_limits(enforce_etag=False)
+    transfer_limits = campaign.transfer_limits()
     reasons: list[str] = []
     phases: list[dict[str, Any]] = []
     downloaded: dict[str, TransferResult] = {}
@@ -1139,10 +1140,6 @@ def cmd_benchmark(args: argparse.Namespace) -> int:
     finally:
         # Only this benchmark's own directory is removed; nothing is retained.
         shutil.rmtree(work, ignore_errors=True)
-    mismatched = [
-        name for name, t in downloaded.items() if t.identity.etag_is_content_sha256 is False
-    ]
-    reasons += [f"strong ETag is a digest that differs from the content: {n}" for n in mismatched]
     if len(downloaded) != len(all_files):
         reasons.append("not every benchmark file was transferred")
     report = {
@@ -1181,6 +1178,40 @@ def parallel_process(jobs: list[dict[str, Any]], workers: int) -> list[dict[str,
 
     with ProcessPoolExecutor(workers) as pool:
         return list(pool.map(local.process_unit, jobs))
+
+
+def cmd_benchmark_accept(args: argparse.Namespace) -> int:
+    """OFFLINE: re-apply the corrected identity rule to the saved live benchmark."""
+    campaign = load_campaign(args.campaign, args.data_root, args.scratch_root)
+    bench = read_json(args.plan)
+    check_digest(bench, "benchmark plan")
+    if bench["digest"] != campaign.config["benchmark"]["plan_digest"]:
+        raise bulk.BulkError("benchmark plan is not the one frozen in the campaign")
+    directory = campaign.plans / "benchmark"
+    source = args.report or directory / "benchmark.json"
+    report = read_json(source)
+    if "revalidation" in report:
+        raise bulk.BulkError("report is already a re-accepted one; pass the original report")
+    accepted = fast.reaccept_benchmark(
+        report,
+        sealer.file_sha256(source),
+        bench,
+        selector.SOURCE_REVISION,
+        campaign.config["transport_code_sha256"],
+    )
+    accepted["campaign"] = campaign.config["digest"]
+    accepted["revalidated_at"] = datetime.now(UTC).isoformat()
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    write_json(directory / f"benchmark-accepted-{stamp}.json", accepted)
+    write_json(directory / "benchmark.json", accepted)
+    if args.evidence_dir is not None:
+        write_json(args.evidence_dir / "live-benchmark-accepted.json", accepted)
+    print(
+        f"benchmark {accepted['verdict']} (offline re-acceptance): {directory / 'benchmark.json'}"
+    )
+    for reason in accepted["reasons"]:
+        print(f"  {reason}")
+    return 0 if accepted["verdict"] == "PASS" else EXIT_REFUSED
 
 
 # ------------------------------------------------------- offline measurements
@@ -1607,10 +1638,16 @@ def cmd_model(args: argparse.Namespace) -> int:
     size = int(policy["chosen_files_per_batch"])
     if size != historical_files:
         raise bulk.BulkError("batch size would change the frozen batch membership; not frozen")
-    write_json(
-        out / "throughput-model.json",
-        fast.throughput_model(physical, local_model, size, process_workers),
-    )
+    throughput = fast.throughput_model(physical, local_model, size, process_workers)
+    live = out / "live-benchmark.json"
+    if live.is_file():
+        throughput["live"] = fast.measured_batch_model(
+            physical,
+            read_json(live),
+            size,
+            int(policy["options"][str(size)]["batches_to_science_target"]),
+        )
+    write_json(out / "throughput-model.json", throughput)
     write_json(out / "scratch-policy.json", scratch)
     write_json(out / "concurrency-policy.json", concurrency)
     write_json(out / "raw-artifact-contract.json", fast.raw_contract())
@@ -1792,6 +1829,13 @@ def build_parser() -> argparse.ArgumentParser:
     benchmark.add_argument("--plan", type=Path, default=REPO / FAST_DIR / "benchmark-plan.json")
     benchmark.add_argument("--authorize", required=True)
     benchmark.set_defaults(func=cmd_benchmark)
+    accept = sub.add_parser(
+        "benchmark-accept", help="OFFLINE: re-accept the saved live benchmark report."
+    )
+    accept.add_argument("--plan", type=Path, default=REPO / FAST_DIR / "benchmark-plan.json")
+    accept.add_argument("--report", type=Path, default=None)
+    accept.add_argument("--evidence-dir", type=Path, default=None)
+    accept.set_defaults(func=cmd_benchmark_accept)
     for name, func, text in (
         ("replay", cmd_replay, "OFFLINE: reproduce the sealed calibration from local Parquet."),
         ("bench-local", cmd_bench_local, "OFFLINE: local processing rate by process count."),

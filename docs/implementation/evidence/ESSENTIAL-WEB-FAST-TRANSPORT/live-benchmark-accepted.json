@@ -1,0 +1,399 @@
+{
+  "campaign": "8e42ba31b0ef9fcbae1079cebf88d2449b88a9b37ec52b68c7a408eb2546bb8c",
+  "counts_as_campaign_progress": false,
+  "evidence_class": "REAL live transport measurement, re-accepted OFFLINE under the corrected identity rule; nothing was transferred again",
+  "files": {
+    "data/crawl=CC-MAIN-2016-50/train-01413-of-03132.parquet": {
+      "etag": "\"f0c954afd30a9b985ec4dbcb938498ea29e842210417680bdb6e809dd847d9ce\"",
+      "etag_is_content_sha256": false,
+      "length": 267039095,
+      "linked_etag": "\"3aed0bc4eeaf7a10c16aa8c46f8a48b9c26fd6f89fe402a3c1b9bc0f49bf7b2e\"",
+      "linked_size": 267039095,
+      "repo_commit": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+      "requests": 2,
+      "seconds": 42.610000000015134,
+      "sha256": "3aed0bc4eeaf7a10c16aa8c46f8a48b9c26fd6f89fe402a3c1b9bc0f49bf7b2e"
+    },
+    "data/crawl=CC-MAIN-2016-50/train-02156-of-03132.parquet": {
+      "etag": "\"87b6c7d4142774d0e716ed48826151f9a7e9d13ffe98c239feb7980cd06af746\"",
+      "etag_is_content_sha256": false,
+      "length": 207246017,
+      "linked_etag": "\"c21be3d4155a0d5540dee9de9cf7ed6e7ed9506f12c2b7d7eecbdc8c129c154d\"",
+      "linked_size": 207246017,
+      "repo_commit": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+      "requests": 2,
+      "seconds": 6.125,
+      "sha256": "c21be3d4155a0d5540dee9de9cf7ed6e7ed9506f12c2b7d7eecbdc8c129c154d"
+    },
+    "data/crawl=CC-MAIN-2016-50/train-02839-of-03132.parquet": {
+      "etag": "\"b03b46fe5b4add2039524998f78ffa80ae5a66499e8ddb4f345abf63b15f9eb0\"",
+      "etag_is_content_sha256": false,
+      "length": 199770150,
+      "linked_etag": "\"87d1423c6f191ecf6ccd5ea982870fb41590a6cc7a5eabc20d5e246ae05cc755\"",
+      "linked_size": 199770150,
+      "repo_commit": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+      "requests": 2,
+      "seconds": 8.89100000000326,
+      "sha256": "87d1423c6f191ecf6ccd5ea982870fb41590a6cc7a5eabc20d5e246ae05cc755"
+    },
+    "data/crawl=CC-MAIN-2018-05/train-00835-of-03429.parquet": {
+      "etag": "\"2d28c3179a878c3a4cf84287230867d4f4d83ede19d4170687b76674b2a7e622\"",
+      "etag_is_content_sha256": false,
+      "length": 246099439,
+      "linked_etag": "\"789de015e29094d6d3fe6d2511c26f2a3f3811bf0ee86b318088a6810654215f\"",
+      "linked_size": 246099439,
+      "repo_commit": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+      "requests": 2,
+      "seconds": 10.296999999991385,
+      "sha256": "789de015e29094d6d3fe6d2511c26f2a3f3811bf0ee86b318088a6810654215f"
+    },
+    "data/crawl=CC-MAIN-2018-05/train-02803-of-03429.parquet": {
+      "etag": "\"cac806a5b77855c273eee2555d1c6c466762bd700f37479b062d996b8399d311\"",
+      "etag_is_content_sha256": false,
+      "length": 290107777,
+      "linked_etag": "\"53cfb03c4f7c943303c519d4d1511033c5c4a0639d26d484580fb6e7d0b7c79f\"",
+      "linked_size": 290107777,
+      "repo_commit": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+      "requests": 2,
+      "seconds": 14.422000000020489,
+      "sha256": "53cfb03c4f7c943303c519d4d1511033c5c4a0639d26d484580fb6e7d0b7c79f"
+    },
+    "data/crawl=CC-MAIN-2018-05/train-03158-of-03429.parquet": {
+      "etag": "\"c8623341c22a18acba5a10b852379cfbb0fcab6484a3e97f208f73a4fbec3bb6\"",
+      "etag_is_content_sha256": false,
+      "length": 288452887,
+      "linked_etag": "\"79557550a28dd3b66f9b0480dc1a3d83b90d2f989ce12208c017fd7cfee38e7d\"",
+      "linked_size": 288452887,
+      "repo_commit": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+      "requests": 2,
+      "seconds": 11.421000000002095,
+      "sha256": "79557550a28dd3b66f9b0480dc1a3d83b90d2f989ce12208c017fd7cfee38e7d"
+    },
+    "data/crawl=CC-MAIN-2019-09/train-01483-of-02577.parquet": {
+      "etag": "\"0efef814f71757d312569e709ae08b6933dde295b99421f6f910ab5cf288fb19\"",
+      "etag_is_content_sha256": false,
+      "length": 247845095,
+      "linked_etag": "\"ada3362aa6d9457dbd2f9683a695750a549838aaad31c18b20c04450ff04cb7a\"",
+      "linked_size": 247845095,
+      "repo_commit": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+      "requests": 2,
+      "seconds": 11.219000000011874,
+      "sha256": "ada3362aa6d9457dbd2f9683a695750a549838aaad31c18b20c04450ff04cb7a"
+    },
+    "data/crawl=CC-MAIN-2019-09/train-02494-of-02577.parquet": {
+      "etag": "\"822b6017558eb8fcfdcb3be1528a5b312fcf8fa9a48a07a31ffca557438ebfc9\"",
+      "etag_is_content_sha256": false,
+      "length": 318869507,
+      "linked_etag": "\"2a9c28889e7d09c57c17104b04907d550d1401c0dc9ba05dfd8e2a1a0dfc47cc\"",
+      "linked_size": 318869507,
+      "repo_commit": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+      "requests": 2,
+      "seconds": 14.046999999991385,
+      "sha256": "2a9c28889e7d09c57c17104b04907d550d1401c0dc9ba05dfd8e2a1a0dfc47cc"
+    },
+    "data/crawl=CC-MAIN-2021-04/train-01454-of-03315.parquet": {
+      "etag": "\"cfc4def4a8fbdfa948bdb9a4c1c03da9c47346bf581a3b7d15e59156a2d7eb31\"",
+      "etag_is_content_sha256": false,
+      "length": 246699581,
+      "linked_etag": "\"27574c8c55ea7fe6e0e543d363d2e7a749860f22627fd9de21bba7065af2ac90\"",
+      "linked_size": 246699581,
+      "repo_commit": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+      "requests": 2,
+      "seconds": 9.203000000008615,
+      "sha256": "27574c8c55ea7fe6e0e543d363d2e7a749860f22627fd9de21bba7065af2ac90"
+    },
+    "data/crawl=CC-MAIN-2021-49/train-01693-of-02895.parquet": {
+      "etag": "\"7a89a070200761d5317e6d7db7350c730cdc9be41e39fd04fc4603bf577af860\"",
+      "etag_is_content_sha256": false,
+      "length": 247433535,
+      "linked_etag": "\"f2cfa1d8ab84c163c5de31cf21c326c9e9f57bf77bbcdd7b56e9ec4c31697950\"",
+      "linked_size": 247433535,
+      "repo_commit": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+      "requests": 2,
+      "seconds": 8.937000000005355,
+      "sha256": "f2cfa1d8ab84c163c5de31cf21c326c9e9f57bf77bbcdd7b56e9ec4c31697950"
+    },
+    "data/crawl=CC-MAIN-2024-26/train-01913-of-03168.parquet": {
+      "etag": "\"7e6eba9066935634621118f43872438b807d39efb6ace31345eb755e2dd4024b\"",
+      "etag_is_content_sha256": false,
+      "length": 246304808,
+      "linked_etag": "\"b2e93aad5b0dda8746d21fc237ca17f862304b8a41cb647a465f2e4b0cd99359\"",
+      "linked_size": 246304808,
+      "repo_commit": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+      "requests": 2,
+      "seconds": 10.719000000011874,
+      "sha256": "b2e93aad5b0dda8746d21fc237ca17f862304b8a41cb647a465f2e4b0cd99359"
+    },
+    "data/crawl=CC-MAIN-2024-26/train-02180-of-03168.parquet": {
+      "etag": "\"1fc75efca3625344db2d83062638ddea6bbf839be49ad09bc5f9fdd79744edfa\"",
+      "etag_is_content_sha256": false,
+      "length": 301669526,
+      "linked_etag": "\"060dc317b286864384f52a7e31b9ae48a4d059d643ac1b31b495a7452ace5ede\"",
+      "linked_size": 301669526,
+      "repo_commit": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+      "requests": 2,
+      "seconds": 12.078000000008615,
+      "sha256": "060dc317b286864384f52a7e31b9ae48a4d059d643ac1b31b495a7452ace5ede"
+    },
+    "data/crawl=CC-MAIN-2024-26/train-02938-of-03168.parquet": {
+      "etag": "\"0f8478476f09a18d9e83d4e87213d4e1635a4e0429108cdfba5893c887f14b37\"",
+      "etag_is_content_sha256": false,
+      "length": 295411638,
+      "linked_etag": "\"3a7e1df5011f9b461cb1d950fdc9d6a1f52307dbe59d5395362bcce81cc29db3\"",
+      "linked_size": 295411638,
+      "repo_commit": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+      "requests": 2,
+      "seconds": 11.952999999979511,
+      "sha256": "3a7e1df5011f9b461cb1d950fdc9d6a1f52307dbe59d5395362bcce81cc29db3"
+    },
+    "data/crawl=CC-MAIN-2024-26/train-03096-of-03168.parquet": {
+      "etag": "\"09a5a96e7fd6b4103e961de6c477a4b6fed67fdf6365a1ce3a8c362b0918787e\"",
+      "etag_is_content_sha256": false,
+      "length": 293679049,
+      "linked_etag": "\"4375ee6347336ba390d15b1e23049fcb996412e06e55b657eef2375904f1dbd7\"",
+      "linked_size": 293679049,
+      "repo_commit": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+      "requests": 2,
+      "seconds": 9.73399999999674,
+      "sha256": "4375ee6347336ba390d15b1e23049fcb996412e06e55b657eef2375904f1dbd7"
+    }
+  },
+  "finished_at": "2026-09-30T16:02:13.290778+00:00",
+  "kind": "essential_web_fast_benchmark_report",
+  "phases": [
+    {
+      "download_workers": 1,
+      "phase": "download",
+      "system": {
+        "cpu_percent_max": 12.2,
+        "cpu_percent_mean": 6.776923076923077,
+        "disk_megabytes_per_second_mean": 25.596535463877107,
+        "disk_megabytes_per_second_peak": 73.27509602205383,
+        "disk_written_bytes": 313967104,
+        "logical_cpus": 16,
+        "network_megabits_per_second_mean": 205.22439719544522,
+        "network_megabits_per_second_peak": 549.1812755887892,
+        "network_received_bytes": 314660307,
+        "peak_resident_bytes": 95256576,
+        "physical_cpus": 8,
+        "samples": 13,
+        "scope": "whole machine for CPU, network and disk; this process tree for memory",
+        "seconds": 12.26600000000326
+      },
+      "transfer": {
+        "cache_hits": 0,
+        "etag_is_content_sha256": {
+          "false": 1,
+          "not_a_digest": 0,
+          "true": 0
+        },
+        "file_bytes": 318869507,
+        "files": 1,
+        "megabits_per_second": 181.40776959173863,
+        "megabytes_per_second": 22.67597119896733,
+        "per_file_megabytes_per_second_min_max": [
+          22.700185591243365,
+          22.700185591243365
+        ],
+        "redirects": 1,
+        "requests": 2,
+        "requests_per_file": 2.0,
+        "requests_per_second": 0.14222727919209488,
+        "response_body_bytes": 318869507,
+        "resumed_bytes": 0,
+        "retries": 0,
+        "wall_seconds": 14.062000000005355
+      }
+    },
+    {
+      "download_workers": 4,
+      "phase": "download",
+      "system": {
+        "cpu_percent_max": 13.4,
+        "cpu_percent_mean": 8.24390243902439,
+        "disk_megabytes_per_second_mean": 34.1233937789372,
+        "disk_megabytes_per_second_peak": 271.3196850384996,
+        "disk_written_bytes": 1392132096,
+        "logical_cpus": 16,
+        "network_megabits_per_second_mean": 227.18340838775757,
+        "network_megabits_per_second_peak": 1599.7379999948676,
+        "network_received_bytes": 1158550189,
+        "peak_resident_bytes": 100933632,
+        "physical_cpus": 8,
+        "samples": 41,
+        "scope": "whole machine for CPU, network and disk; this process tree for memory",
+        "seconds": 40.79700000002049
+      },
+      "transfer": {
+        "cache_hits": 0,
+        "etag_is_content_sha256": {
+          "false": 4,
+          "not_a_digest": 0,
+          "true": 0
+        },
+        "file_bytes": 1109821205,
+        "files": 4,
+        "megabits_per_second": 208.368214972937,
+        "megabytes_per_second": 26.046026871617126,
+        "per_file_megabytes_per_second_min_max": [
+          6.2670522177870245,
+          30.170438565861758
+        ],
+        "redirects": 4,
+        "requests": 8,
+        "requests_per_file": 2.0,
+        "requests_per_second": 0.18774935461152684,
+        "response_body_bytes": 1109821205,
+        "resumed_bytes": 0,
+        "retries": 0,
+        "wall_seconds": 42.610000000015134
+      }
+    },
+    {
+      "download_workers": 8,
+      "phase": "download",
+      "system": {
+        "cpu_percent_max": 15.3,
+        "cpu_percent_mean": 10.764285714285714,
+        "disk_megabytes_per_second_mean": 155.05452001525418,
+        "disk_megabytes_per_second_peak": 384.0837359553048,
+        "disk_written_bytes": 2056798208,
+        "logical_cpus": 16,
+        "network_megabits_per_second_mean": 1291.3965491156837,
+        "network_megabits_per_second_peak": 2861.2945799715826,
+        "network_received_bytes": 2141296903,
+        "peak_resident_bytes": 110923776,
+        "physical_cpus": 8,
+        "samples": 14,
+        "scope": "whole machine for CPU, network and disk; this process tree for memory",
+        "seconds": 13.264999999984866
+      },
+      "transfer": {
+        "cache_hits": 0,
+        "etag_is_content_sha256": {
+          "false": 8,
+          "not_a_digest": 0,
+          "true": 0
+        },
+        "file_bytes": 2060691375,
+        "files": 8,
+        "megabits_per_second": 1141.8945071686558,
+        "megabytes_per_second": 142.73681339608197,
+        "per_file_megabytes_per_second_min_max": [
+          20.11564117317902,
+          26.80643062042476
+        ],
+        "redirects": 8,
+        "requests": 16,
+        "requests_per_file": 2.0,
+        "requests_per_second": 1.108263489644252,
+        "response_body_bytes": 2060691375,
+        "resumed_bytes": 0,
+        "retries": 0,
+        "wall_seconds": 14.437000000005355
+      }
+    },
+    {
+      "canonical_bytes": {
+        "essential_practical": 174608381,
+        "essential_prose": 480055659,
+        "essential_science": 72486624
+      },
+      "cpu_seconds": 818.4375,
+      "documents": {
+        "essential_practical": 32923,
+        "essential_prose": 102736,
+        "essential_science": 8225
+      },
+      "documents_file_bytes": 1008432251,
+      "files": 13,
+      "ledger_compressed_bytes": 151253850,
+      "ledger_uncompressed_bytes": 1789481802,
+      "note": "measured on real files; never counted as campaign progress",
+      "phase": "local_processing",
+      "process_workers": 12,
+      "rows": 1111054,
+      "rows_per_core_second": 1357.5306605574647,
+      "rows_per_second": 11362.67782084592,
+      "selected_records_bytes_not_stored": 10120207042,
+      "source_bytes": 3489382087,
+      "system": {
+        "cpu_percent_max": 97.4,
+        "cpu_percent_mean": 60.11052631578947,
+        "disk_megabytes_per_second_mean": 12.55094869248327,
+        "disk_megabytes_per_second_peak": 87.0568845790822,
+        "disk_written_bytes": 1213325312,
+        "logical_cpus": 16,
+        "network_megabits_per_second_mean": 0.6605358325056527,
+        "network_megabits_per_second_peak": 9.198645669261827,
+        "network_received_bytes": 7981915,
+        "peak_resident_bytes": 3542630400,
+        "physical_cpus": 8,
+        "samples": 95,
+        "scope": "whole machine for CPU, network and disk; this process tree for memory",
+        "seconds": 96.67200000002049
+      },
+      "wall_seconds": 97.78099999998813
+    },
+    {
+      "bytes": 318869507,
+      "megabytes_per_second": 364.42229371428573,
+      "phase": "durable_copy",
+      "seconds": 0.875
+    },
+    {
+      "checks": {
+        "essential_practical_documents_identical": true,
+        "essential_practical_rejections_identical": true,
+        "essential_prose_documents_identical": true,
+        "essential_prose_rejections_identical": true,
+        "essential_science_documents_identical": true,
+        "essential_science_rejections_identical": true,
+        "etag_equals_sealed_validator": true,
+        "length_equals_sealed_validator": true,
+        "selected_records_bytes_equal": true,
+        "selected_records_sha256_equals_sealed_raw": true
+      },
+      "file": "data/crawl=CC-MAIN-2016-50/train-02156-of-03132.parquet",
+      "meaning": "the whole real upstream file, processed locally, reproduces the sealed certified calibration raw records and canonical outputs byte for byte",
+      "phase": "parity",
+      "rows": 2048
+    }
+  ],
+  "plan_digest": "f319a6f0cb7ccdf08f4b770f7d54c087169483bfaa15aeb3d22f25ed5802a316",
+  "reasons": [],
+  "revalidated_at": "2026-09-30T16:50:02.944437+00:00",
+  "revalidation": {
+    "benchmark_files_available": false,
+    "code_changed_since_benchmark": [
+      "src/xlm/data/acquisition/source_parquet.py"
+    ],
+    "files": 14,
+    "files_with_etag_equal_to_local_sha256": 0,
+    "files_with_repository_sha256_equal_to_local_sha256": 14,
+    "identity_rule": "opaque-strong-etag+local-sha256+independent-sha256-when-declared",
+    "local_sha256_recomputed_now": false,
+    "network_requests": 0,
+    "original_plan_digest": "5f865608bb75a6272200c73d4a912d58182b7d991c65fff6ab5ed866aa308115",
+    "original_reasons": 14,
+    "original_report_sha256": "de372896e015109ba1e94f7532b32c895fde7a493e06ecb17b5c8f44703fef94",
+    "original_transport_code_sha256": {
+      "src/xlm/data/acquisition/source_parquet.py": "5107c10d7e4b73f2466970ee51c842baf2ff316693f28cfbfb53af354f3d00f5",
+      "src/xlm/data/adapters/columns.py": "3e594f755eea797ac0d29d819c28b4ccf8e387cfc7889470dfc58e8657e58db1",
+      "src/xlm/data/sources/essential_web_local.py": "05cb36e81c550528af56aa98f8d5c73c15f1f65141429e0ec4e7a33502183bad"
+    },
+    "original_verdict": "FAIL",
+    "record_processing_code_unchanged": true,
+    "superseded_rule": "a 64-hex strong ETag had to equal the content SHA-256",
+    "why_not_recomputed": "the benchmark retains nothing; its scratch files were removed when it finished. The recorded SHA-256 values were computed over the received bytes during the transfer and equal the repository's declared digests"
+  },
+  "scratch_removed": true,
+  "total_requests": 28,
+  "total_response_body_bytes": 3696628104,
+  "transport_code_sha256": {
+    "src/xlm/data/acquisition/source_parquet.py": "40921b00192de706218b7629a31adf18299b0dca1c93d462fbd09067864ddb8a",
+    "src/xlm/data/adapters/columns.py": "3e594f755eea797ac0d29d819c28b4ccf8e387cfc7889470dfc58e8657e58db1",
+    "src/xlm/data/sources/essential_web_local.py": "05cb36e81c550528af56aa98f8d5c73c15f1f65141429e0ec4e7a33502183bad"
+  },
+  "verdict": "PASS"
+}

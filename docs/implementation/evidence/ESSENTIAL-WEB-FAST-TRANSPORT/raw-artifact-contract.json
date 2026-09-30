@@ -6,12 +6,15 @@
       "repository",
       "immutable revision in the request URL",
       "source path",
-      "strong ETag",
+      "strong ETag (opaque remote validator; never compared with the content)",
       "remote length",
-      "locally computed SHA-256 of every byte"
+      "locally computed SHA-256 of every byte",
+      "independent expected SHA-256 when the plan or the repository declares one",
+      "storage hash (X-Xet-Hash) as its own field when exposed"
     ],
+    "identity_rule": "opaque-strong-etag+local-sha256+independent-sha256-when-declared",
     "immutability": "linked exclusively under its final name after its copy reproduced the verified SHA-256; an existing file is never replaced",
-    "stronger_than_before": "the historical raw artifact hashed a derived projection of selected rows and stated that it could not verify a full-file digest; this one hashes the complete original and, where the strong ETag is a 64-hex digest, requires it to equal that hash"
+    "stronger_than_before": "the historical raw artifact hashed a derived projection of selected rows and stated that it could not verify a full-file digest; this one hashes the complete original and requires that hash to equal the digest the repository declares for the pinned path (the Git-LFS SHA-256 sent as X-Linked-ETag) whenever it is declared"
   },
   "contract_id": "essential-web-raw-artifact-v2",
   "derived_lineage_kept_per_file": [

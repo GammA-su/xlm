@@ -75,14 +75,12 @@
   },
   "batch_files": 32,
   "benchmark_files_are_batch_0_prefix": true,
-  "campaign_digest": "d7b1a503055d72e7082e74b1c58eaa9c1c52ed5282ec2f12df4876979cf45822",
+  "campaign_digest": "8e42ba31b0ef9fcbae1079cebf88d2449b88a9b37ec52b68c7a408eb2546bb8c",
   "campaign_rows_counted": 0,
   "files_through_ceiling_distinct": true,
   "first_batch_gate": {
-    "decision": "REFUSE",
-    "reasons": [
-      "the transport benchmark and real-byte parity check have not passed"
-    ]
+    "decision": "RUN",
+    "reasons": []
   },
   "first_batch_gate_expected": "REFUSE until the live benchmark passes",
   "inventory_digest": "4bbd5517e760971405d9aed56bba5b84877a6325d10f5a10a05b50f5a8d763d8",
@@ -95,7 +93,7 @@
   "parity_file_beyond_ceiling": true,
   "parity_file_inventory_rank": 13757,
   "readiness": {
-    "benchmark_passed": false,
+    "benchmark_passed": true,
     "bulk_fetch_run": false,
     "c05_receipt_present": false,
     "historical_campaign_ledger_entries": 0,

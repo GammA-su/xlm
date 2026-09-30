@@ -17,7 +17,7 @@
   "seal_digest": "149f3eb48e047e6545314dcb40cc01fe2b0e8853898a83a2060f0e8c9032e2a1",
   "summary_bytes_per_unit": 4851.375,
   "transport_code_sha256": {
-    "src/xlm/data/acquisition/source_parquet.py": "5107c10d7e4b73f2466970ee51c842baf2ff316693f28cfbfb53af354f3d00f5",
+    "src/xlm/data/acquisition/source_parquet.py": "40921b00192de706218b7629a31adf18299b0dca1c93d462fbd09067864ddb8a",
     "src/xlm/data/adapters/columns.py": "3e594f755eea797ac0d29d819c28b4ccf8e387cfc7889470dfc58e8657e58db1",
     "src/xlm/data/sources/essential_web_local.py": "05cb36e81c550528af56aa98f8d5c73c15f1f65141429e0ec4e7a33502183bad"
   },

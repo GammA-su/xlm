@@ -55,8 +55,12 @@ IDENTITY_VERSION = 1
 #: Decode batch rows; order is preserved, so output bytes do not depend on it.
 DECODE_BATCH_ROWS = 512
 _CONTENT_RANGE = re.compile(r"^bytes (\d+)-(\d+)/(\d+)$")
-_SHA256_ETAG = re.compile(r'^"([0-9a-f]{64})"$')
-_LINKED_HEADERS = ("X-Linked-ETag", "X-Linked-Size", "X-Repo-Commit")
+#: The repository's own content digest for a pinned path (the Git-LFS SHA-256
+#: the Hub sends as ``X-Linked-ETag`` on the revision-pinned resolve response).
+_LINKED_SHA256 = re.compile(r'^(?:W/)?"?([0-9a-fA-F]{64})"?$')
+_LINKED_HEADERS = ("X-Linked-ETag", "X-Linked-Size", "X-Repo-Commit", "X-Xet-Hash")
+EXPECTED_FROM_PLAN = "plan"
+EXPECTED_FROM_REPOSITORY = "x-linked-etag"
 _MAX_RETRY_DELAY_SECONDS = 60.0
 
 
@@ -82,8 +86,6 @@ class TransferLimits:
     max_retries: int
     request_timeout_seconds: float
     deadline_seconds: float
-    #: A 64-hex strong ETag must equal the locally computed SHA-256.
-    require_etag_sha256: bool = True
 
     def __post_init__(self) -> None:
         if (
@@ -98,16 +100,32 @@ class TransferLimits:
 
 @dataclass(frozen=True)
 class SourceIdentity:
-    """What identifies one immutable upstream file after it was transferred."""
+    """What identifies one immutable upstream file after it was transferred.
 
+    Four different things, never substituted for one another: the opaque strong
+    HTTP validator of the storage endpoint (``etag``), the storage system's own
+    hash when it is exposed (``xet_hash``), the content digest the repository
+    declares for the pinned path (``expected_sha256``), and the SHA-256 of the
+    bytes actually received (``sha256``).
+    """
+
+    #: Opaque strong validator. Used for resume and drift only; its shape says
+    #: nothing about what it hashes, even when it is 64 hexadecimal characters.
     etag: str
     length: int
+    #: SHA-256 of every received byte; always computed, always recorded.
     sha256: str
-    #: True/False when the strong ETag is a 64-hex digest; None when it is not.
-    etag_is_content_sha256: bool | None
+    #: Independent expected digest that ``sha256`` was required to equal, if any.
+    expected_sha256: str | None = None
+    expected_sha256_source: str | None = None
     linked_etag: str | None = None
     linked_size: int | None = None
     repo_commit: str | None = None
+    xet_hash: str | None = None
+
+    @property
+    def sha256_independently_verified(self) -> bool:
+        return self.expected_sha256 is not None
 
 
 @dataclass(frozen=True)
@@ -419,13 +437,19 @@ class _Download:
             raise SourceDriftDetectedError(f"'{self.name}' length differs from its linked size")
         if commit is not None and self.revision is not None and commit != self.revision:
             raise SourceDriftDetectedError(f"'{self.name}' resolved to another revision")
+        declared = linked.get("X-Linked-ETag")
         if bound == (None, None):
             self._save(
                 etag=etag,
                 length=total,
-                linked_etag=linked.get("X-Linked-ETag"),
+                linked_etag=declared,
                 linked_size=None if size is None else int(size),
                 repo_commit=commit,
+                xet_hash=linked.get("X-Xet-Hash"),
+            )
+        elif declared is not None and declared != self.state.get("linked_etag"):
+            raise SourceDriftDetectedError(
+                f"repository digest of '{self.name}' changed between requests"
             )
         if self.scratch is not None:
             self.scratch.shrink(self.scratch_key, total)
@@ -472,7 +496,11 @@ class _Download:
                 raise SourceTransferError(
                     f"'{self.name}': unexpected response status {response.status}"
                 )
-            self._bind(etag, total, redirects.linked)
+            linked = dict(redirects.linked)
+            xet = response.headers.get("X-Xet-Hash")
+            if xet:
+                linked["X-Xet-Hash"] = str(xet)
+            self._bind(etag, total, linked)
             if response.status == 200 and self.offset:
                 # Same validator but the range was ignored: only a restart is safe.
                 self._restart_from_zero()
@@ -544,18 +572,38 @@ class _Download:
                     digest.update(chunk)
         self.offset, self.digest = verified, digest
 
+    def _expected(self) -> tuple[str | None, str | None]:
+        """The independent expected SHA-256 and where it comes from.
+
+        A reviewed digest in the plan, or the digest the repository declares
+        for the pinned path. The storage endpoint's ETag is never one.
+        """
+        declared = _LINKED_SHA256.fullmatch(str(self.state.get("linked_etag") or ""))
+        repository = None if declared is None else declared[1].lower()
+        if self.expected_sha256 is not None:
+            planned = self.expected_sha256.lower()
+            if repository is not None and repository != planned:
+                raise SourceDriftDetectedError(
+                    f"'{self.name}': repository digest differs from the plan's expected digest"
+                )
+            return planned, EXPECTED_FROM_PLAN
+        if repository is not None:
+            return repository, EXPECTED_FROM_REPOSITORY
+        return None, None
+
     def _result(self, cache_hit: bool) -> TransferResult:
-        etag, sha256 = str(self.state["etag"]), str(self.state["sha256"])
-        match = _SHA256_ETAG.fullmatch(etag)
+        expected, source = self._expected()
         return TransferResult(
             identity=SourceIdentity(
-                etag=etag,
+                etag=str(self.state["etag"]),
                 length=int(self.state["length"]),
-                sha256=sha256,
-                etag_is_content_sha256=None if match is None else match[1] == sha256,
+                sha256=str(self.state["sha256"]),
+                expected_sha256=expected,
+                expected_sha256_source=source,
                 linked_etag=self.state.get("linked_etag"),
                 linked_size=self.state.get("linked_size"),
                 repo_commit=self.state.get("repo_commit"),
+                xet_hash=self.state.get("xet_hash"),
             ),
             path=self.partial,
             transferred_bytes=self.transferred,
@@ -570,14 +618,12 @@ class _Download:
     def _finish(self) -> TransferResult:
         sha256 = self.digest.hexdigest()
         size = self.partial.stat().st_size
-        match = _SHA256_ETAG.fullmatch(str(self.state["etag"]))
+        expected, source = self._expected()
         refusal = None
         if size != int(self.state["length"]) or size != self.offset:
             refusal = "size differs from the declared length"
-        elif self.expected_sha256 is not None and sha256 != self.expected_sha256.lower():
-            refusal = "content differs from its independent expected digest"
-        elif match is not None and match[1] != sha256 and self.limits.require_etag_sha256:
-            refusal = "content differs from its 64-hex strong ETag"
+        elif expected is not None and sha256 != expected:
+            refusal = f"content differs from its independent expected SHA-256 ({source})"
         if refusal is not None:
             self._restart_from_zero()
             raise SourceTransferError(f"'{self.name}': {refusal}")
@@ -588,7 +634,10 @@ class _Download:
         self._restore()
         if self.state.get("complete"):
             sha256, size = file_sha256(self.partial)
-            if (sha256, size) == (self.state.get("sha256"), self.state.get("length")):
+            if (sha256, size) == (
+                self.state.get("sha256"),
+                self.state.get("length"),
+            ) and self._expected()[0] in (None, sha256):
                 if self.scratch is not None:
                     self.scratch.shrink(self.scratch_key, size)
                 return self._result(cache_hit=True)
@@ -624,8 +673,13 @@ def download_source(
     One GET (plus its allowlisted redirect) when nothing fails. An interrupted
     stream resumes with ``Range`` and ``If-Range`` from the last fsynced
     checkpoint whose prefix hash still matches; anything else restarts from
-    zero with the spent transfer kept charged. A changed validator, length or
-    resolved revision is source drift and is never retried.
+    zero with the spent transfer kept charged. A changed validator, length,
+    repository digest or resolved revision is source drift and is never retried.
+
+    The strong ETag is an opaque validator: it drives ``If-Range`` and drift
+    detection and is never compared with the content. The SHA-256 of the
+    received bytes is always recorded and must equal the independent expected
+    digest when one exists (the plan's, or the repository's for this path).
     """
     return _Download(
         url,
@@ -661,6 +715,7 @@ def identity_record(
         "repository": repository,
         "revision": revision,
         **asdict(identity),
+        "sha256_independently_verified": identity.sha256_independently_verified,
     }
 
 

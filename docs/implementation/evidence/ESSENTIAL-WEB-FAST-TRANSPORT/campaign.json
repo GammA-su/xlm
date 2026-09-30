@@ -16,7 +16,7 @@
     "unit": "one whole source file: download, verify, retain, adapt, receipt"
   },
   "benchmark": {
-    "plan_digest": "5f865608bb75a6272200c73d4a912d58182b7d991c65fff6ab5ed866aa308115",
+    "plan_digest": "f319a6f0cb7ccdf08f4b770f7d54c087169483bfaa15aeb3d22f25ed5802a316",
     "required_before_first_batch": true,
     "why": "source-identity behaviour and parity on real upstream bytes cannot be proved offline"
   },
@@ -71,7 +71,7 @@
     "process_workers": 12,
     "process_workers_max": 16
   },
-  "digest": "d7b1a503055d72e7082e74b1c58eaa9c1c52ed5282ec2f12df4876979cf45822",
+  "digest": "8e42ba31b0ef9fcbae1079cebf88d2449b88a9b37ec52b68c7a408eb2546bb8c",
   "disk": {
     "footprint_cap_bytes": 429496729600,
     "min_free_bytes": 68719476736
@@ -89,6 +89,7 @@
     "batch_deadline_seconds": 14400.0,
     "deadline_basis": "a stalled stream fails after the request timeout and resumes; the file deadline bounds one file at about 0.3 MiB/s and the batch deadline one run",
     "file_deadline_seconds": 1800.0,
+    "identity_rule": "opaque-strong-etag+local-sha256+independent-sha256-when-declared",
     "max_decoded_bytes_per_file": 2147483648,
     "max_decompression_ratio": 15.0,
     "max_durable_bytes_per_file": 1073741824,
@@ -102,7 +103,6 @@
     "observed_max_file_bytes": 316724715,
     "observed_max_rows_per_file": 97828,
     "request_timeout_seconds": 30.0,
-    "require_etag_sha256": true,
     "transfer_factor": 1.5
   },
   "plan": {
@@ -128,12 +128,15 @@
         "repository",
         "immutable revision in the request URL",
         "source path",
-        "strong ETag",
+        "strong ETag (opaque remote validator; never compared with the content)",
         "remote length",
-        "locally computed SHA-256 of every byte"
+        "locally computed SHA-256 of every byte",
+        "independent expected SHA-256 when the plan or the repository declares one",
+        "storage hash (X-Xet-Hash) as its own field when exposed"
       ],
+      "identity_rule": "opaque-strong-etag+local-sha256+independent-sha256-when-declared",
       "immutability": "linked exclusively under its final name after its copy reproduced the verified SHA-256; an existing file is never replaced",
-      "stronger_than_before": "the historical raw artifact hashed a derived projection of selected rows and stated that it could not verify a full-file digest; this one hashes the complete original and, where the strong ETag is a 64-hex digest, requires it to equal that hash"
+      "stronger_than_before": "the historical raw artifact hashed a derived projection of selected rows and stated that it could not verify a full-file digest; this one hashes the complete original and requires that hash to equal the digest the repository declares for the pinned path (the Git-LFS SHA-256 sent as X-Linked-ETag) whenever it is declared"
     },
     "contract_id": "essential-web-raw-artifact-v2",
     "derived_lineage_kept_per_file": [
@@ -200,7 +203,7 @@
     "status": "historical; preserved unmodified; it executed no bulk fetch"
   },
   "transport_code_sha256": {
-    "src/xlm/data/acquisition/source_parquet.py": "5107c10d7e4b73f2466970ee51c842baf2ff316693f28cfbfb53af354f3d00f5",
+    "src/xlm/data/acquisition/source_parquet.py": "40921b00192de706218b7629a31adf18299b0dca1c93d462fbd09067864ddb8a",
     "src/xlm/data/adapters/columns.py": "3e594f755eea797ac0d29d819c28b4ccf8e387cfc7889470dfc58e8657e58db1",
     "src/xlm/data/sources/essential_web_local.py": "05cb36e81c550528af56aa98f8d5c73c15f1f65141429e0ec4e7a33502183bad"
   },

@@ -31,12 +31,12 @@
   },
   "measured_volumes": {
     "durable": {
-      "free_bytes": 999105929216,
+      "free_bytes": 999105871872,
       "total_bytes": 1000203087872,
       "volume": "G:\\"
     },
     "scratch": {
-      "free_bytes": 863101288448,
+      "free_bytes": 862851268608,
       "total_bytes": 999210086400,
       "volume": "C:\\"
     }

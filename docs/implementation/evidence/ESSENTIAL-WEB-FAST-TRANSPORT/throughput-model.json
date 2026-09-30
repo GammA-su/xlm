@@ -52,5 +52,86 @@
     "request_latency_share": 0.6206527451854137,
     "seconds_one_worker": 13356.058589742588,
     "transfer_bytes": 7455456241
+  },
+  "live": {
+    "measured_benchmark": {
+      "class": "MEASURED once, live, on 13 batch-0 files",
+      "download": {
+        "1": {
+          "bytes": 318869507,
+          "files": 1,
+          "megabits_per_second": 181.40776959173863,
+          "megabytes_per_second": 22.67597119896733,
+          "requests_per_file": 2.0,
+          "retries": 0,
+          "wall_seconds": 14.062000000005355
+        },
+        "4": {
+          "bytes": 1109821205,
+          "files": 4,
+          "megabits_per_second": 208.368214972937,
+          "megabytes_per_second": 26.046026871617126,
+          "requests_per_file": 2.0,
+          "retries": 0,
+          "wall_seconds": 42.610000000015134
+        },
+        "8": {
+          "bytes": 2060691375,
+          "files": 8,
+          "megabits_per_second": 1141.8945071686558,
+          "megabytes_per_second": 142.73681339608197,
+          "requests_per_file": 2.0,
+          "retries": 0,
+          "wall_seconds": 14.437000000005355
+        }
+      },
+      "durable_copy_megabytes_per_second": 364.42229371428573,
+      "local_processing": {
+        "files": 13,
+        "peak_resident_bytes": 3542630400,
+        "process_workers": 12,
+        "rows": 1111054,
+        "rows_per_second": 11362.67782084592,
+        "wall_seconds": 97.78099999998813
+      }
+    },
+    "modeled_batch": {
+      "batch_files": 32,
+      "central": {
+        "batch_seconds": 249.20807013505757,
+        "campaign_hours": 1.730611598160122,
+        "campaign_seconds": 6230.201753376439,
+        "download_seconds": 58.52724962283143,
+        "download_streams": 8,
+        "durable_copy_seconds_per_process": 1.9103279473871628,
+        "first_file_seconds": 14.631812405707857,
+        "limited_by": "local processing",
+        "network_megabytes_per_second": 142.73681339608197,
+        "processing_seconds": 232.66592978196255
+      },
+      "class": "MODELED from the measured rates; not a measurement of a batch",
+      "estimated_bytes": 8353993108,
+      "estimated_rows": 2643708,
+      "if_network_is_as_slow_as_the_4_stream_tier": {
+        "batch_seconds": 409.8996849262034,
+        "campaign_hours": 2.8465255897653012,
+        "campaign_seconds": 10247.492123155085,
+        "download_seconds": 320.7396333105803,
+        "download_streams": 4,
+        "durable_copy_seconds_per_process": 1.9103279473871628,
+        "first_file_seconds": 40.09245416382254,
+        "limited_by": "network",
+        "network_megabytes_per_second": 26.046026871617126,
+        "processing_seconds": 232.66592978196255
+      },
+      "not_included": "main-thread sealing (canonical cross-check and receipt), retries and the operator's Prepare/authorize steps between batches"
+    },
+    "modeled_campaign": {
+      "batches": 25,
+      "central_hours": 1.730611598160122,
+      "class": "MODELED; batches are estimated from eight known file sizes",
+      "slow_network_hours": 2.8465255897653012
+    },
+    "variance_note": "the 4-stream tier ran slower per stream than the 1- and 8-stream tiers; one sample per tier does not separate endpoint variance from concurrency"
   }
 }

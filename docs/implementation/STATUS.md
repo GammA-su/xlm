@@ -1,3 +1,25 @@
+> **ESSENTIAL-WEB FAST TRANSPORT IDENTITY FIX (2026-09-30, offline): READY FOR
+> HIGH-THROUGHPUT ESSENTIAL-WEB BATCH 0. NO NETWORK, NO REDOWNLOAD.** The live
+> benchmark (operator) measured 22.7 / 26.0 / 142.7 MB/s at 1 / 4 / 8 streams,
+> 11,363 rows/s at 12 processes, 0 retries, and real-byte parity IDENTICAL. It
+> was recorded FAIL only because the code required a 64-hex strong ETag to equal
+> the content SHA-256. Saved evidence: the storage ETag differs from the local
+> SHA-256 in 14 of 14 files, while the repository's `X-Linked-ETag` equals it in
+> 14 of 14. What the storage ETag hashes is NOT DETERMINED (`X-Xet-Hash` was not
+> captured). New rule: the ETag is an opaque validator for resume and drift; the
+> local SHA-256 is always recorded and must equal the plan's or the repository's
+> declared SHA-256 when one exists; `X-Xet-Hash` is a separate field. No
+> guarantee weakened: the removed check could only fail, the new one refuses
+> real corruption. The saved report was re-accepted offline (PASS); its files
+> were discarded by design, so no SHA-256 was recomputed. Campaign refrozen as
+> `8e42ba31…bb8c` (science unchanged); gate for batch 0 is RUN. Modeled from the
+> measured rates: 4.2 min per 32-file batch, 1.73 h for 25 batches (6.8 min and
+> 2.85 h at the 4-stream rate); no whole batch has been measured. Focused tests
+> 713 passed (33 in the module, 6 new); ruff/format/strict mypy clean; fast/full
+> selections NOT RUN. No selector, mixture or quota change; no push.
+> [Identity fix report](reports/ESSENTIAL-WEB-FAST-TRANSPORT-IDENTITY-FIX.md).
+> Next: `. .\scripts\operator_storage.ps1; .\scripts\operator_essential_web_fast.ps1 -Batch 0 -Stage Prepare`
+
 > **ESSENTIAL-WEB FAST TRANSPORT (2026-09-30, offline): READY FOR HIGH-THROUGHPUT
 > ESSENTIAL-WEB BENCHMARK. NO BULK FETCH, NO LIVE REQUEST.** The range-reader
 > campaign `644be917…0ce9` was stopped before any fetch and is kept as history;

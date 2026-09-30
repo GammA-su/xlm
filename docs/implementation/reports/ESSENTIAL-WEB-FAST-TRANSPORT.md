@@ -2,6 +2,12 @@
 
 **READY FOR HIGH-THROUGHPUT ESSENTIAL-WEB BENCHMARK**
 
+> **Update, same day.** The live benchmark ran. Its only failure was the ETag rule described
+> below, which was wrong; the rule is corrected and the saved report is re-accepted offline.
+> See [identity fix and live benchmark](ESSENTIAL-WEB-FAST-TRANSPORT-IDENTITY-FIX.md).
+> The campaign was refrozen as `8e42ba31…bb8c`. Text below is kept as written except where
+> it named the superseded rule or digests.
+
 The range-reader bulk campaign was stopped before any bulk fetch. Its physical
 transport and storage are replaced by whole-file streaming, a retained source
 Parquet and local processing. **No live request was made here and no bulk data
@@ -17,9 +23,9 @@ What is proved offline and what is not:
 | Local processing reproduces the sealed calibration byte for byte (16,384 real rows) | VERIFIED offline |
 | Local processing equals the certified range reader on authored files | VERIFIED offline |
 | Transport rules: resume, drift, bounds, scratch cap | VERIFIED on a loopback server |
-| Throughput against the real endpoint | NOT RUN (operator benchmark) |
-| Parity on real upstream file bytes | NOT RUN (benchmark parity phase) |
-| The strong ETag equals the content SHA-256 on the real endpoint | NOT RUN (benchmark) |
+| Throughput against the real endpoint | MEASURED live: 142.7 MB/s at 8 streams |
+| Parity on real upstream file bytes | VERIFIED live: identical |
+| The strong ETag equals the content SHA-256 on the real endpoint | FALSE; the rule was wrong and is removed |
 
 The campaign gate refuses batch 0 until that benchmark passes. Exact commands
 and exit statuses are in
@@ -78,7 +84,7 @@ One authoritative raw representation: the unmodified upstream Parquet file.
 | Exact revision | pinned in the request URL; a differing `X-Repo-Commit` is drift |
 | Strong ETag, remote length | the response; weak or missing validators are refused |
 | SHA-256 of every byte | computed while streaming and again while copying |
-| ETag against content | a 64-hex strong ETag must equal the SHA-256 |
+| Declared digest against content | the SHA-256 the repository declares must equal the local one; the ETag is an opaque validator |
 
 This is stronger evidence than before. The historical artifact hashed a derived
 projection of selected rows and stated that it could not verify a full-file

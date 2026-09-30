@@ -32,6 +32,7 @@ RECEIPT_VERSION = 1
 #: Operational heuristic, not a scientific rule: below this byte ratio the
 #: request-count reduction of whole-file transport is worth the extra bytes.
 WHOLE_FILE_PREFERENCE_RATIO = 1.35
+IDENTITY_RULE = "opaque-strong-etag+local-sha256+independent-sha256-when-declared"
 #: One resolve request plus its allowlisted redirect target.
 WHOLE_FILE_REQUESTS = 2
 BATCH_OPTIONS = bulk.BATCH_OPTIONS
@@ -375,7 +376,7 @@ def limits_policy(historical: Mapping[str, Any], physical: Mapping[str, Any]) ->
         "max_record_bytes": int(historical["max_record_bytes"]),
         "max_parser_bytes": int(historical["max_parser_bytes"]),
         "max_decompression_ratio": float(historical["max_decompression_ratio"]),
-        "require_etag_sha256": True,
+        "identity_rule": IDENTITY_RULE,
     }
 
 
@@ -428,14 +429,18 @@ def raw_contract() -> dict[str, Any]:
                 "repository",
                 "immutable revision in the request URL",
                 "source path",
-                "strong ETag",
+                "strong ETag (opaque remote validator; never compared with the content)",
                 "remote length",
                 "locally computed SHA-256 of every byte",
+                "independent expected SHA-256 when the plan or the repository declares one",
+                "storage hash (X-Xet-Hash) as its own field when exposed",
             ],
+            "identity_rule": IDENTITY_RULE,
             "stronger_than_before": "the historical raw artifact hashed a derived projection "
             "of selected rows and stated that it could not verify a full-file digest; this one "
-            "hashes the complete original and, where the strong ETag is a 64-hex digest, "
-            "requires it to equal that hash",
+            "hashes the complete original and requires that hash to equal the digest the "
+            "repository declares for the pinned path (the Git-LFS SHA-256 sent as "
+            "X-Linked-ETag) whenever it is declared",
             "immutability": "linked exclusively under its final name after its copy reproduced "
             "the verified SHA-256; an existing file is never replaced",
         },
@@ -630,6 +635,215 @@ def benchmark_plan(
     }
     plan["digest"] = canonical.digest(plan)
     return plan
+
+
+# ------------------------------------------------- live benchmark evidence
+
+#: The only failure the first identity rule could produce on healthy transfers.
+SUPERSEDED_ETAG_REASON = "strong ETag is a digest that differs from the content"
+_TRANSPORT_FILE = TRANSPORT_CODE_FILES[0]
+
+
+def _is_sha256(value: Any) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) == 64
+        and all(character in "0123456789abcdef" for character in value)
+    )
+
+
+def reaccept_benchmark(
+    report: Mapping[str, Any],
+    report_sha256: str,
+    plan: Mapping[str, Any],
+    revision: str,
+    code: Mapping[str, str],
+) -> dict[str, Any]:
+    """Re-apply the corrected acceptance rule to a saved live benchmark, offline.
+
+    Nothing is transferred and no discarded file is needed: the report already
+    holds, per file, the locally computed SHA-256, the length, the strong ETag
+    and the digest, size and commit the repository declared. The report is
+    accepted only if its sole failure was the superseded ETag rule, every other
+    fact holds under the corrected rule, and the code that processes records is
+    byte-for-byte the code the parity phase ran.
+    """
+    if report.get("kind") != "essential_web_fast_benchmark_report":
+        raise BulkError("not a fast-transport benchmark report")
+    recorded = dict(report["transport_code_sha256"])
+    original_plan = {key: value for key, value in plan.items() if key != "digest"}
+    original_plan["transport_code_sha256"] = recorded
+    if canonical.digest(original_plan) != report["plan_digest"]:
+        raise BulkError("report was made under a plan that differs beyond its code identity")
+    changed = sorted(name for name in code if code[name] != recorded.get(name))
+    if any(name != _TRANSPORT_FILE for name in changed):
+        raise BulkError(
+            f"record-processing code changed since the benchmark ({changed}); parity is void"
+        )
+    other = [r for r in report["reasons"] if not str(r).startswith(SUPERSEDED_ETAG_REASON)]
+    if other:
+        raise BulkError(f"benchmark failed for reasons the identity rule does not explain: {other}")
+    expected = [name for tier in plan["tiers"] for name in tier["files"]] + [plan["parity"]["file"]]
+    if sorted(report["files"]) != sorted(expected):
+        raise BulkError("report does not cover exactly the planned benchmark files")
+    failures: list[str] = []
+    verified = 0
+    for name, entry in report["files"].items():
+        etag, declared = str(entry.get("etag") or ""), str(entry.get("linked_etag") or "")
+        if not _is_sha256(entry.get("sha256")):
+            failures.append(f"{name}: no locally computed SHA-256")
+        if not etag or etag.startswith("W/"):
+            failures.append(f"{name}: no stable strong ETag")
+        if entry.get("repo_commit") != revision:
+            failures.append(f"{name}: resolved to another revision")
+        if entry.get("linked_size") != entry.get("length"):
+            failures.append(f"{name}: length differs from the repository's declared size")
+        digest = declared.strip('"').lower()
+        if _is_sha256(digest):
+            if digest != entry.get("sha256"):
+                failures.append(f"{name}: content differs from the repository's SHA-256")
+            else:
+                verified += 1
+    parity = [phase for phase in report["phases"] if phase["phase"] == "parity"]
+    if len(parity) != 1 or not all(parity[0]["checks"].values()):
+        failures.append("parity is missing or differs")
+    if plan["parity"]["etag"] != report["files"][plan["parity"]["file"]]["etag"]:
+        failures.append("parity file validator differs from the sealed calibration validator")
+    tiers = [phase for phase in report["phases"] if phase["phase"] == "download"]
+    if [t["download_workers"] for t in tiers] != [t["download_workers"] for t in plan["tiers"]]:
+        failures.append("download tiers differ from the plan")
+    if any(int(t["transfer"]["retries"]) or int(t["transfer"]["cache_hits"]) for t in tiers):
+        failures.append("a download tier was not a clean single transfer")
+    accepted = {key: value for key, value in report.items() if key != "campaign"}
+    accepted.update(
+        verdict="PASS" if not failures else "FAIL",
+        reasons=failures,
+        plan_digest=plan["digest"],
+        transport_code_sha256=dict(code),
+        evidence_class="REAL live transport measurement, re-accepted OFFLINE under the "
+        "corrected identity rule; nothing was transferred again",
+        revalidation={
+            "identity_rule": IDENTITY_RULE,
+            "superseded_rule": "a 64-hex strong ETag had to equal the content SHA-256",
+            "original_report_sha256": report_sha256,
+            "original_plan_digest": report["plan_digest"],
+            "original_verdict": report["verdict"],
+            "original_reasons": len(report["reasons"]),
+            "original_transport_code_sha256": recorded,
+            "code_changed_since_benchmark": changed,
+            "record_processing_code_unchanged": True,
+            "files": len(report["files"]),
+            "files_with_repository_sha256_equal_to_local_sha256": verified,
+            "files_with_etag_equal_to_local_sha256": sum(
+                1
+                for entry in report["files"].values()
+                if str(entry.get("etag", "")).strip('"') == entry.get("sha256")
+            ),
+            "benchmark_files_available": False,
+            "local_sha256_recomputed_now": False,
+            "why_not_recomputed": "the benchmark retains nothing; its scratch files were "
+            "removed when it finished. The recorded SHA-256 values were computed over the "
+            "received bytes during the transfer and equal the repository's declared digests",
+            "network_requests": 0,
+        },
+    )
+    return accepted
+
+
+def measured_batch_model(
+    physical: Mapping[str, Any],
+    report: Mapping[str, Any],
+    batch_files: int,
+    batches: int,
+) -> dict[str, Any]:
+    """Expected batch and campaign wall time from the live benchmark's measured rates.
+
+    The pipeline overlaps transfer and processing, so the two are not summed:
+    processing starts when the first file has landed and then runs at its own
+    rate unless files arrive more slowly than they are processed.
+    """
+    full = physical["full_file"]
+    rows_per_file = float(full["mean_rows_per_file"])
+    rows = round(batch_files * rows_per_file)
+    bytes_per_row = sum(int(f["remote_length"]) for f in physical["files"]) / int(full["rows"])
+    size = rows * bytes_per_row
+    tiers = {
+        p["download_workers"]: p["transfer"] for p in report["phases"] if p["phase"] == "download"
+    }
+    local = next(p for p in report["phases"] if p["phase"] == "local_processing")
+    copy = next(p for p in report["phases"] if p["phase"] == "durable_copy")
+    rate = float(local["rows_per_second"])
+    processes = int(local["process_workers"])
+    copy_seconds = size / (float(copy["megabytes_per_second"]) * 1e6) / processes
+
+    def batch(streams: int, megabytes_per_second: float) -> dict[str, Any]:
+        network = megabytes_per_second * 1e6
+        download = size / network
+        first_file = size / batch_files / (network / streams)
+        if network / bytes_per_row >= rate:
+            seconds, limit = first_file + rows / rate + copy_seconds, "local processing"
+        else:
+            last_file = rows_per_file / (rate / processes)
+            seconds, limit = download + last_file + copy_seconds, "network"
+        return {
+            "download_streams": streams,
+            "network_megabytes_per_second": megabytes_per_second,
+            "download_seconds": download,
+            "first_file_seconds": first_file,
+            "processing_seconds": rows / rate,
+            "durable_copy_seconds_per_process": copy_seconds,
+            "batch_seconds": seconds,
+            "limited_by": limit,
+            "campaign_seconds": batches * seconds,
+            "campaign_hours": batches * seconds / 3600,
+        }
+
+    central = batch(8, float(tiers[8]["megabytes_per_second"]))
+    slow = batch(4, float(tiers[4]["megabytes_per_second"]))
+    return {
+        "measured_benchmark": {
+            "download": {
+                str(workers): {
+                    "megabytes_per_second": transfer["megabytes_per_second"],
+                    "megabits_per_second": transfer["megabits_per_second"],
+                    "files": transfer["files"],
+                    "bytes": transfer["file_bytes"],
+                    "wall_seconds": transfer["wall_seconds"],
+                    "requests_per_file": transfer["requests_per_file"],
+                    "retries": transfer["retries"],
+                }
+                for workers, transfer in sorted(tiers.items())
+            },
+            "local_processing": {
+                "rows_per_second": rate,
+                "process_workers": processes,
+                "rows": local["rows"],
+                "files": local["files"],
+                "wall_seconds": local["wall_seconds"],
+                "peak_resident_bytes": local["system"].get("peak_resident_bytes"),
+            },
+            "durable_copy_megabytes_per_second": copy["megabytes_per_second"],
+            "class": "MEASURED once, live, on 13 batch-0 files",
+        },
+        "modeled_batch": {
+            "class": "MODELED from the measured rates; not a measurement of a batch",
+            "batch_files": batch_files,
+            "estimated_rows": rows,
+            "estimated_bytes": round(size),
+            "central": central,
+            "if_network_is_as_slow_as_the_4_stream_tier": slow,
+            "not_included": "main-thread sealing (canonical cross-check and receipt), "
+            "retries and the operator's Prepare/authorize steps between batches",
+        },
+        "modeled_campaign": {
+            "class": "MODELED; batches are estimated from eight known file sizes",
+            "batches": batches,
+            "central_hours": central["campaign_hours"],
+            "slow_network_hours": slow["campaign_hours"],
+        },
+        "variance_note": "the 4-stream tier ran slower per stream than the 1- and 8-stream "
+        "tiers; one sample per tier does not separate endpoint variance from concurrency",
+    }
 
 
 # ----------------------------------------------------------------- accounting

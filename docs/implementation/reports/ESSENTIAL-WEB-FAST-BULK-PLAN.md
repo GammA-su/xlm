@@ -1,12 +1,19 @@
 # Essential-Web fast bulk plan — 2026-09-30
 
-**READY FOR HIGH-THROUGHPUT ESSENTIAL-WEB BENCHMARK**
+**READY FOR HIGH-THROUGHPUT ESSENTIAL-WEB BATCH 0**
 
-Fast campaign `d7b1a503055d72e7082e74b1c58eaa9c1c52ed5282ec2f12df4876979cf45822`
+> **Update, same day.** The live benchmark ran. Its only failure was the ETag rule described
+> below, which was wrong; the rule is corrected and the saved report is re-accepted offline.
+> See [identity fix and live benchmark](ESSENTIAL-WEB-FAST-TRANSPORT-IDENTITY-FIX.md).
+> The campaign was refrozen as `8e42ba31…bb8c`. Text below is kept as written except where
+> it named the superseded rule or digests.
+
+Fast campaign `8e42ba31b0ef9fcbae1079cebf88d2449b88a9b37ec52b68c7a408eb2546bb8c`
 supersedes the range-reader campaign `644be917…0ce9`, which is kept unmodified
 as history and fetched nothing. **No bulk fetch ran and no live request was made.**
-The first live step is a small benchmark, run by the operator. Batch 0 cannot
-start before it passes.
+The live benchmark has run and is accepted (see the
+[identity fix report](ESSENTIAL-WEB-FAST-TRANSPORT-IDENTITY-FIX.md)); the first
+remaining step is batch 0. The benchmark's 3.70 GB are not campaign progress.
 
 The design, measurements and proofs are in
 [ESSENTIAL-WEB-FAST-TRANSPORT.md](ESSENTIAL-WEB-FAST-TRANSPORT.md). Exact
@@ -44,7 +51,7 @@ Membership through all 33 batches equals the historical campaign's
 | Restart unit | one row-group slice of 32 files | one file |
 | Prepare | reads 32 footers over the network | offline |
 | Durable total | 749.9 GB | 268.4 GB |
-| Batch time | 3.71 h modeled | 3 to 11 min modeled, by network rate |
+| Batch time | 3.71 h modeled | 4.2 min modeled from measured rates |
 
 One consequence for the malformed rule: a pass is now one whole file instead of
 one row-group slice. The rule itself is unchanged.
@@ -103,7 +110,7 @@ sealed slice.
 ## Benchmark
 
 [benchmark-plan.json](../evidence/ESSENTIAL-WEB-FAST-TRANSPORT/benchmark-plan.json),
-digest `5f865608bb75a6272200c73d4a912d58182b7d991c65fff6ab5ed866aa308115`.
+digest `f319a6f0cb7ccdf08f4b770f7d54c087169483bfaa15aeb3d22f25ed5802a316` (run under `5f865608…8115`; the two differ only in the transport code hash).
 
 | Phase | Files | What it measures |
 |---|---|---|
@@ -126,8 +133,8 @@ batch 0 later transfers those 13 files again.
 
 The parity file is rank 13,757 of the inventory, beyond the 1,056-file ceiling.
 Its first 2,048 rows must reproduce the sealed calibration raw hash and all six
-canonical hashes. The benchmark fails if parity differs, if a strong ETag is a
-digest that differs from the content, or if a file is not transferred.
+canonical hashes. The benchmark fails if parity differs, if the content differs
+from the SHA-256 the repository declares, or if a file is not transferred.
 
 ## Operator commands
 
@@ -139,13 +146,8 @@ Set-Location -LiteralPath 'F:\Project\xlm-data-ultrax'
 . .\scripts\operator_storage.ps1
 ```
 
-Live benchmark (about 3.6 GB; retains nothing):
-
-```powershell
-.\scripts\operator_essential_web_fast.ps1 -Stage Benchmark -Authorize 5f865608bb75a6272200c73d4a912d58182b7d991c65fff6ab5ed866aa308115
-```
-
-After it prints `benchmark PASS`, batch 0. Prepare is offline:
+The live benchmark is done and accepted; it does not need to run again.
+Batch 0. Prepare is offline:
 
 ```powershell
 .\scripts\operator_essential_web_fast.ps1 -Batch 0 -Stage Prepare
@@ -196,19 +198,18 @@ batches → refreeze and rescreen. `training_permitted` stays false.
 | real_row_replay_identical | true |
 | prepare_needs_network | false |
 | offline_tests_pass | true |
-| first_batch_gate | REFUSE until the benchmark passes |
-| benchmark_passed | false (first operator step) |
+| first_batch_gate | RUN |
+| benchmark_passed | true (live, re-accepted offline) |
 | bulk_fetch_run | false |
 | c05_receipt_present | false (required before training, not before acquisition) |
 
 ## Remaining blockers
 
-None for the benchmark. For batch 0: the benchmark must pass. If it shows that
-the endpoint's strong ETag is a digest that does not match the content, or that
-parity differs, the campaign stays closed and needs review. Known gap, unchanged:
+None for batch 0. A file whose content differs from the SHA-256 the repository
+declares stops its batch. Known gap, unchanged:
 the C05 matcher is not yet sized or wired for the Mix-01 pool freeze; that blocks
 training, not acquisition.
 
-**READY FOR HIGH-THROUGHPUT ESSENTIAL-WEB BENCHMARK**
+**READY FOR HIGH-THROUGHPUT ESSENTIAL-WEB BATCH 0**
 
-Next: `.\scripts\operator_essential_web_fast.ps1 -Stage Benchmark -Authorize 5f865608bb75a6272200c73d4a912d58182b7d991c65fff6ab5ed866aa308115`
+Next: `.\scripts\operator_essential_web_fast.ps1 -Batch 0 -Stage Prepare`
