@@ -1,0 +1,27 @@
+{
+  "authorization_basis": "No source, revision, membership, acquisition plan, resource limit, selector, adapter, rejection classification, mixture, quota or scientific contract changes; adapter code identity (including malformed.py) is byte-identical. The frozen 1% malformed budget per file pass is unchanged and is now judged on the whole pass: the frozen per-row rule must fire and malformed rows must exceed 1% of the pass. Every stop is one the frozen rule also makes, so every existing seal remains valid. Document, ledger and receipt bytes do not change. Existing batch authorizations apply; an automatic envelope bound to the previous running code does not.",
+  "campaign": "8e42ba31b0ef9fcbae1079cebf88d2449b88a9b37ec52b68c7a408eb2546bb8c",
+  "code": {
+    "scripts/essential_web_fast.py": "aaadb12a03d521d06a4080ab6cef5e8886ff08441a495fad346d6b710b32da66",
+    "src/xlm/data/acquisition/source_parquet.py": "a05fbdc48a5bde0d6696cfa4b85d3e85c752f21761a43cf8552f29835e3efe97",
+    "src/xlm/data/adapters/columns.py": "3e594f755eea797ac0d29d819c28b4ccf8e387cfc7889470dfc58e8657e58db1",
+    "src/xlm/data/sources/essential_web_local.py": "8a439e0d6ef2b9809bc520717d4fb17d0d99b4fcecf5dc3802554401f327d605",
+    "src/xlm/data/sources/essential_web_monitor.py": "4c151ed23431f8368d828010b3ef9c4a1af180b1e9abffd3cda38edb6a5f65ac",
+    "src/xlm/data/sources/essential_web_progress.py": "edbba2e52d37a46bcbeb58e0a75c4f4a981d47ed5495767826eeb313e9a7f856",
+    "src/xlm/data/sources/essential_web_recovery.py": "a0d919314c536c1819f6c7174fb894e668951e15e5fe927bba1419206256c8e9"
+  },
+  "digest": "9c9b618b363cd62693f01d92f1f5d12d16e7ecc4ebf3f505199d73ffe6967f18",
+  "kind": "essential_web_malformed_whole_pass_v1",
+  "malformed_policy": "essential-web-malformed-whole-pass-v1",
+  "previous_code": {
+    "scripts/essential_web_fast.py": "aaadb12a03d521d06a4080ab6cef5e8886ff08441a495fad346d6b710b32da66",
+    "src/xlm/data/acquisition/source_parquet.py": "a05fbdc48a5bde0d6696cfa4b85d3e85c752f21761a43cf8552f29835e3efe97",
+    "src/xlm/data/adapters/columns.py": "3e594f755eea797ac0d29d819c28b4ccf8e387cfc7889470dfc58e8657e58db1",
+    "src/xlm/data/sources/essential_web_local.py": "882583efc76400153f4a7a4b05883ae6b4448513f7ffe2e6e61eefdc836df6dd",
+    "src/xlm/data/sources/essential_web_monitor.py": "4c151ed23431f8368d828010b3ef9c4a1af180b1e9abffd3cda38edb6a5f65ac",
+    "src/xlm/data/sources/essential_web_progress.py": "edbba2e52d37a46bcbeb58e0a75c4f4a981d47ed5495767826eeb313e9a7f856",
+    "src/xlm/data/sources/essential_web_recovery.py": "7edaf5364188f782f1ab17dfdedccf2a572193b16f3ffd9fdf47997ef44e3342"
+  },
+  "previous_digest": "1a63736c47c9bc516b406fa81465b7784e96b6fce467c452db2591f8d558c0d9",
+  "recovery_digest": "51c09f0b15e6b19ebeb9854c6d65ec1994b473467b555723f0924606574c24db"
+}

@@ -1,0 +1,836 @@
+{
+  "batch": 3,
+  "etag": "\"7d06fd7f5866db5c502cb4f937a9f7e260dd87533ff9b53b0cff77874f29dde3\"",
+  "first_abort": {},
+  "footer_rows": 75741,
+  "gate_on_valid_fields": {
+    "gate_rejects:gate_artifacts": 7,
+    "gate_rejects:gate_artifacts,gate_doctype": 4,
+    "gate_rejects:gate_english": 1,
+    "gate_rejects:gate_english,gate_artifacts": 2,
+    "gate_rejects:gate_english,gate_artifacts,gate_missing_content,gate_doctype": 5,
+    "gate_rejects:gate_english,gate_missing_content,gate_doctype": 2,
+    "pass": 4,
+    "undetermined: a gate field is itself invalid": 6
+  },
+  "grouped_reasons": {
+    "invalid_fdc_syntax": 7,
+    "unknown_label:k": 18,
+    "unknown_label:m": 6
+  },
+  "hash_seconds": 0.219,
+  "inventory_rank": 123,
+  "key": "f00123",
+  "length": 248877322,
+  "local_location": "scratch",
+  "local_path": "C:\\XLM-scratch\\ew-fast\\b0003\\f00123.parquet.part",
+  "malformed": 31,
+  "malformed_fraction": 0.00040928955255409885,
+  "malformed_rows": [
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Metacognitive",
+          "type": "str",
+          "utf8_bytes": 13
+        }
+      },
+      "gate_on_valid_fields": "pass",
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:k"
+      ],
+      "row_index": 12131,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.free_decimal_correspondence.primary.code": {
+          "status": "ok",
+          "summary": "641.563.2",
+          "type": "str",
+          "utf8_bytes": 9
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_artifacts",
+        "gate_doctype"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "invalid_fdc_syntax"
+      ],
+      "row_index": 14327,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": []
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_artifacts",
+        "gate_doctype"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:k"
+      ],
+      "row_index": 17028,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Metacognitive",
+          "type": "str",
+          "utf8_bytes": 13
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_artifacts"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:k"
+      ],
+      "row_index": 20610,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Metacognitive",
+          "type": "str",
+          "utf8_bytes": 13
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_artifacts"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:k"
+      ],
+      "row_index": 20656,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.free_decimal_correspondence.primary.code": {
+          "status": "ok",
+          "summary": "92",
+          "type": "str",
+          "utf8_bytes": 2
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_artifacts"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "invalid_fdc_syntax"
+      ],
+      "row_index": 28519,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": []
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Metacognitive",
+          "type": "str",
+          "utf8_bytes": 13
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_artifacts"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:k"
+      ],
+      "row_index": 31384,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_english",
+        "gate_missing_content",
+        "gate_doctype"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:k"
+      ],
+      "row_index": 32925,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_artifacts",
+        "gate_doctype"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:k"
+      ],
+      "row_index": 34357,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Metacognitive",
+          "type": "str",
+          "utf8_bytes": 13
+        }
+      },
+      "gate_on_valid_fields": "pass",
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:k"
+      ],
+      "row_index": 36692,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_english",
+        "gate_artifacts",
+        "gate_missing_content",
+        "gate_doctype"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:k"
+      ],
+      "row_index": 36785,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Metacognitive",
+          "type": "str",
+          "utf8_bytes": 13
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_artifacts"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:k"
+      ],
+      "row_index": 37497,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.missing_content.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        }
+      },
+      "gate_on_valid_fields": "undetermined: a gate field is itself invalid",
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:m"
+      ],
+      "row_index": 43457,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "m"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.missing_content.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        }
+      },
+      "gate_on_valid_fields": "undetermined: a gate field is itself invalid",
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:m"
+      ],
+      "row_index": 49928,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "m"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_english",
+        "gate_artifacts",
+        "gate_missing_content",
+        "gate_doctype"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:k"
+      ],
+      "row_index": 51903,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_english",
+        "gate_artifacts",
+        "gate_missing_content",
+        "gate_doctype"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:k"
+      ],
+      "row_index": 56369,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.free_decimal_correspondence.primary.code": {
+          "status": "ok",
+          "summary": "641.563.2",
+          "type": "str",
+          "utf8_bytes": 9
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_artifacts"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "invalid_fdc_syntax"
+      ],
+      "row_index": 57250,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": []
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Metacognitive",
+          "type": "str",
+          "utf8_bytes": 13
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_artifacts",
+        "gate_doctype"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:k"
+      ],
+      "row_index": 58563,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.missing_content.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        }
+      },
+      "gate_on_valid_fields": "undetermined: a gate field is itself invalid",
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:m"
+      ],
+      "row_index": 59444,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "m"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_english",
+        "gate_missing_content",
+        "gate_doctype"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:k"
+      ],
+      "row_index": 61581,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.free_decimal_correspondence.primary.code": {
+          "status": "ok",
+          "summary": "919.4'2'041",
+          "type": "str",
+          "utf8_bytes": 11
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_english",
+        "gate_artifacts"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "invalid_fdc_syntax"
+      ],
+      "row_index": 63291,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": []
+    },
+    {
+      "fields": {
+        "eai_taxonomy.missing_content.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        }
+      },
+      "gate_on_valid_fields": "undetermined: a gate field is itself invalid",
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:m"
+      ],
+      "row_index": 64975,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "m"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.free_decimal_correspondence.primary.code": {
+          "status": "ok",
+          "summary": "641.563.2",
+          "type": "str",
+          "utf8_bytes": 9
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_english",
+        "gate_artifacts"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "invalid_fdc_syntax"
+      ],
+      "row_index": 65035,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": []
+    },
+    {
+      "fields": {
+        "eai_taxonomy.free_decimal_correspondence.primary.code": {
+          "status": "ok",
+          "summary": "641.563.2",
+          "type": "str",
+          "utf8_bytes": 9
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_english"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "invalid_fdc_syntax"
+      ],
+      "row_index": 67785,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": []
+    },
+    {
+      "fields": {
+        "eai_taxonomy.missing_content.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        }
+      },
+      "gate_on_valid_fields": "undetermined: a gate field is itself invalid",
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:m"
+      ],
+      "row_index": 68218,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "m"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Metacognitive",
+          "type": "str",
+          "utf8_bytes": 13
+        }
+      },
+      "gate_on_valid_fields": "pass",
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:k"
+      ],
+      "row_index": 71782,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.free_decimal_correspondence.primary.code": {
+          "status": "ok",
+          "summary": "-1",
+          "type": "str",
+          "utf8_bytes": 2
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_english",
+        "gate_artifacts",
+        "gate_missing_content",
+        "gate_doctype"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "invalid_fdc_syntax"
+      ],
+      "row_index": 71836,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": []
+    },
+    {
+      "fields": {
+        "eai_taxonomy.missing_content.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        }
+      },
+      "gate_on_valid_fields": "undetermined: a gate field is itself invalid",
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:m"
+      ],
+      "row_index": 71965,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "m"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Metacognitive",
+          "type": "str",
+          "utf8_bytes": 13
+        }
+      },
+      "gate_on_valid_fields": "pass",
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:k"
+      ],
+      "row_index": 72404,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_english",
+        "gate_artifacts",
+        "gate_missing_content",
+        "gate_doctype"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:k"
+      ],
+      "row_index": 72680,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Metacognitive",
+          "type": "str",
+          "utf8_bytes": 13
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_artifacts"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:k"
+      ],
+      "row_index": 74370,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    }
+  ],
+  "offending_values": {
+    "eai_taxonomy.bloom_knowledge_domain.primary.label = 'Abstain'": 8,
+    "eai_taxonomy.bloom_knowledge_domain.primary.label = 'Metacognitive'": 10,
+    "eai_taxonomy.free_decimal_correspondence.primary.code = \"919.4'2'041\"": 1,
+    "eai_taxonomy.free_decimal_correspondence.primary.code = '-1'": 1,
+    "eai_taxonomy.free_decimal_correspondence.primary.code = '641.563.2'": 4,
+    "eai_taxonomy.free_decimal_correspondence.primary.code = '92'": 1,
+    "eai_taxonomy.missing_content.primary.label = 'Abstain'": 6
+  },
+  "per_reason": {
+    "invalid_fdc_syntax": 7,
+    "unknown_label:k": 18,
+    "unknown_label:m": 6
+  },
+  "rank": 123,
+  "replay_seconds": 31.563,
+  "repository": "EssentialAI/essential-web-v1.0",
+  "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+  "row_groups": 8,
+  "rows": 75741,
+  "selector_finals": {
+    "essential_practical": 1265,
+    "essential_prose": 5323,
+    "essential_science": 303,
+    "rejected": 68386,
+    "unassigned": 464
+  },
+  "selector_stages": {
+    "component": 7355,
+    "gate": 68355,
+    "validity": 31
+  },
+  "sha256": "36bbae09b06dbfc0c20fa142e6369ec3b3917a5efd4e92d59abd36f10b3cc8eb",
+  "sha256_verified": true,
+  "source_file": "data/crawl=CC-MAIN-2015-32/train-00773-of-01920.parquet",
+  "views": {
+    "essential_practical": {
+      "canonical_bytes": 8780602,
+      "documents": 1265,
+      "estimated_tokens_4_bytes": 2195150.5,
+      "rejection_codes": {
+        "EssentialWebMalformedRowError": 31,
+        "EssentialWebSelectorOtherComponentError": 5626,
+        "EssentialWebSelectorRejectedError": 68355,
+        "EssentialWebSelectorUnassignedError": 464
+      }
+    },
+    "essential_prose": {
+      "canonical_bytes": 27806583,
+      "documents": 5323,
+      "estimated_tokens_4_bytes": 6951645.75,
+      "rejection_codes": {
+        "EssentialWebMalformedRowError": 31,
+        "EssentialWebSelectorOtherComponentError": 1568,
+        "EssentialWebSelectorRejectedError": 68355,
+        "EssentialWebSelectorUnassignedError": 464
+      }
+    },
+    "essential_science": {
+      "canonical_bytes": 2431364,
+      "documents": 303,
+      "estimated_tokens_4_bytes": 607841.0,
+      "rejection_codes": {
+        "EssentialWebMalformedRowError": 31,
+        "EssentialWebSelectorOtherComponentError": 6588,
+        "EssentialWebSelectorRejectedError": 68355,
+        "EssentialWebSelectorUnassignedError": 464
+      }
+    }
+  }
+}

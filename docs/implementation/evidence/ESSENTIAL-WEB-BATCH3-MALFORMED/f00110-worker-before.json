@@ -1,0 +1,10 @@
+{
+  "key": "f00110",
+  "local_location": "durable",
+  "malformed_policy": "frozen per-row rule, no amendment",
+  "outcome": "MalformedLimitError",
+  "reason": "essential_web_malformed_fraction_exceeded",
+  "seconds": 0.281,
+  "sha256": "968bedb4644070246d01fbd7424b164f88e81384947808edb84a1d91d88bd4ea",
+  "source_file": "data/crawl=CC-MAIN-2024-26/train-00549-of-03168.parquet"
+}

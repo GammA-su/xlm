@@ -1,3 +1,28 @@
+> **ESSENTIAL-WEB BATCH-3 MALFORMED STOP (2026-09-30, offline): READY TO RESUME
+> AUTOMATED ESSENTIAL-WEB ACQUISITION.** Batch 3 stopped at 27/32 on f00110
+> (`data/crawl=CC-MAIN-2024-26/train-00549-of-03168.parquet`, rank 110, SHA-256
+> `968bedb4…d4ea`, 78,689 rows) with `MalformedLimitError`. Offline replay: 42
+> malformed rows (0.053%, inside the 1% budget; 123 sealed files pool to 0.048%).
+> The per-pass budget was judged on every prefix, and 3 of the first 283 rows
+> stopped the file at row 282. The rows are frozen validity failures
+> (`unknown_label:k` `Abstain`/`Metacognitive`, `invalid_fdc_syntax` `-1` and
+> garbled codes), all `rejected` under B-normal, and stay counted malformed.
+> Amendment `essential-web-malformed-whole-pass-v1` (local worker only): the
+> frozen counter must fire and malformed rows must exceed 1% of the whole file;
+> it never stops what the old rule passed. Adapters, selector, `malformed.py`,
+> quotas and output bytes are unchanged. f00110 now completes offline (852 /
+> 2,569 / 7,342 docs); f00123 has no blocker. Restart: 27 sealed, 2 local, 3
+> partial (603,979,776 B kept), 0 fresh. The campaign loads through a new
+> compatibility record `9c9b618b…7f18`; Batch-3 authorization is unchanged; the
+> old auto envelope `21cbad8c…d9e` is refused. Store untouched (1,601 files).
+> Tests: 16 new; selection 802 + 3 serial passed, 0 skipped; ruff, format and
+> strict mypy pass. Batch-3 resume and full acceptance NOT RUN; C05 NOT RUN.
+> [Report](reports/ESSENTIAL-WEB-BATCH3-MALFORMED.md). Next: dot-source
+> `scripts/operator_storage.ps1`, then
+> `scripts/operator_essential_web_fast.ps1 -Stage Run -Batch 3`, then
+> `scripts/operator_essential_web_campaign.ps1 -Stage PrepareAuto -MaxBatches 20`
+> and `-Stage RunAuto -Authorize <new digest>`.
+
 > **ESSENTIAL-WEB AUTOMATIC CAMPAIGN RUNNER (2026-09-30, offline): READY FOR
 > AUTOMATED ESSENTIAL-WEB ACQUISITION.** Authoritative state: 3 complete batches,
 > 96 sealed files, 7,956,430 rows, 32,970,294,061 B footprint. Science

@@ -1,0 +1,1304 @@
+{
+  "batch": 3,
+  "etag": "\"ade654c66d8fb3424f7b5a8205107d79f10b5f98001ada8c8ba3db863180c937\"",
+  "first_abort": {
+    "essential_practical": {
+      "malformed_observed": 3,
+      "row_index": 282,
+      "rows_observed": 283
+    },
+    "essential_prose": {
+      "malformed_observed": 3,
+      "row_index": 282,
+      "rows_observed": 283
+    },
+    "essential_science": {
+      "malformed_observed": 3,
+      "row_index": 282,
+      "rows_observed": 283
+    }
+  },
+  "footer_rows": 78689,
+  "gate_on_valid_fields": {
+    "gate_rejects:gate_artifacts": 5,
+    "gate_rejects:gate_artifacts,gate_missing_content": 2,
+    "gate_rejects:gate_artifacts,gate_missing_content,gate_doctype": 1,
+    "gate_rejects:gate_english,gate_artifacts": 1,
+    "gate_rejects:gate_english,gate_artifacts,gate_doctype": 1,
+    "gate_rejects:gate_english,gate_artifacts,gate_missing_content": 3,
+    "gate_rejects:gate_english,gate_artifacts,gate_missing_content,gate_doctype": 19,
+    "gate_rejects:gate_english,gate_doctype": 1,
+    "gate_rejects:gate_missing_content": 1,
+    "pass": 8
+  },
+  "grouped_reasons": {
+    "invalid_fdc_syntax": 5,
+    "invalid_fdc_syntax + unknown_label:k": 19,
+    "unknown_label:k": 18
+  },
+  "hash_seconds": 0.203,
+  "inventory_rank": 110,
+  "key": "f00110",
+  "length": 245401594,
+  "local_location": "durable",
+  "local_path": "G:\\XLM\\acq-raw\\ew-fast\\source\\data\\crawl=CC-MAIN-2024-26\\train-00549-of-03168.parquet",
+  "malformed": 42,
+  "malformed_fraction": 0.0005337467752798994,
+  "malformed_rows": [
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        },
+        "eai_taxonomy.free_decimal_correspondence.primary.code": {
+          "status": "ok",
+          "summary": "-1",
+          "type": "str",
+          "utf8_bytes": 2
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_english",
+        "gate_artifacts",
+        "gate_missing_content",
+        "gate_doctype"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "invalid_fdc_syntax",
+        "unknown_label:k"
+      ],
+      "row_index": 202,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        },
+        "eai_taxonomy.free_decimal_correspondence.primary.code": {
+          "status": "ok",
+          "summary": "-1",
+          "type": "str",
+          "utf8_bytes": 2
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_english",
+        "gate_artifacts",
+        "gate_missing_content",
+        "gate_doctype"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "invalid_fdc_syntax",
+        "unknown_label:k"
+      ],
+      "row_index": 242,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Metacognitive",
+          "type": "str",
+          "utf8_bytes": 13
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_missing_content"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:k"
+      ],
+      "row_index": 282,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Metacognitive",
+          "type": "str",
+          "utf8_bytes": 13
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_artifacts"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:k"
+      ],
+      "row_index": 1241,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Metacognitive",
+          "type": "str",
+          "utf8_bytes": 13
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_artifacts"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:k"
+      ],
+      "row_index": 1531,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_english",
+        "gate_artifacts",
+        "gate_missing_content",
+        "gate_doctype"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:k"
+      ],
+      "row_index": 5037,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_artifacts",
+        "gate_missing_content"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:k"
+      ],
+      "row_index": 7578,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        },
+        "eai_taxonomy.free_decimal_correspondence.primary.code": {
+          "status": "ok",
+          "summary": "-1",
+          "type": "str",
+          "utf8_bytes": 2
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_english",
+        "gate_artifacts",
+        "gate_missing_content",
+        "gate_doctype"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "invalid_fdc_syntax",
+        "unknown_label:k"
+      ],
+      "row_index": 8413,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        },
+        "eai_taxonomy.free_decimal_correspondence.primary.code": {
+          "status": "ok",
+          "summary": "-1",
+          "type": "str",
+          "utf8_bytes": 2
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_english",
+        "gate_artifacts",
+        "gate_doctype"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "invalid_fdc_syntax",
+        "unknown_label:k"
+      ],
+      "row_index": 14204,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        },
+        "eai_taxonomy.free_decimal_correspondence.primary.code": {
+          "status": "ok",
+          "summary": "-1",
+          "type": "str",
+          "utf8_bytes": 2
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_english",
+        "gate_artifacts",
+        "gate_missing_content",
+        "gate_doctype"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "invalid_fdc_syntax",
+        "unknown_label:k"
+      ],
+      "row_index": 16914,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        },
+        "eai_taxonomy.free_decimal_correspondence.primary.code": {
+          "status": "ok",
+          "summary": "-1",
+          "type": "str",
+          "utf8_bytes": 2
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_english",
+        "gate_artifacts",
+        "gate_missing_content"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "invalid_fdc_syntax",
+        "unknown_label:k"
+      ],
+      "row_index": 17016,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        },
+        "eai_taxonomy.free_decimal_correspondence.primary.code": {
+          "status": "ok",
+          "summary": "-1",
+          "type": "str",
+          "utf8_bytes": 2
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_english",
+        "gate_artifacts",
+        "gate_missing_content",
+        "gate_doctype"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "invalid_fdc_syntax",
+        "unknown_label:k"
+      ],
+      "row_index": 17557,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.free_decimal_correspondence.primary.code": {
+          "status": "ok",
+          "summary": "641.563.2",
+          "type": "str",
+          "utf8_bytes": 9
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_artifacts"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "invalid_fdc_syntax"
+      ],
+      "row_index": 18203,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": []
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        },
+        "eai_taxonomy.free_decimal_correspondence.primary.code": {
+          "status": "ok",
+          "summary": "-1",
+          "type": "str",
+          "utf8_bytes": 2
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_english",
+        "gate_artifacts",
+        "gate_missing_content",
+        "gate_doctype"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "invalid_fdc_syntax",
+        "unknown_label:k"
+      ],
+      "row_index": 19064,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        },
+        "eai_taxonomy.free_decimal_correspondence.primary.code": {
+          "status": "ok",
+          "summary": "-1",
+          "type": "str",
+          "utf8_bytes": 2
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_english",
+        "gate_artifacts",
+        "gate_missing_content",
+        "gate_doctype"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "invalid_fdc_syntax",
+        "unknown_label:k"
+      ],
+      "row_index": 19304,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_english",
+        "gate_doctype"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:k"
+      ],
+      "row_index": 19322,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_english",
+        "gate_artifacts",
+        "gate_missing_content",
+        "gate_doctype"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:k"
+      ],
+      "row_index": 20617,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Metacognitive",
+          "type": "str",
+          "utf8_bytes": 13
+        }
+      },
+      "gate_on_valid_fields": "pass",
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:k"
+      ],
+      "row_index": 24399,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        },
+        "eai_taxonomy.free_decimal_correspondence.primary.code": {
+          "status": "ok",
+          "summary": "-1",
+          "type": "str",
+          "utf8_bytes": 2
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_english",
+        "gate_artifacts",
+        "gate_missing_content",
+        "gate_doctype"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "invalid_fdc_syntax",
+        "unknown_label:k"
+      ],
+      "row_index": 25293,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        },
+        "eai_taxonomy.free_decimal_correspondence.primary.code": {
+          "status": "ok",
+          "summary": "-1",
+          "type": "str",
+          "utf8_bytes": 2
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_english",
+        "gate_artifacts",
+        "gate_missing_content",
+        "gate_doctype"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "invalid_fdc_syntax",
+        "unknown_label:k"
+      ],
+      "row_index": 26431,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Metacognitive",
+          "type": "str",
+          "utf8_bytes": 13
+        }
+      },
+      "gate_on_valid_fields": "pass",
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:k"
+      ],
+      "row_index": 26995,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_english",
+        "gate_artifacts",
+        "gate_missing_content"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:k"
+      ],
+      "row_index": 30994,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Metacognitive",
+          "type": "str",
+          "utf8_bytes": 13
+        }
+      },
+      "gate_on_valid_fields": "pass",
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:k"
+      ],
+      "row_index": 33930,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Metacognitive",
+          "type": "str",
+          "utf8_bytes": 13
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_artifacts"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:k"
+      ],
+      "row_index": 35144,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Metacognitive",
+          "type": "str",
+          "utf8_bytes": 13
+        }
+      },
+      "gate_on_valid_fields": "pass",
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:k"
+      ],
+      "row_index": 36163,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Metacognitive",
+          "type": "str",
+          "utf8_bytes": 13
+        }
+      },
+      "gate_on_valid_fields": "pass",
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:k"
+      ],
+      "row_index": 36843,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        },
+        "eai_taxonomy.free_decimal_correspondence.primary.code": {
+          "status": "ok",
+          "summary": "-1",
+          "type": "str",
+          "utf8_bytes": 2
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_english",
+        "gate_artifacts",
+        "gate_missing_content",
+        "gate_doctype"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "invalid_fdc_syntax",
+        "unknown_label:k"
+      ],
+      "row_index": 38907,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Metacognitive",
+          "type": "str",
+          "utf8_bytes": 13
+        }
+      },
+      "gate_on_valid_fields": "pass",
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:k"
+      ],
+      "row_index": 40580,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.free_decimal_correspondence.primary.code": {
+          "status": "ok",
+          "summary": "641.563.2",
+          "type": "str",
+          "utf8_bytes": 9
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_english",
+        "gate_artifacts",
+        "gate_missing_content"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "invalid_fdc_syntax"
+      ],
+      "row_index": 40611,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": []
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_english",
+        "gate_artifacts",
+        "gate_missing_content",
+        "gate_doctype"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:k"
+      ],
+      "row_index": 49876,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        },
+        "eai_taxonomy.free_decimal_correspondence.primary.code": {
+          "status": "ok",
+          "summary": "-1",
+          "type": "str",
+          "utf8_bytes": 2
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_artifacts"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "invalid_fdc_syntax",
+        "unknown_label:k"
+      ],
+      "row_index": 52898,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.free_decimal_correspondence.primary.code": {
+          "status": "ok",
+          "summary": "812.54812.54",
+          "type": "str",
+          "utf8_bytes": 12
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_english",
+        "gate_artifacts"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "invalid_fdc_syntax"
+      ],
+      "row_index": 54079,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": []
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        },
+        "eai_taxonomy.free_decimal_correspondence.primary.code": {
+          "status": "ok",
+          "summary": "-1",
+          "type": "str",
+          "utf8_bytes": 2
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_artifacts",
+        "gate_missing_content",
+        "gate_doctype"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "invalid_fdc_syntax",
+        "unknown_label:k"
+      ],
+      "row_index": 57035,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.free_decimal_correspondence.primary.code": {
+          "status": "ok",
+          "summary": "363.3220976.7",
+          "type": "str",
+          "utf8_bytes": 13
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_artifacts",
+        "gate_missing_content"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "invalid_fdc_syntax"
+      ],
+      "row_index": 57397,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": []
+    },
+    {
+      "fields": {
+        "eai_taxonomy.free_decimal_correspondence.primary.code": {
+          "status": "ok",
+          "summary": "92",
+          "type": "str",
+          "utf8_bytes": 2
+        }
+      },
+      "gate_on_valid_fields": "pass",
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "invalid_fdc_syntax"
+      ],
+      "row_index": 60527,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": []
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_english",
+        "gate_artifacts",
+        "gate_missing_content",
+        "gate_doctype"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:k"
+      ],
+      "row_index": 64818,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        },
+        "eai_taxonomy.free_decimal_correspondence.primary.code": {
+          "status": "ok",
+          "summary": "-1",
+          "type": "str",
+          "utf8_bytes": 2
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_english",
+        "gate_artifacts",
+        "gate_missing_content",
+        "gate_doctype"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "invalid_fdc_syntax",
+        "unknown_label:k"
+      ],
+      "row_index": 67581,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        },
+        "eai_taxonomy.free_decimal_correspondence.primary.code": {
+          "status": "ok",
+          "summary": "-1",
+          "type": "str",
+          "utf8_bytes": 2
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_english",
+        "gate_artifacts",
+        "gate_missing_content",
+        "gate_doctype"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "invalid_fdc_syntax",
+        "unknown_label:k"
+      ],
+      "row_index": 68678,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        },
+        "eai_taxonomy.free_decimal_correspondence.primary.code": {
+          "status": "ok",
+          "summary": "-1",
+          "type": "str",
+          "utf8_bytes": 2
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_english",
+        "gate_artifacts",
+        "gate_missing_content",
+        "gate_doctype"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "invalid_fdc_syntax",
+        "unknown_label:k"
+      ],
+      "row_index": 72327,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Metacognitive",
+          "type": "str",
+          "utf8_bytes": 13
+        }
+      },
+      "gate_on_valid_fields": "pass",
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "unknown_label:k"
+      ],
+      "row_index": 73822,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        },
+        "eai_taxonomy.free_decimal_correspondence.primary.code": {
+          "status": "ok",
+          "summary": "-1",
+          "type": "str",
+          "utf8_bytes": 2
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_english",
+        "gate_artifacts",
+        "gate_missing_content",
+        "gate_doctype"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "invalid_fdc_syntax",
+        "unknown_label:k"
+      ],
+      "row_index": 77526,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    },
+    {
+      "fields": {
+        "eai_taxonomy.bloom_knowledge_domain.primary.label": {
+          "status": "ok",
+          "summary": "Abstain",
+          "type": "str",
+          "utf8_bytes": 7
+        },
+        "eai_taxonomy.free_decimal_correspondence.primary.code": {
+          "status": "ok",
+          "summary": "-1",
+          "type": "str",
+          "utf8_bytes": 2
+        }
+      },
+      "gate_on_valid_fields": [
+        "gate_english",
+        "gate_artifacts",
+        "gate_missing_content",
+        "gate_doctype"
+      ],
+      "message": "essential_web_selector_value",
+      "reasons": [
+        "invalid_fdc_syntax",
+        "unknown_label:k"
+      ],
+      "row_index": 78371,
+      "selector_final": "rejected",
+      "selector_stage": "validity",
+      "stage": "validity",
+      "unknown_fields": [
+        "k"
+      ]
+    }
+  ],
+  "offending_values": {
+    "eai_taxonomy.bloom_knowledge_domain.primary.label = 'Abstain'": 26,
+    "eai_taxonomy.bloom_knowledge_domain.primary.label = 'Metacognitive'": 11,
+    "eai_taxonomy.free_decimal_correspondence.primary.code = '-1'": 19,
+    "eai_taxonomy.free_decimal_correspondence.primary.code = '363.3220976.7'": 1,
+    "eai_taxonomy.free_decimal_correspondence.primary.code = '641.563.2'": 2,
+    "eai_taxonomy.free_decimal_correspondence.primary.code = '812.54812.54'": 1,
+    "eai_taxonomy.free_decimal_correspondence.primary.code = '92'": 1
+  },
+  "per_reason": {
+    "invalid_fdc_syntax": 24,
+    "unknown_label:k": 37
+  },
+  "rank": 110,
+  "replay_seconds": 33.328,
+  "repository": "EssentialAI/essential-web-v1.0",
+  "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+  "row_groups": 8,
+  "rows": 78689,
+  "selector_finals": {
+    "essential_practical": 2569,
+    "essential_prose": 7342,
+    "essential_science": 852,
+    "rejected": 67125,
+    "unassigned": 801
+  },
+  "selector_stages": {
+    "component": 11564,
+    "gate": 67083,
+    "validity": 42
+  },
+  "sha256": "968bedb4644070246d01fbd7424b164f88e81384947808edb84a1d91d88bd4ea",
+  "sha256_verified": true,
+  "source_file": "data/crawl=CC-MAIN-2024-26/train-00549-of-03168.parquet",
+  "views": {
+    "essential_practical": {
+      "canonical_bytes": 13778940,
+      "documents": 2569,
+      "estimated_tokens_4_bytes": 3444735.0,
+      "rejection_codes": {
+        "EssentialWebMalformedRowError": 42,
+        "EssentialWebSelectorOtherComponentError": 8194,
+        "EssentialWebSelectorRejectedError": 67083,
+        "EssentialWebSelectorUnassignedError": 801
+      }
+    },
+    "essential_prose": {
+      "canonical_bytes": 34339602,
+      "documents": 7342,
+      "estimated_tokens_4_bytes": 8584900.5,
+      "rejection_codes": {
+        "EssentialWebMalformedRowError": 42,
+        "EssentialWebSelectorOtherComponentError": 3421,
+        "EssentialWebSelectorRejectedError": 67083,
+        "EssentialWebSelectorUnassignedError": 801
+      }
+    },
+    "essential_science": {
+      "canonical_bytes": 6174756,
+      "documents": 852,
+      "estimated_tokens_4_bytes": 1543689.0,
+      "rejection_codes": {
+        "EssentialWebMalformedRowError": 42,
+        "EssentialWebSelectorOtherComponentError": 9911,
+        "EssentialWebSelectorRejectedError": 67083,
+        "EssentialWebSelectorUnassignedError": 801
+      }
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "adapter_code_unchanged": true,
+  "batch3_authorization_digest": "f25da8735fecea374935c05b1a0727fe77f8855ed91e4d12420da40ed6ccf56c",
+  "batch3_child_bound_equals_derived": true,
+  "batch3_child_bound_equals_recorded": true,
+  "campaign_digest": "8e42ba31b0ef9fcbae1079cebf88d2449b88a9b37ec52b68c7a408eb2546bb8c",
+  "compatibility_records_now": [
+    {
+      "digest": "94ab7cdbebea1dc20af2c875d9774d4d5655adf0743cca12379c7ffa4c47fab6",
+      "kind": "essential_web_recovery_scope_fix_v1",
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-RECOVERY-SCOPE/code-compatibility.json"
+    },
+    {
+      "digest": "1a63736c47c9bc516b406fa81465b7784e96b6fce467c452db2591f8d558c0d9",
+      "kind": "essential_web_windows_publication_fix_v1",
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-BATCH1-WINDOWS/code-compatibility.json"
+    },
+    {
+      "digest": "9c9b618b363cd62693f01d92f1f5d12d16e7ecc4ebf3f505199d73ffe6967f18",
+      "kind": "essential_web_malformed_whole_pass_v1",
+      "path": "docs/implementation/evidence/ESSENTIAL-WEB-BATCH3-MALFORMED/code-compatibility.json"
+    }
+  ],
+  "envelope": "21cbad8ca0de96148b094c14753187145ba0558481a17b4b9ab6a2bd4527ad9e",
+  "identity_differences": [
+    "code.compatibility.records",
+    "code.running_sha256.src/xlm/data/sources/essential_web_local.py",
+    "code.running_sha256.src/xlm/data/sources/essential_web_recovery.py"
+  ],
+  "next_batch_classification": {
+    "batch": 3,
+    "reasons": [
+      "the runner's last attempt on batch 3 exited 1 and nothing changed since; review it, then resume with the fast operator driver"
+    ],
+    "state": "HUMAN_REVIEW_REQUIRED"
+  },
+  "running_code_changes": {
+    "src/xlm/data/sources/essential_web_local.py": {
+      "envelope": "882583efc76400153f4a7a4b05883ae6b4448513f7ffe2e6e61eefdc836df6dd",
+      "now": "8a439e0d6ef2b9809bc520717d4fb17d0d99b4fcecf5dc3802554401f327d605"
+    },
+    "src/xlm/data/sources/essential_web_recovery.py": {
+      "envelope": "7edaf5364188f782f1ab17dfdedccf2a572193b16f3ffd9fdf47997ef44e3342",
+      "now": "a0d919314c536c1819f6c7174fb894e668951e15e5fe927bba1419206256c8e9"
+    }
+  },
+  "selector_unchanged": true
+}

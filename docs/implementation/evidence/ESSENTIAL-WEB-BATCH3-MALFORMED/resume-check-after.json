@@ -1,0 +1,66 @@
+{
+  "already_sealed_scheduled": 0,
+  "completion_percent": 84.375,
+  "network_units": 4,
+  "recovery_authorized": true,
+  "recovery_digest": null,
+  "remaining": [
+    {
+      "file": "data/crawl=CC-MAIN-2024-26/train-00549-of-03168.parquet",
+      "key": "f00110",
+      "rank": 110
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2015-32/train-01492-of-01920.parquet",
+      "key": "f00122",
+      "rank": 122
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2015-32/train-00773-of-01920.parquet",
+      "key": "f00123",
+      "rank": 123
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2015-32/train-00348-of-01920.parquet",
+      "key": "f00125",
+      "rank": 125
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2015-32/train-01047-of-01920.parquet",
+      "key": "f00126",
+      "rank": 126
+    }
+  ],
+  "restart": {
+    "charged_bytes": 8476924052,
+    "fresh_download": 0,
+    "fresh_download_keys": [],
+    "known_network_bytes": 213131186,
+    "local_complete_reuse": 2,
+    "local_complete_reuse_keys": [
+      "f00110",
+      "f00123"
+    ],
+    "partial_resume": 3,
+    "partial_resume_keys": [
+      "f00122",
+      "f00125",
+      "f00126"
+    ],
+    "resumable_verified_bytes": 603979776,
+    "sealed_skip": 27,
+    "transfer_ceiling_bytes": 25769803776,
+    "unknown_length_units": 0,
+    "worst_case_network_bytes": 213131186
+  },
+  "scheduled": 5,
+  "scheduled_keys": [
+    "f00110",
+    "f00122",
+    "f00123",
+    "f00125",
+    "f00126"
+  ],
+  "sealed": 27,
+  "total": 32
+}

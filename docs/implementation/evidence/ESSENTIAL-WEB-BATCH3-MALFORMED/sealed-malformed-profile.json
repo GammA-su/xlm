@@ -1,0 +1,1257 @@
+{
+  "fraction": 0.00048421597339260043,
+  "malformed": 4965,
+  "max_file_fraction": 0.0008918788064113345,
+  "max_worst_prefix_ratio": 0.01,
+  "per_unit": [
+    {
+      "batch": 0,
+      "fraction": 0.0006047498488125377,
+      "malformed": 59,
+      "rank": 0,
+      "rows": 97561,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0022123893805309734,
+      "worst_prefix_row": 451
+    },
+    {
+      "batch": 0,
+      "fraction": 0.00031772465324188704,
+      "malformed": 29,
+      "rank": 1,
+      "rows": 91274,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0004928536224741252,
+      "worst_prefix_row": 4057
+    },
+    {
+      "batch": 0,
+      "fraction": 0.0004654213120649897,
+      "malformed": 44,
+      "rank": 2,
+      "rows": 94538,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0005312897461079001,
+      "worst_prefix_row": 62112
+    },
+    {
+      "batch": 0,
+      "fraction": 0.0004421383893158559,
+      "malformed": 34,
+      "rank": 3,
+      "rows": 76899,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.00046828659139393306,
+      "worst_prefix_row": 57656
+    },
+    {
+      "batch": 0,
+      "fraction": 0.0004389204697519564,
+      "malformed": 41,
+      "rank": 4,
+      "rows": 93411,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.002932551319648094,
+      "worst_prefix_row": 681
+    },
+    {
+      "batch": 0,
+      "fraction": 0.0005801959773078907,
+      "malformed": 54,
+      "rank": 5,
+      "rows": 93072,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0029069767441860465,
+      "worst_prefix_row": 343
+    },
+    {
+      "batch": 0,
+      "fraction": 0.0008386277001270648,
+      "malformed": 66,
+      "rank": 6,
+      "rows": 78700,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0018050541516245488,
+      "worst_prefix_row": 8863
+    },
+    {
+      "batch": 0,
+      "fraction": 0.0007207633637057994,
+      "malformed": 67,
+      "rank": 7,
+      "rows": 92957,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0015174506828528073,
+      "worst_prefix_row": 2635
+    },
+    {
+      "batch": 0,
+      "fraction": 0.0003992488207372795,
+      "malformed": 27,
+      "rank": 8,
+      "rows": 67627,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0014792899408284023,
+      "worst_prefix_row": 675
+    },
+    {
+      "batch": 0,
+      "fraction": 0.0006017309366518154,
+      "malformed": 47,
+      "rank": 9,
+      "rows": 78108,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.002103049421661409,
+      "worst_prefix_row": 950
+    },
+    {
+      "batch": 0,
+      "fraction": 0.0004081310232239718,
+      "malformed": 31,
+      "rank": 10,
+      "rows": 75956,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0005780346820809249,
+      "worst_prefix_row": 5189
+    },
+    {
+      "batch": 0,
+      "fraction": 0.0008548210827012346,
+      "malformed": 79,
+      "rank": 11,
+      "rows": 92417,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.00641025641025641,
+      "worst_prefix_row": 155
+    },
+    {
+      "batch": 0,
+      "fraction": 0.0003183334606667176,
+      "malformed": 25,
+      "rank": 12,
+      "rows": 78534,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0006120700208103807,
+      "worst_prefix_row": 8168
+    },
+    {
+      "batch": 0,
+      "fraction": 0.0003087645009042389,
+      "malformed": 21,
+      "rank": 13,
+      "rows": 68013,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.002652519893899204,
+      "worst_prefix_row": 376
+    },
+    {
+      "batch": 0,
+      "fraction": 0.000433104467345197,
+      "malformed": 34,
+      "rank": 14,
+      "rows": 78503,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0009551098376313276,
+      "worst_prefix_row": 1046
+    },
+    {
+      "batch": 0,
+      "fraction": 0.0004001497334486453,
+      "malformed": 31,
+      "rank": 15,
+      "rows": 77471,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0004071073056062616,
+      "worst_prefix_row": 76146
+    },
+    {
+      "batch": 0,
+      "fraction": 0.00044567251983242714,
+      "malformed": 35,
+      "rank": 16,
+      "rows": 78533,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0005815080441946114,
+      "worst_prefix_row": 5158
+    },
+    {
+      "batch": 0,
+      "fraction": 0.0004523109518764953,
+      "malformed": 38,
+      "rank": 17,
+      "rows": 84013,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0009316770186335404,
+      "worst_prefix_row": 3219
+    },
+    {
+      "batch": 0,
+      "fraction": 0.0003823360734085261,
+      "malformed": 30,
+      "rank": 18,
+      "rows": 78465,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0008186655751125665,
+      "worst_prefix_row": 2442
+    },
+    {
+      "batch": 0,
+      "fraction": 0.0002516205562012485,
+      "malformed": 21,
+      "rank": 19,
+      "rows": 83459,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0002884892778151745,
+      "worst_prefix_row": 51994
+    },
+    {
+      "batch": 0,
+      "fraction": 0.00029173849622066036,
+      "malformed": 22,
+      "rank": 20,
+      "rows": 75410,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0006523157208088715,
+      "worst_prefix_row": 3065
+    },
+    {
+      "batch": 0,
+      "fraction": 0.000471998979461666,
+      "malformed": 37,
+      "rank": 21,
+      "rows": 78390,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.01,
+      "worst_prefix_row": 8
+    },
+    {
+      "batch": 0,
+      "fraction": 0.0002305043723798136,
+      "malformed": 16,
+      "rank": 22,
+      "rows": 69413,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0015420200462606013,
+      "worst_prefix_row": 1296
+    },
+    {
+      "batch": 0,
+      "fraction": 0.0005989015890005989,
+      "malformed": 47,
+      "rank": 23,
+      "rows": 78477,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.01,
+      "worst_prefix_row": 67
+    },
+    {
+      "batch": 0,
+      "fraction": 0.0004128499548445362,
+      "malformed": 32,
+      "rank": 24,
+      "rows": 77510,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0004761904761904762,
+      "worst_prefix_row": 2099
+    },
+    {
+      "batch": 0,
+      "fraction": 0.0003157163604217971,
+      "malformed": 25,
+      "rank": 25,
+      "rows": 79185,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0006261740763932373,
+      "worst_prefix_row": 3193
+    },
+    {
+      "batch": 0,
+      "fraction": 0.0003443476763705755,
+      "malformed": 24,
+      "rank": 26,
+      "rows": 69697,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0005991611743559018,
+      "worst_prefix_row": 1668
+    },
+    {
+      "batch": 0,
+      "fraction": 0.0005600792727586059,
+      "malformed": 52,
+      "rank": 27,
+      "rows": 92844,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0008518445711290217,
+      "worst_prefix_row": 15260
+    },
+    {
+      "batch": 0,
+      "fraction": 0.0004630761117042487,
+      "malformed": 36,
+      "rank": 28,
+      "rows": 77741,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0012594458438287153,
+      "worst_prefix_row": 3175
+    },
+    {
+      "batch": 0,
+      "fraction": 0.0005117118039120367,
+      "malformed": 40,
+      "rank": 29,
+      "rows": 78169,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0012547051442910915,
+      "worst_prefix_row": 796
+    },
+    {
+      "batch": 0,
+      "fraction": 0.00031539937445790734,
+      "malformed": 24,
+      "rank": 30,
+      "rows": 76094,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.002331002331002331,
+      "worst_prefix_row": 428
+    },
+    {
+      "batch": 0,
+      "fraction": 0.0007144867603438197,
+      "malformed": 66,
+      "rank": 31,
+      "rows": 92374,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0014347202295552368,
+      "worst_prefix_row": 696
+    },
+    {
+      "batch": 1,
+      "fraction": 0.0005920429428481213,
+      "malformed": 45,
+      "rank": 32,
+      "rows": 76008,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.001201923076923077,
+      "worst_prefix_row": 831
+    },
+    {
+      "batch": 1,
+      "fraction": 0.00038997214484679665,
+      "malformed": 35,
+      "rank": 33,
+      "rows": 89750,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.00046112699437425065,
+      "worst_prefix_row": 10842
+    },
+    {
+      "batch": 1,
+      "fraction": 0.00035099650100363063,
+      "malformed": 32,
+      "rank": 34,
+      "rows": 91169,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.01,
+      "worst_prefix_row": 68
+    },
+    {
+      "batch": 1,
+      "fraction": 0.000547931241000548,
+      "malformed": 43,
+      "rank": 35,
+      "rows": 78477,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0013812154696132596,
+      "worst_prefix_row": 1447
+    },
+    {
+      "batch": 1,
+      "fraction": 0.0002944981436099162,
+      "malformed": 28,
+      "rank": 36,
+      "rows": 95077,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0008605851979345956,
+      "worst_prefix_row": 2323
+    },
+    {
+      "batch": 1,
+      "fraction": 0.0005322739782936076,
+      "malformed": 41,
+      "rank": 37,
+      "rows": 77028,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0007089684509039348,
+      "worst_prefix_row": 5641
+    },
+    {
+      "batch": 1,
+      "fraction": 0.0005706532077050864,
+      "malformed": 45,
+      "rank": 38,
+      "rows": 78857,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.001718213058419244,
+      "worst_prefix_row": 581
+    },
+    {
+      "batch": 1,
+      "fraction": 0.0003891891891891892,
+      "malformed": 27,
+      "rank": 39,
+      "rows": 69375,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.002967359050445104,
+      "worst_prefix_row": 673
+    },
+    {
+      "batch": 1,
+      "fraction": 0.0002771801539009807,
+      "malformed": 21,
+      "rank": 40,
+      "rows": 75763,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0004911591355599214,
+      "worst_prefix_row": 6107
+    },
+    {
+      "batch": 1,
+      "fraction": 0.0002976960911208905,
+      "malformed": 23,
+      "rank": 41,
+      "rows": 77260,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.01,
+      "worst_prefix_row": 27
+    },
+    {
+      "batch": 1,
+      "fraction": 0.0004629081396475439,
+      "malformed": 43,
+      "rank": 42,
+      "rows": 92891,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.00078064012490242,
+      "worst_prefix_row": 3842
+    },
+    {
+      "batch": 1,
+      "fraction": 0.0004143778488477108,
+      "malformed": 39,
+      "rank": 43,
+      "rows": 94117,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.01,
+      "worst_prefix_row": 1
+    },
+    {
+      "batch": 1,
+      "fraction": 0.0003186217959282332,
+      "malformed": 29,
+      "rank": 44,
+      "rows": 91017,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.001937984496124031,
+      "worst_prefix_row": 2063
+    },
+    {
+      "batch": 1,
+      "fraction": 0.00029932758196765126,
+      "malformed": 28,
+      "rank": 45,
+      "rows": 93543,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0003966155473294553,
+      "worst_prefix_row": 7563
+    },
+    {
+      "batch": 1,
+      "fraction": 0.0005872805706231581,
+      "malformed": 55,
+      "rank": 46,
+      "rows": 93652,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0012539184952978057,
+      "worst_prefix_row": 1594
+    },
+    {
+      "batch": 1,
+      "fraction": 0.0004334083869808349,
+      "malformed": 41,
+      "rank": 47,
+      "rows": 94599,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0009115770282588879,
+      "worst_prefix_row": 3290
+    },
+    {
+      "batch": 1,
+      "fraction": 0.0007992059502172035,
+      "malformed": 62,
+      "rank": 48,
+      "rows": 77577,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0012787723785166241,
+      "worst_prefix_row": 781
+    },
+    {
+      "batch": 1,
+      "fraction": 0.0003824091778202677,
+      "malformed": 36,
+      "rank": 49,
+      "rows": 94140,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0007174887892376681,
+      "worst_prefix_row": 5574
+    },
+    {
+      "batch": 1,
+      "fraction": 0.000377553203538932,
+      "malformed": 30,
+      "rank": 50,
+      "rows": 79459,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0049261083743842365,
+      "worst_prefix_row": 202
+    },
+    {
+      "batch": 1,
+      "fraction": 0.0004996055745464107,
+      "malformed": 38,
+      "rank": 51,
+      "rows": 76060,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.002554278416347382,
+      "worst_prefix_row": 782
+    },
+    {
+      "batch": 1,
+      "fraction": 0.0007772075889530055,
+      "malformed": 73,
+      "rank": 52,
+      "rows": 93926,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0017064846416382253,
+      "worst_prefix_row": 1171
+    },
+    {
+      "batch": 1,
+      "fraction": 0.0005405833025684299,
+      "malformed": 41,
+      "rank": 53,
+      "rows": 75844,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.000642570281124498,
+      "worst_prefix_row": 6224
+    },
+    {
+      "batch": 1,
+      "fraction": 0.0006176652254478073,
+      "malformed": 48,
+      "rank": 54,
+      "rows": 77712,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.01,
+      "worst_prefix_row": 49
+    },
+    {
+      "batch": 1,
+      "fraction": 0.00035602839850049214,
+      "malformed": 34,
+      "rank": 55,
+      "rows": 95498,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0005652620760534429,
+      "worst_prefix_row": 19459
+    },
+    {
+      "batch": 1,
+      "fraction": 0.0006213227835260702,
+      "malformed": 49,
+      "rank": 56,
+      "rows": 78864,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0006401068700165593,
+      "worst_prefix_row": 71862
+    },
+    {
+      "batch": 1,
+      "fraction": 0.0005125510949372766,
+      "malformed": 40,
+      "rank": 57,
+      "rows": 78041,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.00125,
+      "worst_prefix_row": 799
+    },
+    {
+      "batch": 1,
+      "fraction": 0.00033030916938254205,
+      "malformed": 30,
+      "rank": 58,
+      "rows": 90824,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.01,
+      "worst_prefix_row": 98
+    },
+    {
+      "batch": 1,
+      "fraction": 0.00038712591270310666,
+      "malformed": 36,
+      "rank": 59,
+      "rows": 92993,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0008316008316008316,
+      "worst_prefix_row": 2404
+    },
+    {
+      "batch": 1,
+      "fraction": 0.00039798640392393084,
+      "malformed": 37,
+      "rank": 60,
+      "rows": 92968,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.001364256480218281,
+      "worst_prefix_row": 732
+    },
+    {
+      "batch": 1,
+      "fraction": 0.0004965180083262251,
+      "malformed": 39,
+      "rank": 61,
+      "rows": 78547,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.007936507936507936,
+      "worst_prefix_row": 125
+    },
+    {
+      "batch": 1,
+      "fraction": 0.000840721491898502,
+      "malformed": 66,
+      "rank": 62,
+      "rows": 78504,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.005555555555555556,
+      "worst_prefix_row": 179
+    },
+    {
+      "batch": 1,
+      "fraction": 0.00041969781757134864,
+      "malformed": 33,
+      "rank": 63,
+      "rows": 78628,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0007032348804500703,
+      "worst_prefix_row": 1421
+    },
+    {
+      "batch": 2,
+      "fraction": 0.0005820663354909931,
+      "malformed": 58,
+      "rank": 64,
+      "rows": 99645,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0008641548565502938,
+      "worst_prefix_row": 5785
+    },
+    {
+      "batch": 2,
+      "fraction": 0.0002788908949462034,
+      "malformed": 19,
+      "rank": 65,
+      "rows": 68127,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.004424778761061947,
+      "worst_prefix_row": 225
+    },
+    {
+      "batch": 2,
+      "fraction": 0.00044831561419239146,
+      "malformed": 35,
+      "rank": 66,
+      "rows": 78070,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0007407407407407407,
+      "worst_prefix_row": 1349
+    },
+    {
+      "batch": 2,
+      "fraction": 0.0006904810711087615,
+      "malformed": 64,
+      "rank": 67,
+      "rows": 92689,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0014367816091954023,
+      "worst_prefix_row": 695
+    },
+    {
+      "batch": 2,
+      "fraction": 0.00031889508351752273,
+      "malformed": 29,
+      "rank": 68,
+      "rows": 90939,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.00037714839891524936,
+      "worst_prefix_row": 55680
+    },
+    {
+      "batch": 2,
+      "fraction": 0.0003184503546878088,
+      "malformed": 29,
+      "rank": 69,
+      "rows": 91066,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0005980861244019139,
+      "worst_prefix_row": 1671
+    },
+    {
+      "batch": 2,
+      "fraction": 0.0006978898349173318,
+      "malformed": 55,
+      "rank": 70,
+      "rows": 78809,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.003472222222222222,
+      "worst_prefix_row": 287
+    },
+    {
+      "batch": 2,
+      "fraction": 0.0006874450296713406,
+      "malformed": 68,
+      "rank": 71,
+      "rows": 98917,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0035087719298245615,
+      "worst_prefix_row": 284
+    },
+    {
+      "batch": 2,
+      "fraction": 0.0006118234889234456,
+      "malformed": 48,
+      "rank": 72,
+      "rows": 78454,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0019193857965451055,
+      "worst_prefix_row": 520
+    },
+    {
+      "batch": 2,
+      "fraction": 0.00047451106123757615,
+      "malformed": 37,
+      "rank": 73,
+      "rows": 77975,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0005044097641502224,
+      "worst_prefix_row": 65422
+    },
+    {
+      "batch": 2,
+      "fraction": 0.0003679335122500216,
+      "malformed": 34,
+      "rank": 74,
+      "rows": 92408,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.00036928035092823654,
+      "worst_prefix_row": 89362
+    },
+    {
+      "batch": 2,
+      "fraction": 0.0003825652273712668,
+      "malformed": 30,
+      "rank": 75,
+      "rows": 78418,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0012121212121212121,
+      "worst_prefix_row": 824
+    },
+    {
+      "batch": 2,
+      "fraction": 0.0004484161301687966,
+      "malformed": 42,
+      "rank": 76,
+      "rows": 93663,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.003816793893129771,
+      "worst_prefix_row": 523
+    },
+    {
+      "batch": 2,
+      "fraction": 0.0007577671129072998,
+      "malformed": 60,
+      "rank": 77,
+      "rows": 79180,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.009345794392523364,
+      "worst_prefix_row": 106
+    },
+    {
+      "batch": 2,
+      "fraction": 0.0005362477975536886,
+      "malformed": 42,
+      "rank": 78,
+      "rows": 78322,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0010815822002472187,
+      "worst_prefix_row": 6471
+    },
+    {
+      "batch": 2,
+      "fraction": 0.0005520393360122219,
+      "malformed": 43,
+      "rank": 79,
+      "rows": 77893,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.005649717514124294,
+      "worst_prefix_row": 176
+    },
+    {
+      "batch": 2,
+      "fraction": 0.00043877761717943424,
+      "malformed": 34,
+      "rank": 80,
+      "rows": 77488,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0005912495072920772,
+      "worst_prefix_row": 5073
+    },
+    {
+      "batch": 2,
+      "fraction": 0.000721327242125511,
+      "malformed": 57,
+      "rank": 81,
+      "rows": 79021,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.01,
+      "worst_prefix_row": 26
+    },
+    {
+      "batch": 2,
+      "fraction": 0.0003105417845061831,
+      "malformed": 28,
+      "rank": 82,
+      "rows": 90165,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0007987220447284345,
+      "worst_prefix_row": 1251
+    },
+    {
+      "batch": 2,
+      "fraction": 0.00044470985858226496,
+      "malformed": 35,
+      "rank": 83,
+      "rows": 78703,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0009436929852154766,
+      "worst_prefix_row": 3178
+    },
+    {
+      "batch": 2,
+      "fraction": 0.00027561225293330186,
+      "malformed": 21,
+      "rank": 84,
+      "rows": 76194,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0005694760820045558,
+      "worst_prefix_row": 1755
+    },
+    {
+      "batch": 2,
+      "fraction": 0.00030928973820832875,
+      "malformed": 28,
+      "rank": 85,
+      "rows": 90530,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0003494905503131973,
+      "worst_prefix_row": 37196
+    },
+    {
+      "batch": 2,
+      "fraction": 0.0005980252442996743,
+      "malformed": 47,
+      "rank": 86,
+      "rows": 78592,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0019138755980861245,
+      "worst_prefix_row": 1044
+    },
+    {
+      "batch": 2,
+      "fraction": 0.000493339911198816,
+      "malformed": 37,
+      "rank": 87,
+      "rows": 74999,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0015432098765432098,
+      "worst_prefix_row": 647
+    },
+    {
+      "batch": 2,
+      "fraction": 0.0006285274499743458,
+      "malformed": 49,
+      "rank": 88,
+      "rows": 77960,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0008419870895312938,
+      "worst_prefix_row": 7125
+    },
+    {
+      "batch": 2,
+      "fraction": 0.0003025222795053761,
+      "malformed": 24,
+      "rank": 89,
+      "rows": 79333,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.00044697731590121804,
+      "worst_prefix_row": 8948
+    },
+    {
+      "batch": 2,
+      "fraction": 0.0004213321757338202,
+      "malformed": 33,
+      "rank": 90,
+      "rows": 78323,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0005087763927753752,
+      "worst_prefix_row": 7861
+    },
+    {
+      "batch": 2,
+      "fraction": 0.0005279385057228534,
+      "malformed": 50,
+      "rank": 91,
+      "rows": 94708,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0007874015748031496,
+      "worst_prefix_row": 1269
+    },
+    {
+      "batch": 2,
+      "fraction": 0.0003231444896520321,
+      "malformed": 22,
+      "rank": 92,
+      "rows": 68081,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0037313432835820895,
+      "worst_prefix_row": 267
+    },
+    {
+      "batch": 2,
+      "fraction": 0.0005140710472549924,
+      "malformed": 39,
+      "rank": 93,
+      "rows": 75865,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0031847133757961785,
+      "worst_prefix_row": 313
+    },
+    {
+      "batch": 2,
+      "fraction": 0.00039702360369360025,
+      "malformed": 31,
+      "rank": 94,
+      "rows": 78081,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0004108788065550973,
+      "worst_prefix_row": 63278
+    },
+    {
+      "batch": 2,
+      "fraction": 0.00030827158726838344,
+      "malformed": 28,
+      "rank": 95,
+      "rows": 90829,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0003935458480913026,
+      "worst_prefix_row": 7622
+    },
+    {
+      "batch": 3,
+      "fraction": 0.00041706161137440757,
+      "malformed": 33,
+      "rank": 96,
+      "rows": 79125,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.000578438697548866,
+      "worst_prefix_row": 41490
+    },
+    {
+      "batch": 3,
+      "fraction": 0.0004119676605386477,
+      "malformed": 32,
+      "rank": 97,
+      "rows": 77676,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.00558659217877095,
+      "worst_prefix_row": 178
+    },
+    {
+      "batch": 3,
+      "fraction": 0.0003578000408914332,
+      "malformed": 28,
+      "rank": 98,
+      "rows": 78256,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.00038068382093761014,
+      "worst_prefix_row": 70924
+    },
+    {
+      "batch": 3,
+      "fraction": 0.00047999584868455193,
+      "malformed": 37,
+      "rank": 99,
+      "rows": 77084,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0007850834151128558,
+      "worst_prefix_row": 5094
+    },
+    {
+      "batch": 3,
+      "fraction": 0.0007952970004406375,
+      "malformed": 74,
+      "rank": 100,
+      "rows": 93047,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.005235602094240838,
+      "worst_prefix_row": 190
+    },
+    {
+      "batch": 3,
+      "fraction": 0.0005991229859269835,
+      "malformed": 47,
+      "rank": 101,
+      "rows": 78448,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0008698488637599218,
+      "worst_prefix_row": 9196
+    },
+    {
+      "batch": 3,
+      "fraction": 0.00042916613020900393,
+      "malformed": 40,
+      "rank": 102,
+      "rows": 93204,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.01,
+      "worst_prefix_row": 12
+    },
+    {
+      "batch": 3,
+      "fraction": 0.0004149151061855107,
+      "malformed": 38,
+      "rank": 103,
+      "rows": 91585,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0004809233728759218,
+      "worst_prefix_row": 18713
+    },
+    {
+      "batch": 3,
+      "fraction": 0.0005359978155560724,
+      "malformed": 53,
+      "rank": 104,
+      "rows": 98881,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0005846884706742189,
+      "worst_prefix_row": 54729
+    },
+    {
+      "batch": 3,
+      "fraction": 0.0006486661801670316,
+      "malformed": 64,
+      "rank": 105,
+      "rows": 98664,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0008494973807164094,
+      "worst_prefix_row": 21188
+    },
+    {
+      "batch": 3,
+      "fraction": 0.000285147693543997,
+      "malformed": 22,
+      "rank": 106,
+      "rows": 77153,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0002908937047957794,
+      "worst_prefix_row": 75628
+    },
+    {
+      "batch": 3,
+      "fraction": 0.0004385820641864851,
+      "malformed": 40,
+      "rank": 107,
+      "rows": 91203,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.01,
+      "worst_prefix_row": 16
+    },
+    {
+      "batch": 3,
+      "fraction": 0.0003691821977798146,
+      "malformed": 29,
+      "rank": 108,
+      "rows": 78552,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.01,
+      "worst_prefix_row": 11
+    },
+    {
+      "batch": 3,
+      "fraction": 0.0004694234626381599,
+      "malformed": 44,
+      "rank": 109,
+      "rows": 93732,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0010893246187363835,
+      "worst_prefix_row": 917
+    },
+    {
+      "batch": 3,
+      "fraction": 0.0004904940127741701,
+      "malformed": 46,
+      "rank": 111,
+      "rows": 93783,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0005846243788365975,
+      "worst_prefix_row": 3420
+    },
+    {
+      "batch": 3,
+      "fraction": 0.0005403828071806067,
+      "malformed": 50,
+      "rank": 112,
+      "rows": 92527,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0018867924528301887,
+      "worst_prefix_row": 529
+    },
+    {
+      "batch": 3,
+      "fraction": 0.0007938508064516129,
+      "malformed": 63,
+      "rank": 113,
+      "rows": 79360,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.000838703981636797,
+      "worst_prefix_row": 67961
+    },
+    {
+      "batch": 3,
+      "fraction": 0.0003120084242274541,
+      "malformed": 24,
+      "rank": 114,
+      "rows": 76921,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.001524390243902439,
+      "worst_prefix_row": 655
+    },
+    {
+      "batch": 3,
+      "fraction": 0.0008043758043758043,
+      "malformed": 75,
+      "rank": 115,
+      "rows": 93240,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0036809815950920245,
+      "worst_prefix_row": 814
+    },
+    {
+      "batch": 3,
+      "fraction": 0.0006718300396760004,
+      "malformed": 53,
+      "rank": 116,
+      "rows": 78889,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0007499278915488896,
+      "worst_prefix_row": 17334
+    },
+    {
+      "batch": 3,
+      "fraction": 0.00026514649343762427,
+      "malformed": 24,
+      "rank": 117,
+      "rows": 90516,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0005379718461400521,
+      "worst_prefix_row": 11152
+    },
+    {
+      "batch": 3,
+      "fraction": 0.0006615102788520253,
+      "malformed": 52,
+      "rank": 118,
+      "rows": 78608,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0009208103130755065,
+      "worst_prefix_row": 1085
+    },
+    {
+      "batch": 3,
+      "fraction": 0.0008918788064113345,
+      "malformed": 70,
+      "rank": 119,
+      "rows": 78486,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.001291178112786153,
+      "worst_prefix_row": 28655
+    },
+    {
+      "batch": 3,
+      "fraction": 0.0004209076299074003,
+      "malformed": 33,
+      "rank": 120,
+      "rows": 78402,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.00684931506849315,
+      "worst_prefix_row": 145
+    },
+    {
+      "batch": 3,
+      "fraction": 0.00045777065690089265,
+      "malformed": 36,
+      "rank": 121,
+      "rows": 78642,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0005412156536219817,
+      "worst_prefix_row": 24019
+    },
+    {
+      "batch": 3,
+      "fraction": 0.0006843140023679437,
+      "malformed": 63,
+      "rank": 124,
+      "rows": 92063,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.000971722864639005,
+      "worst_prefix_row": 20581
+    },
+    {
+      "batch": 3,
+      "fraction": 0.0004797252941473514,
+      "malformed": 38,
+      "rank": 127,
+      "rows": 79212,
+      "stop_row": null,
+      "worst_prefix_ratio": 0.0007943863365550113,
+      "worst_prefix_row": 7552
+    }
+  ],
+  "reason_codes": {
+    "essential_web_unusable_record": 4,
+    "invalid_fdc_syntax": 650,
+    "invalid_fdc_syntax, missing_label:t": 1,
+    "invalid_fdc_syntax, unknown_label:d, unknown_label:k, unknown_label:a, unknown_label:m": 7,
+    "invalid_fdc_syntax, unknown_label:d, unknown_label:k, unknown_label:a, unknown_label:m, unknown_label:t": 15,
+    "invalid_fdc_syntax, unknown_label:k": 805,
+    "invalid_fdc_syntax, unknown_label:k, unknown_label:a, unknown_label:m": 2,
+    "missing_label:d": 8,
+    "unknown_label:a": 47,
+    "unknown_label:d, unknown_label:k, unknown_label:a, unknown_label:m, unknown_label:t": 1,
+    "unknown_label:k": 3199,
+    "unknown_label:k, unknown_label:a, unknown_label:m": 2,
+    "unknown_label:m": 206,
+    "unknown_label:t": 18
+  },
+  "rows": 10253689,
+  "units": 123,
+  "units_over_half_percent_prefix": 19
+}

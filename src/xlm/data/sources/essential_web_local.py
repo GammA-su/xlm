@@ -52,7 +52,7 @@ from xlm.data.acquisition.source_parquet import (
     selected_payloads,
 )
 from xlm.data.adapters.columns import columns_for
-from xlm.data.adapters.malformed import MalformedCounter
+from xlm.data.adapters.malformed import MalformedCounter, MalformedLimitError
 from xlm.data.adapters.mix01_adapters import (
     ADAPTERS_BY_ID,
     EssentialWebMalformedRowError,
@@ -75,6 +75,8 @@ LEDGER_LEVEL = 9
 SUMMARY_VERSION = 2
 RECEIPT_FILENAME = "receipt.json"
 MIB = 1024**2
+#: The frozen 1% malformed budget, judged on the whole file pass (amendment id).
+MALFORMED_POLICY = "essential-web-malformed-whole-pass-v1"
 
 
 class LocalAdaptError(RuntimeError):
@@ -99,6 +101,23 @@ def read_ledger(path: Path, uncompressed_bytes: int, *, max_bytes: int = 4096 * 
     return bytes(
         codec.decompress(path.read_bytes(), decompressed_size=uncompressed_bytes, asbytes=True)
     )
+
+
+def observe_malformed(counter: MalformedCounter, malformed: bool, pass_rows: int) -> None:
+    """The frozen per-row malformed rule, with the 1% budget taken over the whole pass.
+
+    The frozen counter sees every row and must fire first. Its stop stands only
+    once the malformed rows exceed 1% of all ``pass_rows``, the point from which
+    the pass's final fraction can no longer be 1% or less. A dense prefix of an
+    otherwise clean file does not stop it. Every stop is one the frozen rule
+    also makes, and the decision at the end of the pass is exactly the frozen
+    rule's. Rows, codes and ledger bytes are unaffected.
+    """
+    try:
+        counter.observe(malformed)
+    except MalformedLimitError:
+        if counter.malformed * 100 > pass_rows:
+            raise
 
 
 def _write_bytes(path: Path, data: bytes) -> None:
@@ -340,7 +359,11 @@ def adapt_source_file(
                         source_revision=revision,
                     )
                 except RecordRejectedError as exc:
-                    state.malformed.observe(isinstance(exc, EssentialWebMalformedRowError))
+                    observe_malformed(
+                        state.malformed,
+                        isinstance(exc, EssentialWebMalformedRowError),
+                        stop - start,
+                    )
                     line = serialize_rejection(
                         build_rejection_record(
                             input_line=rows,
@@ -362,7 +385,7 @@ def adapt_source_file(
                     state.codes[code] = state.codes.get(code, 0) + 1
                     state.rejected += 1
                     continue
-                state.malformed.observe(False)
+                observe_malformed(state.malformed, False, stop - start)
                 if document.source_id != source_id:
                     raise LocalAdaptError("adapter produced a document of another source")
                 state.documents.write_line(serialize_document(document).encode("utf-8") + b"\n")

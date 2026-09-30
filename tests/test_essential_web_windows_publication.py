@@ -533,11 +533,13 @@ def test_windows_fix_extends_the_compatibility_chain_only_with_its_own_files(
 
 
 def test_committed_windows_fix_binds_the_running_code(fast_campaign: Any) -> None:
-    """The real campaign loads only because the committed record binds this exact code."""
+    """The committed record stays a link of the chain the running code continues."""
     manifest = json.loads((recovery_repo() / recovery.MANIFEST).read_bytes())
     assert recovery.compatible_code(recovery_repo(), manifest)
     record = json.loads((recovery_repo() / recovery.WINDOWS_FIX).read_bytes())
-    assert record["code"] == recovery.code_identity(recovery_repo())
+    following = json.loads((recovery_repo() / recovery.MALFORMED_FIX).read_bytes())
+    assert record["code"] == following["previous_code"]
+    assert record["digest"] == following["previous_digest"]
     assert (
         record["previous_code"]
         == json.loads((recovery_repo() / recovery.SCOPE_FIX).read_bytes())["code"]

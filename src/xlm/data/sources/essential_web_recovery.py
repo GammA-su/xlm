@@ -17,6 +17,9 @@ from xlm.data.sources.essential_web_bulk import BulkError
 MANIFEST = "docs/implementation/evidence/ESSENTIAL-WEB-BATCH0-RECOVERY/recovery.json"
 SCOPE_FIX = "docs/implementation/evidence/ESSENTIAL-WEB-RECOVERY-SCOPE/code-compatibility.json"
 WINDOWS_FIX = "docs/implementation/evidence/ESSENTIAL-WEB-BATCH1-WINDOWS/code-compatibility.json"
+MALFORMED_FIX = (
+    "docs/implementation/evidence/ESSENTIAL-WEB-BATCH3-MALFORMED/code-compatibility.json"
+)
 _DRIVER = "scripts/essential_web_fast.py"
 _DISPATCHER = "src/xlm/data/sources/essential_web_recovery.py"
 #: Additive code-compatibility records in order: path, kind, and the exact files each changes.
@@ -34,6 +37,11 @@ COMPATIBILITY = (
                 "src/xlm/data/sources/essential_web_progress.py",
             }
         ),
+    ),
+    (
+        MALFORMED_FIX,
+        "essential_web_malformed_whole_pass_v1",
+        frozenset({_DISPATCHER, "src/xlm/data/sources/essential_web_local.py"}),
     ),
 )
 CODE_FILES = (

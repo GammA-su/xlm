@@ -1,3 +1,10 @@
+> **Essential-Web Batch-3 malformed stop (2026-09-30):** after the fix, dot-source
+> storage and resume the reviewed batch with
+> `.\scripts\operator_essential_web_fast.ps1 -Stage Run -Batch 3` (f00110 and f00123 are
+> reused locally; only three partial tails are fetched). Then run `-Stage PrepareAuto`
+> again: the earlier auto digest is bound to the previous code and is refused.
+> [Report](../implementation/reports/ESSENTIAL-WEB-BATCH3-MALFORMED.md).
+>
 > **Essential-Web automatic campaign (2026-09-30):** after `. .\scripts\operator_storage.ps1`,
 > `.\scripts\operator_essential_web_campaign.ps1 -Stage Status` shows the campaign, the
 > next batch and a projected ETA (offline). `-Stage PrepareAuto -MaxBatches 20` binds a

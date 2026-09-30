@@ -1,0 +1,54 @@
+{
+  "key": "f00110",
+  "local_location": "durable",
+  "malformed_fraction": 0.0005337467752798994,
+  "malformed_policy": "essential-web-malformed-whole-pass-v1",
+  "malformed_rows": 42,
+  "outcome": "completed",
+  "rows": 78689,
+  "seconds": 36.812,
+  "selected_records_sha256": "da1428960a77ee98d9e690b9cbf4cb21a49d60f88092e7f44ad6292fe9f96e83",
+  "sha256": "968bedb4644070246d01fbd7424b164f88e81384947808edb84a1d91d88bd4ea",
+  "source_file": "data/crawl=CC-MAIN-2024-26/train-00549-of-03168.parquet",
+  "views": {
+    "essential_practical": {
+      "canonical_bytes": 13778940,
+      "documents": 2569,
+      "documents_sha256": "23a5ce7d1afddf9a5e321679745973f3976b9ce50467965448c523cfa773eaf2",
+      "estimated_tokens_4_bytes": 3444735.0,
+      "rejection_counts_by_code": {
+        "EssentialWebMalformedRowError": 42,
+        "EssentialWebSelectorOtherComponentError": 8194,
+        "EssentialWebSelectorRejectedError": 67083,
+        "EssentialWebSelectorUnassignedError": 801
+      },
+      "rejections_sha256": "c9d74e65ccf21681154c97cf187ed653a9f1e10e8cbcdb49d12baae6bc590607"
+    },
+    "essential_prose": {
+      "canonical_bytes": 34339602,
+      "documents": 7342,
+      "documents_sha256": "66df61053a7d7a91e2d84ee8b01973b5868be1303f76f1760d9be2720afb5a16",
+      "estimated_tokens_4_bytes": 8584900.5,
+      "rejection_counts_by_code": {
+        "EssentialWebMalformedRowError": 42,
+        "EssentialWebSelectorOtherComponentError": 3421,
+        "EssentialWebSelectorRejectedError": 67083,
+        "EssentialWebSelectorUnassignedError": 801
+      },
+      "rejections_sha256": "09d22b9181941c46c48c328e49f3001d18dc37ecd32608545a1ebd28de4e913f"
+    },
+    "essential_science": {
+      "canonical_bytes": 6174756,
+      "documents": 852,
+      "documents_sha256": "461889d36c4555f19576687a65afaa395284ba13abf03dd8d9c0a331f0a57a0c",
+      "estimated_tokens_4_bytes": 1543689.0,
+      "rejection_counts_by_code": {
+        "EssentialWebMalformedRowError": 42,
+        "EssentialWebSelectorOtherComponentError": 9911,
+        "EssentialWebSelectorRejectedError": 67083,
+        "EssentialWebSelectorUnassignedError": 801
+      },
+      "rejections_sha256": "65ac6017a6c4db018480c20e461341c52f5a9ac7fa53a4857b38cbf3ae935498"
+    }
+  }
+}
