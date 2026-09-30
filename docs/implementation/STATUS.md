@@ -1,3 +1,25 @@
+> **ESSENTIAL-WEB SELECTOR FAST-TRACK FREEZE (2026-09-30): B-NORMAL FROZEN;
+> T SEMANTIC REVIEW NOT RUN.** Amendment `essential-web-selector-fasttrack-v1`.
+> Only one human is available, so the operator chose not to run the frozen
+> two-reviewer Arm-T review. Arm-T status is
+> `NOT_RUN_NO_TWO_INDEPENDENT_HUMAN_REVIEWERS`: 118 locators acquired (117
+> reviewable, 1 oversized), blinded package sealed (`18c95b95…`) and preserved,
+> 0 labels, no adjudication, no unblinding. It contributes no acceptance or
+> rejection evidence; no model or single-reviewer substitute was used.
+> B-normal (unchanged policy B, tier normal, policy digest `f4357f61…`,
+> evaluator `5a63e785…`) is frozen as the production Essential-Web selector
+> for Mix-01 by explicit operator decision on metadata evidence only. It is
+> not a T-validated winner. M seal `afc972cc…` verified before and after.
+> Counts recomputed from sealed artifacts (science/practical/prose/
+> unassigned/rejected): development 29/108/371/36/3552, M 24/117/372/45/3538.
+> Freeze digest
+> `c6f32a65f083c99b64245e25151f2cc73275093e1013d68b625c6d6f63d10a0c`, verified
+> by full recomputation. Focused tests: freeze 32, frozen evaluator 60, M
+> analysis 29, identity 5 passed; fast/full selections NOT RUN. No network,
+> acquisition, T text access, labels, reselection, weight change or push.
+> [Freeze report](reports/ESSENTIAL-WEB-SELECTOR-FASTTRACK-FREEZE.md).
+> Next: integrate the frozen selector into the production adapter.
+
 > **ESSENTIAL-WEB V4.1 T BLINDED PACKAGE SEALED (2026-09-30).**
 > The frozen 118-locator Arm-T selection is materialized as a custodian master
 > ledger plus two blinded reviewer packages in the access-restricted external

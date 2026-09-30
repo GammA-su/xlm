@@ -1,0 +1,630 @@
+{
+  "code": {
+    "scripts/essential_web_fasttrack_freeze.py": {
+      "bytes": 7313,
+      "path": "scripts/essential_web_fasttrack_freeze.py",
+      "sha256": "3e5d372b4ae954feab44d1ca8ab20574ab44d96578766cc1c1299ae2c938c24a"
+    },
+    "src/xlm/data/evidence_v2/canonical.py": {
+      "bytes": 6013,
+      "path": "src/xlm/data/evidence_v2/canonical.py",
+      "sha256": "2a2f80d65844337bfcd33fc77f469fcfea3155e66b75c275f4478e9e810f9680"
+    },
+    "src/xlm/data/evidence_v2/fasttrack_freeze.py": {
+      "bytes": 21733,
+      "path": "src/xlm/data/evidence_v2/fasttrack_freeze.py",
+      "sha256": "299ba1830c1da4fc7813d275b6d7332cf4c9b0f127ef7b31586244fa0d8a28f7"
+    },
+    "src/xlm/data/evidence_v2/m_analysis.py": {
+      "bytes": 48012,
+      "path": "src/xlm/data/evidence_v2/m_analysis.py",
+      "sha256": "15a09e30682221a08c07d8e354803bae22bd9cc667ebd38e0604d22a564fae98"
+    }
+  },
+  "commands": [
+    "uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/essential_web_fasttrack_freeze.py build --m-evidence-dir docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-M-ANALYSIS --development-dir F:/Project/xlm-selector-sweeps/essential-web-v2 --t-package-manifest docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-T-BLINDED-PACKAGE/package_manifest.json --output-dir docs/implementation/evidence/ESSENTIAL-WEB-SELECTOR-FASTTRACK-FREEZE --parent-commit e596f19cde59d6f9b922ebc4069cf79b231c27c0 --decision-date 2026-09-30"
+  ],
+  "counts": {
+    "development": {
+      "A-normal": {
+        "practical": 108,
+        "prose": 377,
+        "rejected": 3552,
+        "science": 19,
+        "unassigned": 40
+      },
+      "A-strict": {
+        "practical": 62,
+        "prose": 334,
+        "rejected": 3660,
+        "science": 12,
+        "unassigned": 28
+      },
+      "B-normal": {
+        "practical": 108,
+        "prose": 371,
+        "rejected": 3552,
+        "science": 29,
+        "unassigned": 36
+      },
+      "B-strict": {
+        "practical": 62,
+        "prose": 329,
+        "rejected": 3660,
+        "science": 20,
+        "unassigned": 25
+      },
+      "C-normal": {
+        "practical": 41,
+        "prose": 120,
+        "rejected": 3552,
+        "science": 29,
+        "unassigned": 354
+      },
+      "C-strict": {
+        "practical": 22,
+        "prose": 102,
+        "rejected": 3660,
+        "science": 20,
+        "unassigned": 292
+      },
+      "D-normal": {
+        "practical": 279,
+        "prose": 719,
+        "rejected": 2934,
+        "science": 54,
+        "unassigned": 110
+      },
+      "D-strict": {
+        "practical": 62,
+        "prose": 329,
+        "rejected": 3660,
+        "science": 20,
+        "unassigned": 25
+      }
+    },
+    "m": {
+      "A-normal": {
+        "practical": 117,
+        "prose": 374,
+        "rejected": 3538,
+        "science": 17,
+        "unassigned": 50
+      },
+      "A-strict": {
+        "practical": 68,
+        "prose": 344,
+        "rejected": 3639,
+        "science": 7,
+        "unassigned": 38
+      },
+      "B-normal": {
+        "practical": 117,
+        "prose": 372,
+        "rejected": 3538,
+        "science": 24,
+        "unassigned": 45
+      },
+      "B-strict": {
+        "practical": 68,
+        "prose": 342,
+        "rejected": 3639,
+        "science": 11,
+        "unassigned": 36
+      },
+      "C-normal": {
+        "practical": 46,
+        "prose": 127,
+        "rejected": 3538,
+        "science": 24,
+        "unassigned": 361
+      },
+      "C-strict": {
+        "practical": 30,
+        "prose": 111,
+        "rejected": 3639,
+        "science": 11,
+        "unassigned": 305
+      },
+      "D-normal": {
+        "practical": 257,
+        "prose": 717,
+        "rejected": 2948,
+        "science": 56,
+        "unassigned": 118
+      },
+      "D-strict": {
+        "practical": 68,
+        "prose": 342,
+        "rejected": 3639,
+        "science": 11,
+        "unassigned": 36
+      }
+    }
+  },
+  "decision": {
+    "evidence_basis": [
+      "sealed Arm-M metadata evidence",
+      "hash-verified development metadata evidence"
+    ],
+    "prior_state": {
+      "m_seal_policy_ranking": "NOT PERFORMED",
+      "m_seal_selector_decision": "NOT MADE"
+    },
+    "selector": "B-normal",
+    "semantic_quality_claims": "none",
+    "t_validated": false,
+    "type": "explicit operator and scientific fast-track decision"
+  },
+  "decision_date": "2026-09-30",
+  "development_evidence": {
+    "artifacts": {
+      "attrition.json": {
+        "bytes": 22144,
+        "sha256": "7ed63a682bd8a918fa3c5b4410ae1c8ffafbf7d62f968f764d1590970f98d7ad"
+      },
+      "crosstabs.json": {
+        "bytes": 690521,
+        "sha256": "5fa6d0ac84adb75e0b1ea7ea6bdb0a440ac0d66363043125eeb376b58e4e1720"
+      },
+      "diagnostics.json": {
+        "bytes": 82797,
+        "sha256": "01fa05e3a0859cafb74c47d8e16b06267dca15a5a89def64ffb4ab551ea68f1a"
+      },
+      "overlaps.json": {
+        "bytes": 23200,
+        "sha256": "edc367578fea52c42cb6d3fe21ed7cfa9efce052b981670be5ad70be7e7a4be1"
+      },
+      "per_crawl.json": {
+        "bytes": 28845,
+        "sha256": "b5171045d684be812dd242fbfb60e110045e6a0ad510ede706ef642e969198a2"
+      },
+      "policy_spec.json": {
+        "bytes": 5346,
+        "sha256": "04005393158b01b5cc6433994142fa61f4d0679eda565b425ac82084acf3035b"
+      },
+      "summary.json": {
+        "bytes": 3439,
+        "sha256": "0925c3708461feaa399a3f9c19e28d69cd338d7dd72d9e8837da115e4e9a60ed"
+      },
+      "summary.md": {
+        "bytes": 6496,
+        "sha256": "71396004a981c75afa699569a491b02098c89f66e441f3eb144cc627cf1f8096"
+      }
+    },
+    "binding": {
+      "bundle_digest": "ac1c13b656d9dc3bc506726bfe3f1db925444efb899733052496be0425c58eb3",
+      "combined_sha256": "42e07c350d849c608ef202348971e3f7ea48aa80775d413a39dd3373628c58e1",
+      "execution_digest": "5065bcf6001ee38b63ca783f20a625af0256f2788ce9a0034edfba34c125bc23",
+      "parts": 8,
+      "records": 4096,
+      "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d"
+    },
+    "manifest": {
+      "bytes": 2044,
+      "digest": "e13c9c98efdf07fcc7c1375c4c8b62d918d77aa39c158171aa090c8695ac4087",
+      "sha256": "0d550a2d871f737c8bc46f82a8de38fd817b50bb1bffee46f2c3c07a129e26bc"
+    },
+    "source": "hash-verified frozen sweep artifacts",
+    "summary": {
+      "bytes": 3439,
+      "name": "summary.json",
+      "sha256": "0925c3708461feaa399a3f9c19e28d69cd338d7dd72d9e8837da115e4e9a60ed"
+    }
+  },
+  "environment": {
+    "implementation": "CPython",
+    "machine": "AMD64",
+    "network": "none",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.12.13"
+  },
+  "evaluator": {
+    "bytes": 82158,
+    "path": "scripts/essential_web_selector_sweep.py",
+    "policy": {
+      "bytes": 5506,
+      "digest": "f4357f61f434d5105d823266153dac6372e122f12767187631e8796b4899dd07",
+      "path": "recipes/selectors/essential_web_selector_sweep_v1.yaml",
+      "policy_spec_version": "essential-web-selector-sweep-v1",
+      "sha256": "c27a0aae8f63a1d9f80fdeb693a14d877b68298d386a3fc8679bbab34fa2a088"
+    },
+    "report_schema_version": 2,
+    "sha256": "5a63e78560ea9e12b0ec03b5e7e63204b5c75554bee02192c12bb4ab0853bf9c",
+    "tool_version": "2"
+  },
+  "freeze_digest": "c6f32a65f083c99b64245e25151f2cc73275093e1013d68b625c6d6f63d10a0c",
+  "kind": "essential_web_selector_fasttrack_freeze",
+  "limitations": [
+    "The Arm-T semantic review was not run, so no semantic quality of any policy was assessed; B-normal is not a T-validated winner.",
+    "The condition was chosen with both replicates visible, so M is a descriptive replication of the counts, not an independent test of the choice.",
+    "The frozen evidence protocol planned the blinded two-reviewer T review before the selector decision; this amendment departs from that plan by explicit operator decision.",
+    "Both replicates are one contiguous 512-row window per crawl: clustered, not iid. No confidence interval, test or ranking statistic is reported.",
+    "Science remains sparse under B-normal (every crawl cell below 20 rows in both replicates).",
+    "Rows that pass the gate but match no component are unassigned and are not admitted."
+  ],
+  "m_evidence": {
+    "artifact_manifest_digest": "4e14c7bfc8b5f5109a9befdf479e7543518fcf04986e1684ad64709bca43c2be",
+    "derived_input_sha256": "839e1296940154e70e91cc15c1059a7708d4f1833da329ebb6146739ef625676",
+    "modified_by_this_freeze": false,
+    "post_seal_rule": "M analysis must not change in response to later semantic review",
+    "records": 4096,
+    "result_commit": "65edfd0a9e3b33b2b98cc9423223e31506db59a5",
+    "seal_digest": "afc972ccf570a5587bf7bd3b6b8d1d728a09f2230c49f1b0a19c1c74cda0b9bc",
+    "seal_file": {
+      "bytes": 8517,
+      "sha256": "eaaac163c56976aa473e5f68703dd4abcbf06dde13b76d7dd0867d86f4d6aa23"
+    },
+    "source_records_sha256": "4d268f8d4ac3fcfe6cfea6184c8bcce5b7cb797dc1c627ca83a91371e3070e02",
+    "summary": {
+      "bytes": 3438,
+      "name": "m_sweep/summary.json",
+      "sha256": "75845b345792fa929b671c668e3688e94e24463703883f65fddb9c1cbfc5b069"
+    }
+  },
+  "mixture": {
+    "changed_by_this_freeze": false,
+    "essential_weights": {
+      "essential_practical": 0.1,
+      "essential_prose": 0.05,
+      "essential_science": 0.1
+    },
+    "preset": {
+      "bytes": 864,
+      "path": "recipes/mixtures/mix01.yaml",
+      "sha256": "fa379e974bb1fb1c6ad1bca39b351843d2f16ea12a21c77fc0aa84f9354e0b9d"
+    },
+    "quotas": {
+      "bytes": 2717,
+      "path": "recipes/mixtures/mix01_quotas_6b.yaml",
+      "sha256": "9b16db765c4dbb3fc3a366b1c2a8acc88e3ca8bc81f344d0a082ee00d8c78fdf"
+    },
+    "ultrax_ultrafineweb_weight": 0.2
+  },
+  "parent_commit": "e596f19cde59d6f9b922ebc4069cf79b231c27c0",
+  "production_selector": {
+    "admitted_components": [
+      "essential_science",
+      "essential_practical",
+      "essential_prose"
+    ],
+    "condition": "B-normal",
+    "evaluator_sha256": "5a63e78560ea9e12b0ec03b5e7e63204b5c75554bee02192c12bb4ab0853bf9c",
+    "id": "essential-web-b-normal",
+    "non_admitted_finals": [
+      "unassigned",
+      "rejected"
+    ],
+    "policy": "B",
+    "policy_digest": "f4357f61f434d5105d823266153dac6372e122f12767187631e8796b4899dd07",
+    "precedence": [
+      "science",
+      "practical",
+      "prose"
+    ],
+    "role": "production Essential-Web selector for Mix-01",
+    "semantics": {
+      "component_rules": {
+        "practical": {
+          "all": [
+            "P"
+          ]
+        },
+        "prose": {
+          "all": [
+            "R"
+          ]
+        },
+        "science": {
+          "any": [
+            "S5",
+            "S61"
+          ]
+        }
+      },
+      "final_components": [
+        "essential_science",
+        "essential_practical",
+        "essential_prose",
+        "unassigned",
+        "rejected"
+      ],
+      "gate": {
+        "artifacts": [
+          "No Artifacts"
+        ],
+        "english_min": 0.8,
+        "missing": [
+          "No missing content",
+          "Missing Images or Figures"
+        ]
+      },
+      "gate_name": "GN",
+      "label_universes": {
+        "artifacts_known": [
+          "No Artifacts",
+          "Irrelevant Content",
+          "Leftover HTML",
+          "Text Extraction Errors"
+        ],
+        "correctness_allowed": [
+          "Highly Correct",
+          "Mostly Correct",
+          "Not Applicable/Indeterminate"
+        ],
+        "correctness_rejected": [
+          "Partially Correct",
+          "Technically Flawed"
+        ],
+        "doctype_known_excluded": [
+          "Product Page",
+          "Content Listing",
+          "Structured Data",
+          "Spam / Ads",
+          "Truncated",
+          "News (Org.)",
+          "About (Org.)",
+          "About (Personal)",
+          "Comment Section",
+          "User Review",
+          "Legal Notices",
+          "Audio Transcript",
+          "Listicle",
+          "Other/Unclassified"
+        ],
+        "doctype_union": [
+          "Academic Writing",
+          "Knowledge Article",
+          "Nonfiction Writing",
+          "Documentation",
+          "Tutorial",
+          "News Article",
+          "FAQ",
+          "Customer Support",
+          "Q&A Forum",
+          "Personal Blog",
+          "Creative Writing"
+        ],
+        "knowledge_labels": [
+          "Factual",
+          "Conceptual",
+          "Procedural"
+        ],
+        "missing_known": [
+          "No missing content",
+          "Missing Images or Figures",
+          "Truncated Snippets",
+          "Click Here References",
+          "Incoherent Flow",
+          "Missing Referenced Data",
+          "Indeterminate"
+        ]
+      },
+      "policy": "B",
+      "precedence": [
+        "science",
+        "practical",
+        "prose"
+      ],
+      "predicates": {
+        "practical_conditional_genres": [
+          "Q&A Forum",
+          "Knowledge Article",
+          "Personal Blog"
+        ],
+        "practical_genres": [
+          "Tutorial",
+          "Documentation",
+          "FAQ",
+          "Customer Support"
+        ],
+        "practical_knowledge": [
+          "Procedural"
+        ],
+        "prose_genres": [
+          "Creative Writing",
+          "Nonfiction Writing",
+          "Personal Blog",
+          "News Article",
+          "Knowledge Article"
+        ],
+        "prose_knowledge": [
+          "Factual",
+          "Conceptual"
+        ],
+        "s5_genres": [
+          "Academic Writing",
+          "Knowledge Article",
+          "Nonfiction Writing",
+          "Documentation",
+          "Tutorial",
+          "News Article"
+        ],
+        "s61_correctness": [
+          "Highly Correct",
+          "Mostly Correct"
+        ],
+        "s61_genres": [
+          "Academic Writing",
+          "Knowledge Article"
+        ],
+        "s61_knowledge": [
+          "Conceptual"
+        ],
+        "s61_prefixes": [
+          "610",
+          "612",
+          "613",
+          "614",
+          "615",
+          "616",
+          "617",
+          "618"
+        ]
+      },
+      "tier": "normal",
+      "validity": {
+        "english_max": 1.0,
+        "english_min": 0.0,
+        "fdc_syntax": "[0-9]{3}(?:[.][0-9]+)?"
+      }
+    },
+    "semantics_digest": "56f86d728852b724f22b9d53b65f1566692efdc43a6e5e14d1bf02261249a5ac",
+    "tier": "normal",
+    "tuning_after_m": "none"
+  },
+  "rationale": [
+    {
+      "facts": {
+        "largest_absolute_share_move_percentage_points": 0.3418,
+        "practical": {
+          "delta_percentage_points": 0.2197,
+          "delta_rows": 9,
+          "development": 108,
+          "m": 117
+        },
+        "prose": {
+          "delta_percentage_points": 0.0244,
+          "delta_rows": 1,
+          "development": 371,
+          "m": 372
+        },
+        "rejected": {
+          "delta_percentage_points": -0.3418,
+          "delta_rows": -14,
+          "development": 3552,
+          "m": 3538
+        },
+        "science": {
+          "delta_percentage_points": -0.1221,
+          "delta_rows": -5,
+          "development": 29,
+          "m": 24
+        },
+        "unassigned": {
+          "delta_percentage_points": 0.2197,
+          "delta_rows": 9,
+          "development": 36,
+          "m": 45
+        }
+      },
+      "id": "replication",
+      "statement": "B-normal counts on the confirmation replicate M are close to the development replicate."
+    },
+    {
+      "facts": {
+        "development": {
+          "b_practical": 108,
+          "b_prose": 371,
+          "b_science": 29,
+          "c_practical": 41,
+          "c_prose": 120,
+          "c_science": 29
+        },
+        "m": {
+          "b_practical": 117,
+          "b_prose": 372,
+          "b_science": 24,
+          "c_practical": 46,
+          "c_prose": 127,
+          "c_science": 24
+        }
+      },
+      "id": "coverage_versus_c",
+      "statement": "B-normal keeps substantially more practical and prose rows than C-normal; science is identical."
+    },
+    {
+      "facts": {
+        "development": {
+          "a_science": 19,
+          "added_science_rows": 10,
+          "b_science": 29
+        },
+        "m": {
+          "a_science": 17,
+          "added_science_rows": 7,
+          "b_science": 24
+        }
+      },
+      "id": "science_extension_versus_a",
+      "statement": "B-normal includes the S61 science extension that A-normal lacks."
+    },
+    {
+      "facts": {
+        "artifact_labels_admitted_only_by_d_normal_gate": [
+          "Irrelevant Content"
+        ],
+        "development": {
+          "b_selected_rows": 508,
+          "d_selected_rows": 1052,
+          "rows_b_rejects_that_d_passes": 618
+        },
+        "m": {
+          "b_selected_rows": 513,
+          "d_selected_rows": 1030,
+          "rows_b_rejects_that_d_passes": 590
+        }
+      },
+      "id": "narrower_than_d",
+      "statement": "B-normal avoids D-normal's relaxed artifact admission, which roughly doubles the admitted rows."
+    },
+    {
+      "facts": {
+        "b_normal_science": {
+          "delta_percentage_points": -0.1221,
+          "delta_rows": -5,
+          "development": 29,
+          "m": 24
+        },
+        "b_strict_equals_d_strict_in_both_replicates": true,
+        "b_strict_science": {
+          "delta_percentage_points": -0.2197,
+          "delta_rows": -9,
+          "development": 20,
+          "m": 11
+        }
+      },
+      "id": "strict_not_selected",
+      "statement": "Strict science counts are sparse and moved more between replicates, so the strict tier is not selected; B-strict and D-strict are identical."
+    }
+  ],
+  "scientific_namespace": "essential-web-evidence-v2.0",
+  "source": {
+    "repository": "EssentialAI/essential-web-v1.0",
+    "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d"
+  },
+  "status": "FROZEN",
+  "t_arm": {
+    "acquired_locators": 118,
+    "adjudication": "NOT RUN",
+    "blinded_package": {
+      "commit": "e596f19cde59d6f9b922ebc4069cf79b231c27c0",
+      "key_commitment": "884214cfdd3b9db3ec21503acb3bda80f50b5ddc18fac502d5d9b4611e2e01e9",
+      "manifest": {
+        "bytes": 9809,
+        "name": "package_manifest.json",
+        "sha256": "35a330201cd9d26b9a9788150366ff21d1fb954ebc28b1e7d3cd00709a327fd1"
+      },
+      "package_digest": "18c95b95699922db325626fd8776c2317231c51666f9bcc42898f5811dabc58d",
+      "preserved_for_future_research": true,
+      "status": "SEALED"
+    },
+    "evidence_contribution": "none: the arm supplies neither acceptance nor rejection evidence to this decision",
+    "frozen_review_design": "independent third adjudicator; protocol section 9 unchanged",
+    "human_labels_collected": 0,
+    "reason": "only one human is available; the frozen design needs two independent human reviewers and no substitute is permitted",
+    "reviewable": 117,
+    "semantic_review": "NOT RUN",
+    "status": "NOT_RUN_NO_TWO_INDEPENDENT_HUMAN_REVIEWERS",
+    "substitutes_used": {
+      "model_labels": false,
+      "single_reviewer_labels": false,
+      "synthetic_labels": false
+    },
+    "text_inspected_for_this_freeze": false,
+    "unblinding": "NOT RUN",
+    "unreviewable_oversized": 1,
+    "used_for_selector_decision": false
+  },
+  "version": "essential-web-selector-fasttrack-v1"
+}

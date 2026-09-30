@@ -1,0 +1,20 @@
+﻿{
+  "development_b_normal": {
+    "practical": 108,
+    "prose": 371,
+    "rejected": 3552,
+    "science": 29,
+    "unassigned": 36
+  },
+  "freeze_digest": "c6f32a65f083c99b64245e25151f2cc73275093e1013d68b625c6d6f63d10a0c",
+  "m_b_normal": {
+    "practical": 117,
+    "prose": 372,
+    "rejected": 3538,
+    "science": 24,
+    "unassigned": 45
+  },
+  "selector": "B-normal",
+  "semantics_digest": "56f86d728852b724f22b9d53b65f1566692efdc43a6e5e14d1bf02261249a5ac",
+  "t_arm_status": "NOT_RUN_NO_TWO_INDEPENDENT_HUMAN_REVIEWERS"
+}
