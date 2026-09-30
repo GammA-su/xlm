@@ -1,0 +1,81 @@
+{
+  "schema_version": 2,
+  "plan_id": "plan_essential_web_essential_science_huggingface_6cfc534ecd4496920ddb",
+  "source_id": "essential_web",
+  "view_id": "essential_science",
+  "provider": "huggingface",
+  "repository": "EssentialAI/essential-web-v1.0",
+  "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+  "mode": "selected_records",
+  "selected_files": [
+    "data/crawl=CC-MAIN-2015-32/train-01682-of-01920.parquet",
+    "data/crawl=CC-MAIN-2018-05/train-03378-of-03429.parquet",
+    "data/crawl=CC-MAIN-2014-15/train-01860-of-02772.parquet"
+  ],
+  "row_ranges": {
+    "data/crawl=CC-MAIN-2014-15/train-01860-of-02772.parquet": [
+      80000,
+      90000
+    ],
+    "data/crawl=CC-MAIN-2015-32/train-01682-of-01920.parquet": [
+      80000,
+      90000
+    ],
+    "data/crawl=CC-MAIN-2018-05/train-03378-of-03429.parquet": [
+      80000,
+      90000
+    ]
+  },
+  "projected_fields": [
+    "text",
+    "eai_taxonomy",
+    "quality_signals",
+    "id",
+    "pid",
+    "metadata"
+  ],
+  "range_coalesce_bytes": null,
+  "parquet_window": {
+    "policy_version": 2,
+    "stream_buffer_bytes": 4194304,
+    "max_window_scan_rows": 10000,
+    "batch_rows": 256,
+    "ratio_exempt_bytes": 16777216
+  },
+  "sampling_frame": {
+    "total_remote_files": null,
+    "selected_files": [
+      "data/crawl=CC-MAIN-2015-32/train-01682-of-01920.parquet",
+      "data/crawl=CC-MAIN-2018-05/train-03378-of-03429.parquet",
+      "data/crawl=CC-MAIN-2014-15/train-01860-of-02772.parquet"
+    ],
+    "selection_seed": 20260930,
+    "sampling_method": "explicit_file_list",
+    "coverage_notes": "",
+    "selection_bias_warning": "Warning: Selected subset is not a uniform random sample of the full corpus. Domain, temporal, and shard clustering effects apply."
+  },
+  "expected_bytes": null,
+  "expected_file_digests": {},
+  "limits": {
+    "max_transferred_bytes": 255852544,
+    "max_decompressed_bytes": 605028352,
+    "max_records": 30000,
+    "max_temp_disk_bytes": 1648361472,
+    "max_output_disk_bytes": 824180736,
+    "max_requests": 1283,
+    "max_retries": 5,
+    "per_request_timeout_seconds": 15.0,
+    "overall_deadline_seconds": 86400.0,
+    "max_decompression_ratio": 15.0,
+    "max_workers": 1,
+    "max_record_bytes": 8388608,
+    "max_parser_bytes": 33554432,
+    "max_scanned_records": 90000
+  },
+  "output_artifact_id": "raw_essential_web_essential_science_6cfc534ecd4496920ddb",
+  "admitted_source_reference": null,
+  "is_pilot": false,
+  "attempt": 1,
+  "authorization": null,
+  "plan_hash": "b28268e508a2c348a97da282f99f1fc347ea645ffd6321dc24faff1a54c40ceb"
+}

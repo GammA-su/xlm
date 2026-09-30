@@ -1,0 +1,186 @@
+{
+  "files": [
+    {
+      "buffered_reads": 1056,
+      "file": "data/crawl=CC-MAIN-2014-15/train-01860-of-02772.parquet",
+      "footer_rereads_bytes": 2688240,
+      "full_file_transfer_bytes": 257174977,
+      "projected_compressed_bytes": 254486737,
+      "projected_uncompressed_bytes": 412327895,
+      "remote_length": 290684578,
+      "requests": 1096,
+      "row_groups": 10,
+      "rows": 93417
+    },
+    {
+      "buffered_reads": 1059,
+      "file": "data/crawl=CC-MAIN-2015-32/train-01682-of-01920.parquet",
+      "footer_rereads_bytes": 2643380,
+      "full_file_transfer_bytes": 279134596,
+      "projected_compressed_bytes": 276491216,
+      "projected_uncompressed_bytes": 456576441,
+      "remote_length": 316724715,
+      "requests": 1099,
+      "row_groups": 10,
+      "rows": 97828
+    },
+    {
+      "buffered_reads": 738,
+      "file": "data/crawl=CC-MAIN-2016-50/train-02156-of-03132.parquet",
+      "footer_rereads_bytes": 1509529,
+      "full_file_transfer_bytes": 181823486,
+      "projected_compressed_bytes": 180313957,
+      "projected_uncompressed_bytes": 296497379,
+      "remote_length": 207246017,
+      "requests": 766,
+      "row_groups": 7,
+      "rows": 69622
+    },
+    {
+      "buffered_reads": 1055,
+      "file": "data/crawl=CC-MAIN-2018-05/train-03378-of-03429.parquet",
+      "footer_rereads_bytes": 2647790,
+      "full_file_transfer_bytes": 255098974,
+      "projected_compressed_bytes": 252451184,
+      "projected_uncompressed_bytes": 414024857,
+      "remote_length": 285464583,
+      "requests": 1095,
+      "row_groups": 10,
+      "rows": 91199
+    },
+    {
+      "buffered_reads": 846,
+      "file": "data/crawl=CC-MAIN-2019-09/train-00153-of-02577.parquet",
+      "footer_rereads_bytes": 1829840,
+      "full_file_transfer_bytes": 223010572,
+      "projected_compressed_bytes": 221180732,
+      "projected_uncompressed_bytes": 363386393,
+      "remote_length": 247450105,
+      "requests": 878,
+      "row_groups": 8,
+      "rows": 75980
+    },
+    {
+      "buffered_reads": 847,
+      "file": "data/crawl=CC-MAIN-2021-04/train-00179-of-03315.parquet",
+      "footer_rereads_bytes": 1770392,
+      "full_file_transfer_bytes": 221131590,
+      "projected_compressed_bytes": 219361198,
+      "projected_uncompressed_bytes": 359517745,
+      "remote_length": 246957884,
+      "requests": 879,
+      "row_groups": 8,
+      "rows": 78036
+    },
+    {
+      "buffered_reads": 846,
+      "file": "data/crawl=CC-MAIN-2021-49/train-00408-of-02895.parquet",
+      "footer_rereads_bytes": 1854360,
+      "full_file_transfer_bytes": 223575195,
+      "projected_compressed_bytes": 221720835,
+      "projected_uncompressed_bytes": 366226191,
+      "remote_length": 247477157,
+      "requests": 878,
+      "row_groups": 8,
+      "rows": 76695
+    },
+    {
+      "buffered_reads": 847,
+      "file": "data/crawl=CC-MAIN-2024-26/train-01127-of-03168.parquet",
+      "footer_rereads_bytes": 1818848,
+      "full_file_transfer_bytes": 222914670,
+      "projected_compressed_bytes": 221095822,
+      "projected_uncompressed_bytes": 366475221,
+      "remote_length": 246493238,
+      "requests": 879,
+      "row_groups": 8,
+      "rows": 78150
+    }
+  ],
+  "full_file": {
+    "decoded_bytes_per_projected_uncompressed_byte": 1.238124286497834,
+    "excludes": "retries and restarts; bounded separately by the slice limits",
+    "max_group_buffered_reads": 106,
+    "max_group_projected_compressed_bytes": 30000448,
+    "max_group_rows": 10000,
+    "max_row_groups_per_file": 10,
+    "mean_row_groups_per_file": 8.625,
+    "mean_rows_per_file": 82615.875,
+    "min_max_rows_per_file": [
+      69622,
+      97828
+    ],
+    "requests_per_row": 0.011453609854038344,
+    "rows": 660927,
+    "transfer_bytes": 1863864060,
+    "transfer_bytes_per_row": 2820.075530277928,
+    "transfer_bytes_per_row_min_max_file": [
+      2611.5809083335726,
+      2935.1220321137143
+    ]
+  },
+  "known_layout_files": 8,
+  "limits_of_knowledge": "layouts are known for the footer-certified files only; every other inventory file is measured by its own footer before it is planned",
+  "prefix_linear": {
+    "transfer_bytes_per_row": 6718.1534423828125,
+    "why_too_high": "each 2,048-row prefix already reads every non-text chunk of its 10,000-row group in full plus whole 4 MiB text buffers"
+  },
+  "prefix_model_validation": [
+    {
+      "file": "data/crawl=CC-MAIN-2014-15/train-01860-of-02772.parquet",
+      "implied_text_buffers": 2.0002565383911133,
+      "measured_prefix_transfer_bytes": 13705877,
+      "non_text_chunks_plus_footer_bytes": 5316193
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2015-32/train-01682-of-01920.parquet",
+      "implied_text_buffers": 2.0002565383911133,
+      "measured_prefix_transfer_bytes": 13667949,
+      "non_text_chunks_plus_footer_bytes": 5278265
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2016-50/train-02156-of-03132.parquet",
+      "implied_text_buffers": 2.0002565383911133,
+      "measured_prefix_transfer_bytes": 13650333,
+      "non_text_chunks_plus_footer_bytes": 5260649
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2018-05/train-03378-of-03429.parquet",
+      "implied_text_buffers": 2.0002574920654297,
+      "measured_prefix_transfer_bytes": 13792025,
+      "non_text_chunks_plus_footer_bytes": 5402337
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2019-09/train-00153-of-02577.parquet",
+      "implied_text_buffers": 2.0002570152282715,
+      "measured_prefix_transfer_bytes": 13775155,
+      "non_text_chunks_plus_footer_bytes": 5385469
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2021-04/train-00179-of-03315.parquet",
+      "implied_text_buffers": 2.0002565383911133,
+      "measured_prefix_transfer_bytes": 13806866,
+      "non_text_chunks_plus_footer_bytes": 5417182
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2021-49/train-00408-of-02895.parquet",
+      "implied_text_buffers": 2.0002565383911133,
+      "measured_prefix_transfer_bytes": 13857049,
+      "non_text_chunks_plus_footer_bytes": 5467365
+    },
+    {
+      "file": "data/crawl=CC-MAIN-2024-26/train-01127-of-03168.parquet",
+      "implied_text_buffers": 2.0002570152282715,
+      "measured_prefix_transfer_bytes": 13814972,
+      "non_text_chunks_plus_footer_bytes": 5425286
+    }
+  ],
+  "reader": "window-v2: projected leaves only, one full row group per file per plan, 4 MiB buffered ranges; the footer is re-read for every row group",
+  "seal_digest": "149f3eb48e047e6545314dcb40cc01fe2b0e8853898a83a2060f0e8c9032e2a1",
+  "timing": {
+    "basis": "sum over the eight prefix windows, one worker: request open latency, body time and the remaining wall time; an ESTIMATE, not measured on full row groups",
+    "seconds_per_request": 0.27376071428602916,
+    "seconds_per_row": 0.0006103515625106581,
+    "seconds_per_transfer_byte": 4.6314977130624246e-07
+  }
+}

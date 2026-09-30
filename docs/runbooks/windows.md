@@ -6,6 +6,15 @@
 > Completed measurement is never overwritten; incompatible partial output is
 > retained for review. [Evidence and limitations](../implementation/reports/ESSENTIAL-WEB-OPTIONAL-FDC-FIX.md).
 
+> **Essential-Web bulk acquisition (2026-09-30):** the calibration is sealed and
+> the campaign is frozen. One batch at a time, from the repository root after
+> dot-sourcing `scripts/operator_storage.ps1`:
+> `.\scripts\operator_essential_web_bulk.ps1 -Batch 0 -Stage Prepare` (reads
+> footers only), then
+> `.\scripts\operator_essential_web_bulk.ps1 -Batch 0 -Stage Run -Authorize <digest>`.
+> Stages, resume, status, stop and disk limits are in the
+> [bulk acquisition plan](../implementation/reports/ESSENTIAL-WEB-BULK-ACQUISITION-PLAN.md).
+
 # XLM runbook — Windows (PowerShell)
 
 For the Mix-01 operator checkout, first dot-source `scripts/operator_storage.ps1`.

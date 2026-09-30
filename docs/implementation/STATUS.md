@@ -1,3 +1,27 @@
+> **ESSENTIAL-WEB BULK ACQUISITION (2026-09-30, offline): READY FOR FULL
+> ESSENTIAL-WEB ACQUISITION. NO BULK FETCH RAN.** Campaign `644be917…0ce9`
+> frozen from the sealed calibration. Batches of 32 whole files in frozen
+> inventory order (digest `4bbd5517…63d8` verified); one slice per row-group
+> index through the certified window reader; write-once ledger; restart skips
+> completed work; duplicate rows, source drift and code drift refuse. Science
+> is the bottleneck: 64,424,483 rows ≈ 780 files ≈ 25 batches (ceiling 33 as
+> execution contingency, targets unchanged). Full-file model from eight real
+> footers: 2,820 B/row, 181.7 GB and about 90 h at one worker, against 432.8 GB
+> prefix-linear; all estimates. Stop at the first batch boundary where
+> cumulative canonical bytes reach 2.64/2.64/1.32 GB (660M/660M/330M estimated
+> tokens) via `mix01_inventory sufficiency`; exact sufficiency waits for the
+> tokenizer. Practical/prose oversupply (2.8x/23.5x) is kept; quotas unchanged.
+> Raw is retained (no contract permits deletion) in one copy: about 750 GB of
+> the 1 TB volume, guarded by a 64 GiB reserve and an 850 GiB cap. C05 stays
+> NOT RUN and is required on the frozen pool before tokenizer fit and training.
+> Dry run on the real inventory: batch 0/1 deterministic and disjoint, zero
+> calibration rows counted. Focused tests 505 passed (25 new); ruff/format/
+> strict mypy clean; fast/full selections NOT RUN. Driver `Show` ran on the
+> real root; `Layout`/`Run` NOT RUN. No selector, mixture or quota change; no push.
+> [Plan and commands](reports/ESSENTIAL-WEB-BULK-ACQUISITION-PLAN.md).
+> Next: `. .\scripts\operator_storage.ps1; .\scripts\operator_essential_web_bulk.ps1 -Batch 0 -Stage Prepare`,
+> then `-Stage Run -Authorize <digest>`.
+
 > **ESSENTIAL-WEB PRODUCTION CALIBRATION SEALED (2026-09-30, offline).**
 > The live 16,384-row calibration (8 crawls, 8 files, 2,048 rows each) was
 > recomputed from its executed artifacts and every recorded value reproduced:

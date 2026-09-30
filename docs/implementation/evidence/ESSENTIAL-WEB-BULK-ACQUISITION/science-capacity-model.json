@@ -1,0 +1,121 @@
+{
+  "cases": {
+    "central": {
+      "assumed_bytes_per_token": 4,
+      "estimated_canonical_science_bytes": 2640000000,
+      "estimated_science_documents": 397147.99700927734,
+      "naive_linear_elapsed_seconds": 1184663.923676632,
+      "naive_linear_transfer_bytes": 432813562241,
+      "required_input_rows": 64424483
+    },
+    "high": {
+      "assumed_bytes_per_token": 5,
+      "estimated_canonical_science_bytes": 3300000000,
+      "estimated_science_documents": 496434.9978027344,
+      "naive_linear_elapsed_seconds": 1480829.909192893,
+      "naive_linear_transfer_bytes": 541016954480,
+      "required_input_rows": 80530604
+    },
+    "low": {
+      "assumed_bytes_per_token": 3,
+      "estimated_canonical_science_bytes": 1980000000,
+      "estimated_science_documents": 297860.9962158203,
+      "naive_linear_elapsed_seconds": 888497.938160371,
+      "naive_linear_transfer_bytes": 324610170001,
+      "required_input_rows": 48318362
+    }
+  },
+  "exact_token_break_even_bytes_per_token": 4.4,
+  "final_exact_token_quota": 600000000,
+  "first_pass_estimated_token_target": 660000000,
+  "inventory_file_share_weighted": {
+    "assumption": "crawls weighted by their inventory file counts instead of equally; assumes equal rows per file in every crawl, which is not verified",
+    "estimated_tokens_per_input_row": 10.448467038910964,
+    "required_input_rows": 63167162
+  },
+  "leave_one_crawl_out_rows_range": [
+    60093267,
+    73140172
+  ],
+  "measured_estimated_tokens_per_input_row_central": 10.244552612304688,
+  "model": "simple linear calibration extrapolation; NOT a guaranteed acquisition budget",
+  "physical_full_file": {
+    "central": {
+      "estimated_files": 779.8075490939242,
+      "estimated_seconds_one_worker": 325473.6035756881,
+      "full_file_transfer_bytes": 181681908060,
+      "full_file_transfer_bytes_min_max": [
+        168249749833,
+        189093719461
+      ],
+      "prefix_linear_transfer_bytes": 432813562241,
+      "requests": 737893,
+      "rows": 64424483
+    },
+    "final_quota_if_exact_bytes_per_token_is_5": {
+      "estimated_files": 886.1449449031436,
+      "estimated_seconds_one_worker": 369856.3688478314,
+      "full_file_transfer_bytes": 206456714345,
+      "full_file_transfer_bytes_min_max": [
+        191192898130,
+        214879227328
+      ],
+      "prefix_linear_transfer_bytes": 491833594982,
+      "requests": 838515,
+      "rows": 73209640
+    },
+    "first_pass_target_central_4_bytes_per_token": {
+      "estimated_files": 779.8075490939242,
+      "estimated_seconds_one_worker": 325473.6035756881,
+      "full_file_transfer_bytes": 181681908060,
+      "full_file_transfer_bytes_min_max": [
+        168249749833,
+        189093719461
+      ],
+      "prefix_linear_transfer_bytes": 432813562241,
+      "requests": 737893,
+      "rows": 64424483
+    },
+    "high": {
+      "estimated_files": 974.759439393458,
+      "estimated_seconds_one_worker": 406842.00573261455,
+      "full_file_transfer_bytes": 227102385779,
+      "full_file_transfer_bytes_min_max": [
+        210312187943,
+        236367150060
+      ],
+      "prefix_linear_transfer_bytes": 541016954480,
+      "requests": 922367,
+      "rows": 80530604
+    },
+    "leave_one_crawl_out_maximum": {
+      "estimated_files": 885.3040895590588,
+      "estimated_seconds_one_worker": 369505.4153090471,
+      "full_file_transfer_bytes": 206260809338,
+      "full_file_transfer_bytes_min_max": [
+        191011476828,
+        214675330270
+      ],
+      "prefix_linear_transfer_bytes": 491366898299,
+      "requests": 837719,
+      "rows": 73140172
+    },
+    "low": {
+      "estimated_files": 584.8556587943903,
+      "estimated_seconds_one_worker": 244105.2014187618,
+      "full_file_transfer_bytes": 136261430340,
+      "full_file_transfer_bytes_min_max": [
+        126187311722,
+        141820288862
+      ],
+      "prefix_linear_transfer_bytes": 324610170001,
+      "requests": 553420,
+      "rows": 48318362
+    }
+  },
+  "quota_changed": false,
+  "quota_headroom_ratio": 1.1,
+  "rows_for_final_quota_if_bytes_per_token_is_high": 73209640,
+  "seal_digest": "149f3eb48e047e6545314dcb40cc01fe2b0e8853898a83a2060f0e8c9032e2a1",
+  "stop_uses": "canonical bytes at 4 bytes/token; the 3/5 cases bound what the exact tokenizer count may later show and are handled by deterministic top-up"
+}

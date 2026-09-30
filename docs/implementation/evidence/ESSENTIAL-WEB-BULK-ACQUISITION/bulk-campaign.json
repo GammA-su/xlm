@@ -1,0 +1,153 @@
+{
+  "adapt": {
+    "adapter_id": "essential_web_bnormal",
+    "malformed_policy": "frozen",
+    "on_reject": "record"
+  },
+  "adapter_code_sha256": {
+    "src/xlm/data/adapters/essential_web_selector.py": "fd891e16b0ef6cca0ccf0d1b5a38ad41fab82689094f73c5c7d01c10064a46ac",
+    "src/xlm/data/adapters/malformed.py": "0b93dfb44d79e4493bf6ef9760b2d604544ec79dedf27156eada5472f647bcf6",
+    "src/xlm/data/adapters/mix01_adapters.py": "3651ff2af4fcb46c207404e052caa59e1ec42f2ac5a429e5dec752f7e83a7ef6",
+    "src/xlm/data/adapters/rejections.py": "f23b9a767220731423419e1961fb3fbada6d1e0f4b6650c569cb410707990c8b"
+  },
+  "batch": {
+    "files": 32,
+    "membership": "inventory files [index*files, (index+1)*files) in frozen order",
+    "slice": "one row-group index across the batch; one full-group window per file"
+  },
+  "binding": {
+    "adapter_id": "essential_web_bnormal",
+    "canonicalization": "EssentialWebSelectedAdapter -> EssentialWebAdapter -> CanonicalDocument",
+    "repository": "EssentialAI/essential-web-v1.0",
+    "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+    "selector": {
+      "condition": "B-normal",
+      "evaluator_sha256": "5a63e78560ea9e12b0ec03b5e7e63204b5c75554bee02192c12bb4ab0853bf9c",
+      "freeze_digest": "c6f32a65f083c99b64245e25151f2cc73275093e1013d68b625c6d6f63d10a0c",
+      "freeze_version": "essential-web-selector-fasttrack-v1",
+      "policy_digest": "f4357f61f434d5105d823266153dac6372e122f12767187631e8796b4899dd07",
+      "selector_id": "essential-web-b-normal"
+    },
+    "source_id": "essential_web"
+  },
+  "c05": {
+    "obligation": {
+      "before_official_benchmark_claims": true,
+      "before_training": true,
+      "benchmarks": [
+        "BLiMP",
+        "ARC-Easy",
+        "HellaSwag",
+        "PIQA"
+      ],
+      "mechanism": "xlm.data.exclusion",
+      "receipt_verifier": "xlm.data.exclusion.receipt.verify_benchmark_claim",
+      "scope": "eventually_frozen_essential_mix01_canonical_training_pool",
+      "version": "c04-benchmark-risk-v2"
+    },
+    "required_before": [
+      "tokenizer_fit",
+      "training",
+      "official_benchmark_claims"
+    ],
+    "runs": "on the frozen canonical pool, before tokenizer fitting and gradient training; again on the final pool after any top-up",
+    "status": "NOT RUN"
+  },
+  "calibration_freeze_digest": "a6cab8cd58a127b77dd130249147f3541ac4575f3ea8369bf248879fd52e89b0",
+  "calibration_seal_digest": "149f3eb48e047e6545314dcb40cc01fe2b0e8853898a83a2060f0e8c9032e2a1",
+  "ceiling": {
+    "max_batches": 33,
+    "meaning": "execution contingency, not a quota: beyond it a new reviewed campaign version is required"
+  },
+  "digest": "644be917fc40c124f3682eed0852101e1b66c8862adab73b65513cb2686b0ce9",
+  "disk": {
+    "footprint_cap_bytes": 912680550400,
+    "min_free_bytes": 68719476736
+  },
+  "excluded_progress": "probe and calibration outputs (calib/essential-web-production) are never counted; their files are re-acquired in inventory order like any other",
+  "inventory": {
+    "digest": "4bbd5517e760971405d9aed56bba5b84877a6325d10f5a10a05b50f5a8d763d8",
+    "file_count": 23200,
+    "order": "SHA-256(seed|repository|revision|file) ascending, filename tiebreak",
+    "path": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/production.inventory.json",
+    "seed": 20260930
+  },
+  "kind": "essential_web_bulk_campaign",
+  "limits": {
+    "deadline_factor": 8,
+    "decode_expansion": 1.5,
+    "max_decompression_ratio": 15.0,
+    "max_parser_bytes": 33554432,
+    "max_record_bytes": 8388608,
+    "max_record_bytes_basis": "the largest of 16,384 calibration records already needs about half of the 1 MiB default; one larger row would fail its whole slice, so the production bound is raised, below the unchanged 32 MiB parser bound",
+    "max_retries": 5,
+    "metadata_bytes_per_file": 1048576,
+    "metadata_requests_per_file": 8,
+    "min_deadline_seconds": 86400,
+    "observed_max_raw_record_bytes": 540293,
+    "per_request_timeout_seconds": 15.0,
+    "planning_group_rows": 10000,
+    "raw_bytes_per_row_bound": 27465,
+    "request_margin": 1.25,
+    "restart_factor": 3,
+    "seconds_per_request": 0.27376071428602916,
+    "seconds_per_row": 0.0006103515625106581,
+    "seconds_per_transfer_byte": 4.6314977130624246e-07
+  },
+  "plan": {
+    "adapter_spec": "essential_web_bnormal:essential_science",
+    "catalog": "docs/implementation/evidence/ESSENTIAL-WEB-PRODUCTION-READINESS/production-catalog.json",
+    "catalog_sha256": "007cf500e8279bce2db22f9bcb65c5329dd10397332604c147fee30befb2281c",
+    "mode": "selected_records",
+    "seed": 20260930,
+    "source_id": "essential_web",
+    "view_id": "essential_science",
+    "window": {
+      "batch_rows": 256,
+      "policy_version": 2,
+      "stream_buffer_bytes": 4194304
+    }
+  },
+  "quotas": {
+    "changed": false,
+    "path": "recipes/mixtures/mix01_quotas_6b.yaml",
+    "quota_id": "mix01_6b_v1",
+    "sha256": "9b16db765c4dbb3fc3a366b1c2a8acc88e3ca8bc81f344d0a082ee00d8c78fdf"
+  },
+  "raw_retention": "raw selected records are retained; no deletion is implemented",
+  "roots": {
+    "canonical": "canonical/ew-bulk",
+    "plans": "plans/ew-bulk",
+    "raw": "acq-raw/ew-bulk",
+    "scratch": "acq-scratch/ew-bulk"
+  },
+  "stop": {
+    "assumed_bytes_per_token": 4,
+    "evaluated": "at batch boundaries, over complete batches only",
+    "exactness": "estimated tokens only; exact sufficiency needs the frozen tokenizer",
+    "mechanism": "scripts/mix01_inventory.py estimate + sufficiency",
+    "targets": {
+      "essential_practical": {
+        "final_exact_token_quota": 600000000,
+        "first_pass_estimated_token_target": 660000000,
+        "required_canonical_bytes": 2640000000
+      },
+      "essential_prose": {
+        "final_exact_token_quota": 300000000,
+        "first_pass_estimated_token_target": 330000000,
+        "required_canonical_bytes": 1320000000
+      },
+      "essential_science": {
+        "final_exact_token_quota": 600000000,
+        "first_pass_estimated_token_target": 660000000,
+        "required_canonical_bytes": 2640000000
+      }
+    }
+  },
+  "version": 1,
+  "views": [
+    "essential_science",
+    "essential_practical",
+    "essential_prose"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "data/crawl=CC-MAIN-2014-15/train-01860-of-02772.parquet": [
+    90000,
+    93417
+  ],
+  "data/crawl=CC-MAIN-2015-32/train-01682-of-01920.parquet": [
+    90000,
+    97828
+  ],
+  "data/crawl=CC-MAIN-2018-05/train-03378-of-03429.parquet": [
+    90000,
+    91199
+  ]
+}

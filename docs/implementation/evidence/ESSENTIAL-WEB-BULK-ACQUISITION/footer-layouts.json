@@ -1,0 +1,852 @@
+{
+  "evidence": "real retained Phase-P footers of the eight footer-certified files; sizes and row counts only, no row was decoded",
+  "files": [
+    {
+      "crawl": "crawl=CC-MAIN-2014-15",
+      "file": "data/crawl=CC-MAIN-2014-15/train-01860-of-02772.parquet",
+      "footer_bytes": 203276,
+      "footer_sha256": "eec4e65e7307c3c12c1366f20500e7b0a3e26ac2bd0ee59f8f7d9b1bd1b970a9",
+      "groups": [
+        {
+          "buffered_reads": 106,
+          "index": 0,
+          "projected_compressed_bytes": 27235025,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 44293458,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 0,
+          "text_compressed_bytes": 22187656
+        },
+        {
+          "buffered_reads": 106,
+          "index": 1,
+          "projected_compressed_bytes": 26680919,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 43099835,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 10000,
+          "text_compressed_bytes": 21639358
+        },
+        {
+          "buffered_reads": 106,
+          "index": 2,
+          "projected_compressed_bytes": 27492076,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 45321062,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 20000,
+          "text_compressed_bytes": 22462631
+        },
+        {
+          "buffered_reads": 106,
+          "index": 3,
+          "projected_compressed_bytes": 28946752,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 46385154,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 30000,
+          "text_compressed_bytes": 23894382
+        },
+        {
+          "buffered_reads": 106,
+          "index": 4,
+          "projected_compressed_bytes": 28499286,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 46298546,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 40000,
+          "text_compressed_bytes": 23452934
+        },
+        {
+          "buffered_reads": 106,
+          "index": 5,
+          "projected_compressed_bytes": 26197587,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 42220435,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 50000,
+          "text_compressed_bytes": 21152159
+        },
+        {
+          "buffered_reads": 106,
+          "index": 6,
+          "projected_compressed_bytes": 26334763,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 42524776,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 60000,
+          "text_compressed_bytes": 21311491
+        },
+        {
+          "buffered_reads": 106,
+          "index": 7,
+          "projected_compressed_bytes": 27084469,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 43809322,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 70000,
+          "text_compressed_bytes": 22043394
+        },
+        {
+          "buffered_reads": 106,
+          "index": 8,
+          "projected_compressed_bytes": 26899279,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 43625236,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 80000,
+          "text_compressed_bytes": 21855362
+        },
+        {
+          "buffered_reads": 102,
+          "index": 9,
+          "projected_compressed_bytes": 9116581,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 14750071,
+          "refusal": null,
+          "rows": 3417,
+          "start_row": 90000,
+          "text_compressed_bytes": 7352441
+        }
+      ],
+      "remote_length": 290684578,
+      "rows": 93417
+    },
+    {
+      "crawl": "crawl=CC-MAIN-2015-32",
+      "file": "data/crawl=CC-MAIN-2015-32/train-01682-of-01920.parquet",
+      "footer_bytes": 198790,
+      "footer_sha256": "4d1fa59f5c245aa387a69201812ae79eefdc2250921e387cdbb7454a5a8fdd95",
+      "groups": [
+        {
+          "buffered_reads": 106,
+          "index": 0,
+          "projected_compressed_bytes": 28037114,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 46284177,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 0,
+          "text_compressed_bytes": 23023187
+        },
+        {
+          "buffered_reads": 106,
+          "index": 1,
+          "projected_compressed_bytes": 28116573,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 46319095,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 10000,
+          "text_compressed_bytes": 23104061
+        },
+        {
+          "buffered_reads": 106,
+          "index": 2,
+          "projected_compressed_bytes": 28068211,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 46271665,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 20000,
+          "text_compressed_bytes": 23054882
+        },
+        {
+          "buffered_reads": 106,
+          "index": 3,
+          "projected_compressed_bytes": 27793711,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 45636090,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 30000,
+          "text_compressed_bytes": 22788022
+        },
+        {
+          "buffered_reads": 106,
+          "index": 4,
+          "projected_compressed_bytes": 27979817,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 45905715,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 40000,
+          "text_compressed_bytes": 22958575
+        },
+        {
+          "buffered_reads": 106,
+          "index": 5,
+          "projected_compressed_bytes": 28405860,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 46551804,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 50000,
+          "text_compressed_bytes": 23384233
+        },
+        {
+          "buffered_reads": 106,
+          "index": 6,
+          "projected_compressed_bytes": 28405363,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 47029506,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 60000,
+          "text_compressed_bytes": 23393990
+        },
+        {
+          "buffered_reads": 106,
+          "index": 7,
+          "projected_compressed_bytes": 29418982,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 49210174,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 70000,
+          "text_compressed_bytes": 24403670
+        },
+        {
+          "buffered_reads": 106,
+          "index": 8,
+          "projected_compressed_bytes": 28073397,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 46822856,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 80000,
+          "text_compressed_bytes": 23061160
+        },
+        {
+          "buffered_reads": 105,
+          "index": 9,
+          "projected_compressed_bytes": 22192188,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 36545359,
+          "refusal": null,
+          "rows": 7828,
+          "start_row": 90000,
+          "text_compressed_bytes": 18259685
+        }
+      ],
+      "remote_length": 316724715,
+      "rows": 97828
+    },
+    {
+      "crawl": "crawl=CC-MAIN-2016-50",
+      "file": "data/crawl=CC-MAIN-2016-50/train-02156-of-03132.parquet",
+      "footer_bytes": 150099,
+      "footer_sha256": "73808b5e2a4db3b32a7241f06cd1922f37d50f82b80b6f5fa829789f85f48088",
+      "groups": [
+        {
+          "buffered_reads": 106,
+          "index": 0,
+          "projected_compressed_bytes": 26901066,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 44443283,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 0,
+          "text_compressed_bytes": 21856064
+        },
+        {
+          "buffered_reads": 105,
+          "index": 1,
+          "projected_compressed_bytes": 25761129,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 41978381,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 10000,
+          "text_compressed_bytes": 20739833
+        },
+        {
+          "buffered_reads": 106,
+          "index": 2,
+          "projected_compressed_bytes": 26112417,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 43179744,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 20000,
+          "text_compressed_bytes": 21064853
+        },
+        {
+          "buffered_reads": 105,
+          "index": 3,
+          "projected_compressed_bytes": 25668804,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 42490152,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 30000,
+          "text_compressed_bytes": 20633150
+        },
+        {
+          "buffered_reads": 105,
+          "index": 4,
+          "projected_compressed_bytes": 25460009,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 41765836,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 40000,
+          "text_compressed_bytes": 20411000
+        },
+        {
+          "buffered_reads": 106,
+          "index": 5,
+          "projected_compressed_bytes": 26070961,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 42926827,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 50000,
+          "text_compressed_bytes": 21036320
+        },
+        {
+          "buffered_reads": 105,
+          "index": 6,
+          "projected_compressed_bytes": 24339571,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 39713156,
+          "refusal": null,
+          "rows": 9622,
+          "start_row": 60000,
+          "text_compressed_bytes": 19483365
+        }
+      ],
+      "remote_length": 207246017,
+      "rows": 69622
+    },
+    {
+      "crawl": "crawl=CC-MAIN-2018-05",
+      "file": "data/crawl=CC-MAIN-2018-05/train-03378-of-03429.parquet",
+      "footer_bytes": 199231,
+      "footer_sha256": "71b329616d53118a4af33065aff31e96020eb0195c9bfeb9f4304867a54f2537",
+      "groups": [
+        {
+          "buffered_reads": 106,
+          "index": 0,
+          "projected_compressed_bytes": 27732974,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 45449101,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 0,
+          "text_compressed_bytes": 22595416
+        },
+        {
+          "buffered_reads": 106,
+          "index": 1,
+          "projected_compressed_bytes": 27087795,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 44433615,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 10000,
+          "text_compressed_bytes": 21964329
+        },
+        {
+          "buffered_reads": 106,
+          "index": 2,
+          "projected_compressed_bytes": 27128113,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 44783414,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 20000,
+          "text_compressed_bytes": 21985652
+        },
+        {
+          "buffered_reads": 106,
+          "index": 3,
+          "projected_compressed_bytes": 27286580,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 44591783,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 30000,
+          "text_compressed_bytes": 22150776
+        },
+        {
+          "buffered_reads": 106,
+          "index": 4,
+          "projected_compressed_bytes": 27904059,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 45929006,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 40000,
+          "text_compressed_bytes": 22760345
+        },
+        {
+          "buffered_reads": 106,
+          "index": 5,
+          "projected_compressed_bytes": 27891314,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 45724297,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 50000,
+          "text_compressed_bytes": 22751428
+        },
+        {
+          "buffered_reads": 106,
+          "index": 6,
+          "projected_compressed_bytes": 27759697,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 45416390,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 60000,
+          "text_compressed_bytes": 22608772
+        },
+        {
+          "buffered_reads": 106,
+          "index": 7,
+          "projected_compressed_bytes": 28800962,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 47278842,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 70000,
+          "text_compressed_bytes": 23661883
+        },
+        {
+          "buffered_reads": 106,
+          "index": 8,
+          "projected_compressed_bytes": 27020788,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 43858160,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 80000,
+          "text_compressed_bytes": 21886790
+        },
+        {
+          "buffered_reads": 101,
+          "index": 9,
+          "projected_compressed_bytes": 3838902,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 6560249,
+          "refusal": null,
+          "rows": 1199,
+          "start_row": 90000,
+          "text_compressed_bytes": 3193472
+        }
+      ],
+      "remote_length": 285464583,
+      "rows": 91199
+    },
+    {
+      "crawl": "crawl=CC-MAIN-2019-09",
+      "file": "data/crawl=CC-MAIN-2019-09/train-00153-of-02577.parquet",
+      "footer_bytes": 163182,
+      "footer_sha256": "8de5d9aad30890c88c723216eed274b52378b0b4f0c72b3ee3a65219b3f9ed97",
+      "groups": [
+        {
+          "buffered_reads": 106,
+          "index": 0,
+          "projected_compressed_bytes": 29526445,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 48508169,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 0,
+          "text_compressed_bytes": 24369706
+        },
+        {
+          "buffered_reads": 106,
+          "index": 1,
+          "projected_compressed_bytes": 29323747,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 48519336,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 10000,
+          "text_compressed_bytes": 24166205
+        },
+        {
+          "buffered_reads": 106,
+          "index": 2,
+          "projected_compressed_bytes": 28098058,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 46032796,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 20000,
+          "text_compressed_bytes": 22942013
+        },
+        {
+          "buffered_reads": 106,
+          "index": 3,
+          "projected_compressed_bytes": 28616782,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 46632601,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 30000,
+          "text_compressed_bytes": 23466275
+        },
+        {
+          "buffered_reads": 106,
+          "index": 4,
+          "projected_compressed_bytes": 28896780,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 47493594,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 40000,
+          "text_compressed_bytes": 23733265
+        },
+        {
+          "buffered_reads": 106,
+          "index": 5,
+          "projected_compressed_bytes": 28700210,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 46955518,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 50000,
+          "text_compressed_bytes": 23537203
+        },
+        {
+          "buffered_reads": 106,
+          "index": 6,
+          "projected_compressed_bytes": 29874559,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 49914738,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 60000,
+          "text_compressed_bytes": 24716847
+        },
+        {
+          "buffered_reads": 104,
+          "index": 7,
+          "projected_compressed_bytes": 18144151,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 29329641,
+          "refusal": null,
+          "rows": 5980,
+          "start_row": 70000,
+          "text_compressed_bytes": 15038533
+        }
+      ],
+      "remote_length": 247450105,
+      "rows": 75980
+    },
+    {
+      "crawl": "crawl=CC-MAIN-2021-04",
+      "file": "data/crawl=CC-MAIN-2021-04/train-00179-of-03315.parquet",
+      "footer_bytes": 155751,
+      "footer_sha256": "0ea78bf3262e3ab8f2981448ee6d3770708af49eee075dff825c84eedd73d3a1",
+      "groups": [
+        {
+          "buffered_reads": 106,
+          "index": 0,
+          "projected_compressed_bytes": 27680136,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 45203909,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 0,
+          "text_compressed_bytes": 22484253
+        },
+        {
+          "buffered_reads": 106,
+          "index": 1,
+          "projected_compressed_bytes": 28448577,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 46663373,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 10000,
+          "text_compressed_bytes": 23250055
+        },
+        {
+          "buffered_reads": 106,
+          "index": 2,
+          "projected_compressed_bytes": 28850913,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 47537015,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 20000,
+          "text_compressed_bytes": 23648025
+        },
+        {
+          "buffered_reads": 106,
+          "index": 3,
+          "projected_compressed_bytes": 27476560,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 44874581,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 30000,
+          "text_compressed_bytes": 22276711
+        },
+        {
+          "buffered_reads": 106,
+          "index": 4,
+          "projected_compressed_bytes": 28534728,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 47018578,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 40000,
+          "text_compressed_bytes": 23336525
+        },
+        {
+          "buffered_reads": 106,
+          "index": 5,
+          "projected_compressed_bytes": 28325565,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 46266034,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 50000,
+          "text_compressed_bytes": 23128690
+        },
+        {
+          "buffered_reads": 106,
+          "index": 6,
+          "projected_compressed_bytes": 27692123,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 45269091,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 60000,
+          "text_compressed_bytes": 22501082
+        },
+        {
+          "buffered_reads": 105,
+          "index": 7,
+          "projected_compressed_bytes": 22352596,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 36685164,
+          "refusal": null,
+          "rows": 8036,
+          "start_row": 70000,
+          "text_compressed_bytes": 18178132
+        }
+      ],
+      "remote_length": 246957884,
+      "rows": 78036
+    },
+    {
+      "crawl": "crawl=CC-MAIN-2021-49",
+      "file": "data/crawl=CC-MAIN-2021-49/train-00408-of-02895.parquet",
+      "footer_bytes": 166247,
+      "footer_sha256": "147e23096e4f6781b606ea5a066c2e554bb964fa9923ba8ea021e7750e2bae69",
+      "groups": [
+        {
+          "buffered_reads": 106,
+          "index": 0,
+          "projected_compressed_bytes": 30000448,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 49433912,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 0,
+          "text_compressed_bytes": 24764878
+        },
+        {
+          "buffered_reads": 106,
+          "index": 1,
+          "projected_compressed_bytes": 28118158,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 46043694,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 10000,
+          "text_compressed_bytes": 22882436
+        },
+        {
+          "buffered_reads": 106,
+          "index": 2,
+          "projected_compressed_bytes": 29199784,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 48713237,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 20000,
+          "text_compressed_bytes": 23953505
+        },
+        {
+          "buffered_reads": 106,
+          "index": 3,
+          "projected_compressed_bytes": 28660387,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 47330023,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 30000,
+          "text_compressed_bytes": 23420044
+        },
+        {
+          "buffered_reads": 106,
+          "index": 4,
+          "projected_compressed_bytes": 29068238,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 47624345,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 40000,
+          "text_compressed_bytes": 23839084
+        },
+        {
+          "buffered_reads": 106,
+          "index": 5,
+          "projected_compressed_bytes": 28788911,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 47420407,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 50000,
+          "text_compressed_bytes": 23553737
+        },
+        {
+          "buffered_reads": 106,
+          "index": 6,
+          "projected_compressed_bytes": 28301956,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 46512825,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 60000,
+          "text_compressed_bytes": 23071199
+        },
+        {
+          "buffered_reads": 104,
+          "index": 7,
+          "projected_compressed_bytes": 19582953,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 33147748,
+          "refusal": null,
+          "rows": 6695,
+          "start_row": 70000,
+          "text_compressed_bytes": 16065849
+        }
+      ],
+      "remote_length": 247477157,
+      "rows": 76695
+    },
+    {
+      "crawl": "crawl=CC-MAIN-2024-26",
+      "file": "data/crawl=CC-MAIN-2024-26/train-01127-of-03168.parquet",
+      "footer_bytes": 161808,
+      "footer_sha256": "e829ac281553a31ed91914841671a2b17028aefb94b3d9a64cc0c768c1bef16f",
+      "groups": [
+        {
+          "buffered_reads": 106,
+          "index": 0,
+          "projected_compressed_bytes": 29826743,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 49513552,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 0,
+          "text_compressed_bytes": 24628813
+        },
+        {
+          "buffered_reads": 106,
+          "index": 1,
+          "projected_compressed_bytes": 27655771,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 45898461,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 10000,
+          "text_compressed_bytes": 22461202
+        },
+        {
+          "buffered_reads": 106,
+          "index": 2,
+          "projected_compressed_bytes": 28652793,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 47603975,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 20000,
+          "text_compressed_bytes": 23462052
+        },
+        {
+          "buffered_reads": 106,
+          "index": 3,
+          "projected_compressed_bytes": 27439176,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 45438357,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 30000,
+          "text_compressed_bytes": 22244355
+        },
+        {
+          "buffered_reads": 106,
+          "index": 4,
+          "projected_compressed_bytes": 28126713,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 46530316,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 40000,
+          "text_compressed_bytes": 22920234
+        },
+        {
+          "buffered_reads": 106,
+          "index": 5,
+          "projected_compressed_bytes": 28159141,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 46635133,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 50000,
+          "text_compressed_bytes": 22943589
+        },
+        {
+          "buffered_reads": 106,
+          "index": 6,
+          "projected_compressed_bytes": 28569092,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 47429271,
+          "refusal": null,
+          "rows": 10000,
+          "start_row": 60000,
+          "text_compressed_bytes": 23373021
+        },
+        {
+          "buffered_reads": 105,
+          "index": 7,
+          "projected_compressed_bytes": 22666393,
+          "projected_leaves": 101,
+          "projected_uncompressed_bytes": 37426156,
+          "refusal": null,
+          "rows": 8150,
+          "start_row": 70000,
+          "text_compressed_bytes": 18443981
+        }
+      ],
+      "remote_length": 246493238,
+      "rows": 78150
+    }
+  ],
+  "projection": [
+    "text",
+    "eai_taxonomy",
+    "quality_signals",
+    "id",
+    "pid",
+    "metadata"
+  ]
+}

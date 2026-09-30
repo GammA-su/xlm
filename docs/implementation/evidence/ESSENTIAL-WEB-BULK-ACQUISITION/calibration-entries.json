@@ -1,0 +1,29 @@
+{
+  "note": "sealed calibration totals; every component bears the full shared prefix-window transfer, so transfer sizing here is the naive prefix-linear one",
+  "sources": {
+    "essential_practical": {
+      "accepted_records": 434,
+      "canonical_bytes": 1900850,
+      "extra_survival": 1.0,
+      "records_sampled": 16384,
+      "rejected_records": 15950,
+      "transferred_bytes": 110070226
+    },
+    "essential_prose": {
+      "accepted_records": 1495,
+      "canonical_bytes": 7890289,
+      "extra_survival": 1.0,
+      "records_sampled": 16384,
+      "rejected_records": 14889,
+      "transferred_bytes": 110070226
+    },
+    "essential_science": {
+      "accepted_records": 101,
+      "canonical_bytes": 671387,
+      "extra_survival": 1.0,
+      "records_sampled": 16384,
+      "rejected_records": 16283,
+      "transferred_bytes": 110070226
+    }
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "basis": "measured file bytes per input row of the calibration outputs, linear",
+  "bytes_per_input_row": {
+    "canonical_documents": 880.0206298828125,
+    "raw_selected_records": 9154.003601074219,
+    "rejection_ledgers": 1606.3434448242188
+  },
+  "footprint_cap_bytes": 912680550400,
+  "measured_at": "G:\\XLM",
+  "measured_volume": {
+    "free_bytes": 999015239680,
+    "total_bytes": 1000203087872
+  },
+  "min_free_bytes": 68719476736,
+  "raw_publication": "verification does not publish a second copy of the raw records into the artifact store: two copies would not fit this volume",
+  "raw_retention": "retained; no deletion is implemented",
+  "rows_at_footprint_cap": 77903208,
+  "scenarios": {
+    "final_quota_if_exact_bytes_per_token_is_5": {
+      "canonical_documents_bytes": 64425993507,
+      "fits_footprint_cap": true,
+      "fits_free_space_keeping_reserve": true,
+      "input_rows": 73209640,
+      "peak_bytes": 858045689317,
+      "raw_selected_records_bytes": 670161308194,
+      "rejection_ledgers_bytes": 117599825312,
+      "steady_state_bytes": 852187127012,
+      "steady_state_bytes_if_raw_also_published_to_store": 1522348435205
+    },
+    "first_pass_target_central_4_bytes_per_token": {
+      "canonical_documents_bytes": 56694874110,
+      "fits_footprint_cap": true,
+      "fits_free_space_keeping_reserve": true,
+      "input_rows": 64424483,
+      "peak_bytes": 755783231747,
+      "raw_selected_records_bytes": 589741949380,
+      "rejection_ledgers_bytes": 103487845954,
+      "steady_state_bytes": 749924669443,
+      "steady_state_bytes_if_raw_also_published_to_store": 1339666618822
+    },
+    "leave_one_crawl_out_maximum": {
+      "canonical_documents_bytes": 64364860234,
+      "fits_footprint_cap": true,
+      "fits_free_space_keeping_reserve": true,
+      "input_rows": 73140172,
+      "peak_bytes": 857237056255,
+      "raw_selected_records_bytes": 669525397872,
+      "rejection_ledgers_bytes": 117488235846,
+      "steady_state_bytes": 851378493950,
+      "steady_state_bytes_if_raw_also_published_to_store": 1520903891822
+    }
+  },
+  "slice_transient_bytes": 5858562305
+}

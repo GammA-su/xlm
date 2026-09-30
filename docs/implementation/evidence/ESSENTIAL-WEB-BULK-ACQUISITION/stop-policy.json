@@ -1,0 +1,32 @@
+{
+  "afterwards": [
+    "freeze the canonical pool",
+    "C05 exclusion receipt over the frozen pool",
+    "train and freeze the tokenizer",
+    "exact token count",
+    "top up deficient components from the next inventory batches, then refreeze and rescreen"
+  ],
+  "campaign_digest": "644be917fc40c124f3682eed0852101e1b66c8862adab73b65513cb2686b0ce9",
+  "condition": "continue deterministic inventory batches until, over complete batches, cumulative canonical bytes of every Essential view reach its required_canonical_bytes (first-pass estimated tokens x 4 bytes/token)",
+  "evaluated": "at batch boundaries, over complete batches only",
+  "exactness": "estimated tokens only; exact sufficiency needs the frozen tokenizer",
+  "mechanism": "scripts/mix01_inventory.py estimate + sufficiency",
+  "overshoot_bound": "at most one batch past the first complete batch that meets it",
+  "targets": {
+    "essential_practical": {
+      "final_exact_token_quota": 600000000,
+      "first_pass_estimated_token_target": 660000000,
+      "required_canonical_bytes": 2640000000
+    },
+    "essential_prose": {
+      "final_exact_token_quota": 300000000,
+      "first_pass_estimated_token_target": 330000000,
+      "required_canonical_bytes": 1320000000
+    },
+    "essential_science": {
+      "final_exact_token_quota": 600000000,
+      "first_pass_estimated_token_target": 660000000,
+      "required_canonical_bytes": 2640000000
+    }
+  }
+}

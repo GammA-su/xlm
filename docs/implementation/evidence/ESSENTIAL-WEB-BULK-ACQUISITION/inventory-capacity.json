@@ -1,0 +1,69 @@
+{
+  "assessment": "plausibly sufficient by a wide margin; NOT proven",
+  "cases": {
+    "central": {
+      "break_even_mean_rows_per_file": 2776.9173706896554,
+      "files_at_mean_observed_rows": 780,
+      "files_at_smallest_observed_file": 926,
+      "inventory_share_at_smallest_observed_file": 0.039913793103448274,
+      "required_input_rows": 64424483
+    },
+    "final_quota_if_exact_bytes_per_token_is_5": {
+      "break_even_mean_rows_per_file": 3155.5879310344826,
+      "files_at_mean_observed_rows": 887,
+      "files_at_smallest_observed_file": 1052,
+      "inventory_share_at_smallest_observed_file": 0.0453448275862069,
+      "required_input_rows": 73209640
+    },
+    "first_pass_target_central_4_bytes_per_token": {
+      "break_even_mean_rows_per_file": 2776.9173706896554,
+      "files_at_mean_observed_rows": 780,
+      "files_at_smallest_observed_file": 926,
+      "inventory_share_at_smallest_observed_file": 0.039913793103448274,
+      "required_input_rows": 64424483
+    },
+    "high": {
+      "break_even_mean_rows_per_file": 3471.146724137931,
+      "files_at_mean_observed_rows": 975,
+      "files_at_smallest_observed_file": 1157,
+      "inventory_share_at_smallest_observed_file": 0.04987068965517241,
+      "required_input_rows": 80530604
+    },
+    "leave_one_crawl_out_maximum": {
+      "break_even_mean_rows_per_file": 3152.5936206896554,
+      "files_at_mean_observed_rows": 886,
+      "files_at_smallest_observed_file": 1051,
+      "inventory_share_at_smallest_observed_file": 0.045301724137931036,
+      "required_input_rows": 73140172
+    },
+    "low": {
+      "break_even_mean_rows_per_file": 2082.6880172413794,
+      "files_at_mean_observed_rows": 585,
+      "files_at_smallest_observed_file": 695,
+      "inventory_share_at_smallest_observed_file": 0.02995689655172414,
+      "required_input_rows": 48318362
+    }
+  },
+  "crawl_strata": {
+    "crawl=CC-MAIN-2014-15": 2771,
+    "crawl=CC-MAIN-2015-32": 1919,
+    "crawl=CC-MAIN-2016-50": 3131,
+    "crawl=CC-MAIN-2018-05": 3428,
+    "crawl=CC-MAIN-2019-09": 2576,
+    "crawl=CC-MAIN-2021-04": 3314,
+    "crawl=CC-MAIN-2021-49": 2894,
+    "crawl=CC-MAIN-2024-26": 3167
+  },
+  "files_with_known_size_and_rows": 8,
+  "files_with_unknown_rows": 23192,
+  "inventory_digest": "4bbd5517e760971405d9aed56bba5b84877a6325d10f5a10a05b50f5a8d763d8",
+  "inventory_files": 23200,
+  "observed_rows_per_file": {
+    "max": 97828,
+    "mean": 82615.875,
+    "min": 69622
+  },
+  "policy": "progressive: scan the next inventory batch, measure cumulative canonical bytes, continue until the first-pass targets are met, stop cleanly, top up later from the next inventory batch if the exact tokenizer count is deficient",
+  "row_counts_fabricated": false,
+  "total_capacity_known": false
+}

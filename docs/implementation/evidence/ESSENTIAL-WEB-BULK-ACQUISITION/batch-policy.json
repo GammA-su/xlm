@@ -1,0 +1,73 @@
+{
+  "chosen_files_per_batch": 32,
+  "contract_limit_files_per_plan": 256,
+  "execution_contingency": {
+    "ceiling_basis": "largest leave-one-crawl-out science row requirement, in files of the smallest observed size",
+    "ceiling_rows": 73140172,
+    "expected_batches_central": 25,
+    "max_batches": 33,
+    "quota_headroom": "10% first-pass headroom inside the frozen 660M/660M/330M targets",
+    "scan_contingency": "separate execution ceiling; the stop condition and the targets are unchanged and nothing is acquired beyond the measured stop"
+  },
+  "options": {
+    "16": {
+      "batches_to_science_target": 49,
+      "estimated_raw_jsonl_bytes": 12100256277,
+      "estimated_rows": 1321854,
+      "estimated_science_tokens": 13541802.8487854,
+      "estimated_seconds_one_worker": 6678.029294871294,
+      "estimated_transfer_bytes": 3727728121,
+      "files": 16,
+      "slice_raw_jsonl_bytes": 1464640577,
+      "slice_seconds_one_worker": 801.7903172296737,
+      "slice_transfer_bytes": 480007168,
+      "slices": 10,
+      "within_restart_unit_limits": true
+    },
+    "32": {
+      "batches_to_science_target": 25,
+      "estimated_raw_jsonl_bytes": 24200512553,
+      "estimated_rows": 2643708,
+      "estimated_science_tokens": 27083605.6975708,
+      "estimated_seconds_one_worker": 13356.058589742588,
+      "estimated_transfer_bytes": 7455456241,
+      "files": 32,
+      "slice_raw_jsonl_bytes": 2929281153,
+      "slice_seconds_one_worker": 1603.5806344593475,
+      "slice_transfer_bytes": 960014336,
+      "slices": 10,
+      "within_restart_unit_limits": true
+    },
+    "64": {
+      "batches_to_science_target": 13,
+      "estimated_raw_jsonl_bytes": 48401025105,
+      "estimated_rows": 5287416,
+      "estimated_science_tokens": 54167211.3951416,
+      "estimated_seconds_one_worker": 26712.117179485176,
+      "estimated_transfer_bytes": 14910912481,
+      "files": 64,
+      "slice_raw_jsonl_bytes": 5858562305,
+      "slice_seconds_one_worker": 3207.161268918695,
+      "slice_transfer_bytes": 1920028672,
+      "slices": 10,
+      "within_restart_unit_limits": false
+    },
+    "8": {
+      "batches_to_science_target": 98,
+      "estimated_raw_jsonl_bytes": 6050128139,
+      "estimated_rows": 660927,
+      "estimated_science_tokens": 6770901.4243927,
+      "estimated_seconds_one_worker": 3339.014647435647,
+      "estimated_transfer_bytes": 1863864061,
+      "files": 8,
+      "slice_raw_jsonl_bytes": 732320289,
+      "slice_seconds_one_worker": 400.8951586148369,
+      "slice_transfer_bytes": 240003584,
+      "slices": 10,
+      "within_restart_unit_limits": true
+    }
+  },
+  "rule": "largest assessed size whose slice (the restart unit) stays within 1800 s and 1073741824 transfer bytes at the measured one-worker rates",
+  "uncertainty": "rows, bytes and time are estimates from eight footers and eight prefix windows; each batch is planned from its own real footers",
+  "unit": "whole files in frozen inventory order; one slice per row-group index"
+}

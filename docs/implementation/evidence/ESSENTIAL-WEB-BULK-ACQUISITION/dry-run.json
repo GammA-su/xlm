@@ -1,0 +1,201 @@
+{
+  "batch_0": {
+    "files": [
+      "data/crawl=CC-MAIN-2019-09/train-02494-of-02577.parquet",
+      "data/crawl=CC-MAIN-2016-50/train-01413-of-03132.parquet",
+      "data/crawl=CC-MAIN-2024-26/train-02180-of-03168.parquet",
+      "data/crawl=CC-MAIN-2021-49/train-01693-of-02895.parquet",
+      "data/crawl=CC-MAIN-2024-26/train-03096-of-03168.parquet",
+      "data/crawl=CC-MAIN-2024-26/train-02938-of-03168.parquet",
+      "data/crawl=CC-MAIN-2018-05/train-00835-of-03429.parquet",
+      "data/crawl=CC-MAIN-2018-05/train-02803-of-03429.parquet",
+      "data/crawl=CC-MAIN-2016-50/train-02839-of-03132.parquet",
+      "data/crawl=CC-MAIN-2024-26/train-01913-of-03168.parquet",
+      "data/crawl=CC-MAIN-2019-09/train-01483-of-02577.parquet",
+      "data/crawl=CC-MAIN-2018-05/train-03158-of-03429.parquet",
+      "data/crawl=CC-MAIN-2021-04/train-01454-of-03315.parquet",
+      "data/crawl=CC-MAIN-2016-50/train-02904-of-03132.parquet",
+      "data/crawl=CC-MAIN-2021-04/train-00087-of-03315.parquet",
+      "data/crawl=CC-MAIN-2021-49/train-00092-of-02895.parquet",
+      "data/crawl=CC-MAIN-2024-26/train-01050-of-03168.parquet",
+      "data/crawl=CC-MAIN-2014-15/train-01846-of-02772.parquet",
+      "data/crawl=CC-MAIN-2021-04/train-02014-of-03315.parquet",
+      "data/crawl=CC-MAIN-2016-50/train-00940-of-03132.parquet",
+      "data/crawl=CC-MAIN-2015-32/train-00114-of-01920.parquet",
+      "data/crawl=CC-MAIN-2021-04/train-00817-of-03315.parquet",
+      "data/crawl=CC-MAIN-2016-50/train-02135-of-03132.parquet",
+      "data/crawl=CC-MAIN-2018-05/train-01313-of-03429.parquet",
+      "data/crawl=CC-MAIN-2021-49/train-00868-of-02895.parquet",
+      "data/crawl=CC-MAIN-2014-15/train-00949-of-02772.parquet",
+      "data/crawl=CC-MAIN-2016-50/train-02164-of-03132.parquet",
+      "data/crawl=CC-MAIN-2018-05/train-03027-of-03429.parquet",
+      "data/crawl=CC-MAIN-2021-04/train-00021-of-03315.parquet",
+      "data/crawl=CC-MAIN-2024-26/train-02092-of-03168.parquet",
+      "data/crawl=CC-MAIN-2015-32/train-00655-of-01920.parquet",
+      "data/crawl=CC-MAIN-2018-05/train-03380-of-03429.parquet"
+    ],
+    "membership_digest": "c8e886c0c9737fed57bf491bc5922963af14cbbb398be66a9087bccc2912e8e5"
+  },
+  "batch_0_and_1_disjoint": true,
+  "batch_1": {
+    "files": [
+      "data/crawl=CC-MAIN-2019-09/train-00011-of-02577.parquet",
+      "data/crawl=CC-MAIN-2016-50/train-01628-of-03132.parquet",
+      "data/crawl=CC-MAIN-2016-50/train-00523-of-03132.parquet",
+      "data/crawl=CC-MAIN-2021-04/train-00049-of-03315.parquet",
+      "data/crawl=CC-MAIN-2021-49/train-02837-of-02895.parquet",
+      "data/crawl=CC-MAIN-2019-09/train-01773-of-02577.parquet",
+      "data/crawl=CC-MAIN-2018-05/train-01439-of-03429.parquet",
+      "data/crawl=CC-MAIN-2016-50/train-02538-of-03132.parquet",
+      "data/crawl=CC-MAIN-2015-32/train-00615-of-01920.parquet",
+      "data/crawl=CC-MAIN-2021-49/train-00785-of-02895.parquet",
+      "data/crawl=CC-MAIN-2021-04/train-02710-of-03315.parquet",
+      "data/crawl=CC-MAIN-2024-26/train-02551-of-03168.parquet",
+      "data/crawl=CC-MAIN-2016-50/train-01262-of-03132.parquet",
+      "data/crawl=CC-MAIN-2024-26/train-03119-of-03168.parquet",
+      "data/crawl=CC-MAIN-2024-26/train-02627-of-03168.parquet",
+      "data/crawl=CC-MAIN-2024-26/train-02242-of-03168.parquet",
+      "data/crawl=CC-MAIN-2018-05/train-01190-of-03429.parquet",
+      "data/crawl=CC-MAIN-2024-26/train-02588-of-03168.parquet",
+      "data/crawl=CC-MAIN-2014-15/train-00381-of-02772.parquet",
+      "data/crawl=CC-MAIN-2019-09/train-01453-of-02577.parquet",
+      "data/crawl=CC-MAIN-2018-05/train-02343-of-03429.parquet",
+      "data/crawl=CC-MAIN-2019-09/train-00296-of-02577.parquet",
+      "data/crawl=CC-MAIN-2018-05/train-00483-of-03429.parquet",
+      "data/crawl=CC-MAIN-2021-49/train-02251-of-02895.parquet",
+      "data/crawl=CC-MAIN-2018-05/train-02010-of-03429.parquet",
+      "data/crawl=CC-MAIN-2021-04/train-00163-of-03315.parquet",
+      "data/crawl=CC-MAIN-2014-15/train-02466-of-02772.parquet",
+      "data/crawl=CC-MAIN-2021-04/train-02725-of-03315.parquet",
+      "data/crawl=CC-MAIN-2021-04/train-02510-of-03315.parquet",
+      "data/crawl=CC-MAIN-2021-04/train-00589-of-03315.parquet",
+      "data/crawl=CC-MAIN-2018-05/train-00364-of-03429.parquet",
+      "data/crawl=CC-MAIN-2021-04/train-01715-of-03315.parquet"
+    ],
+    "membership_digest": "fc4a6becbcdd052e3639c03bf67192613ccdb982c821ef728adb04f829e7b139"
+  },
+  "batch_files": 32,
+  "calibration_files": {
+    "data/crawl=CC-MAIN-2014-15/train-01860-of-02772.parquet": {
+      "batch": 280,
+      "calibration_rows": [
+        0,
+        2048
+      ],
+      "inventory_rank": 8981
+    },
+    "data/crawl=CC-MAIN-2015-32/train-01682-of-01920.parquet": {
+      "batch": 75,
+      "calibration_rows": [
+        0,
+        2048
+      ],
+      "inventory_rank": 2405
+    },
+    "data/crawl=CC-MAIN-2016-50/train-02156-of-03132.parquet": {
+      "batch": 429,
+      "calibration_rows": [
+        0,
+        2048
+      ],
+      "inventory_rank": 13757
+    },
+    "data/crawl=CC-MAIN-2018-05/train-03378-of-03429.parquet": {
+      "batch": 174,
+      "calibration_rows": [
+        0,
+        2048
+      ],
+      "inventory_rank": 5570
+    },
+    "data/crawl=CC-MAIN-2019-09/train-00153-of-02577.parquet": {
+      "batch": 248,
+      "calibration_rows": [
+        0,
+        2048
+      ],
+      "inventory_rank": 7939
+    },
+    "data/crawl=CC-MAIN-2021-04/train-00179-of-03315.parquet": {
+      "batch": 256,
+      "calibration_rows": [
+        0,
+        2048
+      ],
+      "inventory_rank": 8214
+    },
+    "data/crawl=CC-MAIN-2021-49/train-00408-of-02895.parquet": {
+      "batch": 171,
+      "calibration_rows": [
+        0,
+        2048
+      ],
+      "inventory_rank": 5477
+    },
+    "data/crawl=CC-MAIN-2024-26/train-01127-of-03168.parquet": {
+      "batch": 620,
+      "calibration_rows": [
+        0,
+        2048
+      ],
+      "inventory_rank": 19848
+    }
+  },
+  "calibration_files_within_ceiling": [],
+  "calibration_measurement_present": true,
+  "calibration_policy": "probe and calibration outputs (calib/essential-web-production) are never counted; their files are re-acquired in inventory order like any other",
+  "campaign_digest": "644be917fc40c124f3682eed0852101e1b66c8862adab73b65513cb2686b0ce9",
+  "campaign_ledger_entries": 0,
+  "campaign_rows_counted": 0,
+  "files_through_ceiling_distinct": true,
+  "inventory_digest": "4bbd5517e760971405d9aed56bba5b84877a6325d10f5a10a05b50f5a8d763d8",
+  "membership_digest_through_ceiling": "ae2a4f18799d603070586ea0a1e9605fe64012b94af41d933948e288bc341d4f",
+  "network": "none",
+  "readiness": {
+    "batch_0_footers_read": false,
+    "bulk_fetch_run": false,
+    "c05_receipt_present": false,
+    "calibration_sealed": true,
+    "campaign_frozen": true,
+    "current_adapter_reproduces_calibration": true,
+    "first_batch_gate": "RUN",
+    "inventory_ready": true,
+    "membership_deterministic": true,
+    "production_admission_recorded": true,
+    "raw_reclamation_permitted_by_contract": false,
+    "selector_frozen": true,
+    "source_revision_ok": true
+  },
+  "restart_reproduces_membership": true,
+  "stop_decision_before_any_batch": {
+    "c05_receipt_required_before_training": true,
+    "complete_batches": 0,
+    "exact_token_sufficiency_known": false,
+    "next": "run the next inventory batch",
+    "target_reached": false,
+    "training_permitted": false,
+    "views": {
+      "essential_practical": {
+        "acquired_canonical_bytes": 0,
+        "deficit_canonical_bytes": 2640000000,
+        "estimated_tokens": 0.0,
+        "required_canonical_bytes": 2640000000,
+        "status": "TOP_UP"
+      },
+      "essential_prose": {
+        "acquired_canonical_bytes": 0,
+        "deficit_canonical_bytes": 1320000000,
+        "estimated_tokens": 0.0,
+        "required_canonical_bytes": 1320000000,
+        "status": "TOP_UP"
+      },
+      "essential_science": {
+        "acquired_canonical_bytes": 0,
+        "deficit_canonical_bytes": 2640000000,
+        "estimated_tokens": 0.0,
+        "required_canonical_bytes": 2640000000,
+        "status": "TOP_UP"
+      }
+    }
+  }
+}

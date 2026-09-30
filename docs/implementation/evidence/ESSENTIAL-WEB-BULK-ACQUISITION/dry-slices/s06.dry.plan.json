@@ -1,0 +1,111 @@
+{
+  "schema_version": 2,
+  "plan_id": "plan_essential_web_essential_science_huggingface_765372b4f9dbb51a6d81",
+  "source_id": "essential_web",
+  "view_id": "essential_science",
+  "provider": "huggingface",
+  "repository": "EssentialAI/essential-web-v1.0",
+  "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+  "mode": "selected_records",
+  "selected_files": [
+    "data/crawl=CC-MAIN-2015-32/train-01682-of-01920.parquet",
+    "data/crawl=CC-MAIN-2021-49/train-00408-of-02895.parquet",
+    "data/crawl=CC-MAIN-2018-05/train-03378-of-03429.parquet",
+    "data/crawl=CC-MAIN-2019-09/train-00153-of-02577.parquet",
+    "data/crawl=CC-MAIN-2021-04/train-00179-of-03315.parquet",
+    "data/crawl=CC-MAIN-2014-15/train-01860-of-02772.parquet",
+    "data/crawl=CC-MAIN-2016-50/train-02156-of-03132.parquet",
+    "data/crawl=CC-MAIN-2024-26/train-01127-of-03168.parquet"
+  ],
+  "row_ranges": {
+    "data/crawl=CC-MAIN-2014-15/train-01860-of-02772.parquet": [
+      60000,
+      70000
+    ],
+    "data/crawl=CC-MAIN-2015-32/train-01682-of-01920.parquet": [
+      60000,
+      70000
+    ],
+    "data/crawl=CC-MAIN-2016-50/train-02156-of-03132.parquet": [
+      60000,
+      69622
+    ],
+    "data/crawl=CC-MAIN-2018-05/train-03378-of-03429.parquet": [
+      60000,
+      70000
+    ],
+    "data/crawl=CC-MAIN-2019-09/train-00153-of-02577.parquet": [
+      60000,
+      70000
+    ],
+    "data/crawl=CC-MAIN-2021-04/train-00179-of-03315.parquet": [
+      60000,
+      70000
+    ],
+    "data/crawl=CC-MAIN-2021-49/train-00408-of-02895.parquet": [
+      60000,
+      70000
+    ],
+    "data/crawl=CC-MAIN-2024-26/train-01127-of-03168.parquet": [
+      60000,
+      70000
+    ]
+  },
+  "projected_fields": [
+    "text",
+    "eai_taxonomy",
+    "quality_signals",
+    "id",
+    "pid",
+    "metadata"
+  ],
+  "range_coalesce_bytes": null,
+  "parquet_window": {
+    "policy_version": 2,
+    "stream_buffer_bytes": 4194304,
+    "max_window_scan_rows": 10000,
+    "batch_rows": 256,
+    "ratio_exempt_bytes": 16777216
+  },
+  "sampling_frame": {
+    "total_remote_files": null,
+    "selected_files": [
+      "data/crawl=CC-MAIN-2015-32/train-01682-of-01920.parquet",
+      "data/crawl=CC-MAIN-2021-49/train-00408-of-02895.parquet",
+      "data/crawl=CC-MAIN-2018-05/train-03378-of-03429.parquet",
+      "data/crawl=CC-MAIN-2019-09/train-00153-of-02577.parquet",
+      "data/crawl=CC-MAIN-2021-04/train-00179-of-03315.parquet",
+      "data/crawl=CC-MAIN-2014-15/train-01860-of-02772.parquet",
+      "data/crawl=CC-MAIN-2016-50/train-02156-of-03132.parquet",
+      "data/crawl=CC-MAIN-2024-26/train-01127-of-03168.parquet"
+    ],
+    "selection_seed": 20260930,
+    "sampling_method": "explicit_file_list",
+    "coverage_notes": "",
+    "selection_bias_warning": "Warning: Selected subset is not a uniform random sample of the full corpus. Domain, temporal, and shard clustering effects apply."
+  },
+  "expected_bytes": null,
+  "expected_file_digests": {},
+  "limits": {
+    "max_transferred_bytes": 689963008,
+    "max_decompressed_bytes": 1637875712,
+    "max_records": 79622,
+    "max_temp_disk_bytes": 4374659072,
+    "max_output_disk_bytes": 2187329536,
+    "max_requests": 3417,
+    "max_retries": 5,
+    "per_request_timeout_seconds": 15.0,
+    "overall_deadline_seconds": 86400.0,
+    "max_decompression_ratio": 15.0,
+    "max_workers": 1,
+    "max_record_bytes": 8388608,
+    "max_parser_bytes": 33554432,
+    "max_scanned_records": 238866
+  },
+  "output_artifact_id": "raw_essential_web_essential_science_765372b4f9dbb51a6d81",
+  "admitted_source_reference": null,
+  "is_pilot": false,
+  "attempt": 1,
+  "authorization": null,
+  "plan_hash": "9b2491d7e132776693399e3421f48dc135605dd7f46e1b1723481bb9b9b488fd"
+}

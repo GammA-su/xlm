@@ -1,0 +1,307 @@
+{
+  "campaign_digest": "644be917fc40c124f3682eed0852101e1b66c8862adab73b65513cb2686b0ce9",
+  "files": [
+    "data/crawl=CC-MAIN-2015-32/train-01682-of-01920.parquet",
+    "data/crawl=CC-MAIN-2021-49/train-00408-of-02895.parquet",
+    "data/crawl=CC-MAIN-2018-05/train-03378-of-03429.parquet",
+    "data/crawl=CC-MAIN-2019-09/train-00153-of-02577.parquet",
+    "data/crawl=CC-MAIN-2021-04/train-00179-of-03315.parquet",
+    "data/crawl=CC-MAIN-2014-15/train-01860-of-02772.parquet",
+    "data/crawl=CC-MAIN-2016-50/train-02156-of-03132.parquet",
+    "data/crawl=CC-MAIN-2024-26/train-01127-of-03168.parquet"
+  ],
+  "rows": 660927,
+  "slices": [
+    {
+      "fetch_refused_without_authorization": true,
+      "files": 8,
+      "limits": {
+        "max_decompressed_bytes": 1679818752,
+        "max_decompression_ratio": 15.0,
+        "max_output_disk_bytes": 2197815296,
+        "max_parser_bytes": 33554432,
+        "max_record_bytes": 8388608,
+        "max_records": 80000,
+        "max_requests": 3420,
+        "max_retries": 5,
+        "max_scanned_records": 240000,
+        "max_temp_disk_bytes": 4395630592,
+        "max_transferred_bytes": 706740224,
+        "max_workers": 1,
+        "overall_deadline_seconds": 86400.0,
+        "per_request_timeout_seconds": 15.0
+      },
+      "modeled": {
+        "buffered_reads": 848,
+        "projected_compressed_bytes": 226939951,
+        "projected_uncompressed_bytes": 373129561
+      },
+      "plan_hash": "ef3846d9653abc9c844554103ef5aab1e5d9688c487731c03faf23a10442b3be",
+      "production_scope": true,
+      "rows": 80000,
+      "slice": 0
+    },
+    {
+      "fetch_refused_without_authorization": true,
+      "files": 8,
+      "limits": {
+        "max_decompressed_bytes": 1633681408,
+        "max_decompression_ratio": 15.0,
+        "max_output_disk_bytes": 2197815296,
+        "max_parser_bytes": 33554432,
+        "max_record_bytes": 8388608,
+        "max_records": 80000,
+        "max_requests": 3417,
+        "max_retries": 5,
+        "max_scanned_records": 240000,
+        "max_temp_disk_bytes": 4395630592,
+        "max_transferred_bytes": 688914432,
+        "max_workers": 1,
+        "overall_deadline_seconds": 86400.0,
+        "per_request_timeout_seconds": 15.0
+      },
+      "modeled": {
+        "buffered_reads": 847,
+        "projected_compressed_bytes": 221192669,
+        "projected_uncompressed_bytes": 362955790
+      },
+      "plan_hash": "2d925629e958fae3cd866234568266e69ac8e44b6e9352a8645cd6507320f6ca",
+      "production_scope": true,
+      "rows": 80000,
+      "slice": 1
+    },
+    {
+      "fetch_refused_without_authorization": true,
+      "files": 8,
+      "limits": {
+        "max_decompressed_bytes": 1663041536,
+        "max_decompression_ratio": 15.0,
+        "max_output_disk_bytes": 2197815296,
+        "max_parser_bytes": 33554432,
+        "max_record_bytes": 8388608,
+        "max_records": 80000,
+        "max_requests": 3420,
+        "max_retries": 5,
+        "max_scanned_records": 240000,
+        "max_temp_disk_bytes": 4395630592,
+        "max_transferred_bytes": 696254464,
+        "max_workers": 1,
+        "overall_deadline_seconds": 86400.0,
+        "per_request_timeout_seconds": 15.0
+      },
+      "modeled": {
+        "buffered_reads": 848,
+        "projected_compressed_bytes": 223602365,
+        "projected_uncompressed_bytes": 369442908
+      },
+      "plan_hash": "27a240cbb367ea1d23ce0b348b85ec584a59cf548ea6e9d1e3509bad88f6aa0c",
+      "production_scope": true,
+      "rows": 80000,
+      "slice": 2
+    },
+    {
+      "fetch_refused_without_authorization": true,
+      "files": 8,
+      "limits": {
+        "max_decompressed_bytes": 1635778560,
+        "max_decompression_ratio": 15.0,
+        "max_output_disk_bytes": 2197815296,
+        "max_parser_bytes": 33554432,
+        "max_record_bytes": 8388608,
+        "max_records": 80000,
+        "max_requests": 3417,
+        "max_retries": 5,
+        "max_scanned_records": 240000,
+        "max_temp_disk_bytes": 4395630592,
+        "max_transferred_bytes": 691011584,
+        "max_workers": 1,
+        "overall_deadline_seconds": 86400.0,
+        "per_request_timeout_seconds": 15.0
+      },
+      "modeled": {
+        "buffered_reads": 847,
+        "projected_compressed_bytes": 221888752,
+        "projected_uncompressed_bytes": 363378741
+      },
+      "plan_hash": "94f95483d5896f8b3dbd5e5cd2020a810ae0f8ca381fc7e5609e83087bdbbbed",
+      "production_scope": true,
+      "rows": 80000,
+      "slice": 3
+    },
+    {
+      "fetch_refused_without_authorization": true,
+      "files": 8,
+      "limits": {
+        "max_decompressed_bytes": 1658847232,
+        "max_decompression_ratio": 15.0,
+        "max_output_disk_bytes": 2197815296,
+        "max_parser_bytes": 33554432,
+        "max_record_bytes": 8388608,
+        "max_records": 80000,
+        "max_requests": 3417,
+        "max_retries": 5,
+        "max_scanned_records": 240000,
+        "max_temp_disk_bytes": 4395630592,
+        "max_transferred_bytes": 699400192,
+        "max_workers": 1,
+        "overall_deadline_seconds": 86400.0,
+        "per_request_timeout_seconds": 15.0
+      },
+      "modeled": {
+        "buffered_reads": 847,
+        "projected_compressed_bytes": 224469630,
+        "projected_uncompressed_bytes": 368565936
+      },
+      "plan_hash": "8ecf4ecb05091efc6a02e4085356f031100006813aefa2cb4fdb25e56add876d",
+      "production_scope": true,
+      "rows": 80000,
+      "slice": 4
+    },
+    {
+      "fetch_refused_without_authorization": true,
+      "files": 8,
+      "limits": {
+        "max_decompressed_bytes": 1642070016,
+        "max_decompression_ratio": 15.0,
+        "max_output_disk_bytes": 2197815296,
+        "max_parser_bytes": 33554432,
+        "max_record_bytes": 8388608,
+        "max_records": 80000,
+        "max_requests": 3420,
+        "max_retries": 5,
+        "max_scanned_records": 240000,
+        "max_temp_disk_bytes": 4395630592,
+        "max_transferred_bytes": 693108736,
+        "max_workers": 1,
+        "overall_deadline_seconds": 86400.0,
+        "per_request_timeout_seconds": 15.0
+      },
+      "modeled": {
+        "buffered_reads": 848,
+        "projected_compressed_bytes": 222539549,
+        "projected_uncompressed_bytes": 364700455
+      },
+      "plan_hash": "fc1fc8b8634004f85f9d26aa6a54dcf131b5c064472b0ac64cd6c65e58f6ff54",
+      "production_scope": true,
+      "rows": 80000,
+      "slice": 5
+    },
+    {
+      "fetch_refused_without_authorization": true,
+      "files": 8,
+      "limits": {
+        "max_decompressed_bytes": 1637875712,
+        "max_decompression_ratio": 15.0,
+        "max_output_disk_bytes": 2187329536,
+        "max_parser_bytes": 33554432,
+        "max_record_bytes": 8388608,
+        "max_records": 79622,
+        "max_requests": 3417,
+        "max_retries": 5,
+        "max_scanned_records": 238866,
+        "max_temp_disk_bytes": 4374659072,
+        "max_transferred_bytes": 689963008,
+        "max_workers": 1,
+        "overall_deadline_seconds": 86400.0,
+        "per_request_timeout_seconds": 15.0
+      },
+      "modeled": {
+        "buffered_reads": 847,
+        "projected_compressed_bytes": 221277124,
+        "projected_uncompressed_bytes": 363809753
+      },
+      "plan_hash": "9b2491d7e132776693399e3421f48dc135605dd7f46e1b1723481bb9b9b488fd",
+      "production_scope": true,
+      "rows": 79622,
+      "slice": 6
+    },
+    {
+      "fetch_refused_without_authorization": true,
+      "files": 7,
+      "limits": {
+        "max_decompressed_bytes": 1246756864,
+        "max_decompression_ratio": 15.0,
+        "max_output_disk_bytes": 1616904192,
+        "max_parser_bytes": 33554432,
+        "max_record_bytes": 8388608,
+        "max_records": 58861,
+        "max_requests": 2970,
+        "max_retries": 5,
+        "max_scanned_records": 176583,
+        "max_temp_disk_bytes": 3233808384,
+        "max_transferred_bytes": 526385152,
+        "max_workers": 1,
+        "overall_deadline_seconds": 86400.0,
+        "per_request_timeout_seconds": 15.0
+      },
+      "modeled": {
+        "buffered_reads": 736,
+        "projected_compressed_bytes": 168050506,
+        "projected_uncompressed_bytes": 276887047
+      },
+      "plan_hash": "0a6a57f4b438cf04d936a02bd2ff803abede609f3884e3280afe1e1ff2e59758",
+      "production_scope": true,
+      "rows": 58861,
+      "slice": 7
+    },
+    {
+      "fetch_refused_without_authorization": true,
+      "files": 3,
+      "limits": {
+        "max_decompressed_bytes": 605028352,
+        "max_decompression_ratio": 15.0,
+        "max_output_disk_bytes": 824180736,
+        "max_parser_bytes": 33554432,
+        "max_record_bytes": 8388608,
+        "max_records": 30000,
+        "max_requests": 1283,
+        "max_retries": 5,
+        "max_scanned_records": 90000,
+        "max_temp_disk_bytes": 1648361472,
+        "max_transferred_bytes": 255852544,
+        "max_workers": 1,
+        "overall_deadline_seconds": 86400.0,
+        "per_request_timeout_seconds": 15.0
+      },
+      "modeled": {
+        "buffered_reads": 318,
+        "projected_compressed_bytes": 81993464,
+        "projected_uncompressed_bytes": 134306252
+      },
+      "plan_hash": "b28268e508a2c348a97da282f99f1fc347ea645ffd6321dc24faff1a54c40ceb",
+      "production_scope": true,
+      "rows": 30000,
+      "slice": 8
+    },
+    {
+      "fetch_refused_without_authorization": true,
+      "files": 3,
+      "limits": {
+        "max_decompressed_bytes": 536870912,
+        "max_decompression_ratio": 15.0,
+        "max_output_disk_bytes": 341835776,
+        "max_parser_bytes": 33554432,
+        "max_record_bytes": 8388608,
+        "max_records": 12444,
+        "max_requests": 1245,
+        "max_retries": 5,
+        "max_scanned_records": 37332,
+        "max_temp_disk_bytes": 683671552,
+        "max_transferred_bytes": 115343360,
+        "max_workers": 1,
+        "overall_deadline_seconds": 86400.0,
+        "per_request_timeout_seconds": 15.0
+      },
+      "modeled": {
+        "buffered_reads": 308,
+        "projected_compressed_bytes": 35147671,
+        "projected_uncompressed_bytes": 57855679
+      },
+      "plan_hash": "a76c20d6d69e3e40af4c18a254fd1f77e235c3c23055ac1b51616e4880eea8f5",
+      "production_scope": true,
+      "rows": 12444,
+      "slice": 9
+    }
+  ],
+  "status": "DRY DEMONSTRATION on the eight footer-certified files; NOT a campaign batch, NOT authorized, NOT executed"
+}
