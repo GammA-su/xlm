@@ -17,6 +17,11 @@ retries, restart reconciliation); only the per-arm caps, the root cap and the
 free-space floor are Phase D's. Decoding and exports follow acquisition. None
 of the entry points accepts a URL, file, range, ETag, host, root, locator or
 output path (protocol sections 3-10).
+
+The root cap covers every file under the root through the final export
+(protocol section 6), and the bound Phase-P parent is re-verified before
+decoding and again at completion (section 1): a run becomes COMPLETE only
+through :meth:`_PhaseDEngine._seal`.
 """
 
 from __future__ import annotations
@@ -47,6 +52,12 @@ ARM_OUTPUTS: dict[str, tuple[str, ...]] = {
     "M": (M_OUTPUT, M_MANIFEST),
     "T": (T_DOCUMENTS, T_PROVENANCE, T_MANIFEST),
 }
+EXPORTS = (REQUESTS, RECEIPT, MANIFEST, *(n for names in ARM_OUTPUTS.values() for n in names))
+SUPERSEDED = ".superseded"
+# SQLite growth (database pages plus the rollback journal) of one single-row
+# transaction is not known before it commits: this much root-cap room is
+# required before each one, and the whole root is measured again after it.
+STORE_WRITE_RESERVE_BYTES = 65536
 FROZEN_ROOTS = (*phase_p.FROZEN_ROOTS, pd.EXECUTION_ROOT)
 
 RefusedError = phase_p.RefusedError
@@ -131,6 +142,9 @@ class _ParentError(ValueError):
     pass
 
 
+_PARENT_ERRORS = (_ParentError, canonical.CanonicalError, OSError, KeyError, TypeError, IndexError)
+
+
 class _PhaseDEngine(phase_p._Engine):
     store_class = PhaseDStore
 
@@ -194,8 +208,9 @@ class _PhaseDEngine(phase_p._Engine):
                 self._write_exports()
                 return self._phase_d_result()
             reason = stop or next((a.reason for a in arms.values() if a.status != "COMPLETE"), None)
-            store.set_status("COMPLETE" if reason is None else "STOPPED", reason, phase_p._utc())
-            self._write_exports()
+            if reason is not None:
+                store.set_status("STOPPED", reason, phase_p._utc())
+            self._write_exports()  # a still-RUNNING run is COMPLETE only through the seal
             return self._phase_d_result()
 
     def _acquire(self) -> str | None:
@@ -204,9 +219,45 @@ class _PhaseDEngine(phase_p._Engine):
             for op in self.plan.operations:
                 if not self._is_complete(op):
                     self._execute(op)
+                    self._root_room(0, f"after {op.op_id}")
         except StopError as exc:
             return str(exc)
         return None
+
+    # -- whole-root cap --------------------------------------------------------
+
+    def _root_room(self, growth: int, what: str) -> None:
+        """STOP unless every file now under the root plus ``growth`` bytes fits the root cap."""
+        used = _root_bytes(self.root)
+        if used + growth > pd.ROOT_BYTES_MAX:
+            raise StopError(
+                f"{what}: execution root holds {used} bytes; {growth} more would exceed "
+                f"the {pd.ROOT_BYTES_MAX}-byte root cap"
+            )
+
+    def _publish(self, name: str, raw: bytes) -> None:
+        """Atomically publish one export, refused before any write that would pass the cap.
+
+        The temp file coexists with a destination it replaces, so the peak is
+        the measured root (old file included) plus the whole new file.
+        """
+        path = self.root / name
+        if path.is_file() and path.read_bytes() == raw:
+            return
+        self._root_room(len(raw), f"publishing {name}")
+        canonical.write_atomic(path, raw)
+        self._root_room(0, f"published {name}")
+
+    def _demote(self, names: tuple[str, ...]) -> list[str]:
+        """Rename existing exports to ``.superseded`` (kept, no new bytes); returns those kept."""
+        kept: list[str] = []
+        for name in names:
+            path = self.root / name
+            if path.exists():
+                os.replace(path, path.with_name(path.name + SUPERSEDED))
+            if path.with_name(path.name + SUPERSEDED).exists():
+                kept.append(name + SUPERSEDED)
+        return kept
 
     def _precheck(self, arm: str) -> None:
         count, body = self.store.arm_totals(arm)
@@ -245,37 +296,48 @@ class _PhaseDEngine(phase_p._Engine):
 
     def _verify_parents(self) -> None:
         """Every bound Phase-P artifact must reproduce before any state change (read-only)."""
-        parents = self.dplan.parents
         try:
-            docs: dict[str, Any] = {}
-            for artifact in parents.artifacts:
-                raw = self._read_parent(artifact)
-                if artifact.digest is not None:
-                    doc = canonical.loads_bytes_strict(raw)
-                    if canonical.self_digest(doc) != doc.get("digest") or (
-                        doc.get("digest") != artifact.digest
-                    ):
-                        raise _ParentError(f"{artifact.rel} self-digest differs")
-                    docs[artifact.rel] = doc
-            receipt = docs["phase_p_receipt.json"]
-            manifest = docs["artifact_manifest.json"]
-            for doc in docs.values():
-                if doc.get("plan_digest") != parents.phase_p_plan_digest:
-                    raise _ParentError("a Phase-P export binds a different Phase-P plan")
-            if (receipt["status"], receipt["run_status"], manifest["status"]) != (
-                "COMPLETE",
-                "COMPLETE",
-                "COMPLETE",
-            ) or manifest["receipt_digest"] != receipt["digest"]:
-                raise _ParentError("the Phase-P parent is not a COMPLETE, manifest-bound run")
-            for artifact in parents.artifacts:
-                if artifact.rel.startswith("payload/") and manifest["artifacts"].get(
-                    artifact.rel
-                ) != {"bytes": artifact.bytes, "sha256": artifact.sha256}:
-                    raise _ParentError(f"{artifact.rel} differs from the Phase-P manifest")
-            self._check_layouts(docs["m_phase_p_layout.json"], docs["t_phase_p_layout.json"])
-        except (_ParentError, canonical.CanonicalError, KeyError, TypeError, IndexError) as exc:
+            self._check_parents()
+        except _PARENT_ERRORS as exc:
             raise RefusedError(f"Phase-P parent differs from the frozen binding: {exc}") from exc
+
+    def _recheck_parents(self, boundary: str) -> None:
+        """The same verification later in the run: any drift is STOP, never COMPLETE."""
+        try:
+            self._check_parents()
+        except _PARENT_ERRORS as exc:
+            raise StopError(f"Phase-P parent changed during Phase D ({boundary}): {exc}") from exc
+
+    def _check_parents(self) -> None:
+        parents = self.dplan.parents
+        docs: dict[str, Any] = {}
+        for artifact in parents.artifacts:
+            raw = self._read_parent(artifact)
+            if artifact.digest is not None:
+                doc = canonical.loads_bytes_strict(raw)
+                if canonical.self_digest(doc) != doc.get("digest") or (
+                    doc.get("digest") != artifact.digest
+                ):
+                    raise _ParentError(f"{artifact.rel} self-digest differs")
+                docs[artifact.rel] = doc
+        receipt = docs["phase_p_receipt.json"]
+        manifest = docs["artifact_manifest.json"]
+        for doc in docs.values():
+            if doc.get("plan_digest") != parents.phase_p_plan_digest:
+                raise _ParentError("a Phase-P export binds a different Phase-P plan")
+        if (receipt["status"], receipt["run_status"], manifest["status"]) != (
+            "COMPLETE",
+            "COMPLETE",
+            "COMPLETE",
+        ) or manifest["receipt_digest"] != receipt["digest"]:
+            raise _ParentError("the Phase-P parent is not a COMPLETE, manifest-bound run")
+        for artifact in parents.artifacts:
+            if artifact.rel.startswith("payload/") and manifest["artifacts"].get(artifact.rel) != {
+                "bytes": artifact.bytes,
+                "sha256": artifact.sha256,
+            }:
+                raise _ParentError(f"{artifact.rel} differs from the Phase-P manifest")
+        self._check_layouts(docs["m_phase_p_layout.json"], docs["t_phase_p_layout.json"])
 
     def _check_layouts(self, m_layout: dict[str, Any], t_layout: dict[str, Any]) -> None:
         if len(m_layout["files"]) != len(self.dplan.m_files) or len(t_layout["files"]) != len(
@@ -320,6 +382,7 @@ class _PhaseDEngine(phase_p._Engine):
     # -- decoding ------------------------------------------------------------
 
     def _decode_arms(self) -> dict[str, ArmOutcome]:
+        self._recheck_parents("before decoding")
         arms = {arm: self._decode(arm) for arm in ("M", "T")}
         new = sum(len(raw) for a in arms.values() for raw in a.files.values())
         if new and _root_bytes(self.root) + new > pd.ROOT_BYTES_MAX:
@@ -539,37 +602,120 @@ class _PhaseDEngine(phase_p._Engine):
         return entries
 
     def _write_exports(self) -> None:
-        run = self.store.run()
+        """Publish the exports. A RUNNING run becomes COMPLETE only through :meth:`_seal`.
+
+        Nothing that would pass the root cap is published: a STOPPED run whose
+        exports no longer fit keeps its receipts in ``state.sqlite`` and its
+        earlier exports are demoted, never left claiming a status.
+        """
+        if self.store.run().status == "RUNNING":
+            try:
+                self._seal()
+                return
+            except StopError as exc:
+                self.store.set_status("STOPPED", str(exc), phase_p._utc())
+                self._arms = {a: _incomplete(a, f"run stopped: {exc}") for a in ("M", "T")}
+        try:
+            outputs, superseded = self._publish_outputs()
+            run = self.store.run()
+            receipt, manifest = self._documents(run.status, run.stop_reason, outputs, superseded)
+            self._publish(RECEIPT, receipt)
+            self._publish(MANIFEST, manifest)
+        except StopError as exc:
+            self._arms = {
+                a: _incomplete(a, f"exports not published: {exc}")
+                if self._arms.get(a, _incomplete(a, "not decoded")).status == "COMPLETE"
+                else self._arms.get(a, _incomplete(a, "not decoded"))
+                for a in ("M", "T")
+            }
+            self._demote(EXPORTS)
+
+    def _seal(self) -> None:
+        """The COMPLETE gate (protocol sections 1, 6, 11): every failure is a STOP.
+
+        Both arms COMPLETE with exactly the frozen rows and locators; the bound
+        Phase-P parent still exact; every export present and reproducing its
+        hash; the whole root within its cap before and after the final write.
+        """
+        outputs, superseded = self._publish_outputs()
+        self._check_outputs()
+        receipt, manifest = self._documents("COMPLETE", None, outputs, superseded)
+        self._recheck_parents("before completion")
+        self._root_room(len(receipt) + len(manifest) + STORE_WRITE_RESERVE_BYTES, "sealing")
+        self._publish(RECEIPT, receipt)
+        self._publish(MANIFEST, manifest)
+        self._check_exports()
+        self._recheck_parents("at completion")
+        self._root_room(STORE_WRITE_RESERVE_BYTES, "marking COMPLETE")
+        self.store.set_status("COMPLETE", None, phase_p._utc())
+        self._root_room(0, "after COMPLETE")
+
+    def _request_lines(self) -> tuple[int, bytes]:
         attempts = self.store.attempts()
-        lines = b"".join(canonical.canonical_bytes(a) + b"\n" for a in attempts)
-        canonical.write_atomic(self.root / REQUESTS, lines)
+        return len(attempts), b"".join(canonical.canonical_bytes(a) + b"\n" for a in attempts)
+
+    def _publish_outputs(self) -> tuple[dict[str, dict[str, Any]], list[str]]:
+        """The request receipt and each COMPLETE arm's outputs, every write under the cap."""
+        self._publish(REQUESTS, self._request_lines()[1])
         outputs: dict[str, dict[str, Any]] = {}
         superseded: list[str] = []
         for arm, names in ARM_OUTPUTS.items():
             outcome = self._arms.get(arm, _incomplete(arm, "not decoded"))
+            if outcome.status != "COMPLETE":  # an earlier output of a now-incomplete arm: keep
+                superseded += self._demote(names)
+                continue
             for name in names:
-                path = self.root / name
-                if outcome.status == "COMPLETE":
-                    raw = outcome.files[name]
-                    canonical.write_atomic(path, raw)
-                    self.dstore.record_decoded(
-                        name, arm, outcome.records[name], raw, phase_p._utc()
-                    )
-                    outputs[name] = {"arm": arm, **_binding(raw)}
-                    continue
-                if path.exists():  # an earlier output of a now-incomplete arm: keep, demote
-                    os.replace(path, path.with_name(path.name + ".superseded"))
-                if path.with_name(path.name + ".superseded").exists():
-                    superseded.append(f"{name}.superseded")
+                raw = outcome.files[name]
+                self._publish(name, raw)
+                self._root_room(STORE_WRITE_RESERVE_BYTES, f"recording {name}")
+                self.dstore.record_decoded(name, arm, outcome.records[name], raw, phase_p._utc())
+                self._root_room(0, f"recorded {name}")
+                outputs[name] = {"arm": arm, **_binding(raw)}
+        return outputs, superseded
+
+    def _records(self, name: str) -> list[Any]:
+        lines = (self.root / name).read_bytes().splitlines()
+        return [canonical.loads_bytes_strict(line) for line in lines]
+
+    def _check_outputs(self) -> None:
+        """Both arms COMPLETE; the published bundles hold exactly the frozen identities."""
+        for arm in ("M", "T"):
+            outcome = self._arms.get(arm, _incomplete(arm, "not decoded"))
+            if outcome.status != "COMPLETE":
+                raise StopError(f"arm {arm} is not COMPLETE: {outcome.reason}")
+        try:
+            locators = [r[dec.LOCATOR_FIELD] for r in self._records(M_OUTPUT)]
+            rows = [(loc["source_file"], loc["row"]) for loc in locators]
+            documents = self._records(T_DOCUMENTS)
+            identities = [tuple(d["locator"]) for d in documents]
+            statuses = {d["status"] for d in documents}
+        except (OSError, canonical.CanonicalError, KeyError, TypeError) as exc:
+            raise StopError(f"published outputs are unreadable: {exc}") from exc
+        if rows != [(f.file, row) for f in self.dplan.m_files for row in range(*f.window)]:
+            raise StopError("M output does not hold exactly the frozen window rows")
+        frozen_identities = [loc.identity for g in self.dplan.t_files for loc in g.locators]
+        if identities != frozen_identities or not statuses <= set(dec.T_TERMINAL):
+            raise StopError("T output does not hold exactly the frozen locators")
+
+    def _documents(
+        self,
+        run_status: str,
+        stop_reason: str | None,
+        outputs: dict[str, dict[str, Any]],
+        superseded: list[str],
+    ) -> tuple[bytes, bytes]:
+        """The canonical receipt and manifest bytes for the exports now in the root."""
+        run = self.store.run()
+        count, lines = self._request_lines()
         rows = {r["op_id"]: r for r in self.store.operations()}
         store_outputs = self.store.outputs()
         both = all(self._arms.get(a, _incomplete(a, "")).status == "COMPLETE" for a in "MT")
-        complete = run.status == "COMPLETE" and both
+        complete = run_status == "COMPLETE" and both
         receipt = self._doc(
             "phase_d_receipt",
             status="COMPLETE" if complete else "INCOMPLETE",
-            run_status=run.status,
-            stop_reason=run.stop_reason,
+            run_status=run_status,
+            stop_reason=stop_reason,
             created_utc=run.created_utc,
             finalized_utc=phase_p._utc(),
             arms=self._arm_entries(),
@@ -600,7 +746,7 @@ class _PhaseDEngine(phase_p._Engine):
             totals=self._totals(),
             request_receipt={
                 "path": REQUESTS,
-                "lines": len(attempts),
+                "lines": count,
                 "bytes": len(lines),
                 "sha256": _sha(lines),
             },
@@ -609,14 +755,14 @@ class _PhaseDEngine(phase_p._Engine):
             human_review="NOT PERFORMED",
             scientific_scoring="NOT PERFORMED",
         )
-        canonical.write_canonical_json(self.root / RECEIPT, receipt)
+        receipt_raw = canonical.canonical_bytes(receipt)
         retained = sorted(
             f"{folder}/{p.name}"
             for folder in ("payload", "tmp")
             for p in (self.root / folder).iterdir()
         )
-        entries = {}
-        for rel in [*retained, REQUESTS, RECEIPT, *sorted(outputs), *superseded]:
+        entries = {RECEIPT: _binding(receipt_raw)}
+        for rel in [*retained, REQUESTS, *sorted(outputs), *superseded]:
             entries[rel] = _binding((self.root / rel).read_bytes())
         manifest = self._doc(
             "artifact_manifest",
@@ -624,9 +770,14 @@ class _PhaseDEngine(phase_p._Engine):
             receipt_digest=receipt["digest"],
             artifacts=entries,
         )
-        canonical.write_canonical_json(self.root / MANIFEST, manifest)
+        return receipt_raw, canonical.canonical_bytes(manifest)
 
     def _verify_exports(self) -> None:
+        self._check_exports()
+        self._arms = {a: ArmOutcome(a, "COMPLETE", None) for a in ("M", "T")}
+
+    def _check_exports(self) -> None:
+        """Every COMPLETE export exists, reproduces its hash and is bound; the root fits."""
         try:
             manifest = canonical.loads_bytes_strict((self.root / MANIFEST).read_bytes())
             receipt = canonical.loads_bytes_strict((self.root / RECEIPT).read_bytes())
@@ -646,18 +797,19 @@ class _PhaseDEngine(phase_p._Engine):
                 entry["sha256"],
             ):
                 raise StopError(f"COMPLETE root artifact {rel} drifted from its manifest")
-        lines = b"".join(canonical.canonical_bytes(a) + b"\n" for a in self.store.attempts())
+        _, lines = self._request_lines()
         if _sha(lines) != receipt["request_receipt"]["sha256"]:
             raise StopError("request receipt differs from the attempt table")
         decoded = {
             name: {"arm": row["arm"], "bytes": row["bytes"], "sha256": row["sha256"]}
             for name, row in self.dstore.decoded().items()
         }
-        if decoded != receipt["outputs"] or set(decoded) != {
-            n for names in ARM_OUTPUTS.values() for n in names
-        }:
+        required = {n for names in ARM_OUTPUTS.values() for n in names}
+        if decoded != receipt["outputs"] or set(decoded) != required:
             raise StopError("decoded outputs differ from the receipt")
-        self._arms = {a: ArmOutcome(a, "COMPLETE", None) for a in ("M", "T")}
+        if not {REQUESTS, RECEIPT, *required} <= set(manifest["artifacts"]):
+            raise StopError("a required export is missing from the manifest")
+        self._root_room(0, "COMPLETE root")
 
     def _phase_d_result(self) -> Result:
         run = self.store.run()

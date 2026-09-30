@@ -1,0 +1,11 @@
+﻿uv : Traceback (most recent call last):
+At line:4 char:1
++ uv @U mypy --strict @files 2>&1 | Out-File -Encoding utf8 "$d/mypy-co ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "F:\Project\xlm-data-ultrax\.venv\Scripts\mypy.exe\__main__.py", line 4, in <module>
+ImportError: DLL load failed while importing mypy: アプリケーション制御ポリシーによってこのファイルがブロックされました。

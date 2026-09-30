@@ -1172,3 +1172,336 @@ def test_cli_refuses_a_wrong_digest_and_shows_the_exact_plan(
     assert cli.main(["phase-d-status"]) == 0
     status = json.loads(capsys.readouterr().out)
     assert status["status"] == "NOT_STARTED" and not Path(pd.EXECUTION_ROOT).exists()
+
+
+# -- D01: the whole-root cap holds through export / store writes ---------------------------
+
+CAP = pd.ROOT_BYTES_MAX
+
+
+class Occupancy:
+    """Simulated pre-existing occupancy added to the real whole-root measurement."""
+
+    def __init__(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        self.real = phase_d._root_bytes
+        self.base = 0
+        self.peak = 0
+        monkeypatch.setattr(phase_d, "_root_bytes", self)
+
+    def __call__(self, path: Path) -> int:
+        size = self.real(path) + self.base
+        self.peak = max(self.peak, size)
+        return size
+
+    def fill(self, root: Path, used: int) -> None:
+        self.base = used - self.real(root)
+
+
+def _idle_engine(dfx: DFixture, root: Path) -> phase_d._PhaseDEngine:
+    root.mkdir()
+    return phase_d._PhaseDEngine(
+        dfx.plan, root, dfx.parent, transport(dfx), sleep=lambda _: None, clock=FakeClock()
+    )
+
+
+def _names(root: Path) -> set[str]:
+    return {p.relative_to(root).as_posix() for p in root.rglob("*") if p.is_file()}
+
+
+@pytest.mark.parametrize(
+    ("used", "allowed"),
+    [
+        (CAP - 10000, False),  # the review's case: 10,000 bytes of room, a 16,748-byte export
+        (CAP - 16748, True),  # root + export == the cap exactly
+        (CAP - 16747, False),  # root + export == the cap + 1
+    ],
+)
+def test_d01_export_publication_is_bounded_by_the_whole_root_cap(
+    dfx: DFixture, root: Path, monkeypatch: pytest.MonkeyPatch, used: int, allowed: bool
+) -> None:
+    engine = _idle_engine(dfx, root)
+    occupancy = Occupancy(monkeypatch)
+    occupancy.fill(root, used)
+    export = b"e" * 16748
+    if allowed:
+        engine._publish(phase_d.RECEIPT, export)
+        assert (root / phase_d.RECEIPT).read_bytes() == export
+        assert occupancy(root) == CAP
+    else:
+        with pytest.raises(phase_d.StopError, match=f"the {CAP}-byte root cap"):
+            engine._publish(phase_d.RECEIPT, export)
+        assert _names(root) == set()  # refused before the temp file was created
+        assert occupancy(root) == used
+    assert occupancy.peak <= CAP
+
+
+def test_d01_atomic_replacement_counts_the_old_and_the_new_file_together(
+    dfx: DFixture, root: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    engine = _idle_engine(dfx, root)
+    old, new = b"o" * 12000, b"n" * 12000
+    (root / phase_d.MANIFEST).write_bytes(old)
+    occupancy = Occupancy(monkeypatch)
+    occupancy.fill(root, CAP - 11999)  # the replaced root would fit; old + temp would not
+    with pytest.raises(phase_d.StopError, match="publishing artifact_manifest.json"):
+        engine._publish(phase_d.MANIFEST, new)
+    assert (root / phase_d.MANIFEST).read_bytes() == old
+    assert _names(root) == {phase_d.MANIFEST}
+    engine._publish(phase_d.MANIFEST, old)  # identical bytes: nothing is written
+    occupancy.fill(root, CAP - 12000)  # old + temp == the cap exactly
+    engine._publish(phase_d.MANIFEST, new)
+    assert (root / phase_d.MANIFEST).read_bytes() == new and _names(root) == {phase_d.MANIFEST}
+    assert occupancy.peak <= CAP
+
+
+def test_d01_root_usage_counts_every_file_including_sqlite_auxiliaries(
+    dfx: DFixture, root: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    fake = tmp_path / "fake-root"
+    sizes = {
+        "state.sqlite": 4096,
+        "state.sqlite-journal": 4616,
+        "state.sqlite-wal": 700,
+        "state.sqlite-shm": 32768,
+        "tmp/T-00-d00.a1.part": 11,
+        "payload/M-00-d00.bin": 13,
+        "sealed/t_provenance.json": 17,
+        "artifact_manifest.json.tmp": 19,
+        "m_selected_metadata.jsonl.superseded": 23,
+        "operator-note.log": 29,
+    }
+    for rel, size in sizes.items():
+        (fake / rel).parent.mkdir(parents=True, exist_ok=True)
+        (fake / rel).write_bytes(b"\x00" * size)
+    assert phase_d._root_bytes(fake) == sum(sizes.values())
+
+    seen: dict[str, Any] = {}
+    original = phase_d._PhaseDEngine._seal
+
+    def seal(engine: phase_d._PhaseDEngine) -> None:  # the store is open: its journal exists
+        original(engine)
+        seen["names"] = _names(root)
+        seen["measured"] = phase_d._root_bytes(root)
+        seen["sum"] = sum(p.stat().st_size for p in root.rglob("*") if p.is_file())
+
+    monkeypatch.setattr(phase_d._PhaseDEngine, "_seal", seal)
+    assert_complete(run_d(root, dfx, transport(dfx)))
+    assert "state.sqlite-journal" in seen["names"]
+    assert not (root / "state.sqlite-journal").exists()  # removed when the store closed
+    assert seen["measured"] == seen["sum"] > phase_d._root_bytes(root)
+
+
+def test_d01_review_boundary_exports_after_decode_can_never_complete_over_the_cap(
+    dfx: DFixture, root: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    occupancy = Occupancy(monkeypatch)
+    original = phase_d._PhaseDEngine._decode
+    decoded: dict[str, phase_d.ArmOutcome] = {}
+
+    def decode(engine: phase_d._PhaseDEngine, arm: str) -> phase_d.ArmOutcome:
+        decoded[arm] = original(engine, arm)
+        if arm == "T":  # the decoded bundles fit exactly; the later exports do not
+            new = sum(len(raw) for a in decoded.values() for raw in a.files.values())
+            occupancy.fill(root, CAP - new)
+        return decoded[arm]
+
+    monkeypatch.setattr(phase_d._PhaseDEngine, "_decode", decode)
+    t = transport(dfx)
+    result = run_d(root, dfx, t)
+    assert_stopped(result, f"the {CAP}-byte root cap")
+    assert {result.arms[a]["status"] for a in "MT"} == {"INCOMPLETE"}
+    assert occupancy.peak <= CAP and occupancy(root) <= CAP
+    assert rows(root, "SELECT status FROM run") == [{"status": "STOPPED"}]
+    for name in (phase_d.RECEIPT, phase_d.MANIFEST):  # nothing on disk claims COMPLETE
+        assert not (root / name).exists() or load(root, name)["status"] == "INCOMPLETE"
+    assert len(attempts(root)) == len(t.calls) == 10  # every receipt row is retained
+    assert {f"payload/{op.op_id}.bin" for op in dfx.plan.fetch.operations} <= _names(root)
+    with pytest.raises(phase_d.RefusedError, match="STOPPED"):
+        run_d(root, dfx, transport(dfx))
+
+
+@pytest.mark.parametrize(("over", "complete"), [(0, True), (1, False)])
+def test_d01_seal_projection_boundary_is_exact(
+    dfx: DFixture, root: Path, monkeypatch: pytest.MonkeyPatch, over: int, complete: bool
+) -> None:
+    occupancy = Occupancy(monkeypatch)
+    original = phase_d._PhaseDEngine._documents
+    gate: dict[str, int] = {}
+
+    def documents(engine: phase_d._PhaseDEngine, status: str, *args: Any) -> tuple[bytes, bytes]:
+        receipt, manifest = original(engine, status, *args)
+        if status == "COMPLETE":  # root + receipt + manifest + the store reserve == cap + over
+            final = len(receipt) + len(manifest) + phase_d.STORE_WRITE_RESERVE_BYTES
+            occupancy.fill(root, CAP - final + over)
+            gate.update(used=CAP - final + over, growth=final)
+        return receipt, manifest
+
+    monkeypatch.setattr(phase_d._PhaseDEngine, "_documents", documents)
+    result = run_d(root, dfx, transport(dfx))
+    assert occupancy.peak <= CAP and occupancy(root) <= CAP
+    if complete:
+        assert_complete(result)
+        assert load(root, phase_d.RECEIPT)["status"] == "COMPLETE"
+    else:
+        assert_stopped(
+            result,
+            f"sealing: execution root holds {gate['used']} bytes; {gate['growth']} more would",
+        )
+        assert {result.arms[a]["status"] for a in "MT"} == {"INCOMPLETE"}
+        receipt = load(root, phase_d.RECEIPT)
+        assert (receipt["status"], receipt["run_status"]) == ("INCOMPLETE", "STOPPED")
+        assert load(root, phase_d.MANIFEST)["status"] == "INCOMPLETE"
+
+
+@pytest.mark.parametrize(("extra", "complete"), [(0, True), (1, False)])
+def test_d01_final_gate_refuses_complete_when_an_extra_file_takes_the_root_over_the_cap(
+    dfx: DFixture, root: Path, monkeypatch: pytest.MonkeyPatch, extra: int, complete: bool
+) -> None:
+    occupancy = Occupancy(monkeypatch)
+    original = phase_d._PhaseDEngine._check_exports
+
+    def check(engine: phase_d._PhaseDEngine) -> None:
+        original(engine)  # every export is published; only the COMPLETE mark remains
+        occupancy.fill(root, CAP - phase_d.STORE_WRITE_RESERVE_BYTES)
+        (root / "operator-note.log").write_bytes(b"x" * extra)  # not an export, still counted
+
+    monkeypatch.setattr(phase_d._PhaseDEngine, "_check_exports", check)
+    result = run_d(root, dfx, transport(dfx))
+    if complete:
+        assert_complete(result)
+        return
+    assert_stopped(result, "marking COMPLETE: execution root holds")
+    assert rows(root, "SELECT status FROM run") == [{"status": "STOPPED"}]
+    for name in (phase_d.RECEIPT, phase_d.MANIFEST):  # the COMPLETE drafts are replaced/demoted
+        assert not (root / name).exists() or load(root, name)["status"] == "INCOMPLETE"
+
+
+def test_d01_a_complete_root_over_the_cap_stops_without_growing(
+    dfx: DFixture, root: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    assert_complete(run_d(root, dfx, transport(dfx)))
+    occupancy = Occupancy(monkeypatch)
+    occupancy.fill(root, CAP)
+    assert_complete(run_d(root, dfx, transport(dfx)))  # exactly at the cap: still COMPLETE
+    (root / "operator-note.log").write_bytes(b"x")
+    before = occupancy.real(root)
+    t = transport(dfx)
+    assert_stopped(run_d(root, dfx, t), "COMPLETE root: execution root holds")
+    assert t.calls == [] and occupancy.real(root) == before  # renames only: no new bytes
+    names = _names(root)
+    for name in phase_d.EXPORTS:  # nothing still claims a status; everything is kept
+        assert name not in names and name + phase_d.SUPERSEDED in names
+    assert rows(root, "SELECT status FROM run") == [{"status": "STOPPED"}]
+
+
+# -- D02: the Phase-P parent stays bound through completion --------------------------------
+
+
+def _same_size(path: Path, old: bytes, new: bytes) -> None:
+    raw = path.read_bytes()
+    assert len(old) == len(new) and old in raw
+    path.write_bytes(raw.replace(old, new, 1))
+
+
+def _append(path: Path) -> None:
+    path.write_bytes(path.read_bytes() + b" ")
+
+
+PARENT_DRIFT = {
+    "manifest": lambda p: _append(p / "artifact_manifest.json"),
+    "m-layout": lambda p: _append(p / "m_phase_p_layout.json"),
+    "t-layout": lambda p: _append(p / "t_phase_p_layout.json"),
+    "missing-trailer": lambda p: (p / "payload/T-00-trailer.bin").unlink(),
+    "missing-receipt": lambda p: (p / "phase_p_receipt.json").unlink(),
+    "same-size-manifest": lambda p: _same_size(
+        p / "artifact_manifest.json", b"COMPLETE", b"COMPLETX"
+    ),
+    "same-size-m-layout": lambda p: _same_size(p / "m_phase_p_layout.json", b"window", b"windoW"),
+    "same-size-t-layout": lambda p: _same_size(p / "t_phase_p_layout.json", b"start", b"starT"),
+    "same-size-footer": lambda p: _flip(p / "payload/M-00-footer.bin"),
+    "same-size-state": lambda p: _flip(p / "state.sqlite"),
+    "same-size-requests": lambda p: _flip(p / "request_receipt.jsonl"),
+}
+# Engine steps after which the copied parent is changed, and the boundary that must catch it.
+PARENT_BOUNDARIES = {
+    "_acquire": "before decoding",
+    "_decode_arms": "before completion",
+    "_check_exports": "at completion",
+}
+
+
+def _drift_after(
+    monkeypatch: pytest.MonkeyPatch, step: str, change: Any, parent: Path
+) -> dict[str, int]:
+    original = getattr(phase_d._PhaseDEngine, step)
+    calls = {"n": 0}
+
+    def wrapped(engine: phase_d._PhaseDEngine) -> Any:
+        value = original(engine)
+        calls["n"] += 1
+        change(parent)
+        return value
+
+    monkeypatch.setattr(phase_d._PhaseDEngine, step, wrapped)
+    return calls
+
+
+@pytest.mark.parametrize("drift", sorted(PARENT_DRIFT))
+@pytest.mark.parametrize("step", sorted(PARENT_BOUNDARIES))
+def test_d02_parent_drift_after_acquisition_can_never_complete(
+    dfx: DFixture,
+    root: Path,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    step: str,
+    drift: str,
+) -> None:
+    parent = tmp_path / "parent-copy"
+    shutil.copytree(dfx.parent, parent)
+    original = tree(dfx.parent)
+    calls = _drift_after(monkeypatch, step, PARENT_DRIFT[drift], parent)
+    t = transport(dfx)
+    result = run_d(root, dfx, t, parent=parent)
+    assert calls["n"] == 1 and len(t.calls) == 10  # the whole acquisition happened first
+    assert_stopped(result, f"Phase-P parent changed during Phase D ({PARENT_BOUNDARIES[step]})")
+    assert {result.arms[a]["status"] for a in "MT"} == {"INCOMPLETE"}
+    assert rows(root, "SELECT status FROM run") == [{"status": "STOPPED"}]
+    receipt = load(root, phase_d.RECEIPT)
+    assert (receipt["status"], receipt["run_status"]) == ("INCOMPLETE", "STOPPED")
+    assert receipt["outputs"] == {} and load(root, phase_d.MANIFEST)["status"] == "INCOMPLETE"
+    names = _names(root)
+    assert not {n for outputs in phase_d.ARM_OUTPUTS.values() for n in outputs} & names
+    # the acquired bytes stay as incomplete evidence
+    assert {f"payload/{op.op_id}.bin" for op in dfx.plan.fetch.operations} <= names
+    assert len(attempts(root)) == 10
+    assert tree(dfx.parent) == original  # only the disposable copy was changed
+    with pytest.raises(phase_d.RefusedError):
+        run_d(root, dfx, transport(dfx), parent=parent)
+
+
+@pytest.mark.parametrize("step", sorted(PARENT_BOUNDARIES))
+def test_d02_unchanged_parent_completes_through_every_boundary(
+    dfx: DFixture, root: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, step: str
+) -> None:
+    parent = tmp_path / "parent-copy"
+    shutil.copytree(dfx.parent, parent)
+    before = tree(parent)
+    calls = _drift_after(monkeypatch, step, lambda _: None, parent)
+    assert_complete(run_d(root, dfx, transport(dfx), parent=parent))
+    assert calls["n"] == 1 and tree(parent) == before
+
+
+def test_d02_every_parent_check_is_the_one_frozen_verification(
+    dfx: DFixture, root: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    original = phase_d._PhaseDEngine._check_parents
+    callers: list[str] = []
+
+    def check(engine: phase_d._PhaseDEngine) -> None:
+        callers.append(sys._getframe(2).f_code.co_name)
+        original(engine)
+
+    monkeypatch.setattr(phase_d._PhaseDEngine, "_check_parents", check)
+    assert_complete(run_d(root, dfx, transport(dfx)))
+    assert callers == ["run", "_decode_arms", "_seal", "_seal"]
+    assert len(pd.load_committed_plan().parents.artifacts) == 30

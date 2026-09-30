@@ -1,0 +1,82 @@
+﻿....................FF                                                   [100%]
+================================== FAILURES ===================================
+______________ test_root_cap_includes_exports_at_decode_boundary ______________
+
+fixture = DFixture(directory=WindowsPath('C:/Users/gamma/AppData/Local/Temp/pytest-of-gamma/pytest-84/independent-phase-d-fixtur...99d9061fe9860cac8151be56a4ca6a2cff41c2', digest='14acea148d66c8d00e61536a608b1ff03a59858352726a2d74e6422539c1747b')))))
+tmp_path = WindowsPath('C:/Users/gamma/AppData/Local/Temp/pytest-of-gamma/pytest-84/test_root_cap_includes_exports0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000002167B20CEC0>
+
+    def test_root_cap_includes_exports_at_decode_boundary(fixture, tmp_path, monkeypatch):
+        """Simulate existing storage so decoded bundles fit exactly; include later exports."""
+        root = tmp_path / "d"
+        original_decode = phase_d._PhaseDEngine._decode
+        original_size = phase_d._root_bytes
+        outputs = {}
+        occupancy = {}
+        original_exports = phase_d._PhaseDEngine._write_exports
+        def decode(engine, arm):
+            outcome = original_decode(engine, arm)
+            outputs[arm] = outcome
+            if arm == "T":
+                output_size = sum(len(raw) for a in outputs.values() for raw in a.files.values())
+                occupancy["base"] = pd.ROOT_BYTES_MAX - output_size - original_size(root)
+                occupancy["output_size"] = output_size
+            return outcome
+        def size(path):
+            return original_size(path) + occupancy.get("base", 0)
+        def exports(engine):
+            original_exports(engine)
+            occupancy["after_exports_before_store_close"] = size(root)
+        monkeypatch.setattr(phase_d._PhaseDEngine, "_decode", decode)
+        monkeypatch.setattr(phase_d, "_root_bytes", size)
+        monkeypatch.setattr(phase_d._PhaseDEngine, "_write_exports", exports)
+        result = run_d(root, fixture, SyntheticTransport(fixture.fx))
+        final = size(root)
+        record = {"simulation": "constant pre-existing occupancy added to measured root bytes at decode boundary",
+                  "cap": pd.ROOT_BYTES_MAX, "final_accounted_bytes": final,
+                  "excess_bytes": final - pd.ROOT_BYTES_MAX, "result": result.status,
+                  "run_status": result.run_status, "decoded_output_bytes": occupancy["output_size"],
+                  "after_exports_before_store_close": occupancy["after_exports_before_store_close"]}
+        (HERE / "cap-boundary-observation.json").write_text(json.dumps(record, indent=2) + "\n")
+>       assert max(final, occupancy["after_exports_before_store_close"]) <= pd.ROOT_BYTES_MAX, record
+E       AssertionError: {'simulation': 'constant pre-existing occupancy added to measured root bytes at decode boundary', 'cap': 1073741824, 'final_accounted_bytes': 1073737540, 'excess_bytes': -4284, ...}
+E       assert 1073758572 <= 1073741824
+E        +  where 1073758572 = max(1073737540, 1073758572)
+E        +  and   1073741824 = pd.ROOT_BYTES_MAX
+
+docs\implementation\evidence\ESSENTIAL-WEB-EVIDENCE-V4.1-PHASE-D-D01-D02-REPAIR\test_astra_probes.py:298: AssertionError
+_________________ test_parent_manifest_drift_during_run_stops _________________
+
+fixture = DFixture(directory=WindowsPath('C:/Users/gamma/AppData/Local/Temp/pytest-of-gamma/pytest-84/independent-phase-d-fixtur...99d9061fe9860cac8151be56a4ca6a2cff41c2', digest='14acea148d66c8d00e61536a608b1ff03a59858352726a2d74e6422539c1747b')))))
+tmp_path = WindowsPath('C:/Users/gamma/AppData/Local/Temp/pytest-of-gamma/pytest-84/test_parent_manifest_drift_dur0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000002167B213E90>
+
+    def test_parent_manifest_drift_during_run_stops(fixture, tmp_path, monkeypatch):
+        """Protocol section 1: a parent change during the run must STOP."""
+        parent = tmp_path / "synthetic-parent"
+        shutil.copytree(fixture.parent, parent)
+        original = phase_d._PhaseDEngine._acquire
+        def acquire(engine):
+            result = original(engine)
+            manifest = parent / phase_d.MANIFEST
+            manifest.write_bytes(manifest.read_bytes() + b" ")
+            return result
+        monkeypatch.setattr(phase_d._PhaseDEngine, "_acquire", acquire)
+        result = run_d(tmp_path / "d", fixture, SyntheticTransport(fixture.fx), parent=parent)
+        (HERE / "parent-drift-observation.json").write_text(json.dumps({
+            "synthetic_only": True, "mutation": "append one space to copied parent manifest after acquisition before decoding",
+            "result": result.status, "run_status": result.run_status,
+            "M_status": result.arms["M"]["status"], "T_status": result.arms["T"]["status"],
+            "expected": "STOPPED / INCOMPLETE"}, indent=2) + "\n")
+>       assert result.run_status == "STOPPED", result
+E       AssertionError: Result(status='COMPLETE', run_status='COMPLETE', stop_reason=None, arms={'M': {'status': 'COMPLETE', 'reason': None, '...87914}}, root='C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-84\\test_parent_manifest_drift_dur0\\d')
+E       assert 'COMPLETE' == 'STOPPED'
+E         
+E         - STOPPED
+E         + COMPLETE
+
+docs\implementation\evidence\ESSENTIAL-WEB-EVIDENCE-V4.1-PHASE-D-D01-D02-REPAIR\test_astra_probes.py:318: AssertionError
+=========================== short test summary info ===========================
+FAILED docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-PHASE-D-D01-D02-REPAIR/test_astra_probes.py::test_root_cap_includes_exports_at_decode_boundary
+FAILED docs/implementation/evidence/ESSENTIAL-WEB-EVIDENCE-V4.1-PHASE-D-D01-D02-REPAIR/test_astra_probes.py::test_parent_manifest_drift_during_run_stops
+2 failed, 20 passed in 106.71s (0:01:46)

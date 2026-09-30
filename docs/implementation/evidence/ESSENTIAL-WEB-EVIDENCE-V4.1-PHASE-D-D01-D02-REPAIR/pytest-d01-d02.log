@@ -1,0 +1,11 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0
+rootdir: F:\Project\xlm-data-ultrax
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0, xdist-3.8.0
+collected 123 items / 75 deselected / 48 selected
+
+tests\test_evidence_v41_phase_d.py ..................................... [ 77%]
+...........                                                              [100%]
+
+===================== 48 passed, 75 deselected in 12.80s ======================
