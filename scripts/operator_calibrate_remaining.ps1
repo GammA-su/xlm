@@ -28,9 +28,7 @@
     A COMPLETED fetch journal whose outputs still hash to their journaled
     digests is adopted without calling fetch; absent or unfinished
     journals run fetch, which resumes natively. Record uses --adopt:
-    identical re-records are no-ops (this covers the convergent essential
-    triple; keep -Files identical across the three essential runs),
-    divergent ones fail.
+    identical re-records are no-ops, divergent ones fail.
   - Machine-value contract: native stdout/stderr are HUMAN-ONLY (shown and
     logged, never returned or parsed). Machine values travel only through
     (a) helper exit codes (calibration_adopt.py: 0 run / 2 reuse / else
@@ -59,9 +57,12 @@
     and tests/files/calibrate_driver_stages.ps1 (Invoke-Stage over an
     authored offline unit).
 
-  The three essential slices share one raw fetch each (the slice stamp is
-  adapt-time metadata over identical rows); the script runs independent
-  per-unit chains so every chain mirrors its production per-view plan.
+  The three essential slices adapt through the frozen B-normal selector
+  (adapter essential_web_bnormal): each slice admits only its own rows, so
+  each unit records under its own key. The 1000-record default sample is
+  too small to calibrate the sparse science slice, and the default file
+  path is not a confirmed path at the pinned revision; do not run the
+  essential units before the production-acquisition review sizes them.
   IFM general/planning record under view-qualified keys; combine them into
   the quota key with the documented one-liner before estimate (see report).
 #>
@@ -90,9 +91,9 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 $Units = @{
-    essential_science   = @{ Source = "essential_web"; Repository = "EssentialAI/essential-web-v1.0"; View = "essential_science"; Revision = "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d"; Adapter = "essential_web"; AdapterConfig = "essential_science"; AdapterSpec = "essential_web:essential_science"; DefaultFiles = "data/v1/train/00001.parquet"; RecordAs = @("essential_science", "essential_practical", "essential_prose") }
-    essential_practical = @{ Source = "essential_web"; Repository = "EssentialAI/essential-web-v1.0"; View = "essential_practical"; Revision = "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d"; Adapter = "essential_web"; AdapterConfig = "essential_practical"; AdapterSpec = "essential_web:essential_practical"; DefaultFiles = "data/v1/train/00001.parquet"; RecordAs = @("essential_science", "essential_practical", "essential_prose") }
-    essential_prose     = @{ Source = "essential_web"; Repository = "EssentialAI/essential-web-v1.0"; View = "essential_prose"; Revision = "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d"; Adapter = "essential_web"; AdapterConfig = "essential_prose"; AdapterSpec = "essential_web:essential_prose"; DefaultFiles = "data/v1/train/00001.parquet"; RecordAs = @("essential_science", "essential_practical", "essential_prose") }
+    essential_science   = @{ Source = "essential_web"; Repository = "EssentialAI/essential-web-v1.0"; View = "essential_science"; Revision = "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d"; Adapter = "essential_web_bnormal"; AdapterConfig = "essential_science"; AdapterSpec = "essential_web_bnormal:essential_science"; DefaultFiles = "data/v1/train/00001.parquet"; RecordAs = @("essential_science") }
+    essential_practical = @{ Source = "essential_web"; Repository = "EssentialAI/essential-web-v1.0"; View = "essential_practical"; Revision = "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d"; Adapter = "essential_web_bnormal"; AdapterConfig = "essential_practical"; AdapterSpec = "essential_web_bnormal:essential_practical"; DefaultFiles = "data/v1/train/00001.parquet"; RecordAs = @("essential_practical") }
+    essential_prose     = @{ Source = "essential_web"; Repository = "EssentialAI/essential-web-v1.0"; View = "essential_prose"; Revision = "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d"; Adapter = "essential_web_bnormal"; AdapterConfig = "essential_prose"; AdapterSpec = "essential_web_bnormal:essential_prose"; DefaultFiles = "data/v1/train/00001.parquet"; RecordAs = @("essential_prose") }
     synth_en_explanations = @{ Source = "synth"; Repository = "PleIAs/SYNTH"; View = "default"; Revision = "0d6813a2966662c39f22f0b9af28a0c1c9f7a437"; Adapter = "synth_en"; AdapterConfig = ""; AdapterSpec = "synth_en"; DefaultFiles = "synth_001.parquet"; RecordAs = @("synth_en_explanations"); Window = @{ ScanRows = "16384"; BufferBytes = "4194304"; BatchRows = "256" } }
     nemotron_wiki_rewrite = @{ Source = "nemotron_specialized"; Repository = "nvidia/Nemotron-Pretraining-Specialized-v1"; View = "Nemotron-Pretraining-Wiki-Rewrite"; Revision = "9ed3718b5f2ae29074c5e34e64115432b7c4320f"; Adapter = "wiki_rewrite"; AdapterConfig = ""; AdapterSpec = "wiki_rewrite"; DefaultFiles = "Nemotron-Pretraining-Wiki-Rewrite/part_000003.parquet"; RecordAs = @("nemotron_wiki_rewrite"); Window = @{ ScanRows = "16384"; BufferBytes = "4194304"; BatchRows = "256"; PolicyVersion = "2" } }
     simple_stories      = @{ Source = "simple_stories"; Repository = "SimpleStories/SimpleStories"; View = "default"; Revision = "e63b8adc3b1a1bdc7cac5b500d150b71346b0628"; Adapter = "simple_stories"; AdapterConfig = ""; AdapterSpec = "simple_stories"; DefaultFiles = "data/train-00003-of-00007.parquet"; RecordAs = @("simple_stories") }

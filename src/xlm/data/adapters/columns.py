@@ -41,6 +41,32 @@ ADAPTER_COLUMN_CONTRACTS: dict[tuple[str, str | None], tuple[str, ...]] = {
         "pid",
         "metadata",
     ),
+    # Frozen B-normal production selector: same columns as the certified
+    # renderer; every selector input lives inside eai_taxonomy/quality_signals.
+    ("essential_web_bnormal", "essential_science"): (
+        "text",
+        "eai_taxonomy",
+        "quality_signals",
+        "id",
+        "pid",
+        "metadata",
+    ),
+    ("essential_web_bnormal", "essential_practical"): (
+        "text",
+        "eai_taxonomy",
+        "quality_signals",
+        "id",
+        "pid",
+        "metadata",
+    ),
+    ("essential_web_bnormal", "essential_prose"): (
+        "text",
+        "eai_taxonomy",
+        "quality_signals",
+        "id",
+        "pid",
+        "metadata",
+    ),
     ("nemotron_organic", "High-Quality"): ("text", "quality_category"),
     ("nemotron_organic", "Medium-High-Quality"): ("text", "quality_category"),
     ("ultrax_ultrafineweb", None): (
@@ -105,7 +131,9 @@ ADAPTER_COLUMN_CONTRACTS: dict[tuple[str, str | None], tuple[str, ...]] = {
 }
 
 #: Adapters that require an explicit config to resolve columns.
-PARAMETERIZED_ADAPTERS: frozenset[str] = frozenset({"essential_web", "nemotron_organic"})
+PARAMETERIZED_ADAPTERS: frozenset[str] = frozenset(
+    {"essential_web", "essential_web_bnormal", "nemotron_organic"}
+)
 
 
 def columns_for(adapter_id: str, config: str | None = None) -> tuple[str, ...]:

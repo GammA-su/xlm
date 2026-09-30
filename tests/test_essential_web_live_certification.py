@@ -16,7 +16,9 @@ import pytest
 from xlm.data.adapters.mix01_adapters import (
     ESSENTIAL_WEB_COMPONENTS,
     EssentialWebAdapter,
+    EssentialWebSelectedAdapter,
     MissingFieldError,
+    RecordRejectedError,
 )
 from xlm.data.adapters.source_ids import canonical_source_doc_id
 
@@ -213,3 +215,32 @@ def test_malformed_nested_classifier_refused() -> None:
     broken["eai_taxonomy"]["document_type_v2"] = {"primary": "Personal Blog"}
     with pytest.raises(MissingFieldError, match="mapping"):
         adapter.adapt(broken, source_file="f", source_row=0, source_revision="r")
+
+
+def test_frozen_selector_adapter_on_the_real_rows() -> None:
+    """The production B-normal adapter runs end to end on the three real rows.
+
+    Each real row is admitted by at most one component, exactly the one the
+    frozen selector names, and an admitted document keeps the certified
+    verbatim rendering and identity.
+    """
+    revision = _revision()
+    adapters = {name: EssentialWebSelectedAdapter(name) for name in ESSENTIAL_WEB_COMPONENTS}
+    for index, row in enumerate(_real_rows()):
+        finals = {name: adapter.selector_final(row) for name, adapter in adapters.items()}
+        assert len(set(finals.values())) == 1
+        final = finals["essential_science"]
+        admitted: list[str] = []
+        for name, adapter in adapters.items():
+            try:
+                doc = adapter.adapt(
+                    row, source_file=CERT_FILES[index], source_row=index, source_revision=revision
+                )
+            except RecordRejectedError:
+                continue
+            admitted.append(name)
+            assert doc.text == row["text"]
+            assert doc.doc_id == canonical_source_doc_id("essential_web", CERT_FILES[index], index)
+            assert doc.source_metadata["mix01_component"] == name
+            assert doc.source_metadata["essential_web_selector"] == "B-normal"
+        assert admitted == ([final] if final in ESSENTIAL_WEB_COMPONENTS else [])

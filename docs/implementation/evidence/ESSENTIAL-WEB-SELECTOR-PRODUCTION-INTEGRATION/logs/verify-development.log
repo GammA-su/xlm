@@ -1,0 +1,13 @@
+{
+  "final": {
+    "essential_practical": 108,
+    "essential_prose": 371,
+    "essential_science": 29,
+    "rejected": 3552,
+    "unassigned": 36
+  },
+  "match": true,
+  "replicate": "frozen development (4096 rows)",
+  "rows": 4096,
+  "sum": 4096
+}

@@ -1,0 +1,8 @@
+{
+  "selector_frozen": true,
+  "selector_integration_ok": true,
+  "source_revision_ok": true,
+  "production_admission_ok": false,
+  "inventory_ready": false,
+  "acquisition_plan_ready": false
+}

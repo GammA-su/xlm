@@ -8,6 +8,16 @@ license resolves. No production admission is granted, no bulk acquisition,
 no tokenizer, no training, no pilot. The USER runs every network command;
 the agent ran none.
 
+> **Essential-Web selector amendment (2026-09-30).** The three Essential
+> units now use adapter `essential_web_bnormal` (spec
+> `essential_web_bnormal:<component>`), the frozen B-normal selector, and
+> each records under its own key only. This supersedes the Essential rows of
+> §1 and the Essential paragraph of §4: the slices no longer stamp identical
+> rows. Do not run the Essential units yet. A 1,000-record sample would
+> yield about six science rows, and the default file path is not a confirmed
+> path at the pinned revision. See
+> [ESSENTIAL-WEB-SELECTOR-PRODUCTION-INTEGRATION](ESSENTIAL-WEB-SELECTOR-PRODUCTION-INTEGRATION.md).
+
 Baseline (confirmed, not redesigned): UltraX calibration succeeded —
 inventory digest `cb42e273…900634f`, file
 `data/UltraX-Ultra-FineWeb/UltraX-Ultra-FineWeb-en-part-0039-of-0104.parquet`

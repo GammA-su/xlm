@@ -1,0 +1,35 @@
+{
+  "admission_inspection": "read-only file inspection; the fetch gate re-verifies through the artifact store",
+  "kind": "essential_web_production_readiness",
+  "ready_for_bulk_acquisition": false,
+  "reasons": {
+    "acquisition_plan_ready": [
+      "no calibration measurement under the frozen selector for ['essential_science', 'essential_practical', 'essential_prose']",
+      "no frozen inventory to order production files from"
+    ],
+    "inventory_ready": [
+      "no frozen production inventory for essential_web"
+    ],
+    "production_admission_ok": [
+      "essential_science: unadmitted: Discovery probe outcome is 'budget_exhausted', not 'accessible'. Reason: response exceeds its allocated body limit",
+      "essential_practical: no probe evidence in the operator store",
+      "essential_prose: no probe evidence in the operator store"
+    ]
+  },
+  "selector": {
+    "condition": "B-normal",
+    "evaluator_sha256": "5a63e78560ea9e12b0ec03b5e7e63204b5c75554bee02192c12bb4ab0853bf9c",
+    "freeze_digest": "c6f32a65f083c99b64245e25151f2cc73275093e1013d68b625c6d6f63d10a0c",
+    "freeze_version": "essential-web-selector-fasttrack-v1",
+    "policy_digest": "f4357f61f434d5105d823266153dac6372e122f12767187631e8796b4899dd07",
+    "selector_id": "essential-web-b-normal"
+  },
+  "vector": {
+    "acquisition_plan_ready": false,
+    "inventory_ready": false,
+    "production_admission_ok": false,
+    "selector_frozen": true,
+    "selector_integration_ok": true,
+    "source_revision_ok": true
+  }
+}

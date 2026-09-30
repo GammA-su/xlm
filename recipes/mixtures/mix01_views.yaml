@@ -10,6 +10,11 @@
 # `live_verified: false` everywhere except the three Essential-Web slices, whose
 # adapter was certified against 3 real pinned rows (offline sample
 # adapter-cert-essential-web01). Nothing here authorizes a production run.
+#
+# Essential-Web admission (2026-09-30): the three Essential views bind adapter
+# `essential_web_bnormal`, the frozen B-normal production selector of freeze
+# essential-web-selector-fasttrack-v1. It is a metadata-only fast-track decision:
+# the Arm-T semantic review was NOT RUN. Weights and quotas are unchanged.
 schema_version: 1
 kind: mix01_view_registry
 registry_id: mix01_views_v2
@@ -20,19 +25,35 @@ views:
     observed_revision: ce4eccc7e9604667b6d7f32cb6274b8b41f3113d
     observed_license: odc-by
     observed_configs: []
-    adapter_id: essential_web
+    adapter_id: essential_web_bnormal
     upstream_selector:
-      description: "Science slice by explicit operator component selection."
+      description: "Science slice: rows whose frozen B-normal final component is essential_science."
+      frozen_selector:
+        selector_id: essential-web-b-normal
+        condition: B-normal
+        policy_spec: recipes/selectors/essential_web_selector_sweep_v1.yaml
+        policy_digest: f4357f61f434d5105d823266153dac6372e122f12767187631e8796b4899dd07
+        evaluator: scripts/essential_web_selector_sweep.py
+        evaluator_sha256: 5a63e78560ea9e12b0ec03b5e7e63204b5c75554bee02192c12bb4ab0853bf9c
+        freeze_version: essential-web-selector-fasttrack-v1
+        freeze_digest: c6f32a65f083c99b64245e25151f2cc73275093e1013d68b625c6d6f63d10a0c
+        precedence: [science, practical, prose]
+        t_semantic_review: NOT_RUN_NO_TWO_INDEPENDENT_HUMAN_REVIEWERS
       eai_taxonomy_paths:
         - eai_taxonomy.free_decimal_correspondence.primary.code
         - eai_taxonomy.document_type_v2.primary.label
+        - eai_taxonomy.bloom_knowledge_domain.primary.label
+        - eai_taxonomy.extraction_artifacts.primary.label
+        - eai_taxonomy.missing_content.primary.label
+        - eai_taxonomy.technical_correctness.primary.label
       quality_paths:
         - quality_signals.fasttext.english
     english_only: true
     live_verified: true
     notes:
-      - "Certified against 3 real pinned rows (offline sample adapter-cert-essential-web01)."
+      - "Rendering is the adapter certified against 3 real pinned rows (offline sample adapter-cert-essential-web01); the selected adapter was run on the same 3 rows."
       - "Flat taxonomy/quality_tier fields do not exist upstream and were removed."
+      - "Admission is the frozen B-normal selector (metadata-only fast-track freeze); the Arm-T semantic review was not run."
 
   - component_id: essential_practical
     source_id: essential_web
@@ -40,19 +61,35 @@ views:
     observed_revision: ce4eccc7e9604667b6d7f32cb6274b8b41f3113d
     observed_license: odc-by
     observed_configs: []
-    adapter_id: essential_web
+    adapter_id: essential_web_bnormal
     upstream_selector:
-      description: "Practical slice by explicit operator component selection."
+      description: "Practical slice: rows whose frozen B-normal final component is essential_practical."
+      frozen_selector:
+        selector_id: essential-web-b-normal
+        condition: B-normal
+        policy_spec: recipes/selectors/essential_web_selector_sweep_v1.yaml
+        policy_digest: f4357f61f434d5105d823266153dac6372e122f12767187631e8796b4899dd07
+        evaluator: scripts/essential_web_selector_sweep.py
+        evaluator_sha256: 5a63e78560ea9e12b0ec03b5e7e63204b5c75554bee02192c12bb4ab0853bf9c
+        freeze_version: essential-web-selector-fasttrack-v1
+        freeze_digest: c6f32a65f083c99b64245e25151f2cc73275093e1013d68b625c6d6f63d10a0c
+        precedence: [science, practical, prose]
+        t_semantic_review: NOT_RUN_NO_TWO_INDEPENDENT_HUMAN_REVIEWERS
       eai_taxonomy_paths:
         - eai_taxonomy.free_decimal_correspondence.primary.code
         - eai_taxonomy.document_type_v2.primary.label
+        - eai_taxonomy.bloom_knowledge_domain.primary.label
+        - eai_taxonomy.extraction_artifacts.primary.label
+        - eai_taxonomy.missing_content.primary.label
+        - eai_taxonomy.technical_correctness.primary.label
       quality_paths:
         - quality_signals.fasttext.english
     english_only: true
     live_verified: true
     notes:
-      - "Certified against 3 real pinned rows (offline sample adapter-cert-essential-web01)."
+      - "Rendering is the adapter certified against 3 real pinned rows (offline sample adapter-cert-essential-web01); the selected adapter was run on the same 3 rows."
       - "Flat taxonomy/quality_tier fields do not exist upstream and were removed."
+      - "Admission is the frozen B-normal selector (metadata-only fast-track freeze); the Arm-T semantic review was not run."
 
   - component_id: essential_prose
     source_id: essential_web
@@ -60,19 +97,35 @@ views:
     observed_revision: ce4eccc7e9604667b6d7f32cb6274b8b41f3113d
     observed_license: odc-by
     observed_configs: []
-    adapter_id: essential_web
+    adapter_id: essential_web_bnormal
     upstream_selector:
-      description: "Prose slice by explicit operator component selection."
+      description: "Prose slice: rows whose frozen B-normal final component is essential_prose."
+      frozen_selector:
+        selector_id: essential-web-b-normal
+        condition: B-normal
+        policy_spec: recipes/selectors/essential_web_selector_sweep_v1.yaml
+        policy_digest: f4357f61f434d5105d823266153dac6372e122f12767187631e8796b4899dd07
+        evaluator: scripts/essential_web_selector_sweep.py
+        evaluator_sha256: 5a63e78560ea9e12b0ec03b5e7e63204b5c75554bee02192c12bb4ab0853bf9c
+        freeze_version: essential-web-selector-fasttrack-v1
+        freeze_digest: c6f32a65f083c99b64245e25151f2cc73275093e1013d68b625c6d6f63d10a0c
+        precedence: [science, practical, prose]
+        t_semantic_review: NOT_RUN_NO_TWO_INDEPENDENT_HUMAN_REVIEWERS
       eai_taxonomy_paths:
         - eai_taxonomy.free_decimal_correspondence.primary.code
         - eai_taxonomy.document_type_v2.primary.label
+        - eai_taxonomy.bloom_knowledge_domain.primary.label
+        - eai_taxonomy.extraction_artifacts.primary.label
+        - eai_taxonomy.missing_content.primary.label
+        - eai_taxonomy.technical_correctness.primary.label
       quality_paths:
         - quality_signals.fasttext.english
     english_only: true
     live_verified: true
     notes:
-      - "Certified against 3 real pinned rows (offline sample adapter-cert-essential-web01)."
+      - "Rendering is the adapter certified against 3 real pinned rows (offline sample adapter-cert-essential-web01); the selected adapter was run on the same 3 rows."
       - "Flat taxonomy/quality_tier fields do not exist upstream and were removed."
+      - "Admission is the frozen B-normal selector (metadata-only fast-track freeze); the Arm-T semantic review was not run."
 
   - component_id: ultrax_ultrafineweb
     source_id: ultrax_ultrafineweb

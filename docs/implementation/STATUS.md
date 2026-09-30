@@ -1,3 +1,26 @@
+> **ESSENTIAL-WEB FROZEN SELECTOR PRODUCTION INTEGRATION (2026-09-30):
+> ESSENTIAL-WEB SELECTOR FROZEN — READY FOR PRODUCTION ACQUISITION REVIEW.**
+> Production admission now uses exact frozen B-normal (freeze `c6f32a65…`).
+> New adapter `essential_web_bnormal` renders with the certified adapter and
+> admits a row only when the frozen evaluator's single final component
+> equals the configured component; the evaluator and policy are loaded by
+> path and refused unless they hash to the frozen identities. No selector
+> logic was rewritten. The three Essential registry views, the column
+> contract and the calibration driver bind it; weights, quotas and other
+> components are unchanged. Real metadata evidence, row level and per crawl,
+> through the production adapters: development 29/108/371/36/3552, sealed M
+> 24/117/372/45/3538, each summing to 4096 with 0 overlaps. Rendering plus
+> admission ran only on the 3 real certification rows (1 prose, 2 rejected).
+> Readiness: selector_frozen, selector_integration_ok, source_revision_ok
+> true; production_admission_ok, inventory_ready, acquisition_plan_ready
+> FALSE (stored probe is budget_exhausted, no admission decisions, no
+> Essential inventory or calibration; text-transfer cost at ~13% admission
+> is unmeasured). Focused tests: selector 57, adapter/registry 123, driver 43, evaluator and freeze 126 passed; fast/full selections NOT RUN. The T
+> semantic review remains NOT RUN. No network, acquisition, T access or push.
+> [Integration report](reports/ESSENTIAL-WEB-SELECTOR-PRODUCTION-INTEGRATION.md).
+> Next: Essential-Web production-acquisition review (probe budget,
+> inventory, resized calibration, metadata-first decision).
+
 > **ESSENTIAL-WEB SELECTOR FAST-TRACK FREEZE (2026-09-30): B-NORMAL FROZEN;
 > T SEMANTIC REVIEW NOT RUN.** Amendment `essential-web-selector-fasttrack-v1`.
 > Only one human is available, so the operator chose not to run the frozen

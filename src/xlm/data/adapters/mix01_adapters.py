@@ -16,6 +16,7 @@ registry's ``live_verified=False`` status until a real pilot tests them.
 from __future__ import annotations
 
 from collections.abc import Mapping
+from dataclasses import replace
 from typing import Any
 
 from xlm.core.contracts import CanonicalDocument
@@ -36,6 +37,18 @@ class MissingFieldError(AdapterError):
 
 class RecordRejectedError(AdapterError):
     """The record is well-formed but excluded by the view policy, with a reason."""
+
+
+class EssentialWebSelectorRejectedError(RecordRejectedError):
+    """The frozen Essential-Web selector rejects the row (validity or gate)."""
+
+
+class EssentialWebSelectorUnassignedError(RecordRejectedError):
+    """The row passes the frozen gate but matches no Essential component."""
+
+
+class EssentialWebSelectorOtherComponentError(RecordRejectedError):
+    """The frozen selector assigns the row to a different Essential component."""
 
 
 def _require(record: Mapping[str, Any], field_name: str, adapter_id: str) -> Any:
@@ -441,6 +454,98 @@ class EssentialWebAdapter:
             document_kind="prose",
             license_reference="odc-by",
             source_metadata=source_metadata,
+        )
+
+
+class EssentialWebSelectedAdapter:
+    """Production Essential-Web admission under the frozen B-normal selector.
+
+    Freeze ``essential-web-selector-fasttrack-v1`` fixed the pre-registered
+    policy ``B`` at tier ``normal`` as the production selector. The Arm-T
+    semantic review was not run, so this is a metadata-only decision, not a
+    text-validated one.
+
+    The constructor takes the Mix-01 component this pass produces. A row is
+    admitted only when the frozen evaluator's single final component equals
+    that component, so the three passes over the same raw rows are disjoint
+    by construction and follow the frozen precedence science, practical,
+    prose. No gate, threshold or taxonomy rule lives here: every decision is
+    delegated to :class:`FrozenEssentialWebSelector`, which refuses to load
+    unless the evaluator and policy files hash to their frozen identities.
+
+    Rendering is the certified :class:`EssentialWebAdapter`, unchanged, and
+    it runs first: a malformed row stays a fatal :class:`MissingFieldError`
+    and is never hidden behind a recordable selector rejection. Selector
+    outcomes other than this component are policy drops with distinct
+    rejection codes (rejected, unassigned, other component). The reason
+    carries the evaluator's reason codes only, never text or label values.
+    """
+
+    ADAPTER_ID = "essential_web_bnormal"
+    REQUIRED_FIELDS = EssentialWebAdapter.REQUIRED_FIELDS
+
+    def __init__(self, component: str) -> None:
+        from xlm.data.adapters.essential_web_selector import (
+            FrozenEssentialWebSelector,
+            selector_identity,
+        )
+
+        self._base = EssentialWebAdapter(component)
+        self.component = component
+        self._selector = FrozenEssentialWebSelector.load()
+        self._identity = selector_identity()
+
+    def contract(self) -> RowExtractorContract:
+        return RowExtractorContract(
+            adapter_id=self.ADAPTER_ID,
+            text_field="text",
+            required_fields=list(self.REQUIRED_FIELDS),
+        )
+
+    def selector_final(self, record: Mapping[str, Any]) -> str:
+        """The frozen selector's single final component for one row."""
+        return self._selector.decide(record).final
+
+    def adapt(
+        self,
+        record: Mapping[str, Any],
+        *,
+        source_file: str,
+        source_row: int,
+        source_revision: str,
+    ) -> CanonicalDocument:
+        document = self._base.adapt(
+            record,
+            source_file=source_file,
+            source_row=source_row,
+            source_revision=source_revision,
+        )
+        decision = self._selector.decide(record)
+        if decision.final == "rejected":
+            raise EssentialWebSelectorRejectedError(
+                f"adapter '{self.ADAPTER_ID}' drops rows the frozen "
+                f"{self._identity['condition']} selector rejects "
+                f"({decision.stage}: {', '.join(decision.reasons)})."
+            )
+        if decision.final == "unassigned":
+            raise EssentialWebSelectorUnassignedError(
+                f"adapter '{self.ADAPTER_ID}' drops rows the frozen "
+                f"{self._identity['condition']} selector leaves unassigned."
+            )
+        if decision.final != self.component:
+            raise EssentialWebSelectorOtherComponentError(
+                f"adapter '{self.ADAPTER_ID}' admits '{self.component}' rows only; the "
+                f"frozen {self._identity['condition']} selector assigns this row to "
+                f"'{decision.final}'."
+            )
+        return replace(
+            document,
+            source_metadata={
+                **document.source_metadata,
+                "essential_web_selector": self._identity["condition"],
+                "essential_web_selector_policy_digest": self._identity["policy_digest"],
+                "essential_web_selector_freeze_digest": self._identity["freeze_digest"],
+            },
         )
 
 
@@ -1521,6 +1626,7 @@ class Txt360WebAdapter:
 
 ADAPTERS_BY_ID = {
     EssentialWebAdapter.ADAPTER_ID: EssentialWebAdapter,
+    EssentialWebSelectedAdapter.ADAPTER_ID: EssentialWebSelectedAdapter,
     NemotronOrganicAdapter.ADAPTER_ID: NemotronOrganicAdapter,
     UltraXUltraFineWebAdapter.ADAPTER_ID: UltraXUltraFineWebAdapter,
     SynthExplanationsAdapter.ADAPTER_ID: SynthExplanationsAdapter,

@@ -1,0 +1,220 @@
+{
+  "existing_limits": {
+    "adapt_default_max_input_bytes": 67108864,
+    "pilot_max_decompressed_bytes": 536870912,
+    "pilot_max_output_disk_bytes": 2147483648,
+    "pilot_max_records": 25000,
+    "pilot_max_requests": 100,
+    "pilot_max_scanned_records": 100000,
+    "pilot_max_transferred_bytes": 268435456,
+    "production_limits": "set per plan with --max-bytes/--max-records/--max-output-disk; anything above the pilot caps requires recorded production admission"
+  },
+  "kind": "essential_web_production_selection_dry_plan",
+  "mixture": {
+    "quota_id": "mix01_6b_v1",
+    "registry_id": "mix01_views_v2",
+    "weights_changed": false
+  },
+  "non_admitted_finals": [
+    "unassigned",
+    "rejected"
+  ],
+  "observations": [
+    "The three components share the same raw rows; each row is admitted by at most one component, following the frozen precedence science, practical, prose.",
+    "Science is the sparse slice while its quota equals the practical quota and is twice the prose quota, so science bounds the rows that must be scanned.",
+    "Admission shares are descriptive counts over clustered 512-row windows, not rates with uncertainty."
+  ],
+  "selector": {
+    "condition": "B-normal",
+    "evaluator_sha256": "5a63e78560ea9e12b0ec03b5e7e63204b5c75554bee02192c12bb4ab0853bf9c",
+    "freeze_digest": "c6f32a65f083c99b64245e25151f2cc73275093e1013d68b625c6d6f63d10a0c",
+    "freeze_version": "essential-web-selector-fasttrack-v1",
+    "policy_digest": "f4357f61f434d5105d823266153dac6372e122f12767187631e8796b4899dd07",
+    "selector_id": "essential-web-b-normal"
+  },
+  "source": {
+    "repository": "EssentialAI/essential-web-v1.0",
+    "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d"
+  },
+  "stages": [
+    {
+      "command": "uv run --locked --extra cpu xlm data probe --catalog manifests/datasets.catalog.yaml --source essential_web --view <component> --live --budget-mib <MIB> --probe-id <ID> --json",
+      "network": true,
+      "note": "one per view; the stored essential_science probe is budget_exhausted",
+      "stage": "probe",
+      "status": "NOT RUN"
+    },
+    {
+      "command": "uv run --offline --locked --extra cpu python scripts/mix01_inventory.py freeze --source essential_web --repo EssentialAI/essential-web-v1.0 --revision ce4eccc7e9604667b6d7f32cb6274b8b41f3113d --seed 20260918 --files <candidates.txt> --sizes <sizes.json> --output <DATA>/inventories/essential_web.inventory.json",
+      "network": false,
+      "note": "one inventory shared by the three views",
+      "stage": "inventory",
+      "status": "NOT RUN"
+    },
+    {
+      "command": "sample-blocks, plan (pilot caps), fetch, verify, then one adapt per component with --adapter essential_web_bnormal --adapter-config <component> --on-reject record",
+      "network": true,
+      "note": "one raw fetch feeds three adapts; the sample must be large enough for the sparse science slice",
+      "stage": "calibrate",
+      "status": "NOT RUN"
+    },
+    {
+      "command": "uv run --offline --locked --extra cpu xlm data plan --source essential_web --view <component> --catalog manifests/datasets.catalog.yaml --files <ORDERED_PREFIX_CSV> --mode selected_records --row-ranges <rows.json> --adapter-spec essential_web_bnormal:<component> --seed 20260918 --max-bytes <BYTES> --max-records <RECORDS> --max-output-disk <BYTES> --output <plan.json>",
+      "network": false,
+      "note": "STOP after the plan hash is shown; no authorization is given here",
+      "stage": "plan",
+      "status": "NOT RUN"
+    },
+    {
+      "command": "uv run --offline --locked --extra cpu xlm data admit --source essential_web --view <component> --adapter essential_web_bnormal --notes \"<operator review notes>\" --decision approve --license-review approved --benchmark-risk clean",
+      "network": false,
+      "note": "operator decision only; one per view",
+      "stage": "admit",
+      "status": "NOT RUN"
+    },
+    {
+      "command": "uv run --locked --extra cpu xlm data fetch --plan <plan.json> --output-dir <raw> --scratch-dir <scratch>; then xlm data verify",
+      "network": true,
+      "note": "the fetch gate re-verifies probe evidence and the admission decision",
+      "stage": "fetch_verify",
+      "status": "NOT RUN"
+    },
+    {
+      "command": "uv run --offline --locked --extra cpu xlm data adapt --plan <plan.json> --adapter essential_web_bnormal --adapter-config <component> --input <raw>/selected_records.jsonl --output-dir <canonical>/<component> --on-reject record --max-input-bytes <BYTES> --output-shard-bytes <BYTES>",
+      "network": false,
+      "note": "frozen B-normal admission happens here; rejection codes give the rejected, unassigned and other-component counts",
+      "stage": "adapt",
+      "status": "NOT RUN"
+    }
+  ],
+  "status": "DRY: no network, no acquisition, no authorization",
+  "t_semantic_review": "NOT_RUN_NO_TWO_INDEPENDENT_HUMAN_REVIEWERS",
+  "units": [
+    {
+      "adapter_config": "essential_science",
+      "adapter_id": "essential_web_bnormal",
+      "adapter_spec": "essential_web_bnormal:essential_science",
+      "component": "essential_science",
+      "final_quota_tokens": 600000000,
+      "first_pass_quota_tokens": 660000000,
+      "mix01_weight": 0.1,
+      "observed_admission": {
+        "both_replicates": {
+          "admitted_rows": 53,
+          "of_rows": 8192,
+          "share_percent": 0.647
+        },
+        "development": {
+          "admitted_rows": 29,
+          "of_rows": 4096,
+          "share_percent": 0.708
+        },
+        "m": {
+          "admitted_rows": 24,
+          "of_rows": 4096,
+          "share_percent": 0.5859
+        }
+      },
+      "projected_columns": [
+        "text",
+        "eai_taxonomy",
+        "quality_signals",
+        "id",
+        "pid",
+        "metadata"
+      ],
+      "repository": "EssentialAI/essential-web-v1.0",
+      "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+      "source_id": "essential_web",
+      "tokens_per_admitted_row": "UNKNOWN (not measured; not zero)",
+      "transferred_bytes_per_scanned_row": "UNKNOWN (not measured; not zero)",
+      "view_id": "essential_science"
+    },
+    {
+      "adapter_config": "essential_practical",
+      "adapter_id": "essential_web_bnormal",
+      "adapter_spec": "essential_web_bnormal:essential_practical",
+      "component": "essential_practical",
+      "final_quota_tokens": 600000000,
+      "first_pass_quota_tokens": 660000000,
+      "mix01_weight": 0.1,
+      "observed_admission": {
+        "both_replicates": {
+          "admitted_rows": 225,
+          "of_rows": 8192,
+          "share_percent": 2.7466
+        },
+        "development": {
+          "admitted_rows": 108,
+          "of_rows": 4096,
+          "share_percent": 2.6367
+        },
+        "m": {
+          "admitted_rows": 117,
+          "of_rows": 4096,
+          "share_percent": 2.8564
+        }
+      },
+      "projected_columns": [
+        "text",
+        "eai_taxonomy",
+        "quality_signals",
+        "id",
+        "pid",
+        "metadata"
+      ],
+      "repository": "EssentialAI/essential-web-v1.0",
+      "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+      "source_id": "essential_web",
+      "tokens_per_admitted_row": "UNKNOWN (not measured; not zero)",
+      "transferred_bytes_per_scanned_row": "UNKNOWN (not measured; not zero)",
+      "view_id": "essential_practical"
+    },
+    {
+      "adapter_config": "essential_prose",
+      "adapter_id": "essential_web_bnormal",
+      "adapter_spec": "essential_web_bnormal:essential_prose",
+      "component": "essential_prose",
+      "final_quota_tokens": 300000000,
+      "first_pass_quota_tokens": 330000000,
+      "mix01_weight": 0.05,
+      "observed_admission": {
+        "both_replicates": {
+          "admitted_rows": 743,
+          "of_rows": 8192,
+          "share_percent": 9.0698
+        },
+        "development": {
+          "admitted_rows": 371,
+          "of_rows": 4096,
+          "share_percent": 9.0576
+        },
+        "m": {
+          "admitted_rows": 372,
+          "of_rows": 4096,
+          "share_percent": 9.082
+        }
+      },
+      "projected_columns": [
+        "text",
+        "eai_taxonomy",
+        "quality_signals",
+        "id",
+        "pid",
+        "metadata"
+      ],
+      "repository": "EssentialAI/essential-web-v1.0",
+      "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+      "source_id": "essential_web",
+      "tokens_per_admitted_row": "UNKNOWN (not measured; not zero)",
+      "transferred_bytes_per_scanned_row": "UNKNOWN (not measured; not zero)",
+      "view_id": "essential_prose"
+    }
+  ],
+  "unknown_costs": [
+    "tokens per admitted row (no text was measured on the production path)",
+    "transferred bytes per scanned row with the text column projected",
+    "rows and files needed per component"
+  ],
+  "version": 1
+}

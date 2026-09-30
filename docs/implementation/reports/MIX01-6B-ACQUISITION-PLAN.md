@@ -6,6 +6,15 @@ no tokenizer, no training, no pilot was performed or authorized here. The
 USER executes every live command in §10. Verdict in §12 does NOT authorize
 bulk acquisition.
 
+> **Essential-Web selector amendment (2026-09-30).** Rows 1–3 of §1 now adapt
+> through `essential_web_bnormal` (adapter spec
+> `essential_web_bnormal:<component>`), the frozen B-normal selector. The
+> three slices no longer hold identical rows: each admits only its own. The
+> selector is a metadata-only fast-track decision; the Arm-T semantic review
+> was not run. Admission status, weights, quotas and the rest of this plan
+> are unchanged. Essential calibration must be resized before it runs. See
+> [ESSENTIAL-WEB-SELECTOR-PRODUCTION-INTEGRATION](ESSENTIAL-WEB-SELECTOR-PRODUCTION-INTEGRATION.md).
+
 Target: 6,000,000,000 exact XLM valid tokens of prepared availability
 across 11 Mix-01 components (weights/quotas frozen in
 `recipes/mixtures/mix01.yaml` + `recipes/mixtures/mix01_quotas_6b.yaml`).

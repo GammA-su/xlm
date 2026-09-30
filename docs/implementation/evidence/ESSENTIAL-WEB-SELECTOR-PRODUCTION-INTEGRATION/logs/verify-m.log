@@ -1,0 +1,13 @@
+{
+  "final": {
+    "essential_practical": 117,
+    "essential_prose": 372,
+    "essential_science": 24,
+    "rejected": 3538,
+    "unassigned": 45
+  },
+  "match": true,
+  "replicate": "sealed Arm-M confirmation (4096 rows)",
+  "rows": 4096,
+  "sum": 4096
+}
