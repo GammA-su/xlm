@@ -3874,6 +3874,7 @@ def mix01_status_cmd(
         load_mixture_preset,
         mix01_status,
     )
+    from xlm.data.sources.mix01_admission import live_verification
 
     try:
         catalog = load_catalog(catalog_path)
@@ -3902,12 +3903,23 @@ def mix01_status_cmd(
         )
         for spec in registry.views
     }
+    # Live-row verification derives from certified store evidence of admitted
+    # components; the registry flag alone still covers Essential-Web's bootstrap.
+    live = {
+        spec.component_id: live_verification(store, catalog, registry, spec)
+        for spec in registry.views
+        if not spec.live_verified and per_component[spec.component_id].state == "admitted"
+    }
 
     if preset_path is not None:
         try:
             preset = load_mixture_preset(preset_path)
             gated = gate_preset_for_run(
-                preset, registry, admission, component_admission=per_component
+                preset,
+                registry,
+                admission,
+                component_admission=per_component,
+                live_evidence=live,
             )
         except (Mix01BlockedError, ValueError) as e:
             typer.echo(f"Error: {e}", err=True)
@@ -3915,7 +3927,9 @@ def mix01_status_cmd(
         typer.echo(f"Preset '{preset.id}' is gated READY ({len(gated)} components).")
         return
 
-    report = mix01_status(registry, admission, component_admission=per_component)
+    report = mix01_status(
+        registry, admission, component_admission=per_component, live_evidence=live
+    )
     if as_json:
         typer.echo(json.dumps([s.to_dict() for s in report], indent=2))
         return

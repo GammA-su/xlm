@@ -39,7 +39,12 @@ from xlm.data.sources.admission import (
     stored_view_ids,
 )
 from xlm.data.sources.catalog import load_catalog
-from xlm.data.sources.mix01 import ComponentAdmission, load_mix01_views, mix01_status
+from xlm.data.sources.mix01 import (
+    ComponentAdmission,
+    LiveVerification,
+    load_mix01_views,
+    mix01_status,
+)
 from xlm.data.sources.policy import BenchmarkContaminationRisk
 from xlm.data.sources.prober import EvidenceType, ProbeEvidenceRecord, ProbeOutcome
 from xlm.data.sources.schema import FieldDescriptor, ViewSchema
@@ -303,3 +308,106 @@ def test_component_admission_needs_every_view() -> None:
     assert any("planning=pending_review" in reason for reason in ifm.reasons)
     assert ComponentAdmission({"a": "admitted"}).state == "admitted"
     assert ComponentAdmission({"a": "admitted", "b": "blocked"}).state == "blocked"
+
+
+# ------------------------------------------------- live readiness from evidence
+
+
+VIEWS = "recipes/mixtures/mix01_views.yaml"
+
+
+def _status(component: str) -> str:
+    result = CliRunner().invoke(app, ["mix01-status", "--json"])
+    assert result.exit_code == 0, result.output
+    return {e["component_id"]: e["readiness"] for e in json.loads(result.output)}[component]
+
+
+def _live(store: ArtifactStore, **update: object) -> LiveVerification:
+    registry = load_mix01_views(VIEWS)
+    views = [
+        spec.model_copy(update=update) if spec.component_id == SOURCE else spec
+        for spec in registry.views
+    ]
+    registry = registry.model_copy(update={"views": views})
+    spec = next(s for s in registry.views if s.component_id == SOURCE)
+    return review.live_verification(
+        store, load_catalog("manifests/datasets.catalog.yaml"), registry, spec
+    )
+
+
+def test_certified_bridge_and_admission_make_ready(store: ArtifactStore, tmp_path: Path) -> None:
+    assert not next(
+        v for v in load_mix01_views(VIEWS).views if v.component_id == SOURCE
+    ).live_verified
+    for view in ("essential_science", "essential_practical", "essential_prose"):
+        _essential_records(store, tmp_path, view)
+    receipt = _published(store)
+    assert _status(SOURCE) == "not_live_verified"  # certified, not yet admitted
+    _admit(store, tmp_path)
+    live = _live(store)
+    assert live.verified and str(receipt["digest"]) in live.reason
+    assert _status(SOURCE) == "ready"
+    for view in ("essential_science", "essential_practical", "essential_prose"):
+        assert _status(view) == "ready"
+
+
+def test_live_status_refuses_missing_or_mismatched_evidence(
+    store: ArtifactStore, tmp_path: Path
+) -> None:
+    assert not _live(store).verified  # no certification at all
+    _admit(store, tmp_path)
+    assert _live(store).verified
+    assert "revision" in _live(store, observed_revision="d" * 40).reason
+    assert not _live(store, adapter_id="finepdfs_en").verified
+    wrong_view = _live(store, observed_configs=["UltraX-FineWeb"])
+    assert not wrong_view.verified and "no certified bridge" in wrong_view.reason
+
+
+def test_authored_only_certification_is_not_live(store: ArtifactStore, tmp_path: Path) -> None:
+    receipt, record = ce.build_bridge(
+        ultrax_pin(), bridge_facts(store, ROWS), evidence_type=EvidenceType.SYNTHETIC_FIXTURE
+    )
+    with pytest.raises(ce.BridgeRefusal):
+        ce.publish_bridge(store, receipt, record)
+    store.publish_artifact(
+        artifact_id=f"probe_{SOURCE}_{CONFIG}.attempt02",
+        kind="probe_evidence",
+        files={
+            ce.EVIDENCE_FILENAME: json.dumps(record.to_canonical_dict()).encode(),
+            ce.RECEIPT_FILENAME: json.dumps(receipt, sort_keys=True).encode(),
+        },
+        producer_code_hash="0" * 16,
+        dependency_hash="0" * 16,
+        resolved_config_hash="0" * 16,
+        metadata={"source_id": SOURCE, "view_id": CONFIG},
+    )
+    assert ce.stored_bridge(store, SOURCE, CONFIG) == receipt
+    live = _live(store)
+    assert not live.verified and "not real observed" in live.reason
+    assert _status(SOURCE) != "ready"
+
+
+def test_revoked_or_unbound_admission_is_not_ready(store: ArtifactStore, tmp_path: Path) -> None:
+    decision = _admit(store, tmp_path)
+    assert _status(SOURCE) == "ready"
+    unbound = decision.model_copy(
+        update={"reviews_sha256": {**decision.reviews_sha256, review.EVIDENCE_BINDING: "e" * 64}}
+    )
+    save_admission_decision(unbound, store, tmp_path / "unbound", attempt=2)
+    assert "does not bind" in _live(store).reason
+    assert _status(SOURCE) == "not_live_verified"
+    revoked = decision.model_copy(update={"operator_approved": False})
+    save_admission_decision(revoked, store, tmp_path / "revoked", attempt=3)
+    assert _status(SOURCE) != "ready"
+
+
+def test_unverified_live_evidence_never_reads_ready() -> None:
+    registry = load_mix01_views(VIEWS)
+    admitted = {SOURCE: ComponentAdmission({CONFIG: "admitted"})}
+    for live in ({}, {SOURCE: LiveVerification(verified=False, reason="stale")}):
+        status = mix01_status(registry, component_admission=admitted, live_evidence=live)
+        row = next(s for s in status if s.component_id == SOURCE)
+        assert row.readiness.value == "not_live_verified"
+    verified = {SOURCE: LiveVerification(verified=True, reason="bound")}
+    status = mix01_status(registry, live_evidence=verified)  # unadmitted stays unready
+    assert next(s for s in status if s.component_id == SOURCE).readiness.value != "ready"

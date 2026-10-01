@@ -1,3 +1,13 @@
+> **MIX-01 LIVE READINESS FROM CERTIFIED EVIDENCE (2026-10-01, offline):
+> ULTRAX READY.** `mix01-status` read only the static registry flag
+> `live_verified`, so admitted UltraX stayed NOT_LIVE_VERIFIED. Readiness now
+> derives live verification for admitted components from the verified,
+> real-observed bridge receipt. The receipt must bind the exact registry pin and
+> the current adapter code, and the admission decision must bind it. Any gap
+> fails closed. Real store: Essential ×3 + UltraX READY, **4/12**. No operator
+> artifact changed. Tests: 13 + 315 related passed; ruff/format exit 0; mypy NOT
+> RUN (app control). Report: `reports/MIX01-LIVE-READINESS.md`.
+
 > **MIX-01 HIGH-THROUGHPUT SOURCE ACQUISITION + ULTRAX ADMISSION BRIDGE
 > (2026-10-01, offline): READY FOR ULTRAX PERFORMANCE BENCHMARK.** UltraX needs
 > no re-probe: a new offline bridge (`certified_evidence.py`, amendment

@@ -295,6 +295,19 @@ def component_admission_views(view: Mix01ViewSpec) -> list[str]:
 
 
 @dataclass(frozen=True)
+class LiveVerification:
+    """Live-row verification of one component, derived from immutable store evidence.
+
+    ``verified`` is true only when every view the component needs carries real-row
+    certified evidence that still binds its exact source, view, revision and
+    adapter and that its admission decision binds; ``reason`` says why or why not.
+    """
+
+    verified: bool
+    reason: str
+
+
+@dataclass(frozen=True)
 class ComponentAdmission:
     """Store admission of one component: every view it needs, each re-evaluated."""
 
@@ -316,6 +329,7 @@ def mix01_status(
     admission: Mapping[str, str] | None = None,
     availability: Mapping[str, int] | None = None,
     component_admission: Mapping[str, ComponentAdmission] | None = None,
+    live_evidence: Mapping[str, LiveVerification] | None = None,
 ) -> list[ComponentStatus]:
     """Report READY / BLOCKED / NOT LIVE-VERIFIED for every mix01 view.
 
@@ -324,11 +338,14 @@ def mix01_status(
     where present, takes precedence: admission is recorded per (source, view), so a
     source-level state cannot describe a component such as one Essential-Web view.
     ``availability`` maps component_id to available unique valid targets. Absent maps
-    mean "no evidence", which never reads as ready.
+    mean "no evidence", which never reads as ready. ``live_evidence`` maps
+    component_id to live-row verification derived from certified store evidence;
+    besides the registry flag, only a ``verified`` entry satisfies the live check.
     """
     admission = admission or {}
     availability = availability or {}
     component_admission = component_admission or {}
+    live_evidence = live_evidence or {}
     report: list[ComponentStatus] = []
 
     for view in registry.views:
@@ -363,15 +380,21 @@ def mix01_status(
                 f"source '{view.source_id}' has admission state '{state}'; "
                 "operator approval and license/provenance review are missing."
             )
-        elif not view.live_verified:
+        elif not view.live_verified and not (
+            (live := live_evidence.get(view.component_id)) is not None and live.verified
+        ):
             readiness = ComponentReadiness.NOT_LIVE_VERIFIED
             reasons.append(
                 "no adapter has been tested against live rows at the observed revision; "
                 "metadata discovery is not a full adapter test (C04)."
             )
+            if live is not None:
+                reasons.append(f"certified evidence: {live.reason}")
         else:
             readiness = ComponentReadiness.READY
             reasons.append("admitted and live-verified.")
+            if not view.live_verified:
+                reasons.append(f"certified evidence: {live_evidence[view.component_id].reason}")
 
         if view.component_id in availability and availability[view.component_id] <= 0:
             readiness = ComponentReadiness.BLOCKED
@@ -398,6 +421,7 @@ def gate_preset_for_run(
     admission: Mapping[str, str] | None = None,
     availability: Mapping[str, int] | None = None,
     component_admission: Mapping[str, ComponentAdmission] | None = None,
+    live_evidence: Mapping[str, LiveVerification] | None = None,
 ) -> list[ComponentStatus]:
     """Refuse to run a preset unless every named component is READY.
 
@@ -408,7 +432,7 @@ def gate_preset_for_run(
     """
     validate_preset_weights_exact(preset)
     validate_preset_components(preset, registry)
-    report = mix01_status(registry, admission, availability, component_admission)
+    report = mix01_status(registry, admission, availability, component_admission, live_evidence)
 
     blocking = [
         s

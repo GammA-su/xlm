@@ -21,20 +21,36 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from xlm.artifacts.store import ArtifactStore
 from xlm.data.sources.admission import (
     MIX01_REVIEW_NAMES,
     MIX01_RISK_CONTRACT,
     RESOURCE_CONTRACT,
     AdmissionDecision,
+    load_admission_decision,
     mix01_contamination_mitigation,
 )
-from xlm.data.sources.certified_evidence import SourcePin, check_receipt
+from xlm.data.sources.catalog import DatasetCatalogDraft
+from xlm.data.sources.certified_evidence import (
+    BridgeRefusal,
+    SourcePin,
+    check_receipt,
+    resolve_pin,
+    stored_bridge,
+    verify_current,
+)
+from xlm.data.sources.mix01 import (
+    LiveVerification,
+    Mix01ViewRegistry,
+    Mix01ViewSpec,
+    component_admission_views,
+)
 from xlm.data.sources.policy import (
     BenchmarkContaminationRisk,
     LicenseReviewStatus,
     LicenseUsagePolicy,
 )
-from xlm.data.sources.prober import ProbeEvidenceRecord
+from xlm.data.sources.prober import EvidenceType, ProbeEvidenceRecord
 
 REVIEW_VERSION = "mix01-source-review-v1"
 REVIEW_FILES = {
@@ -343,3 +359,79 @@ def build_decision(
 
 def decision_binds_bridge(decision: AdmissionDecision, receipt: Mapping[str, Any]) -> bool:
     return decision.reviews_sha256.get(EVIDENCE_BINDING) == receipt.get("digest")
+
+
+def _view_live_verification(
+    store: ArtifactStore,
+    catalog: DatasetCatalogDraft,
+    registry: Mix01ViewRegistry,
+    spec: Mix01ViewSpec,
+    view_id: str,
+) -> str:
+    """The bridge digest proving live rows for one view; refuses on any gap or drift."""
+    receipt = stored_bridge(store, spec.source_id, view_id)
+    if receipt is None:
+        raise BridgeRefusal(f"view '{view_id}' has no certified bridge evidence")
+    if receipt.get("evidence_type") != EvidenceType.REAL_OBSERVED.value:
+        raise BridgeRefusal(f"view '{view_id}' bridge evidence is not real observed rows")
+    source = receipt.get("source")
+    adapter_id = source.get("adapter_id") if isinstance(source, Mapping) else None
+    if not isinstance(adapter_id, str):
+        raise BridgeRefusal(f"view '{view_id}' bridge receipt names no adapter")
+    # The pin is the registry's exact source, view, component, revision and adapter;
+    # verify_current also binds the current adapter code and the stored record.
+    pin = resolve_pin(catalog, registry, spec.source_id, view_id, adapter_id)
+    if pin.component_id != spec.component_id:
+        raise BridgeRefusal(f"view '{view_id}' bridge binds another component")
+    receipt = verify_current(store, pin)
+    adapter = receipt.get("adapter")
+    row_sets = adapter.get("row_sets") if isinstance(adapter, Mapping) else None
+    if not isinstance(row_sets, Mapping) or not any(
+        isinstance(rows, Mapping) and int(rows.get("accepted", 0)) > 0 for rows in row_sets.values()
+    ):
+        raise BridgeRefusal(f"view '{view_id}' bridge certified no accepted real row")
+    decision = load_admission_decision(spec.source_id, view_id, store)
+    if decision is None:
+        raise BridgeRefusal(f"view '{view_id}' has no admission decision")
+    if (
+        not decision_binds_bridge(decision, receipt)
+        or decision.immutable_revision != pin.revision
+        or decision.adapter_id != pin.adapter_id
+        or decision.repository != pin.repository
+        or decision.probe_fingerprint != receipt.get("probe_fingerprint")
+    ):
+        raise BridgeRefusal(
+            f"view '{view_id}' admission decision does not bind its certified bridge evidence"
+        )
+    return str(receipt["digest"])
+
+
+def live_verification(
+    store: ArtifactStore,
+    catalog: DatasetCatalogDraft,
+    registry: Mix01ViewRegistry,
+    spec: Mix01ViewSpec,
+) -> LiveVerification:
+    """Derive a component's live-row verification from immutable certified evidence.
+
+    Every view the component needs must carry a verified, real-observed bridge
+    receipt that still binds the registry pin (source, view, component, exact
+    revision, adapter) and the current adapter code, whose adapter accepted real
+    rows, and that its admission decision binds by digest, revision, adapter and
+    fingerprint. Admission state itself is judged separately by the gate; this
+    never makes an admitted source live-verified without such evidence.
+    """
+    digests: list[str] = []
+    try:
+        for view_id in component_admission_views(spec):
+            digests.append(
+                f"{view_id}={_view_live_verification(store, catalog, registry, spec, view_id)}"
+            )
+    except (ValueError, OSError, KeyError, TypeError) as exc:
+        return LiveVerification(verified=False, reason=str(exc))
+    return LiveVerification(
+        verified=True,
+        reason="real-row adapter certification bound by admission (bridge "
+        + ", ".join(digests)
+        + ").",
+    )
