@@ -343,6 +343,66 @@ def cmd_admit(args: argparse.Namespace) -> int:
     return 0
 
 
+# -------------------------------------------------------------- requirement
+
+
+def cmd_requirement(args: argparse.Namespace) -> int:
+    """OFFLINE: record or show a multi-view component's frozen requirement split."""
+    component = str(args.component)
+    estimate_path = data_root(args) / "calib" / "headroom_estimate.json"
+    quotas = yaml.safe_load(QUOTAS.read_text(encoding="utf-8"))
+    estimate = load_json(estimate_path)
+    if args.action == "split-show":
+        path = split_path(args, component)
+        if not path.is_file():
+            raise DriverError(f"no requirement split is recorded for '{component}'")
+        split = planner.check_view_split(load_json(path), quotas, estimate)
+        emit(split)
+        return 0
+    allocations: dict[str, int] = {}
+    for item in str(args.view_tokens or "").split(","):
+        if not item.strip():
+            continue
+        if "=" not in item:
+            raise DriverError("allocations read as VIEW=TOKENS,... e.g. general=165M,planning=165M")
+        view, raw = item.split("=", 1)
+        view, raw = view.strip(), raw.strip()
+        if not view or not raw.isdigit():
+            raise DriverError("allocations read as VIEW=TOKENS,... with positive integer tokens")
+        allocations[view] = int(raw)
+    try:
+        record = planner.build_view_split(
+            component_id=component,
+            quotas=quotas,
+            estimate=estimate,
+            quotas_sha256=sha256(QUOTAS),
+            estimate_sha256=sha256(estimate_path),
+            view_tokens=allocations,
+            operator=str(args.operator or ""),
+            rationale=str(args.rationale or ""),
+        )
+    except planner.PlanError as exc:
+        raise DriverError(str(exc)) from exc
+    path = split_path(args, component)
+    if path.is_file():
+        existing = load_json(path)
+        if existing == record:
+            print(f"identical split already recorded; nothing written -> {path}")
+            return 0
+        raise DriverError(
+            f"a different split is already recorded at {path}; refusing to overwrite it"
+        )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    print(f"requirement split of {component}: {record['digest']} -> {path}")
+    for view, entry in sorted(record["views"].items()):
+        print(
+            f"  {view}: first-pass {entry['first_pass_tokens']:,} "
+            f"(final {entry['final_tokens']:,}, canonical {entry['required_canonical_bytes']:,})"
+        )
+    return 0
+
+
 # --------------------------------------------------------------------- policy
 
 
@@ -372,13 +432,36 @@ def layout_of(
     return layout, {"perf": perf, "adapt_rate": rate, "evidence": names}
 
 
+def split_path(args: argparse.Namespace, component_id: str) -> Path:
+    """Write-once home of a component's frozen per-view requirement split."""
+    if getattr(args, "requirement_split", None):
+        return Path(str(args.requirement_split))
+    return data_root(args) / "calib" / "requirement_splits" / f"{component_id}.json"
+
+
 def requirement_of(args: argparse.Namespace, spec: SourceSpec) -> planner.Requirement:
     component = pin_of(spec).component_id
     estimate_path = data_root(args) / "calib" / "headroom_estimate.json"
+    quotas = yaml.safe_load(QUOTAS.read_text(encoding="utf-8"))
+    estimate = load_json(estimate_path)
+    if len([s for s in SOURCES.values() if s.source_id == spec.source_id]) > 1:
+        path = split_path(args, component)
+        if not path.is_file():
+            raise DriverError(
+                "a multi-view component needs an explicit per-view requirement decision: "
+                f"record it with 'requirement split-record' -> {path}"
+            )
+        split = load_json(path)
+        try:
+            return planner.requirement_from_split(
+                split, spec.view_id, quotas=quotas, estimate=estimate
+            )
+        except planner.PlanError as exc:
+            raise DriverError(str(exc)) from exc
     return planner.requirement_from(
         component,
-        yaml.safe_load(QUOTAS.read_text(encoding="utf-8")),
-        load_json(estimate_path),
+        quotas,
+        estimate,
         quotas_sha256=sha256(QUOTAS),
         estimate_sha256=sha256(estimate_path),
     )
@@ -435,8 +518,6 @@ def measured_basis(args: argparse.Namespace, spec: SourceSpec) -> Measured:
 def evaluate_policy(
     args: argparse.Namespace, spec: SourceSpec, measured: Measured | None = None
 ) -> dict[str, Any]:
-    if len([s for s in SOURCES.values() if s.source_id == spec.source_id]) > 1:
-        raise DriverError("a multi-view component needs an explicit per-view requirement decision")
     layout, extra = layout_of(args, spec)
     req = requirement_of(args, spec)
     requirement = policy.Requirement(
@@ -954,6 +1035,7 @@ def build_parser() -> argparse.ArgumentParser:
         p.add_argument("--source-key", required=True)
         p.add_argument("--data-root")
         p.add_argument("--scratch-root")
+        p.add_argument("--requirement-split", default="")
         return p
 
     p = common(
@@ -976,6 +1058,21 @@ def build_parser() -> argparse.ArgumentParser:
     p = common(sub.add_parser("admit", help="OFFLINE: record the reviewed mitigated admission"))
     p.add_argument("--review-dir", required=True)
     p.set_defaults(func=cmd_admit)
+
+    p = sub.add_parser("requirement", help="OFFLINE: record/show a multi-view requirement split")
+    p.add_argument("--data-root")
+    p.add_argument("--scratch-root")
+    p.add_argument("--requirement-split", default="")
+    p.add_argument("action", choices=("split-record", "split-show"))
+    p.add_argument("--component", required=True)
+    p.add_argument(
+        "--view-tokens",
+        default="",
+        help="split-record allocations, e.g. general=165000000,planning=165000000",
+    )
+    p.add_argument("--operator", default="")
+    p.add_argument("--rationale", default="")
+    p.set_defaults(func=cmd_requirement)
 
     p = common(sub.add_parser("policy", help="OFFLINE: model or freeze the transport policy"))
     p.add_argument("action", choices=("model", "freeze"))

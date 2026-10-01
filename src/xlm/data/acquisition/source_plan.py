@@ -222,6 +222,12 @@ class Requirement:
     safety_margin: float
     quotas_sha256: str
     estimate_sha256: str
+    #: Set only for a view of a multi-view component carrying a frozen
+    #: requirement split (e.g. ``general`` of
+    #: ``ifm_behaviors_general_planning``). Single-view requirements keep
+    #: both ``None`` so historical records verify unchanged.
+    view_id: str | None = None
+    split_digest: str | None = None
 
 
 def requirement_from(
@@ -259,6 +265,146 @@ def requirement_from(
         safety_margin=safety,
         quotas_sha256=quotas_sha256,
         estimate_sha256=estimate_sha256,
+    )
+
+
+SPLIT_KIND = "mix01_view_requirement_split"
+SPLIT_VERSION = 1
+
+
+def _split_bodies_match(split: Mapping[str, Any], quotas: Mapping[str, Any]) -> None:
+    if split.get("kind") != SPLIT_KIND or split.get("version") != SPLIT_VERSION:
+        raise PlanError("not a version-1 Mix-01 view requirement split")
+
+
+def build_view_split(
+    *,
+    component_id: str,
+    quotas: Mapping[str, Any],
+    estimate: Mapping[str, Any],
+    quotas_sha256: str,
+    estimate_sha256: str,
+    view_tokens: Mapping[str, int],
+    operator: str,
+    rationale: str,
+) -> dict[str, Any]:
+    """Freeze an operator's per-view requirement split of one component.
+
+    Units are first-pass tokens per view (integers summing exactly to the
+    component's first-pass quota); canonical bytes follow at 4 per token and
+    final tokens follow the quota headroom ratio exactly. The operator choice
+    is recorded with the digests of the quotas and estimate it was decided
+    against, so a changed quota table can never silently reuse it.
+    """
+    targets = quotas.get("first_pass_headroom_quotas") or {}
+    finals = quotas.get("final_quotas") or {}
+    if component_id not in targets or component_id not in finals:
+        raise PlanError(f"component '{component_id}' has no quota entry")
+    component_first = int(targets[component_id])
+    component_final = int(finals[component_id])
+    if component_first <= 0 or component_final <= 0:
+        raise PlanError(f"component '{component_id}' quota is not positive")
+    ratio = quotas.get("first_pass_headroom_ratio", 1.1)
+    try:
+        headroom = float(ratio)
+    except (TypeError, ValueError) as exc:
+        raise PlanError("quota headroom ratio is not a number") from exc
+    if not headroom > 0:
+        raise PlanError("quota headroom ratio is not positive")
+    if not operator.strip() or not rationale.strip():
+        raise PlanError("a named operator and a written rationale are required")
+    views = sorted(view_tokens)
+    if len(views) < 2:
+        raise PlanError("a requirement split needs at least two views")
+    allocations: dict[str, dict[str, int]] = {}
+    for view in views:
+        tokens = view_tokens[view]
+        if isinstance(tokens, bool) or not isinstance(tokens, int) or tokens <= 0:
+            raise PlanError(f"view '{view}' allocation must be a positive integer")
+        if (tokens * component_final) % component_first != 0:
+            raise PlanError(f"view '{view}' allocation does not divide the component quota exactly")
+        allocations[view] = {
+            "first_pass_tokens": tokens,
+            "final_tokens": tokens * component_final // component_first,
+            "required_canonical_bytes": tokens * BYTES_PER_ESTIMATED_TOKEN,
+        }
+    if sum(a["first_pass_tokens"] for a in allocations.values()) != component_first:
+        raise PlanError("view allocations must sum exactly to the component first-pass quota")
+    if sum(a["final_tokens"] for a in allocations.values()) != component_final:
+        raise PlanError("view allocations must sum exactly to the component final quota")
+    # The split is decided against one frozen estimate; reuse requirement_from
+    # so the bytes/token assumption and safety margin are cross-checked once.
+    base = requirement_from(
+        component_id,
+        quotas,
+        estimate,
+        quotas_sha256=quotas_sha256,
+        estimate_sha256=estimate_sha256,
+    )
+    body: dict[str, Any] = {
+        "kind": SPLIT_KIND,
+        "version": SPLIT_VERSION,
+        "component_id": component_id,
+        "quotas_sha256": quotas_sha256,
+        "estimate_sha256": estimate_sha256,
+        "component_first_pass_tokens": component_first,
+        "component_final_tokens": component_final,
+        "bytes_per_token_base": BYTES_PER_ESTIMATED_TOKEN,
+        "safety_margin": base.safety_margin,
+        "views": allocations,
+        "operator": operator.strip(),
+        "rationale": rationale.strip(),
+    }
+    return _with_digest(body)
+
+
+def check_view_split(
+    split: Mapping[str, Any],
+    quotas: Mapping[str, Any],
+    estimate: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Verify a split digest and re-derive it from the same frozen inputs."""
+    _split_bodies_match(split, quotas)
+    body = dict(split)
+    if body.pop("digest", None) != canonical.digest(body):
+        raise PlanError("requirement split digest does not verify")
+    rebuilt = build_view_split(
+        component_id=str(split["component_id"]),
+        quotas=quotas,
+        estimate=estimate,
+        quotas_sha256=str(split["quotas_sha256"]),
+        estimate_sha256=str(split["estimate_sha256"]),
+        view_tokens={v: int(a["first_pass_tokens"]) for v, a in split["views"].items()},
+        operator=str(split["operator"]),
+        rationale=str(split["rationale"]),
+    )
+    if rebuilt["digest"] != split["digest"]:
+        raise PlanError("stored split differs from the split its frozen inputs produce")
+    return dict(split)
+
+
+def requirement_from_split(
+    split: Mapping[str, Any],
+    view: str,
+    *,
+    quotas: Mapping[str, Any],
+    estimate: Mapping[str, Any],
+) -> Requirement:
+    """One view's requirement from a verified split; never renormalizes."""
+    checked = check_view_split(split, quotas, estimate)
+    allocations = checked["views"]
+    if view not in allocations:
+        raise PlanError(f"split has no allocation for view '{view}'")
+    entry = allocations[view]
+    return Requirement(
+        component_id=str(checked["component_id"]),
+        first_pass_tokens=int(entry["first_pass_tokens"]),
+        required_canonical_bytes=int(entry["required_canonical_bytes"]),
+        safety_margin=float(checked["safety_margin"]),
+        quotas_sha256=str(checked["quotas_sha256"]),
+        estimate_sha256=str(checked["estimate_sha256"]),
+        view_id=view,
+        split_digest=str(checked["digest"]),
     )
 
 
@@ -667,6 +813,11 @@ def _record(
             "required_canonical_bytes": requirement.required_canonical_bytes,
             "safety_margin": requirement.safety_margin,
             "token_method": "canonical UTF-8 bytes / 4 (estimate, never exact XLM tokens)",
+            **(
+                {"view_id": requirement.view_id, "split_digest": requirement.split_digest}
+                if requirement.view_id is not None and requirement.split_digest is not None
+                else {}
+            ),
         },
         "acquired_before": {"canonical_bytes": acquired},
         "transport_mode": frozen.mode.value,
@@ -687,6 +838,12 @@ def _record(
         record["acquisition_plan"]["expected_file_digests"] = dict(
             sorted(minted.expected_file_digests.items())
         )
+    if requirement.view_id is not None and requirement.split_digest is not None:
+        record["inputs"]["requirement_split"] = {
+            "view_id": requirement.view_id,
+            "split_digest": requirement.split_digest,
+            "rule": "per-view share of the component quota under a frozen operator split",
+        }
     if sizing is not None:
         record["inputs"]["sizing"] = {
             "contract": sizing["contract"],
