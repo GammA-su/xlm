@@ -1,0 +1,117 @@
+{
+  "plans": [
+    {
+      "accounting": {
+        "canonical_bytes": 0,
+        "complete": false,
+        "digest": "070d2ffea4ebd2421326341c71e2a5a21fc0ae66eab5f933ad123d74a0f40f4b",
+        "documents": 0,
+        "estimated_tokens": 0,
+        "footprint_bytes": 0,
+        "kind": "mix01_source_accounting",
+        "plan_digest": "49ecb6b3ded6bc9c71ebe7e5bbc1856599900b9b6029a421948626e127150e63",
+        "raw_bytes": 0,
+        "receipt_digests": [],
+        "rejected": 0,
+        "requests": 0,
+        "rows": 0,
+        "sequence": 1,
+        "transferred_bytes": 0,
+        "units_planned": 2,
+        "units_sealed": 0
+      },
+      "authorized": false,
+      "digest": "49ecb6b3ded6bc9c71ebe7e5bbc1856599900b9b6029a421948626e127150e63",
+      "plan": 1,
+      "restart": {
+        "fresh_download": 2,
+        "local_complete_reuse": 0,
+        "local_processing_retry": 0,
+        "resumable_partial": 0,
+        "sealed_skip": 0
+      },
+      "superseded_by": 2
+    },
+    {
+      "accounting": {
+        "canonical_bytes": 0,
+        "complete": false,
+        "digest": "ed5ae411546eb273154792ee0b04038455c8f61c78ba82f3bd908e64f2bdb632",
+        "documents": 0,
+        "estimated_tokens": 0,
+        "footprint_bytes": 0,
+        "kind": "mix01_source_accounting",
+        "plan_digest": "72778e8c5144033381500dfb6762120df7a0d74813b6641bf509ec6484082141",
+        "raw_bytes": 0,
+        "receipt_digests": [],
+        "rejected": 0,
+        "requests": 0,
+        "rows": 0,
+        "sequence": 2,
+        "transferred_bytes": 0,
+        "units_planned": 2,
+        "units_sealed": 0
+      },
+      "authorized": false,
+      "digest": "72778e8c5144033381500dfb6762120df7a0d74813b6641bf509ec6484082141",
+      "plan": 2,
+      "restart": {
+        "fresh_download": 2,
+        "local_complete_reuse": 0,
+        "local_processing_retry": 0,
+        "resumable_partial": 0,
+        "sealed_skip": 0
+      }
+    }
+  ],
+  "source_key": "ifm_planning",
+  "sufficiency": {
+    "accounting": [
+      "070d2ffea4ebd2421326341c71e2a5a21fc0ae66eab5f933ad123d74a0f40f4b",
+      "ed5ae411546eb273154792ee0b04038455c8f61c78ba82f3bd908e64f2bdb632"
+    ],
+    "acquired_canonical_bytes": 0,
+    "acquired_estimated_tokens": 0,
+    "action": "resume the incomplete plan, or repair units that fail under its limits; never top up over it",
+    "deficit_canonical_bytes": 660000000,
+    "digest": "54ff14e5732ca3faf2bd8a6e4f25580df50a57e39cf5768680e239331c8740ac",
+    "first_pass_tokens": 165000000,
+    "kind": "mix01_source_sufficiency",
+    "next_cursor": 2,
+    "plans": [
+      {
+        "digest": "49ecb6b3ded6bc9c71ebe7e5bbc1856599900b9b6029a421948626e127150e63",
+        "sequence": 1
+      },
+      {
+        "digest": "72778e8c5144033381500dfb6762120df7a0d74813b6641bf509ec6484082141",
+        "sequence": 2
+      }
+    ],
+    "required_canonical_bytes": 660000000,
+    "source": {
+      "adapter_id": "ifm_planning",
+      "component_id": "ifm_behaviors_general_planning",
+      "provider": "huggingface",
+      "repository": "IFM/Pretrain-Behaviors",
+      "revision": "3345e13d7f3f6d0ecb5fdd67b37aed289f3191f5",
+      "source_id": "ifm_behaviors",
+      "view_id": "planning"
+    },
+    "source_key": "ifm_planning",
+    "status": "INCOMPLETE",
+    "supersessions": [
+      {
+        "sequence": 2,
+        "supersedes_sequence": 1
+      }
+    ],
+    "token_method": "canonical UTF-8 bytes / 4 (estimate, never exact XLM tokens)",
+    "unresolved_ranks": {
+      "2": [
+        0,
+        1
+      ]
+    }
+  }
+}

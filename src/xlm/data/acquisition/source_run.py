@@ -256,6 +256,8 @@ def authorize(
 ) -> AcquisitionPlan:
     """Record the operator's explicit authorization of this exact digest; mint the plan."""
     record = load_plan(roots, sequence)
+    if superseding(roots, sequence) is not None:
+        raise RunError(f"plan {sequence} is superseded by plan {sequence + 1}; nothing authorized")
     if digest != record["digest"]:
         raise RunError("digest does not match this plan; nothing authorized")
     if not operator.strip():
@@ -310,18 +312,58 @@ def repairs_of(records: Sequence[Mapping[str, Any]]) -> dict[int, list[Mapping[s
     return repairs
 
 
+def supersessions_of(records: Sequence[Mapping[str, Any]]) -> dict[int, Mapping[str, Any]]:
+    """The plan superseding each superseded sequence; it names that digest and follows it."""
+    by_sequence = {int(r["sequence"]): r for r in records}
+    found: dict[int, Mapping[str, Any]] = {}
+    for record in records:
+        supersedes = record.get("supersedes")
+        if supersedes is None:
+            continue
+        target = by_sequence.get(int(supersedes["plan_sequence"]))
+        if (
+            target is None
+            or target["digest"] != supersedes["plan_digest"]
+            or int(record["sequence"]) != int(target["sequence"]) + 1
+            or int(target["sequence"]) in found
+        ):
+            raise RunError(f"plan {record['sequence']} supersedes no plan of this source")
+        found[int(target["sequence"])] = record
+    return found
+
+
+def superseding(roots: Roots, sequence: int) -> dict[str, Any] | None:
+    """The plan that supersedes plan ``sequence``, if any (it is always the next one)."""
+    if sequence + 1 not in roots.sequences():
+        return None
+    later = load_plan(roots, sequence + 1)
+    supersedes = later.get("supersedes")
+    if supersedes is None or int(supersedes["plan_sequence"]) != sequence:
+        return None
+    if supersedes["plan_digest"] != load_plan(roots, sequence)["digest"]:
+        raise RunError(f"plan {sequence + 1} supersedes another plan {sequence}")
+    return later
+
+
 def resolution(roots: Roots, records: Sequence[Mapping[str, Any]]) -> dict[int, list[int]]:
     """Unresolved ranks per plan: unsealed there and not re-planned by a repair.
 
     A rank re-planned by a repair belongs to that repair, where it is
     unresolved until sealed. A rank sealed both in a plan and in its repair is
-    refused, never counted twice.
+    refused, never counted twice. A superseded plan never ran: its ranks are
+    its successor's, and a sealed unit under it is refused.
     """
     repairs = repairs_of(records)
+    superseded = supersessions_of(records)
     unresolved: dict[int, list[int]] = {}
     for record in records:
         sequence = int(record["sequence"])
         sealed = {int(r["rank"]) for r in resume_state(roots, record)["receipts"]}
+        if sequence in superseded:
+            if sealed:
+                raise RunError(f"superseded plan {sequence} holds sealed units")
+            unresolved[sequence] = []
+            continue
         ranks = [int(e["rank"]) for e in record["selection"]["files"]]
         moved: set[int] = set()
         for repair in repairs.get(sequence, []):
@@ -338,6 +380,8 @@ def load_authorized(roots: Roots, sequence: int) -> tuple[dict[str, Any], Acquis
     later = [load_plan(roots, s) for s in roots.sequences() if s > sequence]
     if any(int(r["repair"]["plan_sequence"]) == sequence for r in later if r.get("repair")):
         raise RunError(f"plan {sequence} is repaired by a later plan; run the repair instead")
+    if superseding(roots, sequence) is not None:
+        raise RunError(f"plan {sequence} is superseded by plan {sequence + 1}; it never runs")
     directory = roots.plan_dir(sequence)
     if not (directory / "authorization.json").is_file():
         raise RunError("plan is not authorized: review its digest, then run authorize")
@@ -1379,6 +1423,13 @@ def sufficiency(roots: Roots) -> dict[str, Any]:
             for target in sorted(repairs)
             for r in repairs[target]
         ]
+    superseded = supersessions_of(records)
+    if superseded:
+        # Present only when a plan was superseded, so earlier statuses keep their bytes.
+        extra["supersessions"] = [
+            {"sequence": superseded[target]["sequence"], "supersedes_sequence": target}
+            for target in sorted(superseded)
+        ]
     if not complete:
         extra["unresolved_ranks"] = {str(s): ranks for s, ranks in unresolved.items() if ranks}
     return self_digest(
@@ -1468,11 +1519,22 @@ def first_pass_seal(roots: Roots, *, content: bool = True) -> dict[str, Any]:
         raise RunError(f"first pass is {status['status']}; nothing sealed")
     records = [load_plan(roots, s) for s in roots.sequences()]
     repairs = repairs_of(records)
+    superseded = supersessions_of(records)
     receipts: list[dict[str, Any]] = []
     plans: list[dict[str, Any]] = []
     for record in records:
         verify_plan(roots, record, content=content)
         sequence = int(record["sequence"])
+        if sequence in superseded:
+            # Never authorized or run (resolution refuses sealed units under it).
+            plans.append(
+                {
+                    "sequence": record["sequence"],
+                    "digest": record["digest"],
+                    "superseded_by": superseded[sequence]["sequence"],
+                }
+            )
+            continue
         authorization = read_json(roots.plan_dir(sequence) / "authorization.json")
         if authorization["plan_digest"] != record["digest"]:
             raise RunError(f"plan {sequence} authorization belongs to another digest")
@@ -1486,6 +1548,10 @@ def first_pass_seal(roots: Roots, *, content: bool = True) -> dict[str, Any]:
         if record.get("repair") is not None:
             entry["repair_of"] = {
                 key: record["repair"][key] for key in ("plan_sequence", "plan_digest", "ranks")
+            }
+        if record.get("supersedes") is not None:
+            entry["supersedes"] = {
+                key: record["supersedes"][key] for key in ("plan_sequence", "plan_digest")
             }
         if sequence in repairs:
             entry["repaired_ranks"] = {

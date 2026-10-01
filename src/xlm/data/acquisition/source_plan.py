@@ -13,7 +13,10 @@ ordering never restarts; inventory positions reserved for bounded benchmarks
 are never planned. Each plan names its predecessor's digest, so lineage is a
 hash chain. An authorized plan whose unsealed units failed under its own limits
 is repaired, not edited: a repair plan re-plans exactly those ranks under
-changed limits and keeps the predecessor's cursor.
+changed limits and keeps the predecessor's cursor. A plan that was never
+authorized or run is superseded, not edited: the next plan re-plans from its
+cursor under today's inputs and it can no longer be authorized. Every selected
+file's exact inventory size fits its plan's ``max_file_bytes``.
 
 Its digest is what the operator reviews and authorizes; nothing runs on a
 digest that was not explicitly authorized.
@@ -23,6 +26,7 @@ from __future__ import annotations
 
 import dataclasses
 import hashlib
+import json
 import math
 import re
 from collections.abc import Mapping, Sequence
@@ -117,7 +121,39 @@ SOURCE_FILE_BOUNDS: dict[tuple[str, str], tuple[int, int, str]] = {
         "measured 2,733,162,301 canonical text bytes; both ceilings are ceil(1.35x) the "
         "largest observed value",
     ),
+    ("ifm_behaviors", "general"): (
+        444_703,
+        6_540_056_044,
+        "ifm-general-file-v1: bounded footer reads of the p01 files 00069 (329,409 rows, text "
+        "4,844,485,958 B uncompressed) and 00146 (328,568 rows, text 4,844,194,575 B) exceed "
+        "the estimate-derived 55,560 rows (the sampling_plan_version 1 layout divides "
+        "compressed file bytes by logical bytes per row of one 698-row calibration group, and "
+        "the calibration shard is the inventory's smallest file); the adapter keeps text "
+        "verbatim, so canonical text is bounded by the text column's uncompressed bytes "
+        "(calibration: 10,216,553 canonical of 10,226,373 logical group bytes); both ceilings "
+        "are ceil(1.35x) the largest observed value",
+    ),
+    ("ifm_behaviors", "planning"): (
+        473_447,
+        6_270_061_965,
+        "ifm-planning-file-v1: bounded footer reads of the p01 files chunk0-00058 (350,701 "
+        "rows, text 4,644,490,344 B uncompressed) and chunk1-00295 (346,354 rows, text "
+        "4,643,743,770 B) exceed the estimate-derived 105,642 rows (sampling_plan_version 1 "
+        "layout of one 1,903-row calibration group; the calibration shard is the inventory's "
+        "smallest file); the adapter keeps text verbatim, so canonical text is bounded by the "
+        "text column's uncompressed bytes (calibration: 25,422,431 canonical of 25,446,776 "
+        "logical group bytes); both ceilings are ceil(1.35x) the largest observed value",
+    ),
 }
+#: Rule of the selected-size anchor (see :func:`selected_sizing`). It enters a
+#: plan only when it applies, so plans whose files fit the estimate keep their
+#: exact digests.
+SIZE_ANCHOR_RULE = (
+    "mix01-selected-size-anchor-v1: the largest selected file's exact frozen-inventory size "
+    "exceeds the estimate-derived file ceiling, so it replaces the calibration file size as "
+    "the per-file sizing anchor; max_file_bytes is that exact size (whole MiB), rows and "
+    "canonical bytes scale with it under the unchanged tolerances"
+)
 #: Source views whose plans bind intra-file row-group parallelism, each with its
 #: evidence. Like record bounds, an entry enters the policy and so the plan
 #: digest; views without one keep serial processing and their exact plans.
@@ -546,10 +582,85 @@ def record_bound(source_id: str, view_id: str) -> tuple[int, str | None]:
     return bound, basis
 
 
+def _whole_mib(value: float) -> int:
+    return math.ceil(value / MIB) * MIB
+
+
+def selected_sizing(
+    layout: SourceLayout, known_file_bytes: Sequence[int]
+) -> tuple[SourceLayout, dict[str, Any] | None]:
+    """The layout that sizes per-file ceilings for selected files of these exact sizes.
+
+    Per-file ceilings come from one measured file with a tolerance for the
+    unknown sizes of the others. When a selected file's exact inventory size
+    already exceeds the ceiling that tolerance yields, the plan could only fail
+    that file before transferring a byte, so its size anchors the sizing: rows
+    scale with bytes and canonical bytes with rows. Otherwise the layout is
+    returned unchanged and no anchor is recorded.
+    """
+    estimated = _whole_mib(layout.file_bytes * FILE_BYTES_TOLERANCE)
+    largest = max(known_file_bytes, default=0)
+    if largest <= estimated:
+        return layout, None
+    measured = layout.rows_per_file_measured
+    anchored = dataclasses.replace(
+        layout,
+        file_bytes=largest,
+        rows_per_file_measured=None
+        if measured is None
+        else math.ceil(measured * largest / layout.file_bytes),
+    )
+    return anchored, {
+        "rule": SIZE_ANCHOR_RULE,
+        "largest_selected_file_bytes": largest,
+        "estimate_max_file_bytes": estimated,
+        "calibration_file_bytes": layout.file_bytes,
+        "rows_per_file_estimate": anchored.rows_per_file,
+    }
+
+
+def known_sizes(inventory: Mapping[str, Any], files: Sequence[str]) -> list[int]:
+    """Exact frozen-inventory sizes of these files; unknown sizes are left out."""
+    sizes = {str(e["file"]): e["size_bytes"] for e in inventory["files"]}
+    return [int(sizes[name]) for name in files if sizes.get(name) is not None]
+
+
+def check_selected_file_bounds(record: Mapping[str, Any], inventory: Mapping[str, Any]) -> None:
+    """Refuse a whole-file plan whose own file bound excludes a known selected size.
+
+    Such a plan can only fail closed before transferring that file, so it is
+    never emitted or authorized. ``inventory`` must be the plan's own.
+    """
+    if inventory_digest(inventory) != record["inventory"]["digest"]:
+        raise PlanError("inventory is not the plan's frozen inventory")
+    bound = int(record["limits"]["max_file_bytes"])
+    sizes = {str(e["file"]): e["size_bytes"] for e in inventory["files"]}
+    over = {
+        name: int(sizes[name])
+        for name in (str(e["file"]) for e in record["selection"]["files"])
+        if (sizes.get(name) or 0) > bound
+    }
+    if over:
+        raise PlanError(
+            f"selected files exceed the plan's max_file_bytes {bound}: {over}; "
+            "this plan can only fail closed; plan again"
+        )
+
+
 def plan_limits(
-    files: int, layout: SourceLayout, mode: TransportMode, pin: Mapping[str, str]
+    files: int,
+    layout: SourceLayout,
+    mode: TransportMode,
+    pin: Mapping[str, str],
+    *,
+    known_file_bytes: Sequence[int] = (),
 ) -> tuple[dict[str, Any], AcquisitionLimits]:
-    """Every resource ceiling of one plan, derived by the versioned planner rules."""
+    """Every resource ceiling of one plan, derived by the versioned planner rules.
+
+    ``known_file_bytes`` are the exact inventory sizes of the selected files;
+    every one of them fits ``max_file_bytes`` (see :func:`selected_sizing`).
+    """
+    layout, anchor = selected_sizing(layout, known_file_bytes)
     concurrency = dict(CONCURRENCY[mode])
     parallel = SOURCE_ROW_GROUP_PARALLEL.get((pin["source_id"], pin["view_id"]))
     if parallel is not None:
@@ -560,7 +671,12 @@ def plan_limits(
         # File processes share the global slot budget with their row-group workers.
         concurrency["process"] = min(concurrency["process"], parallel[0].max_process_workers())
     record_bytes, record_basis = record_bound(pin["source_id"], pin["view_id"])
-    max_file = math.ceil(layout.file_bytes * FILE_BYTES_TOLERANCE / MIB) * MIB
+    # An exact size needs no size tolerance; the estimate keeps its own.
+    max_file = (
+        math.ceil(layout.file_bytes * FILE_BYTES_TOLERANCE / MIB) * MIB
+        if anchor is None
+        else _whole_mib(layout.file_bytes)
+    )
     max_rows = math.ceil(layout.rows_per_file * ROWS_TOLERANCE)
     canonical_per_file = math.ceil(
         layout.rows_per_file * layout.canonical_bytes_per_row * ROWS_TOLERANCE
@@ -577,6 +693,8 @@ def plan_limits(
         source_max_bytes=max_file,
         metadata_bytes=min(MIB, max(1, output_bytes // 16)),
     )
+    if max(known_file_bytes, default=0) > max_file:
+        raise PlanError("a selected file's exact size exceeds the plan's max_file_bytes")
     unit_peak = max_file + growth.processing_peak + growth.state_peak
     if unit_peak > SCRATCH_CAP_BYTES:
         raise PlanError("one source/processing envelope exceeds the scratch policy ceiling")
@@ -611,6 +729,9 @@ def plan_limits(
         policy["max_record_bytes_basis"] = record_basis
     if file_bounds is not None:
         policy["file_bounds_basis"] = file_bounds[2]
+    if anchor is not None:
+        # Present only when the anchor applies, so other plans keep their digests.
+        policy["file_size_anchor"] = anchor
     if parallel is not None:
         policy["row_group_parallel"] = parallel[0].model_dump()
         policy["row_group_parallel_basis"] = parallel[1]
@@ -856,8 +977,66 @@ def _record(
             f"whole-file measurement (receipt {sizing['receipt']['digest']}) of "
             f"{sizing['measured']['files']} file(s); other files differ in size and "
             "yield; exact counts come from receipts"
-        )
+        ) + ("" if record["expected"]["basis"] == EXPECTED_BASIS else "; " + ANCHORED_BASIS)
     return record
+
+
+EXPECTED_BASIS = "one measured file and calibration yield; exact counts come from receipts"
+ANCHORED_BASIS = (
+    "calibration yield scaled to the largest selected file's exact inventory size "
+    "(selected-size anchor); transfer is the exact inventory size of every download; "
+    "exact counts come from receipts"
+)
+
+
+def _expected(
+    files: Sequence[str],
+    downloads: Sequence[str],
+    layout: SourceLayout,
+    inventory: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Expected counts of a plan; scaled to the selected-size anchor when it applies."""
+    sizing, anchor = selected_sizing(layout, known_sizes(inventory, files))
+    per_file = sizing.rows_per_file * sizing.canonical_bytes_per_row
+    canonical_bytes = math.floor(len(files) * per_file)
+    if anchor is None:
+        transfer = len(downloads) * layout.file_bytes
+    else:
+        sizes = known_sizes(inventory, downloads)
+        transfer = sum(sizes) + (len(downloads) - len(sizes)) * sizing.file_bytes
+    return {
+        "files": len(files),
+        "rows": len(files) * sizing.rows_per_file,
+        "canonical_bytes": canonical_bytes,
+        "estimated_tokens": canonical_bytes // BYTES_PER_ESTIMATED_TOKEN,
+        "transfer_bytes": transfer,
+        "requests": 2 * len(downloads),
+        "basis": EXPECTED_BASIS if anchor is None else ANCHORED_BASIS,
+    }
+
+
+@dataclass(frozen=True)
+class Superseded:
+    """The latest plan of a source, never authorized and never run.
+
+    The driver establishes that nothing of it exists beyond its ``plan.json``
+    (no authorization, acquisition plan, events, receipts, units or scratch);
+    the planner re-plans from its cursor and binds its digest.
+    """
+
+    plan: Mapping[str, Any]
+
+
+#: Plan sections whose difference justifies superseding an unauthorized plan.
+SUPERSEDE_SECTIONS = ("inputs", "requirement", "acquired_before", "transport_mode", "limits")
+
+
+def limit_diff(old: Mapping[str, Any], new: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
+    return {
+        key: {"from": old.get(key), "to": new.get(key)}
+        for key in sorted(set(old) | set(new))
+        if old.get(key) != new.get(key)
+    }
 
 
 def build_plan(
@@ -873,14 +1052,45 @@ def build_plan(
     admission: Mapping[str, str],
     predecessor: Predecessor | None = None,
     benchmark_reserved: int = BENCHMARK_RESERVED_POSITIONS,
+    superseded: Superseded | None = None,
 ) -> dict[str, Any]:
-    """The next deterministic plan of this source; refuses rather than guesses."""
+    """The next deterministic plan of this source; refuses rather than guesses.
+
+    With ``superseded``, the plan replaces that unauthorized, never-run plan:
+    it takes the next sequence, starts at the superseded plan's cursor with its
+    acquired bytes, binds its digest and must differ from it. The superseded
+    plan is never edited; it can no longer be authorized or run.
+    """
     frozen = _frozen(pin, policy, layout, inventory)
     layout, ordered = frozen.layout, frozen.ordered
     if not 0 <= benchmark_reserved < len(ordered):
         raise PlanError("benchmark reservation leaves no plannable inventory")
     eligible = len(ordered) - benchmark_reserved
     sequence, start, acquired, previous_digest = 1, 0, 0, None
+    previous_accounting = None if predecessor is None else predecessor.accounting_digest
+    rule = "plans form a hash chain; each starts at its predecessor's next_cursor"
+    if superseded is not None:
+        if predecessor is not None:
+            raise PlanError("a superseding plan takes its cursor from the plan it supersedes")
+        prior = superseded.plan
+        check_plan(prior)
+        if (prior["source_key"], prior["source"], prior["inventory"]["digest"]) != (
+            source_key,
+            dict(pin),
+            inventory["inventory_digest"],
+        ):
+            raise PlanError("superseded plan belongs to another source or inventory")
+        if prior.get("repair") is not None or "start_rank" not in prior["selection"]:
+            raise PlanError("a repair plan is repaired again, never superseded")
+        sequence = int(prior["sequence"]) + 1
+        start = int(prior["selection"]["start_rank"])
+        acquired = int(prior["acquired_before"]["canonical_bytes"])
+        previous_digest = prior["digest"]
+        previous_accounting = prior["lineage"]["previous_accounting_digest"]
+        rule = (
+            "plans form a hash chain; a superseding plan re-plans its unauthorized, "
+            "never-run predecessor from that plan's cursor"
+        )
     if predecessor is not None:
         check_plan(predecessor.plan)
         prior = predecessor.plan
@@ -909,7 +1119,9 @@ def build_plan(
         )
     stop = start + wanted
     files = ordered[start:stop]
-    policy_limits, limits = plan_limits(len(files), layout, frozen.mode, pin)
+    policy_limits, limits = plan_limits(
+        len(files), layout, frozen.mode, pin, known_file_bytes=known_sizes(inventory, files)
+    )
     minted = acquisition_plan(
         pin,
         files,
@@ -918,7 +1130,6 @@ def build_plan(
         coverage_note(sequence, start, stop),
         processing_growth=policy_limits["processing_growth"],
     )
-    expected_canonical = math.floor(len(files) * per_file)
     record = _record(
         source_key=source_key,
         sequence=sequence,
@@ -933,10 +1144,8 @@ def build_plan(
         admission=admission,
         lineage={
             "previous_plan_digest": previous_digest,
-            "previous_accounting_digest": None
-            if predecessor is None
-            else predecessor.accounting_digest,
-            "rule": "plans form a hash chain; each starts at its predecessor's next_cursor",
+            "previous_accounting_digest": previous_accounting,
+            "rule": rule,
         },
         acquired=acquired,
         selection={
@@ -947,18 +1156,31 @@ def build_plan(
             "row_ranges": "whole files (every row of every planned file)",
             "next_cursor": stop,
         },
-        expected={
-            "files": len(files),
-            "rows": len(files) * layout.rows_per_file,
-            "canonical_bytes": expected_canonical,
-            "estimated_tokens": expected_canonical // BYTES_PER_ESTIMATED_TOKEN,
-            "transfer_bytes": len(files) * layout.file_bytes,
-            "requests": 2 * len(files),
-            "basis": "one measured file and calibration yield; exact counts come from receipts",
-        },
+        expected=_expected(files, files, layout, inventory),
         policy_limits=policy_limits,
         minted=minted,
     )
+    if superseded is not None:
+        prior = json.loads(json.dumps(superseded.plan))
+        stored = json.loads(json.dumps(record))  # compare JSON values, as stored
+        changed = [key for key in SUPERSEDE_SECTIONS if prior.get(key) != stored.get(key)] + (
+            ["selection"] if prior["selection"]["files"] != stored["selection"]["files"] else []
+        )
+        if not changed:
+            raise PlanError(
+                "today's frozen inputs reproduce the unauthorized plan; review and authorize it"
+            )
+        record["supersedes"] = {
+            "plan_sequence": int(prior["sequence"]),
+            "plan_digest": prior["digest"],
+            "changed_sections": changed,
+            "changed_limits": limit_diff(prior["limits"], stored["limits"]),
+            "changed_acquisition_limits": limit_diff(
+                prior["acquisition_plan"]["limits"], stored["acquisition_plan"]["limits"]
+            ),
+            "rule": "the superseded plan was never authorized or run and is never edited; "
+            "it can no longer be authorized or run, and its ranks are this plan's",
+        }
     return _with_digest(record)
 
 
@@ -979,6 +1201,7 @@ UNIT_LIMIT_KEYS = (
     "processing_growth",
     "row_group_parallel",
     "scratch_min_free_bytes",
+    "file_deadline_seconds",
 )
 
 
@@ -1059,7 +1282,9 @@ def build_repair_plan(
         raise PlanError("benchmark reservation leaves no plannable inventory")
     files = [name for _, name in remaining]
     ranks = [rank for rank, _ in remaining]
-    policy_limits, limits = plan_limits(len(files), layout, frozen.mode, pin)
+    policy_limits, limits = plan_limits(
+        len(files), layout, frozen.mode, pin, known_file_bytes=known_sizes(inventory, files)
+    )
     changed = {
         key: {"from": prior["limits"].get(key), "to": policy_limits.get(key)}
         for key in UNIT_LIMIT_KEYS
@@ -1077,8 +1302,6 @@ def build_repair_plan(
         processing_growth=policy_limits["processing_growth"],
         expected_file_digests=repaired.retained,
     )
-    per_file = layout.rows_per_file * layout.canonical_bytes_per_row
-    expected_canonical = math.floor(len(files) * per_file)
     downloads = [name for name in files if name not in repaired.retained]
     record = _record(
         source_key=source_key,
@@ -1106,15 +1329,7 @@ def build_repair_plan(
             "row_ranges": "whole files (every row of every planned file)",
             "next_cursor": int(prior["selection"]["next_cursor"]),
         },
-        expected={
-            "files": len(files),
-            "rows": len(files) * layout.rows_per_file,
-            "canonical_bytes": expected_canonical,
-            "estimated_tokens": expected_canonical // BYTES_PER_ESTIMATED_TOKEN,
-            "transfer_bytes": len(downloads) * layout.file_bytes,
-            "requests": 2 * len(downloads),
-            "basis": "one measured file and calibration yield; exact counts come from receipts",
-        },
+        expected=_expected(files, downloads, layout, inventory),
         policy_limits=policy_limits,
         minted=minted,
     )

@@ -1,0 +1,320 @@
+{
+  "files": [
+    {
+      "arrow_types": {
+        "text": "string",
+        "token_count": "int64"
+      },
+      "codecs": [
+        "ZSTD"
+      ],
+      "column_chunk_compressed_bytes": 2013311422,
+      "columns": [
+        "text",
+        "token_count"
+      ],
+      "created_by": "parquet-cpp-arrow version 25.0.1",
+      "encodings": {
+        "text": [
+          "PLAIN",
+          "RLE",
+          "RLE_DICTIONARY"
+        ],
+        "token_count": [
+          "PLAIN",
+          "RLE",
+          "RLE_DICTIONARY"
+        ]
+      },
+      "file": "general/general_full.chunk0-bdbff8a5c6-00069.parquet",
+      "file_bytes": 2013330256,
+      "footer_bytes": 18830,
+      "footer_sha256": "6dec1098b1c7ca00780277449425f086c134578f0194be51545b88be73ec960a",
+      "format_version": "2.6",
+      "max_projected_column_ratio": 2.505,
+      "max_row_group_projected_uncompressed_bytes": 60654676,
+      "max_row_group_rows": 4188,
+      "max_row_group_total_byte_size": 60654676,
+      "min_row_group_rows": 4045,
+      "per_column": {
+        "text": {
+          "compressed": 2012403999,
+          "max_rg_uncompressed": 60626707,
+          "uncompressed": 4844485958
+        },
+        "token_count": {
+          "compressed": 907423,
+          "max_rg_uncompressed": 28629,
+          "uncompressed": 2253476
+        }
+      },
+      "projected_compressed_bytes": 2013311422,
+      "projected_uncompressed_bytes": 4846739434,
+      "rank": 0,
+      "row_groups": 80,
+      "rows": 329409,
+      "token_count_max": 7863,
+      "total_byte_size": 4846739434,
+      "unit": "f00000",
+      "view": "general"
+    },
+    {
+      "arrow_types": {
+        "text": "string",
+        "token_count": "int64"
+      },
+      "codecs": [
+        "ZSTD"
+      ],
+      "column_chunk_compressed_bytes": 2014387899,
+      "columns": [
+        "text",
+        "token_count"
+      ],
+      "created_by": "parquet-cpp-arrow version 25.0.1",
+      "encodings": {
+        "text": [
+          "PLAIN",
+          "RLE",
+          "RLE_DICTIONARY"
+        ],
+        "token_count": [
+          "PLAIN",
+          "RLE",
+          "RLE_DICTIONARY"
+        ]
+      },
+      "file": "general/general_full.chunk0-bdbff8a5c6-00146.parquet",
+      "file_bytes": 2014409401,
+      "footer_bytes": 21498,
+      "footer_sha256": "7255546a630daf5e2921fe431879b4868b0624c39de403db0c9222a6648b16eb",
+      "format_version": "2.6",
+      "max_projected_column_ratio": 2.5113,
+      "max_row_group_projected_uncompressed_bytes": 60648838,
+      "max_row_group_rows": 4188,
+      "max_row_group_total_byte_size": 60648838,
+      "min_row_group_rows": 4043,
+      "per_column": {
+        "text": {
+          "compressed": 2013480595,
+          "max_rg_uncompressed": 60620305,
+          "uncompressed": 4844194575
+        },
+        "token_count": {
+          "compressed": 907304,
+          "max_rg_uncompressed": 28601,
+          "uncompressed": 2257600
+        }
+      },
+      "projected_compressed_bytes": 2014387899,
+      "projected_uncompressed_bytes": 4846452175,
+      "rank": 1,
+      "row_groups": 80,
+      "rows": 328568,
+      "token_count_max": 7819,
+      "total_byte_size": 4846452175,
+      "unit": "f00001",
+      "view": "general"
+    },
+    {
+      "arrow_types": {
+        "text": "string",
+        "token_count": "int64"
+      },
+      "codecs": [
+        "ZSTD"
+      ],
+      "column_chunk_compressed_bytes": 2007778514,
+      "columns": [
+        "text",
+        "token_count"
+      ],
+      "created_by": "parquet-cpp-arrow version 25.0.1",
+      "encodings": {
+        "text": [
+          "PLAIN",
+          "RLE",
+          "RLE_DICTIONARY"
+        ],
+        "token_count": [
+          "PLAIN",
+          "RLE",
+          "RLE_DICTIONARY"
+        ]
+      },
+      "file": "planning/planning.chunk0-160f3594ed-00058.parquet",
+      "file_bytes": 2007884297,
+      "footer_bytes": 105779,
+      "footer_sha256": "52cadd0eac54fb4b3d415fd9bb8cd1825d768582fee51b60978e121622800ad2",
+      "format_version": "2.6",
+      "max_projected_column_ratio": 2.5078,
+      "max_row_group_projected_uncompressed_bytes": 59636171,
+      "max_row_group_rows": 4575,
+      "max_row_group_total_byte_size": 59636171,
+      "min_row_group_rows": 4391,
+      "per_column": {
+        "text": {
+          "compressed": 2006813800,
+          "max_rg_uncompressed": 59605630,
+          "uncompressed": 4644490344
+        },
+        "token_count": {
+          "compressed": 964714,
+          "max_rg_uncompressed": 31290,
+          "uncompressed": 2403039
+        }
+      },
+      "projected_compressed_bytes": 2007778514,
+      "projected_uncompressed_bytes": 4646893383,
+      "rank": 0,
+      "row_groups": 78,
+      "rows": 350701,
+      "token_count_max": 7719,
+      "total_byte_size": 4646893383,
+      "unit": "f00000",
+      "view": "planning"
+    },
+    {
+      "arrow_types": {
+        "text": "string",
+        "token_count": "int64"
+      },
+      "codecs": [
+        "ZSTD"
+      ],
+      "column_chunk_compressed_bytes": 2007399646,
+      "columns": [
+        "text",
+        "token_count"
+      ],
+      "created_by": "parquet-cpp-arrow version 25.0.1",
+      "encodings": {
+        "text": [
+          "PLAIN",
+          "RLE",
+          "RLE_DICTIONARY"
+        ],
+        "token_count": [
+          "PLAIN",
+          "RLE",
+          "RLE_DICTIONARY"
+        ]
+      },
+      "file": "planning/planning.chunk1-6d580bf230-00295.parquet",
+      "file_bytes": 2007493650,
+      "footer_bytes": 94000,
+      "footer_sha256": "b127927e10f820f187056177f9bd96124b05089fbc10bc61eb657c3232f4b605",
+      "format_version": "2.6",
+      "max_projected_column_ratio": 2.5262,
+      "max_row_group_projected_uncompressed_bytes": 59629018,
+      "max_row_group_rows": 4549,
+      "max_row_group_total_byte_size": 59629018,
+      "min_row_group_rows": 4328,
+      "per_column": {
+        "text": {
+          "compressed": 2006442421,
+          "max_rg_uncompressed": 59598113,
+          "uncompressed": 4643743770
+        },
+        "token_count": {
+          "compressed": 957225,
+          "max_rg_uncompressed": 31289,
+          "uncompressed": 2390707
+        }
+      },
+      "projected_compressed_bytes": 2007399646,
+      "projected_uncompressed_bytes": 4646134477,
+      "rank": 1,
+      "row_groups": 78,
+      "rows": 346354,
+      "token_count_max": 7696,
+      "total_byte_size": 4646134477,
+      "unit": "f00001",
+      "view": "planning"
+    }
+  ],
+  "network": {
+    "bytes": 240107,
+    "hosts": [
+      "us.aws.cdn.hf.co",
+      "us.aws.cdn.hf.co",
+      "us.aws.cdn.hf.co",
+      "us.aws.cdn.hf.co",
+      "us.aws.cdn.hf.co",
+      "us.aws.cdn.hf.co",
+      "us.aws.cdn.hf.co",
+      "us.aws.cdn.hf.co"
+    ],
+    "redirects": 8,
+    "requests": 8,
+    "responses": [
+      {
+        "bytes": 8,
+        "file": "general/general_full.chunk0-bdbff8a5c6-00069.parquet",
+        "range": [
+          2013330248,
+          2013330255
+        ]
+      },
+      {
+        "bytes": 18822,
+        "file": "general/general_full.chunk0-bdbff8a5c6-00069.parquet",
+        "range": [
+          2013311426,
+          2013330247
+        ]
+      },
+      {
+        "bytes": 8,
+        "file": "general/general_full.chunk0-bdbff8a5c6-00146.parquet",
+        "range": [
+          2014409393,
+          2014409400
+        ]
+      },
+      {
+        "bytes": 21490,
+        "file": "general/general_full.chunk0-bdbff8a5c6-00146.parquet",
+        "range": [
+          2014387903,
+          2014409392
+        ]
+      },
+      {
+        "bytes": 8,
+        "file": "planning/planning.chunk0-160f3594ed-00058.parquet",
+        "range": [
+          2007884289,
+          2007884296
+        ]
+      },
+      {
+        "bytes": 105771,
+        "file": "planning/planning.chunk0-160f3594ed-00058.parquet",
+        "range": [
+          2007778518,
+          2007884288
+        ]
+      },
+      {
+        "bytes": 8,
+        "file": "planning/planning.chunk1-6d580bf230-00295.parquet",
+        "range": [
+          2007493642,
+          2007493649
+        ]
+      },
+      {
+        "bytes": 93992,
+        "file": "planning/planning.chunk1-6d580bf230-00295.parquet",
+        "range": [
+          2007399650,
+          2007493641
+        ]
+      }
+    ],
+    "wall_seconds": 6.328
+  },
+  "repository": "IFM/Pretrain-Behaviors",
+  "revision": "3345e13d7f3f6d0ecb5fdd67b37aed289f3191f5"
+}

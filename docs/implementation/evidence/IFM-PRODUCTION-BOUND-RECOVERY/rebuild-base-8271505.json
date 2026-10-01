@@ -1,0 +1,62 @@
+{
+  "finepdfs/p01": {
+    "anchored": false,
+    "rebuilt": "1f44a4f579fa82557e259e576119ef6fae3797d2d98a6246de66ec6959d44da3",
+    "reproduces": false,
+    "stored": "de220b0110a2be278f35fedf4daca70568f9a177b68cab1e7e4357ed83433890"
+  },
+  "finepdfs/p02": {
+    "anchored": false,
+    "rebuilt": "98209572a1939769dc3032562d2887bb8da4912b4936c1845f450a1bdb9799ad",
+    "reproduces": true,
+    "stored": "98209572a1939769dc3032562d2887bb8da4912b4936c1845f450a1bdb9799ad"
+  },
+  "finewiki/p01": {
+    "anchored": false,
+    "rebuilt": "21c19610c885963541bee750f738971f7aaed6a527c7267b251d15e91db4e83e",
+    "reproduces": false,
+    "stored": "fd8c67df3638059dd58b908317fe368c69a6c4b5c96e14139372bc63eabeabfb"
+  },
+  "finewiki/p02": {
+    "anchored": false,
+    "rebuilt": "319d6bf3dbb7ef085b637c27ea75a89d9d1a97f6b1337153cfebebb1844a305b",
+    "reproduces": true,
+    "stored": "319d6bf3dbb7ef085b637c27ea75a89d9d1a97f6b1337153cfebebb1844a305b"
+  },
+  "ifm_general/p01": {
+    "anchored": false,
+    "rebuilt": "b7bb0cbfb6b7f600a48babcb4507e7dd089ae04716bb4501927f5cda55428372",
+    "reproduces": true,
+    "stored": "b7bb0cbfb6b7f600a48babcb4507e7dd089ae04716bb4501927f5cda55428372"
+  },
+  "ifm_planning/p01": {
+    "anchored": false,
+    "rebuilt": "49ecb6b3ded6bc9c71ebe7e5bbc1856599900b9b6029a421948626e127150e63",
+    "reproduces": true,
+    "stored": "49ecb6b3ded6bc9c71ebe7e5bbc1856599900b9b6029a421948626e127150e63"
+  },
+  "simple_stories/p01": {
+    "anchored": false,
+    "rebuilt": "3f595ab5f9f9e450ba454b31e442dabcada599e5f15ca82ec6c2f86c983b28a3",
+    "reproduces": true,
+    "stored": "3f595ab5f9f9e450ba454b31e442dabcada599e5f15ca82ec6c2f86c983b28a3"
+  },
+  "synth/p01": {
+    "anchored": false,
+    "rebuilt": "4ec226d9d285896a9342cdb07282b31ef87e9a2a8de8b033df274655b0833a0d",
+    "reproduces": true,
+    "stored": "4ec226d9d285896a9342cdb07282b31ef87e9a2a8de8b033df274655b0833a0d"
+  },
+  "ultrax/p01": {
+    "anchored": false,
+    "rebuilt": "60945c41e436c6a3200566a71b9826fc2fa419abd1260fffd4eabd471cda601e",
+    "reproduces": false,
+    "stored": "454395fbf3f1e7e8c371281beb3948d073e329b52b03279bd36b7e758cc045fb"
+  },
+  "wiki_rewrite/p01": {
+    "anchored": false,
+    "rebuilt": "9c1c0df652462586627a1c0a419698de895d1ad52b3311e0e5e55cd537b427f8",
+    "reproduces": true,
+    "stored": "9c1c0df652462586627a1c0a419698de895d1ad52b3311e0e5e55cd537b427f8"
+  }
+}

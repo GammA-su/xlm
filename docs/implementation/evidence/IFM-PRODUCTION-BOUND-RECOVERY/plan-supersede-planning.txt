@@ -1,0 +1,35 @@
+supersedes plan     1 49ecb6b3ded6bc9c71ebe7e5bbc1856599900b9b6029a421948626e127150e63 (never authorized or run; kept unchanged; can no longer be authorized)
+changed sections    ['limits']
+changed limit       file_bounds_basis: None -> ifm-planning-file-v1: bounded footer reads of the p01 files chunk0-00058 (350,701 rows, text 4,644,490,344 B uncompressed) and chunk1-00295 (346,354 rows, text 4,643,743,770 B) exceed the estimate-derived 105,642 rows (sampling_plan_version 1 layout of one 1,903-row calibration group; the calibration shard is the inventory's smallest file); the adapter keeps text verbatim, so canonical text is bounded by the text column's uncompressed bytes (calibration: 25,422,431 canonical of 25,446,776 logical group bytes); both ceilings are ceil(1.35x) the largest observed value
+changed limit       file_deadline_seconds: 4493.333333333334 -> 6383.333333333334
+changed limit       file_size_anchor: None -> {'rule': "mix01-selected-size-anchor-v1: the largest selected file's exact frozen-inventory size exceeds the estimate-derived file ceiling, so it replaces the calibration file size as the per-file sizing anchor; max_file_bytes is that exact size (whole MiB), rows and canonical bytes scale with it under the unchanged tolerances", 'largest_selected_file_bytes': 2007884297, 'estimate_max_file_bytes': 1413480448, 'calibration_file_bytes': 706323152, 'rows_per_file_estimate': 150156}
+changed limit       max_canonical_bytes_per_file: 1411285579 -> 6270061965
+changed limit       max_decoded_bytes_per_file: 5653921792 -> 8032092160
+changed limit       max_durable_bytes_per_file: 4236051606 -> 10031839224
+changed limit       max_file_bytes: 1413480448 -> 2008023040
+changed limit       max_rows_per_file: 105642 -> 473447
+changed limit       processing_growth: {'event_bytes': 1048576, 'metadata_bytes': 1048576, 'output_bytes': 2822571158, 'progress_bytes': 4096, 'run_metadata_bytes': 8388608, 'source_max_bytes': 1413480448, 'state_bytes': 1048576, 'version': 1} -> {'version': 1, 'output_bytes': 8023816184, 'source_max_bytes': 2008023040, 'metadata_bytes': 1048576, 'progress_bytes': 4096, 'state_bytes': 1048576, 'run_metadata_bytes': 8388608, 'event_bytes': 1048576}
+changed limit       scratch_cap_bytes: 8478411052 -> 20069986288
+changed plan limit  max_decompressed_bytes: 11307843584 -> 16064184320
+changed plan limit  max_output_disk_bytes: 11323197740 -> 24103858160
+changed plan limit  max_records: 211284 -> 946894
+changed plan limit  max_scanned_records: 211284 -> 946894
+changed plan limit  max_temp_disk_bytes: 8478411052 -> 20069986288
+changed plan limit  max_transferred_bytes: 2119172096 -> 6024069120
+plan 2 of ifm_planning: G:\XLM\plans\ifm_planning\p02\plan.json
+transport mode      whole_file_local (modeled policy)
+policy digest       730f723f743484c1293184b066a817d26362ee4e2e2ed65dd6fdfbb919f7723c
+sizing basis        calibration estimate
+inventory ranks     [0, 2) of 834 (2 whole files); next top-up cursor 2
+expected            4,015,377,947 B transfer, 4 requests, 300,312 rows, 1,002,977,022 est. tokens
+transfer ceiling    6,024,069,120 B
+request ceiling     32
+per-file ceiling    2,008,023,040 B, 473,447 rows
+size anchor         largest selected file 2,007,884,297 B > estimate ceiling 1,413,480,448 B (calibration file 706,323,152 B)
+file bounds basis   ifm-planning-file-v1
+scratch ceiling     20,069,986,288 B (+34,359,738,368 B kept free)
+durable ceiling     24,103,858,160 B (raw + canonical)
+canonical ceiling   12,540,123,930 B
+concurrency         2 streams, 2 processes
+PLAN DIGEST: 72778e8c5144033381500dfb6762120df7a0d74813b6641bf509ec6484082141
+STOP - USER MUST REVIEW PLAN DIGEST BEFORE AUTHORIZATION

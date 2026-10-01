@@ -1,0 +1,146 @@
+{
+  "ifm_general/p01/f00000": {
+    "checks": {
+      "file + text <= max_durable_bytes_per_file": false,
+      "file_bytes <= max_file_bytes": false,
+      "footer_bytes <= max_parser_bytes": true,
+      "no row group refused (check_layout)": true,
+      "projected uncompressed <= max_decoded_bytes_per_file": false,
+      "rows <= max_rows_per_file (check_layout)": false,
+      "text uncompressed <= max_canonical_bytes_per_file": false
+    },
+    "file": "general/general_full.chunk0-bdbff8a5c6-00069.parquet",
+    "passes": false,
+    "plan_digest": "b7bb0cbfb6b7f600a48babcb4507e7dd089ae04716bb4501927f5cda55428372",
+    "projected_uncompressed_bytes": 4846739434,
+    "refused_groups": [],
+    "row_groups": 80,
+    "rows": 329409
+  },
+  "ifm_general/p01/f00001": {
+    "checks": {
+      "file + text <= max_durable_bytes_per_file": false,
+      "file_bytes <= max_file_bytes": false,
+      "footer_bytes <= max_parser_bytes": true,
+      "no row group refused (check_layout)": true,
+      "projected uncompressed <= max_decoded_bytes_per_file": false,
+      "rows <= max_rows_per_file (check_layout)": false,
+      "text uncompressed <= max_canonical_bytes_per_file": false
+    },
+    "file": "general/general_full.chunk0-bdbff8a5c6-00146.parquet",
+    "passes": false,
+    "plan_digest": "b7bb0cbfb6b7f600a48babcb4507e7dd089ae04716bb4501927f5cda55428372",
+    "projected_uncompressed_bytes": 4846452175,
+    "refused_groups": [],
+    "row_groups": 80,
+    "rows": 328568
+  },
+  "ifm_general/p02/f00000": {
+    "checks": {
+      "file + text <= max_durable_bytes_per_file": true,
+      "file_bytes <= max_file_bytes": true,
+      "footer_bytes <= max_parser_bytes": true,
+      "no row group refused (check_layout)": true,
+      "projected uncompressed <= max_decoded_bytes_per_file": true,
+      "rows <= max_rows_per_file (check_layout)": true,
+      "text uncompressed <= max_canonical_bytes_per_file": true
+    },
+    "file": "general/general_full.chunk0-bdbff8a5c6-00069.parquet",
+    "passes": true,
+    "plan_digest": "6c0dfe5a3474978684d294cf8b9dffa616d6cf963b3bfdcd3ecaaea89ec79939",
+    "projected_uncompressed_bytes": 4846739434,
+    "refused_groups": [],
+    "row_groups": 80,
+    "rows": 329409
+  },
+  "ifm_general/p02/f00001": {
+    "checks": {
+      "file + text <= max_durable_bytes_per_file": true,
+      "file_bytes <= max_file_bytes": true,
+      "footer_bytes <= max_parser_bytes": true,
+      "no row group refused (check_layout)": true,
+      "projected uncompressed <= max_decoded_bytes_per_file": true,
+      "rows <= max_rows_per_file (check_layout)": true,
+      "text uncompressed <= max_canonical_bytes_per_file": true
+    },
+    "file": "general/general_full.chunk0-bdbff8a5c6-00146.parquet",
+    "passes": true,
+    "plan_digest": "6c0dfe5a3474978684d294cf8b9dffa616d6cf963b3bfdcd3ecaaea89ec79939",
+    "projected_uncompressed_bytes": 4846452175,
+    "refused_groups": [],
+    "row_groups": 80,
+    "rows": 328568
+  },
+  "ifm_planning/p01/f00000": {
+    "checks": {
+      "file + text <= max_durable_bytes_per_file": false,
+      "file_bytes <= max_file_bytes": false,
+      "footer_bytes <= max_parser_bytes": true,
+      "no row group refused (check_layout)": true,
+      "projected uncompressed <= max_decoded_bytes_per_file": true,
+      "rows <= max_rows_per_file (check_layout)": false,
+      "text uncompressed <= max_canonical_bytes_per_file": false
+    },
+    "file": "planning/planning.chunk0-160f3594ed-00058.parquet",
+    "passes": false,
+    "plan_digest": "49ecb6b3ded6bc9c71ebe7e5bbc1856599900b9b6029a421948626e127150e63",
+    "projected_uncompressed_bytes": 4646893383,
+    "refused_groups": [],
+    "row_groups": 78,
+    "rows": 350701
+  },
+  "ifm_planning/p01/f00001": {
+    "checks": {
+      "file + text <= max_durable_bytes_per_file": false,
+      "file_bytes <= max_file_bytes": false,
+      "footer_bytes <= max_parser_bytes": true,
+      "no row group refused (check_layout)": true,
+      "projected uncompressed <= max_decoded_bytes_per_file": true,
+      "rows <= max_rows_per_file (check_layout)": false,
+      "text uncompressed <= max_canonical_bytes_per_file": false
+    },
+    "file": "planning/planning.chunk1-6d580bf230-00295.parquet",
+    "passes": false,
+    "plan_digest": "49ecb6b3ded6bc9c71ebe7e5bbc1856599900b9b6029a421948626e127150e63",
+    "projected_uncompressed_bytes": 4646134477,
+    "refused_groups": [],
+    "row_groups": 78,
+    "rows": 346354
+  },
+  "ifm_planning/p02/f00000": {
+    "checks": {
+      "file + text <= max_durable_bytes_per_file": true,
+      "file_bytes <= max_file_bytes": true,
+      "footer_bytes <= max_parser_bytes": true,
+      "no row group refused (check_layout)": true,
+      "projected uncompressed <= max_decoded_bytes_per_file": true,
+      "rows <= max_rows_per_file (check_layout)": true,
+      "text uncompressed <= max_canonical_bytes_per_file": true
+    },
+    "file": "planning/planning.chunk0-160f3594ed-00058.parquet",
+    "passes": true,
+    "plan_digest": "72778e8c5144033381500dfb6762120df7a0d74813b6641bf509ec6484082141",
+    "projected_uncompressed_bytes": 4646893383,
+    "refused_groups": [],
+    "row_groups": 78,
+    "rows": 350701
+  },
+  "ifm_planning/p02/f00001": {
+    "checks": {
+      "file + text <= max_durable_bytes_per_file": true,
+      "file_bytes <= max_file_bytes": true,
+      "footer_bytes <= max_parser_bytes": true,
+      "no row group refused (check_layout)": true,
+      "projected uncompressed <= max_decoded_bytes_per_file": true,
+      "rows <= max_rows_per_file (check_layout)": true,
+      "text uncompressed <= max_canonical_bytes_per_file": true
+    },
+    "file": "planning/planning.chunk1-6d580bf230-00295.parquet",
+    "passes": true,
+    "plan_digest": "72778e8c5144033381500dfb6762120df7a0d74813b6641bf509ec6484082141",
+    "projected_uncompressed_bytes": 4646134477,
+    "refused_groups": [],
+    "row_groups": 78,
+    "rows": 346354
+  }
+}

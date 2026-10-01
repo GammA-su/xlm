@@ -36,7 +36,11 @@ CANONICAL = 10**9
 
 
 def test_finewiki_bounds_are_explicit_and_other_sources_keep_theirs() -> None:
-    assert set(planner.SOURCE_FILE_BOUNDS) == {("finewiki", "en")}
+    assert set(planner.SOURCE_FILE_BOUNDS) == {
+        ("finewiki", "en"),
+        ("ifm_behaviors", "general"),
+        ("ifm_behaviors", "planning"),
+    }
     rows, canonical, basis = planner.SOURCE_FILE_BOUNDS[("finewiki", "en")]
     # ceil(1.35x) the largest observed: 446,535 rows; 2,733,162,301 canonical bytes.
     assert rows == math.ceil(446_535 * 1.35) and canonical == math.ceil(2_733_162_301 * 1.35)

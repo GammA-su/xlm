@@ -1,0 +1,38 @@
+{
+  "completion_percent": 0.0,
+  "plan_digest": "6c0dfe5a3474978684d294cf8b9dffa616d6cf963b3bfdcd3ecaaea89ec79939",
+  "remaining": [
+    {
+      "file": "general/general_full.chunk0-bdbff8a5c6-00069.parquet",
+      "rank": 0
+    },
+    {
+      "file": "general/general_full.chunk0-bdbff8a5c6-00146.parquet",
+      "rank": 1
+    }
+  ],
+  "restart": {
+    "counts": {
+      "fresh_download": 2,
+      "local_complete_reuse": 0,
+      "local_processing_retry": 0,
+      "resumable_partial": 0,
+      "sealed_skip": 0
+    },
+    "known_network_bytes": 0,
+    "resumable_verified_bytes": 0,
+    "units": {
+      "fresh_download": [
+        "f00000",
+        "f00001"
+      ],
+      "local_complete_reuse": [],
+      "local_processing_retry": [],
+      "resumable_partial": [],
+      "sealed_skip": []
+    },
+    "worst_case_network_bytes": 4030726144
+  },
+  "sealed": 0,
+  "total": 2
+}

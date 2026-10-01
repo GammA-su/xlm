@@ -1,3 +1,26 @@
+> **IFM PRODUCTION BOUND RECOVERY (2026-10-01): IFM PRODUCTION BOUNDS READY FOR
+> OPERATOR DIGEST REVIEW.** General p01 `b7bb0cbf...8372` failed in `_bind`:
+> both selected files (2,013,330,256 / 2,014,409,401 B) exceed its 814,743,552 B
+> `max_file_bytes`. Cause: a planner bug plus an estimate miss. The planner never
+> bound its file ceiling to the exact selected sizes in the frozen inventory, and
+> each view's calibration shard is that inventory's smallest file (medians are
+> about 2.01 GB). One bounded footer audit (8 ranged GETs, 240,107 B, metadata
+> only) found 329K-351K rows and 4.64-4.84 GB of text per file. So rows,
+> canonical, decoded, durable, output, scratch, deadline and transfer ceilings
+> were insufficient too. Generic fix: the selected-size anchor
+> (`max_file_bytes` = exact largest size) and an authorize-time refusal. IFM
+> footer bounds (1.35x) and `file_deadline_seconds` were added to the repair
+> keys. New `plan-supersede` handles unauthorized, never-run plans. All non-IFM
+> plan rebuild digests are unchanged. p01 artifacts are byte-identical. **General
+> p02 repair `6c0dfe5a3474978684d294cf8b9dffa616d6cf963b3bfdcd3ecaaea89ec79939`**:
+> ranks [0,1], cursor 2, fresh_download 2. **Planning p02
+> `72778e8c5144033381500dfb6762120df7a0d74813b6641bf509ec6484082141`** supersedes
+> unauthorized p01 `49ecb6b3...`. NEITHER is authorized. Footer preflight passes
+> both. 10 new + 216 related tests, ruff/format/mypy strict pass. Two files per
+> view overshoot the 660 MB need about 14x (operator decision).
+> [Report and commands](reports/IFM-PRODUCTION-BOUND-RECOVERY.md). Next: review
+> both digests with this branch's code, then authorize and run.
+
 > **FINEWIKI P01 ROW-LIMIT RECOVERY (2026-10-01): FINEWIKI P01 RECOVERY READY
 > FOR OPERATOR DIGEST REVIEW.** p01 `fd8c67df...` f00001 (`000_00011`, 417,809
 > rows) failed the 162,540 row bound; f00000 (`000_00014`, 446,535 rows by one

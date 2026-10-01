@@ -1,0 +1,190 @@
+{
+  "general": {
+    "calibration_file_bytes": 407007573,
+    "calibration_file_size_percentile_rank": 0.16,
+    "calibration_x_median": 0.2021,
+    "inventory": {
+      "digest": "fcbaf4c532b28d32941d97fa2b316cba867dbec796ea3812421f970276c42510",
+      "file_count": 632,
+      "files_above_p01_max_file_bytes": 630,
+      "max_bytes": 2016262542,
+      "mean_bytes": 2009188947.4,
+      "median_bytes": 2014077184.5,
+      "min_bytes": 407007573,
+      "p10_bytes": 2013242606,
+      "p90_bytes": 2014954968,
+      "path": "G:\\XLM\\inventories\\ifm_general.inventory.json",
+      "sha256": "4322b1ef914f50919ee5fac1d14ea37b7a90fbc5747bc9f251690ea921618e6e",
+      "total_bytes": 1269807414764,
+      "unknown_sizes": 0
+    },
+    "p01_max_file_bytes": 814743552,
+    "p01_plan_digest": "b7bb0cbfb6b7f600a48babcb4507e7dd089ae04716bb4501927f5cda55428372",
+    "p01_selected": [
+      {
+        "declared_bytes": 2013330256,
+        "file": "general/general_full.chunk0-bdbff8a5c6-00069.parquet",
+        "fits_p01_max_file_bytes": false,
+        "rank": 0,
+        "size_percentile_rank": 12.66,
+        "x_calibration_file": 4.9467,
+        "x_inventory_max": 0.9985,
+        "x_inventory_mean": 1.0021,
+        "x_inventory_median": 0.9996
+      },
+      {
+        "declared_bytes": 2014409401,
+        "file": "general/general_full.chunk0-bdbff8a5c6-00146.parquet",
+        "fits_p01_max_file_bytes": false,
+        "rank": 1,
+        "size_percentile_rank": 67.56,
+        "x_calibration_file": 4.9493,
+        "x_inventory_max": 0.9991,
+        "x_inventory_mean": 1.0026,
+        "x_inventory_median": 1.0002
+      }
+    ]
+  },
+  "general_p01": {
+    "acquisition.plan.json": {
+      "bytes": 2532,
+      "mtime_utc": "2026-10-01T19:18:08.793427+00:00",
+      "path": "G:\\XLM\\plans\\ifm_general\\p01\\acquisition.plan.json",
+      "present": true,
+      "sha256": "22d5ddb9eefa30f2012389daebf34596470a26b6e5f3a9625896805781186de1"
+    },
+    "authorization.json": {
+      "bytes": 166,
+      "mtime_utc": "2026-10-01T19:18:08.718367+00:00",
+      "path": "G:\\XLM\\plans\\ifm_general\\p01\\authorization.json",
+      "present": true,
+      "sha256": "a3e55f6f169aa58b1a792d1e6344c39b48d128a925a640bec7127f4f3f7d1686"
+    },
+    "events.jsonl": {
+      "bytes": 751,
+      "mtime_utc": "2026-10-01T19:18:20.274537+00:00",
+      "path": "G:\\XLM\\plans\\ifm_general\\p01\\events.jsonl",
+      "present": true,
+      "sha256": "54e956e55d1a45f59bacfb7569384966b5588a141b8ff2375a208f0f8c917fb7"
+    },
+    "performance-00.json": {
+      "bytes": 3131,
+      "mtime_utc": "2026-10-01T19:18:20.275546+00:00",
+      "path": "G:\\XLM\\plans\\ifm_general\\p01\\performance-00.json",
+      "present": true,
+      "sha256": "d3d8469e71cfe96b9ac82a4cd47467ac16d5bc3d6ea21a84c4b22b73ed217704"
+    },
+    "plan.json": {
+      "bytes": 6065,
+      "mtime_utc": "2026-10-01T19:16:49.230968+00:00",
+      "path": "G:\\XLM\\plans\\ifm_general\\p01\\plan.json",
+      "present": true,
+      "sha256": "fce481dbfa271a4433bbfb923c35a411494dbf47a730faa6cbf54036dce186a0"
+    }
+  },
+  "general_state": {
+    "canonical_tree": [
+      ".staging",
+      ".staging\\p01"
+    ],
+    "raw_tree": [],
+    "scratch_tree": []
+  },
+  "general_sufficiency": {
+    "bytes": 1161,
+    "mtime_utc": "2026-10-01T19:20:45.086393+00:00",
+    "path": "G:\\XLM\\plans\\ifm_general\\sufficiency.json",
+    "present": true,
+    "sha256": "78fc52d9b9ac77b0ee062d3c2e66776bd83f50af06b35832ab8e923edd5e6cf6"
+  },
+  "general_transport_policy": {
+    "bytes": 4434,
+    "mtime_utc": "2026-10-01T19:16:45.318134+00:00",
+    "path": "G:\\XLM\\plans\\ifm_general\\transport-policy.json",
+    "present": true,
+    "sha256": "786a607419ebc7b0251dec468486d7d29a685efd110b55d8e85f112ce9605a94"
+  },
+  "planning": {
+    "calibration_file_bytes": 706323152,
+    "calibration_file_size_percentile_rank": 0.12,
+    "calibration_x_median": 0.3519,
+    "inventory": {
+      "digest": "87a6c99b4d3d44179d1bd01047ff68cdc4b44cd0afaca8fc3cc147833201c418",
+      "file_count": 834,
+      "files_above_p01_max_file_bytes": 832,
+      "max_bytes": 2011241379,
+      "mean_bytes": 2004684617.0,
+      "median_bytes": 2007390808.0,
+      "min_bytes": 706323152,
+      "p10_bytes": 2005794619,
+      "p90_bytes": 2008904641,
+      "path": "G:\\XLM\\inventories\\ifm_planning.inventory.json",
+      "sha256": "3ab754bb127a2ebe036a019a736cbcf527f13586e418706c9c196467237701ce",
+      "total_bytes": 1671906970539,
+      "unknown_sizes": 0
+    },
+    "p01_max_file_bytes": 1413480448,
+    "p01_plan_digest": "49ecb6b3ded6bc9c71ebe7e5bbc1856599900b9b6029a421948626e127150e63",
+    "p01_selected": [
+      {
+        "declared_bytes": 2007884297,
+        "file": "planning/planning.chunk0-160f3594ed-00058.parquet",
+        "fits_p01_max_file_bytes": false,
+        "rank": 0,
+        "size_percentile_rank": 66.91,
+        "x_calibration_file": 2.8427,
+        "x_inventory_max": 0.9983,
+        "x_inventory_mean": 1.0016,
+        "x_inventory_median": 1.0002
+      },
+      {
+        "declared_bytes": 2007493650,
+        "file": "planning/planning.chunk1-6d580bf230-00295.parquet",
+        "fits_p01_max_file_bytes": false,
+        "rank": 1,
+        "size_percentile_rank": 54.08,
+        "x_calibration_file": 2.8422,
+        "x_inventory_max": 0.9981,
+        "x_inventory_mean": 1.0014,
+        "x_inventory_median": 1.0001
+      }
+    ]
+  },
+  "planning_p01": {
+    "acquisition.plan.json": {
+      "path": "G:\\XLM\\plans\\ifm_planning\\p01\\acquisition.plan.json",
+      "present": false
+    },
+    "authorization.json": {
+      "path": "G:\\XLM\\plans\\ifm_planning\\p01\\authorization.json",
+      "present": false
+    },
+    "events.jsonl": {
+      "path": "G:\\XLM\\plans\\ifm_planning\\p01\\events.jsonl",
+      "present": false
+    },
+    "performance-00.json": {
+      "path": "G:\\XLM\\plans\\ifm_planning\\p01\\performance-00.json",
+      "present": false
+    },
+    "plan.json": {
+      "bytes": 6087,
+      "mtime_utc": "2026-10-01T19:17:05.605988+00:00",
+      "path": "G:\\XLM\\plans\\ifm_planning\\p01\\plan.json",
+      "present": true,
+      "sha256": "89ee0c6081219efb1a65f0ccc4f053599ce6b449de271a0aac51c320b8dadaea"
+    }
+  },
+  "planning_state": {
+    "canonical_tree": [],
+    "raw_tree": [],
+    "scratch_tree": []
+  },
+  "planning_transport_policy": {
+    "bytes": 4435,
+    "mtime_utc": "2026-10-01T19:17:02.097570+00:00",
+    "path": "G:\\XLM\\plans\\ifm_planning\\transport-policy.json",
+    "present": true,
+    "sha256": "1b44cdcd54635eed9cafb5062ce099a0d78b14378e88ea44571ad89b4c40cc0f"
+  }
+}

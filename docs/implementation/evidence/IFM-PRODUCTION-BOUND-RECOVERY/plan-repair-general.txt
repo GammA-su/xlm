@@ -1,0 +1,29 @@
+repair plan 2 of ifm_general: G:\XLM\plans\ifm_general\p02\plan.json
+repairs plan        1 b7bb0cbfb6b7f600a48babcb4507e7dd089ae04716bb4501927f5cda55428372
+kept sealed ranks   [] (their receipts are not touched)
+re-planned ranks    [0, 1]: ['general/general_full.chunk0-bdbff8a5c6-00069.parquet', 'general/general_full.chunk0-bdbff8a5c6-00146.parquet']
+failed run          performance-00.json e5f6e98e80792caf716ef80e77cb276f0f3e80181a1fa97a76abb709589706f3 {'exception': 'SourceTransferError', 'key': 'f00001', 'root': True, 'site': 'source_parquet.py:575 in _bind'}
+changed limit       max_file_bytes: 814743552 -> 2015363072
+changed limit       max_rows_per_file: 55560 -> 444703
+changed limit       max_decoded_bytes_per_file: 3258974208 -> 8061452288
+changed limit       max_canonical_bytes_per_file: 813225910 -> 6540056044
+changed limit       max_durable_bytes_per_file: 2441195372 -> 10065245718
+changed limit       processing_growth: {'event_bytes': 1048576, 'metadata_bytes': 1048576, 'output_bytes': 1626451820, 'progress_bytes': 4096, 'run_metadata_bytes': 8388608, 'source_max_bytes': 814743552, 'state_bytes': 1048576, 'version': 1} -> {'version': 1, 'output_bytes': 8049882646, 'source_max_bytes': 2015363072, 'metadata_bytes': 1048576, 'progress_bytes': 4096, 'state_bytes': 1048576, 'run_metadata_bytes': 8388608, 'event_bytes': 1048576}
+changed limit       file_deadline_seconds: 2590.0 -> 6406.666666666667
+plan-wide limit     file_bounds_basis: None -> ifm-general-file-v1: bounded footer reads of the p01 files 00069 (329,409 rows, text 4,844,485,958 B uncompressed) and 00146 (328,568 rows, text 4,844,194,575 B) exceed the estimate-derived 55,560 rows (the sampling_plan_version 1 layout divides compressed file bytes by logical bytes per row of one 698-row calibration group, and the calibration shard is the inventory's smallest file); the adapter keeps text verbatim, so canonical text is bounded by the text column's uncompressed bytes (calibration: 10,216,553 canonical of 10,226,373 logical group bytes); both ceilings are ceil(1.35x) the largest observed value
+plan-wide limit     file_size_anchor: None -> {'rule': "mix01-selected-size-anchor-v1: the largest selected file's exact frozen-inventory size exceeds the estimate-derived file ceiling, so it replaces the calibration file size as the per-file sizing anchor; max_file_bytes is that exact size (whole MiB), rows and canonical bytes scale with it under the unchanged tolerances", 'largest_selected_file_bytes': 2014409401, 'estimate_max_file_bytes': 814743552, 'calibration_file_bytes': 407007573, 'rows_per_file_estimate': 137493}
+plan-wide limit     scratch_cap_bytes: 4888698584 -> 20136799276
+acquisition limit   max_decompressed_bytes: 6517948416 -> 16122904576
+acquisition limit   max_output_disk_bytes: 6536011480 -> 24185351212
+acquisition limit   max_records: 111120 -> 889406
+acquisition limit   max_scanned_records: 111120 -> 889406
+acquisition limit   max_temp_disk_bytes: 4888698584 -> 20136799276
+acquisition limit   max_transferred_bytes: 1221591040 -> 6043992064
+size anchor         largest selected file 2,014,409,401 B > estimate ceiling 814,743,552 B (calibration file 407,007,573 B)
+file bounds basis   ifm-general-file-v1
+next top-up cursor  2 (unchanged)
+expected            4,027,739,657 B transfer, 274,986 rows, 1,006,235,330 est. tokens
+record bound        8,388,608 B (None)
+parser bound        33,554,432 B
+PLAN DIGEST: 6c0dfe5a3474978684d294cf8b9dffa616d6cf963b3bfdcd3ecaaea89ec79939
+STOP - USER MUST REVIEW PLAN DIGEST BEFORE AUTHORIZATION

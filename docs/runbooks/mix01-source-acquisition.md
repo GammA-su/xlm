@@ -196,6 +196,27 @@ Record bounds: generic and UltraX 8 MiB; FinePDFs `finepdfs-record-v2` 48 MiB
 (whole-file plans only; the 32 MiB parser bound limits Thrift metadata, not a
 row). First use: [FinePDFs p01 recovery](../implementation/reports/FINEPDFS-P01-RECORD-LIMIT-RECOVERY.md).
 
+### Selected file sizes and superseding an unauthorized plan
+
+Every selected file's exact frozen-inventory size fits its plan's
+`max_file_bytes`. When the largest selected size exceeds the estimate-derived
+ceiling (calibration file size x 2), it becomes the per-file sizing anchor:
+`max_file_bytes` is that size rounded up to a whole MiB, rows and canonical
+bytes scale with it, and every derived ceiling follows. The plan records this
+as `file_size_anchor` (absent, and digests unchanged, when files fit).
+`authorize` also refuses a stored plan whose own file bound excludes a known
+selected size: such a plan can only fail closed.
+
+A latest plan that was never authorized or run (only its `plan.json` exists,
+with no units, staging or scratch) is superseded, not edited:
+`plan-supersede --plan N` (offline) writes plan N+1 from N's cursor under
+today's frozen inputs, binds N's digest and the changed limits, prints
+`PLAN DIGEST` and stops. It refuses when nothing changed (authorize N
+instead) and for repair plans. Plan N stays byte-identical and can no longer be
+authorized or run; `sufficiency` lists `supersessions`, and the seal binds N as
+`superseded_by` without units. An authorized or failed plan is repaired, never
+superseded. First use: [IFM production bound recovery](../implementation/reports/IFM-PRODUCTION-BOUND-RECOVERY.md).
+
 ### Intra-file row-group parallelism
 
 A view listed in `source_plan.SOURCE_ROW_GROUP_PARALLEL` gets a

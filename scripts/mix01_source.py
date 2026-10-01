@@ -15,6 +15,8 @@ Sequence (UltraX shown; other sources use their own key):
     -> sufficiency -> plan (top-up, only if TOP_UP) -> seal
     (an authorized plan whose units fail under its own limits: plan-repair
      -> authorize -> run the repair; the failed plan is never edited)
+    (a latest plan never authorized or run, whose inputs or rules changed:
+     plan-supersede -> authorize the new plan; the old one is kept, never run)
 
 Nothing here edits a plan, renormalizes a quota or re-probes a source.
 """
@@ -601,6 +603,25 @@ def predecessor(roots: runner.Roots) -> planner.Predecessor | None:
     )
 
 
+def superseded_of(roots: runner.Roots, sequence: int) -> planner.Superseded:
+    """The latest plan, provided nothing of it exists beyond its plan record."""
+    sequences = roots.sequences()
+    if not sequences or sequence != sequences[-1]:
+        raise DriverError("only the latest plan can be superseded")
+    record = runner.load_plan(roots, sequence)
+    others = sorted(p.name for p in roots.plan_dir(sequence).iterdir() if p.name != "plan.json")
+    if others:
+        raise DriverError(
+            f"plan {sequence} holds {others}: an authorized or run plan is resumed or repaired, "
+            "never superseded"
+        )
+    label = f"p{sequence:02d}"
+    for place in (roots.canonical / label, roots.staging(label), roots.scratch(label)):
+        if place.exists() and any(place.iterdir()):
+            raise DriverError(f"plan {sequence} left work in {place}; it cannot be superseded")
+    return planner.Superseded(plan=record)
+
+
 def cmd_plan(args: argparse.Namespace) -> int:
     spec = spec_of(args.source_key)
     roots = roots_of(args)
@@ -609,6 +630,7 @@ def cmd_plan(args: argparse.Namespace) -> int:
     frozen = runner.read_json(roots.plans / "transport-policy.json")
     inventory_path = data_root(args) / "inventories" / f"{args.source_key}.inventory.json"
     layout, extra = layout_of(args, spec)
+    superseded = superseded_of(roots, args.plan) if args.command == "plan-supersede" else None
     record = planner.build_plan(
         source_key=args.source_key,
         pin=pin.as_dict(),
@@ -619,9 +641,21 @@ def cmd_plan(args: argparse.Namespace) -> int:
         calibration=extra["evidence"],
         policy=frozen,
         admission=current_admission(spec, target),
-        predecessor=predecessor(roots),
+        predecessor=None if superseded is not None else predecessor(roots),
+        superseded=superseded,
     )
     path = runner.store_plan(roots, record)
+    supersedes = record.get("supersedes")
+    if supersedes is not None:
+        print(
+            f"supersedes plan     {supersedes['plan_sequence']} {supersedes['plan_digest']} "
+            "(never authorized or run; kept unchanged; can no longer be authorized)"
+        )
+        print(f"changed sections    {supersedes['changed_sections']}")
+        for key, change in supersedes["changed_limits"].items():
+            print(f"changed limit       {key}: {change['from']} -> {change['to']}")
+        for key, change in supersedes["changed_acquisition_limits"].items():
+            print(f"changed plan limit  {key}: {change['from']} -> {change['to']}")
     limits = record["limits"]
     acq = record["acquisition_plan"]["limits"]
     selection = record["selection"]
@@ -653,6 +687,7 @@ def cmd_plan(args: argparse.Namespace) -> int:
     print(
         f"per-file ceiling    {limits['max_file_bytes']:,} B, {limits['max_rows_per_file']:,} rows"
     )
+    print_anchor(limits)
     keep_free = limits["scratch_min_free_bytes"]
     print(f"scratch ceiling     {limits['scratch_cap_bytes']:,} B (+{keep_free:,} B kept free)")
     print(f"durable ceiling     {acq['max_output_disk_bytes']:,} B (raw + canonical)")
@@ -670,6 +705,19 @@ def cmd_plan(args: argparse.Namespace) -> int:
     print(f"PLAN DIGEST: {record['digest']}")
     print("STOP - USER MUST REVIEW PLAN DIGEST BEFORE AUTHORIZATION")
     return 0
+
+
+def print_anchor(limits: dict[str, Any]) -> None:
+    anchor = limits.get("file_size_anchor")
+    if anchor is not None:
+        print(
+            f"size anchor         largest selected file {anchor['largest_selected_file_bytes']:,} B"
+            f" > estimate ceiling {anchor['estimate_max_file_bytes']:,} B "
+            f"(calibration file {anchor['calibration_file_bytes']:,} B)"
+        )
+    basis = limits.get("file_bounds_basis")
+    if basis is not None:
+        print(f"file bounds basis   {basis.split(':', 1)[0]}")
 
 
 def repaired_of(roots: runner.Roots, sequence: int) -> planner.Repaired:
@@ -755,6 +803,18 @@ def cmd_plan_repair(args: argparse.Namespace) -> int:
         print(f"failed run          {failure['receipt']} {failure['digest']} {root}")
     for key, change in repair["changed_limits"].items():
         print(f"changed limit       {key}: {change['from']} -> {change['to']}")
+    # Plan-wide ceilings follow from the per-unit ones and the remaining file count;
+    # both plans bind theirs, so these lines only display the difference.
+    prior = runner.load_plan(roots, int(repair["plan_sequence"]))
+    for key, change in planner.limit_diff(prior["limits"], limits).items():
+        if key not in repair["changed_limits"]:
+            print(f"plan-wide limit     {key}: {change['from']} -> {change['to']}")
+    acquisition = planner.limit_diff(
+        prior["acquisition_plan"]["limits"], record["acquisition_plan"]["limits"]
+    )
+    for key, change in acquisition.items():
+        print(f"acquisition limit   {key}: {change['from']} -> {change['to']}")
+    print_anchor(limits)
     for name, digest in repair["retained_sha256"].items():
         print(f"retained source     {name} sha256 {digest} (no download)")
     print(f"next top-up cursor  {record['selection']['next_cursor']} (unchanged)")
@@ -781,6 +841,9 @@ def cmd_authorize(args: argparse.Namespace) -> int:
     spec = spec_of(args.source_key)
     roots = roots_of(args)
     record = runner.load_plan(roots, args.plan)
+    # A plan whose own file bound excludes a known selected size can only fail closed.
+    inventory_path = data_root(args) / "inventories" / f"{args.source_key}.inventory.json"
+    planner.check_selected_file_bounds(record, load_json(inventory_path))
     check = admission_check(spec, store(), dict(record["inputs"]["admission"]))
     plan = runner.authorize(roots, args.plan, args.digest, args.operator, check)
     print(f"authorized plan {args.plan}: acquisition plan {plan.plan_hash}")
@@ -842,6 +905,11 @@ def cmd_status(args: argparse.Namespace) -> int:
                 "plan": sequence,
                 "digest": record["digest"],
                 "authorized": (roots.plan_dir(sequence) / "authorization.json").is_file(),
+                **(
+                    {"superseded_by": sequence + 1}
+                    if runner.superseding(roots, sequence) is not None
+                    else {}
+                ),
                 "accounting": runner.account(roots, record),
                 "restart": runner.classify(roots, record, resume, f"p{sequence:02d}")["counts"],
             }
@@ -1097,6 +1165,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p.add_argument("--plan", type=int, required=True)
     p.set_defaults(func=cmd_plan_repair)
+
+    p = common(
+        sub.add_parser(
+            "plan-supersede",
+            help="OFFLINE: re-plan an unauthorized, never-run latest plan under today's inputs",
+        )
+    )
+    p.add_argument("--plan", type=int, required=True)
+    p.set_defaults(func=cmd_plan)
 
     p = common(sub.add_parser("authorize", help="OFFLINE: authorize one reviewed plan digest"))
     p.add_argument("--plan", type=int, required=True)

@@ -1,0 +1,247 @@
+{
+  "acquired_before": {
+    "canonical_bytes": 0
+  },
+  "acquisition_plan": {
+    "is_pilot": false,
+    "limits": {
+      "max_decompressed_bytes": 16122904576,
+      "max_decompression_ratio": 15.0,
+      "max_output_disk_bytes": 24185351212,
+      "max_parser_bytes": 33554432,
+      "max_record_bytes": 8388608,
+      "max_records": 889406,
+      "max_requests": 32,
+      "max_retries": 5,
+      "max_scanned_records": 889406,
+      "max_temp_disk_bytes": 20136799276,
+      "max_transferred_bytes": 6043992064,
+      "max_workers": 16,
+      "overall_deadline_seconds": 14400.0,
+      "per_request_timeout_seconds": 30.0
+    },
+    "plan_hash": "bcb4b5b19d6a089f52f62d3d94cf386c8925efd64ced721d1bfe60bac1a18da4",
+    "plan_id": "plan_ifm_behaviors_general_huggingface_3b7e65378eb7f4299c22",
+    "selection_hash": "7b3cd854f223de992d28f9be67ecb874cf492157ac1681a160029b228ffc14f9"
+  },
+  "authorization": "STOP: the operator reviews this digest and authorizes it explicitly",
+  "digest": "6c0dfe5a3474978684d294cf8b9dffa616d6cf963b3bfdcd3ecaaea89ec79939",
+  "expected": {
+    "basis": "calibration yield scaled to the largest selected file's exact inventory size (selected-size anchor); transfer is the exact inventory size of every download; exact counts come from receipts",
+    "canonical_bytes": 4024941322,
+    "estimated_tokens": 1006235330,
+    "files": 2,
+    "requests": 4,
+    "rows": 274986,
+    "transfer_bytes": 4027739657
+  },
+  "inputs": {
+    "admission": {
+      "benchmark_risk": "suspect_with_mitigation",
+      "bridge_receipt_digest": "1330da81815c0fdeccac36f95e88523787a16ed1f662fa210fe8eab0206e7045",
+      "decision_contract": "c04-benchmark-risk-v3",
+      "probe_fingerprint": "cca8d4cbf241d00dc3f6a964f4a42f7380198dac2d7d49a02e9021a5433f913b"
+    },
+    "calibration": {
+      "adapt_log": "c2f48c26a8cae65c75d5fb76bf152b72183bdfb98d597000414a080b0c293ecc",
+      "journal": "1b26893417e116cda8815afe7441d4003e8592d8c625af3d684c9293d45f0cba",
+      "perf": "dd1743b8dd7279d1f84e2a24a4cbba95fd1471005a386e9fe10eea87e89864b4",
+      "plan": "96af17184ff551a9a2e57bc7f83f98850c6f62b39678801c7957c76f214d0c87",
+      "records": "b02c2881659420150cf34e807806dd71b7334263765e8b484f5cf3d4ff96ac99",
+      "rows": "e6fd18ecb9ababd0dcf561ade20e0e55f13cdf2eb3be46a7811617b762437c11",
+      "summary": "7d978abe654212e572edb55d5a7de99df99043289d92e7836fd7ab6276bf808e"
+    },
+    "estimate_sha256": "cd815f14ab37b11d9f96188981d44ea5ef79f4ca39ad7d352f831f773041634d",
+    "layout": {
+      "canonical_bytes_per_row": 14636.89541547278,
+      "file_bytes_measured": 407007573,
+      "rows_per_file_estimate": 27780,
+      "whole_bytes_per_row": 14650.96418338109
+    },
+    "quota_component": "ifm_behaviors_general_planning",
+    "quotas_sha256": "9b16db765c4dbb3fc3a366b1c2a8acc88e3ca8bc81f344d0a082ee00d8c78fdf",
+    "requirement_split": {
+      "rule": "per-view share of the component quota under a frozen operator split",
+      "split_digest": "e001aff4b508929db3c39c3536df299a7118ea52d3c338cae6bd41ae8133abd7",
+      "view_id": "general"
+    },
+    "transport_policy": {
+      "basis": "modeled",
+      "digest": "591b000e8f98894b21afd530bb7b07e747f38dc1ea53b14c6659493f0a5244f6",
+      "selected_mode": "whole_file_local"
+    }
+  },
+  "inventory": {
+    "benchmark_reserved_ranks": [
+      630,
+      631
+    ],
+    "digest": "fcbaf4c532b28d32941d97fa2b316cba867dbec796ea3812421f970276c42510",
+    "file_count": 632,
+    "file_sha256": "4322b1ef914f50919ee5fac1d14ea37b7a90fbc5747bc9f251690ea921618e6e",
+    "order": "SHA-256(seed|repository|revision|file) ascending, filename tiebreak",
+    "seed": 20260918
+  },
+  "kind": "mix01_source_production_plan",
+  "limits": {
+    "download_workers": 2,
+    "download_workers_max": 16,
+    "file_bounds_basis": "ifm-general-file-v1: bounded footer reads of the p01 files 00069 (329,409 rows, text 4,844,485,958 B uncompressed) and 00146 (328,568 rows, text 4,844,194,575 B) exceed the estimate-derived 55,560 rows (the sampling_plan_version 1 layout divides compressed file bytes by logical bytes per row of one 698-row calibration group, and the calibration shard is the inventory's smallest file); the adapter keeps text verbatim, so canonical text is bounded by the text column's uncompressed bytes (calibration: 10,216,553 canonical of 10,226,373 logical group bytes); both ceilings are ceil(1.35x) the largest observed value",
+    "file_deadline_seconds": 6406.666666666667,
+    "file_size_anchor": {
+      "calibration_file_bytes": 407007573,
+      "estimate_max_file_bytes": 814743552,
+      "largest_selected_file_bytes": 2014409401,
+      "rows_per_file_estimate": 137493,
+      "rule": "mix01-selected-size-anchor-v1: the largest selected file's exact frozen-inventory size exceeds the estimate-derived file ceiling, so it replaces the calibration file size as the per-file sizing anchor; max_file_bytes is that exact size (whole MiB), rows and canonical bytes scale with it under the unchanged tolerances"
+    },
+    "max_canonical_bytes_per_file": 6540056044,
+    "max_decoded_bytes_per_file": 8061452288,
+    "max_decompression_ratio": 15.0,
+    "max_durable_bytes_per_file": 10065245718,
+    "max_file_bytes": 2015363072,
+    "max_in_flight_files": 2,
+    "max_ledger_bytes": 536870912,
+    "max_parser_bytes": 33554432,
+    "max_record_bytes": 8388608,
+    "max_requests_per_file": 16,
+    "max_retries": 5,
+    "max_rows_per_file": 444703,
+    "plan_deadline_seconds": 14400.0,
+    "process_workers": 2,
+    "process_workers_max": 16,
+    "processing_growth": {
+      "event_bytes": 1048576,
+      "metadata_bytes": 1048576,
+      "output_bytes": 8049882646,
+      "progress_bytes": 4096,
+      "run_metadata_bytes": 8388608,
+      "source_max_bytes": 2015363072,
+      "state_bytes": 1048576,
+      "version": 1
+    },
+    "request_timeout_seconds": 30.0,
+    "rules": "mix01-source-planner-v1",
+    "scratch_cap_bytes": 20136799276,
+    "scratch_min_free_bytes": 34359738368
+  },
+  "lineage": {
+    "previous_accounting_digest": "639b188afcb1d9416b5999330bb81b5a7ab62471a3486f22d5e82461e400c6d2",
+    "previous_plan_digest": "b7bb0cbfb6b7f600a48babcb4507e7dd089ae04716bb4501927f5cda55428372",
+    "rule": "plans form a hash chain; a repair re-plans its predecessor's unsealed ranks and keeps its next_cursor"
+  },
+  "live_run": false,
+  "repair": {
+    "accounting_digest": "639b188afcb1d9416b5999330bb81b5a7ab62471a3486f22d5e82461e400c6d2",
+    "changed_limits": {
+      "file_deadline_seconds": {
+        "from": 2590.0,
+        "to": 6406.666666666667
+      },
+      "max_canonical_bytes_per_file": {
+        "from": 813225910,
+        "to": 6540056044
+      },
+      "max_decoded_bytes_per_file": {
+        "from": 3258974208,
+        "to": 8061452288
+      },
+      "max_durable_bytes_per_file": {
+        "from": 2441195372,
+        "to": 10065245718
+      },
+      "max_file_bytes": {
+        "from": 814743552,
+        "to": 2015363072
+      },
+      "max_rows_per_file": {
+        "from": 55560,
+        "to": 444703
+      },
+      "processing_growth": {
+        "from": {
+          "event_bytes": 1048576,
+          "metadata_bytes": 1048576,
+          "output_bytes": 1626451820,
+          "progress_bytes": 4096,
+          "run_metadata_bytes": 8388608,
+          "source_max_bytes": 814743552,
+          "state_bytes": 1048576,
+          "version": 1
+        },
+        "to": {
+          "event_bytes": 1048576,
+          "metadata_bytes": 1048576,
+          "output_bytes": 8049882646,
+          "progress_bytes": 4096,
+          "run_metadata_bytes": 8388608,
+          "source_max_bytes": 2015363072,
+          "state_bytes": 1048576,
+          "version": 1
+        }
+      }
+    },
+    "failures": [
+      {
+        "digest": "e5f6e98e80792caf716ef80e77cb276f0f3e80181a1fa97a76abb709589706f3",
+        "receipt": "performance-00.json",
+        "root_failure": {
+          "exception": "SourceTransferError",
+          "key": "f00001",
+          "root": true,
+          "site": "source_parquet.py:575 in _bind"
+        }
+      }
+    ],
+    "plan_digest": "b7bb0cbfb6b7f600a48babcb4507e7dd089ae04716bb4501927f5cda55428372",
+    "plan_sequence": 1,
+    "ranks": [
+      0,
+      1
+    ],
+    "retained_sha256": {},
+    "rule": "the repaired plan is never edited; its sealed units stay valid, its unsealed ranks are sealed only by this plan, and it no longer runs",
+    "sealed_ranks": []
+  },
+  "requirement": {
+    "first_pass_tokens": 165000000,
+    "required_canonical_bytes": 660000000,
+    "safety_margin": 1.15,
+    "split_digest": "e001aff4b508929db3c39c3536df299a7118ea52d3c338cae6bd41ae8133abd7",
+    "token_method": "canonical UTF-8 bytes / 4 (estimate, never exact XLM tokens)",
+    "view_id": "general"
+  },
+  "rules": "mix01-source-planner-v1",
+  "selection": {
+    "files": [
+      {
+        "file": "general/general_full.chunk0-bdbff8a5c6-00069.parquet",
+        "rank": 0
+      },
+      {
+        "file": "general/general_full.chunk0-bdbff8a5c6-00146.parquet",
+        "rank": 1
+      }
+    ],
+    "next_cursor": 2,
+    "ranks": [
+      0,
+      1
+    ],
+    "row_ranges": "whole files (every row of every planned file)",
+    "rule": "repair: exactly the unsealed ranks of the repaired plan"
+  },
+  "sequence": 2,
+  "source": {
+    "adapter_id": "ifm_general",
+    "component_id": "ifm_behaviors_general_planning",
+    "provider": "huggingface",
+    "repository": "IFM/Pretrain-Behaviors",
+    "revision": "3345e13d7f3f6d0ecb5fdd67b37aed289f3191f5",
+    "source_id": "ifm_behaviors",
+    "view_id": "general"
+  },
+  "source_key": "ifm_general",
+  "transport_mode": "whole_file_local",
+  "version": 1
+}
