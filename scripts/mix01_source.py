@@ -37,6 +37,7 @@ from xlm.data.acquisition import source_plan as planner
 from xlm.data.acquisition import source_run as runner
 from xlm.data.acquisition import transport_policy as policy
 from xlm.data.acquisition.plan import AcquisitionPlan
+from xlm.data.acquisition.source_dashboard import ObservedScratch
 from xlm.data.sources import certified_evidence as ce
 from xlm.data.sources import mix01_admission as review
 from xlm.data.sources.admission import (
@@ -651,6 +652,7 @@ def cmd_benchmark(args: argparse.Namespace) -> int:
             admission=current_admission(spec, target),
             download_workers=args.download_workers,
             process_workers=args.process_workers,
+            retained_scratch_bytes=ObservedScratch(roots.scratch(), 1, 0).occupied(),
         )
         path = bench.store_benchmark(roots, record)
         print(f"benchmark {args.label}: {[e['file'] for e in entries]} -> {path}")
@@ -675,7 +677,10 @@ def cmd_benchmark(args: argparse.Namespace) -> int:
         return 0
     if args.action == "run":
         receipt = bench.run_benchmark(
-            roots, args.label, admitted=admission_check(spec, target, expected)
+            roots,
+            args.label,
+            admitted=admission_check(spec, target, expected),
+            offline=args.offline,
         )
         print(f"benchmark receipt {receipt['digest']}: {json.dumps(receipt['transfer'])}")
         return 0
@@ -780,6 +785,9 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("action", choices=("plan", "authorize", "adopt", "run", "record-range"))
     p.add_argument("--label", required=True)
     p.add_argument("--donor", default="", help="adopt: earlier benchmark label to reuse")
+    p.add_argument(
+        "--offline", action="store_true", help="run: require verified complete local inputs"
+    )
     p.add_argument("--files", type=int, default=2)
     p.add_argument("--file")
     p.add_argument("--download-workers", type=int, default=8)

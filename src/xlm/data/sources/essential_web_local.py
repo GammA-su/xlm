@@ -141,10 +141,15 @@ def _progress_lock(path: Path) -> FileLock:
     return FileLock(path.with_suffix(".lock"), preserve_lock_file=True)
 
 
-def publish_progress(path: Path, value: Mapping[str, Any]) -> bool:
+def publish_progress(path: Path, value: Mapping[str, Any], *, max_bytes: int | None = None) -> bool:
     """Atomically replace one progress snapshot; False when a reader holds it right now."""
     temporary = path.with_suffix(".tmp")
-    temporary.write_text(json.dumps(dict(value)), encoding="utf-8")
+    data = json.dumps(dict(value)).encode("utf-8")
+    if max_bytes is not None and len(data) > max_bytes:
+        from xlm.data.acquisition.source_growth import GrowthLimitError
+
+        raise GrowthLimitError("progress snapshot exceeds its byte ceiling")
+    temporary.write_bytes(data)
     lock = _progress_lock(path)
     try:
         lock.acquire(blocking=False)
@@ -543,6 +548,7 @@ class Unit:
     job: dict[str, Any] | None
     identity_record: dict[str, Any] | None = None
     expected_sha256: str | None = None
+    require_complete: bool = False
 
 
 def run_pipeline(
@@ -560,6 +566,9 @@ def run_pipeline(
     process: Callable[[Mapping[str, Any]], dict[str, Any]] = process_unit,
     max_in_flight: int | None = None,
     on_progress: Callable[[dict[str, Any]], None] | None = None,
+    reserve_unit: Callable[[Unit], bool] | None = None,
+    release_unit: Callable[[Unit], None] | None = None,
+    before_process: Callable[[Unit, TransferResult | None], None] | None = None,
 ) -> dict[str, Any]:
     """Download files concurrently while finished ones are processed in parallel.
 
@@ -605,6 +614,9 @@ def run_pipeline(
             on_done(unit, transfer, result)
         except BaseException as exc:
             fail(exc, unit.key)
+        if release_unit is not None:
+            release_unit(unit)
+            held.discard(unit.key)
         if unit.key in held and not unit.partial.exists():
             scratch.release(unit.key)
             held.discard(unit.key)
@@ -618,11 +630,13 @@ def run_pipeline(
     pool = ProcessPoolExecutor(process_workers) if process_workers else None
 
     def start(unit: Unit, transfer: TransferResult | None) -> None:
-        job = job_for(unit, transfer)
-        if pool is not None:
-            processes[pool.submit(process, job)] = (unit, transfer)
-            return
         try:
+            if before_process is not None:
+                before_process(unit, transfer)
+            job = job_for(unit, transfer)
+            if pool is not None:
+                processes[pool.submit(process, job)] = (unit, transfer)
+                return
             result = process(job)
         except BaseException as exc:
             fail(exc, unit.key)
@@ -635,13 +649,37 @@ def run_pipeline(
             while queue or downloads or processes:
                 while not failures and queue:
                     unit = queue[0]
+                    if reserve_unit is not None:
+                        if len(held) >= bound or (
+                            unit.url is not None and len(downloads) >= download_workers
+                        ):
+                            break
+                        try:
+                            reserved = reserve_unit(unit)
+                        except BaseException as exc:
+                            fail(exc, unit.key)
+                            break
+                        if not reserved:
+                            if not held:
+                                fail(
+                                    ScratchCapError(
+                                        "scratch cap leaves no room for "
+                                        "source and processing growth"
+                                    )
+                                )
+                            break
+                        held.add(unit.key)
                     if unit.url is None:
                         queue.popleft()
                         start(unit, None)
                         continue
-                    if len(downloads) >= download_workers or len(held) >= bound:
+                    if reserve_unit is None and (
+                        len(downloads) >= download_workers or len(held) >= bound
+                    ):
                         break
-                    if not scratch.reserve(unit.key, limits.max_file_bytes, unit.partial):
+                    if reserve_unit is None and not scratch.reserve(
+                        unit.key, limits.max_file_bytes, unit.partial
+                    ):
                         if not held:
                             fail(ScratchCapError("scratch cap leaves no room for one file"))
                         break
@@ -661,6 +699,7 @@ def run_pipeline(
                             scratch_key=unit.key,
                             meter=meter,
                             cancel=cancel,
+                            require_complete=unit.require_complete,
                         )
                     ] = unit
                 stats["peak_downloads"] = max(stats["peak_downloads"], len(downloads))

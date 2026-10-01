@@ -33,6 +33,7 @@ from xlm.data.acquisition.plan import (
     SamplingFrame,
     plan_requires_production_admission,
 )
+from xlm.data.acquisition.source_growth import ProcessingGrowth
 from xlm.data.acquisition.transport_policy import (
     LOCAL_MODES,
     SourceLayout,
@@ -247,7 +248,16 @@ def plan_limits(
     durable_per_file = max_file + math.ceil(canonical_per_file * CANONICAL_FILE_OVERHEAD)
     file_deadline = max(MIN_FILE_DEADLINE_SECONDS, max_file / MIN_FILE_RATE_BYTES_PER_SECOND)
     in_flight = min(files, concurrency["download"] + 2 * concurrency["process"])
-    scratch_cap = min(SCRATCH_CAP_BYTES, max(max_file, in_flight * max_file))
+    output_bytes = durable_per_file - max_file
+    growth = ProcessingGrowth(
+        output_bytes=output_bytes,
+        source_max_bytes=max_file,
+        metadata_bytes=min(MIB, max(1, output_bytes // 16)),
+    )
+    unit_peak = max_file + growth.processing_peak + growth.state_peak
+    if unit_peak > SCRATCH_CAP_BYTES:
+        raise PlanError("one source/processing envelope exceeds the scratch policy ceiling")
+    scratch_cap = min(SCRATCH_CAP_BYTES, in_flight * unit_peak)
     policy: dict[str, Any] = {
         "rules": PLANNER_RULES,
         "max_file_bytes": max_file,
@@ -265,6 +275,7 @@ def plan_limits(
         "max_durable_bytes_per_file": durable_per_file,
         "max_canonical_bytes_per_file": canonical_per_file,
         "scratch_cap_bytes": scratch_cap,
+        "processing_growth": growth.model_dump(),
         "scratch_min_free_bytes": SCRATCH_MIN_FREE_BYTES,
         "max_in_flight_files": in_flight,
         "download_workers": min(files, concurrency["download"]),
@@ -281,7 +292,9 @@ def plan_limits(
         max_records=files * max_rows,
         max_scanned_records=files * max_rows,
         max_temp_disk_bytes=scratch_cap,
-        max_output_disk_bytes=files * durable_per_file,
+        max_output_disk_bytes=files
+        * (2 * max_file + growth.processing_peak + 2 * growth.metadata_bytes)
+        + growth.run_peak,
         max_requests=files * MAX_REQUESTS_PER_FILE,
         max_retries=MAX_RETRIES,
         per_request_timeout_seconds=REQUEST_TIMEOUT_SECONDS,
@@ -308,6 +321,7 @@ def minted_from_record(record: Mapping[str, Any]) -> AcquisitionPlan:
         AcquisitionLimits.model_validate(record["acquisition_plan"]["limits"]),
         int(record["inventory"]["seed"]),
         coverage_note(int(record["sequence"]), selection["start_rank"], selection["stop_rank"]),
+        processing_growth=record["limits"].get("processing_growth"),
     )
     if minted.plan_hash != record["acquisition_plan"]["plan_hash"]:
         raise PlanError("plan record does not reproduce its acquisition plan hash")
@@ -321,6 +335,7 @@ def acquisition_plan(
     seed: int,
     coverage: str,
     attempt: int = 1,
+    processing_growth: Mapping[str, Any] | None = None,
 ) -> AcquisitionPlan:
     """The production ``AcquisitionPlan`` of these whole files.
 
@@ -344,6 +359,9 @@ def acquisition_plan(
         output_artifact_id=f"raw_{pin['source_id']}_{pin['view_id']}",
         attempt=attempt,
         is_pilot=False,
+        source_processing_growth=None
+        if processing_growth is None
+        else ProcessingGrowth.model_validate(processing_growth),
     )
     if not plan_requires_production_admission(base):
         raise PlanError("a source plan must take the production admission path")
@@ -415,7 +433,12 @@ def build_plan(
     files = ordered[start:stop]
     policy_limits, limits = plan_limits(len(files), layout, mode, pin)
     minted = acquisition_plan(
-        pin, files, limits, int(inventory["seed"]), coverage_note(sequence, start, stop)
+        pin,
+        files,
+        limits,
+        int(inventory["seed"]),
+        coverage_note(sequence, start, stop),
+        processing_growth=policy_limits["processing_growth"],
     )
     expected_rows = len(files) * layout.rows_per_file
     expected_canonical = math.floor(len(files) * per_file)

@@ -1,0 +1,26 @@
+{
+  "authorization_basis": "Optional source-growth hooks and bounded metadata parameters preserve Essential-Web default call behavior and all source, selection, record/parser and scientific limits. Existing sealed artifacts and authorization records are unchanged. New Mix-01 processing growth requires a new plan identity.",
+  "campaign": "8e42ba31b0ef9fcbae1079cebf88d2449b88a9b37ec52b68c7a408eb2546bb8c",
+  "code": {
+    "scripts/essential_web_fast.py": "aaadb12a03d521d06a4080ab6cef5e8886ff08441a495fad346d6b710b32da66",
+    "src/xlm/data/acquisition/source_parquet.py": "537f4a3bbeb95f423834844febbf4da81c6c42f1fe3322bfced7695856387123",
+    "src/xlm/data/adapters/columns.py": "3e594f755eea797ac0d29d819c28b4ccf8e387cfc7889470dfc58e8657e58db1",
+    "src/xlm/data/sources/essential_web_local.py": "02594e9a2761826a4966abbb36e694062a0a8e19a4c6bb7fd380ac481a36ce7d",
+    "src/xlm/data/sources/essential_web_monitor.py": "4c151ed23431f8368d828010b3ef9c4a1af180b1e9abffd3cda38edb6a5f65ac",
+    "src/xlm/data/sources/essential_web_progress.py": "edbba2e52d37a46bcbeb58e0a75c4f4a981d47ed5495767826eeb313e9a7f856",
+    "src/xlm/data/sources/essential_web_recovery.py": "37418e8df4e876a4c4661b0b1dfe0d376b7d26dc0679881b1d6488162ebf03e1"
+  },
+  "digest": "34ab62fb84433505106ad5002e768e575d6cc030932d525c19a9f74182015934",
+  "kind": "source_processing_growth_v1",
+  "previous_code": {
+    "scripts/essential_web_fast.py": "aaadb12a03d521d06a4080ab6cef5e8886ff08441a495fad346d6b710b32da66",
+    "src/xlm/data/acquisition/source_parquet.py": "a05fbdc48a5bde0d6696cfa4b85d3e85c752f21761a43cf8552f29835e3efe97",
+    "src/xlm/data/adapters/columns.py": "3e594f755eea797ac0d29d819c28b4ccf8e387cfc7889470dfc58e8657e58db1",
+    "src/xlm/data/sources/essential_web_local.py": "8a439e0d6ef2b9809bc520717d4fb17d0d99b4fcecf5dc3802554401f327d605",
+    "src/xlm/data/sources/essential_web_monitor.py": "4c151ed23431f8368d828010b3ef9c4a1af180b1e9abffd3cda38edb6a5f65ac",
+    "src/xlm/data/sources/essential_web_progress.py": "edbba2e52d37a46bcbeb58e0a75c4f4a981d47ed5495767826eeb313e9a7f856",
+    "src/xlm/data/sources/essential_web_recovery.py": "a0d919314c536c1819f6c7174fb894e668951e15e5fe927bba1419206256c8e9"
+  },
+  "previous_digest": "9c9b618b363cd62693f01d92f1f5d12d16e7ecc4ebf3f505199d73ffe6967f18",
+  "recovery_digest": "51c09f0b15e6b19ebeb9854c6d65ec1994b473467b555723f0924606574c24db"
+}

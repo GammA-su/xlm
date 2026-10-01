@@ -38,6 +38,7 @@ from xlm.data.acquisition.source_dashboard import (
     RESUMABLE_PARTIAL,
     SEALED_SKIP,
     Dashboard,
+    ObservedScratch,
     Snapshot,
 )
 
@@ -449,10 +450,10 @@ def test_durable_and_scratch_caps_refuse_before_transfer(
         world.run()
     assert world.served.requests == []
     monkeypatch.undo()
-    budget = runner.ObservedScratch(world.roots.scratch(), 100, 0)
+    budget = ObservedScratch(world.roots.scratch(), 100, 0)
     with pytest.raises(sp.ScratchCapError):
         budget.reserve("k", 101, world.roots.scratch("x"))
-    tight = runner.ObservedScratch(world.roots.scratch(), 1000, 10**18)
+    tight = ObservedScratch(world.roots.scratch(), 1000, 10**18)
     assert tight.reserve("k", 10, world.roots.scratch("y")) is False
 
 

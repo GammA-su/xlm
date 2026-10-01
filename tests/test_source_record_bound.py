@@ -57,6 +57,7 @@ GENERIC_KEYS = {
     "max_durable_bytes_per_file",
     "max_canonical_bytes_per_file",
     "scratch_cap_bytes",
+    "processing_growth",
     "scratch_min_free_bytes",
     "max_in_flight_files",
     "download_workers",

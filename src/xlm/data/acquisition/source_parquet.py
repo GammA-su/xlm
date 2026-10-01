@@ -38,6 +38,7 @@ from xlm.data.acquisition.projection import (
     resolve_projection,
 )
 from xlm.data.acquisition.records import LOCATOR_FIELD, RecordLimitError
+from xlm.data.acquisition.source_growth import bounded_json
 from xlm.data.sources.transport import (
     HostNotAllowlistedError,
     SafeRedirectHandler,
@@ -86,6 +87,7 @@ class TransferLimits:
     max_retries: int
     request_timeout_seconds: float
     deadline_seconds: float
+    max_state_bytes: int | None = None
 
     def __post_init__(self) -> None:
         if (
@@ -217,6 +219,8 @@ class ScratchBudget:
     @staticmethod
     def _size(path: Path) -> int:
         try:
+            if path.is_dir():
+                return sum(p.stat().st_size for p in path.rglob("*") if p.is_file())
             return path.stat().st_size
         except OSError:
             return 0
@@ -225,6 +229,22 @@ class ScratchBudget:
         with self._lock:
             return sum(amount for amount, _ in self._reserved.values())
 
+    def fits(self) -> bool:
+        """Check existing occupancy even when a local retry needs no source allocation."""
+        with self._lock:
+            remaining = sum(max(0, n - self._size(p)) for n, p in self._reserved.values())
+            return (
+                self.occupied() + remaining <= self.cap_bytes
+                and self._disk_free(self.root) - remaining >= self.min_free_bytes
+            )
+
+    def unwritten(self) -> int:
+        with self._lock:
+            return sum(max(0, n - self._size(p)) for n, p in self._reserved.values())
+
+    def free(self) -> int:
+        return self._disk_free(self.root)
+
     def reserve(self, key: str, amount: int, path: Path) -> bool:
         """Reserve ``amount`` bytes for ``path``; False when it does not fit now."""
         if amount < 1:
@@ -232,11 +252,15 @@ class ScratchBudget:
         if amount > self.cap_bytes:
             raise ScratchCapError("one file reservation exceeds the whole scratch cap")
         self.root.mkdir(parents=True, exist_ok=True)
+        ensure_plain_path(path)
         with self._lock:
             if key in self._reserved:
                 raise ValueError(f"scratch key '{key}' is already reserved")
             owned = sum(self._size(owner) for _, owner in self._reserved.values())
-            reserved = sum(value for value, _ in self._reserved.values())
+            amount = max(amount, self._size(path))
+            reserved = sum(
+                max(value, self._size(owner)) for value, owner in self._reserved.values()
+            )
             foreign = max(0, self.occupied() - owned - self._size(path))
             if foreign + reserved + amount > self.cap_bytes:
                 return False
@@ -259,6 +283,24 @@ class ScratchBudget:
         with self._lock:
             self._reserved.pop(key, None)
 
+    def resize(self, key: str, amount: int) -> None:
+        """Rebalance a held envelope after a verified transfer reveals its size."""
+        with self._lock:
+            _, path = self._reserved[key]
+            own = self._size(path)
+            amount = max(amount, own)
+            others = [(n, p) for k, (n, p) in self._reserved.items() if k != key]
+            used = sum(self._size(p) for _, p in others)
+            reserved = sum(max(n, self._size(p)) for n, p in others)
+            if (
+                max(0, self.occupied() - used - own) + reserved + amount > self.cap_bytes
+                or self._disk_free(self.root) - max(0, reserved - used + amount - own)
+                < self.min_free_bytes
+            ):
+                raise ScratchCapError("verified processing growth no longer fits")
+            self._reserved[key] = (amount, path)
+            self.peak_reserved_bytes = max(self.peak_reserved_bytes, reserved + amount)
+
 
 class _ObservedRedirects(SafeRedirectHandler):
     """Allowlist-checked redirects that are counted and whose link headers are kept."""
@@ -279,12 +321,19 @@ class _ObservedRedirects(SafeRedirectHandler):
         return super().redirect_request(req, fp, code, msg, headers, newurl)
 
 
-def _write_json(path: Path, payload: Mapping[str, Any]) -> None:
+def _write_json(path: Path, payload: Mapping[str, Any], max_bytes: int | None = None) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_name(f"{path.name}.{uuid.uuid4().hex}.tmp")
+    data = (
+        bounded_json(payload, max_bytes)
+        if max_bytes is not None
+        else (json.dumps(dict(payload), indent=2, sort_keys=True) + "\n").encode("utf-8")
+    )
+    temporary = path.with_name(
+        f"{path.name}.tmp" if max_bytes is not None else f"{path.name}.{uuid.uuid4().hex}.tmp"
+    )
     try:
-        with temporary.open("x", encoding="utf-8", newline="\n") as stream:
-            stream.write(json.dumps(dict(payload), indent=2, sort_keys=True) + "\n")
+        with temporary.open("wb" if max_bytes is not None else "xb") as stream:
+            stream.write(data)
             stream.flush()
             os.fsync(stream.fileno())
         os.replace(temporary, path)
@@ -309,6 +358,92 @@ def file_sha256(path: Path) -> tuple[str, int]:
             digest.update(chunk)
             size += len(chunk)
     return digest.hexdigest(), size
+
+
+@dataclass(frozen=True)
+class SourceResume:
+    kind: str
+    final_reservation: int
+    new_growth: int
+
+
+def inspect_source(
+    url: str,
+    partial: Path,
+    state_path: Path,
+    *,
+    name: str,
+    limits: TransferLimits,
+    revision: str | None,
+    expected_sha256: str | None = None,
+) -> SourceResume:
+    """Read-only, verified source classification BEFORE a storage reservation."""
+    validate_host(url)
+    ensure_plain_path(partial)
+    ensure_plain_path(state_path)
+    size = partial.stat().st_size if partial.exists() else 0
+    if not state_path.exists():
+        if size:
+            raise SourceTransferError("unowned local source; refusing reuse")
+        return SourceResume("fresh_download", limits.max_file_bytes, limits.max_file_bytes)
+    state = _read_json(state_path)
+    if (state.get("version"), state.get("name"), state.get("url")) != (STATE_VERSION, name, url):
+        raise SourceTransferError("local transfer state belongs to another source")
+    if (
+        state.get("repo_commit") is not None
+        and revision is not None
+        and state["repo_commit"] != revision
+    ):
+        raise SourceDriftDetectedError("local source revision changed")
+    verified = int(state.get("verified_bytes", 0))
+    length = state.get("length")
+    if verified < 0 or (length is not None and not 12 <= int(length) <= limits.max_file_bytes):
+        raise SourceTransferError("local source length is outside its bound")
+    if length is not None and verified > int(length):
+        raise SourceTransferError("verified prefix exceeds declared length")
+    if state.get("linked_size") is not None and state["linked_size"] != length:
+        raise SourceDriftDetectedError("local linked size differs")
+    declared = _LINKED_SHA256.fullmatch(str(state.get("linked_etag") or ""))
+    expected = (
+        expected_sha256.lower() if expected_sha256 else (declared[1].lower() if declared else None)
+    )
+    if expected_sha256 and declared and expected != declared[1].lower():
+        raise SourceDriftDetectedError("local repository digest differs from plan")
+    if state.get("complete"):
+        if (
+            not isinstance(state.get("etag"), str)
+            or not state["etag"]
+            or state["etag"].startswith("W/")
+            or verified != length
+            or size != length
+            or not partial.is_file()
+        ):
+            raise SourceTransferError("invalid complete local source state")
+        sha, actual = file_sha256(partial)
+        if (
+            sha != state.get("sha256")
+            or sha != state.get("prefix_sha256")
+            or expected not in (None, sha)
+        ):
+            raise SourceTransferError("complete local source hash verification failed")
+        return SourceResume("local_complete_reuse", actual, 0)
+    if verified and size >= verified and length is not None:
+        digest = hashlib.sha256()
+        left = verified
+        with partial.open("rb") as stream:
+            while left:
+                chunk = stream.read(min(left, READ_BYTES))
+                if not chunk:
+                    raise SourceTransferError("local prefix changed while verifying")
+                digest.update(chunk)
+                left -= len(chunk)
+        if digest.hexdigest() == state.get("prefix_sha256"):
+            if not state.get("etag") or str(state["etag"]).startswith("W/"):
+                raise SourceTransferError("partial local source has no strong validator")
+            growth = int(length) - verified
+            return SourceResume("resumable_partial", size + growth, growth)
+    # Restoration may truncate invalid bytes. Do not spend that space before it does.
+    return SourceResume("fresh_download", size + limits.max_file_bytes, limits.max_file_bytes)
 
 
 class _Download:
@@ -346,7 +481,7 @@ class _Download:
     def _save(self, **changes: Any) -> None:
         self.state.update(changes)
         self.state.update(requests=self.requests, redirects=self.redirects, retries=self.retries)
-        _write_json(self.state_path, self.state)
+        _write_json(self.state_path, self.state, self.limits.max_state_bytes)
 
     def _restart_from_zero(self) -> None:
         if self.partial.exists():
@@ -648,7 +783,7 @@ class _Download:
         self._save(sha256=sha256, complete=True, charged_bytes=self.transferred)
         return self._result(cache_hit=False)
 
-    def run(self) -> TransferResult:
+    def run(self, *, require_complete: bool = False) -> TransferResult:
         self._restore()
         if self.state.get("complete"):
             sha256, size = file_sha256(self.partial)
@@ -659,7 +794,11 @@ class _Download:
                 if self.scratch is not None:
                     self.scratch.shrink(self.scratch_key, size)
                 return self._result(cache_hit=True)
+            if require_complete:
+                raise SourceTransferError("complete source changed; network fallback refused")
             self._restart_from_zero()
+        if require_complete:
+            raise SourceTransferError("complete source unavailable; network fallback refused")
         for attempt in range(self.limits.max_retries + 1):
             try:
                 self._attempt()
@@ -685,6 +824,7 @@ def download_source(
     meter: TransferMeter | None = None,
     cancel: threading.Event | None = None,
     sleep: Callable[[float], None] = time.sleep,
+    require_complete: bool = False,
 ) -> TransferResult:
     """Stream one whole source file into scratch and verify it.
 
@@ -699,6 +839,18 @@ def download_source(
     received bytes is always recorded and must equal the independent expected
     digest when one exists (the plan's, or the repository's for this path).
     """
+    if require_complete:
+        resumed = inspect_source(
+            url,
+            partial,
+            state_path,
+            name=name,
+            limits=limits,
+            revision=revision,
+            expected_sha256=expected_sha256,
+        )
+        if resumed.kind != "local_complete_reuse":
+            raise SourceTransferError("verified complete source changed before reuse")
     return _Download(
         url,
         partial,
@@ -712,7 +864,7 @@ def download_source(
         meter=meter,
         cancel=cancel,
         sleep=sleep,
-    ).run()
+    ).run(require_complete=require_complete)
 
 
 # ------------------------------------------------------------------ durable raw
@@ -747,7 +899,13 @@ def check_parquet_magic(path: Path) -> None:
         raise SourceTransferError(f"'{path.name}' is not a complete Parquet file")
 
 
-def promote_source(source: Path, destination: Path, record: Mapping[str, Any]) -> bool:
+def promote_source(
+    source: Path,
+    destination: Path,
+    record: Mapping[str, Any],
+    *,
+    max_metadata_bytes: int | None = None,
+) -> bool:
     """Copy a verified scratch file into the durable store; True when it was written.
 
     The copy is hashed while it is written and must reproduce the verified
@@ -757,6 +915,8 @@ def promote_source(source: Path, destination: Path, record: Mapping[str, Any]) -
     ensure_plain_path(destination)
     sidecar = identity_path(destination)
     expected, length = str(record["sha256"]), int(record["length"])
+    if max_metadata_bytes is not None:
+        bounded_json(record, max_metadata_bytes)
     if destination.exists():
         if file_sha256(destination) != (expected, length):
             raise SourceTransferError(
@@ -766,7 +926,7 @@ def promote_source(source: Path, destination: Path, record: Mapping[str, Any]) -
             if _read_json(sidecar) != json.loads(json.dumps(dict(record))):
                 raise SourceTransferError(f"durable identity of '{destination.name}' differs")
         else:
-            _write_json(sidecar, record)
+            _write_json(sidecar, record, max_metadata_bytes)
         return False
     destination.parent.mkdir(parents=True, exist_ok=True)
     temporary = destination.with_name(f"{destination.name}.{uuid.uuid4().hex}.tmp")
@@ -774,6 +934,8 @@ def promote_source(source: Path, destination: Path, record: Mapping[str, Any]) -
     try:
         with source.open("rb") as reader, temporary.open("xb") as writer:
             while chunk := reader.read(READ_BYTES):
+                if size + len(chunk) > length:
+                    raise SourceTransferError("durable source copy exceeds its verified length")
                 writer.write(chunk)
                 digest.update(chunk)
                 size += len(chunk)
@@ -784,7 +946,7 @@ def promote_source(source: Path, destination: Path, record: Mapping[str, Any]) -
         os.link(temporary, destination)
     finally:
         temporary.unlink(missing_ok=True)
-    _write_json(sidecar, record)
+    _write_json(sidecar, record, max_metadata_bytes)
     return True
 
 

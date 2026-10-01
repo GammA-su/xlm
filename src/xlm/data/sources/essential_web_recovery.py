@@ -22,6 +22,9 @@ MALFORMED_FIX = (
 )
 _DRIVER = "scripts/essential_web_fast.py"
 _DISPATCHER = "src/xlm/data/sources/essential_web_recovery.py"
+SOURCE_GROWTH_FIX = (
+    "docs/implementation/evidence/FINEPDFS-PROCESSING-GROWTH/code-compatibility.json"
+)
 #: Additive code-compatibility records in order: path, kind, and the exact files each changes.
 COMPATIBILITY = (
     (SCOPE_FIX, "essential_web_recovery_scope_fix_v1", frozenset({_DRIVER, _DISPATCHER})),
@@ -42,6 +45,17 @@ COMPATIBILITY = (
         MALFORMED_FIX,
         "essential_web_malformed_whole_pass_v1",
         frozenset({_DISPATCHER, "src/xlm/data/sources/essential_web_local.py"}),
+    ),
+    (
+        SOURCE_GROWTH_FIX,
+        "source_processing_growth_v1",
+        frozenset(
+            {
+                _DISPATCHER,
+                "src/xlm/data/sources/essential_web_local.py",
+                "src/xlm/data/acquisition/source_parquet.py",
+            }
+        ),
     ),
 )
 CODE_FILES = (

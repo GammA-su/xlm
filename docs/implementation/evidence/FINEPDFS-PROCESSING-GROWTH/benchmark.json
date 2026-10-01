@@ -1,0 +1,96 @@
+{
+  "acquisition_plan": {
+    "limits": {
+      "max_decompressed_bytes": 22171090944,
+      "max_decompression_ratio": 15.0,
+      "max_output_disk_bytes": 21828424326,
+      "max_parser_bytes": 33554432,
+      "max_record_bytes": 33554432,
+      "max_records": 520834,
+      "max_requests": 16,
+      "max_retries": 5,
+      "max_scanned_records": 520834,
+      "max_temp_disk_bytes": 19038848034,
+      "max_transferred_bytes": 4156555264,
+      "max_workers": 16,
+      "overall_deadline_seconds": 14400.0,
+      "per_request_timeout_seconds": 30.0
+    },
+    "plan_hash": "55d9a94fc105fec2281fb5bb38475e7252234f8cd29aa0b138149db362eabeab",
+    "plan_id": "plan_finepdfs_edu_eng_Latn_huggingface_52dca1066cc6acf4381b",
+    "seed": 0
+  },
+  "authorization": "STOP: review the digest, then authorize the benchmark explicitly",
+  "digest": "aa539f079104c7c764266a285354ec0b79462d2a13390b7301e841876a5e1f35",
+  "expected": {
+    "requests": 2,
+    "rows": 260417,
+    "transfer_bytes": 2771021138
+  },
+  "files": [
+    {
+      "file": "data/eng_Latn/train/000_00083.parquet",
+      "rank": null,
+      "reason": "named calibration file"
+    }
+  ],
+  "inputs": {
+    "admission": {
+      "benchmark_risk": "suspect_with_mitigation",
+      "bridge_receipt_digest": "283df718f73b548885f4eb576c72a8c4b5af76abc9bb997d101d168087429dc4",
+      "decision_contract": "c04-benchmark-risk-v3",
+      "probe_fingerprint": "5f390e6c3b3c7caf24fe30e9672a3f2256c7800b2e6a830f59ce0a990a0caa77"
+    }
+  },
+  "kind": "mix01_source_benchmark_plan",
+  "label": "b3",
+  "limits": {
+    "download_workers": 1,
+    "download_workers_max": 16,
+    "file_deadline_seconds": 17620.0,
+    "max_canonical_bytes_per_file": 5360949571,
+    "max_decoded_bytes_per_file": 22171090944,
+    "max_decompression_ratio": 15.0,
+    "max_durable_bytes_per_file": 16264671878,
+    "max_file_bytes": 5542772736,
+    "max_in_flight_files": 1,
+    "max_ledger_bytes": 536870912,
+    "max_parser_bytes": 33554432,
+    "max_record_bytes": 33554432,
+    "max_record_bytes_basis": "finepdfs-record-v1: whole-file scan of data/eng_Latn/train/000_00083.parquet (220,407 rows, sha256 4eeb58bc...a38d) found a 24,828,818-byte largest projected row and 3 rows above the generic 8 MiB; the bound is the existing 32 MiB parser ceiling, about 1.35x that maximum",
+    "max_requests_per_file": 16,
+    "max_retries": 5,
+    "max_rows_per_file": 520834,
+    "plan_deadline_seconds": 14400.0,
+    "process_workers": 1,
+    "process_workers_max": 16,
+    "processing_growth": {
+      "event_bytes": 1048576,
+      "metadata_bytes": 1048576,
+      "output_bytes": 10721899142,
+      "progress_bytes": 4096,
+      "run_metadata_bytes": 8388608,
+      "source_max_bytes": 5542772736,
+      "state_bytes": 1048576,
+      "version": 1
+    },
+    "request_timeout_seconds": 30.0,
+    "rules": "mix01-source-planner-v1",
+    "scratch_cap_bytes": 19038848034,
+    "scratch_min_free_bytes": 34359738368,
+    "scratch_retained_bytes": 2771022236
+  },
+  "retention": "scratch only; verified files and outputs are removed after the receipt; nothing enters the durable store or the production inventory",
+  "source": {
+    "adapter_id": "finepdfs_en",
+    "component_id": "finepdfs_en",
+    "provider": "huggingface",
+    "repository": "HuggingFaceFW/finepdfs-edu",
+    "revision": "9cfabe2127faca99b3d5c4dc6d1fcb397399ebde",
+    "source_id": "finepdfs_edu",
+    "view_id": "eng_Latn"
+  },
+  "source_key": "finepdfs",
+  "transport_mode": "whole_file_local",
+  "version": 1
+}

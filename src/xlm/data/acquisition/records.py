@@ -7,7 +7,7 @@ import hashlib
 import json
 import os
 import time
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from pathlib import Path
 from typing import Any, Protocol
 
@@ -379,10 +379,17 @@ class StreamingJsonlWriter:
     sampled per flush on a best-effort basis and never fails the write.
     """
 
-    def __init__(self, path: Path, *, buffer_bytes: int = 262144) -> None:
+    def __init__(
+        self,
+        path: Path,
+        *,
+        buffer_bytes: int = 262144,
+        before_write: Callable[[int], None] | None = None,
+    ) -> None:
         self._stream = path.open("xb")
         self._buffer = bytearray()
         self._bound = max(65536, buffer_bytes)
+        self._before_write = before_write
         self.digest = hashlib.sha256()
         self.count = 0
         self.size = 0
@@ -392,6 +399,8 @@ class StreamingJsonlWriter:
 
     def write_line(self, payload: bytes) -> None:
         """Append one ``\\n``-terminated encoded record."""
+        if self._before_write is not None:
+            self._before_write(len(payload))
         self._buffer += payload
         self.digest.update(payload)
         self.count += 1
@@ -401,6 +410,8 @@ class StreamingJsonlWriter:
 
     def write_raw(self, block: bytes) -> None:
         """Append pre-framed bytes (ordered-merge path); hash/size only."""
+        if self._before_write is not None:
+            self._before_write(len(block))
         self._buffer += block
         self.digest.update(block)
         self.size += len(block)

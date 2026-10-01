@@ -15,6 +15,7 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from xlm.artifacts.manifest import ensure_plain_path, validate_component, validate_file_set
+from xlm.data.acquisition.source_growth import ProcessingGrowth
 from xlm.data.sources.policy import check_denial_policy
 
 
@@ -229,6 +230,7 @@ class AcquisitionPlan(BaseModel):
     )
     sampling_frame: SamplingFrame = Field(default_factory=SamplingFrame)
     expected_bytes: int | None = None
+    source_processing_growth: ProcessingGrowth | None = None
     expected_file_digests: dict[str, str] = Field(
         default_factory=dict,
         description="Optional independent expected SHA-256 digests mapped by relative file path.",
@@ -337,6 +339,8 @@ class AcquisitionPlan(BaseModel):
             "admitted_source_reference": self.admitted_source_reference,
             "is_pilot": self.is_pilot,
         }
+        if self.source_processing_growth is not None:
+            behavioral_dict["source_processing_growth"] = self.source_processing_growth.model_dump()
         # Attempt 1 is the legacy identity element: plans written before the
         # attempt counter existed hash exactly as before, so their recorded
         # plan_hash values keep verifying. Higher attempts bind a distinct

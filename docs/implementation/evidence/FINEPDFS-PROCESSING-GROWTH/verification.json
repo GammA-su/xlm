@@ -1,0 +1,232 @@
+{
+  "active_scratch_bytes": 2771022236,
+  "adopted": false,
+  "archive_inventory_unchanged": [
+    {
+      "mtime_ns": 1790847274079719800,
+      "path": "f00000.parquet.part",
+      "sha256": "4eeb58bc769a194f472100ed4acd1d960e35c669caecd96fd4ce6425fabca38d",
+      "size": 2771021138
+    },
+    {
+      "mtime_ns": 1790847274092154100,
+      "path": "f00000.state.json",
+      "sha256": "2b05a06c33b1e7461d0f1ec9f4a92c73a3416a8fe35fae9cee65c868d6c4556f",
+      "size": 896
+    },
+    {
+      "mtime_ns": 1790847278679953200,
+      "path": "staging/f00000.progress.json",
+      "sha256": "7f8774aa8f9d467ccb64d4648a5665cafd9da2e8afe72a107cf66c0a9f21da66",
+      "size": 99
+    },
+    {
+      "mtime_ns": 1790847274645043500,
+      "path": "staging/f00000.progress.lock",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "mtime_ns": 1790847278838256600,
+      "path": "staging/f00000/c80d20f5d270/documents.jsonl",
+      "sha256": "94d61457b3147837d1a8d20f81a5a00fe19ee027af98657da09d0a3bad332f69",
+      "size": 136943760
+    }
+  ],
+  "authorized": false,
+  "b1_b2_history_unchanged": {
+    "G:\\XLM\\plans\\finepdfs\\benchmarks\\b1\\acquisition.plan.json": {
+      "mtime_ns": 1790847165657945500,
+      "sha256": "709734f91a4c99d79486bb97e392f5f6f596adbb4da374130cb2e21cb137895e",
+      "size": 2068
+    },
+    "G:\\XLM\\plans\\finepdfs\\benchmarks\\b1\\authorization.json": {
+      "mtime_ns": 1790847165594709700,
+      "sha256": "3eb518622340af9c2927aca5ed44f58f85bce139afe8b5288c09c789df2873b6",
+      "size": 171
+    },
+    "G:\\XLM\\plans\\finepdfs\\benchmarks\\b1\\benchmark.json": {
+      "mtime_ns": 1790847088749911500,
+      "sha256": "5e46ceefe3c4230188ee88745466f55d446dd224ad4902dc31256e49969b0410",
+      "size": 2865
+    },
+    "G:\\XLM\\plans\\finepdfs\\benchmarks\\b1\\events.jsonl": {
+      "mtime_ns": 1790847278896503000,
+      "sha256": "360a57cf9691c1324016b4cc06408ffad2ad2a6530a929ead9e90208523f7ee0",
+      "size": 261
+    },
+    "G:\\XLM\\plans\\finepdfs\\benchmarks\\b1\\performance-00.json": {
+      "mtime_ns": 1790847278967074200,
+      "sha256": "fb86b74cc3186158d6d93bea1bfd5daac862d156f1efb16e302f121b92571e2f",
+      "size": 3310
+    },
+    "G:\\XLM\\plans\\finepdfs\\benchmarks\\b1\\scratch-archive.intent.json": {
+      "mtime_ns": 1790849354925267100,
+      "sha256": "19539d3672425ebb3c7f993e2ac65a77a3da48e558e4fe5984c0fce1f5342208",
+      "size": 1708
+    },
+    "G:\\XLM\\plans\\finepdfs\\benchmarks\\b1\\scratch-archive.json": {
+      "mtime_ns": 1790849359796393100,
+      "sha256": "19539d3672425ebb3c7f993e2ac65a77a3da48e558e4fe5984c0fce1f5342208",
+      "size": 1708
+    },
+    "G:\\XLM\\plans\\finepdfs\\benchmarks\\b2\\acquisition.plan.json": {
+      "mtime_ns": 1790848128724152800,
+      "sha256": "3f418f6a0d6e9ac6d27b229e23f8303f58f26d6d846b4b71d0672ce4b48adabf",
+      "size": 2069
+    },
+    "G:\\XLM\\plans\\finepdfs\\benchmarks\\b2\\adoption.json": {
+      "mtime_ns": 1790848137233912100,
+      "sha256": "c487689e741cc01f4e7a353f7176473e69f8664119ba3b302ab12c35dd4a2093",
+      "size": 450
+    },
+    "G:\\XLM\\plans\\finepdfs\\benchmarks\\b2\\authorization.json": {
+      "mtime_ns": 1790848128658802800,
+      "sha256": "8b347696cb75cbb554fa1fb1ed3a536f37472ed7720535b420d46335b6d287d8",
+      "size": 171
+    },
+    "G:\\XLM\\plans\\finepdfs\\benchmarks\\b2\\b1-archive-capacity-check.json": {
+      "mtime_ns": 1790849364491423200,
+      "sha256": "c2ebaa16344c4938fd2278af22bcbd6606e5633888909418215e75a8d3d6f75b",
+      "size": 4332
+    },
+    "G:\\XLM\\plans\\finepdfs\\benchmarks\\b2\\benchmark.json": {
+      "mtime_ns": 1790848077545058900,
+      "sha256": "b5c4a2f6f19ceb60ccc48a1daa02e786ea1ef901eb3e624400cc85cbaaad7623",
+      "size": 3172
+    },
+    "G:\\XLM\\plans\\finepdfs\\benchmarks\\b2\\events.jsonl": {
+      "mtime_ns": 1790848455423965600,
+      "sha256": "135cdfef6598ea6180d44a9a7f1d5b3e938a5971ce49fb095396090ef83f47f5",
+      "size": 382
+    },
+    "G:\\XLM\\plans\\finepdfs\\benchmarks\\b2\\performance-00.json": {
+      "mtime_ns": 1790848145462611100,
+      "sha256": "05abb6d92b612e533bf6a7da07306a9573ab9d1ceed9b08b02ece2e7c20015a7",
+      "size": 3192
+    },
+    "G:\\XLM\\plans\\finepdfs\\benchmarks\\b2\\performance-01.json": {
+      "mtime_ns": 1790848455423965600,
+      "sha256": "6cc1dee3a3df33a41e3ff64ae384328c52f1904cc79b188c236bd0a7cb5e8987",
+      "size": 3192
+    }
+  },
+  "benchmark_digest": "aa539f079104c7c764266a285354ec0b79462d2a13390b7301e841876a5e1f35",
+  "digest": "831824c4564e13f33939a45495ab7b3d63cf4467d188fd2c638f7c52c430a45b",
+  "essential_compatibility": true,
+  "executed": false,
+  "growth": {
+    "event_bytes": 1048576,
+    "metadata_bytes": 1048576,
+    "output_bytes": 10721899142,
+    "progress_bytes": 4096,
+    "run_metadata_bytes": 8388608,
+    "source_max_bytes": 5542772736,
+    "state_bytes": 1048576,
+    "version": 1
+  },
+  "kind": "finepdfs_b3_offline_plan_verification",
+  "limits_changed_from_b2": [
+    "processing_growth",
+    "scratch_cap_bytes",
+    "scratch_retained_bytes"
+  ],
+  "network": "socket audit hook refused",
+  "new_source_growth_on_reuse": 0,
+  "physical_free_bytes": 851160186880,
+  "plan_hash": "55d9a94fc105fec2281fb5bb38475e7252234f8cd29aa0b138149db362eabeab",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.12.13",
+  "scratch_cap_bytes": 19038848034,
+  "scratch_min_free_bytes": 34359738368,
+  "seconds": 98.31200000000536,
+  "source": {
+    "mtime_ns": 1790847274079719800,
+    "sha256": "4eeb58bc769a194f472100ed4acd1d960e35c669caecd96fd4ce6425fabca38d",
+    "size": 2771021138
+  },
+  "state": {
+    "mtime_ns": 1790848137232901000,
+    "sha256": "75f7f0d2ebdb39eccd97b3f79b6da433dd9eadc8f57b4435d19afcbc59fc1992",
+    "size": 1098
+  },
+  "ultrax_first_pass_seal": "efdb99dbf1bc8380985925fcbbe654536d02c5b0c87162eecc9e92e858302f1f",
+  "ultrax_operator_files_unchanged": {
+    "G:\\XLM\\plans\\ultrax\\benchmarks\\b1\\acquisition.plan.json": {
+      "mtime_ns": 1790845566471432900,
+      "sha256": "6f2448cd268225218a4436ed3ac5509c37010f6d511ec1de9ad0638a58c9cfb0",
+      "size": 2373
+    },
+    "G:\\XLM\\plans\\ultrax\\benchmarks\\b1\\authorization.json": {
+      "mtime_ns": 1790845566406603000,
+      "sha256": "f7c9cd0498a416ee25728cec0911e988b0fb6174895a15749c7a3e52a865679f",
+      "size": 171
+    },
+    "G:\\XLM\\plans\\ultrax\\benchmarks\\b1\\benchmark.json": {
+      "mtime_ns": 1790845503690329000,
+      "sha256": "79540183922068e6263f633b57f10a47679f735e871ad56da83b8b4c3bd4e963",
+      "size": 3132
+    },
+    "G:\\XLM\\plans\\ultrax\\benchmarks\\b1\\performance-00.json": {
+      "mtime_ns": 1790845694186042600,
+      "sha256": "b47911e66a1b3057d7b611082f3744874e5044d06a95d09b4cc22a4a0bc87ebf",
+      "size": 3490
+    },
+    "G:\\XLM\\plans\\ultrax\\benchmarks\\b1\\range-plan.json": {
+      "mtime_ns": 1790845955030634900,
+      "sha256": "4d63959c8b04cf6601cd699c940474e58277bb89407c93678a15442a50535e94",
+      "size": 2659
+    },
+    "G:\\XLM\\plans\\ultrax\\benchmarks\\b1\\range-receipt.json": {
+      "mtime_ns": 1790846109284526600,
+      "sha256": "96c0d2fe9a2c69c93da6900322e3b9c5b18366f350676b6310c7687c3cecfda0",
+      "size": 1484
+    },
+    "G:\\XLM\\plans\\ultrax\\benchmarks\\b1\\range-rows.evidence.json": {
+      "mtime_ns": 1790845944942028900,
+      "sha256": "51285d85aad276643ecbebf67856482f0b5fbcccdd3937c724ed6f0ad94bf8dc",
+      "size": 2363
+    },
+    "G:\\XLM\\plans\\ultrax\\benchmarks\\b1\\range-rows.json": {
+      "mtime_ns": 1790845944936138300,
+      "sha256": "7874f4bad72f1e2f89f88a606107371b056fa2eeb5d82229cb1ea4080dddad20",
+      "size": 230
+    },
+    "G:\\XLM\\plans\\ultrax\\first-pass-seal.json": {
+      "mtime_ns": 1790846822095340400,
+      "sha256": "77d9b177ba8faf3de4d6f62a4152db3819e7af29c8860c34e2e85f7907469f55",
+      "size": 10023
+    },
+    "G:\\XLM\\plans\\ultrax\\p01\\acquisition.plan.json": {
+      "mtime_ns": 1790846395791721800,
+      "sha256": "b33382242e4ce56889c7927f72a126b6f5d14755657b0e108e57bfd3a96cbc47",
+      "size": 4109
+    },
+    "G:\\XLM\\plans\\ultrax\\p01\\authorization.json": {
+      "mtime_ns": 1790846395718774800,
+      "sha256": "6a6b699604efcc7bf42a8370a20356604aafb6e46baea8753166b2c68e91a0d6",
+      "size": 166
+    },
+    "G:\\XLM\\plans\\ultrax\\p01\\performance-00.json": {
+      "mtime_ns": 1790846581712093800,
+      "sha256": "b5e2e5ac2dff90f25906ad7db589ad371096c821f40596241054632d367385df",
+      "size": 3068
+    },
+    "G:\\XLM\\plans\\ultrax\\p01\\plan.json": {
+      "mtime_ns": 1790846346281017600,
+      "sha256": "76f54402c083b84c6a38f2221c16c2384e926a5fb32f98c2cfbdd1e5fd6a09c8",
+      "size": 6732
+    },
+    "G:\\XLM\\plans\\ultrax\\sufficiency.json": {
+      "mtime_ns": 1790846733098452900,
+      "sha256": "557a34d8c049746fcf9da2cc453789d4b908477adb22667a52b1526e169dfd4a",
+      "size": 1061
+    },
+    "G:\\XLM\\plans\\ultrax\\transport-policy.json": {
+      "mtime_ns": 1790846339231800300,
+      "sha256": "8cc2d11d7fb063abfa5d53f1d4e9b8e4e3f3455f24aaefd0e4a8367c6ca17572",
+      "size": 4407
+    }
+  },
+  "ultrax_units": 12
+}

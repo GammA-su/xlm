@@ -109,8 +109,12 @@ class RecentRate:
 class Dashboard:
     """TTY frames each second, a line each 30 s otherwise, and append-only events."""
 
-    def __init__(self, stream: TextIO, log: Path, *, now: float | None = None) -> None:
+    def __init__(
+        self, stream: TextIO, log: Path, *, now: float | None = None, max_growth: int | None = None
+    ) -> None:
         self.stream, self.log = stream, log
+        self.max_growth = max_growth
+        self.written_bytes = 0
         self.tty = bool(getattr(stream, "isatty", lambda: False)())
         self.started = time.monotonic() if now is None else now
         self.last_render = -math.inf
@@ -128,8 +132,14 @@ class Dashboard:
         now = time.monotonic() if now is None else now
         record = {"elapsed": duration(now - self.started), "event": kind, **metadata}
         self.log.parent.mkdir(parents=True, exist_ok=True)
-        with self.log.open("a", encoding="utf-8") as output:
-            output.write(json.dumps(record, sort_keys=True) + "\n")
+        data = (json.dumps(record, sort_keys=True) + "\n").encode("utf-8")
+        if self.max_growth is not None and self.written_bytes + len(data) > self.max_growth:
+            from xlm.data.acquisition.source_growth import GrowthLimitError
+
+            raise GrowthLimitError("run event log exceeds its growth ceiling")
+        with self.log.open("ab") as output:
+            output.write(data)
+        self.written_bytes += len(data)
         self.clear()
         self.stream.write(f"[{record['elapsed']}] {kind} " + json.dumps(metadata) + "\n")
         self.stream.flush()

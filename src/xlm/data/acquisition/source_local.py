@@ -8,10 +8,9 @@ For the same rows and selection identity the documents are therefore the ones
 the range path writes. The rejection ledger is stored zstd-compressed and is
 identified by the SHA-256 of its uncompressed version-1 JSONL bytes.
 
-Source-agnostic primitives that the frozen Essential-Web campaign also uses
-(verified transfer, durable promotion, progress snapshots, ledger codec) are
-imported unchanged: that campaign binds the bytes of its own modules, so they
-are reused, not moved.
+Source-agnostic primitives also serve the frozen Essential-Web campaign.
+Optional processing bounds preserve its call signatures and default behavior;
+an additive compatibility record binds the shared-code repair.
 """
 
 from __future__ import annotations
@@ -30,6 +29,12 @@ import pyarrow as pa
 from xlm.artifacts.manifest import ensure_plain_path
 from xlm.data.acquisition.records import StreamingJsonlWriter
 from xlm.data.acquisition.sampling import discover_layout_local
+from xlm.data.acquisition.source_growth import (
+    GrowthLimitError,
+    OutputBudget,
+    ProcessingGrowth,
+    bounded_json,
+)
 from xlm.data.acquisition.source_parquet import (
     check_parquet_magic,
     file_sha256,
@@ -109,6 +114,7 @@ def adapt_source_file(
     limits: Mapping[str, Any],
     row_range: tuple[int, int] | None = None,
     progress_path: Path | None = None,
+    reserved_tail_bytes: int = 0,
 ) -> dict[str, Any]:
     """Adapt one verified local source Parquet into a fresh private ``output_dir``.
 
@@ -118,12 +124,30 @@ def adapt_source_file(
     if output_dir.exists() and any(output_dir.iterdir()):
         raise SourceAdaptError("local adaptation needs a fresh private output directory")
     started, cpu_started = time.monotonic(), time.process_time()
+    growth = (
+        ProcessingGrowth.model_validate(limits["processing_growth"])
+        if "processing_growth" in limits
+        else None
+    )
+    budget = (
+        OutputBudget(
+            growth.output_bytes,
+            disk_path=output_dir.parent,
+            min_free_bytes=int(limits.get("scratch_min_free_bytes", 0)),
+        )
+        if growth is not None
+        else None
+    )
+    if budget is not None:
+        budget.charge(reserved_tail_bytes)
     layout = check_layout(path, source_file, adapter_id, view_id, limits)
     start, stop = row_range or (0, int(layout["rows"]))
     output_dir.mkdir(parents=True)
     factory: Any = ADAPTERS_BY_ID[adapter_id]
     adapter = factory()
-    documents = StreamingJsonlWriter(output_dir / DOCUMENTS_FILENAME)
+    documents = StreamingJsonlWriter(
+        output_dir / DOCUMENTS_FILENAME, before_write=None if budget is None else budget.charge
+    )
     ledger = bytearray()
     codes: dict[str, int] = {}
     raw_digest = hashlib.sha256()
@@ -147,7 +171,9 @@ def adapt_source_file(
             "rejected": rows - accepted,
         }
         progress_path.parent.mkdir(parents=True, exist_ok=True)
-        if publish_progress(progress_path, snapshot):
+        if publish_progress(
+            progress_path, snapshot, max_bytes=None if growth is None else growth.progress_bytes
+        ):
             last = now
 
     progress()
@@ -191,16 +217,21 @@ def adapt_source_file(
                         original_record_sha256=record["_xlm_acquisition"]["original_record_sha256"],
                     )
                 )
-                ledger += line.encode("utf-8") + b"\n"
-                if len(ledger) > ledger_bound:
+                encoded = line.encode("utf-8") + b"\n"
+                if len(ledger) + len(encoded) > ledger_bound:
                     raise SourceAdaptError(
                         f"{source_file}: rejection ledger exceeds its bound"
                     ) from None
+                ledger += encoded
                 codes[type(exc).__name__] = codes.get(type(exc).__name__, 0) + 1
                 progress()
                 continue
             if document.source_id != source_id or document.source_revision != revision:
                 raise SourceAdaptError("adapter produced a document of another source or revision")
+            if growth is not None and canonical_bytes + document.utf8_byte_count > int(
+                limits["max_canonical_bytes_per_file"]
+            ):
+                raise GrowthLimitError("canonical text exceeds its byte ceiling")
             documents.write_line(serialize_document(document).encode("utf-8") + b"\n")
             accepted += 1
             canonical_bytes += document.utf8_byte_count
@@ -217,7 +248,10 @@ def adapt_source_file(
     data = bytes(ledger)
     compressed = compress_ledger(data) if data else b""
     ledger_sha256 = hashlib.sha256(data).hexdigest()
-    _write_bytes(output_dir / LEDGER_FILENAME, compressed)
+    if budget is None:
+        _write_bytes(output_dir / LEDGER_FILENAME, compressed)
+    else:
+        budget.write(output_dir / LEDGER_FILENAME, compressed, min(ledger_bound, budget.limit))
     if hashlib.sha256(read_ledger(output_dir / LEDGER_FILENAME, len(data))).hexdigest() != (
         ledger_sha256
     ):
@@ -256,10 +290,11 @@ def adapt_source_file(
             "compressed_sha256": hashlib.sha256(compressed).hexdigest(),
         },
     )
-    _write_bytes(
-        output_dir / SUMMARY_FILENAME,
-        (json.dumps(summary, indent=2, sort_keys=True) + "\n").encode("utf-8"),
-    )
+    summary_data = (json.dumps(summary, indent=2, sort_keys=True) + "\n").encode("utf-8")
+    if budget is None or growth is None:
+        _write_bytes(output_dir / SUMMARY_FILENAME, summary_data)
+    else:
+        budget.write(output_dir / SUMMARY_FILENAME, summary_data, growth.metadata_bytes)
     progress()
     return {
         "source_file": source_file,
@@ -285,6 +320,10 @@ def adapt_source_file(
         "rejections_uncompressed_bytes": len(data),
         "rejections_file_bytes": len(compressed),
         "rejections_file_sha256": hashlib.sha256(compressed).hexdigest(),
+        "processing_output_bytes": documents.size
+        + len(compressed)
+        + len(summary_data)
+        + reserved_tail_bytes,
         "process_seconds": time.monotonic() - started,
         "process_cpu_seconds": time.process_time() - cpu_started,
     }
@@ -300,12 +339,30 @@ def process_source_unit(job: Mapping[str, Any]) -> dict[str, Any]:
     pa.set_cpu_count(1)
     pa.set_io_thread_count(1)
     source = Path(str(job["source_path"]))
+    growth = (
+        ProcessingGrowth.model_validate(job["limits"]["processing_growth"])
+        if "processing_growth" in job["limits"]
+        else None
+    )
+    if growth is not None:
+        growth = growth.for_source(int(job["identity_record"]["length"]))
+    tail_bytes = 0
+    if growth is not None:
+        if job.get("growth_reserved") != growth.model_dump():
+            raise GrowthLimitError("worker has no matching processing-growth reservation")
+        # Leave room for the caller's bounded receipt before writing documents.
+        tail_bytes = growth.metadata_bytes + len(
+            bounded_json(job["identity_record"], growth.metadata_bytes)
+        )
     promote_seconds = 0.0
     promoted = False
     if job.get("durable_path") is not None:
         started = time.monotonic()
         promoted = promote_source(
-            source, Path(str(job["durable_path"])), dict(job["identity_record"])
+            source,
+            Path(str(job["durable_path"])),
+            dict(job["identity_record"]),
+            max_metadata_bytes=None if growth is None else growth.metadata_bytes,
         )
         promote_seconds = time.monotonic() - started
     staging = Path(str(job["staging_dir"])) / uuid.uuid4().hex[:12]
@@ -322,9 +379,13 @@ def process_source_unit(job: Mapping[str, Any]) -> dict[str, Any]:
         plan_hash=str(job["plan_hash"]),
         selection_hash=str(job["selection_hash"]),
         identity=dict(job["identity_record"]),
-        limits=dict(job["limits"]),
+        limits={
+            **job["limits"],
+            **({"processing_growth": growth.model_dump()} if growth is not None else {}),
+        },
         row_range=None if job.get("row_range") is None else tuple(job["row_range"]),
         progress_path=Path(str(job["progress_path"])) if job.get("progress_path") else None,
+        reserved_tail_bytes=tail_bytes,
     )
     result.update(
         staging_dir=str(staging),

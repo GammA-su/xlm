@@ -96,11 +96,61 @@ junctions or manually relocate a receipted archive.
 
 FinePDFs b1 is now at `C:\XLM-scratch-history\finepdfs\bench-b1`, verified by
 `G:\XLM\plans\finepdfs\benchmarks\b1\scratch-archive.json`. b2's source and
-authorization remain valid. Active usage is 2,771,022,236 B, leaving
-2,771,750,500 B, below the planner's 10,721,899,142 B processing allowance.
-b3 needs larger scratch capacity and bounded processing-output accounting;
-the generic scheduler repair remains pending. Do not retry b2 or run the range
-half. See the [archive/capacity report](../implementation/reports/FINEPDFS-SCRATCH-ARCHIVE.md).
+authorization remain valid; b2 stays failed capacity history. Active usage is
+2,771,022,236 B. Do not retry b2 or run the range half.
+
+New local-processing plans freeze `processing_growth` version 1 in their
+benchmark and acquisition identity. The parent verifies source state/hash before
+reserving new growth, then reserves all worker outputs before submission.
+Serialized documents, compressed rejection ledger, summary and final metadata
+share an enforced output pool; canonical text has its separate unchanged cap.
+State/progress and atomic publication overlap are reserved and bounded before
+write. Benchmark and production share worker and final result enforcement.
+Historical unsealed plans without that contract need a new plan; sealed plans
+and their identities remain verifiable.
+
+FinePDFs **b3 is planned only**, awaiting operator digest review:
+
+- Digest: `aa539f079104c7c764266a285354ec0b79462d2a13390b7301e841876a5e1f35`.
+- Plan hash: `55d9a94fc105fec2281fb5bb38475e7252234f8cd29aa0b138149db362eabeab`.
+- Scratch cap: **19,038,848,034 B** = retained b2 `2,771,022,236`
+  + source maximum `5,542,772,736` + processing pool `10,721,899,142`
+  + atomic metadata `1,048,576` + two progress snapshots `8,192`
+  + two source states `2,097,152`. No rounding.
+- Ledger up to `536,870,912` B, summary/receipt each up to `1,048,576` B,
+  and serialized documents share the pool. With verified source length `s`,
+  the output pool may use `16,264,671,878-s`; the combined ceiling is unchanged.
+- Fresh and verified-reuse cases fit this same envelope. Existing hard-linked
+  paths still count. Preserve **34,359,738,368 B** physical free space after all
+  outstanding growth. G: reserves another **17,825,792 B** for run metadata.
+
+See the complete [byte audit and validation report](../implementation/reports/FINEPDFS-PROCESSING-GROWTH.md).
+Next command is review only:
+
+```powershell
+Get-Content -LiteralPath 'G:\XLM\plans\finepdfs\benchmarks\b3\benchmark.json'
+```
+
+Future commands, **only after operator review and explicit authorization**:
+
+```powershell
+$env:UV_OFFLINE='1'
+$env:HF_HUB_OFFLINE='1'
+$env:HF_DATASETS_OFFLINE='1'
+$env:TRANSFORMERS_OFFLINE='1'
+$env:XLM_DATA_ROOT='G:\XLM'
+$env:XLM_HOME='G:\XLM\xlm-home'
+$env:XLM_SCRATCH_ROOT='C:\XLM-scratch'
+$env:PYTHONUTF8='1'
+uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/mix01_source.py benchmark authorize --source-key finepdfs --label b3 --digest aa539f079104c7c764266a285354ec0b79462d2a13390b7301e841876a5e1f35 --operator '<operator-name>'
+uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/mix01_source.py benchmark adopt --source-key finepdfs --label b3 --donor b2
+uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/mix01_source.py benchmark run --source-key finepdfs --label b3 --offline
+```
+
+Run b3 with **network OFF** after verified adoption. The benchmark's explicit
+`--offline` refuses any input requiring network; it rechecks complete inputs
+and prevents transfer fallback if reuse changes. Environment variables alone
+are insufficient. None of these future commands was executed during b3 planning.
 
 ## 5. Plans, authorization, runs
 

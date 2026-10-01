@@ -1,3 +1,18 @@
+> **FINEPDFS B3 PROCESSING GROWTH (2026-10-01, offline): FINEPDFS B3 READY
+> FOR OPERATOR DIGEST REVIEW.** Verified-source growth and pre-worker processing
+> reservations now share frozen, pre-write output/state/progress bounds. Fresh
+> and local-reuse envelopes fit a derived 19,038,848,034 B scratch cap; existing
+> bytes and hard-link paths count. b3 digest `aa539f07...e1f35`, plan hash
+> `55d9a94f...abeab`; only `benchmark.json` exists, no authorization/adoption/run.
+> Real offline checks preserve all 15 b1/b2 operator files, archived b1 inventory
+> and b2 source/state; UltraX's 12-unit first-pass seal re-verifies unchanged.
+> Essential's shared-code compatibility chain gains one additive exact-hash link.
+> 192 distinct focused cases have passing results; final affected selection
+> 34/34 pass. Ruff/format/strict mypy pass on 18 Python files. No full acceptance,
+> whole-file performance, network, range, production, C05, tokenizer, training
+> or push. [Report](reports/FINEPDFS-PROCESSING-GROWTH.md). Next: review
+> `G:\XLM\plans\finepdfs\benchmarks\b3\benchmark.json`; stop at its digest.
+
 > **FINEPDFS B1 ARCHIVE / B2 CAPACITY (2026-10-01, offline): FINEPDFS B2
 > REQUIRES B3 FOR SCRATCH CAPACITY.** b1's five scratch files were moved to
 > `C:\XLM-scratch-history\finepdfs\bench-b1`; hashes/sizes/mtimes verify, with

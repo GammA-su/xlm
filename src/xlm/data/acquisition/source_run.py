@@ -65,6 +65,7 @@ from xlm.data.acquisition.source_dashboard import (
     fatal_lines,
     free_bytes,
 )
+from xlm.data.acquisition.source_growth import ProcessingGrowth, bounded_json, check_result
 from xlm.data.acquisition.source_local import (
     LEDGER_FILENAME,
     RECEIPT_FILENAME,
@@ -83,6 +84,7 @@ from xlm.data.acquisition.source_parquet import (
     load_durable_source,
 )
 from xlm.data.acquisition.source_plan import check_plan, minted_from_record
+from xlm.data.acquisition.source_reservations import SourceReservations, reserve_metadata
 from xlm.data.adapters.rejections import DOCUMENTS_FILENAME, SUMMARY_FILENAME
 from xlm.data.evidence_v2 import canonical
 from xlm.data.sources import essential_web_local as pipeline
@@ -125,7 +127,7 @@ def write_json(path: Path, payload: Mapping[str, Any]) -> None:
 def write_once(path: Path, payload: Mapping[str, Any]) -> bool:
     """Exclusive publication; an identical rerun is a no-op, a different one refuses."""
     ensure_plain_path(path)
-    data = (json.dumps(dict(payload), indent=2, sort_keys=True) + "\n").encode("utf-8")
+    data = bounded_json(payload, MAX_JSON_BYTES)
     if path.exists():
         if path.read_bytes() != data:
             raise RunError(f"'{path.name}' already exists with different content; refusing")
@@ -417,6 +419,9 @@ PROCESS_LIMIT_KEYS = (
     "max_record_bytes",
     "max_decoded_bytes_per_file",
     "max_ledger_bytes",
+    "max_canonical_bytes_per_file",
+    "max_durable_bytes_per_file",
+    "scratch_min_free_bytes",
 )
 
 
@@ -433,7 +438,11 @@ def prepare_units(
 ) -> tuple[list[Unit], dict[str, int], int]:
     """Pipeline units; retained durable sources are reused, never downloaded again."""
     pin = record["source"]
+    if entries and "processing_growth" not in record["limits"]:
+        raise RunError("unsealed source work needs a new plan with bounded processing growth")
     limits = {key: record["limits"][key] for key in PROCESS_LIMIT_KEYS}
+    if "processing_growth" in record["limits"]:
+        limits["processing_growth"] = record["limits"]["processing_growth"]
     units: list[Unit] = []
     ranks: dict[str, int] = {}
     charged = 0
@@ -458,7 +467,7 @@ def prepare_units(
             "selection_hash": plan.compute_selection_hash(),
             "limits": limits,
             "row_range": None,
-            "progress_path": str(staging / f"{key}.progress.json"),
+            "progress_path": str(staging / key / "progress.json"),
         }
         retained = load_durable_source(roots.raw_path(name)) if durable else None
         if retained is not None:
@@ -519,6 +528,9 @@ def transfer_limits(record: Mapping[str, Any]) -> TransferLimits:
         max_retries=int(limits["max_retries"]),
         request_timeout_seconds=float(limits["request_timeout_seconds"]),
         deadline_seconds=float(limits["file_deadline_seconds"]),
+        max_state_bytes=None
+        if "processing_growth" not in limits
+        else int(limits["processing_growth"]["state_bytes"]),
     )
 
 
@@ -651,6 +663,10 @@ def seal_unit(
         (staging / SUMMARY_FILENAME).stat().st_size + identity_path(durable).stat().st_size,
     )
     limits = record["limits"]
+    if "processing_growth" in limits:
+        check_result(result, limits, int(source["length"]))
+        growth = ProcessingGrowth.model_validate(limits["processing_growth"])
+        bounded_json(receipt, growth.metadata_bytes)
     if receipt["canonical_bytes"] > int(limits["max_canonical_bytes_per_file"]) or receipt[
         "footprint_bytes"
     ] > int(limits["max_durable_bytes_per_file"]):
@@ -833,7 +849,9 @@ class Monitor:
         self.roots, self.record, self.resume, self.units = roots, record, resume, units
         self.scratch, self.meter, self.title, self.staging = scratch, meter, title, staging
         self.target, self.prior = target, prior_canonical
-        self.dashboard = Dashboard(stream, log)
+        self.dashboard = Dashboard(
+            stream, log, max_growth=record["limits"].get("processing_growth", {}).get("event_bytes")
+        )
         self.receipts: dict[str, dict[str, Any]] = {}
         self.progress: dict[str, dict[str, Any]] = {}
         self.status: dict[str, Any] = {}
@@ -1078,6 +1096,21 @@ def _execute(
         bytes_used=charged
         + sum(int(r["transfer"].get("transferred_bytes", 0)) for r in resume["receipts"]),
     )
+    reservations = None
+    directory = roots.plan_dir(sequence)
+    if "processing_growth" in limits:
+        growth = ProcessingGrowth.model_validate(limits["processing_growth"])
+        output_budget = ObservedScratch(
+            staging, plan.limits.max_output_disk_bytes, int(limits["scratch_min_free_bytes"])
+        )
+        reservations = SourceReservations(
+            scratch,
+            output_budget,
+            transfer_limits(record),
+            growth,
+            plan.revision,
+            reserve_metadata(directory, growth, int(limits["scratch_min_free_bytes"])),
+        )
     directory = roots.plan_dir(sequence)
     monitor = Monitor(
         roots,
@@ -1132,6 +1165,9 @@ def _execute(
                 process=process_source_unit,
                 max_in_flight=int(limits["max_in_flight_files"]),
                 on_progress=monitor.update,
+                reserve_unit=None if reservations is None else reservations.reserve,
+                release_unit=None if reservations is None else reservations.release,
+                before_process=None if reservations is None else reservations.processing,
             )
         monitor.update(
             {"downloading": [], "processing": [], "process_workers": 0, "backlog": 0}, force=True
@@ -1168,6 +1204,8 @@ def _execute(
             system=system,
         )
         index = next_index(directory, "performance")
+        if "processing_growth" in limits:
+            bounded_json(report, growth.run_metadata_bytes)
         write_once(directory / f"performance-{index:02d}.json", report)
     shutil.rmtree(staging, ignore_errors=True)
     return report

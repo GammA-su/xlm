@@ -31,21 +31,26 @@ from xlm.data.acquisition import source_archive
 from xlm.data.acquisition.plan import (
     AcquisitionPlan,
     PlanAuthorization,
+    SourceDriftDetectedError,
     load_acquisition_plan,
     save_acquisition_plan,
     validate_plan_authorization,
 )
 from xlm.data.acquisition.source_dashboard import ObservedScratch
+from xlm.data.acquisition.source_growth import ProcessingGrowth, bounded_json, check_result
 from xlm.data.acquisition.source_local import process_source_unit, scan_documents
 from xlm.data.acquisition.source_parquet import (
     _LINKED_SHA256,
     STATE_VERSION,
+    SourceTransferError,
     TransferMeter,
     TransferResult,
     file_sha256,
     identity_record,
+    inspect_source,
 )
 from xlm.data.acquisition.source_plan import acquisition_plan, plan_limits
+from xlm.data.acquisition.source_reservations import SourceReservations, reserve_metadata
 from xlm.data.acquisition.source_run import (
     Monitor,
     Roots,
@@ -98,6 +103,7 @@ def build_benchmark(
     admission: Mapping[str, str],
     download_workers: int,
     process_workers: int,
+    retained_scratch_bytes: int = 0,
 ) -> dict[str, Any]:
     """A bounded, self-digested whole-file benchmark plan; authorized like production."""
     if not label.isidentifier() or not 1 <= len(entries) <= MAX_BENCHMARK_FILES:
@@ -109,7 +115,19 @@ def build_benchmark(
     policy["process_workers"] = min(process_workers, len(files))
     if not 1 <= download_workers <= 16 or not 0 <= process_workers <= 16:
         raise RunError("benchmark concurrency must be 1..16 streams and 0..16 processes")
-    minted = acquisition_plan(pin, files, limits, seed, f"benchmark {label}; not production data")
+    if retained_scratch_bytes < 0:
+        raise RunError("retained scratch allowance must be nonnegative")
+    policy["scratch_retained_bytes"] = retained_scratch_bytes
+    policy["scratch_cap_bytes"] += retained_scratch_bytes
+    limits = limits.model_copy(update={"max_temp_disk_bytes": policy["scratch_cap_bytes"]})
+    minted = acquisition_plan(
+        pin,
+        files,
+        limits,
+        seed,
+        f"benchmark {label}; not production data",
+        processing_growth=policy["processing_growth"],
+    )
     return self_digest(
         {
             "kind": BENCHMARK_KIND,
@@ -159,6 +177,7 @@ def _minted(record: Mapping[str, Any]) -> AcquisitionPlan:
         AcquisitionLimits.model_validate(record["acquisition_plan"]["limits"]),
         int(record["acquisition_plan"]["seed"]),
         f"benchmark {record['label']}; not production data",
+        processing_growth=record["limits"].get("processing_growth"),
     )
     if minted.plan_hash != record["acquisition_plan"]["plan_hash"]:
         raise RunError("benchmark record does not reproduce its plan hash")
@@ -274,6 +293,20 @@ def _adopt_benchmark_download(roots: Roots, label: str, donor: str) -> dict[str,
             or (expected is not None and expected.lower() != sha256)
         ):
             raise RunError(f"{name}: donor download is incomplete or not independently bound")
+        try:
+            verified = inspect_source(
+                source_url(record["source"], name),
+                part,
+                donor_directory / f"{donor_key}.state.json",
+                name=name,
+                limits=transfer_limits(record),
+                revision=plan.revision,
+                expected_sha256=expected,
+            )
+        except (SourceTransferError, SourceDriftDetectedError) as exc:
+            raise RunError(f"{name}: donor bytes/state do not match verified identity") from exc
+        if verified.kind != "local_complete_reuse":
+            raise RunError(f"{name}: donor source is not verified complete reuse")
         target = roots.scratch(f"bench-{label}", f"{key}.parquet.part")
         target_state = roots.scratch(f"bench-{label}", f"{key}.state.json")
         if target.exists() or target_state.exists():
@@ -310,6 +343,7 @@ def run_benchmark(
     admitted: Callable[[AcquisitionPlan], None],
     stream: TextIO | None = None,
     url_for: Callable[[str], str] | None = None,
+    offline: bool = False,
 ) -> dict[str, Any]:
     """NETWORK: run one authorized whole-file benchmark; write its performance receipt."""
     directory = benchmark_dir(roots, label)
@@ -358,6 +392,17 @@ def run_benchmark(
         meter = TransferMeter(
             plan.limits.max_transferred_bytes, plan.limits.max_requests, bytes_used=charged
         )
+        growth = ProcessingGrowth.model_validate(limits["processing_growth"])
+        metadata = reserve_metadata(directory, growth, int(limits["scratch_min_free_bytes"]))
+        reservations = SourceReservations(
+            scratch,
+            scratch,
+            transfer_limits(record),
+            growth,
+            plan.revision,
+            metadata,
+            offline=offline,
+        )
         resume = {"receipts": [], "sealed": 0, "total": len(units)}
         monitor = Monitor(
             roots,
@@ -381,6 +426,7 @@ def run_benchmark(
         ) -> None:
             if result is None or transfer is None:
                 raise RunError("benchmark unit finished without transfer and processing")
+            check_result(result, limits, transfer.identity.length)
             documents = Path(str(result["staging_dir"])) / "documents.jsonl"
             if scan_documents(documents) != (
                 int(result["documents"]),
@@ -420,6 +466,10 @@ def run_benchmark(
                 on_done=on_done,
                 process=process_source_unit,
                 on_progress=monitor.update,
+                max_in_flight=int(limits["max_in_flight_files"]),
+                reserve_unit=reservations.reserve,
+                release_unit=reservations.release,
+                before_process=reservations.processing,
             )
         except BaseException as exc:
             outcome = {
@@ -449,6 +499,7 @@ def run_benchmark(
                 benchmark={"label": label, "digest": record["digest"], "files": record["files"]},
             )
             index = next_index(directory, "performance")
+            bounded_json(receipt, growth.run_metadata_bytes)
             write_once(directory / f"performance-{index:02d}.json", receipt)
         shutil.rmtree(staging, ignore_errors=True)
         return receipt
