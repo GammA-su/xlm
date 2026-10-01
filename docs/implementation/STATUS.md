@@ -1,3 +1,24 @@
+> **FINEPDFS WHOLE-FILE POLICY (2026-10-01, offline): FINEPDFS POLICY DIGEST NEEDS
+> OPERATOR REVIEW.** Measured freezes can now bind a receiptless `range_selected`
+> disposition (`range-v1-reach-v1`, `non_comparable`: 64/221 groups refused) next
+> to the real b3 whole-file receipt, as `mix01-transport-policy-v2` (not a speed
+> comparison). Whole-file sizing (`mix01-whole-file-sizing-v1`: 220,407 rows,
+> 65.39% accepted, 8,096.7 canonical B/row) supersedes the 1,000/1,000
+> calibration: 3 files, not 2. Sampling block bytes are v2 (true compressed).
+> UltraX identities unchanged. Rehearsed digests: reach `27ceafe9…`, policy
+> `f3a52411…`. Inventory needs a lister milestone. No network or G: writes.
+> [Report and operator commands](reports/FINEPDFS-WHOLE-FILE-POLICY.md).
+
+> **FINEPDFS RANGE ROW-GROUP AUDIT (2026-10-01, offline): FINEPDFS RANGE PATH
+> NOT COMPARABLE.** Group 178 is refused by `total_byte_size` 51,723,873 >
+> `max_parser_bytes` 33,554,432 (generic sample-blocks default, same rule as
+> range `check_row_group`). File-wide 64/221 groups refused (29% rows, 54%
+> projected bytes); longest usable run 9,000 rows; no contiguous 20k region.
+> One-interval `row_ranges` forbids skipping; range-reachable rows are 36%
+> lighter, the 4k block 50% lighter, than what whole-file b3 processed.
+> No code, digest, benchmark, network, or commit.
+> [Audit](reports/FINEPDFS-RANGE-ROWGROUP-AUDIT.md).
+
 > **FINEPDFS B3 PROCESSING GROWTH (2026-10-01, offline): FINEPDFS B3 READY
 > FOR OPERATOR DIGEST REVIEW.** Verified-source growth and pre-worker processing
 > reservations now share frozen, pre-write output/state/progress bounds. Fresh

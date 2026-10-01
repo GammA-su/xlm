@@ -37,7 +37,13 @@ from xlm.data.acquisition.projection import (
     resolve_projection,
 )
 
-SAMPLING_PLAN_VERSION = 1
+#: Block report schema. Version 1 (historical, never re-derived) reported the
+#: logical all-column ``total_byte_size`` under the ``compressed_bytes`` label.
+#: Version 2 reports the column-chunk compressed sum as ``compressed_bytes``
+#: and the logical size explicitly as ``total_byte_size``. Window reports carry
+#: no blocks and keep :data:`WINDOW_SAMPLING_PLAN_VERSION`.
+SAMPLING_PLAN_VERSION = 2
+WINDOW_SAMPLING_PLAN_VERSION = 1
 
 WINDOW_WARNING = (
     "Window sampling is clustered, nonuniform sampling: each selected file "
@@ -120,6 +126,11 @@ class RowGroupSpec:
     usable: bool
     refusal: str | None = None
     columns: tuple[ColumnChunkSpec, ...] = ()
+
+    @property
+    def compressed_bytes(self) -> int:
+        """Stored (compressed) bytes of every column chunk the footer listed."""
+        return sum(column.compressed for column in self.columns)
 
 
 @dataclass(frozen=True)
@@ -457,8 +468,11 @@ class ChosenBlock:
     start_row: int
     stop_row: int
     num_rows: int
+    #: Column-chunk compressed bytes (what a whole-group range read stores/moves).
     compressed_bytes: int
     uncompressed_bytes: int
+    #: Footer ``total_byte_size`` sum: logical all-column size, not compressed.
+    total_byte_size: int
 
 
 @dataclass(frozen=True)
@@ -644,8 +658,11 @@ class SamplingResult:
         return report
 
     def _legacy_report(self) -> dict[str, Any]:
+        windowed = self.window_policy is not None
         return {
-            "sampling_plan_version": SAMPLING_PLAN_VERSION,
+            "sampling_plan_version": (
+                WINDOW_SAMPLING_PLAN_VERSION if windowed else SAMPLING_PLAN_VERSION
+            ),
             "source_id": self.source_id,
             "view_id": self.view_id,
             "revision": self.revision,
@@ -668,6 +685,7 @@ class SamplingResult:
                     "num_rows": block.num_rows,
                     "compressed_bytes": block.compressed_bytes,
                     "uncompressed_bytes": block.uncompressed_bytes,
+                    "total_byte_size": block.total_byte_size,
                 }
                 for block in self.blocks
             ],
@@ -872,7 +890,7 @@ def plan_sample_blocks(layouts: dict[str, FileLayout], request: SamplingRequest)
         start_row = groups[0].start_row
         stop_row = groups[-1].start_row + groups[-1].num_rows
         rows = stop_row - start_row
-        compressed = sum(group.total_byte_size for group in groups)
+        compressed = sum(group.compressed_bytes for group in groups)
         uncompressed = sum(group.uncompressed_bytes for group in groups)
         blocks.append(
             ChosenBlock(
@@ -884,6 +902,7 @@ def plan_sample_blocks(layouts: dict[str, FileLayout], request: SamplingRequest)
                 num_rows=rows,
                 compressed_bytes=compressed,
                 uncompressed_bytes=uncompressed,
+                total_byte_size=sum(group.total_byte_size for group in groups),
             )
         )
         row_ranges[name] = (start_row, stop_row)

@@ -516,7 +516,11 @@ def test_legacy_reports_carry_no_window_keys(tmp_path: Path) -> None:
         ),
     ).to_report()
     assert not {"window_policy", "windows", "projected_fields"} & set(report)
-    assert report["sampling_plan_version"] == 1
+    # Block reports moved to v2 (true compressed bytes); window reports carry no
+    # blocks and keep version 1.
+    assert report["sampling_plan_version"] == 2
+    windowed = plan_sample_blocks(_layout(path), _window_request((path.name,))).to_report()
+    assert windowed["sampling_plan_version"] == 1 and windowed["blocks"] == []
 
 
 def test_projection_drives_ratio_safety(tmp_path: Path) -> None:

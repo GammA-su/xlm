@@ -103,6 +103,9 @@ class SourceLayout:
     #: Files in the source (None when no inventory exists).
     source_files: int | None
     evidence: Mapping[str, str]
+    #: Rows per file counted by a whole-file measurement; supersedes the
+    #: row-group density estimate. Omitted from records when unset.
+    rows_per_file_measured: int | None = None
 
     def __post_init__(self) -> None:
         if (
@@ -110,11 +113,14 @@ class SourceLayout:
             or self.canonical_bytes_per_row <= 0
             or self.range_requests_per_group <= 0
             or self.projected_group_bytes > self.group_bytes
+            or (self.rows_per_file_measured is not None and self.rows_per_file_measured < 1)
         ):
             raise PolicyError(f"layout of '{self.source_id}' is not physically consistent")
 
     @property
     def whole_bytes_per_row(self) -> float:
+        if self.rows_per_file_measured is not None:
+            return self.file_bytes / self.rows_per_file_measured
         return self.group_bytes / self.group_rows
 
     @property
@@ -123,8 +129,18 @@ class SourceLayout:
 
     @property
     def rows_per_file(self) -> int:
-        """Estimated rows per file from the measured file size and row-group density."""
+        """Measured rows per file, else estimated from file size and row-group density."""
+        if self.rows_per_file_measured is not None:
+            return self.rows_per_file_measured
         return max(1, int(self.file_bytes / self.whole_bytes_per_row))
+
+
+def layout_record(layout: SourceLayout) -> dict[str, Any]:
+    """The layout as recorded in reports; unset optional facts are omitted (old shape)."""
+    record = asdict(layout)
+    if record["rows_per_file_measured"] is None:
+        del record["rows_per_file_measured"]
+    return {**record, "rows_per_file_estimate": layout.rows_per_file}
 
 
 @dataclass(frozen=True)
@@ -358,7 +374,7 @@ def evaluate(
         "safety_margin": requirement.safety_margin,
         "planned_canonical_bytes": requirement.planned_canonical_bytes,
         "required_rows": rows,
-        "layout": {**asdict(layout), "rows_per_file_estimate": layout.rows_per_file},
+        "layout": layout_record(layout),
         "ceilings": asdict(ceilings),
         "candidates": candidates,
         "selected_mode": chosen["mode"],
@@ -376,13 +392,81 @@ def evaluate(
 # ------------------------------------------------------------------ freeze
 
 
-def freeze(report: Mapping[str, Any], *, basis: str, inputs: Mapping[str, str]) -> dict[str, Any]:
-    """Self-digested policy record; the plan binds its digest, never a recomputation."""
+#: A measured record that also binds its subject (source, view, repository,
+#: revision), the whole-file sizing measurement and any alternative mode that
+#: was disposed of without timing. v1 records keep verifying unchanged.
+POLICY_ID_V2 = "mix01-transport-policy-v2"
+SUBJECT_KEYS = ("source_id", "view_id", "repository", "revision")
+#: Why an alternative mode carries no timing: it cannot run (``infeasible``) or
+#: cannot deliver the population the selected mode processes (``non_comparable``).
+DISPOSITION_STATUSES = frozenset({"infeasible", "non_comparable"})
+_HEX64 = re.compile(r"^[0-9a-f]{64}$")
+
+
+def mode_disposition(
+    mode: TransportMode,
+    status: str,
+    *,
+    contract: str,
+    evidence_digest: str,
+    evidence_sha256: str,
+    summary: str,
+) -> dict[str, str]:
+    """One alternative excluded by structural evidence, never by a fabricated timing."""
+    if status not in DISPOSITION_STATUSES:
+        raise PolicyError(f"disposition status must be one of {sorted(DISPOSITION_STATUSES)}")
+    if not (_HEX64.fullmatch(evidence_digest) and _HEX64.fullmatch(evidence_sha256)):
+        raise PolicyError("a disposition binds its evidence digest and file sha256")
+    if not contract or not summary:
+        raise PolicyError("a disposition names its reason contract and summary")
+    return {
+        "mode": mode.value,
+        "status": status,
+        "contract": contract,
+        "evidence_digest": evidence_digest,
+        "evidence_sha256": evidence_sha256,
+        "summary": summary,
+    }
+
+
+def _check_dispositions(
+    dispositions: Sequence[Mapping[str, Any]], selected: str, timed: set[str]
+) -> None:
+    seen: set[str] = set()
+    for item in dispositions:
+        mode = str(item.get("mode"))
+        if mode not in {m.value for m in TransportMode} or mode in seen:
+            raise PolicyError(f"disposition of unknown or repeated mode '{mode}'")
+        seen.add(mode)
+        if item.get("status") not in DISPOSITION_STATUSES:
+            raise PolicyError(f"disposition of '{mode}' has no valid status")
+        if mode == selected:
+            raise PolicyError(f"the selected mode '{mode}' cannot also be disposed of")
+        if mode in timed:
+            raise PolicyError(f"disposed mode '{mode}' must not also carry a timing")
+
+
+def freeze(
+    report: Mapping[str, Any],
+    *,
+    basis: str,
+    inputs: Mapping[str, str],
+    subject: Mapping[str, str] | None = None,
+    sizing: Mapping[str, Any] | None = None,
+    dispositions: Sequence[Mapping[str, str]] = (),
+) -> dict[str, Any]:
+    """Self-digested policy record; the plan binds its digest, never a recomputation.
+
+    Without ``subject``/``sizing``/``dispositions`` the record is exactly the
+    historical v1 shape. With them it is a v2 measured record: dispositions
+    exclude modes by evidence, so its reason never claims a speed comparison
+    that was not measured.
+    """
     if basis not in ("modeled", "measured"):
         raise PolicyError("policy basis must be 'modeled' or 'measured'")
     if basis == "measured" and not inputs:
         raise PolicyError("a measured policy must bind its benchmark receipts")
-    body = {
+    body: dict[str, Any] = {
         "kind": POLICY_KIND,
         "policy": POLICY_ID,
         "basis": basis,
@@ -392,6 +476,35 @@ def freeze(report: Mapping[str, Any], *, basis: str, inputs: Mapping[str, str]) 
         "reason": report["reason"],
         "report": dict(report),
     }
+    if subject is None and sizing is None and not dispositions:
+        body["digest"] = canonical.digest(body)
+        return body
+    if basis != "measured" or subject is None or sizing is None:
+        raise PolicyError("a v2 policy is measured and binds its subject and sizing")
+    if tuple(sorted(subject)) != tuple(sorted(SUBJECT_KEYS)) or (
+        subject["source_id"] != report["source_id"]
+    ):
+        raise PolicyError("policy subject must name exactly this source, view and revision")
+    if not _HEX64.fullmatch(str(sizing.get("digest", ""))):
+        raise PolicyError("policy sizing must be a digested measurement")
+    timed = {str(c["mode"]) for c in report["candidates"]}
+    ordered = sorted((dict(item) for item in dispositions), key=lambda item: item["mode"])
+    _check_dispositions(ordered, str(report["selected_mode"]), timed)
+    if ordered:
+        excluded = "; ".join(
+            f"{item['mode']} {item['status']} under {item['contract']}" for item in ordered
+        )
+        body["reason"] = (
+            f"{report['selected_mode']} is the only measured eligible mode "
+            f"({report['reason']}); {excluded}; no timing exists for the excluded "
+            "modes, so this is not a speed comparison"
+        )
+    body.update(
+        policy=POLICY_ID_V2,
+        subject={key: str(subject[key]) for key in SUBJECT_KEYS},
+        sizing=dict(sizing),
+        dispositions=ordered,
+    )
     body["digest"] = canonical.digest(body)
     return body
 
@@ -400,11 +513,21 @@ def check_frozen(record: Mapping[str, Any], source_id: str) -> TransportMode:
     body = dict(record)
     if body.pop("digest", None) != canonical.digest(body):
         raise PolicyError("transport policy digest does not verify")
-    if record.get("kind") != POLICY_KIND or record.get("policy") != POLICY_ID:
-        raise PolicyError("not a mix01-transport-policy-v1 record")
+    if record.get("kind") != POLICY_KIND or record.get("policy") not in (POLICY_ID, POLICY_ID_V2):
+        raise PolicyError("not a mix01-transport-policy-v1/v2 record")
     if record.get("source_id") != source_id:
         raise PolicyError("transport policy belongs to another source")
+    if record["policy"] == POLICY_ID_V2:
+        timed = {str(c["mode"]) for c in record["report"]["candidates"]}
+        _check_dispositions(record["dispositions"], str(record["selected_mode"]), timed)
     return TransportMode(str(record["selected_mode"]))
+
+
+def check_subject(record: Mapping[str, Any], pin: Mapping[str, str]) -> None:
+    """A v2 policy applies only to the exact view and revision it measured."""
+    subject = record.get("subject")
+    if subject is not None and dict(subject) != {key: pin[key] for key in SUBJECT_KEYS}:
+        raise PolicyError("transport policy binds another source view, repository or revision")
 
 
 # ------------------------------------------------------------ model inputs
@@ -518,6 +641,13 @@ def layout_from_calibration(
     transferred = int(perf["transferred_bytes"])
     if rows_evidence.get("mode") == "rowgroup":
         (block,) = rows_evidence["blocks"]
+        version = rows_evidence.get("sampling_plan_version", 1)
+        if version not in (1, 2):
+            raise PolicyError(f"rows evidence sampling_plan_version {version} is unknown")
+        # v1 labels the logical total_byte_size as compressed_bytes (historical,
+        # read unchanged so earlier layouts reproduce); v2 is the column-chunk
+        # compressed sum. A measured whole-file sizing supersedes either for
+        # rows per file (``source_plan.sized_layout``).
         group_rows, group_bytes = int(block["num_rows"]), int(block["compressed_bytes"])
         projected = int(telemetry["projection_selected_bytes"]) // groups
         ranges = float(telemetry["coalesced_ranges"]) / groups

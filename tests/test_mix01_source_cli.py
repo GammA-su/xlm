@@ -235,3 +235,126 @@ def test_operator_cli_offline_path(
     # Re-planning while plan 1 is incomplete refuses (no silent top-up).
     assert cli.main(["plan", *common]) == 1
     assert "INCOMPLETE" in capsys.readouterr().err
+
+
+def test_measured_policy_with_range_reach_disposition(
+    tmp_path: Path,
+    isolated_xlm_home: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """benchmark range-reach -> policy freeze --basis measured --range-reach (offline)."""
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+
+    from xlm.data.evidence_v2 import canonical
+
+    cli = load_cli()
+    data, scratch, probe_dir = tmp_path / "data", tmp_path / "scratch", tmp_path / "probe"
+    authored_tree(data, probe_dir)
+    monkeypatch.setattr(cli, "REPO", tmp_path / "checkout")
+    monkeypatch.setenv("XLM_DATA_ROOT", str(data))
+    monkeypatch.setenv("XLM_SCRATCH_ROOT", str(scratch))
+    common = ["--source-key", "ultrax"]
+    pin = cli.pin_of(cli.spec_of("ultrax")).as_dict()
+
+    def run(*args: str, code: int = 0) -> str:
+        found = cli.main([*args])
+        captured = capsys.readouterr()
+        assert found == code, captured.err
+        return captured.out + captured.err
+
+    # One small reachable group, then one group whose logical size exceeds 32 MiB.
+    local = tmp_path / "local.parquet"
+    big = "x" * (17 * 1024 * 1024)
+    pq.write_table(
+        pa.table({"text": ["a", "b", big, big + "y"]}), local, row_group_size=2, compression="zstd"
+    )
+    local_sha = hashlib.sha256(local.read_bytes()).hexdigest()
+    bench_dir = data / "plans" / "ultrax" / "benchmarks" / "b9"
+    benchmark: dict[str, Any] = {
+        "kind": "mix01_source_benchmark_plan",
+        "label": "b9",
+        "source": pin,
+        "files": [{"file": CAL_FILE, "rank": None, "reason": "named calibration file"}],
+        "inputs": {"admission": {}},
+    }
+    benchmark["digest"] = canonical.digest(benchmark)
+    write(bench_dir / "benchmark.json", benchmark)
+
+    reach_args = ["benchmark", "range-reach", *common, "--label", "b9", "--local-file", str(local)]
+    out = run(*reach_args, "--expected-sha256", "0" * 64, code=1)
+    assert "differs from the expected identity" in out
+    out = run(*reach_args, "--expected-sha256", local_sha)
+    assert "range reach non_comparable: 1/2 groups reachable" in out
+    reach_path = bench_dir / "range-reach.json"
+    audit = json.loads(reach_path.read_text(encoding="utf-8"))
+    assert audit["refused_groups"] == [1] and audit["file"]["sha256"] == local_sha
+    assert audit["bounds"]["max_parser_bytes"] == planner.MAX_PARSER_BYTES
+
+    def receipt(file: str) -> Path:
+        body: dict[str, Any] = {
+            "kind": "mix01_source_performance_receipt",
+            "benchmark": {"digest": benchmark["digest"], "files": [{"file": file}], "label": "b9"},
+            "plan": {"digest": benchmark["digest"], "plan_hash": "5" * 64, "sequence": None},
+            "source": pin,
+            "outcome": {"status": "completed"},
+            "transport_mode": "whole_file_local",
+            "concurrency": {"download_workers": 1, "process_workers": 1},
+            "transfer": {
+                "files": 1,
+                "file_bytes": FILE_BYTES,
+                "transferred_bytes": FILE_BYTES,
+                "requests": 2,
+                "wall_seconds": 60.0,
+                "sha256_independently_verified": 1,
+            },
+            "processing": {
+                "units": 1,
+                "rows": 300_000,
+                "documents": 290_000,
+                "rejected": 10_000,
+                "canonical_bytes": 1_200_000_000,
+                "rows_per_process_second": 2000.0,
+            },
+        }
+        body["digest"] = canonical.digest(body)
+        return write(tmp_path / f"receipt-{len(file)}.json", body)
+
+    whole = receipt(CAL_FILE)
+    freeze = ["policy", "freeze", *common, "--basis", "measured", "--whole-receipt", str(whole)]
+    assert "exactly one of" in run(*freeze, code=1)
+    out = run(*freeze, "--range-reach", str(reach_path), "--range-receipt", str(whole), code=1)
+    assert "exactly one of" in out
+    # The audit must cover the file the whole-file benchmark measured.
+    other = receipt("data/other.parquet")
+    out = run(
+        "policy",
+        "freeze",
+        *common,
+        "--basis",
+        "measured",
+        "--whole-receipt",
+        str(other),
+        "--range-reach",
+        str(reach_path),
+        code=1,
+    )
+    assert "did not measure" in out
+    policy_path = data / "plans" / "ultrax" / "transport-policy.json"
+    assert not policy_path.exists()
+
+    out = run(*freeze, "--range-reach", str(reach_path))
+    assert "SIZING mix01-whole-file-sizing-v1" in out and "300,000 rows/file" in out
+    assert "DISPOSITION range_selected non_comparable (range-v1-reach-v1)" in out
+    assert "TRANSPORT POLICY whole_file_local (measured)" in out
+    record = json.loads(policy_path.read_text(encoding="utf-8"))
+    assert record["policy"] == "mix01-transport-policy-v2"
+    assert set(record["inputs"]) == {"whole", "range_reach"}
+    assert record["dispositions"][0]["evidence_digest"] == audit["digest"]
+    assert record["sizing"]["derived"]["rows_per_file"] == 300_000
+    assert "not a speed comparison" in record["reason"]
+    # Re-freezing identical inputs is a no-op; the record is write-once.
+    assert "TRANSPORT POLICY whole_file_local (measured)" in run(
+        *freeze, "--range-reach", str(reach_path)
+    )

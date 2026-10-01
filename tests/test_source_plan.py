@@ -11,6 +11,7 @@ import yaml
 
 from xlm.data.acquisition import source_plan as planner
 from xlm.data.acquisition import transport_policy as tp
+from xlm.data.evidence_v2 import canonical
 
 PIN = {
     "source_id": "ultrax_ultrafineweb",
@@ -343,3 +344,272 @@ def test_planner_refuses_instead_of_guessing() -> None:
         build(policy={**frozen_policy(), "digest": "0" * 64})
     with pytest.raises(planner.PlanError, match="another source"):
         build(inventory=inventory(seed=1) | {"source_id": "finewiki"})
+
+
+# ------------------------------------------- measured sizing and v2 dispositions
+
+SUBJECT = {key: PIN[key] for key in tp.SUBJECT_KEYS}
+#: Real-shaped whole-file benchmark: 8,000 rows of which 3,000 are rejected,
+#: against a calibration that saw 100% acceptance at 50 canonical B/row.
+MEASURED_ROWS, MEASURED_CANONICAL = 8_000, 240_000
+
+
+def receipt(**changes: Any) -> dict[str, Any]:
+    body: dict[str, Any] = {
+        "kind": "mix01_source_performance_receipt",
+        "benchmark": {
+            "digest": "a" * 64,
+            "files": [{"file": "data/part-0039.parquet", "rank": None, "reason": "named"}],
+            "label": "b1",
+        },
+        "plan": {"digest": "a" * 64, "plan_hash": "5" * 64, "sequence": None},
+        "source": dict(PIN),
+        "outcome": {"status": "completed"},
+        "transport_mode": "whole_file_local",
+        "concurrency": {"download_workers": 1, "process_workers": 1},
+        "transfer": {
+            "files": 1,
+            "file_bytes": 1_000_000,
+            "transferred_bytes": 1_000_000,
+            "requests": 2,
+            "wall_seconds": 10.0,
+            "sha256_independently_verified": 1,
+        },
+        "processing": {
+            "units": 1,
+            "rows": MEASURED_ROWS,
+            "documents": 5_000,
+            "rejected": 3_000,
+            "canonical_bytes": MEASURED_CANONICAL,
+            "rows_per_process_second": 1000.0,
+        },
+    }
+    for key, value in changes.items():
+        section, _, field = key.partition("__")
+        if field:
+            body[section] = {**body[section], field: value}
+        else:
+            body[section] = value
+    body["digest"] = canonical.digest(body)
+    return body
+
+
+def sizing(**changes: Any) -> dict[str, Any]:
+    return planner.sizing_from_receipt(receipt(**changes), PIN, receipt_sha256="6" * 64)
+
+
+def reach_disposition(**changes: Any) -> dict[str, str]:
+    values: dict[str, Any] = {
+        "contract": "range-v1-reach-v1",
+        "evidence_digest": "7" * 64,
+        "evidence_sha256": "8" * 64,
+        "summary": "authored: 1 of 4 row groups refused",
+    }
+    values.update(changes)
+    return tp.mode_disposition(tp.TransportMode.RANGE_SELECTED, "non_comparable", **values)
+
+
+def measured_policy(
+    measurement: dict[str, Any] | None = None,
+    dispositions: list[dict[str, str]] | None = None,
+    subject: dict[str, str] | None = None,
+) -> dict[str, Any]:
+    measurement = measurement or sizing()
+    sized = planner.sized_layout(layout(source_files=None), measurement)
+    local = models()[tp.TransportMode.WHOLE_FILE_LOCAL]
+    report = tp.evaluate(
+        sized,
+        tp.Requirement(PIN["source_id"], 4_000_000, 1.15),
+        tp.Ceilings(),
+        {tp.TransportMode.WHOLE_FILE_LOCAL: local, tp.TransportMode.SMALL_SOURCE_DIRECT: local},
+    )
+    return tp.freeze(
+        report,
+        basis="measured",
+        inputs={"whole": "6" * 64, "range_reach": "8" * 64},
+        subject=subject or SUBJECT,
+        sizing=measurement,
+        dispositions=[reach_disposition()] if dispositions is None else dispositions,
+    )
+
+
+def test_sizing_from_receipt_derives_only_measured_quantities() -> None:
+    found = sizing()
+    assert found["contract"] == planner.SIZING_CONTRACT and found["subject"] == SUBJECT
+    assert found["receipt"] == {
+        "digest": receipt()["digest"],
+        "sha256": "6" * 64,
+        "benchmark_digest": "a" * 64,
+        "plan_hash": "5" * 64,
+    }
+    assert found["measured"] == {
+        "files": 1,
+        "rows": 8_000,
+        "documents": 5_000,
+        "rejected": 3_000,
+        "file_bytes": 1_000_000,
+        "canonical_bytes": 240_000,
+    }
+    derived = found["derived"]
+    assert derived["rows_per_file"] == 8_000 and derived["file_bytes_per_file"] == 1_000_000
+    assert derived["canonical_bytes_per_row"] == 30.0
+    assert derived["accepted_fraction"] == 0.625
+    assert derived["canonical_bytes_per_raw_byte"] == 0.24
+    assert derived["estimated_tokens"] == 60_000
+    assert "exact tokens only after tokenizer freeze" in found["token_method"]
+    assert found == sizing()  # deterministic
+
+
+@pytest.mark.parametrize(
+    ("changes", "match"),
+    [
+        ({"source__revision": "c" * 40}, "another source view"),
+        ({"source__view_id": "other"}, "another source view"),
+        ({"outcome": {"status": "failed"}}, "completed"),
+        ({"transport_mode": "range_selected"}, "whole files"),
+        ({"processing__rejected": 2_999}, "whole, verified files"),
+        ({"transfer__sha256_independently_verified": 0}, "whole, verified files"),
+        ({"processing__units": 2}, "whole, verified files"),
+    ],
+)
+def test_sizing_refuses_mismatched_or_incomplete_receipts(
+    changes: dict[str, Any], match: str
+) -> None:
+    with pytest.raises(planner.PlanError, match=match):
+        sizing(**changes)
+
+
+def test_sizing_refuses_tampered_receipt() -> None:
+    tampered = {**receipt(), "processing": {**receipt()["processing"], "rows": 9_000}}
+    with pytest.raises(planner.PlanError, match="digest"):
+        planner.sizing_from_receipt(tampered, PIN, receipt_sha256="6" * 64)
+
+
+def test_v1_policy_and_layout_record_shapes_are_unchanged() -> None:
+    record = frozen_policy()
+    assert record["policy"] == tp.POLICY_ID == "mix01-transport-policy-v1"
+    assert set(record) == {
+        "kind",
+        "policy",
+        "basis",
+        "inputs",
+        "source_id",
+        "selected_mode",
+        "reason",
+        "report",
+        "digest",
+    }
+    assert "rows_per_file_measured" not in record["report"]["layout"]
+    assert tp.layout_record(layout())["rows_per_file_estimate"] == 10_000
+    # A v1 record still verifies after the v2 extension.
+    assert tp.check_frozen(record, PIN["source_id"]) == tp.TransportMode.WHOLE_FILE_LOCAL
+
+
+def test_v2_policy_binds_disposition_not_a_speed_comparison() -> None:
+    record = measured_policy()
+    assert record["policy"] == tp.POLICY_ID_V2 and record["basis"] == "measured"
+    assert tp.check_frozen(record, PIN["source_id"]) == tp.TransportMode.WHOLE_FILE_LOCAL
+    assert record["subject"] == SUBJECT and record["sizing"] == sizing()
+    assert {c["mode"] for c in record["report"]["candidates"]} == {"whole_file_local"}
+    (disposed,) = record["dispositions"]
+    assert disposed["mode"] == "range_selected" and disposed["status"] == "non_comparable"
+    assert "not a speed comparison" in record["reason"]
+    assert "range_selected non_comparable under range-v1-reach-v1" in record["reason"]
+    assert record["report"]["layout"]["rows_per_file_measured"] == MEASURED_ROWS
+    # Deterministic, and every bound input moves the digest.
+    assert measured_policy()["digest"] == record["digest"]
+    other_evidence = measured_policy(dispositions=[reach_disposition(evidence_digest="9" * 64)])
+    assert other_evidence["digest"] != record["digest"]
+    other_sizing = measured_policy(sizing(processing__canonical_bytes=241_000))
+    assert other_sizing["digest"] != record["digest"]
+    with pytest.raises(tp.PolicyError, match="digest"):
+        tp.check_frozen({**record, "dispositions": []}, PIN["source_id"])
+
+
+def test_v2_policy_refuses_unsound_dispositions() -> None:
+    measurement = sizing()
+    sized = planner.sized_layout(layout(source_files=None), measurement)
+    req = tp.Requirement(PIN["source_id"], 4_000_000, 1.15)
+    timed = tp.evaluate(sized, req, tp.Ceilings(), models(), executable=tp.ALL_MODES)
+    common: dict[str, Any] = {"inputs": {"whole": "6" * 64}, "subject": SUBJECT}
+    # A mode with a timing cannot also be disposed of structurally.
+    with pytest.raises(tp.PolicyError, match="must not also carry a timing"):
+        tp.freeze(
+            timed,
+            basis="measured",
+            sizing=measurement,
+            dispositions=[reach_disposition()],
+            **common,
+        )
+    whole_only = measured_policy()["report"]
+    whole = tp.mode_disposition(
+        tp.TransportMode.WHOLE_FILE_LOCAL,
+        "infeasible",
+        contract="authored",
+        evidence_digest="7" * 64,
+        evidence_sha256="8" * 64,
+        summary="authored",
+    )
+    with pytest.raises(tp.PolicyError, match="selected mode"):
+        tp.freeze(whole_only, basis="measured", sizing=measurement, dispositions=[whole], **common)
+    with pytest.raises(tp.PolicyError, match="status"):
+        tp.mode_disposition(
+            tp.TransportMode.RANGE_SELECTED,
+            "slower",
+            contract="c",
+            evidence_digest="7" * 64,
+            evidence_sha256="8" * 64,
+            summary="s",
+        )
+    with pytest.raises(tp.PolicyError, match="measured and binds"):
+        tp.freeze(whole_only, basis="modeled", sizing=measurement, **common)
+    with pytest.raises(tp.PolicyError, match="measured and binds"):
+        tp.freeze(whole_only, basis="measured", dispositions=[reach_disposition()], **common)
+    with pytest.raises(tp.PolicyError, match="subject"):
+        tp.freeze(
+            whole_only,
+            basis="measured",
+            inputs={"whole": "6" * 64},
+            subject={**SUBJECT, "source_id": "finewiki"},
+            sizing=measurement,
+        )
+
+
+def test_plan_sizes_from_measurement_over_calibration() -> None:
+    calibrated = build()
+    measured = build(layout=layout(source_files=None), policy=measured_policy())
+    # Calibration: 100% acceptance at 50 B/row -> 10 files of 500,000 canonical bytes.
+    assert calibrated["expected"]["files"] == 10
+    assert "sizing" not in calibrated["inputs"]
+    assert calibrated["expected"]["basis"].startswith("one measured file and calibration yield")
+    # Measurement: 8,000 rows at 30 B/row -> 240,000 per file -> ceil(4.6e6 / 2.4e5) = 20 files.
+    assert measured["expected"]["files"] == math.ceil(4_000_000 * 1.15 / 240_000) == 20
+    assert measured["expected"]["rows"] == 20 * MEASURED_ROWS
+    assert measured["expected"]["canonical_bytes"] == 20 * MEASURED_CANONICAL
+    assert measured["inputs"]["layout"]["rows_per_file_estimate"] == MEASURED_ROWS
+    assert measured["inputs"]["layout"]["canonical_bytes_per_row"] == 30.0
+    assert measured["limits"]["max_rows_per_file"] == 2 * MEASURED_ROWS
+    assert measured["inputs"]["sizing"]["digest"] == sizing()["digest"]
+    assert measured["inputs"]["sizing"]["receipt_digest"] == receipt()["digest"]
+    # The calibration evidence is still bound (schema/adapter), only its sizing is superseded.
+    assert measured["inputs"]["calibration"] == calibrated["inputs"]["calibration"]
+    assert measured["transport_mode"] == "whole_file_local"
+    planner.check_plan(measured)
+    assert planner.minted_from_record(measured).selected_files == [
+        entry["file"] for entry in measured["selection"]["files"]
+    ]
+
+
+def test_plan_refuses_policy_of_another_revision_or_tampered_sizing() -> None:
+    other = measured_policy(subject={**SUBJECT, "revision": "c" * 40})
+    with pytest.raises(planner.PlanError, match="another source view"):
+        build(layout=layout(source_files=None), policy=other)
+    record = measured_policy()
+    body = {k: v for k, v in record.items() if k != "digest"}
+    body["sizing"] = {
+        **body["sizing"],
+        "derived": {**body["sizing"]["derived"], "rows_per_file": 1},
+    }
+    body["digest"] = canonical.digest(body)
+    with pytest.raises(planner.PlanError, match="sizing measurement digest"):
+        build(layout=layout(source_files=None), policy=body)

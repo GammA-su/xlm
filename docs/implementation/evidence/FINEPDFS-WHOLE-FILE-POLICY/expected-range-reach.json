@@ -1,0 +1,212 @@
+{
+  "bounds": {
+    "max_decompression_ratio": 15.0,
+    "max_parser_bytes": 33554432
+  },
+  "contract": "range-v1-reach-v1",
+  "digest": "27ceafe9c32e7a175d852260129204a04dcfff603c2dc81174e4ee81db215780",
+  "file": {
+    "bytes": 2771021138,
+    "name": "data/eng_Latn/train/000_00083.parquet",
+    "sha256": "4eeb58bc769a194f472100ed4acd1d960e35c669caecd96fd4ce6425fabca38d"
+  },
+  "invalidates": "any range_selected estimate for this file that assumes every row group is reachable or takes per-row transfer from reachable groups only",
+  "kind": "mix01_range_reach_audit",
+  "longest_reachable_run_rows": 9000,
+  "projected_compressed_bytes": 2722039869,
+  "projected_fields": [
+    "extractor",
+    "full_doc_lid",
+    "full_doc_lid_score",
+    "is_truncated",
+    "language",
+    "page_average_lid",
+    "page_average_lid_score",
+    "text",
+    "token_count"
+  ],
+  "reachable_groups": 157,
+  "reachable_runs": [
+    [
+      0,
+      9
+    ],
+    [
+      13,
+      20
+    ],
+    [
+      23,
+      29
+    ],
+    [
+      32,
+      40
+    ],
+    [
+      44,
+      50
+    ],
+    [
+      54,
+      58
+    ],
+    [
+      61,
+      69
+    ],
+    [
+      72,
+      78
+    ],
+    [
+      82,
+      87
+    ],
+    [
+      89,
+      97
+    ],
+    [
+      99,
+      106
+    ],
+    [
+      110,
+      114
+    ],
+    [
+      117,
+      124
+    ],
+    [
+      127,
+      133
+    ],
+    [
+      134,
+      142
+    ],
+    [
+      145,
+      150
+    ],
+    [
+      153,
+      162
+    ],
+    [
+      163,
+      169
+    ],
+    [
+      171,
+      178
+    ],
+    [
+      181,
+      186
+    ],
+    [
+      188,
+      195
+    ],
+    [
+      196,
+      202
+    ],
+    [
+      204,
+      211
+    ],
+    [
+      213,
+      218
+    ],
+    [
+      220,
+      221
+    ]
+  ],
+  "refusal_reasons": {
+    "parser_byte_bound": 64
+  },
+  "refused_groups": [
+    9,
+    10,
+    11,
+    12,
+    20,
+    21,
+    22,
+    29,
+    30,
+    31,
+    40,
+    41,
+    42,
+    43,
+    50,
+    51,
+    52,
+    53,
+    58,
+    59,
+    60,
+    69,
+    70,
+    71,
+    78,
+    79,
+    80,
+    81,
+    87,
+    88,
+    97,
+    98,
+    106,
+    107,
+    108,
+    109,
+    114,
+    115,
+    116,
+    124,
+    125,
+    126,
+    133,
+    142,
+    143,
+    144,
+    150,
+    151,
+    152,
+    162,
+    169,
+    170,
+    178,
+    179,
+    180,
+    186,
+    187,
+    195,
+    202,
+    203,
+    211,
+    212,
+    218,
+    219
+  ],
+  "refused_projected_compressed_bytes": 1476464698,
+  "refused_rows": 64000,
+  "row_groups": 221,
+  "rows": 220407,
+  "rule": "a row group is range-reachable iff records.check_row_group accepts it (total_byte_size <= max_parser_bytes and every column within the ratio bound)",
+  "status": "non_comparable",
+  "subject": {
+    "repository": "HuggingFaceFW/finepdfs-edu",
+    "revision": "9cfabe2127faca99b3d5c4dc6d1fcb397399ebde",
+    "source_id": "finepdfs_edu",
+    "view_id": "eng_Latn"
+  }
+}

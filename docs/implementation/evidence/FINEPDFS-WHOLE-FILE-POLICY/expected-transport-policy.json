@@ -1,0 +1,141 @@
+{
+  "basis": "measured",
+  "digest": "f3a524116f38ac9b49e55d5a33e81ecbc503074f21af9f3fe5263b02a6e7fc73",
+  "dispositions": [
+    {
+      "contract": "range-v1-reach-v1",
+      "evidence_digest": "27ceafe9c32e7a175d852260129204a04dcfff603c2dc81174e4ee81db215780",
+      "evidence_sha256": "2a82194c64bfafd995374d6ab5fe52e9de21ff93fa739f1da8747eb544755361",
+      "mode": "range_selected",
+      "status": "non_comparable",
+      "summary": "64 of 221 row groups of data/eng_Latn/train/000_00083.parquet are refused by records.check_row_group (64000/220407 rows, 1476464698/2722039869 projected compressed bytes); the range path cannot reach the whole-file population"
+    }
+  ],
+  "inputs": {
+    "range_reach": "2a82194c64bfafd995374d6ab5fe52e9de21ff93fa739f1da8747eb544755361",
+    "whole": "7d932b867687e449603871a8a5c3bbdbfc6379fb37c52f430a01b2abbefb3960"
+  },
+  "kind": "mix01_transport_policy",
+  "policy": "mix01-transport-policy-v2",
+  "reason": "whole_file_local is the only measured eligible mode (smallest modeled wall time among feasible modes (654 s)); range_selected non_comparable under range-v1-reach-v1; no timing exists for the excluded modes, so this is not a speed comparison",
+  "report": {
+    "candidates": [
+      {
+        "byte_amplification": 2.5867040380326993,
+        "durable_raw_bytes": 8313063414,
+        "feasible": true,
+        "files": 3,
+        "mode": "whole_file_local",
+        "model": {
+          "aggregate_bytes_per_second": 15476501.354393724,
+          "basis": "measured: benchmark receipt 16b0cc14e13187f06e3d5c26a1dc0fd58e3f47fd5986d5cfd47ad32a8978ad5c",
+          "per_stream_bytes_per_second": 15476501.354393724,
+          "processes": 1,
+          "rows_per_process_second": 1893.1751442759362,
+          "seconds_per_request": 0.0,
+          "streams": 1
+        },
+        "network_seconds": 537.1409999999742,
+        "note": "whole files in frozen inventory order; every row of each file is processed; the verified upstream file is retained",
+        "processing_seconds": 349.265625,
+        "refusals": [],
+        "request_latency_seconds": 0.0,
+        "requests": 6,
+        "rows_processed": 661221,
+        "scratch_peak_bytes": 8313063414,
+        "transfer_bytes": 8313063414,
+        "wall_seconds": 653.5628749999742
+      }
+    ],
+    "ceilings": {
+      "durable_bytes": null,
+      "in_flight_files": 10,
+      "max_requests": 20000,
+      "scratch_bytes": 68719476736
+    },
+    "fastest_modeled": {
+      "executable": true,
+      "mode": "whole_file_local",
+      "wall_seconds": 653.5628749999742
+    },
+    "layout": {
+      "canonical_bytes_per_row": 8096.727100318955,
+      "evidence": {
+        "adapt_log": "75aaa417ea53677514afaaa05b5adff8d3204ffa432997068856b51d98f7eb39",
+        "journal": "bfa6361bb02d8551fb51bc1c4f9c9bcbc9e7b2c3c52be6295c7fba9bc3108674",
+        "perf": "4ed8d5768db8a4a3dac90baf1a986e440bffbf5c1188509ea00c3bbd03e4acc6",
+        "plan": "141191097d578be3e302bd354564ac3313215827b5c42b3b941cf77c168f039d",
+        "records": "8d5d11e84ed8ba5f8a5a234d7dce9465637afde5c41fcc57e59e78379022c7af",
+        "rows": "57ca71b609d14b3e7d10425f1d4d1e7620bcae881faaf22999ba451740ca42e2",
+        "sizing": "4709fb8460c1cca6bc54624ce9e8ad3069fea7434c8a98c9c2eb856f835b2a58",
+        "summary": "390124e32e535f44ae8a07ea6dee7d28c9f03130a97830593c74cc155b869770"
+      },
+      "file_bytes": 2771021138,
+      "group_bytes": 10640678,
+      "group_rows": 1000,
+      "metadata_bytes_per_file": 963657,
+      "metadata_requests_per_file": 4,
+      "projected_group_bytes": 5713871,
+      "range_record_bytes_per_row": 11272.333,
+      "range_requests_per_group": 3.0,
+      "rows_per_file_estimate": 220407,
+      "rows_per_file_measured": 220407,
+      "source_files": null,
+      "source_id": "finepdfs_edu"
+    },
+    "planned_canonical_bytes": 4554000000.0,
+    "policy": "mix01-transport-policy-v1",
+    "reason": "smallest modeled wall time among feasible modes (654 s)",
+    "required_canonical_bytes": 3960000000,
+    "required_rows": 562450,
+    "safety_margin": 1.15,
+    "selected_mode": "whole_file_local",
+    "source_id": "finepdfs_edu"
+  },
+  "selected_mode": "whole_file_local",
+  "sizing": {
+    "contract": "mix01-whole-file-sizing-v1",
+    "derived": {
+      "accepted_fraction": 0.6539039141225097,
+      "canonical_bytes_per_raw_byte": 0.6440136112740111,
+      "canonical_bytes_per_row": 8096.727100318955,
+      "estimated_tokens": 446143832,
+      "file_bytes_per_file": 2771021138,
+      "rows_per_file": 220407
+    },
+    "digest": "4709fb8460c1cca6bc54624ce9e8ad3069fea7434c8a98c9c2eb856f835b2a58",
+    "files": [
+      "data/eng_Latn/train/000_00083.parquet"
+    ],
+    "kind": "mix01_source_sizing_measurement",
+    "measured": {
+      "canonical_bytes": 1784575330,
+      "documents": 144125,
+      "file_bytes": 2771021138,
+      "files": 1,
+      "rejected": 76282,
+      "rows": 220407
+    },
+    "receipt": {
+      "benchmark_digest": "aa539f079104c7c764266a285354ec0b79462d2a13390b7301e841876a5e1f35",
+      "digest": "16b0cc14e13187f06e3d5c26a1dc0fd58e3f47fd5986d5cfd47ad32a8978ad5c",
+      "plan_hash": "55d9a94fc105fec2281fb5bb38475e7252234f8cd29aa0b138149db362eabeab",
+      "sha256": "7d932b867687e449603871a8a5c3bbdbfc6379fb37c52f430a01b2abbefb3960"
+    },
+    "subject": {
+      "repository": "HuggingFaceFW/finepdfs-edu",
+      "revision": "9cfabe2127faca99b3d5c4dc6d1fcb397399ebde",
+      "source_id": "finepdfs_edu",
+      "view_id": "eng_Latn"
+    },
+    "supersedes": "calibration rows per file, canonical bytes per row and file bytes",
+    "token_method": "canonical UTF-8 bytes / 4 (estimate, never exact XLM tokens); exact tokens only after tokenizer freeze"
+  },
+  "source_id": "finepdfs_edu",
+  "subject": {
+    "repository": "HuggingFaceFW/finepdfs-edu",
+    "revision": "9cfabe2127faca99b3d5c4dc6d1fcb397399ebde",
+    "source_id": "finepdfs_edu",
+    "view_id": "eng_Latn"
+  }
+}

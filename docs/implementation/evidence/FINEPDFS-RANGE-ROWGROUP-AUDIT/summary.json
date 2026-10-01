@@ -1,0 +1,141 @@
+{
+  "kind": "finepdfs_range_rowgroup_audit",
+  "basis": "footer metadata of the verified local shard; no record payload decoded or printed",
+  "file": "data/eng_Latn/train/000_00083.parquet",
+  "local_copy_sha256": "4eeb58bc769a194f472100ed4acd1d960e35c669caecd96fd4ce6425fabca38d",
+  "local_copy_bytes": 2771021138,
+  "bounds": {
+    "max_parser_bytes": 33554432,
+    "max_decompression_ratio": 15.0
+  },
+  "refusal_rule": "sampling._refusal_for_group == records.check_row_group: total_byte_size > max_parser_bytes",
+  "row_groups": 221,
+  "usable_groups": 157,
+  "refused_groups": 64,
+  "refused_by_kind": {
+    "parser_byte_bound": 64
+  },
+  "usable_rows": 156407,
+  "refused_rows": 64000,
+  "projected_compressed_usable": 1245575171,
+  "projected_compressed_refused": 1476464698,
+  "usable_runs_start_stop_exclusive": [
+    [
+      0,
+      9
+    ],
+    [
+      13,
+      20
+    ],
+    [
+      23,
+      29
+    ],
+    [
+      32,
+      40
+    ],
+    [
+      44,
+      50
+    ],
+    [
+      54,
+      58
+    ],
+    [
+      61,
+      69
+    ],
+    [
+      72,
+      78
+    ],
+    [
+      82,
+      87
+    ],
+    [
+      89,
+      97
+    ],
+    [
+      99,
+      106
+    ],
+    [
+      110,
+      114
+    ],
+    [
+      117,
+      124
+    ],
+    [
+      127,
+      133
+    ],
+    [
+      134,
+      142
+    ],
+    [
+      145,
+      150
+    ],
+    [
+      153,
+      162
+    ],
+    [
+      163,
+      169
+    ],
+    [
+      171,
+      178
+    ],
+    [
+      181,
+      186
+    ],
+    [
+      188,
+      195
+    ],
+    [
+      196,
+      202
+    ],
+    [
+      204,
+      211
+    ],
+    [
+      213,
+      218
+    ],
+    [
+      220,
+      221
+    ]
+  ],
+  "longest_usable_run_rows": 9000,
+  "usable_groups_after_178": 31,
+  "reproduced_sample_blocks": {
+    "seed": 20260918,
+    "row_ranges": {
+      "data/eng_Latn/train/000_00083.parquet": [
+        174000,
+        178000
+      ]
+    },
+    "planned_records": 4000,
+    "warnings": [
+      "Row-group/block sampling is not uniform record sampling. Retained rows cluster in dense aligned blocks; shard, temporal, and domain clustering effects apply. Do not treat screened statistics as unbiased corpus estimates.",
+      "planned 4000 records fall 16000 short of target 20000; bounds or file exhaustion limited coverage",
+      "'data/eng_Latn/train/000_00083.parquet' truncated at an unusable row group boundary"
+    ]
+  }
+}

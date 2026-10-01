@@ -8,7 +8,8 @@ or ``--data-root`` / ``--scratch-root``; the admission store is ``XLM_HOME``.
 Sequence (UltraX shown; other sources use their own key):
 
     evidence publish -> review show -> review record -> admit
-    -> benchmark plan/authorize/run (+ range benchmark record) -> policy freeze
+    -> benchmark plan/authorize/run (+ range benchmark record, or a range-reach
+       audit when range v1 cannot reach the whole-file population) -> policy freeze
     -> plan  (STOP: the operator reviews the printed digest)
     -> authorize --digest <digest> -> run -> status/resume-check/verify
     -> sufficiency -> plan (top-up, only if TOP_UP) -> seal
@@ -32,12 +33,15 @@ import yaml
 
 from xlm.artifacts.store import ArtifactStore
 from xlm.core.paths import ArtifactPaths
+from xlm.data.acquisition import range_reach as reach
 from xlm.data.acquisition import source_benchmark as bench
 from xlm.data.acquisition import source_plan as planner
 from xlm.data.acquisition import source_run as runner
 from xlm.data.acquisition import transport_policy as policy
 from xlm.data.acquisition.plan import AcquisitionPlan
+from xlm.data.acquisition.sampling import SamplingRefusal, discover_layout_local
 from xlm.data.acquisition.source_dashboard import ObservedScratch
+from xlm.data.adapters.columns import columns_for
 from xlm.data.sources import certified_evidence as ce
 from xlm.data.sources import mix01_admission as review
 from xlm.data.sources.admission import (
@@ -382,7 +386,52 @@ def requirement_of(args: argparse.Namespace, spec: SourceSpec) -> planner.Requir
 FALLBACK_ADAPT_ROWS_PER_SECOND = 5814.0
 
 
-def evaluate_policy(args: argparse.Namespace, spec: SourceSpec) -> dict[str, Any]:
+@dataclass(frozen=True)
+class Measured:
+    """Everything a measured policy binds: receipts or structural audits, never guesses."""
+
+    models: dict[policy.TransportMode, policy.ThroughputModel]
+    inputs: dict[str, str]
+    sizing: dict[str, Any]
+    dispositions: list[dict[str, str]]
+
+
+def measured_basis(args: argparse.Namespace, spec: SourceSpec) -> Measured:
+    """The whole-file receipt plus exactly one range receipt or range reach audit."""
+    if not args.whole_receipt:
+        raise DriverError("a measured policy needs --whole-receipt")
+    if bool(args.range_receipt) == bool(args.range_reach):
+        raise DriverError("a measured policy needs exactly one of --range-receipt/--range-reach")
+    pin = pin_of(spec).as_dict()
+    whole_path = Path(args.whole_receipt)
+    whole = load_json(whole_path)
+    runner.check_digest(whole, "whole-file benchmark receipt")
+    if whole.get("outcome", {}).get("status") != "completed":
+        raise DriverError("whole-file benchmark did not complete")
+    inputs = {"whole": sha256(whole_path)}
+    sizing = planner.sizing_from_receipt(whole, pin, receipt_sha256=inputs["whole"])
+    local = policy.measured_model(whole)
+    models = {
+        policy.TransportMode.WHOLE_FILE_LOCAL: local,
+        policy.TransportMode.SMALL_SOURCE_DIRECT: local,
+    }
+    dispositions: list[dict[str, str]] = []
+    if args.range_receipt:
+        ranged = load_json(Path(args.range_receipt))
+        runner.check_digest(ranged, "range benchmark receipt")
+        models[policy.TransportMode.RANGE_SELECTED] = policy.measured_model(ranged)
+        inputs["range"] = sha256(Path(args.range_receipt))
+    else:
+        path = Path(args.range_reach)
+        audit = reach.check_reach(load_json(path), pin, sizing["files"])
+        inputs["range_reach"] = sha256(path)
+        dispositions.append(reach.disposition_of(audit, inputs["range_reach"]))
+    return Measured(models, inputs, sizing, dispositions)
+
+
+def evaluate_policy(
+    args: argparse.Namespace, spec: SourceSpec, measured: Measured | None = None
+) -> dict[str, Any]:
     if len([s for s in SOURCES.values() if s.source_id == spec.source_id]) > 1:
         raise DriverError("a multi-view component needs an explicit per-view requirement decision")
     layout, extra = layout_of(args, spec)
@@ -390,8 +439,10 @@ def evaluate_policy(args: argparse.Namespace, spec: SourceSpec) -> dict[str, Any
     requirement = policy.Requirement(
         spec.source_id, req.required_canonical_bytes, req.safety_margin
     )
-    if args.basis == "measured":
-        models = measured_models(args)
+    if measured is not None:
+        # The whole-file measurement, not the small calibration, sizes the workloads.
+        layout = planner.sized_layout(layout, measured.sizing)
+        models = measured.models
     else:
         rate = extra["adapt_rate"] or FALLBACK_ADAPT_ROWS_PER_SECOND
         models = policy.modeled_models(
@@ -407,32 +458,37 @@ def evaluate_policy(args: argparse.Namespace, spec: SourceSpec) -> dict[str, Any
     return policy.evaluate(layout, requirement, ceilings, models)
 
 
-def measured_models(args: argparse.Namespace) -> dict[policy.TransportMode, policy.ThroughputModel]:
-    whole = load_json(Path(args.whole_receipt))
-    ranged = load_json(Path(args.range_receipt))
-    runner.check_digest(whole, "whole-file benchmark receipt")
-    runner.check_digest(ranged, "range benchmark receipt")
-    if whole.get("outcome", {}).get("status") != "completed":
-        raise DriverError("whole-file benchmark did not complete")
-    local = policy.measured_model(whole)
-    return {
-        policy.TransportMode.WHOLE_FILE_LOCAL: local,
-        policy.TransportMode.SMALL_SOURCE_DIRECT: local,
-        policy.TransportMode.RANGE_SELECTED: policy.measured_model(ranged),
-    }
-
-
 def cmd_policy(args: argparse.Namespace) -> int:
     spec = spec_of(args.source_key)
-    report = evaluate_policy(args, spec)
+    measured = measured_basis(args, spec) if args.basis == "measured" else None
+    report = evaluate_policy(args, spec, measured)
     emit(policy.summarize([report]))
-    if args.action == "freeze":
-        inputs = (
-            {"whole": sha256(Path(args.whole_receipt)), "range": sha256(Path(args.range_receipt))}
-            if args.basis == "measured"
-            else {"model": "named prior measurements (transport_policy.ESSENTIAL_WEB_MEASUREMENTS)"}
+    if measured is not None:
+        derived = measured.sizing["derived"]
+        print(
+            f"SIZING {measured.sizing['contract']} digest {measured.sizing['digest']}: "
+            f"{derived['rows_per_file']:,} rows/file, "
+            f"{derived['canonical_bytes_per_row']:.1f} canonical B/row, "
+            f"accepted {derived['accepted_fraction']:.6f}"
         )
-        record = policy.freeze(report, basis=args.basis, inputs=inputs)
+        for item in measured.dispositions:
+            print(f"DISPOSITION {item['mode']} {item['status']} ({item['contract']})")
+    if args.action == "freeze":
+        if measured is not None:
+            pin = pin_of(spec).as_dict()
+            record = policy.freeze(
+                report,
+                basis="measured",
+                inputs=measured.inputs,
+                subject={key: pin[key] for key in policy.SUBJECT_KEYS},
+                sizing=measured.sizing,
+                dispositions=measured.dispositions,
+            )
+        else:
+            inputs = {
+                "model": "named prior measurements (transport_policy.ESSENTIAL_WEB_MEASUREMENTS)"
+            }
+            record = policy.freeze(report, basis=args.basis, inputs=inputs)
         roots = roots_of(args)
         runner.write_once(roots.plans / "transport-policy.json", record)
         print(
@@ -489,6 +545,15 @@ def cmd_plan(args: argparse.Namespace) -> int:
     print(f"plan {record['sequence']} of {args.source_key}: {path}")
     print(f"transport mode      {record['transport_mode']} ({frozen['basis']} policy)")
     print(f"policy digest       {frozen['digest']}")
+    sizing = record["inputs"].get("sizing")
+    print(
+        "sizing basis        "
+        + (
+            f"whole-file measurement {sizing['digest']} (receipt {sizing['receipt_digest']})"
+            if sizing
+            else "calibration estimate"
+        )
+    )
     print(
         f"inventory ranks     [{selection['start_rank']}, {selection['stop_rank']}) of "
         f"{record['inventory']['file_count']} ({len(selection['files'])} whole files); "
@@ -684,6 +749,8 @@ def cmd_benchmark(args: argparse.Namespace) -> int:
         )
         print(f"benchmark receipt {receipt['digest']}: {json.dumps(receipt['transfer'])}")
         return 0
+    if args.action == "range-reach":
+        return range_reach(args, spec, roots, record)
     receipt = bench.range_benchmark_receipt(
         source_key=args.source_key,
         pin=pin_of(spec).as_dict(),
@@ -696,6 +763,65 @@ def cmd_benchmark(args: argparse.Namespace) -> int:
     )
     runner.write_once(bench.benchmark_dir(roots, args.label) / "range-receipt.json", receipt)
     print(f"range benchmark receipt {receipt['digest']}")
+    return 0
+
+
+def file_sha256(path: Path) -> tuple[str, int]:
+    """Streaming SHA-256 and length of a large local file."""
+    digest, length = hashlib.sha256(), 0
+    with path.open("rb") as stream:
+        while chunk := stream.read(8 * 1024 * 1024):
+            digest.update(chunk)
+            length += len(chunk)
+    return digest.hexdigest(), length
+
+
+def range_reach(
+    args: argparse.Namespace, spec: SourceSpec, roots: runner.Roots, record: dict[str, Any]
+) -> int:
+    """OFFLINE: footer-only range-v1 reach audit of one verified benchmark file."""
+    runner.check_digest(record, "benchmark plan")
+    pin = pin_of(spec).as_dict()
+    if any(record["source"].get(key) != pin[key] for key in policy.SUBJECT_KEYS):
+        raise DriverError("benchmark belongs to another source view, repository or revision")
+    names = [str(entry["file"]) for entry in record["files"]]
+    name = args.file or (names[0] if len(names) == 1 else "")
+    if name not in names:
+        raise DriverError(f"--file must name one benchmark file: {names}")
+    if not args.local_file or not args.expected_sha256:
+        raise DriverError("range-reach needs --local-file and --expected-sha256")
+    local = Path(args.local_file)
+    if not local.is_file():
+        raise DriverError(f"local file '{local}' does not exist")
+    found, length = file_sha256(local)
+    if found != args.expected_sha256.lower():
+        raise DriverError(f"local file sha256 {found} differs from the expected identity")
+    try:
+        layout = discover_layout_local(
+            local,
+            name=name,
+            max_parser_bytes=planner.MAX_PARSER_BYTES,
+            max_decompression_ratio=planner.MAX_DECOMPRESSION_RATIO,
+        )
+    except SamplingRefusal as exc:
+        raise DriverError(str(exc)) from exc
+    audit = reach.reach_audit(
+        layout,
+        subject=pin,
+        file_sha256=found,
+        file_bytes=length,
+        max_parser_bytes=planner.MAX_PARSER_BYTES,
+        max_decompression_ratio=planner.MAX_DECOMPRESSION_RATIO,
+        projected_fields=columns_for(spec.adapter_id),
+    )
+    path = bench.benchmark_dir(roots, args.label) / "range-reach.json"
+    runner.write_once(path, audit)
+    print(
+        f"range reach {audit['status']}: {audit['reachable_groups']}/{audit['row_groups']} "
+        f"groups reachable, {audit['refused_rows']:,}/{audit['rows']:,} rows refused; "
+        f"longest reachable run {audit['longest_reachable_run_rows']:,} rows"
+    )
+    print(f"RANGE REACH DIGEST {audit['digest']} -> {path}")
     return 0
 
 
@@ -742,6 +868,9 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--durable-budget-bytes", type=int)
     p.add_argument("--whole-receipt")
     p.add_argument("--range-receipt")
+    p.add_argument(
+        "--range-reach", help="measured: range-v1 reach audit in place of a range receipt"
+    )
     p.set_defaults(func=cmd_policy)
 
     p = common(sub.add_parser("plan", help="OFFLINE: next deterministic plan (first or top-up)"))
@@ -782,7 +911,9 @@ def build_parser() -> argparse.ArgumentParser:
     p.set_defaults(func=cmd_seal)
 
     p = common(sub.add_parser("benchmark", help="bounded transport benchmark (run = NETWORK)"))
-    p.add_argument("action", choices=("plan", "authorize", "adopt", "run", "record-range"))
+    p.add_argument(
+        "action", choices=("plan", "authorize", "adopt", "run", "record-range", "range-reach")
+    )
     p.add_argument("--label", required=True)
     p.add_argument("--donor", default="", help="adopt: earlier benchmark label to reuse")
     p.add_argument(
@@ -799,6 +930,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--range-journal")
     p.add_argument("--range-documents")
     p.add_argument("--adapt-log")
+    p.add_argument("--local-file", help="range-reach: verified local copy of the file")
+    p.add_argument("--expected-sha256", help="range-reach: required sha256 of --local-file")
     p.set_defaults(func=cmd_benchmark)
     return parser
 

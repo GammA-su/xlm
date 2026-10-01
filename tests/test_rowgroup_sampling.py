@@ -321,7 +321,9 @@ def test_report_bias_and_no_paths(tmp_path: Path) -> None:
     assert "not uniform record sampling" in report["bias"]
     dumped = json.dumps(report)
     assert str(root) not in dumped
-    assert report["sampling_plan_version"] == 1
+    # v2: blocks report column-chunk compressed bytes plus the logical total_byte_size.
+    assert report["sampling_plan_version"] == 2
+    assert {"compressed_bytes", "uncompressed_bytes", "total_byte_size"} <= set(report["blocks"][0])
 
 
 class RangeFileHandler(http.server.BaseHTTPRequestHandler):

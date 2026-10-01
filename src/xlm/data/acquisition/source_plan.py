@@ -19,6 +19,7 @@ digest that was not explicitly authorized.
 
 from __future__ import annotations
 
+import dataclasses
 import hashlib
 import math
 import re
@@ -36,9 +37,12 @@ from xlm.data.acquisition.plan import (
 from xlm.data.acquisition.source_growth import ProcessingGrowth
 from xlm.data.acquisition.transport_policy import (
     LOCAL_MODES,
+    SUBJECT_KEYS,
+    PolicyError,
     SourceLayout,
     TransportMode,
     check_frozen,
+    check_subject,
 )
 from xlm.data.evidence_v2 import canonical
 
@@ -93,6 +97,12 @@ CONCURRENCY = {
 }
 CONCURRENCY_MAX = {"download": 16, "process": 16}
 BYTES_PER_ESTIMATED_TOKEN = 4
+SIZING_KIND = "mix01_source_sizing_measurement"
+#: Whole files measured end to end supersede a small calibration for exactly
+#: rows per file, canonical bytes per row (rejections included) and file
+#: bytes. Calibration keeps the schema/adapter evidence and the range model.
+SIZING_CONTRACT = "mix01-whole-file-sizing-v1"
+TOKEN_METHOD = "canonical UTF-8 bytes / 4 (estimate, never exact XLM tokens)"
 
 
 class PlanError(ValueError):
@@ -216,6 +226,112 @@ def _with_digest(body: dict[str, Any]) -> dict[str, Any]:
     body.pop("digest", None)
     body["digest"] = canonical.digest(body)
     return body
+
+
+def _verifies(record: Mapping[str, Any]) -> bool:
+    body = dict(record)
+    return bool(body.pop("digest", None) == canonical.digest(body))
+
+
+# -------------------------------------------------------------------- sizing
+
+
+def sizing_from_receipt(
+    receipt: Mapping[str, Any], pin: Mapping[str, str], *, receipt_sha256: str
+) -> dict[str, Any]:
+    """Whole-file production sizing from one completed benchmark receipt of this view.
+
+    Only what a whole-file run actually measures is derived: rows per file,
+    canonical bytes per row (acceptance and rejections included) and file
+    bytes. Tokens stay an explicit ``canonical bytes / 4`` estimate.
+    """
+    if not _verifies(receipt):
+        raise PlanError("performance receipt digest does not verify")
+    if receipt.get("kind") != "mix01_source_performance_receipt" or "benchmark" not in receipt:
+        raise PlanError("sizing needs a Mix-01 source benchmark performance receipt")
+    source = receipt.get("source") or {}
+    if any(source.get(key) != pin[key] for key in SUBJECT_KEYS):
+        raise PlanError(
+            "performance receipt belongs to another source view, repository or revision"
+        )
+    if (receipt.get("outcome") or {}).get("status") != "completed":
+        raise PlanError("sizing needs a completed benchmark run")
+    if receipt.get("transport_mode") != TransportMode.WHOLE_FILE_LOCAL.value:
+        raise PlanError("sizing needs whole files processed end to end")
+    files = sorted(str(entry["file"]) for entry in receipt["benchmark"]["files"])
+    transfer, processing = receipt["transfer"], receipt["processing"]
+    count = len(files)
+    rows, documents, rejected = (
+        int(processing["rows"]),
+        int(processing["documents"]),
+        int(processing["rejected"]),
+    )
+    canonical_bytes, file_bytes = int(processing["canonical_bytes"]), int(transfer["file_bytes"])
+    if (
+        count < 1
+        or len(set(files)) != count
+        or int(transfer["files"]) != count
+        or int(processing["units"]) != count
+        or int(transfer["sha256_independently_verified"]) != count
+        or min(rows, canonical_bytes, file_bytes) < 1
+        or documents + rejected != rows
+    ):
+        raise PlanError("performance receipt does not account whole, verified files")
+    return _with_digest(
+        {
+            "kind": SIZING_KIND,
+            "contract": SIZING_CONTRACT,
+            "subject": {key: pin[key] for key in SUBJECT_KEYS},
+            "receipt": {
+                "digest": receipt["digest"],
+                "sha256": receipt_sha256,
+                "benchmark_digest": receipt["benchmark"]["digest"],
+                "plan_hash": receipt["plan"]["plan_hash"],
+            },
+            "files": files,
+            "measured": {
+                "files": count,
+                "rows": rows,
+                "documents": documents,
+                "rejected": rejected,
+                "file_bytes": file_bytes,
+                "canonical_bytes": canonical_bytes,
+            },
+            "derived": {
+                "rows_per_file": rows // count,
+                "file_bytes_per_file": math.ceil(file_bytes / count),
+                "canonical_bytes_per_row": canonical_bytes / rows,
+                "accepted_fraction": documents / rows,
+                "canonical_bytes_per_raw_byte": canonical_bytes / file_bytes,
+                "estimated_tokens": canonical_bytes // BYTES_PER_ESTIMATED_TOKEN,
+            },
+            "token_method": f"{TOKEN_METHOD}; exact tokens only after tokenizer freeze",
+            "supersedes": "calibration rows per file, canonical bytes per row and file bytes",
+        }
+    )
+
+
+def check_sizing(sizing: Mapping[str, Any], pin: Mapping[str, str]) -> None:
+    if not _verifies(sizing):
+        raise PlanError("sizing measurement digest does not verify")
+    if sizing.get("kind") != SIZING_KIND or sizing.get("contract") != SIZING_CONTRACT:
+        raise PlanError(f"not a {SIZING_CONTRACT} sizing measurement")
+    if dict(sizing["subject"]) != {key: pin[key] for key in SUBJECT_KEYS}:
+        raise PlanError("sizing measurement belongs to another source view, repository or revision")
+
+
+def sized_layout(layout: SourceLayout, sizing: Mapping[str, Any]) -> SourceLayout:
+    """Measured whole-file facts take precedence over calibration estimates for sizing."""
+    if sizing["subject"]["source_id"] != layout.source_id:
+        raise PlanError("sizing measurement belongs to another source")
+    derived = sizing["derived"]
+    return dataclasses.replace(
+        layout,
+        file_bytes=int(derived["file_bytes_per_file"]),
+        canonical_bytes_per_row=float(derived["canonical_bytes_per_row"]),
+        rows_per_file_measured=int(derived["rows_per_file"]),
+        evidence={**layout.evidence, "sizing": str(sizing["digest"])},
+    )
 
 
 def check_plan(record: Mapping[str, Any]) -> None:
@@ -398,6 +514,16 @@ def build_plan(
             f"frozen transport mode '{mode.value}' runs through xlm data plan/fetch, "
             "not this planner"
         )
+    try:
+        check_subject(policy, pin)
+    except PolicyError as exc:
+        raise PlanError(str(exc)) from exc
+    # A policy that binds a whole-file measurement sizes the plan from it, never
+    # from the calibration estimate; policies without one keep their exact plans.
+    sizing = policy.get("sizing")
+    if sizing is not None:
+        check_sizing(sizing, pin)
+        layout = sized_layout(layout, sizing)
     ordered = check_inventory(inventory, pin["source_id"], pin["repository"], pin["revision"])
     if not 0 <= benchmark_reserved < len(ordered):
         raise PlanError("benchmark reservation leaves no plannable inventory")
@@ -442,7 +568,7 @@ def build_plan(
     )
     expected_rows = len(files) * layout.rows_per_file
     expected_canonical = math.floor(len(files) * per_file)
-    record = {
+    record: dict[str, Any] = {
         "kind": PLAN_KIND,
         "version": PLAN_VERSION,
         "rules": PLANNER_RULES,
@@ -518,6 +644,19 @@ def build_plan(
         "authorization": "STOP: the operator reviews this digest and authorizes it explicitly",
         "live_run": False,
     }
+    if sizing is not None:
+        record["inputs"]["sizing"] = {
+            "contract": sizing["contract"],
+            "digest": sizing["digest"],
+            "receipt_digest": sizing["receipt"]["digest"],
+            "rule": "measured rows per file, canonical bytes per row and file bytes "
+            "supersede the calibration estimate",
+        }
+        record["expected"]["basis"] = (
+            f"whole-file measurement (receipt {sizing['receipt']['digest']}) of "
+            f"{sizing['measured']['files']} file(s); other files differ in size and "
+            "yield; exact counts come from receipts"
+        )
     return _with_digest(record)
 
 
