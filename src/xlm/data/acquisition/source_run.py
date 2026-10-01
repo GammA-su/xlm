@@ -291,8 +291,53 @@ def authorize(
     return plan
 
 
+def repairs_of(records: Sequence[Mapping[str, Any]]) -> dict[int, list[Mapping[str, Any]]]:
+    """Repair plans by the sequence they repair; each must name that plan's digest."""
+    by_sequence = {int(r["sequence"]): r for r in records}
+    repairs: dict[int, list[Mapping[str, Any]]] = {}
+    for record in records:
+        repair = record.get("repair")
+        if repair is None:
+            continue
+        target = by_sequence.get(int(repair["plan_sequence"]))
+        if (
+            target is None
+            or target["digest"] != repair["plan_digest"]
+            or int(record["sequence"]) <= int(target["sequence"])
+        ):
+            raise RunError(f"plan {record['sequence']} repairs no earlier plan of this source")
+        repairs.setdefault(int(target["sequence"]), []).append(record)
+    return repairs
+
+
+def resolution(roots: Roots, records: Sequence[Mapping[str, Any]]) -> dict[int, list[int]]:
+    """Unresolved ranks per plan: unsealed there and not re-planned by a repair.
+
+    A rank re-planned by a repair belongs to that repair, where it is
+    unresolved until sealed. A rank sealed both in a plan and in its repair is
+    refused, never counted twice.
+    """
+    repairs = repairs_of(records)
+    unresolved: dict[int, list[int]] = {}
+    for record in records:
+        sequence = int(record["sequence"])
+        sealed = {int(r["rank"]) for r in resume_state(roots, record)["receipts"]}
+        ranks = [int(e["rank"]) for e in record["selection"]["files"]]
+        moved: set[int] = set()
+        for repair in repairs.get(sequence, []):
+            taken = {int(rank) for rank in repair["repair"]["ranks"]}
+            if taken & sealed or taken & moved:
+                raise RunError(f"plan {sequence} ranks {sorted(taken)} are sealed twice")
+            moved |= taken
+        unresolved[sequence] = [rank for rank in ranks if rank not in sealed | moved]
+    return unresolved
+
+
 def load_authorized(roots: Roots, sequence: int) -> tuple[dict[str, Any], AcquisitionPlan]:
     record = load_plan(roots, sequence)
+    later = [load_plan(roots, s) for s in roots.sequences() if s > sequence]
+    if any(int(r["repair"]["plan_sequence"]) == sequence for r in later if r.get("repair")):
+        raise RunError(f"plan {sequence} is repaired by a later plan; run the repair instead")
     directory = roots.plan_dir(sequence)
     if not (directory / "authorization.json").is_file():
         raise RunError("plan is not authorized: review its digest, then run authorize")
@@ -479,6 +524,9 @@ def prepare_units(
                 pin["revision"],
             ):
                 raise RunError(f"retained source identity differs for {key}")
+            expected = plan.expected_file_digests.get(name)
+            if expected is not None and retained["sha256"] != expected:
+                raise RunError(f"retained source of {key} is not the plan's bound SHA-256")
             if not state.is_file():
                 charged += int(retained["length"])
             units.append(
@@ -1257,10 +1305,28 @@ def sufficiency(roots: Roots) -> dict[str, Any]:
     accounts = [account(roots, r) for r in records]
     acquired = sum(int(a["canonical_bytes"]) for a in accounts)
     required = int(records[-1]["requirement"]["required_canonical_bytes"])
-    complete = all(a["complete"] for a in accounts)
-    status = "SUFFICIENT" if acquired >= required else "TOP_UP" if complete else "INCOMPLETE"
+    # Complete means every planned rank is sealed in its plan or in that plan's
+    # repair. An incomplete pass is never sufficient: no unit is dropped silently.
+    unresolved = resolution(roots, records)
+    complete = not any(unresolved.values())
+    status = ("SUFFICIENT" if acquired >= required else "TOP_UP") if complete else "INCOMPLETE"
+    repairs = repairs_of(records)
+    extra: dict[str, Any] = {}
+    if repairs:
+        extra["repairs"] = [
+            {
+                "sequence": r["sequence"],
+                "repairs_sequence": r["repair"]["plan_sequence"],
+                "ranks": r["repair"]["ranks"],
+            }
+            for target in sorted(repairs)
+            for r in repairs[target]
+        ]
+    if not complete:
+        extra["unresolved_ranks"] = {str(s): ranks for s, ranks in unresolved.items() if ranks}
     return self_digest(
         {
+            **extra,
             "kind": "mix01_source_sufficiency",
             "source_key": roots.source_key,
             "source": records[-1]["source"],
@@ -1277,7 +1343,8 @@ def sufficiency(roots: Roots) -> dict[str, Any]:
             "action": {
                 "SUFFICIENT": "seal the first pass; no top-up",
                 "TOP_UP": "plan the next inventory ranks (a new plan; nothing is edited)",
-                "INCOMPLETE": "resume the incomplete plan; never top up over it",
+                "INCOMPLETE": "resume the incomplete plan, or repair units that fail under "
+                "its limits; never top up over it",
             }[status],
         }
     )
@@ -1334,25 +1401,44 @@ def membership_digest(receipts: Sequence[Mapping[str, Any]]) -> str:
 
 
 def first_pass_seal(roots: Roots, *, content: bool = True) -> dict[str, Any]:
-    """Write-once seal of the source's first pass; refuses an insufficient or partial pass."""
+    """Write-once seal of the source's first pass; refuses an insufficient or partial pass.
+
+    Every planned rank is bound: a rank an authorized plan could not seal is
+    bound through the repair plan that sealed it, never dropped.
+    """
     status = sufficiency(roots)
     if status["status"] != "SUFFICIENT":
         raise RunError(f"first pass is {status['status']}; nothing sealed")
     records = [load_plan(roots, s) for s in roots.sequences()]
+    repairs = repairs_of(records)
     receipts: list[dict[str, Any]] = []
     plans: list[dict[str, Any]] = []
     for record in records:
         verify_plan(roots, record, content=content)
-        authorization = read_json(roots.plan_dir(int(record["sequence"])) / "authorization.json")
-        plans.append(
-            {
-                "sequence": record["sequence"],
-                "digest": record["digest"],
-                "authorization": authorization["plan_digest"],
-                "selection": record["selection"],
+        sequence = int(record["sequence"])
+        authorization = read_json(roots.plan_dir(sequence) / "authorization.json")
+        if authorization["plan_digest"] != record["digest"]:
+            raise RunError(f"plan {sequence} authorization belongs to another digest")
+        entry: dict[str, Any] = {
+            "sequence": record["sequence"],
+            "digest": record["digest"],
+            "authorization": authorization["plan_digest"],
+            "selection": record["selection"],
+        }
+        # Present only when repairs exist, so earlier seals keep their bytes.
+        if record.get("repair") is not None:
+            entry["repair_of"] = {
+                key: record["repair"][key] for key in ("plan_sequence", "plan_digest", "ranks")
             }
-        )
+        if sequence in repairs:
+            entry["repaired_ranks"] = {
+                str(r["sequence"]): r["repair"]["ranks"] for r in repairs[sequence]
+            }
+        plans.append(entry)
         receipts.extend(resume_state(roots, record)["receipts"])
+    files = [str(r["file"]) for r in receipts]
+    if len(set(files)) != len(files):
+        raise RunError("a source file is sealed in more than one unit; nothing sealed")
     seal = self_digest(
         {
             "kind": SEAL_KIND,

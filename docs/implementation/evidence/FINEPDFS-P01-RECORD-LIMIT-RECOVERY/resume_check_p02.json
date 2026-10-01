@@ -1,0 +1,33 @@
+{
+  "completion_percent": 0.0,
+  "plan_digest": "98209572a1939769dc3032562d2887bb8da4912b4936c1845f450a1bdb9799ad",
+  "remaining": [
+    {
+      "file": "data/eng_Latn/train/000_00022.parquet",
+      "rank": 0
+    }
+  ],
+  "restart": {
+    "counts": {
+      "fresh_download": 0,
+      "local_complete_reuse": 0,
+      "local_processing_retry": 1,
+      "resumable_partial": 0,
+      "sealed_skip": 0
+    },
+    "known_network_bytes": 0,
+    "resumable_verified_bytes": 0,
+    "units": {
+      "fresh_download": [],
+      "local_complete_reuse": [],
+      "local_processing_retry": [
+        "f00000"
+      ],
+      "resumable_partial": [],
+      "sealed_skip": []
+    },
+    "worst_case_network_bytes": 0
+  },
+  "sealed": 0,
+  "total": 1
+}

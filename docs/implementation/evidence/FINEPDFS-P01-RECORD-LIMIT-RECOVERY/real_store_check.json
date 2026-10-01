@@ -1,0 +1,215 @@
+{
+  "finepdfs_sufficiency": {
+    "accounting": [
+      "41ae3b076fde31bb8af97685d844c2d40c320545a03ef4c96ba2d6d99fe081e6"
+    ],
+    "acquired_canonical_bytes": 3681678984,
+    "acquired_estimated_tokens": 920419746,
+    "action": "resume the incomplete plan, or repair units that fail under its limits; never top up over it",
+    "deficit_canonical_bytes": 278321016,
+    "digest": "1ca17e33b1fa609e6522d86d2986648a287f8f04190884f189c770961370e50e",
+    "first_pass_tokens": 990000000,
+    "kind": "mix01_source_sufficiency",
+    "next_cursor": 3,
+    "plans": [
+      {
+        "digest": "de220b0110a2be278f35fedf4daca70568f9a177b68cab1e7e4357ed83433890",
+        "sequence": 1
+      }
+    ],
+    "required_canonical_bytes": 3960000000,
+    "source": {
+      "adapter_id": "finepdfs_en",
+      "component_id": "finepdfs_en",
+      "provider": "huggingface",
+      "repository": "HuggingFaceFW/finepdfs-edu",
+      "revision": "9cfabe2127faca99b3d5c4dc6d1fcb397399ebde",
+      "source_id": "finepdfs_edu",
+      "view_id": "eng_Latn"
+    },
+    "source_key": "finepdfs",
+    "status": "INCOMPLETE",
+    "token_method": "canonical UTF-8 bytes / 4 (estimate, never exact XLM tokens)",
+    "unresolved_ranks": {
+      "1": [
+        0
+      ]
+    }
+  },
+  "fresh_plan1_under_v2_digest": "1f44a4f579fa82557e259e576119ef6fae3797d2d98a6246de66ec6959d44da3",
+  "p01_accounting": {
+    "canonical_bytes": 3681678984,
+    "complete": false,
+    "digest": "41ae3b076fde31bb8af97685d844c2d40c320545a03ef4c96ba2d6d99fe081e6",
+    "documents": 292134,
+    "estimated_tokens": 920419746,
+    "footprint_bytes": 9999249172,
+    "kind": "mix01_source_accounting",
+    "plan_digest": "de220b0110a2be278f35fedf4daca70568f9a177b68cab1e7e4357ed83433890",
+    "raw_bytes": 5925247747,
+    "receipt_digests": [
+      "7c0eb19ccc92b82e810ea6eaee0f21fc3ddf677aea9e70bbef25d78b2eea314e",
+      "c2b7602ad16ccd093ae2c5a57af39237df55dbeb2dc2dc9b228cffa4ad904273"
+    ],
+    "rejected": 159374,
+    "requests": 4,
+    "rows": 451508,
+    "sequence": 1,
+    "transferred_bytes": 5925247747,
+    "units_planned": 3,
+    "units_sealed": 2
+  },
+  "p01_authorization": {
+    "authorized_at": "2026-10-01T15:49:50.083476+00:00",
+    "operator": "GammA",
+    "plan_digest": "de220b0110a2be278f35fedf4daca70568f9a177b68cab1e7e4357ed83433890"
+  },
+  "p01_minted_hash_reproduces": true,
+  "p01_rebuilt_under_v1_digest": "de220b0110a2be278f35fedf4daca70568f9a177b68cab1e7e4357ed83433890",
+  "p01_reconstructs": true,
+  "p01_stored_digest": "de220b0110a2be278f35fedf4daca70568f9a177b68cab1e7e4357ed83433890",
+  "p01_verify_content": {
+    "mode": "content",
+    "plan_digest": "de220b0110a2be278f35fedf4daca70568f9a177b68cab1e7e4357ed83433890",
+    "units_planned": 3,
+    "units_verified": 2
+  },
+  "repair_acquisition_plan": {
+    "expected_file_digests": {
+      "data/eng_Latn/train/000_00022.parquet": "b33dba5fa5a3086d34c0decc76ca6e3f1f794850037eec019005557090d7c3c2"
+    },
+    "is_pilot": false,
+    "limits": {
+      "max_decompressed_bytes": 22171090944,
+      "max_decompression_ratio": 15.0,
+      "max_output_disk_bytes": 18244826504,
+      "max_parser_bytes": 33554432,
+      "max_record_bytes": 50331648,
+      "max_records": 440814,
+      "max_requests": 16,
+      "max_retries": 5,
+      "max_scanned_records": 440814,
+      "max_temp_disk_bytes": 12684227976,
+      "max_transferred_bytes": 4156555264,
+      "max_workers": 16,
+      "overall_deadline_seconds": 14400.0,
+      "per_request_timeout_seconds": 30.0
+    },
+    "plan_hash": "32962b1cf8bb0410fc92174b54af668bb1067060d900d447998c3a60d4d04706",
+    "plan_id": "plan_finepdfs_edu_eng_Latn_huggingface_2925d18c0c3eeca41b00",
+    "selection_hash": "2078501c9eed84a9879db711b5ec8c2ca10af79b40a29ed3baafd4bd970d04ee"
+  },
+  "repair_dry_run_again_digest": "98209572a1939769dc3032562d2887bb8da4912b4936c1845f450a1bdb9799ad",
+  "repair_dry_run_digest": "98209572a1939769dc3032562d2887bb8da4912b4936c1845f450a1bdb9799ad",
+  "repair_limits": {
+    "download_workers": 1,
+    "download_workers_max": 16,
+    "file_deadline_seconds": 17620.0,
+    "max_canonical_bytes_per_file": 3569150660,
+    "max_decoded_bytes_per_file": 22171090944,
+    "max_decompression_ratio": 15.0,
+    "max_durable_bytes_per_file": 12681074056,
+    "max_file_bytes": 5542772736,
+    "max_in_flight_files": 1,
+    "max_ledger_bytes": 536870912,
+    "max_parser_bytes": 33554432,
+    "max_record_bytes": 50331648,
+    "max_record_bytes_basis": "finepdfs-record-v2: four whole eng_Latn files measured; row scans found largest projected rows of 24,828,818 B (000_00083) and 35,618,267 B (000_00022, row 52794, sha256 b33dba5f...c3c2, the p01 RecordLimitError), and sealed p01 receipts record largest selected-record lines of 16,257,336 B (000_00037) and 22,828,005 B (000_00093); every scanned row above 4 MiB is extractor rolmOCR with is_truncated true, which the adapter rejects; 48 MiB keeps the v1 rule of at least 1.35x the largest observed row (1.41x); the 32 MiB parser bound is unchanged",
+    "max_requests_per_file": 16,
+    "max_retries": 5,
+    "max_rows_per_file": 440814,
+    "plan_deadline_seconds": 14400.0,
+    "process_workers": 1,
+    "process_workers_max": 16,
+    "processing_growth": {
+      "event_bytes": 1048576,
+      "metadata_bytes": 1048576,
+      "output_bytes": 7138301320,
+      "progress_bytes": 4096,
+      "run_metadata_bytes": 8388608,
+      "source_max_bytes": 5542772736,
+      "state_bytes": 1048576,
+      "version": 1
+    },
+    "request_timeout_seconds": 30.0,
+    "row_group_parallel": {
+      "lookahead": 4,
+      "memory_bytes": 6442450944,
+      "processing_slots": 15,
+      "version": 1,
+      "workers": 4
+    },
+    "row_group_parallel_basis": "finepdfs-intrafile-v1: offline matrix on the verified 000_00083.parquet (221 row groups, sha256 4eeb58bc...a38d); output byte-identical to serial at 2, 4 and 8 workers; 4 workers is the stable knee; 3 files x (4 workers + 1 coordinator) fill 15 of 16 logical CPUs; 6 GiB per file covers the measured process-tree peak with headroom for larger row groups",
+    "rules": "mix01-source-planner-v1",
+    "scratch_cap_bytes": 12684227976,
+    "scratch_min_free_bytes": 34359738368
+  },
+  "repair_minted_hash_reproduces": true,
+  "repair_record": {
+    "acquired_before": {
+      "canonical_bytes": 3681678984
+    },
+    "expected": {
+      "basis": "whole-file measurement (receipt 16b0cc14e13187f06e3d5c26a1dc0fd58e3f47fd5986d5cfd47ad32a8978ad5c) of 1 file(s); other files differ in size and yield; exact counts come from receipts",
+      "canonical_bytes": 1784575330,
+      "estimated_tokens": 446143832,
+      "files": 1,
+      "requests": 0,
+      "rows": 220407,
+      "transfer_bytes": 0
+    },
+    "repair": {
+      "accounting_digest": "41ae3b076fde31bb8af97685d844c2d40c320545a03ef4c96ba2d6d99fe081e6",
+      "changed_limits": {
+        "max_record_bytes": {
+          "from": 33554432,
+          "to": 50331648
+        }
+      },
+      "failures": [
+        {
+          "digest": "a2fc78eb5734e8419fee09b8cd11b5aea1fee8548b8e0f8cf2dc6f51d3db0859",
+          "receipt": "performance-00.json",
+          "root_failure": {
+            "exception": "RecordLimitError",
+            "key": "f00000",
+            "root": true,
+            "site": "source_local.py:413 in _replay (worker process)"
+          }
+        }
+      ],
+      "plan_digest": "de220b0110a2be278f35fedf4daca70568f9a177b68cab1e7e4357ed83433890",
+      "plan_sequence": 1,
+      "ranks": [
+        0
+      ],
+      "retained_sha256": {
+        "data/eng_Latn/train/000_00022.parquet": "b33dba5fa5a3086d34c0decc76ca6e3f1f794850037eec019005557090d7c3c2"
+      },
+      "rule": "the repaired plan is never edited; its sealed units stay valid, its unsealed ranks are sealed only by this plan, and it no longer runs",
+      "sealed_ranks": [
+        1,
+        2
+      ]
+    },
+    "selection": {
+      "files": [
+        {
+          "file": "data/eng_Latn/train/000_00022.parquet",
+          "rank": 0
+        }
+      ],
+      "next_cursor": 3,
+      "ranks": [
+        0
+      ],
+      "row_ranges": "whole files (every row of every planned file)",
+      "rule": "repair: exactly the unsealed ranks of the repaired plan"
+    }
+  },
+  "ultrax_reseal_is_identical_noop": true,
+  "ultrax_seal_digest": "efdb99dbf1bc8380985925fcbbe654536d02c5b0c87162eecc9e92e858302f1f",
+  "ultrax_sufficiency_file_matches": true,
+  "ultrax_sufficiency_matches_seal": true,
+  "v2_is_new_identity": true
+}

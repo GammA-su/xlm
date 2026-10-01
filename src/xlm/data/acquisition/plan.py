@@ -53,8 +53,9 @@ class AcquisitionLimits(BaseModel):
                 raise ValueError(f"{name} must be positive (retries may be zero)")
         if self.max_workers > 16 or self.max_retries > 20:
             raise ValueError("at most 16 workers and 20 retries are supported")
-        if self.max_record_bytes > self.max_parser_bytes:
-            raise ValueError("record byte bound exceeds parser byte bound")
+        # The record bound is checked against the parser bound where the parser
+        # bound also caps the buffered bytes a record is decoded from (selected
+        # records, see AcquisitionPlan); a whole local file has no such buffer.
         return self
 
 
@@ -269,6 +270,8 @@ class AcquisitionPlan(BaseModel):
             if len(digest) != 64 or any(c not in "0123456789abcdefABCDEF" for c in digest):
                 raise ValueError("expected digest must be SHA-256 hex")
         if self.mode == AcquisitionMode.SELECTED_RECORDS:
+            if self.limits.max_record_bytes > self.limits.max_parser_bytes:
+                raise ValueError("record byte bound exceeds parser byte bound")
             if not self.row_ranges or set(self.row_ranges) != set(self.selected_files):
                 raise ValueError("selected records require an explicit row range for every file")
             for start, stop in self.row_ranges.values():

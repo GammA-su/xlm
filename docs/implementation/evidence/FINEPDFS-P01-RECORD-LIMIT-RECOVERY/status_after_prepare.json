@@ -1,0 +1,121 @@
+{
+  "plans": [
+    {
+      "accounting": {
+        "canonical_bytes": 3681678984,
+        "complete": false,
+        "digest": "41ae3b076fde31bb8af97685d844c2d40c320545a03ef4c96ba2d6d99fe081e6",
+        "documents": 292134,
+        "estimated_tokens": 920419746,
+        "footprint_bytes": 9999249172,
+        "kind": "mix01_source_accounting",
+        "plan_digest": "de220b0110a2be278f35fedf4daca70568f9a177b68cab1e7e4357ed83433890",
+        "raw_bytes": 5925247747,
+        "receipt_digests": [
+          "7c0eb19ccc92b82e810ea6eaee0f21fc3ddf677aea9e70bbef25d78b2eea314e",
+          "c2b7602ad16ccd093ae2c5a57af39237df55dbeb2dc2dc9b228cffa4ad904273"
+        ],
+        "rejected": 159374,
+        "requests": 4,
+        "rows": 451508,
+        "sequence": 1,
+        "transferred_bytes": 5925247747,
+        "units_planned": 3,
+        "units_sealed": 2
+      },
+      "authorized": true,
+      "digest": "de220b0110a2be278f35fedf4daca70568f9a177b68cab1e7e4357ed83433890",
+      "plan": 1,
+      "restart": {
+        "fresh_download": 0,
+        "local_complete_reuse": 0,
+        "local_processing_retry": 1,
+        "resumable_partial": 0,
+        "sealed_skip": 2
+      }
+    },
+    {
+      "accounting": {
+        "canonical_bytes": 0,
+        "complete": false,
+        "digest": "8f78a615f0a85f7a526f2bd2002617d643df7502abe420b7ac7bf33a0570b8c6",
+        "documents": 0,
+        "estimated_tokens": 0,
+        "footprint_bytes": 0,
+        "kind": "mix01_source_accounting",
+        "plan_digest": "98209572a1939769dc3032562d2887bb8da4912b4936c1845f450a1bdb9799ad",
+        "raw_bytes": 0,
+        "receipt_digests": [],
+        "rejected": 0,
+        "requests": 0,
+        "rows": 0,
+        "sequence": 2,
+        "transferred_bytes": 0,
+        "units_planned": 1,
+        "units_sealed": 0
+      },
+      "authorized": false,
+      "digest": "98209572a1939769dc3032562d2887bb8da4912b4936c1845f450a1bdb9799ad",
+      "plan": 2,
+      "restart": {
+        "fresh_download": 0,
+        "local_complete_reuse": 0,
+        "local_processing_retry": 1,
+        "resumable_partial": 0,
+        "sealed_skip": 0
+      }
+    }
+  ],
+  "source_key": "finepdfs",
+  "sufficiency": {
+    "accounting": [
+      "41ae3b076fde31bb8af97685d844c2d40c320545a03ef4c96ba2d6d99fe081e6",
+      "8f78a615f0a85f7a526f2bd2002617d643df7502abe420b7ac7bf33a0570b8c6"
+    ],
+    "acquired_canonical_bytes": 3681678984,
+    "acquired_estimated_tokens": 920419746,
+    "action": "resume the incomplete plan, or repair units that fail under its limits; never top up over it",
+    "deficit_canonical_bytes": 278321016,
+    "digest": "c17b365d5b7518979dc0bba594d09447288551aa6e3fa113982bf5e0f597a61a",
+    "first_pass_tokens": 990000000,
+    "kind": "mix01_source_sufficiency",
+    "next_cursor": 3,
+    "plans": [
+      {
+        "digest": "de220b0110a2be278f35fedf4daca70568f9a177b68cab1e7e4357ed83433890",
+        "sequence": 1
+      },
+      {
+        "digest": "98209572a1939769dc3032562d2887bb8da4912b4936c1845f450a1bdb9799ad",
+        "sequence": 2
+      }
+    ],
+    "repairs": [
+      {
+        "ranks": [
+          0
+        ],
+        "repairs_sequence": 1,
+        "sequence": 2
+      }
+    ],
+    "required_canonical_bytes": 3960000000,
+    "source": {
+      "adapter_id": "finepdfs_en",
+      "component_id": "finepdfs_en",
+      "provider": "huggingface",
+      "repository": "HuggingFaceFW/finepdfs-edu",
+      "revision": "9cfabe2127faca99b3d5c4dc6d1fcb397399ebde",
+      "source_id": "finepdfs_edu",
+      "view_id": "eng_Latn"
+    },
+    "source_key": "finepdfs",
+    "status": "INCOMPLETE",
+    "token_method": "canonical UTF-8 bytes / 4 (estimate, never exact XLM tokens)",
+    "unresolved_ranks": {
+      "2": [
+        0
+      ]
+    }
+  }
+}

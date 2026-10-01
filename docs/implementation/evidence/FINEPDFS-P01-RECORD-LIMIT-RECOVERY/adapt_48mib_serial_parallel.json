@@ -1,0 +1,137 @@
+{
+  "record_bound": 50331648,
+  "results": {
+    "parallel": {
+      "adaptation_summary_sha256": "facf08a73853c972505b6cb21d2aae56d6a6af03250682c97c01ef7e03710141",
+      "canonical_bytes": 1952122354,
+      "decoded_bytes": 6006343315,
+      "documents": 152614,
+      "documents_file_bytes": 2153464363,
+      "documents_file_sha256": "2a3e2dd457653c56c2571b82de44b7f5b441fa57be0f32266141135167d8004a",
+      "documents_sha256": "2a3e2dd457653c56c2571b82de44b7f5b441fa57be0f32266141135167d8004a",
+      "error": null,
+      "file_rows": 234423,
+      "ledger_file_sha256": "3f4a2ce42d0f4ca8fc76a84ebfec7a2bca6f9bfd52fc031996f8d47492e9a93a",
+      "max_selected_record_bytes": 35618877,
+      "process_cpu_seconds": 124.796875,
+      "process_seconds": 33.01500000001397,
+      "processing_output_bytes": 2157396654,
+      "projected_compressed_bytes": 3053938324,
+      "rejected": 81809,
+      "rejection_counts_by_code": {
+        "RecordRejectedError": 81809
+      },
+      "rejections_file_bytes": 3930782,
+      "rejections_file_sha256": "3f4a2ce42d0f4ca8fc76a84ebfec7a2bca6f9bfd52fc031996f8d47492e9a93a",
+      "rejections_sha256": "75cc63456aced8a06fc48b31337bd2a1c4bc5a27518e49b52771b3f56e1ebc81",
+      "rejections_uncompressed_bytes": 47794026,
+      "row_group_pool": {
+        "groups": 235,
+        "head_of_line_wait_seconds": 27.24700000003213,
+        "max_group_result_bytes": 101886692,
+        "max_worker_peak_rss_bytes": 1095000064,
+        "peak_buffered_result_bytes": 359210704,
+        "peak_outstanding_groups": 8,
+        "peak_tree_rss_bytes": 1912561664,
+        "sum_worker_peak_rss_bytes": 2837327872,
+        "worker_cpu_seconds": 108.546875,
+        "workers": 4
+      },
+      "row_group_workers": 4,
+      "row_groups": 235,
+      "row_range": [
+        0,
+        234423
+      ],
+      "rows": 234423,
+      "selected_records_bytes": 6263148760,
+      "selected_records_sha256": "8a917aa6eae5d5807324b2e6a028596904abe01dc5d573cebe45d9f85a569d29",
+      "source_file": "data/eng_Latn/train/000_00022.parquet",
+      "wall_seconds": 34.75
+    },
+    "parallel2": {
+      "adaptation_summary_sha256": "facf08a73853c972505b6cb21d2aae56d6a6af03250682c97c01ef7e03710141",
+      "canonical_bytes": 1952122354,
+      "decoded_bytes": 6006343315,
+      "documents": 152614,
+      "documents_file_bytes": 2153464363,
+      "documents_file_sha256": "2a3e2dd457653c56c2571b82de44b7f5b441fa57be0f32266141135167d8004a",
+      "documents_sha256": "2a3e2dd457653c56c2571b82de44b7f5b441fa57be0f32266141135167d8004a",
+      "error": null,
+      "file_rows": 234423,
+      "ledger_file_sha256": "3f4a2ce42d0f4ca8fc76a84ebfec7a2bca6f9bfd52fc031996f8d47492e9a93a",
+      "max_selected_record_bytes": 35618877,
+      "process_cpu_seconds": 134.390625,
+      "process_seconds": 35.421999999991385,
+      "processing_output_bytes": 2157396654,
+      "projected_compressed_bytes": 3053938324,
+      "rejected": 81809,
+      "rejection_counts_by_code": {
+        "RecordRejectedError": 81809
+      },
+      "rejections_file_bytes": 3930782,
+      "rejections_file_sha256": "3f4a2ce42d0f4ca8fc76a84ebfec7a2bca6f9bfd52fc031996f8d47492e9a93a",
+      "rejections_sha256": "75cc63456aced8a06fc48b31337bd2a1c4bc5a27518e49b52771b3f56e1ebc81",
+      "rejections_uncompressed_bytes": 47794026,
+      "row_group_pool": {
+        "groups": 235,
+        "head_of_line_wait_seconds": 29.57900000011432,
+        "max_group_result_bytes": 101886692,
+        "max_worker_peak_rss_bytes": 1120374784,
+        "peak_buffered_result_bytes": 329668621,
+        "peak_outstanding_groups": 8,
+        "peak_tree_rss_bytes": 1809784832,
+        "sum_worker_peak_rss_bytes": 2861043712,
+        "worker_cpu_seconds": 117.828125,
+        "workers": 4
+      },
+      "row_group_workers": 4,
+      "row_groups": 235,
+      "row_range": [
+        0,
+        234423
+      ],
+      "rows": 234423,
+      "selected_records_bytes": 6263148760,
+      "selected_records_sha256": "8a917aa6eae5d5807324b2e6a028596904abe01dc5d573cebe45d9f85a569d29",
+      "source_file": "data/eng_Latn/train/000_00022.parquet",
+      "wall_seconds": 37.14100000000326
+    },
+    "serial": {
+      "adaptation_summary_sha256": "facf08a73853c972505b6cb21d2aae56d6a6af03250682c97c01ef7e03710141",
+      "canonical_bytes": 1952122354,
+      "decoded_bytes": 6006343315,
+      "documents": 152614,
+      "documents_file_bytes": 2153464363,
+      "documents_file_sha256": "2a3e2dd457653c56c2571b82de44b7f5b441fa57be0f32266141135167d8004a",
+      "documents_sha256": "2a3e2dd457653c56c2571b82de44b7f5b441fa57be0f32266141135167d8004a",
+      "error": null,
+      "file_rows": 234423,
+      "ledger_file_sha256": "3f4a2ce42d0f4ca8fc76a84ebfec7a2bca6f9bfd52fc031996f8d47492e9a93a",
+      "max_selected_record_bytes": 35618877,
+      "process_cpu_seconds": 100.171875,
+      "process_seconds": 100.96799999999348,
+      "processing_output_bytes": 2157396654,
+      "projected_compressed_bytes": 3053938324,
+      "rejected": 81809,
+      "rejection_counts_by_code": {
+        "RecordRejectedError": 81809
+      },
+      "rejections_file_bytes": 3930782,
+      "rejections_file_sha256": "3f4a2ce42d0f4ca8fc76a84ebfec7a2bca6f9bfd52fc031996f8d47492e9a93a",
+      "rejections_sha256": "75cc63456aced8a06fc48b31337bd2a1c4bc5a27518e49b52771b3f56e1ebc81",
+      "rejections_uncompressed_bytes": 47794026,
+      "row_group_workers": 1,
+      "row_groups": 235,
+      "row_range": [
+        0,
+        234423
+      ],
+      "rows": 234423,
+      "selected_records_bytes": 6263148760,
+      "selected_records_sha256": "8a917aa6eae5d5807324b2e6a028596904abe01dc5d573cebe45d9f85a569d29",
+      "source_file": "data/eng_Latn/train/000_00022.parquet",
+      "wall_seconds": 102.75
+    }
+  }
+}

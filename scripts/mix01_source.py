@@ -13,6 +13,8 @@ Sequence (UltraX shown; other sources use their own key):
     -> plan  (STOP: the operator reviews the printed digest)
     -> authorize --digest <digest> -> run -> status/resume-check/verify
     -> sufficiency -> plan (top-up, only if TOP_UP) -> seal
+    (an authorized plan whose units fail under its own limits: plan-repair
+     -> authorize -> run the repair; the failed plan is never edited)
 
 Nothing here edits a plan, renormalizes a quota or re-probes a source.
 """
@@ -35,6 +37,7 @@ from xlm.artifacts.store import ArtifactStore
 from xlm.core.paths import ArtifactPaths
 from xlm.data.acquisition import range_reach as reach
 from xlm.data.acquisition import source_benchmark as bench
+from xlm.data.acquisition import source_parquet as sp
 from xlm.data.acquisition import source_plan as planner
 from xlm.data.acquisition import source_run as runner
 from xlm.data.acquisition import transport_policy as policy
@@ -588,6 +591,111 @@ def cmd_plan(args: argparse.Namespace) -> int:
     return 0
 
 
+def repaired_of(roots: runner.Roots, sequence: int) -> planner.Repaired:
+    """The authorized latest plan, its sealed outcome, failed runs and retained sources."""
+    sequences = roots.sequences()
+    if not sequences or sequence != sequences[-1]:
+        raise DriverError("only the latest plan can be repaired")
+    record = runner.load_plan(roots, sequence)
+    directory = roots.plan_dir(sequence)
+    if not (directory / "authorization.json").is_file():
+        raise DriverError("an unauthorized plan is planned again, not repaired")
+    resume = runner.resume_state(roots, record)
+    totals = runner.account(roots, record)
+    failures: list[dict[str, Any]] = []
+    for path in sorted(directory.glob("performance-*.json")):
+        receipt = runner.read_json(path)
+        runner.check_digest(receipt, path.name)
+        if receipt["plan"]["digest"] != record["digest"]:
+            raise DriverError(f"{path.name} belongs to another plan")
+        if receipt["outcome"]["status"] == "failed":
+            failures.append(
+                {
+                    "receipt": path.name,
+                    "digest": receipt["digest"],
+                    "root_failure": receipt["outcome"]["root_failure"],
+                }
+            )
+    retained: dict[str, str] = {}
+    pin = record["source"]
+    for entry in resume["remaining"]:
+        # Re-hashes the whole retained file against its identity sidecar.
+        source = sp.load_durable_source(roots.raw_path(str(entry["file"])))
+        if source is None:
+            continue
+        if (source["source_file"], source["repository"], source["revision"]) != (
+            entry["file"],
+            pin["repository"],
+            pin["revision"],
+        ):
+            raise DriverError(f"retained source identity differs for {entry['file']}")
+        retained[str(entry["file"])] = str(source["sha256"])
+    return planner.Repaired(
+        plan=record,
+        authorized_digest=str(runner.read_json(directory / "authorization.json")["plan_digest"]),
+        sealed_ranks=tuple(int(r["rank"]) for r in resume["receipts"]),
+        sealed_canonical_bytes=int(totals["canonical_bytes"]),
+        accounting_digest=str(totals["digest"]),
+        failures=tuple(failures),
+        retained=retained,
+    )
+
+
+def cmd_plan_repair(args: argparse.Namespace) -> int:
+    spec = spec_of(args.source_key)
+    roots = roots_of(args)
+    target = store()
+    pin = pin_of(spec)
+    frozen = runner.read_json(roots.plans / "transport-policy.json")
+    inventory_path = data_root(args) / "inventories" / f"{args.source_key}.inventory.json"
+    layout, extra = layout_of(args, spec)
+    repaired = repaired_of(roots, args.plan)
+    record = planner.build_repair_plan(
+        source_key=args.source_key,
+        pin=pin.as_dict(),
+        requirement=requirement_of(args, spec),
+        inventory=load_json(inventory_path),
+        inventory_sha256=sha256(inventory_path),
+        layout=layout,
+        calibration=extra["evidence"],
+        policy=frozen,
+        admission=current_admission(spec, target),
+        repaired=repaired,
+    )
+    path = runner.store_plan(roots, record)
+    repair, limits = record["repair"], record["limits"]
+    print(f"repair plan {record['sequence']} of {args.source_key}: {path}")
+    print(f"repairs plan        {repair['plan_sequence']} {repair['plan_digest']}")
+    print(f"kept sealed ranks   {repair['sealed_ranks']} (their receipts are not touched)")
+    files = [entry["file"] for entry in record["selection"]["files"]]
+    print(f"re-planned ranks    {repair['ranks']}: {files}")
+    for failure in repair["failures"]:
+        root = failure["root_failure"]
+        print(f"failed run          {failure['receipt']} {failure['digest']} {root}")
+    for key, change in repair["changed_limits"].items():
+        print(f"changed limit       {key}: {change['from']} -> {change['to']}")
+    for name, digest in repair["retained_sha256"].items():
+        print(f"retained source     {name} sha256 {digest} (no download)")
+    print(f"next top-up cursor  {record['selection']['next_cursor']} (unchanged)")
+    print(
+        f"expected            {record['expected']['transfer_bytes']:,} B transfer, "
+        f"{record['expected']['rows']:,} rows, "
+        f"{record['expected']['estimated_tokens']:,} est. tokens"
+    )
+    basis = limits.get("max_record_bytes_basis")
+    print(f"record bound        {limits['max_record_bytes']:,} B ({basis})")
+    print(f"parser bound        {limits['max_parser_bytes']:,} B")
+    parallel = limits.get("row_group_parallel")
+    if parallel is not None:
+        print(
+            f"intra-file          {parallel['workers']} row-group workers, lookahead "
+            f"{parallel['lookahead']}, {parallel['memory_bytes']:,} B sampled memory ceiling"
+        )
+    print(f"PLAN DIGEST: {record['digest']}")
+    print("STOP - USER MUST REVIEW PLAN DIGEST BEFORE AUTHORIZATION")
+    return 0
+
+
 def cmd_authorize(args: argparse.Namespace) -> int:
     spec = spec_of(args.source_key)
     roots = roots_of(args)
@@ -883,6 +991,15 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = common(sub.add_parser("plan", help="OFFLINE: next deterministic plan (first or top-up)"))
     p.set_defaults(func=cmd_plan)
+
+    p = common(
+        sub.add_parser(
+            "plan-repair",
+            help="OFFLINE: re-plan the unsealed ranks of a failed plan under changed limits",
+        )
+    )
+    p.add_argument("--plan", type=int, required=True)
+    p.set_defaults(func=cmd_plan_repair)
 
     p = common(sub.add_parser("authorize", help="OFFLINE: authorize one reviewed plan digest"))
     p.add_argument("--plan", type=int, required=True)

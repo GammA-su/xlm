@@ -173,8 +173,28 @@ performance receipt; partial and complete downloads are kept.
 
 `sufficiency` compares receipt-derived canonical bytes with the first-pass
 requirement: `SUFFICIENT`, `TOP_UP` (run `plan` again: a new plan at the next
-cursor) or `INCOMPLETE` (resume, never top up). `seal` writes the write-once
-first-pass seal of the source.
+cursor) or `INCOMPLETE` (resume or repair, never top up). A pass with any
+unsealed planned rank is `INCOMPLETE` even when its bytes suffice: no unit is
+dropped silently. `seal` writes the write-once first-pass seal of the source.
+
+### Repairing a unit that fails under its plan's own limits
+
+An authorized plan is never edited. When a unit fails closed under one of the
+plan's limits (for example `RecordLimitError`), a retry fails the same way.
+`plan-repair --plan N` (offline) writes the next plan for exactly the unsealed
+ranks of plan N, under the planner's current limits. It needs N's failed
+performance receipt naming an unsealed unit and at least one changed per-unit
+limit (otherwise: resume). It keeps N's `next_cursor`, binds N's digest and
+accounting, the failed receipts, the changed limits and the SHA-256 of every
+retained verified source (in the plan hash), prints `PLAN DIGEST` and stops.
+After `authorize` and `run --plan N+1 --offline`, retained sources are
+processed with no transfer. Plan N can no longer run; its sealed units stay
+valid; `sufficiency` and `seal` bind each rank once, through the plan that
+sealed it (`repair_of`, `repaired_ranks`).
+
+Record bounds: generic and UltraX 8 MiB; FinePDFs `finepdfs-record-v2` 48 MiB
+(whole-file plans only; the 32 MiB parser bound limits Thrift metadata, not a
+row). First use: [FinePDFs p01 recovery](../implementation/reports/FINEPDFS-P01-RECORD-LIMIT-RECOVERY.md).
 
 ### Intra-file row-group parallelism
 

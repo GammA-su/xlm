@@ -1,3 +1,22 @@
+> **FINEPDFS P01 RECORD-LIMIT RECOVERY (2026-10-01, offline): FINEPDFS P01
+> RECOVERY READY FOR OPERATOR DIGEST REVIEW.** p01 unit f00000 (rank 0,
+> `000_00022.parquet`, sha256 `b33dba5f...c3c2`, retained) failed on row 52,794
+> (35,618,267 B > 32 MiB). A full offline scan shows it is the true maximum and
+> the only row > 32 MiB; all 23 rows > 4 MiB are rolmOCR/truncated and
+> adapter-rejected. New source bound `finepdfs-record-v2` = 48 MiB (1.41x);
+> parser stays 32 MiB (whole-file: Thrift metadata only); generic/UltraX 8 MiB
+> unchanged. Generic `plan-repair`: a new plan for exactly the unsealed ranks
+> under changed limits, binding failed receipts and retained SHA-256, keeping
+> cursor 3; repaired plans cannot run; an incomplete pass is never SUFFICIENT.
+> Offline W4/serial adaptation at 48 MiB is byte-identical (152,614 docs,
+> 488,030,588 est. tokens, 1.91 GB peak tree RSS). p01 `de220b01...` and its 2
+> sealed units unchanged (rebuild reproduces it); UltraX seal unchanged.
+> **Repair p02 digest `98209572a1939769dc3032562d2887bb8da4912b4936c1845f450a1bdb9799ad`,
+> NOT authorized.** 29 focused + 427 related tests, ruff/format/strict mypy pass.
+> No network, run, seal, C05, tokenizer, training or push.
+> [Report and operator commands](reports/FINEPDFS-P01-RECORD-LIMIT-RECOVERY.md).
+> Next: operator reviews the p02 digest; authorize; `run --plan 2 --offline`.
+
 > **FINEPDFS INTRA-FILE PARALLEL (2026-10-01, offline): FINEPDFS PARALLEL
 > PROCESSING READY FOR PRODUCTION PLANNING.** Generic row-group workers decode
 > and adapt one verified local Parquet file. The coordinator replays them in

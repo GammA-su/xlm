@@ -110,9 +110,10 @@ def test_generic_bound_is_unchanged_and_finepdfs_is_explicit() -> None:
     assert generic["max_record_bytes"] == generic_limits.max_record_bytes == 8 * MIB
     assert set(generic) == GENERIC_KEYS
     pdfs, pdfs_limits = planner.plan_limits(2, layout(FINEPDFS), mode, FINEPDFS)
-    assert pdfs["max_record_bytes"] == pdfs_limits.max_record_bytes == 32 * MIB
-    assert pdfs_limits.max_record_bytes <= pdfs_limits.max_parser_bytes == 32 * MIB
-    assert pdfs["max_record_bytes_basis"].startswith("finepdfs-record-v1")
+    assert pdfs["max_record_bytes"] == pdfs_limits.max_record_bytes == 48 * MIB
+    # Whole-file plans only: the parser bound limits Thrift metadata, not one row.
+    assert pdfs["max_parser_bytes"] == pdfs_limits.max_parser_bytes == 32 * MIB
+    assert pdfs["max_record_bytes_basis"].startswith("finepdfs-record-v2")
     assert set(pdfs) - GENERIC_KEYS == {
         "max_record_bytes_basis",
         "row_group_parallel",
@@ -125,10 +126,13 @@ def test_generic_bound_is_unchanged_and_finepdfs_is_explicit() -> None:
     assert planner.plan_limits(1, layout(other), mode, other)[0]["max_record_bytes"] == 8 * MIB
 
 
-def test_record_bound_never_exceeds_the_parser_ceiling(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_record_bound_never_exceeds_the_source_record_ceiling(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     key = ("finepdfs_edu", "eng_Latn")
-    monkeypatch.setitem(planner.SOURCE_RECORD_BYTES, key, (64 * MIB, "too large"))
-    with pytest.raises(planner.PlanError, match="parser ceiling"):
+    assert planner.MAX_SOURCE_RECORD_BYTES == 2 * planner.MAX_PARSER_BYTES == 64 * MIB
+    monkeypatch.setitem(planner.SOURCE_RECORD_BYTES, key, (64 * MIB + 1, "too large"))
+    with pytest.raises(planner.PlanError, match="source record ceiling"):
         planner.record_bound(*key)
 
 
@@ -152,7 +156,7 @@ def _payloads(path: Path, bound: int) -> list[int]:
     ]
 
 
-def test_a_9_06_mb_row_passes_the_finepdfs_bound_and_a_larger_row_fails_closed(
+def test_rows_between_the_bounds_pass_and_a_larger_row_fails_closed(
     tmp_path: Path,
 ) -> None:
     bound = planner.record_bound("finepdfs_edu", "eng_Latn")[0]
@@ -161,6 +165,12 @@ def test_a_9_06_mb_row_passes_the_finepdfs_bound_and_a_larger_row_fails_closed(
     with pytest.raises(RecordLimitError, match="row=1 encoded_bytes="):
         _payloads(observed, planner.MAX_RECORD_BYTES)
     assert _payloads(observed, bound) == [0, 1]
+    # A row above the old 32 MiB bound decodes under the unchanged 32 MiB parser bound.
+    between = tmp_path / "between.parquet"
+    _parquet(between, ["a", "d" * (33 * MIB)])
+    with pytest.raises(RecordLimitError, match=f"row=1 encoded_bytes=.* limit={32 * MIB}"):
+        _payloads(between, 32 * MIB)
+    assert _payloads(between, bound) == [0, 1]
     oversized = tmp_path / "oversized.parquet"
     _parquet(oversized, ["a", "c" * bound])
     with pytest.raises(RecordLimitError, match=f"limit={bound}"):
@@ -176,7 +186,7 @@ def test_changed_bound_is_a_new_benchmark_identity(
         old = benchmark(roots, "b1")
     new = benchmark(roots, "b2")
     assert old["limits"]["max_record_bytes"] == 8 * MIB
-    assert new["limits"]["max_record_bytes"] == 32 * MIB
+    assert new["limits"]["max_record_bytes"] == 48 * MIB
     assert old["digest"] != new["digest"]
     assert old["acquisition_plan"]["plan_hash"] != new["acquisition_plan"]["plan_hash"]
     bench.authorize_benchmark(roots, "b1", old["digest"], "tester", admitted)

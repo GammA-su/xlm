@@ -1,0 +1,359 @@
+{
+  "bytes": 3106919244,
+  "canonical_bytes": 1952122354,
+  "decoded_bytes": 6006343315,
+  "documents": 152614,
+  "documents_file_bytes": 2141985875,
+  "estimated_tokens": 488030588,
+  "file": "data/eng_Latn/train/000_00022.parquet",
+  "first_row_above_32mib": 52794,
+  "footer_rows": 234423,
+  "groups_with_rows_above_8mib": [
+    {
+      "compressed_bytes": 66871176,
+      "decoded_bytes": 66272785,
+      "group": 22,
+      "max_encoded_bytes": 11335852,
+      "rows": 1000
+    },
+    {
+      "compressed_bytes": 100151316,
+      "decoded_bytes": 99378263,
+      "group": 52,
+      "max_encoded_bytes": 35618267,
+      "rows": 1000
+    },
+    {
+      "compressed_bytes": 47659412,
+      "decoded_bytes": 47144166,
+      "group": 54,
+      "max_encoded_bytes": 9197309,
+      "rows": 1000
+    },
+    {
+      "compressed_bytes": 92471479,
+      "decoded_bytes": 91809105,
+      "group": 90,
+      "max_encoded_bytes": 26874676,
+      "rows": 1000
+    },
+    {
+      "compressed_bytes": 83086440,
+      "decoded_bytes": 82389770,
+      "group": 91,
+      "max_encoded_bytes": 8512690,
+      "rows": 1000
+    },
+    {
+      "compressed_bytes": 52590077,
+      "decoded_bytes": 52068128,
+      "group": 207,
+      "max_encoded_bytes": 17183849,
+      "rows": 1000
+    }
+  ],
+  "hash_seconds": 2.5780000000086147,
+  "identity_length": 3106919244,
+  "identity_match": true,
+  "identity_sha256": "b33dba5fa5a3086d34c0decc76ca6e3f1f794850037eec019005557090d7c3c2",
+  "max_batch_decoded_bytes": 69124894,
+  "max_encoded_bytes": 35618267,
+  "max_encoded_row": 52794,
+  "max_group_decoded_bytes": 99378263,
+  "max_payload_bytes": 35618877,
+  "path": "G:\\XLM\\acq-raw\\finepdfs\\source\\data\\eng_Latn\\train\\000_00022.parquet",
+  "percentiles_encoded_bytes": {
+    "0.5": 6765,
+    "0.9": 48295,
+    "0.99": 311956,
+    "0.999": 1302690,
+    "0.9999": 4070341,
+    "0.99999": 17183849
+  },
+  "projection": [
+    "text",
+    "language",
+    "extractor",
+    "is_truncated",
+    "token_count",
+    "full_doc_lid",
+    "full_doc_lid_score",
+    "page_average_lid",
+    "page_average_lid_score"
+  ],
+  "rejected": 81809,
+  "rejection_counts_by_code": {
+    "RecordRejectedError": 81809
+  },
+  "row_groups": 235,
+  "rows_above_4mib": [
+    {
+      "adapter": "rejected",
+      "encoded_bytes": 4654746,
+      "extractor": "rolmOCR",
+      "is_truncated": true,
+      "payload_bytes": 4655354,
+      "row": 9612,
+      "row_group": 9,
+      "text_utf8_bytes": 4564191,
+      "token_count": 1385727
+    },
+    {
+      "adapter": "rejected",
+      "encoded_bytes": 11335852,
+      "extractor": "rolmOCR",
+      "is_truncated": true,
+      "payload_bytes": 11336462,
+      "row": 22393,
+      "row_group": 22,
+      "text_utf8_bytes": 11162457,
+      "token_count": 3311812
+    },
+    {
+      "adapter": "rejected",
+      "encoded_bytes": 4435460,
+      "extractor": "rolmOCR",
+      "is_truncated": true,
+      "payload_bytes": 4436070,
+      "row": 42711,
+      "row_group": 42,
+      "text_utf8_bytes": 4402969,
+      "token_count": 871259
+    },
+    {
+      "adapter": "rejected",
+      "encoded_bytes": 35618267,
+      "extractor": "rolmOCR",
+      "is_truncated": true,
+      "payload_bytes": 35618877,
+      "row": 52794,
+      "row_group": 52,
+      "text_utf8_bytes": 35292989,
+      "token_count": 8361665
+    },
+    {
+      "adapter": "rejected",
+      "encoded_bytes": 8231253,
+      "extractor": "rolmOCR",
+      "is_truncated": true,
+      "payload_bytes": 8231863,
+      "row": 52956,
+      "row_group": 52,
+      "text_utf8_bytes": 8161416,
+      "token_count": 1703307
+    },
+    {
+      "adapter": "rejected",
+      "encoded_bytes": 9197309,
+      "extractor": "rolmOCR",
+      "is_truncated": true,
+      "payload_bytes": 9197919,
+      "row": 54857,
+      "row_group": 54,
+      "text_utf8_bytes": 8967886,
+      "token_count": 2809486
+    },
+    {
+      "adapter": "rejected",
+      "encoded_bytes": 4960455,
+      "extractor": "rolmOCR",
+      "is_truncated": true,
+      "payload_bytes": 4961065,
+      "row": 73812,
+      "row_group": 73,
+      "text_utf8_bytes": 4937935,
+      "token_count": 1216489
+    },
+    {
+      "adapter": "rejected",
+      "encoded_bytes": 4744849,
+      "extractor": "rolmOCR",
+      "is_truncated": true,
+      "payload_bytes": 4745459,
+      "row": 83625,
+      "row_group": 83,
+      "text_utf8_bytes": 4705359,
+      "token_count": 1026342
+    },
+    {
+      "adapter": "rejected",
+      "encoded_bytes": 6176960,
+      "extractor": "rolmOCR",
+      "is_truncated": true,
+      "payload_bytes": 6177570,
+      "row": 83682,
+      "row_group": 83,
+      "text_utf8_bytes": 6151112,
+      "token_count": 1456814
+    },
+    {
+      "adapter": "rejected",
+      "encoded_bytes": 26874676,
+      "extractor": "rolmOCR",
+      "is_truncated": true,
+      "payload_bytes": 26875286,
+      "row": 90843,
+      "row_group": 90,
+      "text_utf8_bytes": 26725996,
+      "token_count": 5696612
+    },
+    {
+      "adapter": "rejected",
+      "encoded_bytes": 8512690,
+      "extractor": "rolmOCR",
+      "is_truncated": true,
+      "payload_bytes": 8513300,
+      "row": 91277,
+      "row_group": 91,
+      "text_utf8_bytes": 8479320,
+      "token_count": 1969876
+    },
+    {
+      "adapter": "rejected",
+      "encoded_bytes": 5673083,
+      "extractor": "rolmOCR",
+      "is_truncated": true,
+      "payload_bytes": 5673695,
+      "row": 111500,
+      "row_group": 111,
+      "text_utf8_bytes": 5657874,
+      "token_count": 1292691
+    },
+    {
+      "adapter": "rejected",
+      "encoded_bytes": 5053122,
+      "extractor": "rolmOCR",
+      "is_truncated": true,
+      "payload_bytes": 5053734,
+      "row": 119743,
+      "row_group": 119,
+      "text_utf8_bytes": 5032321,
+      "token_count": 1206759
+    },
+    {
+      "adapter": "rejected",
+      "encoded_bytes": 4818211,
+      "extractor": "rolmOCR",
+      "is_truncated": true,
+      "payload_bytes": 4818823,
+      "row": 120231,
+      "row_group": 120,
+      "text_utf8_bytes": 4793314,
+      "token_count": 1597775
+    },
+    {
+      "adapter": "rejected",
+      "encoded_bytes": 5650882,
+      "extractor": "rolmOCR",
+      "is_truncated": true,
+      "payload_bytes": 5651494,
+      "row": 137214,
+      "row_group": 137,
+      "text_utf8_bytes": 5636228,
+      "token_count": 1297619
+    },
+    {
+      "adapter": "rejected",
+      "encoded_bytes": 4781196,
+      "extractor": "rolmOCR",
+      "is_truncated": true,
+      "payload_bytes": 4781808,
+      "row": 138720,
+      "row_group": 138,
+      "text_utf8_bytes": 4758659,
+      "token_count": 1052422
+    },
+    {
+      "adapter": "rejected",
+      "encoded_bytes": 5648987,
+      "extractor": "rolmOCR",
+      "is_truncated": true,
+      "payload_bytes": 5649599,
+      "row": 138731,
+      "row_group": 138,
+      "text_utf8_bytes": 5589253,
+      "token_count": 1237601
+    },
+    {
+      "adapter": "rejected",
+      "encoded_bytes": 5138281,
+      "extractor": "rolmOCR",
+      "is_truncated": true,
+      "payload_bytes": 5138893,
+      "row": 139603,
+      "row_group": 139,
+      "text_utf8_bytes": 5115524,
+      "token_count": 1148576
+    },
+    {
+      "adapter": "rejected",
+      "encoded_bytes": 6766118,
+      "extractor": "rolmOCR",
+      "is_truncated": true,
+      "payload_bytes": 6766729,
+      "row": 155020,
+      "row_group": 155,
+      "text_utf8_bytes": 6723463,
+      "token_count": 1426804
+    },
+    {
+      "adapter": "rejected",
+      "encoded_bytes": 8009401,
+      "extractor": "rolmOCR",
+      "is_truncated": true,
+      "payload_bytes": 8010012,
+      "row": 173061,
+      "row_group": 173,
+      "text_utf8_bytes": 7910075,
+      "token_count": 1720031
+    },
+    {
+      "adapter": "rejected",
+      "encoded_bytes": 5007008,
+      "extractor": "rolmOCR",
+      "is_truncated": true,
+      "payload_bytes": 5007620,
+      "row": 193282,
+      "row_group": 193,
+      "text_utf8_bytes": 4958450,
+      "token_count": 1061521
+    },
+    {
+      "adapter": "rejected",
+      "encoded_bytes": 17183849,
+      "extractor": "rolmOCR",
+      "is_truncated": true,
+      "payload_bytes": 17184461,
+      "row": 207961,
+      "row_group": 207,
+      "text_utf8_bytes": 16930389,
+      "token_count": 3863103
+    },
+    {
+      "adapter": "rejected",
+      "encoded_bytes": 5668811,
+      "extractor": "rolmOCR",
+      "is_truncated": true,
+      "payload_bytes": 5669423,
+      "row": 232887,
+      "row_group": 232,
+      "text_utf8_bytes": 5625068,
+      "token_count": 1265732
+    }
+  ],
+  "rows_above_mib": {
+    ">16 MiB": 3,
+    ">24 MiB": 2,
+    ">32 MiB": 1,
+    ">4 MiB": 23,
+    ">40 MiB": 0,
+    ">48 MiB": 0,
+    ">64 MiB": 0,
+    ">8 MiB": 6
+  },
+  "rows_scanned": 234423,
+  "scan_peak_rss_bytes": 426110976,
+  "scan_seconds": 84.18700000000536,
+  "selected_records_bytes": 6263148760,
+  "sha256": "b33dba5fa5a3086d34c0decc76ca6e3f1f794850037eec019005557090d7c3c2"
+}

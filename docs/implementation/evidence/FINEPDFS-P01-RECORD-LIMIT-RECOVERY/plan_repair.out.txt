@@ -1,0 +1,14 @@
+repair plan 2 of finepdfs: G:\XLM\plans\finepdfs\p02\plan.json
+repairs plan        1 de220b0110a2be278f35fedf4daca70568f9a177b68cab1e7e4357ed83433890
+kept sealed ranks   [1, 2] (their receipts are not touched)
+re-planned ranks    [0]: ['data/eng_Latn/train/000_00022.parquet']
+failed run          performance-00.json a2fc78eb5734e8419fee09b8cd11b5aea1fee8548b8e0f8cf2dc6f51d3db0859 {'exception': 'RecordLimitError', 'key': 'f00000', 'root': True, 'site': 'source_local.py:413 in _replay (worker process)'}
+changed limit       max_record_bytes: 33554432 -> 50331648
+retained source     data/eng_Latn/train/000_00022.parquet sha256 b33dba5fa5a3086d34c0decc76ca6e3f1f794850037eec019005557090d7c3c2 (no download)
+next top-up cursor  3 (unchanged)
+expected            0 B transfer, 220,407 rows, 446,143,832 est. tokens
+record bound        50,331,648 B (finepdfs-record-v2: four whole eng_Latn files measured; row scans found largest projected rows of 24,828,818 B (000_00083) and 35,618,267 B (000_00022, row 52794, sha256 b33dba5f...c3c2, the p01 RecordLimitError), and sealed p01 receipts record largest selected-record lines of 16,257,336 B (000_00037) and 22,828,005 B (000_00093); every scanned row above 4 MiB is extractor rolmOCR with is_truncated true, which the adapter rejects; 48 MiB keeps the v1 rule of at least 1.35x the largest observed row (1.41x); the 32 MiB parser bound is unchanged)
+parser bound        33,554,432 B
+intra-file          4 row-group workers, lookahead 4, 6,442,450,944 B sampled memory ceiling
+PLAN DIGEST: 98209572a1939769dc3032562d2887bb8da4912b4936c1845f450a1bdb9799ad
+STOP - USER MUST REVIEW PLAN DIGEST BEFORE AUTHORIZATION

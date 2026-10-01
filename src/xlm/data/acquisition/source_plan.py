@@ -11,7 +11,9 @@ starting at the cursor the previous plan left: plan 1 starts at rank 0, a
 top-up plan starts where the last one stopped. A spent plan is never edited;
 ordering never restarts; inventory positions reserved for bounded benchmarks
 are never planned. Each plan names its predecessor's digest, so lineage is a
-hash chain.
+hash chain. An authorized plan whose unsealed units failed under its own limits
+is repaired, not edited: a repair plan re-plans exactly those ranks under
+changed limits and keeps the predecessor's cursor.
 
 Its digest is what the operator reviews and authorizes; nothing runs on a
 digest that was not explicitly authorized.
@@ -69,17 +71,26 @@ MIN_FILE_DEADLINE_SECONDS = 1800.0
 PLAN_DEADLINE_SECONDS = 14400.0
 MAX_RECORD_BYTES = 8 * MIB
 MAX_PARSER_BYTES = 32 * MIB
+#: Hard ceiling of any source-specific record bound. Source plans process whole
+#: local files, where the parser bound only limits Thrift metadata (footer and
+#: page headers), not the decoded bytes of one row; so a record bound may exceed
+#: it, but never by more than this rule allows.
+MAX_SOURCE_RECORD_BYTES = 2 * MAX_PARSER_BYTES
 #: Source-specific record bounds that replace the generic one, each with its
 #: evidence. They enter the policy and the ``AcquisitionLimits`` and so the plan
 #: digest and hash: a changed bound is a new plan that needs a new authorization.
 #: A row above the bound still fails its unit closed (``RecordLimitError``).
 SOURCE_RECORD_BYTES: dict[tuple[str, str], tuple[int, str]] = {
     ("finepdfs_edu", "eng_Latn"): (
-        MAX_PARSER_BYTES,
-        "finepdfs-record-v1: whole-file scan of data/eng_Latn/train/000_00083.parquet "
-        "(220,407 rows, sha256 4eeb58bc...a38d) found a 24,828,818-byte largest "
-        "projected row and 3 rows above the generic 8 MiB; the bound is the existing "
-        "32 MiB parser ceiling, about 1.35x that maximum",
+        48 * MIB,
+        "finepdfs-record-v2: four whole eng_Latn files measured; row scans found largest "
+        "projected rows of 24,828,818 B (000_00083) and 35,618,267 B (000_00022, row "
+        "52794, sha256 b33dba5f...c3c2, the p01 RecordLimitError), and sealed p01 "
+        "receipts record largest selected-record lines of 16,257,336 B (000_00037) and "
+        "22,828,005 B (000_00093); every scanned row above 4 MiB is extractor rolmOCR "
+        "with is_truncated true, which the adapter rejects; 48 MiB keeps the v1 rule of "
+        "at least 1.35x the largest observed row (1.41x); the 32 MiB parser bound is "
+        "unchanged",
     ),
 }
 #: Source views whose plans bind intra-file row-group parallelism, each with its
@@ -359,8 +370,8 @@ def check_plan(record: Mapping[str, Any]) -> None:
 def record_bound(source_id: str, view_id: str) -> tuple[int, str | None]:
     """The record byte bound of one source view and its basis (``None``: generic)."""
     bound, basis = SOURCE_RECORD_BYTES.get((source_id, view_id), (MAX_RECORD_BYTES, None))
-    if not 0 < bound <= MAX_PARSER_BYTES:
-        raise PlanError(f"record bound of {source_id}:{view_id} exceeds the parser ceiling")
+    if not 0 < bound <= MAX_SOURCE_RECORD_BYTES:
+        raise PlanError(f"record bound of {source_id}:{view_id} exceeds the source record ceiling")
     return bound, basis
 
 
@@ -452,17 +463,25 @@ def coverage_note(sequence: int, start: int, stop: int) -> str:
     return f"{PLANNER_RULES} plan {sequence}: frozen inventory ranks [{start}, {stop})"
 
 
+def repair_note(sequence: int, repaired: int, ranks: Sequence[int]) -> str:
+    return f"{PLANNER_RULES} plan {sequence}: repair of plan {repaired} ranks {list(ranks)}"
+
+
 def minted_from_record(record: Mapping[str, Any]) -> AcquisitionPlan:
     """Rebuild the plan's ``AcquisitionPlan`` from the record alone; it must match its hash."""
     check_plan(record)
     selection = record["selection"]
+    repair = record.get("repair")
     minted = acquisition_plan(
         record["source"],
         [entry["file"] for entry in selection["files"]],
         AcquisitionLimits.model_validate(record["acquisition_plan"]["limits"]),
         int(record["inventory"]["seed"]),
-        coverage_note(int(record["sequence"]), selection["start_rank"], selection["stop_rank"]),
+        coverage_note(int(record["sequence"]), selection["start_rank"], selection["stop_rank"])
+        if repair is None
+        else repair_note(int(record["sequence"]), int(repair["plan_sequence"]), repair["ranks"]),
         processing_growth=record["limits"].get("processing_growth"),
+        expected_file_digests=record["acquisition_plan"].get("expected_file_digests"),
     )
     if minted.plan_hash != record["acquisition_plan"]["plan_hash"]:
         raise PlanError("plan record does not reproduce its acquisition plan hash")
@@ -477,12 +496,14 @@ def acquisition_plan(
     coverage: str,
     attempt: int = 1,
     processing_growth: Mapping[str, Any] | None = None,
+    expected_file_digests: Mapping[str, str] | None = None,
 ) -> AcquisitionPlan:
     """The production ``AcquisitionPlan`` of these whole files.
 
     Always production scope, whatever its size: a source plan never takes the
     pilot path, so it always needs the stored admission and an authorization
-    bound to its behavioral hash.
+    bound to its behavioral hash. Expected digests (repair plans only) bind
+    the verified bytes a unit must be processed from.
     """
     base = AcquisitionPlan(
         plan_id=f"plan_{pin['source_id']}_{pin['view_id']}_{pin['provider']}",
@@ -503,6 +524,7 @@ def acquisition_plan(
         source_processing_growth=None
         if processing_growth is None
         else ProcessingGrowth.model_validate(processing_growth),
+        expected_file_digests=dict(expected_file_digests or {}),
     )
     if not plan_requires_production_admission(base):
         raise PlanError("a source plan must take the production admission path")
@@ -516,21 +538,22 @@ def acquisition_plan(
     return named.with_computed_hash()
 
 
-def build_plan(
-    *,
-    source_key: str,
+@dataclass(frozen=True)
+class _Frozen:
+    """The verified frozen inputs every plan of a source view is derived from."""
+
+    mode: TransportMode
+    layout: SourceLayout
+    sizing: Mapping[str, Any] | None
+    ordered: list[str]
+
+
+def _frozen(
     pin: Mapping[str, str],
-    requirement: Requirement,
-    inventory: Mapping[str, Any],
-    inventory_sha256: str,
-    layout: SourceLayout,
-    calibration: Mapping[str, str],
     policy: Mapping[str, Any],
-    admission: Mapping[str, str],
-    predecessor: Predecessor | None = None,
-    benchmark_reserved: int = BENCHMARK_RESERVED_POSITIONS,
-) -> dict[str, Any]:
-    """The next deterministic plan of this source; refuses rather than guesses."""
+    layout: SourceLayout,
+    inventory: Mapping[str, Any],
+) -> _Frozen:
     if not SHA_RE.fullmatch(pin["revision"]):
         raise PlanError("source revision is not an exact 40-hex commit")
     mode = check_frozen(policy, pin["source_id"])
@@ -550,6 +573,123 @@ def build_plan(
         check_sizing(sizing, pin)
         layout = sized_layout(layout, sizing)
     ordered = check_inventory(inventory, pin["source_id"], pin["repository"], pin["revision"])
+    return _Frozen(mode, layout, sizing, ordered)
+
+
+def _record(
+    *,
+    source_key: str,
+    sequence: int,
+    pin: Mapping[str, str],
+    frozen: _Frozen,
+    requirement: Requirement,
+    inventory: Mapping[str, Any],
+    inventory_sha256: str,
+    eligible: int,
+    calibration: Mapping[str, str],
+    policy: Mapping[str, Any],
+    admission: Mapping[str, str],
+    lineage: Mapping[str, Any],
+    acquired: int,
+    selection: Mapping[str, Any],
+    expected: Mapping[str, Any],
+    policy_limits: Mapping[str, Any],
+    minted: AcquisitionPlan,
+) -> dict[str, Any]:
+    """The plan record body shared by ordinary and repair plans (without digest)."""
+    layout, sizing = frozen.layout, frozen.sizing
+    record: dict[str, Any] = {
+        "kind": PLAN_KIND,
+        "version": PLAN_VERSION,
+        "rules": PLANNER_RULES,
+        "source_key": source_key,
+        "sequence": sequence,
+        "source": dict(pin),
+        "lineage": dict(lineage),
+        "inputs": {
+            "quota_component": requirement.component_id,
+            "quotas_sha256": requirement.quotas_sha256,
+            "estimate_sha256": requirement.estimate_sha256,
+            "calibration": dict(calibration),
+            "layout": {
+                "file_bytes_measured": layout.file_bytes,
+                "rows_per_file_estimate": layout.rows_per_file,
+                "whole_bytes_per_row": layout.whole_bytes_per_row,
+                "canonical_bytes_per_row": layout.canonical_bytes_per_row,
+            },
+            "transport_policy": {
+                "digest": policy["digest"],
+                "basis": policy["basis"],
+                "selected_mode": frozen.mode.value,
+            },
+            "admission": dict(admission),
+        },
+        "inventory": {
+            "digest": inventory["inventory_digest"],
+            "file_sha256": inventory_sha256,
+            "seed": inventory["seed"],
+            "file_count": len(frozen.ordered),
+            "order": inventory["selection"],
+            "benchmark_reserved_ranks": list(range(eligible, len(frozen.ordered))),
+        },
+        "requirement": {
+            "first_pass_tokens": requirement.first_pass_tokens,
+            "required_canonical_bytes": requirement.required_canonical_bytes,
+            "safety_margin": requirement.safety_margin,
+            "token_method": "canonical UTF-8 bytes / 4 (estimate, never exact XLM tokens)",
+        },
+        "acquired_before": {"canonical_bytes": acquired},
+        "transport_mode": frozen.mode.value,
+        "selection": dict(selection),
+        "expected": dict(expected),
+        "limits": dict(policy_limits),
+        "acquisition_plan": {
+            "plan_id": minted.plan_id,
+            "plan_hash": minted.plan_hash,
+            "selection_hash": minted.compute_selection_hash(),
+            "limits": minted.limits.model_dump(),
+            "is_pilot": minted.is_pilot,
+        },
+        "authorization": "STOP: the operator reviews this digest and authorizes it explicitly",
+        "live_run": False,
+    }
+    if minted.expected_file_digests:
+        record["acquisition_plan"]["expected_file_digests"] = dict(
+            sorted(minted.expected_file_digests.items())
+        )
+    if sizing is not None:
+        record["inputs"]["sizing"] = {
+            "contract": sizing["contract"],
+            "digest": sizing["digest"],
+            "receipt_digest": sizing["receipt"]["digest"],
+            "rule": "measured rows per file, canonical bytes per row and file bytes "
+            "supersede the calibration estimate",
+        }
+        record["expected"]["basis"] = (
+            f"whole-file measurement (receipt {sizing['receipt']['digest']}) of "
+            f"{sizing['measured']['files']} file(s); other files differ in size and "
+            "yield; exact counts come from receipts"
+        )
+    return record
+
+
+def build_plan(
+    *,
+    source_key: str,
+    pin: Mapping[str, str],
+    requirement: Requirement,
+    inventory: Mapping[str, Any],
+    inventory_sha256: str,
+    layout: SourceLayout,
+    calibration: Mapping[str, str],
+    policy: Mapping[str, Any],
+    admission: Mapping[str, str],
+    predecessor: Predecessor | None = None,
+    benchmark_reserved: int = BENCHMARK_RESERVED_POSITIONS,
+) -> dict[str, Any]:
+    """The next deterministic plan of this source; refuses rather than guesses."""
+    frozen = _frozen(pin, policy, layout, inventory)
+    layout, ordered = frozen.layout, frozen.ordered
     if not 0 <= benchmark_reserved < len(ordered):
         raise PlanError("benchmark reservation leaves no plannable inventory")
     eligible = len(ordered) - benchmark_reserved
@@ -582,7 +722,7 @@ def build_plan(
         )
     stop = start + wanted
     files = ordered[start:stop]
-    policy_limits, limits = plan_limits(len(files), layout, mode, pin)
+    policy_limits, limits = plan_limits(len(files), layout, frozen.mode, pin)
     minted = acquisition_plan(
         pin,
         files,
@@ -591,57 +731,28 @@ def build_plan(
         coverage_note(sequence, start, stop),
         processing_growth=policy_limits["processing_growth"],
     )
-    expected_rows = len(files) * layout.rows_per_file
     expected_canonical = math.floor(len(files) * per_file)
-    record: dict[str, Any] = {
-        "kind": PLAN_KIND,
-        "version": PLAN_VERSION,
-        "rules": PLANNER_RULES,
-        "source_key": source_key,
-        "sequence": sequence,
-        "source": dict(pin),
-        "lineage": {
+    record = _record(
+        source_key=source_key,
+        sequence=sequence,
+        pin=pin,
+        frozen=frozen,
+        requirement=requirement,
+        inventory=inventory,
+        inventory_sha256=inventory_sha256,
+        eligible=eligible,
+        calibration=calibration,
+        policy=policy,
+        admission=admission,
+        lineage={
             "previous_plan_digest": previous_digest,
             "previous_accounting_digest": None
             if predecessor is None
             else predecessor.accounting_digest,
             "rule": "plans form a hash chain; each starts at its predecessor's next_cursor",
         },
-        "inputs": {
-            "quota_component": requirement.component_id,
-            "quotas_sha256": requirement.quotas_sha256,
-            "estimate_sha256": requirement.estimate_sha256,
-            "calibration": dict(calibration),
-            "layout": {
-                "file_bytes_measured": layout.file_bytes,
-                "rows_per_file_estimate": layout.rows_per_file,
-                "whole_bytes_per_row": layout.whole_bytes_per_row,
-                "canonical_bytes_per_row": layout.canonical_bytes_per_row,
-            },
-            "transport_policy": {
-                "digest": policy["digest"],
-                "basis": policy["basis"],
-                "selected_mode": mode.value,
-            },
-            "admission": dict(admission),
-        },
-        "inventory": {
-            "digest": inventory["inventory_digest"],
-            "file_sha256": inventory_sha256,
-            "seed": inventory["seed"],
-            "file_count": len(ordered),
-            "order": inventory["selection"],
-            "benchmark_reserved_ranks": list(range(eligible, len(ordered))),
-        },
-        "requirement": {
-            "first_pass_tokens": requirement.first_pass_tokens,
-            "required_canonical_bytes": requirement.required_canonical_bytes,
-            "safety_margin": requirement.safety_margin,
-            "token_method": "canonical UTF-8 bytes / 4 (estimate, never exact XLM tokens)",
-        },
-        "acquired_before": {"canonical_bytes": acquired},
-        "transport_mode": mode.value,
-        "selection": {
+        acquired=acquired,
+        selection={
             "rule": "the next contiguous ranks of the frozen inventory order",
             "start_rank": start,
             "stop_rank": stop,
@@ -649,39 +760,189 @@ def build_plan(
             "row_ranges": "whole files (every row of every planned file)",
             "next_cursor": stop,
         },
-        "expected": {
+        expected={
             "files": len(files),
-            "rows": expected_rows,
+            "rows": len(files) * layout.rows_per_file,
             "canonical_bytes": expected_canonical,
             "estimated_tokens": expected_canonical // BYTES_PER_ESTIMATED_TOKEN,
             "transfer_bytes": len(files) * layout.file_bytes,
             "requests": 2 * len(files),
             "basis": "one measured file and calibration yield; exact counts come from receipts",
         },
-        "limits": policy_limits,
-        "acquisition_plan": {
-            "plan_id": minted.plan_id,
-            "plan_hash": minted.plan_hash,
-            "selection_hash": minted.compute_selection_hash(),
-            "limits": minted.limits.model_dump(),
-            "is_pilot": minted.is_pilot,
-        },
-        "authorization": "STOP: the operator reviews this digest and authorizes it explicitly",
-        "live_run": False,
+        policy_limits=policy_limits,
+        minted=minted,
+    )
+    return _with_digest(record)
+
+
+# -------------------------------------------------------------------- repair
+
+#: Per-unit processing limits. A repair must change at least one of them:
+#: with identical limits the predecessor is simply resumed.
+UNIT_LIMIT_KEYS = (
+    "max_file_bytes",
+    "max_rows_per_file",
+    "max_decoded_bytes_per_file",
+    "max_record_bytes",
+    "max_parser_bytes",
+    "max_ledger_bytes",
+    "max_decompression_ratio",
+    "max_canonical_bytes_per_file",
+    "max_durable_bytes_per_file",
+    "processing_growth",
+    "row_group_parallel",
+    "scratch_min_free_bytes",
+)
+
+
+@dataclass(frozen=True)
+class Repaired:
+    """An authorized, partially sealed plan whose remaining units failed under its limits.
+
+    ``failures`` are the failed performance receipts of its runs (name, digest
+    and root failure); ``retained`` maps each unsealed file that has a verified
+    durable copy to that copy's SHA-256.
+    """
+
+    plan: Mapping[str, Any]
+    authorized_digest: str
+    sealed_ranks: tuple[int, ...]
+    sealed_canonical_bytes: int
+    accounting_digest: str
+    failures: tuple[Mapping[str, Any], ...]
+    retained: Mapping[str, str]
+
+
+def build_repair_plan(
+    *,
+    source_key: str,
+    pin: Mapping[str, str],
+    requirement: Requirement,
+    inventory: Mapping[str, Any],
+    inventory_sha256: str,
+    layout: SourceLayout,
+    calibration: Mapping[str, str],
+    policy: Mapping[str, Any],
+    admission: Mapping[str, str],
+    repaired: Repaired,
+    benchmark_reserved: int = BENCHMARK_RESERVED_POSITIONS,
+) -> dict[str, Any]:
+    """A new plan for exactly the unsealed ranks of ``repaired``, under today's limits.
+
+    The repaired plan is never edited: its sealed units stay its own, and its
+    unsealed ranks are sealed only by this plan, which keeps its predecessor's
+    ``next_cursor`` so a later top-up neither skips nor repeats a rank. A
+    repair needs the authorized predecessor's failed-run evidence and at least
+    one changed per-unit limit; otherwise the predecessor is resumed. Files
+    whose verified bytes were retained are bound to that SHA-256.
+    """
+    frozen = _frozen(pin, policy, layout, inventory)
+    layout, ordered = frozen.layout, frozen.ordered
+    prior = repaired.plan
+    check_plan(prior)
+    if (prior["source_key"], prior["source"], prior["inventory"]["digest"]) != (
+        source_key,
+        dict(pin),
+        inventory["inventory_digest"],
+    ):
+        raise PlanError("repaired plan belongs to another source or inventory")
+    if repaired.authorized_digest != prior["digest"]:
+        raise PlanError("only an authorized plan can be repaired")
+    if not repaired.failures or any(
+        not isinstance(f.get("digest"), str) or not f.get("root_failure") for f in repaired.failures
+    ):
+        raise PlanError("a repair needs the failed-run receipts of the plan it repairs")
+    planned = [(int(entry["rank"]), str(entry["file"])) for entry in prior["selection"]["files"]]
+    if not set(repaired.sealed_ranks) <= {rank for rank, _ in planned}:
+        raise PlanError("sealed ranks are not ranks of the repaired plan")
+    remaining = [(rank, name) for rank, name in planned if rank not in repaired.sealed_ranks]
+    if not remaining:
+        raise PlanError("the plan is completely sealed; there is nothing to repair")
+    if any(not 0 <= rank < len(ordered) or ordered[rank] != name for rank, name in remaining):
+        raise PlanError("repaired ranks do not match the frozen inventory order")
+    if not {str(f["root_failure"].get("key")) for f in repaired.failures} & {
+        f"f{rank:05d}" for rank, _ in remaining
+    }:
+        raise PlanError("no failed run names an unsealed unit of the repaired plan")
+    if set(repaired.retained) - {name for _, name in remaining} or any(
+        not re.fullmatch(r"[0-9a-f]{64}", sha) for sha in repaired.retained.values()
+    ):
+        raise PlanError("retained digests must be SHA-256 of unsealed files")
+    if not 0 <= benchmark_reserved < len(ordered):
+        raise PlanError("benchmark reservation leaves no plannable inventory")
+    files = [name for _, name in remaining]
+    ranks = [rank for rank, _ in remaining]
+    policy_limits, limits = plan_limits(len(files), layout, frozen.mode, pin)
+    changed = {
+        key: {"from": prior["limits"].get(key), "to": policy_limits.get(key)}
+        for key in UNIT_LIMIT_KEYS
+        if prior["limits"].get(key) != policy_limits.get(key)
     }
-    if sizing is not None:
-        record["inputs"]["sizing"] = {
-            "contract": sizing["contract"],
-            "digest": sizing["digest"],
-            "receipt_digest": sizing["receipt"]["digest"],
-            "rule": "measured rows per file, canonical bytes per row and file bytes "
-            "supersede the calibration estimate",
-        }
-        record["expected"]["basis"] = (
-            f"whole-file measurement (receipt {sizing['receipt']['digest']}) of "
-            f"{sizing['measured']['files']} file(s); other files differ in size and "
-            "yield; exact counts come from receipts"
-        )
+    if not changed:
+        raise PlanError("per-unit limits are unchanged: resume the plan instead of repairing it")
+    sequence = int(prior["sequence"]) + 1
+    minted = acquisition_plan(
+        pin,
+        files,
+        limits,
+        int(inventory["seed"]),
+        repair_note(sequence, int(prior["sequence"]), ranks),
+        processing_growth=policy_limits["processing_growth"],
+        expected_file_digests=repaired.retained,
+    )
+    per_file = layout.rows_per_file * layout.canonical_bytes_per_row
+    expected_canonical = math.floor(len(files) * per_file)
+    downloads = [name for name in files if name not in repaired.retained]
+    record = _record(
+        source_key=source_key,
+        sequence=sequence,
+        pin=pin,
+        frozen=frozen,
+        requirement=requirement,
+        inventory=inventory,
+        inventory_sha256=inventory_sha256,
+        eligible=len(ordered) - benchmark_reserved,
+        calibration=calibration,
+        policy=policy,
+        admission=admission,
+        lineage={
+            "previous_plan_digest": prior["digest"],
+            "previous_accounting_digest": repaired.accounting_digest,
+            "rule": "plans form a hash chain; a repair re-plans its predecessor's "
+            "unsealed ranks and keeps its next_cursor",
+        },
+        acquired=int(prior["acquired_before"]["canonical_bytes"]) + repaired.sealed_canonical_bytes,
+        selection={
+            "rule": "repair: exactly the unsealed ranks of the repaired plan",
+            "ranks": ranks,
+            "files": [{"rank": rank, "file": name} for rank, name in remaining],
+            "row_ranges": "whole files (every row of every planned file)",
+            "next_cursor": int(prior["selection"]["next_cursor"]),
+        },
+        expected={
+            "files": len(files),
+            "rows": len(files) * layout.rows_per_file,
+            "canonical_bytes": expected_canonical,
+            "estimated_tokens": expected_canonical // BYTES_PER_ESTIMATED_TOKEN,
+            "transfer_bytes": len(downloads) * layout.file_bytes,
+            "requests": 2 * len(downloads),
+            "basis": "one measured file and calibration yield; exact counts come from receipts",
+        },
+        policy_limits=policy_limits,
+        minted=minted,
+    )
+    record["repair"] = {
+        "plan_sequence": int(prior["sequence"]),
+        "plan_digest": prior["digest"],
+        "accounting_digest": repaired.accounting_digest,
+        "sealed_ranks": sorted(repaired.sealed_ranks),
+        "ranks": ranks,
+        "failures": [dict(f) for f in repaired.failures],
+        "changed_limits": changed,
+        "retained_sha256": dict(sorted(repaired.retained.items())),
+        "rule": "the repaired plan is never edited; its sealed units stay valid, its "
+        "unsealed ranks are sealed only by this plan, and it no longer runs",
+    }
     return _with_digest(record)
 
 
