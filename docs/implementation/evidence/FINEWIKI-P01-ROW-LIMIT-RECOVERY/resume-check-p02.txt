@@ -1,0 +1,39 @@
+{
+  "completion_percent": 0.0,
+  "plan_digest": "319d6bf3dbb7ef085b637c27ea75a89d9d1a97f6b1337153cfebebb1844a305b",
+  "remaining": [
+    {
+      "file": "data/enwiki/000_00014.parquet",
+      "rank": 0
+    },
+    {
+      "file": "data/enwiki/000_00011.parquet",
+      "rank": 1
+    }
+  ],
+  "restart": {
+    "counts": {
+      "fresh_download": 0,
+      "local_complete_reuse": 0,
+      "local_processing_retry": 1,
+      "resumable_partial": 1,
+      "sealed_skip": 0
+    },
+    "known_network_bytes": 860310719,
+    "resumable_verified_bytes": 1677721600,
+    "units": {
+      "fresh_download": [],
+      "local_complete_reuse": [],
+      "local_processing_retry": [
+        "f00001"
+      ],
+      "resumable_partial": [
+        "f00000"
+      ],
+      "sealed_skip": []
+    },
+    "worst_case_network_bytes": 860310719
+  },
+  "sealed": 0,
+  "total": 2
+}

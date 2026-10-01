@@ -1,0 +1,15 @@
+{
+ "file": "G:/XLM/acq-raw/finewiki/source/data/enwiki/000_00011.parquet",
+ "file_size": 2498000006,
+ "num_rows": 417809,
+ "row_groups": 418,
+ "max_rg_rows": 1000,
+ "min_rg_rows": 809,
+ "total_byte_size": 7426183990,
+ "max_rg_total_byte_size": 61566929,
+ "compressed": 2495363663,
+ "first_rg_rows": 1000,
+ "first_rg_total_byte_size": 9108656,
+ "footer_bytes": 2636331,
+ "columns": 14
+}

@@ -1,0 +1,20 @@
+{
+ "file": "data/enwiki/000_00014.parquet",
+ "file_size": 2538032319,
+ "footer_length": 2899995,
+ "num_rows": 446535,
+ "row_groups": 447,
+ "max_rg_rows": 1000,
+ "min_rg_rows": 535,
+ "total_byte_size": 7439794805,
+ "max_rg_total_byte_size": 68209786,
+ "text_uncompressed_bytes": 2665228415,
+ "network": {
+  "requests": 2,
+  "bytes": 2900003,
+  "hosts": [
+   "us.aws.cdn.hf.co",
+   "us.aws.cdn.hf.co"
+  ]
+ }
+}

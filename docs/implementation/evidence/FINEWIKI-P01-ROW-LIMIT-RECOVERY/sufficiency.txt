@@ -1,0 +1,8 @@
+  "token_method": "canonical UTF-8 bytes / 4 (estimate, never exact XLM tokens)",
+  "unresolved_ranks": {
+    "2": [
+      0,
+      1
+    ]
+  }
+}

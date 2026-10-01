@@ -92,6 +92,31 @@ SOURCE_RECORD_BYTES: dict[tuple[str, str], tuple[int, str]] = {
         "at least 1.35x the largest observed row (1.41x); the 32 MiB parser bound is "
         "unchanged",
     ),
+    ("finewiki", "en"): (
+        18 * MIB,
+        "finewiki-record-v1: the p01 whole-file local scan of 000_00011 (sha256 "
+        "c6448177...622d, 417,809 rows, every row accepted) found a largest projected "
+        "located_record of 13,566,858 B (row 58004) and six rows above the generic 8 MiB; "
+        "18 MiB is the smallest whole MiB of at least 1.35x that row (1.39x); the 32 MiB "
+        "parser bound is unchanged",
+    ),
+}
+#: Source-specific whole-file row and canonical-text ceilings that replace the
+#: estimate-derived ones (rows per file x ``ROWS_TOLERANCE``), each with its
+#: evidence. Only these two keys change: durable, output and scratch ceilings
+#: stay derived from the layout estimate. Like record bounds they enter the
+#: policy, the ``AcquisitionLimits`` and so the plan digest and hash.
+SOURCE_FILE_BOUNDS: dict[tuple[str, str], tuple[int, int, str]] = {
+    ("finewiki", "en"): (
+        602_823,
+        3_689_769_107,
+        "finewiki-file-v1: footer row counts of the p01 files 000_00014 (446,535 rows, "
+        "bounded footer read) and 000_00011 (417,809 rows, local footer) exceed the "
+        "estimate-derived 162,540 (a sampling_plan_version 1 layout divides compressed file "
+        "bytes by a dense row group's logical bytes per row); the exact scan of 000_00011 "
+        "measured 2,733,162,301 canonical text bytes; both ceilings are ceil(1.35x) the "
+        "largest observed value",
+    ),
 }
 #: Source views whose plans bind intra-file row-group parallelism, each with its
 #: evidence. Like record bounds, an entry enters the policy and so the plan
@@ -395,6 +420,9 @@ def plan_limits(
         layout.rows_per_file * layout.canonical_bytes_per_row * ROWS_TOLERANCE
     )
     durable_per_file = max_file + math.ceil(canonical_per_file * CANONICAL_FILE_OVERHEAD)
+    file_bounds = SOURCE_FILE_BOUNDS.get((pin["source_id"], pin["view_id"]))
+    if file_bounds is not None:
+        max_rows, canonical_per_file = file_bounds[0], file_bounds[1]
     file_deadline = max(MIN_FILE_DEADLINE_SECONDS, max_file / MIN_FILE_RATE_BYTES_PER_SECOND)
     in_flight = min(files, concurrency["download"] + 2 * concurrency["process"])
     output_bytes = durable_per_file - max_file
@@ -435,6 +463,8 @@ def plan_limits(
     if record_basis is not None:
         # Only an overridden source carries this key: generic plans keep their digests.
         policy["max_record_bytes_basis"] = record_basis
+    if file_bounds is not None:
+        policy["file_bounds_basis"] = file_bounds[2]
     if parallel is not None:
         policy["row_group_parallel"] = parallel[0].model_dump()
         policy["row_group_parallel_basis"] = parallel[1]

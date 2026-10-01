@@ -1,3 +1,20 @@
+> **FINEWIKI P01 ROW-LIMIT RECOVERY (2026-10-01): FINEWIKI P01 RECOVERY READY
+> FOR OPERATOR DIGEST REVIEW.** p01 `fd8c67df...` f00001 (`000_00011`, 417,809
+> rows) failed the 162,540 row bound; f00000 (`000_00014`, 446,535 rows by one
+> bounded footer read: 2 ranged requests, 2,900,003 B) was cancelled with
+> 1,677,721,600 verified bytes. Cause: v1 calibration layout divides compressed
+> file bytes by a dense group's logical bytes per row (estimate error, not a
+> planner defect). An exact offline scan of 000_00011 also exceeds the record
+> (13,566,858 B) and canonical (2,733,162,301 B) ceilings. FineWiki-only bounds
+> (1.35x rule): rows 602,823, record 18 MiB, canonical 3,689,769,107; others
+> unchanged. Generic fix: repair plans adopt the predecessor's verified scratch
+> partial. **Repair p02 digest
+> `319d6bf3dbb7ef085b637c27ea75a89d9d1a97f6b1337153cfebebb1844a305b`, NOT
+> authorized**; resume-check: retry 1, resumable partial 1, 860,310,719 B
+> network; cursor 2. 4 new + 94 related tests pass (-n 4); -n 16 flake noted.
+> [Report](reports/FINEWIKI-P01-ROW-LIMIT-RECOVERY.md). Next: review digest,
+> authorize, `run --plan 2` (online, resumes f00000).
+
 > **FINEPDFS P01 RECORD-LIMIT RECOVERY (2026-10-01, offline): FINEPDFS P01
 > RECOVERY READY FOR OPERATOR DIGEST REVIEW.** p01 unit f00000 (rank 0,
 > `000_00022.parquet`, sha256 `b33dba5f...c3c2`, retained) failed on row 52,794

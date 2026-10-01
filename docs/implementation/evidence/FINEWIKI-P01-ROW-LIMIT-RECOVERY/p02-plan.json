@@ -1,0 +1,205 @@
+{
+  "acquired_before": {
+    "canonical_bytes": 0
+  },
+  "acquisition_plan": {
+    "expected_file_digests": {
+      "data/enwiki/000_00011.parquet": "c64481777c4ad518969680bdb3f27e8b1c9e782fa831709ee5fc30beb3aa622d"
+    },
+    "is_pilot": false,
+    "limits": {
+      "max_decompressed_bytes": 38679871488,
+      "max_decompression_ratio": 15.0,
+      "max_output_disk_bytes": 27587005036,
+      "max_parser_bytes": 33554432,
+      "max_record_bytes": 18874368,
+      "max_records": 1205646,
+      "max_requests": 32,
+      "max_retries": 5,
+      "max_scanned_records": 1205646,
+      "max_temp_disk_bytes": 17899211372,
+      "max_transferred_bytes": 7253000192,
+      "max_workers": 16,
+      "overall_deadline_seconds": 14400.0,
+      "per_request_timeout_seconds": 30.0
+    },
+    "plan_hash": "8ae16084a310be329591f1a1bd4105dd2ced7047202f7adc9eb07d1c9fba9384",
+    "plan_id": "plan_finewiki_en_huggingface_a911bff986a0c3611f03",
+    "selection_hash": "836487a5c1d56f44756f0700af89c28b977cae1ae57e4614ee1964d4032cca82"
+  },
+  "authorization": "STOP: the operator reviews this digest and authorizes it explicitly",
+  "digest": "319d6bf3dbb7ef085b637c27ea75a89d9d1a97f6b1337153cfebebb1844a305b",
+  "expected": {
+    "basis": "one measured file and calibration yield; exact counts come from receipts",
+    "canonical_bytes": 2055733914,
+    "estimated_tokens": 513933478,
+    "files": 2,
+    "requests": 2,
+    "rows": 162540,
+    "transfer_bytes": 2417467623
+  },
+  "inputs": {
+    "admission": {
+      "benchmark_risk": "suspect_with_mitigation",
+      "bridge_receipt_digest": "f36584a5eea3dd69a863ff37d56eadc80916fdce28641fa5b2aa816fc560fab7",
+      "decision_contract": "c04-benchmark-risk-v3",
+      "probe_fingerprint": "11a0b610ed08b53a5c4c195dcb631f9529bf215202b82e88f7a28dbea0976a60"
+    },
+    "calibration": {
+      "adapt_log": "8fe5fbc1b62a54cf8220e78bcc634c3bf3e17d94184a8ad07150c7ff53eee7a4",
+      "journal": "52ab299122d9284e30ebc7e6f5f2297f3c4f8c4722053eb30bc5597177b7c672",
+      "perf": "23164b72a0182381b432c571059c6e6ef9ec95296ae33ab1472fce98869e47a6",
+      "plan": "89b6fe66d0d98ce9c1b69d591372795613be8b77dac3f3e4a481dfef40688b19",
+      "records": "dc84345893217de6bc49ea86a220938ab26ebeea572965f99ce679b31c71d54c",
+      "rows": "3abc16f15da2004852948dcac8e432174afcbfa4813420de33a59032d4efebbe",
+      "summary": "c2b4df7b80b86b2f4de4d624b1d68e33f77ae6b0bbe5ea4bf73d572770626968"
+    },
+    "estimate_sha256": "cd815f14ab37b11d9f96188981d44ea5ef79f4ca39ad7d352f831f773041634d",
+    "layout": {
+      "canonical_bytes_per_row": 12647.557,
+      "file_bytes_measured": 2417467623,
+      "rows_per_file_estimate": 81270,
+      "whole_bytes_per_row": 29745.797
+    },
+    "quota_component": "finewiki_en",
+    "quotas_sha256": "9b16db765c4dbb3fc3a366b1c2a8acc88e3ca8bc81f344d0a082ee00d8c78fdf",
+    "transport_policy": {
+      "basis": "modeled",
+      "digest": "329f4922ddb4eae7e35adcabdaf9853f5461da806611f523ac7ec646051c0c05",
+      "selected_mode": "whole_file_local"
+    }
+  },
+  "inventory": {
+    "benchmark_reserved_ranks": [
+      13,
+      14
+    ],
+    "digest": "9193c6b72c3edb3877648c9022cc1c789217119b2c06105b4c03c69ef514f8ff",
+    "file_count": 15,
+    "file_sha256": "6f97f37db6f1ccb08957e5535ec331e1f2f5af0f9d7d05766b4a706f356aa868",
+    "order": "SHA-256(seed|repository|revision|file) ascending, filename tiebreak",
+    "seed": 20260918
+  },
+  "kind": "mix01_source_production_plan",
+  "limits": {
+    "download_workers": 2,
+    "download_workers_max": 16,
+    "file_bounds_basis": "finewiki-file-v1: footer row counts of the p01 files 000_00014 (446,535 rows, bounded footer read) and 000_00011 (417,809 rows, local footer) exceed the estimate-derived 162,540 (a sampling_plan_version 1 layout divides compressed file bytes by a dense row group's logical bytes per row); the exact scan of 000_00011 measured 2,733,162,301 canonical text bytes; both ceilings are ceil(1.35x) the largest observed value",
+    "file_deadline_seconds": 15370.0,
+    "max_canonical_bytes_per_file": 3689769107,
+    "max_decoded_bytes_per_file": 19339935744,
+    "max_decompression_ratio": 15.0,
+    "max_durable_bytes_per_file": 8946451766,
+    "max_file_bytes": 4834983936,
+    "max_in_flight_files": 2,
+    "max_ledger_bytes": 536870912,
+    "max_parser_bytes": 33554432,
+    "max_record_bytes": 18874368,
+    "max_record_bytes_basis": "finewiki-record-v1: the p01 whole-file local scan of 000_00011 (sha256 c6448177...622d, 417,809 rows, every row accepted) found a largest projected located_record of 13,566,858 B (row 58004) and six rows above the generic 8 MiB; 18 MiB is the smallest whole MiB of at least 1.35x that row (1.39x); the 32 MiB parser bound is unchanged",
+    "max_requests_per_file": 16,
+    "max_retries": 5,
+    "max_rows_per_file": 602823,
+    "plan_deadline_seconds": 14400.0,
+    "process_workers": 2,
+    "process_workers_max": 16,
+    "processing_growth": {
+      "event_bytes": 1048576,
+      "metadata_bytes": 1048576,
+      "output_bytes": 4111467830,
+      "progress_bytes": 4096,
+      "run_metadata_bytes": 8388608,
+      "source_max_bytes": 4834983936,
+      "state_bytes": 1048576,
+      "version": 1
+    },
+    "request_timeout_seconds": 30.0,
+    "rules": "mix01-source-planner-v1",
+    "scratch_cap_bytes": 17899211372,
+    "scratch_min_free_bytes": 34359738368
+  },
+  "lineage": {
+    "previous_accounting_digest": "16532d58446b169b7380d6f4c0a182343d04fd902d4bee5885e5cf00a9b01175",
+    "previous_plan_digest": "fd8c67df3638059dd58b908317fe368c69a6c4b5c96e14139372bc63eabeabfb",
+    "rule": "plans form a hash chain; a repair re-plans its predecessor's unsealed ranks and keeps its next_cursor"
+  },
+  "live_run": false,
+  "repair": {
+    "accounting_digest": "16532d58446b169b7380d6f4c0a182343d04fd902d4bee5885e5cf00a9b01175",
+    "changed_limits": {
+      "max_canonical_bytes_per_file": {
+        "from": 2055733915,
+        "to": 3689769107
+      },
+      "max_record_bytes": {
+        "from": 8388608,
+        "to": 18874368
+      },
+      "max_rows_per_file": {
+        "from": 162540,
+        "to": 602823
+      }
+    },
+    "failures": [
+      {
+        "digest": "dc3d3585f1e9c5d0416915c319c75862003f1117e04424fd9b053a60fc9f8426",
+        "receipt": "performance-00.json",
+        "root_failure": {
+          "exception": "SourceAdaptError",
+          "key": "f00001",
+          "root": true,
+          "site": "source_local.py:119 in check_layout (worker process)"
+        }
+      }
+    ],
+    "plan_digest": "fd8c67df3638059dd58b908317fe368c69a6c4b5c96e14139372bc63eabeabfb",
+    "plan_sequence": 1,
+    "ranks": [
+      0,
+      1
+    ],
+    "retained_sha256": {
+      "data/enwiki/000_00011.parquet": "c64481777c4ad518969680bdb3f27e8b1c9e782fa831709ee5fc30beb3aa622d"
+    },
+    "rule": "the repaired plan is never edited; its sealed units stay valid, its unsealed ranks are sealed only by this plan, and it no longer runs",
+    "sealed_ranks": []
+  },
+  "requirement": {
+    "first_pass_tokens": 330000000,
+    "required_canonical_bytes": 1320000000,
+    "safety_margin": 1.15,
+    "token_method": "canonical UTF-8 bytes / 4 (estimate, never exact XLM tokens)"
+  },
+  "rules": "mix01-source-planner-v1",
+  "selection": {
+    "files": [
+      {
+        "file": "data/enwiki/000_00014.parquet",
+        "rank": 0
+      },
+      {
+        "file": "data/enwiki/000_00011.parquet",
+        "rank": 1
+      }
+    ],
+    "next_cursor": 2,
+    "ranks": [
+      0,
+      1
+    ],
+    "row_ranges": "whole files (every row of every planned file)",
+    "rule": "repair: exactly the unsealed ranks of the repaired plan"
+  },
+  "sequence": 2,
+  "source": {
+    "adapter_id": "finewiki_en",
+    "component_id": "finewiki_en",
+    "provider": "huggingface",
+    "repository": "HuggingFaceFW/finewiki",
+    "revision": "8bd13e72e6a002407649b3e898535f42ceb1aeb9",
+    "source_id": "finewiki",
+    "view_id": "en"
+  },
+  "source_key": "finewiki",
+  "transport_mode": "whole_file_local",
+  "version": 1
+}

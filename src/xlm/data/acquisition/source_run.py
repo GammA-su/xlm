@@ -405,6 +405,57 @@ def prefix_sha256(path: Path, length: int) -> str | None:
     return digest.hexdigest()
 
 
+def inherited_scratch(
+    roots: Roots, record: Mapping[str, Any], key: str, name: str
+) -> tuple[Path, Path] | None:
+    """A repaired predecessor's scratch download of the same file, if this plan has none.
+
+    A repair keeps each rank's unit key, so its predecessor's partial (or complete)
+    download of that file is the same transfer; the transport re-verifies its
+    prefix, URL and revision before any byte is reused. Read-only.
+    """
+    repair = record.get("repair")
+    label = f"p{int(record['sequence']):02d}"
+    if repair is None or roots.scratch(label, f"{key}.state.json").is_file():
+        return None
+    prior = f"p{int(repair['plan_sequence']):02d}"
+    partial, state = (
+        roots.scratch(prior, f"{key}.parquet.part"),
+        roots.scratch(prior, f"{key}.state.json"),
+    )
+    if not state.is_file():
+        return None
+    found = read_json(state)
+    if (found.get("name"), found.get("repo_commit")) != (name, record["source"]["revision"]):
+        raise RunError(f"repaired plan's scratch download of {key} is another file or revision")
+    return partial, state
+
+
+def adopt_inherited_scratch(
+    roots: Roots, record: Mapping[str, Any], entries: Sequence[Mapping[str, Any]], label: str
+) -> list[str]:
+    """Move each inherited predecessor download into this plan's scratch (same volume).
+
+    The partial moves before its state, so an interruption leaves either nothing
+    moved, or this plan's partial plus the predecessor's state, which the next
+    adoption completes; a lost prefix is only ever downloaded again.
+    """
+    adopted = []
+    for entry in entries:
+        key, name = unit_key(int(entry["rank"])), str(entry["file"])
+        inherited = inherited_scratch(roots, record, key, name)
+        # A retained durable source is reused as is; its scratch copy is not inherited.
+        if inherited is None or load_durable_source(roots.raw_path(name)) is not None:
+            continue
+        partial, state = inherited
+        roots.scratch(label).mkdir(parents=True, exist_ok=True)
+        if partial.is_file():
+            os.replace(partial, roots.scratch(label, f"{key}.parquet.part"))
+        os.replace(state, roots.scratch(label, f"{key}.state.json"))
+        adopted.append(key)
+    return adopted
+
+
 def classify(
     roots: Roots, record: Mapping[str, Any], resume: Mapping[str, Any], label: str
 ) -> dict[str, Any]:
@@ -428,6 +479,11 @@ def classify(
             continue
         partial = roots.scratch(label, f"{key}.parquet.part")
         state_path = roots.scratch(label, f"{key}.state.json")
+        inherited = inherited_scratch(roots, record, key, name)
+        if inherited is not None:
+            if not partial.is_file():
+                partial = inherited[0]
+            state_path = inherited[1]
         state = read_json(state_path) if state_path.is_file() else {}
         length, verified = state.get("length"), int(state.get("verified_bytes", 0))
         if state.get("complete") and partial.is_file():
@@ -1132,6 +1188,7 @@ def _execute(
     if not staging.resolve().is_relative_to((roots.canonical / ".staging").resolve()):
         raise RunError("staging deletion escapes the source staging root")
     shutil.rmtree(staging, ignore_errors=True)
+    adopt_inherited_scratch(roots, record, resume["remaining"], label)
     units, ranks, charged = prepare_units(
         roots, record, plan, resume["remaining"], label, staging, url_for
     )

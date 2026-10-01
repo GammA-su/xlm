@@ -1,0 +1,15 @@
+repair plan 2 of finewiki: G:\XLM\plans\finewiki\p02\plan.json
+repairs plan        1 fd8c67df3638059dd58b908317fe368c69a6c4b5c96e14139372bc63eabeabfb
+kept sealed ranks   [] (their receipts are not touched)
+re-planned ranks    [0, 1]: ['data/enwiki/000_00014.parquet', 'data/enwiki/000_00011.parquet']
+failed run          performance-00.json dc3d3585f1e9c5d0416915c319c75862003f1117e04424fd9b053a60fc9f8426 {'exception': 'SourceAdaptError', 'key': 'f00001', 'root': True, 'site': 'source_local.py:119 in check_layout (worker process)'}
+changed limit       max_rows_per_file: 162540 -> 602823
+changed limit       max_record_bytes: 8388608 -> 18874368
+changed limit       max_canonical_bytes_per_file: 2055733915 -> 3689769107
+retained source     data/enwiki/000_00011.parquet sha256 c64481777c4ad518969680bdb3f27e8b1c9e782fa831709ee5fc30beb3aa622d (no download)
+next top-up cursor  2 (unchanged)
+expected            2,417,467,623 B transfer, 162,540 rows, 513,933,478 est. tokens
+record bound        18,874,368 B (finewiki-record-v1: the p01 whole-file local scan of 000_00011 (sha256 c6448177...622d, 417,809 rows, every row accepted) found a largest projected located_record of 13,566,858 B (row 58004) and six rows above the generic 8 MiB; 18 MiB is the smallest whole MiB of at least 1.35x that row (1.39x); the 32 MiB parser bound is unchanged)
+parser bound        33,554,432 B
+PLAN DIGEST: 319d6bf3dbb7ef085b637c27ea75a89d9d1a97f6b1337153cfebebb1844a305b
+STOP - USER MUST REVIEW PLAN DIGEST BEFORE AUTHORIZATION
