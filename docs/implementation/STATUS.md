@@ -1,3 +1,35 @@
+> **MIX-01 TRANSITION AFTER THE ESSENTIAL-WEB FIRST PASS (2026-10-01, offline):
+> MIX-01 ACQUISITION TRANSITION STILL BLOCKED.** Essential-Web first pass
+> verified from artifacts: 18 batches, 576 sealed files, 47,979,123 rows. Views:
+> science 2,692,218,118 / practical 6,962,804,542 / prose 20,071,278,364
+> canonical bytes = 673.1M / 1,740.7M / 5,017.8M estimated tokens, all SUFFICIENT.
+> The runner stopped `FIRST_PASS_COMPLETE` after Batch 17; batches 18/19 never
+> existed. C05, tokenizer and training NOT RUN. No native freeze fits a pre-C05
+> component pool (`PoolFreeze`/`FrozenPoolManifest` need dedup + split
+> identities), and the campaign's summaries carry no digest. A new additive
+> write-once seal `G:\XLM\plans\ew-fast\first-pass-seal.json`, digest
+> `a77c78f7636695ef0ab241c176e07cc9bcfd1815907a13f55dc2f6f7c28c7516`, binds
+> source, revision, B-normal, adapter, campaign, inventory, quotas, recovery +
+> compatibility chain, admissions, 18 batches, 576 receipts and per-view
+> membership. Its build re-hashed 5,760 files (198.4 GB) in 353 s; only that
+> file was added to the store. It records availability, not exposure: the
+> oversupply is kept, no weight/quota/selector change, and C05, tokenizer,
+> exact count, top-up and 6B freeze are pending. C05 is global (dedup survivor
+> rule and corpus-dependent exclusion span suppression), so it is deferred
+> until all of Mix-01 is available. Next source by readiness: UltraX
+> (revision, inventory, calibration, estimate 5.25 GB, adapter certified on 30
+> real rows). It and every other source are blocked: the generic `data probe
+> --live` cannot produce accessible schema-verified evidence, and no production
+> planner exists. License/provenance/benchmark reviews are pending. Common Pile
+> stays BLOCKED (NULL license, no allowlist). Transport: UltraX and FinePDFs
+> keep the bounded fetch; SYNTH needs measurement. Tests: 11 new; a related
+> 30-file selection gave 702 + 3 serial passed and 2 known long-path failures,
+> which pass with a short basetemp; 0 skipped; ruff, format and strict mypy
+> pass. Full acceptance NOT RUN.
+> [Report, ledger and runbook](reports/MIX01-ESSENTIAL-FIRST-PASS-TRANSITION.md).
+> Next: implement the UltraX footer-schema admission probe and production
+> planner (report §11, §15); no network until that lands.
+
 > **ESSENTIAL-WEB BATCH-3 MALFORMED STOP (2026-09-30, offline): READY TO RESUME
 > AUTOMATED ESSENTIAL-WEB ACQUISITION.** Batch 3 stopped at 27/32 on f00110
 > (`data/crawl=CC-MAIN-2024-26/train-00549-of-03168.parquet`, rank 110, SHA-256
