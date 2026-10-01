@@ -13,6 +13,15 @@
 > push. [Report](reports/FINEPDFS-INTRAFILE-PARALLEL.md). Next: build the
 > FinePDFs production plan for review once its inventory exists; stop at the
 > digest.
+> **GENERIC HUB INVENTORY LISTER (2026-10-01, offline): READY FOR OPERATOR
+> METADATA LISTING.** Bounded paginated `huggingface` tree lister
+> (`src/xlm/data/sources/hf_inventory.py` v1) separates live metadata listing
+> from freeze; `mix01_inventory.py` gains `list-hf` (network, future operator
+> only), `verify-listing` (offline) and `freeze --listing`. FinePDFs filter is
+> configuration (`data/eng_Latn/`, `.parquet`), never hard-coded. Ordering and
+> v1 freeze/digest semantics unchanged. 40 new + 149 related cases pass;
+> ruff/format/strict-mypy/diff-check pass. No live Hub/payload/plan/run/push.
+> [Report](reports/HF-INVENTORY-LISTER.md).
 
 > **FINEPDFS WHOLE-FILE POLICY (2026-10-01, offline): FINEPDFS POLICY DIGEST NEEDS
 > OPERATOR REVIEW.** Measured freezes can now bind a receiptless `range_selected`

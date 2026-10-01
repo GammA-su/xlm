@@ -98,9 +98,47 @@ def dupe_str(dupes: list[str]) -> str:
 
 
 def cmd_freeze(args: argparse.Namespace) -> int:
+    listing_path = getattr(args, "listing", None)
+    files_path = getattr(args, "files", None)
+    if listing_path is not None and files_path is not None:
+        return _fail("pass either --files or --listing, not both")
+    if listing_path is not None:
+        try:
+            from xlm.data.sources import hf_inventory as _hfi
+        except Exception as exc:
+            return _fail(f"cannot load generic listing module: {exc}")
+        try:
+            receipt = _hfi.read_listing(listing_path)
+            names, sizes = _hfi.listing_to_freeze_inputs(receipt)
+            # Bind freeze identity to the listing identity; never mix revisions.
+            if str(args.source) != str(receipt["source_id"]):
+                return _fail("freeze --source differs from the listing source_id")
+            if str(args.repo) != str(receipt["repository"]):
+                return _fail("freeze --repo differs from the listing repository")
+            try:
+                revision = _checked_sha(args.revision, "revision")
+            except ValueError as exc:
+                return _fail(str(exc))
+            if revision != str(receipt["resolved_revision"]):
+                return _fail("freeze --revision differs from the listing resolved revision")
+            if getattr(args, "sizes", None) is not None:
+                return _fail("--listing already carries sizes; do not also pass --sizes")
+        except ValueError as exc:
+            return _fail(str(exc))
+        if not names:
+            return _fail("listing holds no file; refusing to freeze an empty inventory")
+        payload = freeze_inventory(args.source, args.repo, revision, args.seed, names, sizes)
+        _atomic_write_json(args.output, payload)
+        print(
+            f"source: {args.source} files: {len(names)} "
+            f"digest: {payload['inventory_digest']} from-listing: {receipt['digest']}"
+        )
+        return 0
     try:
         revision = _checked_sha(args.revision, "revision")
-        names = _read_lines(args.files)
+        if files_path is None:
+            return _fail("freeze needs --files or --listing")
+        names = _read_lines(files_path)
     except ValueError as exc:
         return _fail(str(exc))
     if not names:
@@ -779,6 +817,83 @@ def cmd_measure(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_list_hf(args: argparse.Namespace) -> int:
+    """NETWORK: bounded metadata-only Hub tree listing at the pinned revision."""
+    import os
+
+    if os.environ.get("HF_HUB_OFFLINE") == "1" or os.environ.get("HF_DATASETS_OFFLINE") == "1":
+        return _fail("live listing refused while HF_*_OFFLINE=1; unset only for the operator run")
+    try:
+        from xlm.data.sources import hf_inventory as _hfi
+    except Exception as exc:
+        return _fail(f"cannot load generic listing module: {exc}")
+    try:
+        filt = _hfi.normalize_filter(
+            path_prefix=str(args.path_prefix or ""),
+            extensions=tuple(args.extension or ()),
+            include_globs=tuple(args.include_glob or ()),
+            exclude_globs=tuple(args.exclude_glob or ()),
+        )
+        limits = _hfi.ListingLimits(
+            max_pages=int(args.max_pages),
+            max_items=int(args.max_items),
+            max_requests=int(args.max_requests),
+            max_metadata_bytes=int(args.max_metadata_bytes),
+            max_retries=int(args.max_retries),
+            per_request_timeout_seconds=float(args.timeout),
+            total_deadline_seconds=float(args.deadline),
+        )
+        _hfi.check_limits(limits)
+        fetcher = _hfi.HfTreeFetcher(
+            repository=str(args.repo),
+            revision=str(args.revision),
+            path_prefix=filt.path_prefix,
+            recursive=True,
+            timeout_seconds=float(args.timeout),
+        )
+        receipt = _hfi.collect_listing(
+            repository=str(args.repo),
+            requested_revision=str(args.revision),
+            source_id=str(args.source),
+            view_id=str(args.view),
+            filt=filt,
+            limits=limits,
+            fetcher=fetcher,
+        )
+        _hfi.write_listing(args.output, receipt)
+    except ValueError as exc:
+        return _fail(str(exc))
+    except OSError as exc:
+        return _fail(str(exc))
+    total = receipt["total_declared_bytes"]
+    print(
+        f"listing: {receipt['repository']}@{receipt['resolved_revision']} "
+        f"files: {receipt['item_count']} bytes: {total} "
+        f"pages: {receipt['page_count']} requests: {receipt['request_count']} "
+        f"digest: {receipt['digest']}"
+    )
+    return 0
+
+
+def cmd_verify_listing(args: argparse.Namespace) -> int:
+    """Offline verification of a listing receipt; never uses the network."""
+    try:
+        from xlm.data.sources import hf_inventory as _hfi
+    except Exception as exc:
+        return _fail(f"cannot load generic listing module: {exc}")
+    try:
+        receipt = _hfi.read_listing(args.listing)
+    except ValueError as exc:
+        return _fail(str(exc))
+    print(
+        f"listing VERIFIED: {receipt['repository']}@{receipt['resolved_revision']} "
+        f"source: {receipt['source_id']} view: {receipt['view_id']} "
+        f"files: {receipt['item_count']} bytes: {receipt['total_declared_bytes']} "
+        f"file-list: {receipt['file_list_digest']} digest: {receipt['digest']}"
+    )
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Mix-01 acquisition planning helper (offline).")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -787,10 +902,50 @@ def build_parser() -> argparse.ArgumentParser:
     freeze.add_argument("--repo", required=True)
     freeze.add_argument("--revision", required=True)
     freeze.add_argument("--seed", type=int, default=20260918)
-    freeze.add_argument("--files", type=Path, required=True)
+    freeze.add_argument("--files", type=Path, required=False, default=None)
     freeze.add_argument("--sizes", type=Path, default=None)
+    freeze.add_argument(
+        "--listing",
+        type=Path,
+        default=None,
+        help="Frozen listing receipt (from list-hf); replaces --files/--sizes.",
+    )
     freeze.add_argument("--output", type=Path, required=True)
     freeze.set_defaults(func=cmd_freeze)
+    list_hf = sub.add_parser(
+        "list-hf",
+        help="NETWORK: bounded metadata-only Hugging Face tree listing at a pinned revision.",
+    )
+    list_hf.add_argument("--source", required=True)
+    list_hf.add_argument("--view", required=True)
+    list_hf.add_argument("--repo", required=True)
+    list_hf.add_argument("--revision", required=True)
+    list_hf.add_argument("--path-prefix", default="", help="Relative prefix, e.g. data/eng_Latn/.")
+    list_hf.add_argument(
+        "--extension",
+        action="append",
+        default=None,
+        dest="extension",
+        help="Allowlist one extension (repeatable), e.g. --extension .parquet.",
+    )
+    list_hf.add_argument(
+        "--include-glob", action="append", default=None, help="Required glob (repeatable)."
+    )
+    list_hf.add_argument(
+        "--exclude-glob", action="append", default=None, help="Exclusion glob (repeatable)."
+    )
+    list_hf.add_argument("--output", type=Path, required=True)
+    list_hf.add_argument("--max-pages", type=int, default=128)
+    list_hf.add_argument("--max-items", type=int, default=50000)
+    list_hf.add_argument("--max-requests", type=int, default=256)
+    list_hf.add_argument("--max-metadata-bytes", type=int, default=16 * 1024**2)
+    list_hf.add_argument("--max-retries", type=int, default=3)
+    list_hf.add_argument("--timeout", type=float, default=15.0)
+    list_hf.add_argument("--deadline", type=float, default=300.0)
+    list_hf.set_defaults(func=cmd_list_hf)
+    verify = sub.add_parser("verify-listing", help="Offline verification of a listing receipt.")
+    verify.add_argument("--listing", type=Path, required=True)
+    verify.set_defaults(func=cmd_verify_listing)
     estimate = sub.add_parser("estimate", help="Size first-pass bytes from calibration.")
     estimate.add_argument("--quotas", type=Path, required=True)
     estimate.add_argument("--calibration", type=Path, required=True)
