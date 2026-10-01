@@ -1,0 +1,30 @@
+{
+  "planner_row_group_parallel": {
+    "basis": "finepdfs-intrafile-v1: offline matrix on the verified 000_00083.parquet (221 row groups, sha256 4eeb58bc...a38d); output byte-identical to serial at 2, 4 and 8 workers; 4 workers is the stable knee; 3 files x (4 workers + 1 coordinator) fill 15 of 16 logical CPUs; 6 GiB per file covers the measured process-tree peak with headroom for larger row groups",
+    "config": {
+      "lookahead": 4,
+      "memory_bytes": 6442450944,
+      "processing_slots": 15,
+      "version": 1,
+      "workers": 4
+    }
+  },
+  "protected_code_unchanged": {
+    "src/xlm/data/acquisition/source_parquet.py": true,
+    "src/xlm/data/adapters/columns.py": true,
+    "src/xlm/data/adapters/mix01_adapters.py": true,
+    "src/xlm/data/sources/essential_web_local.py": true
+  },
+  "sizing": {
+    "digest": "4709fb8460c1cca6bc54624ce9e8ad3069fea7434c8a98c9c2eb856f835b2a58",
+    "expected": "4709fb8460c1cca6bc54624ce9e8ad3069fea7434c8a98c9c2eb856f835b2a58",
+    "verifies": true
+  },
+  "transport_policy": {
+    "digest": "f3a524116f38ac9b49e55d5a33e81ecbc503074f21af9f3fe5263b02a6e7fc73",
+    "expected": "f3a524116f38ac9b49e55d5a33e81ecbc503074f21af9f3fe5263b02a6e7fc73",
+    "selected_mode": "whole_file_local",
+    "verifies": true,
+    "whole_file_local": true
+  }
+}

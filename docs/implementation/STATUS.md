@@ -1,3 +1,19 @@
+> **FINEPDFS INTRA-FILE PARALLEL (2026-10-01, offline): FINEPDFS PARALLEL
+> PROCESSING READY FOR PRODUCTION PLANNING.** Generic row-group workers decode
+> and adapt one verified local Parquet file. The coordinator replays them in
+> file order through the unchanged bounds, so outputs and first errors equal
+> serial. Owned shard `4eeb58bc...a38d`, 3 interleaved warm-cache repeats:
+> serial 124.0 s, W2 63.5 s, W4 35.9 s (3.45x, 1.46 GB tree RSS), W8 25.0 s
+> (4.96x). 3 files x W4 give 2.06x aggregate throughput over today. All 24
+> runs reproduce `documents.jsonl` `f6d9bd01...0bd`, the ledger, summary and
+> selected-record SHA-256. FinePDFs plans now bind `row_group_parallel` (W4,
+> lookahead 4, 15 slots, 6 GiB); other plans and the frozen policy
+> `f3a52411...` and sizing are unchanged. 324/324 related tests;
+> ruff/format/strict mypy pass. No network, plan, C05, tokenizer, training or
+> push. [Report](reports/FINEPDFS-INTRAFILE-PARALLEL.md). Next: build the
+> FinePDFs production plan for review once its inventory exists; stop at the
+> digest.
+
 > **FINEPDFS WHOLE-FILE POLICY (2026-10-01, offline): FINEPDFS POLICY DIGEST NEEDS
 > OPERATOR REVIEW.** Measured freezes can now bind a receiptless `range_selected`
 > disposition (`range-v1-reach-v1`, `non_comparable`: 64/221 groups refused) next

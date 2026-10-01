@@ -1,0 +1,14 @@
+matrix-c1-w1-r0: 124.1s group=126.6s cores=0.99 rss=0.55GiB docs=f6d9bd018d72
+matrix-c1-w2-r0: 63.4s group=65.8s cores=2.04 rss=0.97GiB docs=f6d9bd018d72
+matrix-c1-w4-r0: 36.2s group=38.6s cores=3.91 rss=1.34GiB docs=f6d9bd018d72
+matrix-c1-w8-r0: 25.1s group=27.6s cores=7.10 rss=2.28GiB docs=f6d9bd018d72
+matrix-c1-w1-r1: 124.0s group=126.4s cores=0.99 rss=0.56GiB docs=f6d9bd018d72
+matrix-c1-w2-r1: 63.6s group=66.1s cores=2.07 rss=0.94GiB docs=f6d9bd018d72
+matrix-c1-w4-r1: 35.9s group=38.4s cores=3.84 rss=1.36GiB docs=f6d9bd018d72
+matrix-c1-w8-r1: 25.0s group=27.4s cores=7.00 rss=2.22GiB docs=f6d9bd018d72
+matrix-c1-w1-r2: 122.7s group=125.1s cores=0.99 rss=0.58GiB docs=f6d9bd018d72
+matrix-c1-w2-r2: 63.5s group=65.9s cores=2.05 rss=0.97GiB docs=f6d9bd018d72
+matrix-c1-w4-r2: 35.9s group=38.3s cores=3.90 rss=1.34GiB docs=f6d9bd018d72
+matrix-c1-w8-r2: 24.8s group=27.3s cores=7.11 rss=2.32GiB docs=f6d9bd018d72
+total 778s
+exit=0

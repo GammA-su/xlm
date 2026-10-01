@@ -51,6 +51,7 @@ from xlm.data.acquisition.source_parquet import (
 )
 from xlm.data.acquisition.source_plan import acquisition_plan, plan_limits
 from xlm.data.acquisition.source_reservations import SourceReservations, reserve_metadata
+from xlm.data.acquisition.source_rowgroups import RowGroupError, check_concurrency
 from xlm.data.acquisition.source_run import (
     Monitor,
     Roots,
@@ -115,6 +116,10 @@ def build_benchmark(
     policy["process_workers"] = min(process_workers, len(files))
     if not 1 <= download_workers <= 16 or not 0 <= process_workers <= 16:
         raise RunError("benchmark concurrency must be 1..16 streams and 0..16 processes")
+    try:
+        check_concurrency(policy["process_workers"], policy)
+    except RowGroupError as exc:
+        raise RunError(str(exc)) from exc
     if retained_scratch_bytes < 0:
         raise RunError("retained scratch allowance must be nonnegative")
     policy["scratch_retained_bytes"] = retained_scratch_bytes

@@ -113,7 +113,13 @@ def test_generic_bound_is_unchanged_and_finepdfs_is_explicit() -> None:
     assert pdfs["max_record_bytes"] == pdfs_limits.max_record_bytes == 32 * MIB
     assert pdfs_limits.max_record_bytes <= pdfs_limits.max_parser_bytes == 32 * MIB
     assert pdfs["max_record_bytes_basis"].startswith("finepdfs-record-v1")
-    assert set(pdfs) - GENERIC_KEYS == {"max_record_bytes_basis"}
+    assert set(pdfs) - GENERIC_KEYS == {
+        "max_record_bytes_basis",
+        "row_group_parallel",
+        "row_group_parallel_basis",
+    }
+    assert pdfs["row_group_parallel"]["workers"] == 4
+    assert pdfs["row_group_parallel_basis"].startswith("finepdfs-intrafile-v1")
     # Another view of the same source keeps the generic bound.
     other = {**FINEPDFS, "view_id": "fra_Latn"}
     assert planner.plan_limits(1, layout(other), mode, other)[0]["max_record_bytes"] == 8 * MIB

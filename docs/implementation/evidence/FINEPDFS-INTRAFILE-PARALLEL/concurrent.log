@@ -1,0 +1,14 @@
+concurrent-c3-w1-r0-i0: 132.9s group=136.4s cores=0.99 rss=0.50GiB docs=f6d9bd018d72
+concurrent-c3-w1-r0-i1: 132.8s group=136.4s cores=0.99 rss=0.57GiB docs=f6d9bd018d72
+concurrent-c3-w1-r0-i2: 133.9s group=136.4s cores=0.99 rss=0.54GiB docs=f6d9bd018d72
+concurrent-c3-w4-r0-i0: 64.9s group=67.5s cores=3.73 rss=1.36GiB docs=f6d9bd018d72
+concurrent-c3-w4-r0-i1: 64.2s group=67.5s cores=3.72 rss=1.37GiB docs=f6d9bd018d72
+concurrent-c3-w4-r0-i2: 64.3s group=67.5s cores=3.75 rss=1.38GiB docs=f6d9bd018d72
+concurrent-c3-w1-r1-i0: 133.3s group=136.8s cores=0.99 rss=0.53GiB docs=f6d9bd018d72
+concurrent-c3-w1-r1-i1: 133.3s group=136.8s cores=0.99 rss=0.53GiB docs=f6d9bd018d72
+concurrent-c3-w1-r1-i2: 134.2s group=136.8s cores=0.99 rss=0.55GiB docs=f6d9bd018d72
+concurrent-c3-w4-r1-i0: 62.9s group=65.5s cores=3.65 rss=1.31GiB docs=f6d9bd018d72
+concurrent-c3-w4-r1-i1: 62.5s group=65.5s cores=3.69 rss=1.33GiB docs=f6d9bd018d72
+concurrent-c3-w4-r1-i2: 62.1s group=65.5s cores=3.70 rss=1.28GiB docs=f6d9bd018d72
+total 411s
+exit=0

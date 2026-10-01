@@ -25,6 +25,7 @@ import pytest
 
 from mix01_source_fixtures import REPOSITORY, REVISION, parquet_bytes, ultrax_row
 from test_source_plan import PIN, inventory, models
+from test_source_rowgroups import crashing_worker
 from xlm.data.acquisition import source_benchmark as bench
 from xlm.data.acquisition import source_local
 from xlm.data.acquisition import source_parquet as sp
@@ -41,6 +42,7 @@ from xlm.data.acquisition.source_dashboard import (
     ObservedScratch,
     Snapshot,
 )
+from xlm.data.acquisition.source_rowgroups import RowGroupError, RowGroupParallel
 
 FILES = 7
 ROWS_PER_FILE = 300
@@ -406,6 +408,85 @@ def test_worker_processes_produce_identical_units(world: World) -> None:
         )
         assert again["documents_sha256"] == receipt["documents_sha256"]
         assert again["selected_records_sha256"] == receipt["selected_records"]["sha256"]
+
+
+def bind_row_group_parallel(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setitem(
+        planner.SOURCE_ROW_GROUP_PARALLEL,
+        (PIN["source_id"], PIN["view_id"]),
+        (
+            RowGroupParallel(workers=2, lookahead=1, processing_slots=6, memory_bytes=32 * 1024**3),
+            "authored test binding",
+        ),
+    )
+
+
+def serial_unit(world: World, record: dict[str, Any], receipt: dict[str, Any]) -> dict[str, Any]:
+    limits = {k: record["limits"][k] for k in runner.PROCESS_LIMIT_KEYS}
+    return source_local.adapt_source_file(
+        world.roots.data_root / receipt["raw"]["path"],
+        world.roots.data_root / "serial" / receipt["file"].replace("/", "_"),
+        source_file=receipt["file"],
+        source_id=PIN["source_id"],
+        view_id=PIN["view_id"],
+        adapter_id=PIN["adapter_id"],
+        repository=PIN["repository"],
+        revision=PIN["revision"],
+        plan_id=record["acquisition_plan"]["plan_id"],
+        plan_hash=record["acquisition_plan"]["plan_hash"],
+        selection_hash=record["acquisition_plan"]["selection_hash"],
+        identity=receipt["identity"],
+        limits=limits,
+    )
+
+
+def test_row_group_parallel_plan_seals_serial_identical_units(
+    world: World, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    bind_row_group_parallel(monkeypatch)
+    record = world.plan(tokens_for_files(world, 3))
+    assert record["limits"]["row_group_parallel"]["workers"] == 2
+    assert record["limits"]["process_workers"] == 2  # 6 slots // (2 workers + 1 coordinator)
+    with pytest.raises(runner.RunError, match="authorized processing slots"):
+        world.run(process_workers=3)
+    # Two file processes, each coordinating its own pool of two row-group workers.
+    report = world.run(process_workers=2)
+    assert report["outcome"]["status"] == "completed"
+    receipts = runner.resume_state(world.roots, record)["receipts"]
+    assert len(receipts) == 3
+    for receipt in receipts:
+        serial = serial_unit(world, record, receipt)
+        assert serial["row_group_workers"] == 1
+        assert receipt["documents_sha256"] == serial["documents_sha256"]
+        assert receipt["selected_records"]["sha256"] == serial["selected_records_sha256"]
+        assert receipt["rejections"]["sha256"] == serial["rejections_sha256"]
+        assert receipt["rejection_counts_by_code"] == serial["rejection_counts_by_code"]
+        assert (receipt["documents"], receipt["rejected"], receipt["canonical_bytes"]) == (
+            serial["documents"],
+            serial["rejected"],
+            serial["canonical_bytes"],
+        )
+    assert runner.verify_plan(world.roots, record, content=True)["units_verified"] == 3
+
+
+def test_row_group_worker_failure_publishes_nothing_and_resumes(
+    world: World, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    bind_row_group_parallel(monkeypatch)
+    record = world.plan(tokens_for_files(world, 2))
+    with monkeypatch.context() as patch:
+        patch.setattr(source_local, "adapt_row_group", crashing_worker)
+        with pytest.raises(RowGroupError, match="terminated abnormally"):
+            world.run()
+    assert runner.resume_state(world.roots, record)["sealed"] == 0
+    assert not list(world.roots.canonical.glob("p*/f*"))
+    world.run()
+    receipts = runner.resume_state(world.roots, record)["receipts"]
+    assert len(receipts) == 2
+    for receipt in receipts:
+        assert (
+            receipt["documents_sha256"] == serial_unit(world, record, receipt)["documents_sha256"]
+        )
 
 
 def test_complete_scratch_download_is_reused(world: World) -> None:

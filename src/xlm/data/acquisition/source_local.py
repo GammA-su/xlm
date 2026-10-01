@@ -11,6 +11,12 @@ identified by the SHA-256 of its uncompressed version-1 JSONL bytes.
 Source-agnostic primitives also serve the frozen Essential-Web campaign.
 Optional processing bounds preserve its call signatures and default behavior;
 an additive compatibility record binds the shared-code repair.
+
+A plan may bind intra-file row-group parallelism
+(:mod:`~xlm.data.acquisition.source_rowgroups`). Workers then decode and adapt
+row groups exactly as the serial loop does, and the coordinator replays their
+rows in file order through the same bounds, writer and digests, so documents,
+ledger, summary and the first raised error equal the serial ones.
 """
 
 from __future__ import annotations
@@ -18,16 +24,25 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import pickle
 import time
 import uuid
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
+from concurrent.futures import Future, ThreadPoolExecutor
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 import pyarrow as pa
+import pyarrow.parquet as pq
 
 from xlm.artifacts.manifest import ensure_plain_path
-from xlm.data.acquisition.records import StreamingJsonlWriter
+from xlm.data.acquisition.projection import (
+    ProjectionRefusal,
+    parquet_field_leaves,
+    resolve_projection,
+)
+from xlm.data.acquisition.records import RecordLimitError, StreamingJsonlWriter
 from xlm.data.acquisition.sampling import discover_layout_local
 from xlm.data.acquisition.source_growth import (
     GrowthLimitError,
@@ -36,10 +51,25 @@ from xlm.data.acquisition.source_growth import (
     bounded_json,
 )
 from xlm.data.acquisition.source_parquet import (
+    DECODE_BATCH_ROWS,
     check_parquet_magic,
     file_sha256,
+    located_record,
     promote_source,
     selected_payloads,
+)
+from xlm.data.acquisition.source_rowgroups import (
+    DOCUMENT,
+    REJECTION,
+    GroupResult,
+    GroupTask,
+    RowGroupError,
+    RowGroupParallel,
+    RowGroupPool,
+    SourceStat,
+    check_adapter,
+    configured,
+    peak_rss,
 )
 from xlm.data.adapters.columns import columns_for
 from xlm.data.adapters.mix01_adapters import ADAPTERS_BY_ID, RecordRejectedError
@@ -97,6 +127,297 @@ def _write_bytes(path: Path, data: bytes) -> None:
         os.fsync(stream.fileno())
 
 
+@dataclass
+class _Tally:
+    """Running totals of one adaptation, in file row order."""
+
+    rows: int = 0
+    accepted: int = 0
+    canonical_bytes: int = 0
+    raw_bytes: int = 0
+    max_record: int = 0
+    decoded: int = 0
+    raw_digest: Any = field(default_factory=hashlib.sha256)
+    ledger: bytearray = field(default_factory=bytearray)
+    codes: dict[str, int] = field(default_factory=dict)
+
+
+def _decoded_error(source_file: str) -> RecordLimitError:
+    return RecordLimitError(f"'{source_file}' exceeds its decoded byte bound")
+
+
+def adapt_row_group(task: GroupTask) -> GroupResult:
+    """Worker entry point: decode and adapt one whole row group, writing nothing.
+
+    The decode, serialization, bounds and adapter calls are those of
+    :func:`selected_payloads` and the serial loop of :func:`adapt_source_file`
+    for the same rows; only totals that span the file (decoded, canonical and
+    ledger bytes) are left to the coordinator's ordered replay.
+    """
+    cpu_started = time.process_time()
+    result = GroupResult(group=task.group, pid=os.getpid())
+    payloads: list[bytes] = []
+    documents: list[bytes] = []
+    rejections: list[bytes] = []
+    start, stop = task.row_range
+    try:
+        task.source.check()
+        parquet = pq.ParquetFile(
+            task.source.path,
+            pre_buffer=False,
+            thrift_string_size_limit=task.max_parser_bytes,
+            thrift_container_size_limit=task.max_parser_bytes,
+        )
+        try:
+            if int(parquet.metadata.row_group(task.group).num_rows) != task.rows:
+                raise RowGroupError(f"row group {task.group} differs from the planned layout")
+            factory: Any = ADAPTERS_BY_ID[task.adapter_id]
+            adapter = factory()
+            decoded = local = 0
+            for batch in parquet.iter_batches(
+                batch_size=DECODE_BATCH_ROWS,
+                row_groups=[task.group],
+                columns=list(task.logical),
+                use_threads=False,
+            ):
+                result.batches.append((int(batch.nbytes), 0))
+                decoded += int(batch.nbytes)
+                if decoded > task.max_decoded_bytes:
+                    raise _decoded_error(task.source_file)
+                low = max(0, start - task.base - local)
+                high = min(batch.num_rows, stop - task.base - local)
+                if low < high:
+                    for offset, value in enumerate(
+                        batch.slice(low, high - low).to_pylist(), start=low
+                    ):
+                        row_index = task.base + local + offset
+                        raw, payload = located_record(
+                            value,
+                            {
+                                "row_index": row_index,
+                                "row_group": task.group,
+                                "row_in_group": local + offset,
+                                "format": "parquet",
+                                "etag": task.etag,
+                                "original_record_hash_convention": (
+                                    "canonical JSON serialization, not compressed bytes"
+                                ),
+                                **task.locator,
+                                "source_file": task.source_file,
+                            },
+                        )
+                        if len(raw) > task.max_record_bytes:
+                            raise RecordLimitError(
+                                f"Parquet record byte bound exceeded: row={row_index} "
+                                f"encoded_bytes={len(raw)} limit={task.max_record_bytes}"
+                            )
+                        if len(payload) > task.max_record_bytes + 8192:
+                            raise RecordLimitError(
+                                "selected record plus locator exceeds bounded serialization"
+                            )
+                        payloads.append(payload)
+                        result.max_payload = max(result.max_payload, len(payload))
+                        record = json.loads(payload)
+                        try:
+                            document = adapter.adapt(
+                                record,
+                                source_file=task.source_file,
+                                source_row=row_index,
+                                source_revision=task.revision,
+                            )
+                        except RecordRejectedError as exc:
+                            line = (
+                                serialize_rejection(
+                                    build_rejection_record(
+                                        input_line=row_index - start + 1,
+                                        source_id=task.source_id,
+                                        source_revision=task.revision,
+                                        source_file=task.source_file,
+                                        source_row=row_index,
+                                        adapter_id=task.adapter_id,
+                                        error=exc,
+                                        original_record_sha256=record["_xlm_acquisition"][
+                                            "original_record_sha256"
+                                        ],
+                                    )
+                                ).encode("utf-8")
+                                + b"\n"
+                            )
+                            rejections.append(line)
+                            result.rejection_lengths.append(len(line))
+                            result.rejection_codes.append(type(exc).__name__)
+                            result.kinds.append(REJECTION)
+                        else:
+                            if (
+                                document.source_id != task.source_id
+                                or document.source_revision != task.revision
+                            ):
+                                raise SourceAdaptError(
+                                    "adapter produced a document of another source or revision"
+                                )
+                            line = serialize_document(document).encode("utf-8") + b"\n"
+                            documents.append(line)
+                            result.document_lengths.append(len(line))
+                            result.document_text_bytes.append(document.utf8_byte_count)
+                            result.kinds.append(DOCUMENT)
+                        result.batches[-1] = (result.batches[-1][0], result.batches[-1][1] + 1)
+                local += batch.num_rows
+                if task.base + local >= stop:
+                    break
+        finally:
+            parquet.close()
+    except Exception as exc:
+        result.error = _portable(exc)
+    result.payloads = b"".join(payloads)
+    result.documents = b"".join(documents)
+    result.rejections = b"".join(rejections)
+    result.cpu_seconds = time.process_time() - cpu_started
+    result.peak_rss_bytes = peak_rss()
+    return result
+
+
+def _portable(error: Exception) -> BaseException:
+    """The worker's own exception when it survives a process boundary, else a summary."""
+    try:
+        restored = pickle.loads(pickle.dumps(error))
+    except Exception:
+        return RowGroupError(f"{type(error).__name__}: {error}")
+    return restored if isinstance(restored, BaseException) else RowGroupError(str(error))
+
+
+def group_tasks(
+    path: Path,
+    *,
+    source_file: str,
+    source_id: str,
+    revision: str,
+    adapter_id: str,
+    locator: Mapping[str, Any],
+    etag: str,
+    columns: tuple[str, ...],
+    limits: Mapping[str, Any],
+    row_range: tuple[int, int],
+) -> list[GroupTask]:
+    """Deterministic row-group partition of ``row_range``, in file order.
+
+    Projection and range refusals are the ones :func:`selected_payloads` raises.
+    """
+    max_parser = int(limits["max_parser_bytes"])
+    source = SourceStat.of(path)
+    parquet = pq.ParquetFile(
+        path,
+        pre_buffer=False,
+        thrift_string_size_limit=max_parser,
+        thrift_container_size_limit=max_parser,
+    )
+    try:
+        try:
+            logical = tuple(
+                resolve_projection(parquet_field_leaves(parquet), columns).logical_fields
+            )
+        except ProjectionRefusal as exc:
+            raise RecordLimitError(f"projection refused for '{source_file}': {exc}") from exc
+        start, stop = row_range
+        if not 0 <= start < stop <= int(parquet.metadata.num_rows):
+            raise ValueError("selected row range extends beyond Parquet corpus")
+        tasks: list[GroupTask] = []
+        base = 0
+        for group in range(parquet.num_row_groups):
+            rows = int(parquet.metadata.row_group(group).num_rows)
+            if base + rows > start and base < stop:
+                tasks.append(
+                    GroupTask(
+                        source=source,
+                        group=group,
+                        base=base,
+                        rows=rows,
+                        row_range=(start, stop),
+                        logical=logical,
+                        source_file=source_file,
+                        source_id=source_id,
+                        revision=revision,
+                        adapter_id=adapter_id,
+                        locator=dict(locator),
+                        etag=etag,
+                        max_record_bytes=int(limits["max_record_bytes"]),
+                        max_parser_bytes=max_parser,
+                        max_decoded_bytes=int(limits["max_decoded_bytes_per_file"]),
+                    )
+                )
+            base += rows
+    finally:
+        parquet.close()
+    return tasks
+
+
+def _replay(
+    result: GroupResult,
+    tally: _Tally,
+    *,
+    source_file: str,
+    limits: Mapping[str, Any],
+    growth: ProcessingGrowth | None,
+    budget: OutputBudget | None,
+    documents: StreamingJsonlWriter,
+    progress: Callable[[], None],
+) -> bytes:
+    """Apply one row group's rows in order with the serial loop's file-wide checks.
+
+    Every bound is checked at the row where the serial loop checks it, so the
+    first raised error is the serial one. The group's documents are then
+    written as one block: the bytes and digest are those of per-line writes,
+    and the budget's byte arithmetic was already checked per line (the
+    physical free-space check runs once for the block). Returns the payload
+    bytes still to be hashed, in order, by the caller.
+    """
+    max_decoded = int(limits["max_decoded_bytes_per_file"])
+    ledger_bound = int(limits["max_ledger_bytes"])
+    row = document = rejection = 0
+    document_offset = rejection_offset = 0
+    for decoded, completed in result.batches:
+        tally.decoded += decoded
+        if tally.decoded > max_decoded:
+            raise _decoded_error(source_file)
+        for _ in range(completed):
+            kind = result.kinds[row]
+            row += 1
+            tally.rows += 1
+            if kind == REJECTION:
+                length = result.rejection_lengths[rejection]
+                if len(tally.ledger) + length > ledger_bound:
+                    raise SourceAdaptError(f"{source_file}: rejection ledger exceeds its bound")
+                tally.ledger += result.rejections[rejection_offset : rejection_offset + length]
+                code = result.rejection_codes[rejection]
+                tally.codes[code] = tally.codes.get(code, 0) + 1
+                rejection += 1
+                rejection_offset += length
+                progress()
+                continue
+            text_bytes = result.document_text_bytes[document]
+            if growth is not None and tally.canonical_bytes + text_bytes > int(
+                limits["max_canonical_bytes_per_file"]
+            ):
+                raise GrowthLimitError("canonical text exceeds its byte ceiling")
+            length = result.document_lengths[document]
+            if budget is not None and budget.used + document_offset + length > budget.limit:
+                # Raises exactly the per-line write's error; nothing was charged yet.
+                budget.charge(document_offset + length)
+            document += 1
+            document_offset += length
+            tally.accepted += 1
+            tally.canonical_bytes += text_bytes
+            progress()
+    if row != len(result.kinds) or document_offset != len(result.documents):
+        raise RowGroupError(f"row group {result.group} events do not reconcile")
+    if result.error is not None:
+        raise result.error
+    if result.documents:
+        documents.write_raw(result.documents)
+    tally.raw_bytes += len(result.payloads)
+    tally.max_record = max(tally.max_record, result.max_payload)
+    return result.payloads
+
+
 def adapt_source_file(
     path: Path,
     output_dir: Path,
@@ -140,6 +461,12 @@ def adapt_source_file(
     )
     if budget is not None:
         budget.charge(reserved_tail_bytes)
+    parallel = configured(limits)
+    if parallel is not None:
+        try:
+            check_adapter(adapter_id)
+        except RowGroupError as exc:
+            raise SourceAdaptError(str(exc)) from exc
     layout = check_layout(path, source_file, adapter_id, view_id, limits)
     start, stop = row_range or (0, int(layout["rows"]))
     output_dir.mkdir(parents=True)
@@ -148,27 +475,31 @@ def adapt_source_file(
     documents = StreamingJsonlWriter(
         output_dir / DOCUMENTS_FILENAME, before_write=None if budget is None else budget.charge
     )
-    ledger = bytearray()
-    codes: dict[str, int] = {}
-    raw_digest = hashlib.sha256()
-    raw_bytes = rows = accepted = canonical_bytes = max_record = 0
+    tally = _Tally()
     counters: dict[str, int] = {}
     ledger_bound = int(limits["max_ledger_bytes"])
     last = 0.0
+    locator = {
+        "source_id": source_id,
+        "repository": repository,
+        "revision": revision,
+        "selection_hash": selection_hash,
+    }
+    pool_stats: dict[str, Any] | None = None
 
     def progress() -> None:
         nonlocal last
         if progress_path is None:
             return
         now = time.monotonic()
-        if now - last < 1 and rows != stop - start:
+        if now - last < 1 and tally.rows != stop - start:
             return
         snapshot = {
-            "rows": rows,
+            "rows": tally.rows,
             "total": stop - start,
-            "documents": accepted,
-            "canonical_bytes": canonical_bytes,
-            "rejected": rows - accepted,
+            "documents": tally.accepted,
+            "canonical_bytes": tally.canonical_bytes,
+            "rejected": tally.rows - tally.accepted,
         }
         progress_path.parent.mkdir(parents=True, exist_ok=True)
         if publish_progress(
@@ -178,74 +509,112 @@ def adapt_source_file(
 
     progress()
     try:
-        for row_index, payload in selected_payloads(
-            path,
-            source_file=source_file,
-            locator={
-                "source_id": source_id,
-                "repository": repository,
-                "revision": revision,
-                "selection_hash": selection_hash,
-            },
-            etag=str(identity["etag"]),
-            columns=columns_for(adapter_id, view_id),
-            max_record_bytes=int(limits["max_record_bytes"]),
-            max_parser_bytes=int(limits["max_parser_bytes"]),
-            max_decoded_bytes=int(limits["max_decoded_bytes_per_file"]),
-            row_range=(start, stop),
-            counters=counters,
-        ):
-            raw_digest.update(payload)
-            raw_bytes += len(payload)
-            max_record = max(max_record, len(payload))
-            rows += 1
-            record = json.loads(payload)
-            try:
-                document = adapter.adapt(
-                    record, source_file=source_file, source_row=row_index, source_revision=revision
-                )
-            except RecordRejectedError as exc:
-                line = serialize_rejection(
-                    build_rejection_record(
-                        input_line=rows,
-                        source_id=source_id,
-                        source_revision=revision,
+        tasks = (
+            []
+            if parallel is None
+            else group_tasks(
+                path,
+                source_file=source_file,
+                source_id=source_id,
+                revision=revision,
+                adapter_id=adapter_id,
+                locator=locator,
+                etag=str(identity["etag"]),
+                columns=tuple(columns_for(adapter_id, view_id)),
+                limits=limits,
+                row_range=(start, stop),
+            )
+        )
+        if parallel is not None and len(tasks) > 1:
+            pool_stats = _adapt_parallel(
+                parallel,
+                tasks,
+                tally,
+                source_file=source_file,
+                limits=limits,
+                growth=growth,
+                budget=budget,
+                documents=documents,
+                progress=progress,
+            )
+        else:
+            for row_index, payload in selected_payloads(
+                path,
+                source_file=source_file,
+                locator=locator,
+                etag=str(identity["etag"]),
+                columns=columns_for(adapter_id, view_id),
+                max_record_bytes=int(limits["max_record_bytes"]),
+                max_parser_bytes=int(limits["max_parser_bytes"]),
+                max_decoded_bytes=int(limits["max_decoded_bytes_per_file"]),
+                row_range=(start, stop),
+                counters=counters,
+            ):
+                tally.raw_digest.update(payload)
+                tally.raw_bytes += len(payload)
+                tally.max_record = max(tally.max_record, len(payload))
+                tally.rows += 1
+                record = json.loads(payload)
+                try:
+                    document = adapter.adapt(
+                        record,
                         source_file=source_file,
                         source_row=row_index,
-                        adapter_id=adapter_id,
-                        error=exc,
-                        original_record_sha256=record["_xlm_acquisition"]["original_record_sha256"],
+                        source_revision=revision,
                     )
-                )
-                encoded = line.encode("utf-8") + b"\n"
-                if len(ledger) + len(encoded) > ledger_bound:
+                except RecordRejectedError as exc:
+                    line = serialize_rejection(
+                        build_rejection_record(
+                            input_line=tally.rows,
+                            source_id=source_id,
+                            source_revision=revision,
+                            source_file=source_file,
+                            source_row=row_index,
+                            adapter_id=adapter_id,
+                            error=exc,
+                            original_record_sha256=record["_xlm_acquisition"][
+                                "original_record_sha256"
+                            ],
+                        )
+                    )
+                    encoded = line.encode("utf-8") + b"\n"
+                    if len(tally.ledger) + len(encoded) > ledger_bound:
+                        raise SourceAdaptError(
+                            f"{source_file}: rejection ledger exceeds its bound"
+                        ) from None
+                    tally.ledger += encoded
+                    tally.codes[type(exc).__name__] = tally.codes.get(type(exc).__name__, 0) + 1
+                    progress()
+                    continue
+                if document.source_id != source_id or document.source_revision != revision:
                     raise SourceAdaptError(
-                        f"{source_file}: rejection ledger exceeds its bound"
-                    ) from None
-                ledger += encoded
-                codes[type(exc).__name__] = codes.get(type(exc).__name__, 0) + 1
+                        "adapter produced a document of another source or revision"
+                    )
+                if growth is not None and tally.canonical_bytes + document.utf8_byte_count > int(
+                    limits["max_canonical_bytes_per_file"]
+                ):
+                    raise GrowthLimitError("canonical text exceeds its byte ceiling")
+                documents.write_line(serialize_document(document).encode("utf-8") + b"\n")
+                tally.accepted += 1
+                tally.canonical_bytes += document.utf8_byte_count
                 progress()
-                continue
-            if document.source_id != source_id or document.source_revision != revision:
-                raise SourceAdaptError("adapter produced a document of another source or revision")
-            if growth is not None and canonical_bytes + document.utf8_byte_count > int(
-                limits["max_canonical_bytes_per_file"]
-            ):
-                raise GrowthLimitError("canonical text exceeds its byte ceiling")
-            documents.write_line(serialize_document(document).encode("utf-8") + b"\n")
-            accepted += 1
-            canonical_bytes += document.utf8_byte_count
-            progress()
+            tally.decoded = counters.get("decoded_bytes", 0)
     except BaseException:
         try:
             documents.close()
         except OSError:
             pass
         raise
+    rows, accepted, canonical_bytes, codes = (
+        tally.rows,
+        tally.accepted,
+        tally.canonical_bytes,
+        tally.codes,
+    )
     if rows != stop - start:
         raise SourceAdaptError(f"{source_file}: decoded rows differ from the footer row count")
     documents.close()
-    data = bytes(ledger)
+    data = bytes(tally.ledger)
     compressed = compress_ledger(data) if data else b""
     ledger_sha256 = hashlib.sha256(data).hexdigest()
     if budget is None:
@@ -305,10 +674,10 @@ def adapt_source_file(
         "projected_compressed_bytes": sum(
             int(group["projected_compressed_bytes"]) for group in layout["groups"]
         ),
-        "selected_records_sha256": raw_digest.hexdigest(),
-        "selected_records_bytes": raw_bytes,
-        "max_selected_record_bytes": max_record,
-        "decoded_bytes": counters.get("decoded_bytes", 0),
+        "selected_records_sha256": tally.raw_digest.hexdigest(),
+        "selected_records_bytes": tally.raw_bytes,
+        "max_selected_record_bytes": tally.max_record,
+        "decoded_bytes": tally.decoded,
         "documents": accepted,
         "rejected": rows - accepted,
         "rejection_counts_by_code": dict(sorted(codes.items())),
@@ -325,8 +694,56 @@ def adapt_source_file(
         + len(summary_data)
         + reserved_tail_bytes,
         "process_seconds": time.monotonic() - started,
-        "process_cpu_seconds": time.process_time() - cpu_started,
+        # Coordinator plus row-group worker CPU: all of this file's processing.
+        "process_cpu_seconds": time.process_time()
+        - cpu_started
+        + (0.0 if pool_stats is None else float(pool_stats["worker_cpu_seconds"])),
+        "row_group_workers": 1 if pool_stats is None else int(pool_stats["workers"]),
+        "row_group_pool": pool_stats,
     }
+
+
+def _adapt_parallel(
+    config: RowGroupParallel,
+    tasks: list[GroupTask],
+    tally: _Tally,
+    *,
+    source_file: str,
+    limits: Mapping[str, Any],
+    growth: ProcessingGrowth | None,
+    budget: OutputBudget | None,
+    documents: StreamingJsonlWriter,
+    progress: Callable[[], None],
+) -> dict[str, Any]:
+    """Row groups in worker processes, merged strictly in file order.
+
+    One hashing thread digests the selected-record bytes group by group in
+    file order (at most one group waits for it), overlapping the next replay.
+    """
+    hashed: Future[None] | None = None
+    with ThreadPoolExecutor(1, thread_name_prefix="xlm-rowgroup-hash") as hasher:
+        try:
+            with RowGroupPool(config, tasks, adapt_row_group) as pool:
+                for result in pool.results():
+                    payloads = _replay(
+                        result,
+                        tally,
+                        source_file=source_file,
+                        limits=limits,
+                        growth=growth,
+                        budget=budget,
+                        documents=documents,
+                        progress=progress,
+                    )
+                    if hashed is not None:
+                        hashed.result()
+                    hashed = hasher.submit(tally.raw_digest.update, payloads)
+                    pool.sample()
+        finally:
+            if hashed is not None:
+                hashed.result()
+    tasks[0].source.check()
+    return pool.stats.as_dict()
 
 
 def process_source_unit(job: Mapping[str, Any]) -> dict[str, Any]:

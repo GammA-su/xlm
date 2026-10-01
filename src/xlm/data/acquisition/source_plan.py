@@ -35,6 +35,7 @@ from xlm.data.acquisition.plan import (
     plan_requires_production_admission,
 )
 from xlm.data.acquisition.source_growth import ProcessingGrowth
+from xlm.data.acquisition.source_rowgroups import RowGroupError, RowGroupParallel, check_adapter
 from xlm.data.acquisition.transport_policy import (
     LOCAL_MODES,
     SUBJECT_KEYS,
@@ -79,6 +80,19 @@ SOURCE_RECORD_BYTES: dict[tuple[str, str], tuple[int, str]] = {
         "(220,407 rows, sha256 4eeb58bc...a38d) found a 24,828,818-byte largest "
         "projected row and 3 rows above the generic 8 MiB; the bound is the existing "
         "32 MiB parser ceiling, about 1.35x that maximum",
+    ),
+}
+#: Source views whose plans bind intra-file row-group parallelism, each with its
+#: evidence. Like record bounds, an entry enters the policy and so the plan
+#: digest; views without one keep serial processing and their exact plans.
+SOURCE_ROW_GROUP_PARALLEL: dict[tuple[str, str], tuple[RowGroupParallel, str]] = {
+    ("finepdfs_edu", "eng_Latn"): (
+        RowGroupParallel(workers=4, lookahead=4, processing_slots=15, memory_bytes=6 * GIB),
+        "finepdfs-intrafile-v1: offline matrix on the verified 000_00083.parquet "
+        "(221 row groups, sha256 4eeb58bc...a38d); output byte-identical to serial at 2, 4 and "
+        "8 workers; 4 workers is the stable knee; 3 files x (4 workers + 1 coordinator) fill "
+        "15 of 16 logical CPUs; 6 GiB per file covers the measured process-tree peak with "
+        "headroom for larger row groups",
     ),
 }
 MAX_LEDGER_BYTES = 512 * MIB
@@ -354,7 +368,15 @@ def plan_limits(
     files: int, layout: SourceLayout, mode: TransportMode, pin: Mapping[str, str]
 ) -> tuple[dict[str, Any], AcquisitionLimits]:
     """Every resource ceiling of one plan, derived by the versioned planner rules."""
-    concurrency = CONCURRENCY[mode]
+    concurrency = dict(CONCURRENCY[mode])
+    parallel = SOURCE_ROW_GROUP_PARALLEL.get((pin["source_id"], pin["view_id"]))
+    if parallel is not None:
+        try:
+            check_adapter(pin["adapter_id"])
+        except RowGroupError as exc:
+            raise PlanError(str(exc)) from exc
+        # File processes share the global slot budget with their row-group workers.
+        concurrency["process"] = min(concurrency["process"], parallel[0].max_process_workers())
     record_bytes, record_basis = record_bound(pin["source_id"], pin["view_id"])
     max_file = math.ceil(layout.file_bytes * FILE_BYTES_TOLERANCE / MIB) * MIB
     max_rows = math.ceil(layout.rows_per_file * ROWS_TOLERANCE)
@@ -402,6 +424,9 @@ def plan_limits(
     if record_basis is not None:
         # Only an overridden source carries this key: generic plans keep their digests.
         policy["max_record_bytes_basis"] = record_basis
+    if parallel is not None:
+        policy["row_group_parallel"] = parallel[0].model_dump()
+        policy["row_group_parallel_basis"] = parallel[1]
     limits = AcquisitionLimits(
         max_transferred_bytes=math.ceil(files * layout.file_bytes * TRANSFER_FACTOR / MIB) * MIB,
         max_decompressed_bytes=files * policy["max_decoded_bytes_per_file"],

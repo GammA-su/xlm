@@ -176,6 +176,28 @@ requirement: `SUFFICIENT`, `TOP_UP` (run `plan` again: a new plan at the next
 cursor) or `INCOMPLETE` (resume, never top up). `seal` writes the write-once
 first-pass seal of the source.
 
+### Intra-file row-group parallelism
+
+A view listed in `source_plan.SOURCE_ROW_GROUP_PARALLEL` gets a
+`row_group_parallel` limit in its plan (part of the plan digest). Currently
+only `finepdfs_edu/eng_Latn` is listed: 4 workers, lookahead 4, 15 slots,
+6 GiB per file. Each file process then coordinates its own pool of row-group
+workers. They read the same verified local Parquet file, write nothing, and
+the coordinator replays their rows strictly in file order through the
+unchanged bounds. Documents, ledger and summary are byte-identical to serial
+processing, and so is the first error raised.
+
+- `plan` derives `process_workers <= slots // (workers + 1)`. `run
+  --process-workers` may lower it, but `process_workers x (workers + 1)` may
+  never exceed the slots.
+- The sampled process-tree memory ceiling per file is checked every 0.25 s;
+  exceeding it fails the unit with `ProcessingMemoryError`.
+- A worker crash fails the unit with `RowGroupError`. Nothing is published,
+  and a rerun redoes the unit locally (`local_processing_retry`).
+- Views without an entry, and their existing plans (UltraX p01), are unchanged.
+
+Evidence: [FinePDFs intra-file report](../implementation/reports/FINEPDFS-INTRAFILE-PARALLEL.md).
+
 ## Files
 
 `G:\XLM\plans\<key>\` (plans, authorizations, policy, benchmarks, performance

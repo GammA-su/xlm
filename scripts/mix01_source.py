@@ -575,6 +575,14 @@ def cmd_plan(args: argparse.Namespace) -> int:
     print(f"canonical ceiling   {limits['max_canonical_bytes_per_file'] * files:,} B")
     streams, processes = limits["download_workers"], limits["process_workers"]
     print(f"concurrency         {streams} streams, {processes} processes")
+    parallel = limits.get("row_group_parallel")
+    if parallel is not None:
+        print(
+            f"intra-file          {parallel['workers']} row-group workers + 1 coordinator per "
+            f"file (lookahead {parallel['lookahead']}); {processes} x "
+            f"{parallel['workers'] + 1} <= {parallel['processing_slots']} slots; "
+            f"{parallel['memory_bytes']:,} B sampled memory ceiling per file"
+        )
     print(f"PLAN DIGEST: {record['digest']}")
     print("STOP - USER MUST REVIEW PLAN DIGEST BEFORE AUTHORIZATION")
     return 0

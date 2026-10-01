@@ -85,6 +85,7 @@ from xlm.data.acquisition.source_parquet import (
 )
 from xlm.data.acquisition.source_plan import check_plan, minted_from_record
 from xlm.data.acquisition.source_reservations import SourceReservations, reserve_metadata
+from xlm.data.acquisition.source_rowgroups import RowGroupError, check_concurrency
 from xlm.data.adapters.rejections import DOCUMENTS_FILENAME, SUMMARY_FILENAME
 from xlm.data.evidence_v2 import canonical
 from xlm.data.sources import essential_web_local as pipeline
@@ -441,8 +442,9 @@ def prepare_units(
     if entries and "processing_growth" not in record["limits"]:
         raise RunError("unsealed source work needs a new plan with bounded processing growth")
     limits = {key: record["limits"][key] for key in PROCESS_LIMIT_KEYS}
-    if "processing_growth" in record["limits"]:
-        limits["processing_growth"] = record["limits"]["processing_growth"]
+    for optional in ("processing_growth", "row_group_parallel"):
+        if optional in record["limits"]:
+            limits[optional] = record["limits"][optional]
     units: list[Unit] = []
     ranks: dict[str, int] = {}
     charged = 0
@@ -1039,6 +1041,10 @@ def run_plan(
         raise RunError("requested workers exceed the plan's authorized concurrency ceiling")
     if downloads > plan.limits.max_workers:
         raise RunError("requested download workers exceed the authorized plan")
+    try:
+        check_concurrency(processes, limits)
+    except RowGroupError as exc:
+        raise RunError(str(exc)) from exc
     roots.plans.mkdir(parents=True, exist_ok=True)
     try:
         with FileLock(str(roots.plans / "run.lock"), timeout=1):
