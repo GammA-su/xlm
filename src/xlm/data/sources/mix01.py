@@ -284,19 +284,51 @@ class ComponentStatus:
         }
 
 
+def component_admission_views(view: Mix01ViewSpec) -> list[str]:
+    """Store view ids a component needs admitted: its observed configs, else its component id.
+
+    This is the naming every admission path uses (``xlm data probe --view``):
+    the upstream config for config-addressed sources (UltraX, FinePDFs, both
+    IFM subsets) and the component id for the Essential-Web selector views.
+    """
+    return list(view.observed_configs) or [view.component_id]
+
+
+@dataclass(frozen=True)
+class ComponentAdmission:
+    """Store admission of one component: every view it needs, each re-evaluated."""
+
+    views: Mapping[str, str]
+
+    @property
+    def state(self) -> str:
+        states = set(self.views.values())
+        if states == {"admitted"}:
+            return "admitted"
+        for state in ("blocked", "pending_review", "unadmitted"):
+            if state in states:
+                return state
+        return "unadmitted"
+
+
 def mix01_status(
     registry: Mix01ViewRegistry,
     admission: Mapping[str, str] | None = None,
     availability: Mapping[str, int] | None = None,
+    component_admission: Mapping[str, ComponentAdmission] | None = None,
 ) -> list[ComponentStatus]:
     """Report READY / BLOCKED / NOT LIVE-VERIFIED for every mix01 view.
 
     ``admission`` maps source_id to one of admitted/pending_review/unadmitted/blocked.
+    ``component_admission`` maps component_id to the per-view store admission and,
+    where present, takes precedence: admission is recorded per (source, view), so a
+    source-level state cannot describe a component such as one Essential-Web view.
     ``availability`` maps component_id to available unique valid targets. Absent maps
     mean "no evidence", which never reads as ready.
     """
     admission = admission or {}
     availability = availability or {}
+    component_admission = component_admission or {}
     report: list[ComponentStatus] = []
 
     for view in registry.views:
@@ -317,7 +349,11 @@ def mix01_status(
             )
             continue
 
-        state = admission.get(view.source_id, "unadmitted")
+        stored = component_admission.get(view.component_id)
+        state = stored.state if stored is not None else admission.get(view.source_id, "unadmitted")
+        if stored is not None and state != "admitted":
+            detail = ", ".join(f"{name}={value}" for name, value in sorted(stored.views.items()))
+            reasons.append(f"store admission of '{view.source_id}' views: {detail}.")
         if state == "blocked":
             readiness = ComponentReadiness.BLOCKED
             reasons.append(f"source '{view.source_id}' is blocked by admission review.")
@@ -361,6 +397,7 @@ def gate_preset_for_run(
     registry: Mix01ViewRegistry,
     admission: Mapping[str, str] | None = None,
     availability: Mapping[str, int] | None = None,
+    component_admission: Mapping[str, ComponentAdmission] | None = None,
 ) -> list[ComponentStatus]:
     """Refuse to run a preset unless every named component is READY.
 
@@ -371,7 +408,7 @@ def gate_preset_for_run(
     """
     validate_preset_weights_exact(preset)
     validate_preset_components(preset, registry)
-    report = mix01_status(registry, admission, availability)
+    report = mix01_status(registry, admission, availability, component_admission)
 
     blocking = [
         s

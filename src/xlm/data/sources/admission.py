@@ -7,9 +7,9 @@ import json
 from datetime import UTC, datetime
 from enum import StrEnum
 from pathlib import Path
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, Final, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from xlm.artifacts.store import ArtifactStore
 from xlm.data.acquisition.plan import AcquisitionPlan, AuthorizationRequiredError
@@ -36,19 +36,42 @@ class AdmissionStatus(StrEnum):
 
 ReviewDigest = Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
 
+#: The Essential-Web amendment (three Essential views only).
+ESSENTIAL_RISK_CONTRACT: Final = "c04-benchmark-risk-v2"
+#: The same mitigation extended to every other Mix-01 source (CONTRACTS.md C04).
+MIX01_RISK_CONTRACT: Final = "c04-benchmark-risk-v3"
+ESSENTIAL_MITIGATION_SCOPE: Final = "eventually_frozen_essential_mix01_canonical_training_pool"
+MIX01_MITIGATION_SCOPE: Final = "eventually_frozen_mix01_canonical_training_pool"
+#: Review files every mitigated non-Essential decision binds by SHA-256.
+MIX01_REVIEW_NAMES = ("source_rights", "attribution", "benchmark_risk", "external_evidence")
+RESOURCE_CONTRACT: Final = "C04/C13; exact limits and matching authorization required"
+
 
 class ContaminationMitigation(BaseModel):
     """Data-only C05 obligation, not an executed exclusion receipt."""
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    version: Literal["c04-benchmark-risk-v2"]
+    version: Literal["c04-benchmark-risk-v2", "c04-benchmark-risk-v3"]
     mechanism: Literal["xlm.data.exclusion"]
-    scope: Literal["eventually_frozen_essential_mix01_canonical_training_pool"]
+    scope: Literal[
+        "eventually_frozen_essential_mix01_canonical_training_pool",
+        "eventually_frozen_mix01_canonical_training_pool",
+    ]
     benchmarks: tuple[Literal["BLiMP"], Literal["ARC-Easy"], Literal["HellaSwag"], Literal["PIQA"]]
     before_training: Literal[True]
     before_official_benchmark_claims: Literal[True]
     receipt_verifier: Literal["xlm.data.exclusion.receipt.verify_benchmark_claim"]
+
+    @model_validator(mode="after")
+    def scope_matches_version(self) -> ContaminationMitigation:
+        expected = {
+            ESSENTIAL_RISK_CONTRACT: ESSENTIAL_MITIGATION_SCOPE,
+            MIX01_RISK_CONTRACT: MIX01_MITIGATION_SCOPE,
+        }[self.version]
+        if self.scope != expected:
+            raise ValueError(f"mitigation {self.version} must bind scope {expected}")
+        return self
 
 
 def essential_contamination_mitigation() -> ContaminationMitigation:
@@ -64,12 +87,25 @@ def essential_contamination_mitigation() -> ContaminationMitigation:
     )
 
 
+def mix01_contamination_mitigation() -> ContaminationMitigation:
+    """The same C05 obligation for any other Mix-01 source; never a screening result."""
+    return ContaminationMitigation(
+        version="c04-benchmark-risk-v3",
+        mechanism="xlm.data.exclusion",
+        scope="eventually_frozen_mix01_canonical_training_pool",
+        benchmarks=("BLiMP", "ARC-Easy", "HellaSwag", "PIQA"),
+        before_training=True,
+        before_official_benchmark_claims=True,
+        receipt_verifier="xlm.data.exclusion.receipt.verify_benchmark_claim",
+    )
+
+
 class AdmissionDecision(BaseModel):
     """Auditable record of operator review and admission decisions."""
 
     model_config = ConfigDict(extra="forbid", validate_assignment=True)
 
-    contract_version: Literal["1", "c04-benchmark-risk-v2"] = "1"
+    contract_version: Literal["1", "c04-benchmark-risk-v2", "c04-benchmark-risk-v3"] = "1"
     source_id: str
     view_id: str = "default"
     provider: str
@@ -104,6 +140,32 @@ class AdmissionGateResult(BaseModel):
     source_id: str
     view_id: str
     reasons: list[str] = Field(default_factory=list)
+
+
+def _mix01_mitigation_reasons(decision: AdmissionDecision) -> list[str]:
+    """What a mitigated decision for a non-Essential Mix-01 source still lacks (C04 risk v3).
+
+    The Essential-scoped v2 obligation can never be reused for another source:
+    the contract version, the Mix-01 pool scope, the four review bindings, an
+    approved provenance review and the resource contract are all required.
+    """
+    reasons: list[str] = []
+    if decision.contract_version != MIX01_RISK_CONTRACT:
+        reasons.append(
+            "Mitigated risk for a non-Essential source requires the "
+            f"'{MIX01_RISK_CONTRACT}' benchmark-risk contract."
+        )
+    mitigation = decision.contamination_mitigation
+    if mitigation is not None and mitigation != mix01_contamination_mitigation():
+        reasons.append("C05 mitigation binding is not the Mix-01 pool obligation.")
+    missing = [name for name in MIX01_REVIEW_NAMES if name not in decision.reviews_sha256]
+    if missing:
+        reasons.append(f"Source/license/provenance review bindings are missing: {missing}.")
+    if decision.provenance_review != "approved":
+        reasons.append("Provenance review is not approved.")
+    if decision.resource_contract is None:
+        reasons.append("Resource contract binding is missing.")
+    return reasons
 
 
 class AdmissionGate:
@@ -224,8 +286,13 @@ class AdmissionGate:
 
         # 9. Benchmark contamination check
         if decision.benchmark_risk == BenchmarkContaminationRisk.SUSPECT_WITH_MITIGATION:
-            if decision.contract_version != "c04-benchmark-risk-v2":
-                reasons.append("Mitigated risk requires the versioned C04 benchmark-risk contract.")
+            if evidence.source_id == "essential_web":
+                if decision.contract_version != ESSENTIAL_RISK_CONTRACT:
+                    reasons.append(
+                        "Mitigated risk requires the versioned C04 benchmark-risk contract."
+                    )
+            else:
+                reasons.extend(_mix01_mitigation_reasons(decision))
             if not decision.reviews_sha256.get("benchmark_risk"):
                 reasons.append("Benchmark-risk review binding is missing.")
             if decision.contamination_mitigation is None:
@@ -269,7 +336,13 @@ class AdmissionGate:
 
 
 class CatalogAuditor:
-    """Read-only audit engine evaluating candidate catalog sources against admission gates."""
+    """Read-only audit engine evaluating candidate catalog sources against admission gates.
+
+    Admission is recorded per (source, view) in the operator artifact store,
+    never in the static catalog. Every view the store holds evidence or a
+    decision for is re-evaluated through the full gate; a source without any
+    stored view is reported for its ``default`` view, as before.
+    """
 
     def __init__(
         self, catalog: DatasetCatalogDraft, artifact_store: ArtifactStore | None = None
@@ -280,34 +353,18 @@ class CatalogAuditor:
     def audit_source(
         self, candidate: CandidateSourceEntry, view_id: str = "default"
     ) -> AdmissionGateResult:
-        # Load evidence and decision from artifact store if available
-        evidence: ProbeEvidenceRecord | None = None
-        decision: AdmissionDecision | None = None
+        return evaluate_stored_view(
+            self.artifact_store, candidate.source_id, view_id, candidate.repository
+        )
 
-        if self.artifact_store is not None:
-            evidence = load_probe_evidence(candidate.source_id, view_id, self.artifact_store)
-            decision = load_admission_decision(candidate.source_id, view_id, self.artifact_store)
-
-        if evidence is None:
-            # Check direct denial first
-            if is_denied_source(candidate.repository):
-                return AdmissionGateResult(
-                    admitted=False,
-                    status=AdmissionStatus.BLOCKED,
-                    source_id=candidate.source_id,
-                    view_id=view_id,
-                    reasons=[f"Repository '{candidate.repository}' is denied by XLM policy."],
-                )
-
-            return AdmissionGateResult(
-                admitted=False,
-                status=AdmissionStatus.UNADMITTED,
-                source_id=candidate.source_id,
-                view_id=view_id,
-                reasons=["Source has not been probed yet (no probe evidence found)."],
-            )
-
-        return AdmissionGate.evaluate(evidence, decision)
+    def audit_source_views(self, candidate: CandidateSourceEntry) -> list[AdmissionGateResult]:
+        """One full gate evaluation per view the operator store records for this source."""
+        views = (
+            stored_view_ids(self.artifact_store, candidate.source_id)
+            if self.artifact_store is not None
+            else []
+        )
+        return [self.audit_source(candidate, view) for view in views or ["default"]]
 
     def audit_all(self) -> dict[str, Any]:
         results: list[dict[str, Any]] = []
@@ -320,34 +377,115 @@ class CatalogAuditor:
         }
 
         for candidate in self.catalog.sources:
-            res = self.audit_source(candidate)
-            status_str = res.status.value
-            if res.admitted:
-                counts["admitted"] += 1
-            elif res.status == AdmissionStatus.BLOCKED:
-                counts["blocked"] += 1
-            elif res.status == AdmissionStatus.PENDING_REVIEW:
-                counts["pending_review"] += 1
-            else:
-                counts["unadmitted"] += 1
+            views = self.audit_source_views(candidate)
+            status = source_status(views)
+            counts[status.value] += 1
 
             results.append(
                 {
                     "candidate_number": candidate.candidate_number,
                     "source_id": candidate.source_id,
                     "repository": candidate.repository,
-                    "status": status_str,
-                    "admitted": res.admitted,
-                    "reasons": res.reasons,
+                    "status": status.value,
+                    "admitted": status == AdmissionStatus.ADMITTED,
+                    "admitted_views": [v.view_id for v in views if v.admitted],
+                    "views": [
+                        {
+                            "view_id": v.view_id,
+                            "status": v.status.value,
+                            "admitted": v.admitted,
+                            "reasons": v.reasons,
+                        }
+                        for v in views
+                    ],
+                    "reasons": [reason for v in views for reason in v.reasons],
                 }
             )
 
         return {
             "catalog_id": self.catalog.catalog_id,
+            "admission_source": "operator artifact store, per (source, view); never the catalog",
             "counts": counts,
             "sources": results,
             "legal_disclaimer": LEGAL_DISCLAIMER,
         }
+
+
+def evaluate_stored_view(
+    store: ArtifactStore | None, source_id: str, view_id: str, repository: str
+) -> AdmissionGateResult:
+    """The authoritative gate result of one (source, view) pair in the operator store.
+
+    The same evaluation the production fetch gate performs
+    (:func:`resolve_verified_production_admission`), minus the plan binding.
+    """
+    evidence: ProbeEvidenceRecord | None = None
+    decision: AdmissionDecision | None = None
+    if store is not None:
+        evidence = load_probe_evidence(source_id, view_id, store)
+        decision = load_admission_decision(source_id, view_id, store)
+    if evidence is None:
+        if is_denied_source(repository):
+            return AdmissionGateResult(
+                admitted=False,
+                status=AdmissionStatus.BLOCKED,
+                source_id=source_id,
+                view_id=view_id,
+                reasons=[f"Repository '{repository}' is denied by XLM policy."],
+            )
+        return AdmissionGateResult(
+            admitted=False,
+            status=AdmissionStatus.UNADMITTED,
+            source_id=source_id,
+            view_id=view_id,
+            reasons=["Source has not been probed yet (no probe evidence found)."],
+        )
+    return AdmissionGate.evaluate(evidence, decision)
+
+
+def source_status(views: list[AdmissionGateResult]) -> AdmissionStatus:
+    """Source-level summary of its views: admitted when at least one view is admitted.
+
+    The per-view results stay in the report; a component that needs several
+    views must check each of them (see ``xlm.data.sources.mix01``).
+    """
+    statuses = {v.status for v in views}
+    for status in (
+        AdmissionStatus.ADMITTED,
+        AdmissionStatus.PENDING_REVIEW,
+        AdmissionStatus.UNADMITTED,
+    ):
+        if status in statuses:
+            return status
+    return AdmissionStatus.BLOCKED
+
+
+def stored_view_ids(store: ArtifactStore, source_id: str) -> list[str]:
+    """Views with a completed probe-evidence or admission artifact for ``source_id``.
+
+    Discovery reads only each artifact's manifest metadata; the evaluation that
+    follows loads and verifies the records themselves. Artifact names are never
+    parsed, because source and view ids may both contain underscores.
+    """
+    views: set[str] = set()
+    for kind in ("probe_evidence", "admission_decision"):
+        root = store.paths.root / kind
+        if not root.is_dir():
+            continue
+        for directory in root.iterdir():
+            manifest = directory / "manifest.json"
+            if not (directory / "_COMPLETED").is_file() or not manifest.is_file():
+                continue
+            try:
+                metadata = json.loads(manifest.read_text(encoding="utf-8")).get("metadata", {})
+            except (OSError, ValueError, AttributeError):
+                continue
+            if not isinstance(metadata, dict):
+                continue
+            view = metadata.get("view_id")
+            if metadata.get("source_id") == source_id and isinstance(view, str) and view:
+                views.add(view)
+    return sorted(views)
 
 
 # -------------------------------------------------------------------------

@@ -575,17 +575,19 @@ def audit_catalog(
         if not cand:
             typer.echo(f"Error: Source '{source_id}' not found in catalog.", err=True)
             raise typer.Exit(code=1)
-        res = auditor.audit_source(cand)
+        results = auditor.audit_source_views(cand)
         if as_json:
-            typer.echo(json.dumps(res.model_dump(), indent=2))
+            typer.echo(json.dumps([res.model_dump() for res in results], indent=2))
         else:
-            typer.echo(
-                f"Source: {source_id} | Status: {res.status.value} | Admitted: {res.admitted}"
-            )
-            for r in res.reasons:
-                typer.echo(f"  - {r}")
+            for res in results:
+                typer.echo(
+                    f"Source: {source_id} | View: {res.view_id} | Status: {res.status.value} "
+                    f"| Admitted: {res.admitted}"
+                )
+                for r in res.reasons:
+                    typer.echo(f"  - {r}")
             typer.echo(f"\n{LEGAL_DISCLAIMER}")
-        if strict and not res.admitted:
+        if strict and not all(res.admitted for res in results):
             raise typer.Exit(code=1)
         return
 
@@ -606,7 +608,10 @@ def audit_catalog(
         typer.echo("-" * 70)
         for s in report["sources"]:
             status_tag = f"[{s['status'].upper()}]"
-            typer.echo(f"{s['candidate_number']:<3} {s['source_id']:<22} {status_tag:<18}")
+            views = ", ".join(f"{v['view_id']}={v['status']}" for v in s["views"])
+            typer.echo(
+                f"{s['candidate_number']:<3} {s['source_id']:<22} {status_tag:<18} views: {views}"
+            )
         typer.echo("-" * 70)
         typer.echo(f"\n{LEGAL_DISCLAIMER}\n")
 
@@ -3859,8 +3864,11 @@ def mix01_status_cmd(
     is presumed admitted. With --preset, the named treatment is gated for a run
     and the command fails loudly when any component blocks.
     """
+    from xlm.data.sources.admission import evaluate_stored_view
     from xlm.data.sources.mix01 import (
+        ComponentAdmission,
         Mix01BlockedError,
+        component_admission_views,
         gate_preset_for_run,
         load_mix01_views,
         load_mixture_preset,
@@ -3881,18 +3889,33 @@ def mix01_status_cmd(
         candidate.source_id: auditor.audit_source(candidate).status.value
         for candidate in catalog.sources
     }
+    # Admission is recorded per (source, view) in the operator store; each
+    # component is judged on every view it needs, through the full gate.
+    per_component = {
+        spec.component_id: ComponentAdmission(
+            {
+                view: evaluate_stored_view(
+                    store, spec.source_id, view, spec.repository
+                ).status.value
+                for view in component_admission_views(spec)
+            }
+        )
+        for spec in registry.views
+    }
 
     if preset_path is not None:
         try:
             preset = load_mixture_preset(preset_path)
-            gated = gate_preset_for_run(preset, registry, admission)
+            gated = gate_preset_for_run(
+                preset, registry, admission, component_admission=per_component
+            )
         except (Mix01BlockedError, ValueError) as e:
             typer.echo(f"Error: {e}", err=True)
             raise typer.Exit(code=1) from e
         typer.echo(f"Preset '{preset.id}' is gated READY ({len(gated)} components).")
         return
 
-    report = mix01_status(registry, admission)
+    report = mix01_status(registry, admission, component_admission=per_component)
     if as_json:
         typer.echo(json.dumps([s.to_dict() for s in report], indent=2))
         return

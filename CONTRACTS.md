@@ -91,6 +91,54 @@ artifact and every other source are unchanged. This amendment changes physical
 transport and storage only: no source, revision, selector, membership, mixture,
 quota or stop-target changes.
 
+**C04 benchmark-risk amendment `c04-benchmark-risk-v3` (2026-10-01).**
+The `c04-benchmark-risk-v2` treatment extends to every other Mix-01 source.
+Large web-derived or synthetic corpora cannot be shown benchmark clean, so a
+non-Essential source may be admitted with `suspect_with_mitigation` only under
+contract version `c04-benchmark-risk-v3`, with: SHA-256 bindings to four
+reviews (`source_rights`, `attribution`, `benchmark_risk`,
+`external_evidence`), an approved provenance review, the unchanged resource
+contract, operator approval, and the C05 mitigation binding of the same
+mechanism and benchmarks over scope `eventually_frozen_mix01_canonical_training_pool`.
+The Essential-scoped v2 obligation can never be reused for another source, and
+Essential-Web decisions stay exactly under v2. The legacy `clean` value is
+unchanged for existing decisions and still makes no zero-contamination claim;
+the operator review workflow for Mix-01 sources records only the mitigated
+value. Admission remains acquisition/pretraining eligibility, never evidence of
+zero contamination; C05 screening and its receipt are still required before
+tokenizer fitting, training and any benchmark claim.
+
+**C04 certified-evidence amendment `c04-certified-evidence-bridge-v1` (2026-10-01).**
+Admission evidence may be derived offline from earlier certified real-source
+evidence instead of a repeated network probe. The bridge accepts only a
+source-specific probe receipt with its saved real rows (`ultrax-schema-probe-v1`)
+and/or a completed real calibration fetch (plan, journal, selected records,
+adaptation summary), plus the earlier real metadata probe record for the
+declared license. It binds the catalog/registry pin (source, view, revision,
+adapter), re-runs the registered adapter on every real row (reproducing any
+recorded documents digest), names the schema basis (pinned-Parquet features or
+observed projected rows), binds real file identities from fetch journals, and
+publishes a self-digested receipt next to the evidence as a new attempt. It
+refuses authored fixtures, inputs inside the code checkout, any pin, schema,
+adapter or input disagreement, and later adapter-code drift. A decision binds
+the receipt digest. Nothing is downloaded and no source inherits another
+source's evidence.
+
+**C04 raw-artifact amendment `mix01-source-raw-artifact-v1` (2026-10-01).**
+For an admitted Mix-01 source whose frozen transport policy
+(`mix01-transport-policy-v1`) selects a local mode (`whole_file_local`,
+`row_group_local` or `small_source_direct`), the raw acquisition artifact may be
+the `verified_source_parquet` under exactly the identity, verification,
+retention, ledger-compression and no-second-representation rules of
+`essential-web-raw-artifact-v2`. The mode is frozen per source in a
+self-digested policy record bound into every plan; a run never switches modes.
+Plans are deterministic contiguous prefixes of the frozen inventory order,
+always on the production admission path, and top-ups continue at the previous
+plan's cursor under a new plan. This changes physical transport and storage
+only: no source, revision, selector, membership, mixture, quota or stop-target
+changes. Common Pile stays blocked by license/provenance and component
+allowlist.
+
 ## C05 — Duplicate clusters, exclusions and splits
 
 Deduplicate across all selected source families before assigning final train/validation splits. Implement exact hashes and a scalable near-duplicate method such as shingled MinHash/LSH with bounded candidate verification; do not use an all-pairs comparison. Algorithm, seeds, thresholds and deterministic survivor selection are frozen. Retain all source aliases and provenance of the surviving document.

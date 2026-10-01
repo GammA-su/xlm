@@ -1,0 +1,249 @@
+{
+  "basis": "modeled (Essential-Web endpoint rates; per-source calibration latency)",
+  "policy": "mix01-transport-policy-v1",
+  "summary": [
+    {
+      "fastest_modeled": {
+        "executable": false,
+        "mode": "range_selected",
+        "wall_seconds": 463.6590505549427
+      },
+      "modes": {
+        "range_selected": {
+          "byte_amplification": 1.004,
+          "durable_raw_bytes": 7379085866,
+          "feasible": false,
+          "requests": 3208,
+          "rows_processed": 1579018,
+          "scratch_peak_bytes": 7379085866,
+          "transfer_bytes": 3597392267,
+          "wall_seconds": 463.7
+        },
+        "whole_file_local": {
+          "byte_amplification": 3.534,
+          "durable_raw_bytes": 12669452460,
+          "feasible": true,
+          "requests": 24,
+          "rows_processed": 1610436,
+          "scratch_peak_bytes": 10557877050,
+          "transfer_bytes": 12669452460,
+          "wall_seconds": 493.7
+        }
+      },
+      "reason": "smallest modeled wall time among feasible modes (494 s)",
+      "required_canonical_bytes": 5280000000,
+      "selected_mode": "whole_file_local",
+      "source_id": "ultrax_ultrafineweb"
+    },
+    {
+      "fastest_modeled": {
+        "executable": false,
+        "mode": "range_selected",
+        "wall_seconds": 324.2569419515908
+      },
+      "modes": {
+        "range_selected": {
+          "byte_amplification": 1.001,
+          "durable_raw_bytes": 4987297196,
+          "feasible": false,
+          "requests": 1337,
+          "rows_processed": 442437,
+          "scratch_peak_bytes": 4987297196,
+          "transfer_bytes": 2529955258,
+          "wall_seconds": 324.3
+        },
+        "whole_file_local": {
+          "byte_amplification": 2.192,
+          "durable_raw_bytes": 5542042276,
+          "feasible": true,
+          "requests": 4,
+          "rows_processed": 520834,
+          "scratch_peak_bytes": 5542042276,
+          "transfer_bytes": 5542042276,
+          "wall_seconds": 429.0
+        }
+      },
+      "reason": "smallest modeled wall time among feasible modes (429 s)",
+      "required_canonical_bytes": 3960000000,
+      "selected_mode": "whole_file_local",
+      "source_id": "finepdfs_edu"
+    },
+    {
+      "fastest_modeled": {
+        "executable": false,
+        "mode": "range_selected",
+        "wall_seconds": 257.3589943702371
+      },
+      "modes": {
+        "range_selected": {
+          "byte_amplification": 1.047,
+          "durable_raw_bytes": 7601633766,
+          "feasible": false,
+          "requests": 1053,
+          "rows_processed": 1988719,
+          "scratch_peak_bytes": 7601633766,
+          "transfer_bytes": 3680595261,
+          "wall_seconds": 257.4
+        },
+        "whole_file_local": {
+          "byte_amplification": 1.743,
+          "durable_raw_bytes": 6130027267,
+          "feasible": true,
+          "requests": 26,
+          "rows_processed": 2010801,
+          "scratch_peak_bytes": 4715405590,
+          "transfer_bytes": 6130027267,
+          "wall_seconds": 333.6
+        }
+      },
+      "reason": "smallest modeled wall time among feasible modes (334 s)",
+      "required_canonical_bytes": 3960000000,
+      "selected_mode": "whole_file_local",
+      "source_id": "synth"
+    },
+    {
+      "fastest_modeled": {
+        "executable": false,
+        "mode": "range_selected",
+        "wall_seconds": 120.09551238780989
+      },
+      "modes": {
+        "range_selected": {
+          "byte_amplification": 1.01,
+          "durable_raw_bytes": 2701784151,
+          "feasible": false,
+          "requests": 206,
+          "rows_processed": 289098,
+          "scratch_peak_bytes": 2701784151,
+          "transfer_bytes": 446286292,
+          "wall_seconds": 120.1
+        },
+        "whole_file_local": {
+          "byte_amplification": 3.183,
+          "durable_raw_bytes": 1406396385,
+          "feasible": true,
+          "requests": 2,
+          "rows_processed": 920086,
+          "scratch_peak_bytes": 1406396385,
+          "transfer_bytes": 1406396385,
+          "wall_seconds": 1034.2
+        }
+      },
+      "reason": "smallest modeled wall time among feasible modes (1034 s)",
+      "required_canonical_bytes": 2112000000,
+      "selected_mode": "whole_file_local",
+      "source_id": "nemotron_specialized"
+    },
+    {
+      "fastest_modeled": {
+        "executable": false,
+        "mode": "range_selected",
+        "wall_seconds": 83.03770423848567
+      },
+      "modes": {
+        "range_selected": {
+          "byte_amplification": 1.016,
+          "durable_raw_bytes": 1613525241,
+          "feasible": false,
+          "requests": 371,
+          "rows_processed": 120024,
+          "scratch_peak_bytes": 1613525241,
+          "transfer_bytes": 326686740,
+          "wall_seconds": 83.0
+        },
+        "whole_file_local": {
+          "byte_amplification": 15.041,
+          "durable_raw_bytes": 4834935246,
+          "feasible": true,
+          "requests": 4,
+          "rows_processed": 162540,
+          "scratch_peak_bytes": 4834935246,
+          "transfer_bytes": 4834935246,
+          "wall_seconds": 220.1
+        }
+      },
+      "reason": "smallest modeled wall time among feasible modes (220 s)",
+      "required_canonical_bytes": 1320000000,
+      "selected_mode": "whole_file_local",
+      "source_id": "finewiki"
+    },
+    {
+      "fastest_modeled": {
+        "executable": true,
+        "mode": "whole_file_local",
+        "wall_seconds": 204.92785738480154
+      },
+      "modes": {
+        "range_selected": {
+          "byte_amplification": 1.013,
+          "durable_raw_bytes": 1170308928,
+          "feasible": false,
+          "requests": 10071,
+          "rows_processed": 478417,
+          "scratch_peak_bytes": 1170308928,
+          "transfer_bytes": 383715379,
+          "wall_seconds": 867.4
+        },
+        "small_source_direct": {
+          "byte_amplification": 4.392,
+          "durable_raw_bytes": 1663612818,
+          "feasible": true,
+          "requests": 14,
+          "rows_processed": 1227072,
+          "scratch_peak_bytes": 1663612818,
+          "transfer_bytes": 1663612818,
+          "wall_seconds": 231.3
+        },
+        "whole_file_local": {
+          "byte_amplification": 1.882,
+          "durable_raw_bytes": 712976922,
+          "feasible": true,
+          "requests": 6,
+          "rows_processed": 525888,
+          "scratch_peak_bytes": 712976922,
+          "transfer_bytes": 712976922,
+          "wall_seconds": 204.9
+        }
+      },
+      "reason": "smallest modeled wall time among feasible modes (205 s)",
+      "required_canonical_bytes": 528000000,
+      "selected_mode": "whole_file_local",
+      "source_id": "simple_stories"
+    }
+  ],
+  "ultrax_at_142_7_mb_per_s": [
+    {
+      "fastest_modeled": {
+        "executable": true,
+        "mode": "whole_file_local",
+        "wall_seconds": 235.98658117820162
+      },
+      "modes": {
+        "range_selected": {
+          "byte_amplification": 1.004,
+          "durable_raw_bytes": 7379085866,
+          "feasible": false,
+          "requests": 3208,
+          "rows_processed": 1579018,
+          "scratch_peak_bytes": 7379085866,
+          "transfer_bytes": 3597392267,
+          "wall_seconds": 463.7
+        },
+        "whole_file_local": {
+          "byte_amplification": 3.534,
+          "durable_raw_bytes": 12669452460,
+          "feasible": true,
+          "requests": 24,
+          "rows_processed": 1610436,
+          "scratch_peak_bytes": 10557877050,
+          "transfer_bytes": 12669452460,
+          "wall_seconds": 236.0
+        }
+      },
+      "reason": "smallest modeled wall time among feasible modes (236 s)",
+      "required_canonical_bytes": 5280000000,
+      "selected_mode": "whole_file_local",
+      "source_id": "ultrax_ultrafineweb"
+    }
+  ]
+}

@@ -1,3 +1,37 @@
+> **MIX-01 HIGH-THROUGHPUT SOURCE ACQUISITION + ULTRAX ADMISSION BRIDGE
+> (2026-10-01, offline): READY FOR ULTRAX PERFORMANCE BENCHMARK.** UltraX needs
+> no re-probe: a new offline bridge (`certified_evidence.py`, amendment
+> `c04-certified-evidence-bridge-v1`) turns the existing real schema-probe
+> receipt (`c67e9152…`), its 30 rows and the real 1,000-row calibration into
+> accessible, schema-verified, fingerprinted C04 evidence; the adapter re-runs
+> on every real row and reproduces the recorded documents digest `cd7c157a…`
+> (dry run: receipt `b874f47e…c3ecf9`, fingerprint `ca72a0e8…41f8`; nothing
+> published). The same command bridges FinePDFs, SYNTH, Wiki-Rewrite, FineWiki,
+> both IFM views and SimpleStories from their real calibrations. Root cause of
+> Essential-Web showing UNADMITTED: `audit`/`mix01-status` looked up view
+> `default`; admission is per view. Fixed in reporting (real store: 3 Essential
+> views admitted/READY); production gating was always per view. Non-Essential
+> mitigated admission: `c04-benchmark-risk-v3` (Mix-01-pool C05 obligation,
+> four reviews, provenance, resource contract); Essential v2 unchanged.
+> New: versioned transport policy (`mix01-transport-policy-v1`, wall-time model,
+> executable modes only, fastest reported), deterministic production planner
+> (frozen-inventory prefix, hash-chained top-ups, benchmark-reserved tail), and
+> a reusable whole-file engine (resumable streams, verification, retained
+> upstream Parquet, pipelined worker processes, restart classes, root-failure
+> report, dashboard, performance receipts, sufficiency, first-pass seal) with
+> bounded benchmarks. UltraX modeled: whole-file 12.67 GB / 24 requests vs
+> selected 3.60 GB / 3,208 requests (amplification 3.53, corrected from 2.37);
+> preview plan 12 files, ranks [0, 12), transfer ceiling 19.0 GB. Operator
+> review, admission, benchmark, plan authorization and acquisition NOT RUN.
+> Tests: 52 new passed; 38-file related selection 867 passed + 1 basetemp-location
+> failure that passes with the default temp root, 3 serial passed, 0 skipped;
+> ruff/format pass; strict mypy NOT RUN (blocked by Windows application
+> control); Essential seal `a77c78f7…` re-verifies, store unchanged.
+> [Report and runbooks](reports/MIX01-HIGH-THROUGHPUT-ACQUISITION.md),
+> [operator guide](../runbooks/mix01-source-acquisition.md). Next: run the
+> UltraX runbook through `review show`, record the decision, `admit`, then the
+> bounded benchmark and `plan`; stop at the PLAN DIGEST.
+
 > **MIX-01 TRANSITION AFTER THE ESSENTIAL-WEB FIRST PASS (2026-10-01, offline):
 > MIX-01 ACQUISITION TRANSITION STILL BLOCKED.** Essential-Web first pass
 > verified from artifacts: 18 batches, 576 sealed files, 47,979,123 rows. Views:

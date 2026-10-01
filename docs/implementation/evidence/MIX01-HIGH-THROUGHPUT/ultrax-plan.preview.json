@@ -1,0 +1,126 @@
+{
+  "acquisition_limits": {
+    "max_decompressed_bytes": 101367939072,
+    "max_decompression_ratio": 15.0,
+    "max_output_disk_bytes": 50113260408,
+    "max_parser_bytes": 33554432,
+    "max_record_bytes": 8388608,
+    "max_records": 3220872,
+    "max_requests": 192,
+    "max_retries": 5,
+    "max_scanned_records": 3220872,
+    "max_temp_disk_bytes": 25341984768,
+    "max_transferred_bytes": 19004391424,
+    "max_workers": 16,
+    "overall_deadline_seconds": 14400.0,
+    "per_request_timeout_seconds": 30.0
+  },
+  "expected": {
+    "basis": "one measured file and calibration yield; exact counts come from receipts",
+    "canonical_bytes": 6192818907,
+    "estimated_tokens": 1548204726,
+    "files": 12,
+    "requests": 24,
+    "rows": 1610436,
+    "transfer_bytes": 12669452460
+  },
+  "inventory": {
+    "benchmark_reserved_ranks": [
+      102,
+      103
+    ],
+    "digest": "cb42e2738c9b2f74aae98dd557758a638fec7dbb799f3c5b2b0c7e256900634f",
+    "file_count": 104,
+    "file_sha256": "ad407c72400eb93083e71abcc0834a1b8fb1730a9cf47ad8950f22e0e1b11e1d",
+    "order": "SHA-256(seed|repository|revision|file) ascending, filename tiebreak",
+    "seed": 20260918
+  },
+  "limits": {
+    "download_workers": 8,
+    "download_workers_max": 16,
+    "file_deadline_seconds": 6713.333333333334,
+    "max_canonical_bytes_per_file": 1032136485,
+    "max_decoded_bytes_per_file": 8447328256,
+    "max_decompression_ratio": 15.0,
+    "max_durable_bytes_per_file": 4176105034,
+    "max_file_bytes": 2111832064,
+    "max_in_flight_files": 12,
+    "max_ledger_bytes": 536870912,
+    "max_parser_bytes": 33554432,
+    "max_record_bytes": 8388608,
+    "max_requests_per_file": 16,
+    "max_retries": 5,
+    "max_rows_per_file": 268406,
+    "plan_deadline_seconds": 14400.0,
+    "process_workers": 12,
+    "process_workers_max": 16,
+    "request_timeout_seconds": 30.0,
+    "rules": "mix01-source-planner-v1",
+    "scratch_cap_bytes": 25341984768,
+    "scratch_min_free_bytes": 34359738368
+  },
+  "requirement": {
+    "first_pass_tokens": 1320000000,
+    "required_canonical_bytes": 5280000000,
+    "safety_margin": 1.15,
+    "token_method": "canonical UTF-8 bytes / 4 (estimate, never exact XLM tokens)"
+  },
+  "selection": {
+    "files": [
+      {
+        "file": "data/UltraX-Ultra-FineWeb/UltraX-Ultra-FineWeb-en-part-0048-of-0104.parquet",
+        "rank": 0
+      },
+      {
+        "file": "data/UltraX-Ultra-FineWeb/UltraX-Ultra-FineWeb-en-part-0039-of-0104.parquet",
+        "rank": 1
+      },
+      {
+        "file": "data/UltraX-Ultra-FineWeb/UltraX-Ultra-FineWeb-en-part-0084-of-0104.parquet",
+        "rank": 2
+      },
+      {
+        "file": "data/UltraX-Ultra-FineWeb/UltraX-Ultra-FineWeb-en-part-0065-of-0104.parquet",
+        "rank": 3
+      },
+      {
+        "file": "data/UltraX-Ultra-FineWeb/UltraX-Ultra-FineWeb-en-part-0060-of-0104.parquet",
+        "rank": 4
+      },
+      {
+        "file": "data/UltraX-Ultra-FineWeb/UltraX-Ultra-FineWeb-en-part-0023-of-0104.parquet",
+        "rank": 5
+      },
+      {
+        "file": "data/UltraX-Ultra-FineWeb/UltraX-Ultra-FineWeb-en-part-0040-of-0104.parquet",
+        "rank": 6
+      },
+      {
+        "file": "data/UltraX-Ultra-FineWeb/UltraX-Ultra-FineWeb-en-part-0083-of-0104.parquet",
+        "rank": 7
+      },
+      {
+        "file": "data/UltraX-Ultra-FineWeb/UltraX-Ultra-FineWeb-en-part-0095-of-0104.parquet",
+        "rank": 8
+      },
+      {
+        "file": "data/UltraX-Ultra-FineWeb/UltraX-Ultra-FineWeb-en-part-0016-of-0104.parquet",
+        "rank": 9
+      },
+      {
+        "file": "data/UltraX-Ultra-FineWeb/UltraX-Ultra-FineWeb-en-part-0068-of-0104.parquet",
+        "rank": 10
+      },
+      {
+        "file": "data/UltraX-Ultra-FineWeb/UltraX-Ultra-FineWeb-en-part-0042-of-0104.parquet",
+        "rank": 11
+      }
+    ],
+    "next_cursor": 12,
+    "row_ranges": "whole files (every row of every planned file)",
+    "rule": "the next contiguous ranks of the frozen inventory order",
+    "start_rank": 0,
+    "stop_rank": 12
+  },
+  "status": "PREVIEW ONLY: built with placeholder admission and a preview policy; its digest is not authorizable. The operator's plan comes from 'plan'."
+}

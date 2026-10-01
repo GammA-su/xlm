@@ -1,0 +1,79 @@
+{
+  "adapter_certification": {
+    "calibration_records": {
+      "accepted": 994,
+      "rejected": 6,
+      "rows": 1000
+    },
+    "probe_sample": {
+      "accepted": 30,
+      "rejected": 0,
+      "rows": 30
+    }
+  },
+  "bridge_receipt_digest": "b874f47e8d9a2a58c809a80f34a905353e591d71bd66c7a4645acc1c56c3ecf9",
+  "configs_observed": [
+    "UltraX-AICC",
+    "UltraX-FineWeb",
+    "UltraX-FineWeb-ProX-Doc",
+    "UltraX-RedPajama-V2",
+    "UltraX-Ultra-FineWeb"
+  ],
+  "decision_fields_required": {
+    "benchmark_risk": [
+      "suspect_with_mitigation"
+    ],
+    "license_decision": [
+      "approve_research_pretraining",
+      "reject"
+    ],
+    "operator": "named person recording the decision",
+    "provenance_decision": [
+      "approved",
+      "rejected"
+    ],
+    "rationale": "the operator's own written reasoning"
+  },
+  "declared_license_scope": "the dataset repository's metadata declaration only; it does not establish the license of every underlying document",
+  "declared_repository_license": "apache-2.0",
+  "legal_advice": false,
+  "license_caveat_from_evidence": "UltraX is derived from source corpora and users must check applicable source-dataset licenses.",
+  "observed_files": [
+    {
+      "length": 1055787705,
+      "path": "data/UltraX-Ultra-FineWeb/UltraX-Ultra-FineWeb-en-part-0039-of-0104.parquet"
+    }
+  ],
+  "registry_notes": [
+    "Probe target is openbmb/UltraX-Preview; the README alias openbmb/UltraX must be resolved explicitly by the operator probe, never silently chosen.",
+    "observed_revision is null until the operator schema probe freezes an exact commit SHA; unpinned revisions never run.",
+    "observed_license is null until the probe receipt records the published license; UltraX is derived from source corpora and users must check applicable source-dataset licenses.",
+    "raw_content is never training input and is never copied into canonical output; empty cleaned_content (remove_all) is a counted policy drop, not a raw_content fallback."
+  ],
+  "row_source_labels": {
+    "Ultra-FineWeb": 30
+  },
+  "schema_basis": "hf_features_of_pinned_parquet_arrow_schema",
+  "schema_fields": [
+    "cleaned_content",
+    "processed_functions",
+    "raw_content",
+    "source",
+    "uid"
+  ],
+  "source": {
+    "adapter_id": "ultrax_ultrafineweb",
+    "component_id": "ultrax_ultrafineweb",
+    "provider": "huggingface",
+    "repository": "openbmb/UltraX-Preview",
+    "revision": "a88527587389fd4ab352e9ad1273f4c0a234d8df",
+    "source_id": "ultrax_ultrafineweb",
+    "view_id": "UltraX-Ultra-FineWeb"
+  },
+  "unknown": [
+    "per-document license or terms of the underlying web pages",
+    "whether any underlying content rights are cleared (never assumed)",
+    "the exact upstream corpus lineage beyond what the dataset card and row labels state",
+    "benchmark contamination: unknown until C05 screening runs on the frozen pool"
+  ]
+}
