@@ -1,0 +1,51 @@
+{
+  "archive_path": "C:\\XLM-scratch-history\\finepdfs\\bench-b1",
+  "benchmark_digest": "b458e83d38dbe9d0a5088c66da0bd43de880160e75d869f18116ff7a6fb0e90a",
+  "digest": "e5ac48be7724749c953c405a6e84c437f868fa4cff26f4db977b32dcc05afb83",
+  "files": [
+    {
+      "mtime_ns": 1790847274079719800,
+      "path": "f00000.parquet.part",
+      "sha256": "4eeb58bc769a194f472100ed4acd1d960e35c669caecd96fd4ce6425fabca38d",
+      "size": 2771021138
+    },
+    {
+      "mtime_ns": 1790847274092154100,
+      "path": "f00000.state.json",
+      "sha256": "2b05a06c33b1e7461d0f1ec9f4a92c73a3416a8fe35fae9cee65c868d6c4556f",
+      "size": 896
+    },
+    {
+      "mtime_ns": 1790847278679953200,
+      "path": "staging/f00000.progress.json",
+      "sha256": "7f8774aa8f9d467ccb64d4648a5665cafd9da2e8afe72a107cf66c0a9f21da66",
+      "size": 99
+    },
+    {
+      "mtime_ns": 1790847274645043500,
+      "path": "staging/f00000.progress.lock",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "mtime_ns": 1790847278838256600,
+      "path": "staging/f00000/c80d20f5d270/documents.jsonl",
+      "sha256": "94d61457b3147837d1a8d20f81a5a00fe19ee027af98657da09d0a3bad332f69",
+      "size": 136943760
+    }
+  ],
+  "kind": "mix01_benchmark_scratch_archive",
+  "label": "b1",
+  "max_bytes": 2907965893,
+  "original_path": "C:\\XLM-scratch\\finepdfs\\bench-b1",
+  "source": {
+    "adapter_id": "finepdfs_en",
+    "component_id": "finepdfs_en",
+    "provider": "huggingface",
+    "repository": "HuggingFaceFW/finepdfs-edu",
+    "revision": "9cfabe2127faca99b3d5c4dc6d1fcb397399ebde",
+    "source_id": "finepdfs_edu",
+    "view_id": "eng_Latn"
+  },
+  "version": 1
+}

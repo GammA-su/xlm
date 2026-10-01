@@ -1,3 +1,32 @@
+> **FINEPDFS B1 ARCHIVE / B2 CAPACITY (2026-10-01, offline): FINEPDFS B2
+> REQUIRES B3 FOR SCRATCH CAPACITY.** b1's five scratch files were moved to
+> `C:\XLM-scratch-history\finepdfs\bench-b1`; hashes/sizes/mtimes verify, with
+> durable archive receipt `e5ac48be...afb83`. Donor adoption resolves verified
+> archives; historical receipts/events stay unchanged. b2 source and state
+> reverify, complete reuse=1, network bytes=0. Active occupancy is now
+> 2,771,022,236 B; remaining 2,771,750,500 B cannot cover the planner's
+> 10,721,899,142 B processing allowance, before transient metadata. Task 4 STOP:
+> generic scheduler repair and real b2 retry NOT RUN; b3 needs larger capacity
+> and bounded output enforcement. b2 identity/authorization and all limits
+> remain unchanged. 38 distinct focused cases passed; ruff/format/strict mypy
+> pass. [Report](reports/FINEPDFS-SCRATCH-ARCHIVE.md). Next: review the local
+> archive commit (`git show --stat HEAD`), then repair growth accounting and
+> prepare b3 for review; no range benchmark, production run or push.
+
+> **FINEPDFS B2 SCRATCH INVESTIGATION (2026-10-01, offline): FINEPDFS
+> SCRATCH ACCOUNTING STILL BLOCKED.** Exact ScratchCapError reproduced.
+> Scheduler reserves 5,542,772,736 B before complete-file reuse verification;
+> adopted input is 2,771,021,138 B. Even corrected zero-growth source accounting
+> cannot fit: the whole source scratch root is 5,678,988,129 B, already
+> 136,215,393 B above the unchanged cap, including retained b1 output. Task 5's
+> explicit stop condition applies. No code fix, cleanup, successful retry or
+> commit; tests/ruff/format/mypy NOT RUN. Hash/state and authorization checks
+> passed; local_complete_reuse=1, required network bytes=0. Existing b2
+> authorization remains valid. Failed reproduction adds performance-01.json;
+> prior history stays. [Report](reports/FINEPDFS-SCRATCH-ACCOUNTING.md).
+> Next: review the report and resolve storage placement/processing capacity
+> before resuming the narrow repair. No range benchmark or production run.
+
 > **FINEPDFS WHOLE-FILE RECORD BOUND (2026-10-01, offline): FINEPDFS
 > BENCHMARK REQUIRES NEW AUTHORIZATION.** Real b1 failed closed on a
 > 9,064,396-byte row (generic `max_record_bytes` 8 MiB). An offline scan of the

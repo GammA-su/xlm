@@ -17,6 +17,7 @@ from xlm.data.acquisition import source_parquet as sp
 from xlm.data.acquisition import source_plan as planner
 from xlm.data.acquisition import source_run as runner
 from xlm.data.acquisition import transport_policy as tp
+from xlm.data.acquisition.records import RecordLimitError
 
 MIB = 1024 * 1024
 FINEPDFS = {
@@ -150,12 +151,12 @@ def test_a_9_06_mb_row_passes_the_finepdfs_bound_and_a_larger_row_fails_closed(
     bound = planner.record_bound("finepdfs_edu", "eng_Latn")[0]
     observed = tmp_path / "observed.parquet"
     _parquet(observed, ["a", "b" * 9_064_000])
-    with pytest.raises(sp.RecordLimitError, match="row=1 encoded_bytes="):
+    with pytest.raises(RecordLimitError, match="row=1 encoded_bytes="):
         _payloads(observed, planner.MAX_RECORD_BYTES)
     assert _payloads(observed, bound) == [0, 1]
     oversized = tmp_path / "oversized.parquet"
     _parquet(oversized, ["a", "c" * bound])
-    with pytest.raises(sp.RecordLimitError, match=f"limit={bound}"):
+    with pytest.raises(RecordLimitError, match=f"limit={bound}"):
         _payloads(oversized, bound)
 
 

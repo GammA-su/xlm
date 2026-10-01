@@ -77,6 +77,31 @@ removed after the receipt. The range mode is measured with a pilot-scope
 `xlm data sample-blocks` / `plan --pilot-approved` / `fetch` / `adapt` of the
 same files, normalized by `benchmark record-range`.
 
+`benchmark adopt --label <target> --donor <donor>` verifies and hard-links a
+complete pinned donor download. Existing source bytes need no second download,
+but still count toward the scratch budget. The budget covers the entire source
+scratch root, including donor files, state, leftovers and processing output;
+it currently counts each hard-link path conservatively. The HF offline
+variables alone do not prohibit the transport client's network requests.
+
+Failed benchmark workspaces can be preserved outside the active scratch root
+with `source_archive.archive_benchmark(roots, label, absolute_destination,
+max_bytes=explicit_bound)`. This requires explicit operator authorization for
+the move. It records a durable intent and verified archive receipt beside the
+benchmark records, uses a same-volume rename, and retains every file. Adoption
+resolves that receipt and verifies archived files; an archived benchmark cannot
+run or receive adoption into its former workspace. A pending archive intent
+requires finishing the same archival call before donor reuse. Do not leave
+junctions or manually relocate a receipted archive.
+
+FinePDFs b1 is now at `C:\XLM-scratch-history\finepdfs\bench-b1`, verified by
+`G:\XLM\plans\finepdfs\benchmarks\b1\scratch-archive.json`. b2's source and
+authorization remain valid. Active usage is 2,771,022,236 B, leaving
+2,771,750,500 B, below the planner's 10,721,899,142 B processing allowance.
+b3 needs larger scratch capacity and bounded processing-output accounting;
+the generic scheduler repair remains pending. Do not retry b2 or run the range
+half. See the [archive/capacity report](../implementation/reports/FINEPDFS-SCRATCH-ARCHIVE.md).
+
 ## 5. Plans, authorization, runs
 
 `plan` writes the next write-once plan: the next contiguous ranks of the frozen

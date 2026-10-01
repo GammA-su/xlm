@@ -1,0 +1,112 @@
+{
+  "archive_digest": "e5ac48be7724749c953c405a6e84c437f868fa4cff26f4db977b32dcc05afb83",
+  "benchmark_digest": "5a9080d424b18b39f10fd81325515ec8a870e9b81984f4e7a0f40bf4839bd298",
+  "classification": {
+    "counts": {
+      "fresh_download": 0,
+      "local_complete_reuse": 1,
+      "local_processing_retry": 0,
+      "resumable_partial": 0,
+      "sealed_skip": 0
+    },
+    "known_network_bytes": 0,
+    "resumable_verified_bytes": 0,
+    "units": {
+      "fresh_download": [],
+      "local_complete_reuse": [
+        "f00000"
+      ],
+      "local_processing_retry": [],
+      "resumable_partial": [],
+      "sealed_skip": []
+    },
+    "worst_case_network_bytes": 0
+  },
+  "digest": "7c2f15f26795969f33d2e7e22b3b1bfe859b68f504156dfe64a4229aecfc429a",
+  "environment": {
+    "offline": {
+      "HF_DATASETS_OFFLINE": "1",
+      "HF_HUB_OFFLINE": "1",
+      "TRANSFORMERS_OFFLINE": "1",
+      "UV_OFFLINE": "1"
+    },
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.12.13"
+  },
+  "kind": "finepdfs_b1_archive_b2_capacity_check",
+  "physical_free_bytes": 851285602304,
+  "plan_hash": "25bcb8ae9121d1744d945d9a9a687f918a28b1ce54cb9a6945c0aaa277f5bffb",
+  "planned_processing_allowance": 10721899142,
+  "post_occupied": 2771022236,
+  "pre_occupied": 5678988129,
+  "preserved_history": {
+    "G:\\XLM\\plans\\finepdfs\\benchmarks\\b1\\acquisition.plan.json": {
+      "mtime_ns": 1790847165657945500,
+      "sha256": "709734f91a4c99d79486bb97e392f5f6f596adbb4da374130cb2e21cb137895e",
+      "size": 2068
+    },
+    "G:\\XLM\\plans\\finepdfs\\benchmarks\\b1\\authorization.json": {
+      "mtime_ns": 1790847165594709700,
+      "sha256": "3eb518622340af9c2927aca5ed44f58f85bce139afe8b5288c09c789df2873b6",
+      "size": 171
+    },
+    "G:\\XLM\\plans\\finepdfs\\benchmarks\\b1\\benchmark.json": {
+      "mtime_ns": 1790847088749911500,
+      "sha256": "5e46ceefe3c4230188ee88745466f55d446dd224ad4902dc31256e49969b0410",
+      "size": 2865
+    },
+    "G:\\XLM\\plans\\finepdfs\\benchmarks\\b1\\events.jsonl": {
+      "mtime_ns": 1790847278896503000,
+      "sha256": "360a57cf9691c1324016b4cc06408ffad2ad2a6530a929ead9e90208523f7ee0",
+      "size": 261
+    },
+    "G:\\XLM\\plans\\finepdfs\\benchmarks\\b1\\performance-00.json": {
+      "mtime_ns": 1790847278967074200,
+      "sha256": "fb86b74cc3186158d6d93bea1bfd5daac862d156f1efb16e302f121b92571e2f",
+      "size": 3310
+    },
+    "G:\\XLM\\plans\\finepdfs\\benchmarks\\b2\\acquisition.plan.json": {
+      "mtime_ns": 1790848128724152800,
+      "sha256": "3f418f6a0d6e9ac6d27b229e23f8303f58f26d6d846b4b71d0672ce4b48adabf",
+      "size": 2069
+    },
+    "G:\\XLM\\plans\\finepdfs\\benchmarks\\b2\\adoption.json": {
+      "mtime_ns": 1790848137233912100,
+      "sha256": "c487689e741cc01f4e7a353f7176473e69f8664119ba3b302ab12c35dd4a2093",
+      "size": 450
+    },
+    "G:\\XLM\\plans\\finepdfs\\benchmarks\\b2\\authorization.json": {
+      "mtime_ns": 1790848128658802800,
+      "sha256": "8b347696cb75cbb554fa1fb1ed3a536f37472ed7720535b420d46335b6d287d8",
+      "size": 171
+    },
+    "G:\\XLM\\plans\\finepdfs\\benchmarks\\b2\\benchmark.json": {
+      "mtime_ns": 1790848077545058900,
+      "sha256": "b5c4a2f6f19ceb60ccc48a1daa02e786ea1ef901eb3e624400cc85cbaaad7623",
+      "size": 3172
+    },
+    "G:\\XLM\\plans\\finepdfs\\benchmarks\\b2\\events.jsonl": {
+      "mtime_ns": 1790848455423965600,
+      "sha256": "135cdfef6598ea6180d44a9a7f1d5b3e938a5971ce49fb095396090ef83f47f5",
+      "size": 382
+    },
+    "G:\\XLM\\plans\\finepdfs\\benchmarks\\b2\\performance-00.json": {
+      "mtime_ns": 1790848145462611100,
+      "sha256": "05abb6d92b612e533bf6a7da07306a9573ab9d1ceed9b08b02ece2e7c20015a7",
+      "size": 3192
+    },
+    "G:\\XLM\\plans\\finepdfs\\benchmarks\\b2\\performance-01.json": {
+      "mtime_ns": 1790848455423965600,
+      "sha256": "6cc1dee3a3df33a41e3ff64ae384328c52f1904cc79b188c236bd0a7cb5e8987",
+      "size": 3192
+    }
+  },
+  "processing_allowance_deficit": 7950148642,
+  "remaining_capacity": 2771750500,
+  "scratch_min_free_bytes": 34359738368,
+  "seconds": 14.35899999999674,
+  "source_bytes": 2771021138,
+  "source_sha256": "4eeb58bc769a194f472100ed4acd1d960e35c669caecd96fd4ce6425fabca38d",
+  "state_sha256": "75f7f0d2ebdb39eccd97b3f79b6da433dd9eadc8f57b4435d19afcbc59fc1992",
+  "verdict": "FINEPDFS B2 REQUIRES B3 FOR SCRATCH CAPACITY"
+}

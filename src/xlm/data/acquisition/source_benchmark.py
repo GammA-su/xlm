@@ -27,6 +27,7 @@ from typing import Any, TextIO
 
 from filelock import FileLock, Timeout
 
+from xlm.data.acquisition import source_archive
 from xlm.data.acquisition.plan import (
     AcquisitionPlan,
     PlanAuthorization,
@@ -224,8 +225,18 @@ def adopt_benchmark_download(roots: Roots, label: str, donor: str) -> dict[str, 
     their state is written. The donor's file stays where it is, and the
     adopted state charges no transfer, so the new run reports a cache hit.
     """
+    with FileLock(str(roots.plans / "run.lock"), timeout=1):
+        return _adopt_benchmark_download(roots, label, donor)
+
+
+def _adopt_benchmark_download(roots: Roots, label: str, donor: str) -> dict[str, Any]:
     if donor == label:
         raise RunError("a benchmark cannot adopt its own download")
+    if any(
+        (benchmark_dir(roots, label) / name).exists()
+        for name in (source_archive.INTENT, source_archive.RECEIPT)
+    ):
+        raise RunError("adoption target is archived; use another authorized benchmark")
     record = read_json(benchmark_dir(roots, label) / "benchmark.json")
     check_digest(record, "benchmark plan")
     authorization = benchmark_dir(roots, label) / "authorization.json"
@@ -240,13 +251,14 @@ def adopt_benchmark_download(roots: Roots, label: str, donor: str) -> dict[str, 
     keys = ("provider", "repository", "revision", "source_id", "view_id")
     if any(donor_record["source"][k] != record["source"][k] for k in keys):
         raise RunError("donor benchmark belongs to another source, repository or revision")
+    donor_directory = source_archive.donor_directory(roots, donor, donor_record)
     adopted = []
     for i, entry in enumerate(record["files"]):
         name = str(entry["file"])
         key = unit_key(int(entry["rank"]) if entry.get("rank") is not None else i)
         donor_key = _scratch_key(donor_record["files"], name)
-        part = roots.scratch(f"bench-{donor}", f"{donor_key}.parquet.part")
-        state = read_json(roots.scratch(f"bench-{donor}", f"{donor_key}.state.json"))
+        part = donor_directory / f"{donor_key}.parquet.part"
+        state = read_json(donor_directory / f"{donor_key}.state.json")
         declared = _LINKED_SHA256.fullmatch(str(state.get("linked_etag") or ""))
         sha256, length = str(state.get("sha256")), int(state.get("length", -1))
         expected = plan.expected_file_digests.get(name)
@@ -301,6 +313,8 @@ def run_benchmark(
 ) -> dict[str, Any]:
     """NETWORK: run one authorized whole-file benchmark; write its performance receipt."""
     directory = benchmark_dir(roots, label)
+    if any((directory / name).exists() for name in (source_archive.INTENT, source_archive.RECEIPT)):
+        raise RunError("benchmark scratch is archived; adopt into an authorized benchmark to reuse")
     record = read_json(directory / "benchmark.json")
     check_digest(record, "benchmark plan")
     if read_json(directory / "authorization.json")["benchmark_digest"] != record["digest"]:
@@ -321,6 +335,12 @@ def run_benchmark(
     except Timeout as exc:
         raise RunError("another run of this source is active") from exc
     try:
+        # Recheck under the shared lock: archival may have finished while this
+        # run was validating its authorization or waiting for the lock.
+        if any(
+            (directory / name).exists() for name in (source_archive.INTENT, source_archive.RECEIPT)
+        ):
+            raise RunError("benchmark scratch is archived; use another authorized benchmark")
         shutil.rmtree(staging, ignore_errors=True)
         entries = [
             {"rank": e["rank"] if e.get("rank") is not None else i, "file": e["file"]}
