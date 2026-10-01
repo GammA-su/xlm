@@ -1,3 +1,17 @@
+> **FINEPDFS WHOLE-FILE RECORD BOUND (2026-10-01, offline): FINEPDFS
+> BENCHMARK REQUIRES NEW AUTHORIZATION.** Real b1 failed closed on a
+> 9,064,396-byte row (generic `max_record_bytes` 8 MiB). An offline scan of the
+> retained file (220,407 rows, sha256 `4eeb58bc…a38d`, repository-declared
+> digest matches) found a 24,828,818-byte maximum. 3 rows exceed 8 MiB and 0
+> exceed 24 MiB; every row above 4 MiB is a `rolmOCR` row. New source-specific,
+> digest-bound bound for FinePDFs `eng_Latn`: 32 MiB, equal to the parser ceiling.
+> A larger row still fails closed. Every other source keeps 8 MiB, and the
+> UltraX p01 plan and seal are unchanged. b1 stays as history. Next: plan,
+> authorize and adopt b2 (`benchmark adopt --donor b1`, offline, verified
+> hard link, no redownload), then run b2. Tests: 12 new + 46 related passed;
+> ruff exit 0; mypy NOT RUN (app control). Report:
+> `reports/FINEPDFS-RECORD-BOUND.md`.
+
 > **MIX-01 LIVE READINESS FROM CERTIFIED EVIDENCE (2026-10-01, offline):
 > ULTRAX READY.** `mix01-status` read only the static registry flag
 > `live_verified`, so admitted UltraX stayed NOT_LIVE_VERIFIED. Readiness now

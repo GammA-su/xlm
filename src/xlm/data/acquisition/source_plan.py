@@ -63,6 +63,19 @@ MIN_FILE_DEADLINE_SECONDS = 1800.0
 PLAN_DEADLINE_SECONDS = 14400.0
 MAX_RECORD_BYTES = 8 * MIB
 MAX_PARSER_BYTES = 32 * MIB
+#: Source-specific record bounds that replace the generic one, each with its
+#: evidence. They enter the policy and the ``AcquisitionLimits`` and so the plan
+#: digest and hash: a changed bound is a new plan that needs a new authorization.
+#: A row above the bound still fails its unit closed (``RecordLimitError``).
+SOURCE_RECORD_BYTES: dict[tuple[str, str], tuple[int, str]] = {
+    ("finepdfs_edu", "eng_Latn"): (
+        MAX_PARSER_BYTES,
+        "finepdfs-record-v1: whole-file scan of data/eng_Latn/train/000_00083.parquet "
+        "(220,407 rows, sha256 4eeb58bc...a38d) found a 24,828,818-byte largest "
+        "projected row and 3 rows above the generic 8 MiB; the bound is the existing "
+        "32 MiB parser ceiling, about 1.35x that maximum",
+    ),
+}
 MAX_LEDGER_BYTES = 512 * MIB
 MAX_DECOMPRESSION_RATIO = 15.0
 #: Canonical JSONL carries metadata beyond the UTF-8 text; ledgers are small.
@@ -212,11 +225,20 @@ def check_plan(record: Mapping[str, Any]) -> None:
         raise PlanError("not a version-1 Mix-01 source production plan")
 
 
+def record_bound(source_id: str, view_id: str) -> tuple[int, str | None]:
+    """The record byte bound of one source view and its basis (``None``: generic)."""
+    bound, basis = SOURCE_RECORD_BYTES.get((source_id, view_id), (MAX_RECORD_BYTES, None))
+    if not 0 < bound <= MAX_PARSER_BYTES:
+        raise PlanError(f"record bound of {source_id}:{view_id} exceeds the parser ceiling")
+    return bound, basis
+
+
 def plan_limits(
-    files: int, layout: SourceLayout, mode: TransportMode
+    files: int, layout: SourceLayout, mode: TransportMode, pin: Mapping[str, str]
 ) -> tuple[dict[str, Any], AcquisitionLimits]:
     """Every resource ceiling of one plan, derived by the versioned planner rules."""
     concurrency = CONCURRENCY[mode]
+    record_bytes, record_basis = record_bound(pin["source_id"], pin["view_id"])
     max_file = math.ceil(layout.file_bytes * FILE_BYTES_TOLERANCE / MIB) * MIB
     max_rows = math.ceil(layout.rows_per_file * ROWS_TOLERANCE)
     canonical_per_file = math.ceil(
@@ -231,7 +253,7 @@ def plan_limits(
         "max_file_bytes": max_file,
         "max_rows_per_file": max_rows,
         "max_decoded_bytes_per_file": max_file * DECODED_BYTES_PER_FILE_FACTOR,
-        "max_record_bytes": MAX_RECORD_BYTES,
+        "max_record_bytes": record_bytes,
         "max_parser_bytes": MAX_PARSER_BYTES,
         "max_ledger_bytes": MAX_LEDGER_BYTES,
         "max_decompression_ratio": MAX_DECOMPRESSION_RATIO,
@@ -250,6 +272,9 @@ def plan_limits(
         "download_workers_max": CONCURRENCY_MAX["download"],
         "process_workers_max": CONCURRENCY_MAX["process"],
     }
+    if record_basis is not None:
+        # Only an overridden source carries this key: generic plans keep their digests.
+        policy["max_record_bytes_basis"] = record_basis
     limits = AcquisitionLimits(
         max_transferred_bytes=math.ceil(files * layout.file_bytes * TRANSFER_FACTOR / MIB) * MIB,
         max_decompressed_bytes=files * policy["max_decoded_bytes_per_file"],
@@ -263,7 +288,7 @@ def plan_limits(
         overall_deadline_seconds=PLAN_DEADLINE_SECONDS,
         max_decompression_ratio=MAX_DECOMPRESSION_RATIO,
         max_workers=CONCURRENCY_MAX["download"],
-        max_record_bytes=MAX_RECORD_BYTES,
+        max_record_bytes=record_bytes,
         max_parser_bytes=MAX_PARSER_BYTES,
     )
     return policy, limits
@@ -388,7 +413,7 @@ def build_plan(
         )
     stop = start + wanted
     files = ordered[start:stop]
-    policy_limits, limits = plan_limits(len(files), layout, mode)
+    policy_limits, limits = plan_limits(len(files), layout, mode, pin)
     minted = acquisition_plan(
         pin, files, limits, int(inventory["seed"]), coverage_note(sequence, start, stop)
     )

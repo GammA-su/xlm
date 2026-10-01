@@ -18,6 +18,7 @@ never consumes a production inventory position.
 
 from __future__ import annotations
 
+import os
 import shutil
 import sys
 from collections.abc import Callable, Mapping, Sequence
@@ -35,7 +36,14 @@ from xlm.data.acquisition.plan import (
 )
 from xlm.data.acquisition.source_dashboard import ObservedScratch
 from xlm.data.acquisition.source_local import process_source_unit, scan_documents
-from xlm.data.acquisition.source_parquet import TransferMeter, TransferResult, identity_record
+from xlm.data.acquisition.source_parquet import (
+    _LINKED_SHA256,
+    STATE_VERSION,
+    TransferMeter,
+    TransferResult,
+    file_sha256,
+    identity_record,
+)
 from xlm.data.acquisition.source_plan import acquisition_plan, plan_limits
 from xlm.data.acquisition.source_run import (
     Monitor,
@@ -50,6 +58,7 @@ from xlm.data.acquisition.source_run import (
     self_digest,
     source_url,
     transfer_limits,
+    unit_key,
     write_once,
 )
 from xlm.data.acquisition.transport_policy import (
@@ -93,7 +102,7 @@ def build_benchmark(
     if not label.isidentifier() or not 1 <= len(entries) <= MAX_BENCHMARK_FILES:
         raise RunError(f"benchmark needs a plain label and 1..{MAX_BENCHMARK_FILES} files")
     files = [str(e["file"]) for e in entries]
-    policy, limits = plan_limits(len(files), layout, TransportMode.WHOLE_FILE_LOCAL)
+    policy, limits = plan_limits(len(files), layout, TransportMode.WHOLE_FILE_LOCAL, pin)
     # One stream and at most one process per file: record the effective concurrency.
     policy["download_workers"] = min(download_workers, len(files))
     policy["process_workers"] = min(process_workers, len(files))
@@ -196,6 +205,90 @@ def authorize_benchmark(
     validate_plan_authorization(plan, catalog_source_approved=True)
     save_acquisition_plan(plan, directory / "acquisition.plan.json")
     return plan
+
+
+def _scratch_key(entries: Sequence[Mapping[str, Any]], name: str) -> str:
+    for i, entry in enumerate(entries):
+        if entry["file"] == name:
+            return unit_key(int(entry["rank"]) if entry.get("rank") is not None else i)
+    raise RunError(f"'{name}' is not a file of the donor benchmark")
+
+
+def adopt_benchmark_download(roots: Roots, label: str, donor: str) -> dict[str, Any]:
+    """OFFLINE: reuse a donor benchmark's complete download of the same pinned files.
+
+    Only for an authorized benchmark of the same source, repository and
+    revision. The donor's scratch state must be complete, name the identical
+    canonical URL and resolved commit, and carry a repository-declared SHA-256
+    equal to the recorded one; the hard-linked bytes are hashed again before
+    their state is written. The donor's file stays where it is, and the
+    adopted state charges no transfer, so the new run reports a cache hit.
+    """
+    if donor == label:
+        raise RunError("a benchmark cannot adopt its own download")
+    record = read_json(benchmark_dir(roots, label) / "benchmark.json")
+    check_digest(record, "benchmark plan")
+    authorization = benchmark_dir(roots, label) / "authorization.json"
+    if (
+        not authorization.is_file()
+        or read_json(authorization)["benchmark_digest"] != (record["digest"])
+    ):
+        raise RunError("only an authorized benchmark adopts a download")
+    plan = load_acquisition_plan(benchmark_dir(roots, label) / "acquisition.plan.json")
+    donor_record = read_json(benchmark_dir(roots, donor) / "benchmark.json")
+    check_digest(donor_record, "donor benchmark plan")
+    keys = ("provider", "repository", "revision", "source_id", "view_id")
+    if any(donor_record["source"][k] != record["source"][k] for k in keys):
+        raise RunError("donor benchmark belongs to another source, repository or revision")
+    adopted = []
+    for i, entry in enumerate(record["files"]):
+        name = str(entry["file"])
+        key = unit_key(int(entry["rank"]) if entry.get("rank") is not None else i)
+        donor_key = _scratch_key(donor_record["files"], name)
+        part = roots.scratch(f"bench-{donor}", f"{donor_key}.parquet.part")
+        state = read_json(roots.scratch(f"bench-{donor}", f"{donor_key}.state.json"))
+        declared = _LINKED_SHA256.fullmatch(str(state.get("linked_etag") or ""))
+        sha256, length = str(state.get("sha256")), int(state.get("length", -1))
+        expected = plan.expected_file_digests.get(name)
+        if (
+            state.get("version") != STATE_VERSION
+            or state.get("complete") is not True
+            or state.get("name") != name
+            or state.get("url") != source_url(record["source"], name)
+            or state.get("repo_commit") != record["source"]["revision"]
+            or state.get("verified_bytes") != length
+            or declared is None
+            or declared[1].lower() != sha256
+            or (expected is not None and expected.lower() != sha256)
+        ):
+            raise RunError(f"{name}: donor download is incomplete or not independently bound")
+        target = roots.scratch(f"bench-{label}", f"{key}.parquet.part")
+        target_state = roots.scratch(f"bench-{label}", f"{key}.state.json")
+        if target.exists() or target_state.exists():
+            raise RunError(f"{name}: benchmark {label} already holds a download; refusing")
+        target.parent.mkdir(parents=True, exist_ok=True)
+        os.link(part, target)
+        if file_sha256(target) != (sha256, length):
+            target.unlink()
+            raise RunError(f"{name}: donor bytes do not match their recorded SHA-256")
+        provenance = {"benchmark": donor, "digest": donor_record["digest"], "sha256": sha256}
+        write_once(
+            target_state,
+            {
+                **state,
+                "charged_bytes": 0,
+                "requests": 0,
+                "redirects": 0,
+                "retries": 0,
+                "adopted_from": provenance,
+            },
+        )
+        adopted.append({"file": name, "length": length, **provenance})
+    receipt = self_digest(
+        {"kind": "mix01_source_benchmark_adoption", "label": label, "files": adopted}
+    )
+    write_once(benchmark_dir(roots, label) / "adoption.json", receipt)
+    return receipt
 
 
 def run_benchmark(

@@ -667,6 +667,12 @@ def cmd_benchmark(args: argparse.Namespace) -> int:
         )
         print(f"authorized benchmark {args.label}")
         return 0
+    if args.action == "adopt":
+        adoption = bench.adopt_benchmark_download(roots, args.label, args.donor)
+        for item in adoption["files"]:
+            print(f"adopted {item['file']} ({item['length']:,} B, sha256 {item['sha256']})")
+        print(f"adoption {adoption['digest']}: no bytes transferred")
+        return 0
     if args.action == "run":
         receipt = bench.run_benchmark(
             roots, args.label, admitted=admission_check(spec, target, expected)
@@ -771,8 +777,9 @@ def build_parser() -> argparse.ArgumentParser:
     p.set_defaults(func=cmd_seal)
 
     p = common(sub.add_parser("benchmark", help="bounded transport benchmark (run = NETWORK)"))
-    p.add_argument("action", choices=("plan", "authorize", "run", "record-range"))
+    p.add_argument("action", choices=("plan", "authorize", "adopt", "run", "record-range"))
     p.add_argument("--label", required=True)
+    p.add_argument("--donor", default="", help="adopt: earlier benchmark label to reuse")
     p.add_argument("--files", type=int, default=2)
     p.add_argument("--file")
     p.add_argument("--download-workers", type=int, default=8)

@@ -389,7 +389,7 @@ uv run --offline --locked --no-sync --extra cpu --extra eval xlm data plan --sou
 $env:HF_HUB_OFFLINE='0'; $env:HF_DATASETS_OFFLINE='0'
 uv run --offline --locked --no-sync --extra cpu --extra eval xlm data fetch --plan G:\XLM\plans\ultrax\benchmarks\b1\range-plan.json --output-dir C:\XLM-scratch\ultrax\bench-range\raw --scratch-dir C:\XLM-scratch\ultrax\bench-range\scratch --pilot-approved
 $env:HF_HUB_OFFLINE='1'; $env:HF_DATASETS_OFFLINE='1'
-uv run --offline --locked --no-sync --extra cpu --extra eval xlm data adapt --plan G:\XLM\plans\ultrax\benchmarks\b1\range-plan.json --adapter ultrax_ultrafineweb --input C:\XLM-scratch\ultrax\bench-range\raw\selected_records.jsonl --output-dir C:\XLM-scratch\ultrax\bench-range\canonical --on-reject record | Out-File -Encoding utf8 -FilePath G:\XLM\plans\ultrax\benchmarks\b1\range-adapt.log
+uv run --offline --locked --no-sync --extra cpu --extra eval xlm data adapt --plan G:\XLM\plans\ultrax\benchmarks\b1\range-plan.json --adapter ultrax_ultrafineweb --input C:\XLM-scratch\ultrax\bench-range\raw\selected_records.jsonl --output-dir C:\XLM-scratch\ultrax\bench-range\canonical --on-reject record --max-input-bytes 134217728 | Out-File -Encoding utf8 -FilePath G:\XLM\plans\ultrax\benchmarks\b1\range-adapt.log
 uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/mix01_source.py benchmark record-range --source-key ultrax --label b1 --range-plan G:\XLM\plans\ultrax\benchmarks\b1\range-plan.json --range-perf C:\XLM-scratch\ultrax\bench-range\scratch\performance\<RANGE_PLAN_ID>.perf.json --range-journal C:\XLM-scratch\ultrax\bench-range\scratch\journals\<RANGE_PLAN_ID>.progress.json --range-documents C:\XLM-scratch\ultrax\bench-range\canonical\documents.jsonl --adapt-log G:\XLM\plans\ultrax\benchmarks\b1\range-adapt.log
 uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/mix01_source.py policy freeze --source-key ultrax --basis measured --whole-receipt G:\XLM\plans\ultrax\benchmarks\b1\performance-00.json --range-receipt G:\XLM\plans\ultrax\benchmarks\b1\range-receipt.json
 uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/mix01_source.py plan --source-key ultrax
@@ -454,6 +454,18 @@ uses `xlm data sample-blocks --source finepdfs_edu --view eng_Latn --revision 9c
 `adapt | Out-File -Encoding utf8`, `benchmark record-range`, exactly as for
 UltraX with `finepdfs`/`finepdfs_edu`/`eng_Latn` paths. Plan/run require a
 frozen FinePDFs inventory first.
+
+Correction (2026-10-01):
+
+- The real b1 run failed closed. A 9,064,396-byte row exceeded the generic 8 MiB `max_record_bytes`.
+- FinePDFs `eng_Latn` now has an explicit, digest-bound 32 MiB record bound. The largest row in the scanned file is 24,828,818 B.
+- A row above the bound still fails the unit closed.
+- b1 stays as failed history. Plan and authorize a new **b2**, then run `benchmark adopt --source-key finepdfs --label b2 --donor b1` (OFFLINE). That reuses the verified retained 2.77 GB file with no redownload. After that, run `benchmark run --label b2`.
+- See `FINEPDFS-RECORD-BOUND.md`.
+
+The UltraX range-half `adapt` needs `--max-input-bytes 134217728`. The default
+64 MiB cap is below its 96,365,880-byte 20,000-row `selected_records.jsonl`.
+Use the same flag for a FinePDFs range half of similar size.
 
 SYNTH (`--source-key synth`): the same first six commands; benchmark
 `benchmark plan --source-key synth --label b1 --file synth_001.parquet`; the range
