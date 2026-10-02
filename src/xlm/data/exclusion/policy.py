@@ -135,19 +135,19 @@ class C05Error(ValueError):
     """An identity, budget or authorization check failed closed."""
 
 
-ENGINEERING_BLOCKERS = (
-    "Hard aggregate scratch/rollback-journal enforcement: current filesystem thresholds "
-    "are sampled; SQLite page/output limits alone do not prove the aggregate ceiling",
-    "Final exact per-allocation down-selection and selected-training-membership receipt "
-    "bridge: quota reports and screened exposure plans do not implement that freeze",
-)
+# Engineering acceptance (independent audit, 2026-10-02): hard aggregate storage
+# admission (capacity.py) and the exact quota selection / selected-training-membership
+# / schema-3 receipt chain (selection.py, freeze.py, bridge.py) are implemented and
+# tested. Add an entry here to re-close protected plans and runs.
+ENGINEERING_BLOCKERS: tuple[str, ...] = ()
 
 
 def require_engine_acceptance(mode: str) -> None:
-    """Keep the unaudited production path closed while authored validation proceeds.
+    """Refuse protected plans/runs while any recorded engineering blocker remains.
 
-    A benchmark receipt alone cannot cure spill-accounting and downstream
-    integration gaps. Removing this refusal requires completing that acceptance.
+    This gate covers engineering only. Protected execution still requires the
+    protected benchmark receipt, signed operator decisions (Gutenberg lineage,
+    resources, policy), trusted keys and a plan-digest-bound authorization.
     """
-    if mode != "authored":
+    if mode != "authored" and ENGINEERING_BLOCKERS:
         raise C05Error("protected engine acceptance incomplete: " + "; ".join(ENGINEERING_BLOCKERS))

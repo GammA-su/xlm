@@ -20,6 +20,7 @@ plus the reviewed free-space reserve. Nothing here widens a bound automatically.
 
 from __future__ import annotations
 
+import os
 import shutil
 import sqlite3
 import uuid
@@ -278,7 +279,9 @@ def physical_reserve(
         if item.current > item.bound:
             raise C05Error(f"existing {item.name} exceeds its hard bound")
         root = _volume(item.path)
-        anchor = str(Path(root.anchor or root).resolve())
+        # Group by filesystem device, not path anchor: a mount point (POSIX, or a
+        # Windows folder mount) shares the anchor but has its own free space.
+        anchor = f"{Path(root.anchor or root).resolve()} (device {os.stat(root).st_dev})"
         volume = volumes.setdefault(anchor, {"path": root, "growth": 0, "present": 0})
         volume["growth"] += item.bound - item.current
         volume["present"] += item.current

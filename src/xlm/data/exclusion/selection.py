@@ -369,6 +369,11 @@ def select(
                 records += 1
         if value.hexdigest() != counts["counts_sha256"] or records != counts["documents"]:
             raise C05Error("exact count artifact changed during selection")
+        # Even a trusted-signer count artifact must cover the complete eligible pool;
+        # an omitted record would silently change the deterministic selection.
+        kept_train = gate.db.execute("SELECT COUNT(*) FROM membership WHERE split='train'")
+        if records != kept_train.fetchone()[0]:
+            raise C05Error("exact counts do not cover every kept training record")
         report: dict[str, dict[str, Any]] = {}
         with db:
             for allocation in sorted(quotas_by_allocation):
@@ -514,6 +519,8 @@ class SelectionGate:
         db.execute("CREATE INDEX selected_component ON selected(component)")
         value = hashlib.sha256()
         documents = tokens = 0
+        report: dict[str, dict[str, Any]] = self.body["allocations"]
+        actual = {a: {"documents": 0, "tokens": 0, "truncated": 0} for a in report}
         with db, (directory / "selected.jsonl").open("rb") as stream:
             while raw := stream.readline(64 * 1024 + 1):
                 if len(raw) > 64 * 1024:
@@ -521,10 +528,12 @@ class SelectionGate:
                 value.update(raw)
                 row = canonical.loads_bytes_strict(raw)
                 allocation = allocation_key(*row["allocation"])
+                if allocation not in actual:
+                    raise C05Error("selected record outside the signed allocations")
                 if not _kept_train(gate, row["doc_id"], row["content"], allocation):
                     raise C05Error("selected record is not kept training membership")
                 chosen, counted = row["selected_valid_targets"], row["counted_valid_targets"]
-                if not 0 < chosen <= counted:
+                if type(chosen) is not int or type(counted) is not int or not 0 < chosen <= counted:
                     raise C05Error("selected valid targets outside the exact count")
                 db.execute(
                     "INSERT INTO selected VALUES(?,?,?,?,?)",
@@ -532,12 +541,35 @@ class SelectionGate:
                 )
                 documents += 1
                 tokens += chosen
+                totals = actual[allocation]
+                totals["documents"] += 1
+                totals["tokens"] += chosen
+                totals["truncated"] += int(chosen < counted)
         if (value.hexdigest(), documents, tokens) != (
             self.body["selected_membership_sha256"],
             self.body["selected_documents"],
             self.body["selected_valid_targets"],
         ):
             raise C05Error("selected membership changed during import")
+        # Re-prove each internal allocation from the actual rows, so surplus in one
+        # allocation (an IFM view, a Common Pile upstream) can never cover another.
+        components: dict[str, int] = {}
+        for allocation, totals in actual.items():
+            signed_row = report[allocation]
+            if (
+                totals["tokens"] != signed_row["quota"]
+                or totals["tokens"] != signed_row["selected_valid_targets"]
+                or totals["documents"] != signed_row["selected_documents"]
+                or totals["truncated"] != signed_row["truncated_documents"]
+                or totals["truncated"] > 1
+            ):
+                raise C05Error("selected allocation totals differ from the signed allocation")
+            component = canonical.loads_strict(allocation)[0]
+            components[component] = components.get(component, 0) + totals["tokens"]
+        if {c: v["quota"] for c, v in self.body["components"].items()} != components or sum(
+            components.values()
+        ) != self.body["valid_target_quota"]:
+            raise C05Error("selected component totals differ from the signed allocations")
 
     def selected(self, doc_id: str) -> bool:
         row = self.gate.db.execute("SELECT 1 FROM selected WHERE id=?", (doc_id,)).fetchone()

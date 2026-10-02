@@ -1,14 +1,14 @@
 # Global C05 preparation
 
-**Current state (2026-10-02, allocation/resource continuation):** the operator
+**Current state (2026-10-02, independent engineering acceptance audit):** the operator
 control plane, hard aggregate storage admission and the final allocation chain
 (exact counts, quota selection, selected-training-membership, final freeze, training
-input and schema-3 claim receipt) exist and pass authored/generated tests.
-**Protected plan creation/execution remain disabled in code**: the recorded
-`ENGINEERING_BLOCKERS` list and `require_engine_acceptance` were left unchanged and
-need an explicit maintainer decision (see the report). Missing operator inputs:
-protected benchmark preparation receipt, Gutenberg lineage decision and reviewed
-resource decision. Sections further below are historical unless they say otherwise.
+input and schema-3 claim receipt) are engineering-accepted; `ENGINEERING_BLOCKERS` is
+empty (see the report). Protected plans and runs still refuse without the operator
+inputs: protected benchmark preparation receipt, Gutenberg lineage decision and
+reviewed resource decision (plus trusted keys and plan authorization). A run refuses
+if job files exist without signed `state.json`; never delete it to "restart" — use a
+new plan. Sections further below are historical unless they say otherwise.
 
 ## Readiness check (metadata only)
 
@@ -16,8 +16,9 @@ resource decision. Sections further below are historical unless they say otherwi
 uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator plan-readiness --manifest docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/input-manifest.json --ifm-split G:/XLM/calib/requirement_splits/ifm_behaviors_general_planning.json --geometry-probe-dir G:/XLM/temp/c05-geometry-probe
 ```
 
-Expected exit 2. The JSON separates `engineering_blockers`, `operator_decisions`,
-`protected_evidence` and `engineering_checks`. The checks re-derive the 17 frozen
+Expected exit 2 until the operator inputs exist. The JSON separates
+`engineering_blockers` (now `[]`), `operator_decisions`, `protected_evidence` and
+`engineering_checks`. The checks re-derive the 17 frozen
 allocations (6,000,000,000 valid targets) from the real quota table, IFM split and
 Common Pile split, and admit the *proposed* `Resources()` defaults against the SQLite
 journal geometry measured in the probe directory (a few kB, removed afterwards).

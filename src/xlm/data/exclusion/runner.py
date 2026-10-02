@@ -218,6 +218,18 @@ def _locked(
         if state.get("plan") != identity:
             raise C05Error("journal plan mismatch")
     else:
+        # Signed state is saved before any other job file exists, so job files
+        # without it mean deletion; restarting would reset spent time/work/storage.
+        leftovers = [
+            name
+            for name in ("facts.sqlite", "facts.sqlite-journal", "decisions.jsonl")
+            if (work / name).exists()
+        ] + [p.name for p in (output / (identity + ".partial"), output / identity) if p.exists()]
+        if leftovers:
+            raise C05Error(
+                "C05 job files exist without signed state; spent accounting cannot restart: "
+                + ", ".join(leftovers)
+            )
         state = {
             "plan": identity,
             "started": time.time(),

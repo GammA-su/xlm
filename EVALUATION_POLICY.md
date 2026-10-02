@@ -7,8 +7,9 @@ occur under the separate operator identity/machine required below, with a truste
 content-free receipt. Raw indexes, pattern digests and detailed exclusion decisions
 remain protected; exported kept membership is frozen against the complete source
 manifest before any query. The new completion/token-shard attestations do not
-replace the official evaluation `FinalExclusionReceipt` gate: that integration is
-still incomplete and protected execution is disabled. See the current
+replace the official evaluation `FinalExclusionReceipt` gate. C05 engineering is
+accepted (2026-10-02); protected execution still awaits the protected benchmark
+receipt and operator decisions, and no protected schema-3 receipt exists. See the current
 [C05 ledger](docs/implementation/reports/C05-GLOBAL-CONTAMINATION-PLAN.md).
 
 **Official-claim binding (2026-10-02):** `verify_benchmark_claim` now accepts only a

@@ -220,12 +220,14 @@ authored matcher, disk-grouping, recovery and membership-gate tests. Benchmark
 repetition must never suppress a signature using training-corpus frequency.
 Known-lineage v2 includes all parents and available SYNTH seed URLs; it does not
 invent missing book identities. Detailed decisions remain private; only kept
-membership and aggregate results may be exported. Protected execution remains
-disabled pending full production acceptance; these tests do not satisfy the
-scientific requirements below or authorize tokenizer/training operations. See
+membership and aggregate results may be exported. Engineering acceptance is complete
+(independent audit, 2026-10-02); protected execution still requires the protected
+benchmark receipt, signed operator decisions and plan authorization. These tests do
+not satisfy the scientific requirements below or authorize tokenizer/training
+operations. See
 `docs/implementation/reports/C05-GLOBAL-CONTAMINATION-PLAN.md` for the current ledger.
 
-Allocation contract (2026-10-02, implemented; protected path still closed): the
+Allocation contract (2026-10-02, implemented and engineering-accepted; protected path awaits operator evidence/decisions): the
 final Mix-01 training membership is a deterministic exact selection *from* C05 kept
 `train` membership, never the kept set itself. Exact valid targets use the frozen
 tokenizer bound to the same completion (`c05-valid-targets-v1`: every token of

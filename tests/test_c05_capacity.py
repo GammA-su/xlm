@@ -268,7 +268,9 @@ def test_readiness_separates_engineering_decisions_and_evidence(
     )
     report = json.loads(capsys.readouterr().out)
     assert code == 2 and report["ready"] is False and report["plan_digest"] is None
-    assert report["engineering_blockers"] == list(ENGINEERING_BLOCKERS)
+    assert report["engineering_blockers"] == list(ENGINEERING_BLOCKERS) == []
+    # Only genuine operator decisions and protected evidence remain.
+    assert report["blockers"] and not any(b.startswith("engineering") for b in report["blockers"])
     assert report["operator_decisions"] == {
         "gutenberg_lineage_decision": "missing",
         "reviewed_resource_decision": "missing",

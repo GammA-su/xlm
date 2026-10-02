@@ -1,0 +1,31 @@
+{
+  "audit": "independent C05 engineering acceptance audit",
+  "date": "2026-10-02",
+  "starting_head": "c8119475bceccbcec572d37b23c9ad475d5799d1",
+  "environment": {
+    "python": "3.12.13",
+    "platform": "Windows-11-10.0.26200",
+    "runner": "uv run --offline --locked --no-sync --extra cpu --extra eval",
+    "UV_PROJECT_ENVIRONMENT": "F:/Project/xlm-common-pile/.venv",
+    "PYTHONPATH": "F:/Project/xlm-c05-global/src (plus checkout root for scripts.*)",
+    "threads": "OMP/MKL/OPENBLAS/NUMEXPR=1, TOKENIZERS_PARALLELISM=false",
+    "offline": "HF_HUB_OFFLINE, HF_DATASETS_OFFLINE, TRANSFORMERS_OFFLINE, UV_OFFLINE = 1"
+  },
+  "fixture_or_live": "authored/generated fixtures and synthetic trust only; plan-readiness reads real metadata (manifest, quota table, IFM split) and writes a removed geometry probe",
+  "runs": [
+    {"name": "baseline-focused", "code": "unmodified HEAD", "selection": "recorded focused-final 10 files, not serial/optional, -n 16", "result": "225 passed", "exit": 0, "wall_seconds": 26, "log": "baseline-focused.log"},
+    {"name": "audit-before-fix", "code": "unmodified HEAD", "selection": "tests/test_c05_acceptance_audit.py -n 0", "result": "5 failed, 5 passed (state reset, volume grouping, 2x internal allocation shift, incomplete counts)", "exit": 1, "note": "first volume test version errored on its own monkeypatch target; rewritten to patch os.stat and then failed behaviourally (1 volume instead of 2)"},
+    {"name": "audit-and-core-after-fix", "selection": "audit + capacity + selection + engine + control, -n 16", "result": "93 passed", "exit": 0, "wall_seconds": 30},
+    {"name": "related-parallel-fixes", "selection": "recorded related-parallel 36 files + audit, not serial/optional, -n 16 --dist=worksteal", "result": "578 passed", "exit": 0, "wall_seconds": 40, "log": "related-parallel-fixes.log"},
+    {"name": "related-parallel-gate-open", "selection": "same, after ENGINEERING_BLOCKERS change", "result": "579 passed", "exit": 0, "wall_seconds": 39, "log": "related-parallel-gate-open.log"},
+    {"name": "related-serial-gate-open", "selection": "same 37 files, serial or optional_dependency, -n 0, --basetemp=C:/t/aud8", "result": "19 passed, 580 deselected", "exit": 0, "wall_seconds": 612, "log": "related-serial-gate-open.log"},
+    {"name": "synthetic-flow", "command": "python -m scripts.c05_synthetic_flow --root C:/t/audflow2/root --output C:/t/audflow2/summary.json", "result": "383 docs, 349 kept, 17 excluded, 17 duplicates; 2 admissions; 17/17 EXACT; 34 selected, 17 truncated; 10000 targets; receipt schema 3 development; claim-check exit 1", "exit": 0, "wall_seconds": 9, "log": "synthetic-flow.log", "summary": "synthetic-flow-summary.json"},
+    {"name": "ruff-format-check", "files": 30, "exit": 0},
+    {"name": "ruff-check", "files": 30, "exit": 0},
+    {"name": "mypy-strict-01", "files": 28, "exit": 1, "finding": "tests/test_c05_acceptance_audit.py:199 no-any-return (fixed with int())"},
+    {"name": "mypy-strict-final", "files": 28, "exit": 0},
+    {"name": "git-diff-check", "exit": 0},
+    {"name": "plan-readiness", "command": "python -m xlm.data.exclusion.operator plan-readiness --manifest docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/input-manifest.json --ifm-split G:/XLM/calib/requirement_splits/ifm_behaviors_general_planning.json --geometry-probe-dir G:/XLM/temp/c05-geometry-probe", "exit": 2, "result": "engineering_blockers []; gutenberg_lineage_decision missing; reviewed_resource_decision missing; protected_benchmark_preparation_receipt missing", "output": "plan-readiness.json", "cleanup": "empty probe directory removed with rmdir"}
+  ],
+  "not_run": ["full repository acceptance selection", "real C05 scan", "production tokenizer", "real 6B freeze", "model training", "CUDA", "network"]
+}

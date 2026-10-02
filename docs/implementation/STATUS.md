@@ -1,3 +1,21 @@
+> **GLOBAL C05 INDEPENDENT ENGINEERING ACCEPTANCE AUDIT (2026-10-02): ENGINEERING ACCEPTED; OPERATOR EVIDENCE/DECISIONS REQUIRED.**
+>
+> Independent audit of `c811947`. Falsification tests found and fixed four bounded
+> defects: deleting signed `state.json` beside existing job files silently restarted
+> spent time/work/storage accounting; physical-reserve volumes were grouped by path
+> anchor, not filesystem device (mount points unchecked); `SelectionGate` trusted
+> signed per-allocation totals, so a re-signed selection could move IFM
+> general→planning or Gutenberg→news targets inside a component; `select` accepted
+> counts omitting kept training records. With those fixed, both
+> `ENGINEERING_BLOCKERS` entries are obsolete and were removed; the gate refuses
+> protected work only while an entry exists. `plan-readiness` exits 2 with an empty
+> engineering list: Gutenberg lineage decision, reviewed resource decision and
+> protected benchmark receipt remain. Related parallel 579 passed, serial complement
+> 19 passed; Ruff and strict mypy clean. The 2 GiB training-input cap blocks
+> later 6B training, not C05. No real scan, tokenizer, freeze, training, network or
+> push. [Report](reports/C05-GLOBAL-CONTAMINATION-PLAN.md),
+> [evidence](evidence/C05-GLOBAL-CONTAMINATION-PLAN/engineering-acceptance-audit/).
+
 > **GLOBAL C05 ALLOCATION/RESOURCE CONTINUATION (2026-10-02): ENGINE NEEDS A GATE DECISION.**
 >
 > Recovered Astra checkpoint `42c133b` intact (clean; also on `rescue/c05-post-astra-shutdown`).

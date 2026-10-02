@@ -185,7 +185,9 @@ def test_authored_plan_binds_material_input_policy_limits_and_roots(tmp_path: Pa
     assert plan.identity() != plan.model_copy(update={"sequence": 2}).identity()
     with pytest.raises(C05Error, match="overlap"):
         plan.model_copy(update={"output_root": plan.data_root}).identity()
-    with pytest.raises(C05Error, match="acceptance incomplete"):
+    # Engineering is accepted; an authored benchmark receipt still cannot back a
+    # protected plan (the genuine protected-evidence requirement).
+    with pytest.raises(C05Error, match="benchmark mode"):
         make_plan(
             manifest,
             envelope,
