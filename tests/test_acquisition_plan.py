@@ -24,7 +24,7 @@ from xlm.data.acquisition.plan import (
     save_acquisition_plan,
     validate_plan_authorization,
 )
-from xlm.data.sources.policy import DirectSourceDeniedError
+from xlm.data.sources.policy import BenchmarkContaminationRisk, DirectSourceDeniedError
 
 
 def test_plan_behavioral_hash_invariance() -> None:
@@ -427,7 +427,7 @@ def test_production_admission_synthetic_evidence_is_refused(tmp_path: Path) -> N
             adapter_id="JsonlAdapter",
             probe_fingerprint="fp_production_1",
             license_review="approved",
-            benchmark_risk="clean",
+            benchmark_risk=BenchmarkContaminationRisk.CLEAN,
             operator_approved=True,
             operator_notes="synthetic must still be refused",
         ),
@@ -627,7 +627,7 @@ def test_cli_attempt_renewal_offline(tmp_path: Path) -> None:
 
     def plan_cmd(extra: list[str], output: Path) -> dict[str, Any]:
         _attempt_cli(home, *base_args, "--output", str(output), *extra)
-        return json.loads(output.read_text(encoding="utf-8"))
+        return dict(json.loads(output.read_text(encoding="utf-8")))
 
     first = plan_cmd([], tmp_path / "plan1.json")
     renewed = plan_cmd(["--attempt", "2"], tmp_path / "plan2.json")
@@ -650,3 +650,34 @@ def test_cli_attempt_renewal_offline(tmp_path: Path) -> None:
         "0",
         success=False,
     )
+
+
+def test_explicit_production_file_limit_is_bounded_and_hash_bound() -> None:
+    base = _attempt_plan_base() | {
+        "is_pilot": False,
+        "mode": AcquisitionMode.WHOLE_FILE,
+        "row_ranges": None,
+        "selected_files": [f"news/file{i}.jsonl.gz" for i in range(268)],
+    }
+    with pytest.raises(ValidationError, match="at most 256"):
+        AcquisitionPlan(**base)
+    plan = AcquisitionPlan(**(base | {"selected_file_limit": 268}))
+    assert AcquisitionPlan.model_validate_json(plan.model_dump_json()) == plan
+    assert (
+        plan.compute_behavioral_hash()
+        != AcquisitionPlan(**(base | {"selected_file_limit": 269})).compute_behavioral_hash()
+    )
+    with pytest.raises(ValidationError, match="pilot"):
+        AcquisitionPlan(**(base | {"is_pilot": True, "selected_file_limit": 268}))
+    with pytest.raises(ValidationError):
+        AcquisitionPlan(**(base | {"selected_file_limit": 385}))
+    with pytest.raises(ValidationError, match="at most 268"):
+        AcquisitionPlan(
+            **(
+                base
+                | {
+                    "selected_file_limit": 268,
+                    "selected_files": base["selected_files"] + ["news/extra.jsonl.gz"],
+                }
+            )
+        )

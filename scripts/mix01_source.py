@@ -44,6 +44,7 @@ from xlm.core.paths import ArtifactPaths
 from xlm.data.acquisition import component_allowlist as allow
 from xlm.data.acquisition import component_calibration as cc
 from xlm.data.acquisition import component_policy as cp
+from xlm.data.acquisition import component_transport as ct
 from xlm.data.acquisition import range_reach as reach
 from xlm.data.acquisition import source_benchmark as bench
 from xlm.data.acquisition import source_plan as planner
@@ -54,6 +55,7 @@ from xlm.data.acquisition.sampling import SamplingRefusal, discover_layout_local
 from xlm.data.acquisition.source_dashboard import ObservedScratch
 from xlm.data.acquisition.source_formats import load_durable
 from xlm.data.adapters.columns import columns_for
+from xlm.data.evidence_v2 import canonical
 from xlm.data.sources import certified_evidence as ce
 from xlm.data.sources import common_pile_evidence as cpe
 from xlm.data.sources import common_pile_license as cpl
@@ -362,12 +364,15 @@ def current_admission(spec: SourceSpec, target: ArtifactStore) -> dict[str, str]
     gate = AdmissionGate.evaluate(evidence, decision)
     if not gate.admitted or not review.decision_binds_bridge(decision, receipt):
         raise DriverError("view is not admitted on the current bridge: " + "; ".join(gate.reasons))
-    return {
+    identity = {
         "probe_fingerprint": str(receipt["probe_fingerprint"]),
         "bridge_receipt_digest": str(receipt["digest"]),
         "decision_contract": decision.contract_version,
         "benchmark_risk": decision.benchmark_risk.value,
     }
+    if spec.calibration == "component":
+        identity["admission_decision_digest"] = canonical.digest(decision.model_dump(mode="json"))
+    return identity
 
 
 def admission_check(
@@ -824,6 +829,14 @@ def evaluate_policy(
     )
     if spec.calibration == "component":
         models = {mode: model for mode, model in models.items() if mode in planner.JSONL_GZ_MODES}
+        return ct.evaluate(
+            component_ready(args, spec),
+            layout,
+            requirement,
+            models,
+            benchmark_reserved=planner.BENCHMARK_RESERVED_POSITIONS,
+            durable_budget_bytes=args.durable_budget_bytes,
+        )
     return policy.evaluate(layout, requirement, ceilings, models)
 
 

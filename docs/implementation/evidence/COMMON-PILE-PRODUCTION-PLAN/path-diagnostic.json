@@ -1,0 +1,26 @@
+[
+  {
+    "case": "short",
+    "path": "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-229\\popen-gw1\\test_production_fetch_with_ver0\\home\\acquisition\\plan_authored_default_https_2b29bc7736d1b2de61a0\\scratch\\journals\\audit-path-length.tmp",
+    "characters": 207,
+    "outcome": "created"
+  },
+  {
+    "case": "long",
+    "path": "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-229\\popen-gw1\\test_production_fetch_with_ver0\\home\\acquisition\\plan_authored_default_https_2b29bc7736d1b2de61a0\\scratch\\journals\\plan_authored_default_https_2b29bc7736d1b2de61a0.progress.json.39916f1e728d42df8200c9df2578ae88.tmp.audit",
+    "characters": 291,
+    "outcome": "FileNotFoundError: 2"
+  },
+  {
+    "case": "short",
+    "path": "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-229\\popen-gw11\\test_public_plan_fetch_status_0\\home\\acquisition\\plan_authored_default_https_e7c666916d94dd333ab0\\scratch\\journals\\audit-path-length.tmp",
+    "characters": 208,
+    "outcome": "created"
+  },
+  {
+    "case": "long",
+    "path": "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-229\\popen-gw11\\test_public_plan_fetch_status_0\\home\\acquisition\\plan_authored_default_https_e7c666916d94dd333ab0\\scratch\\journals\\plan_authored_default_https_e7c666916d94dd333ab0.progress.json.0dec9edce5744c568293df1ec336c585.tmp.audit",
+    "characters": 292,
+    "outcome": "FileNotFoundError: 2"
+  }
+]

@@ -206,6 +206,7 @@ class AcquisitionPlan(BaseModel):
     revision: str  # Immutable commit SHA, git tag, or local file hash
     mode: AcquisitionMode = AcquisitionMode.WHOLE_FILE
     selected_files: list[str] = Field(min_length=1)
+    selected_file_limit: int = Field(default=256, ge=1, le=384)
     row_ranges: dict[str, tuple[int, int]] | None = None
     projected_fields: list[str] | None = Field(
         default=None,
@@ -262,8 +263,12 @@ class AcquisitionPlan(BaseModel):
         validate_file_set(self.selected_files)
         if "acquisition_receipt.json" in self.selected_files:
             raise ValueError("source filename collides with publication receipt")
-        if len(self.selected_files) > 256:
-            raise ValueError("acquisition supports at most 256 selected files")
+        if self.is_pilot and self.selected_file_limit > 256:
+            raise ValueError("pilot acquisition supports at most 256 selected files")
+        if len(self.selected_files) > self.selected_file_limit:
+            raise ValueError(
+                f"acquisition supports at most {self.selected_file_limit} selected files"
+            )
         if set(self.expected_file_digests) - set(self.selected_files):
             raise ValueError("expected digests refer to unselected files")
         for digest in self.expected_file_digests.values():
@@ -344,6 +349,8 @@ class AcquisitionPlan(BaseModel):
         }
         if self.source_processing_growth is not None:
             behavioral_dict["source_processing_growth"] = self.source_processing_growth.model_dump()
+        if self.selected_file_limit != 256:
+            behavioral_dict["selected_file_limit"] = self.selected_file_limit
         # Attempt 1 is the legacy identity element: plans written before the
         # attempt counter existed hash exactly as before, so their recorded
         # plan_hash values keep verifying. Higher attempts bind a distinct

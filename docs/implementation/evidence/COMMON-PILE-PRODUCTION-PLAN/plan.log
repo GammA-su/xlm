@@ -1,0 +1,22 @@
+Traceback (most recent call last):
+  File "F:\Project\xlm-common-pile\scripts\mix01_source.py", line 1637, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "F:\Project\xlm-common-pile\scripts\mix01_source.py", line 1617, in main
+    result: int = args.func(args)
+                  ^^^^^^^^^^^^^^^
+  File "F:\Project\xlm-common-pile\scripts\mix01_source.py", line 948, in cmd_plan
+    record = planner.build_plan(
+             ^^^^^^^^^^^^^^^^^^^
+  File "F:\Project\xlm-common-pile\src\xlm\data\acquisition\source_plan.py", line 1230, in build_plan
+    minted = acquisition_plan(
+             ^^^^^^^^^^^^^^^^^
+  File "F:\Project\xlm-common-pile\src\xlm\data\acquisition\source_plan.py", line 848, in acquisition_plan
+    base = AcquisitionPlan(
+           ^^^^^^^^^^^^^^^^
+  File "F:\Project\xlm-common-pile\.venv\Lib\site-packages\pydantic\main.py", line 263, in __init__
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pydantic_core._pydantic_core.ValidationError: 1 validation error for AcquisitionPlan
+  Value error, acquisition supports at most 256 selected files [type=value_error, input_value={'plan_id': 'plan_common_...ected_file_digests': {}}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.13/v/value_error

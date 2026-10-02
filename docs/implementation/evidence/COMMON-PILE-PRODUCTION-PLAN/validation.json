@@ -1,0 +1,164 @@
+{
+  "format-fix": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python -m ruff format scripts/mix01_source.py src/xlm/data/acquisition/component_policy.py src/xlm/data/acquisition/source_plan.py src/xlm/data/acquisition/transport_policy.py tests/test_component_policy.py docs/implementation/evidence/COMMON-PILE-PRODUCTION-PLAN/audit.py src/xlm/data/acquisition/component_transport.py",
+    "exit": 0,
+    "seconds": 0.25,
+    "sampled_tree_peak_rss_bytes": 18984960
+  },
+  "lint-fix": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python -m ruff check --fix scripts/mix01_source.py src/xlm/data/acquisition/component_policy.py src/xlm/data/acquisition/source_plan.py src/xlm/data/acquisition/transport_policy.py tests/test_component_policy.py docs/implementation/evidence/COMMON-PILE-PRODUCTION-PLAN/audit.py src/xlm/data/acquisition/component_transport.py",
+    "exit": 0,
+    "seconds": 0.234,
+    "sampled_tree_peak_rss_bytes": 18927616
+  },
+  "integrity": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python docs\\implementation\\evidence\\COMMON-PILE-PRODUCTION-PLAN\\audit.py",
+    "exit": 0,
+    "seconds": 5.531,
+    "sampled_tree_peak_rss_bytes": 178143232
+  },
+  "related": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python -m pytest tests/test_component_allowlist.py tests/test_component_calibration.py tests/test_component_policy.py tests/test_jsonl_gz.py tests/test_source_jsonl_gz_run.py tests/test_source_plan.py tests/test_source_run.py tests/test_source_repair.py tests/test_source_file_bounds.py tests/test_source_record_bound.py tests/test_source_growth.py tests/test_source_growth_integration.py tests/test_source_rowgroups.py tests/test_mix01_source_cli.py tests/test_mix01_inventory.py tests/test_source_admission.py tests/test_mix01_admission.py tests/test_source_discovery.py tests/test_mix01_views.py tests/test_production_ingest.py tests/test_ifm_requirement_split.py tests/test_ifm_production_bounds.py tests/test_ifm_empty_text_recovery.py tests/test_synth_adapter_semantics.py tests/test_certified_evidence.py tests/test_essential_web_bulk.py -n 16 --dist=worksteal --max-worker-restart=0 -m \"not serial\" -q",
+    "exit": 0,
+    "seconds": 25.688,
+    "sampled_tree_peak_rss_bytes": 3680899072
+  },
+  "mypy": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python -m mypy --strict scripts/mix01_source.py src/xlm/data/acquisition/component_policy.py src/xlm/data/acquisition/source_plan.py src/xlm/data/acquisition/transport_policy.py tests/test_component_policy.py docs/implementation/evidence/COMMON-PILE-PRODUCTION-PLAN/audit.py src/xlm/data/acquisition/component_transport.py",
+    "exit": 1,
+    "seconds": 1.187,
+    "sampled_tree_peak_rss_bytes": 144388096
+  },
+  "format-final": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python -m ruff format --check scripts/mix01_source.py src/xlm/data/acquisition/component_policy.py src/xlm/data/acquisition/source_plan.py src/xlm/data/acquisition/transport_policy.py tests/test_component_policy.py docs/implementation/evidence/COMMON-PILE-PRODUCTION-PLAN/audit.py src/xlm/data/acquisition/component_transport.py",
+    "exit": 0,
+    "seconds": 0.235,
+    "sampled_tree_peak_rss_bytes": 18890752
+  },
+  "lint-final": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python -m ruff check scripts/mix01_source.py src/xlm/data/acquisition/component_policy.py src/xlm/data/acquisition/source_plan.py src/xlm/data/acquisition/transport_policy.py tests/test_component_policy.py docs/implementation/evidence/COMMON-PILE-PRODUCTION-PLAN/audit.py src/xlm/data/acquisition/component_transport.py",
+    "exit": 0,
+    "seconds": 0.125,
+    "sampled_tree_peak_rss_bytes": 18894848
+  },
+  "mypy-final": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python -m mypy --strict scripts/mix01_source.py src/xlm/data/acquisition/component_policy.py src/xlm/data/acquisition/source_plan.py src/xlm/data/acquisition/transport_policy.py tests/test_component_policy.py docs/implementation/evidence/COMMON-PILE-PRODUCTION-PLAN/audit.py src/xlm/data/acquisition/component_transport.py",
+    "exit": 1,
+    "seconds": 1.031,
+    "sampled_tree_peak_rss_bytes": 142536704
+  },
+  "mypy-corrected": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python -m mypy --strict scripts/mix01_source.py src/xlm/data/acquisition/component_policy.py src/xlm/data/acquisition/source_plan.py src/xlm/data/acquisition/transport_policy.py tests/test_component_policy.py docs/implementation/evidence/COMMON-PILE-PRODUCTION-PLAN/audit.py src/xlm/data/acquisition/component_transport.py",
+    "exit": 0,
+    "seconds": 0.593,
+    "sampled_tree_peak_rss_bytes": 98152448
+  },
+  "focused-final": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python -m pytest tests/test_component_policy.py tests/test_source_plan.py tests/test_source_repair.py tests/test_source_run.py -n 0 -q",
+    "exit": 0,
+    "seconds": 29.313,
+    "sampled_tree_peak_rss_bytes": 539156480
+  },
+  "diff": {
+    "command": "git diff --check",
+    "exit": 0,
+    "seconds": 0.125,
+    "sampled_tree_peak_rss_bytes": 12673024
+  },
+  "format-approved": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python -m ruff format --check scripts/mix01_source.py src/xlm/data/acquisition/component_policy.py src/xlm/data/acquisition/source_plan.py src/xlm/data/acquisition/transport_policy.py tests/test_component_policy.py docs/implementation/evidence/COMMON-PILE-PRODUCTION-PLAN/audit.py src/xlm/data/acquisition/component_transport.py",
+    "exit": 0,
+    "seconds": 0.235,
+    "sampled_tree_peak_rss_bytes": 17674240
+  },
+  "lint-approved": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python -m ruff check scripts/mix01_source.py src/xlm/data/acquisition/component_policy.py src/xlm/data/acquisition/source_plan.py src/xlm/data/acquisition/transport_policy.py tests/test_component_policy.py docs/implementation/evidence/COMMON-PILE-PRODUCTION-PLAN/audit.py src/xlm/data/acquisition/component_transport.py",
+    "exit": 0,
+    "seconds": 0.25,
+    "sampled_tree_peak_rss_bytes": 18776064
+  },
+  "mypy-approved": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python -m mypy --strict scripts/mix01_source.py src/xlm/data/acquisition/component_policy.py src/xlm/data/acquisition/source_plan.py src/xlm/data/acquisition/transport_policy.py tests/test_component_policy.py docs/implementation/evidence/COMMON-PILE-PRODUCTION-PLAN/audit.py src/xlm/data/acquisition/component_transport.py",
+    "exit": 0,
+    "seconds": 0.812,
+    "sampled_tree_peak_rss_bytes": 129691648
+  },
+  "admission-final": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python -m pytest tests/test_component_policy.py tests/test_mix01_source_cli.py tests/test_mix01_admission.py -n 0 -q",
+    "exit": 0,
+    "seconds": 8.344,
+    "sampled_tree_peak_rss_bytes": 333545472
+  },
+  "integrity-final": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python docs\\implementation\\evidence\\COMMON-PILE-PRODUCTION-PLAN\\audit.py",
+    "exit": 0,
+    "seconds": 5.469,
+    "sampled_tree_peak_rss_bytes": 179081216
+  },
+  "filelimit-format": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python -m ruff format scripts/mix01_source.py src/xlm/data/acquisition/component_policy.py src/xlm/data/acquisition/perf.py src/xlm/data/acquisition/plan.py src/xlm/data/acquisition/source_plan.py src/xlm/data/acquisition/transport_policy.py tests/test_acquisition_plan.py tests/test_component_policy.py docs/implementation/evidence/COMMON-PILE-PRODUCTION-PLAN/audit.py src/xlm/data/acquisition/component_transport.py",
+    "exit": 0,
+    "seconds": 0.235,
+    "sampled_tree_peak_rss_bytes": 18944000
+  },
+  "filelimit-lint": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python -m ruff check scripts/mix01_source.py src/xlm/data/acquisition/component_policy.py src/xlm/data/acquisition/perf.py src/xlm/data/acquisition/plan.py src/xlm/data/acquisition/source_plan.py src/xlm/data/acquisition/transport_policy.py tests/test_acquisition_plan.py tests/test_component_policy.py docs/implementation/evidence/COMMON-PILE-PRODUCTION-PLAN/audit.py src/xlm/data/acquisition/component_transport.py",
+    "exit": 0,
+    "seconds": 0.125,
+    "sampled_tree_peak_rss_bytes": 18907136
+  },
+  "filelimit-types": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python -m mypy --strict scripts/mix01_source.py src/xlm/data/acquisition/component_policy.py src/xlm/data/acquisition/perf.py src/xlm/data/acquisition/plan.py src/xlm/data/acquisition/source_plan.py src/xlm/data/acquisition/transport_policy.py tests/test_acquisition_plan.py tests/test_component_policy.py docs/implementation/evidence/COMMON-PILE-PRODUCTION-PLAN/audit.py src/xlm/data/acquisition/component_transport.py",
+    "exit": 1,
+    "seconds": 1.281,
+    "sampled_tree_peak_rss_bytes": 146423808
+  },
+  "filelimit-types-fixed": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python -m mypy --strict scripts/mix01_source.py src/xlm/data/acquisition/component_policy.py src/xlm/data/acquisition/perf.py src/xlm/data/acquisition/plan.py src/xlm/data/acquisition/source_plan.py src/xlm/data/acquisition/transport_policy.py tests/test_acquisition_plan.py tests/test_component_policy.py docs/implementation/evidence/COMMON-PILE-PRODUCTION-PLAN/audit.py src/xlm/data/acquisition/component_transport.py",
+    "exit": 0,
+    "seconds": 0.703,
+    "sampled_tree_peak_rss_bytes": 91156480
+  },
+  "filelimit-regressions": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python -m pytest tests/test_acquisition_plan.py tests/test_acquisition_bounds.py tests/test_acquisition_fetcher.py tests/test_acquisition_performance.py tests/test_source_plan.py tests/test_source_run.py tests/test_source_repair.py tests/test_source_jsonl_gz_run.py tests/test_component_policy.py tests/test_mix01_source_cli.py -n 16 --dist=worksteal --max-worker-restart=0 -m \"not serial\" -q",
+    "exit": 1,
+    "seconds": 20.813,
+    "sampled_tree_peak_rss_bytes": 3053080576
+  },
+  "filelimit-short-path": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python -m pytest tests/test_acquisition_plan.py tests/test_acquisition_bounds.py tests/test_acquisition_fetcher.py tests/test_acquisition_performance.py tests/test_source_plan.py tests/test_source_run.py tests/test_source_repair.py tests/test_source_jsonl_gz_run.py tests/test_component_policy.py tests/test_mix01_source_cli.py -n 16 --dist=worksteal --max-worker-restart=0 -m \"not serial\" --basetemp C:/XLM-scratch/cpcheck01 -q",
+    "exit": 0,
+    "seconds": 26.485,
+    "sampled_tree_peak_rss_bytes": 3135344640
+  },
+  "final-format": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python -m ruff format --check scripts/mix01_source.py src/xlm/data/acquisition/component_policy.py src/xlm/data/acquisition/perf.py src/xlm/data/acquisition/plan.py src/xlm/data/acquisition/source_plan.py src/xlm/data/acquisition/transport_policy.py tests/test_acquisition_plan.py tests/test_component_policy.py docs/implementation/evidence/COMMON-PILE-PRODUCTION-PLAN/audit.py src/xlm/data/acquisition/component_transport.py",
+    "exit": 0,
+    "seconds": 0.141,
+    "sampled_tree_peak_rss_bytes": 19066880
+  },
+  "final-ruff": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python -m ruff check scripts/mix01_source.py src/xlm/data/acquisition/component_policy.py src/xlm/data/acquisition/perf.py src/xlm/data/acquisition/plan.py src/xlm/data/acquisition/source_plan.py src/xlm/data/acquisition/transport_policy.py tests/test_acquisition_plan.py tests/test_component_policy.py docs/implementation/evidence/COMMON-PILE-PRODUCTION-PLAN/audit.py src/xlm/data/acquisition/component_transport.py",
+    "exit": 0,
+    "seconds": 0.109,
+    "sampled_tree_peak_rss_bytes": 18948096
+  },
+  "final-mypy": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python -m mypy --strict scripts/mix01_source.py src/xlm/data/acquisition/component_policy.py src/xlm/data/acquisition/perf.py src/xlm/data/acquisition/plan.py src/xlm/data/acquisition/source_plan.py src/xlm/data/acquisition/transport_policy.py tests/test_acquisition_plan.py tests/test_component_policy.py docs/implementation/evidence/COMMON-PILE-PRODUCTION-PLAN/audit.py src/xlm/data/acquisition/component_transport.py",
+    "exit": 0,
+    "seconds": 0.719,
+    "sampled_tree_peak_rss_bytes": 100421632
+  },
+  "stored-plan-verify": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python docs\\implementation\\evidence\\COMMON-PILE-PRODUCTION-PLAN\\audit.py",
+    "exit": 0,
+    "seconds": 5.531,
+    "sampled_tree_peak_rss_bytes": 178520064
+  },
+  "final-diff": {
+    "command": "git diff --check",
+    "exit": 0,
+    "seconds": 0.109,
+    "sampled_tree_peak_rss_bytes": 11636736
+  }
+}

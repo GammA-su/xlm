@@ -1,0 +1,142 @@
+{
+  "basis": "modeled",
+  "digest": "2d14a2c7e2036f94262d3ae16f28635a6afb59501cd9af5914ef2e76ee68436b",
+  "inputs": {
+    "calibration": "c8a32cced2bae62c21b4e4396d46f0803f11745117e52d468adf3912dde0541d",
+    "component_split": "d64b2b6ee53c7dd22d6b0ef193f09f4fb86a8fa512a6920daf40f048baa28e77",
+    "model": "observed prefix transfer; fallback adaptation rate; estimate",
+    "reviewed_bounds": "0f1467e65b1c0b4b79ed4bd2aeb4d0399b2995fb41c4df6472b73390b46a966c"
+  },
+  "kind": "mix01_transport_policy",
+  "policy": "mix01-transport-policy-v1",
+  "reason": "smallest modeled wall time among feasible modes (3314 s)",
+  "report": {
+    "candidates": [
+      {
+        "byte_amplification": 1.1414903670366017,
+        "durable_raw_bytes": 545786978944,
+        "feasible": true,
+        "files": 268,
+        "mode": "whole_file_local",
+        "model": {
+          "aggregate_bytes_per_second": 197380.90648606408,
+          "basis": "observed_transfer prefix rate; fallback adaptation rate; estimate",
+          "per_stream_bytes_per_second": 197380.90648606408,
+          "processes": 1,
+          "rows_per_process_second": 5814.0,
+          "seconds_per_request": 0,
+          "streams": 1
+        },
+        "network_seconds": 3313.7024530089466,
+        "note": "independent component prefixes; exact inventory transfer; projected rows; reviewed worst-case scratch/durable envelopes, including temporary/state files",
+        "processing_seconds": 32.83780529755762,
+        "refusals": [],
+        "request_latency_seconds": 0.0,
+        "requests": 536,
+        "rows_processed": 190919,
+        "scratch_peak_bytes": 3828713572,
+        "transfer_bytes": 654061594,
+        "wall_seconds": 3313.884255554526
+      }
+    ],
+    "ceilings": {
+      "durable_bytes": null,
+      "in_flight_files": 2,
+      "max_requests": 20000,
+      "scratch_bytes": 3828713572
+    },
+    "component_selection": {
+      "component_split_digest": "d64b2b6ee53c7dd22d6b0ef193f09f4fb86a8fa512a6920daf40f048baa28e77",
+      "cursors": {
+        "libretexts": 266,
+        "news": 381,
+        "oercommons": 377,
+        "pressbooks": 185,
+        "project_gutenberg": 16,
+        "public_domain_review": 382
+      },
+      "expected": {
+        "basis": "exact selected inventory sizes; component-specific biased prefix densities; rows rounded up, canonical bytes rounded down; /4 token estimates; actual yields and costs require production receipts",
+        "canonical_bytes": 1766270453,
+        "components": {
+          "libretexts": {
+            "canonical_bytes": 257155526.52921566,
+            "compressed_bytes": 87207314,
+            "files": 46,
+            "rows": 28762.30672823218
+          },
+          "news": {
+            "canonical_bytes": 247415757.40188414,
+            "compressed_bytes": 98602096,
+            "files": 64,
+            "rows": 120835.90196078428
+          },
+          "oercommons": {
+            "canonical_bytes": 51258376.13592791,
+            "compressed_bytes": 17149251,
+            "files": 64,
+            "rows": 4513.504585206843
+          },
+          "pressbooks": {
+            "canonical_bytes": 254009903.98326117,
+            "compressed_bytes": 88695527,
+            "files": 28,
+            "rows": 27579.45491293532
+          },
+          "project_gutenberg": {
+            "canonical_bytes": 949409949.801374,
+            "compressed_bytes": 359530917,
+            "files": 3,
+            "rows": 8261.280261948528
+          },
+          "public_domain_review": {
+            "canonical_bytes": 7020939.182866959,
+            "compressed_bytes": 2876489,
+            "files": 63,
+            "rows": 966.3333918686772
+          }
+        },
+        "estimated_tokens": 441567613,
+        "files": 268,
+        "requests": 536,
+        "rows": 190919,
+        "transfer_bytes": 654061594
+      },
+      "reviewed_bounds_digest": "0f1467e65b1c0b4b79ed4bd2aeb4d0399b2995fb41c4df6472b73390b46a966c",
+      "small_source_direct": "inapplicable: eligible source exceeds 2 GiB or differs from the selected population"
+    },
+    "fastest_modeled": {
+      "executable": true,
+      "mode": "whole_file_local",
+      "wall_seconds": 3313.884255554526
+    },
+    "layout": {
+      "canonical_bytes_per_row": 53078.4369827931,
+      "evidence": {
+        "component_calibration": "756f7066a7b39986ddb98ad260595cfc4d5fd6981ad21771e7b75836697d7060"
+      },
+      "file_bytes": 21176557,
+      "group_bytes": 21176557,
+      "group_rows": 1057,
+      "metadata_bytes_per_file": 0,
+      "metadata_requests_per_file": 1,
+      "projected_group_bytes": 21176557,
+      "range_record_bytes_per_row": 53078.4369827931,
+      "range_requests_per_group": 1.0,
+      "rows_per_file_estimate": 1057,
+      "rows_per_file_measured": 1057,
+      "source_files": 384,
+      "source_id": "common_pile"
+    },
+    "planned_canonical_bytes": 1518000000.0,
+    "policy": "mix01-transport-policy-v1",
+    "reason": "smallest modeled wall time among feasible modes (3314 s)",
+    "required_canonical_bytes": 1320000000,
+    "required_rows": 28600,
+    "safety_margin": 1.15,
+    "selected_mode": "whole_file_local",
+    "source_id": "common_pile"
+  },
+  "selected_mode": "whole_file_local",
+  "source_id": "common_pile"
+}

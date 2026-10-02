@@ -208,8 +208,51 @@ def test_driver_uses_component_layout_and_only_gzip_modes(
     layout, extra = cli.layout_of(args, spec)
     assert extra["perf"] == cal["observed_transfer"]
     assert layout.source_files == 12
-    report = cli.evaluate_policy(args, spec)
-    assert {c["mode"] for c in report["candidates"]} == {m.value for m in planner.JSONL_GZ_MODES}
+    component = {
+        "calibration": cal,
+        "reviewed_bounds": cp.build_bounds(cal, ceilings(), operator="fixture", rationale="test"),
+        "component_split": cp.build_split(
+            cal, {"strategy": "hash_prefix"}, operator="fixture", rationale="test"
+        ),
+    }
+    monkeypatch.setattr(cli, "component_ready", lambda *_: component)
+    # This tiny authored corpus cannot fulfill the real 1.32 GB split.
+    with pytest.raises(cp.ComponentPolicyError, match="capacity exhausted"):
+        cli.evaluate_policy(args, spec)
+
+
+def test_component_expected_uses_each_density_and_retained_files() -> None:
+    cal = {
+        "inventory_snapshot": {
+            "files": [
+                {"file": "news/a.jsonl.gz", "size_bytes": 10},
+                {"file": "project_gutenberg/b.jsonl.gz", "size_bytes": 100},
+            ]
+        },
+        "components": {
+            "news": {
+                "measured": {
+                    "canonical_bytes_per_compressed_byte": 2,
+                    "compressed_bytes_per_row": 1,
+                }
+            },
+            "project_gutenberg": {
+                "measured": {
+                    "canonical_bytes_per_compressed_byte": 8,
+                    "compressed_bytes_per_row": 20,
+                }
+            },
+        },
+    }
+    names = ["news/a.jsonl.gz", "project_gutenberg/b.jsonl.gz"]
+    result = cp.expected_selection(cal, names, names[1:])
+    assert (result["canonical_bytes"], result["rows"], result["transfer_bytes"]) == (820, 15, 100)
+    assert result["requests"] == 2
+    assert result["components"]["news"]["canonical_bytes"] == 20
+    with pytest.raises(cp.ComponentPolicyError):
+        cp.expected_selection(cal, names + names, names)
+    with pytest.raises(cp.ComponentPolicyError):
+        cp.expected_selection(cal, names, ["excluded/x.jsonl.gz"])
 
 
 def test_component_plan_topup_keeps_independent_cursors_and_mints_identically() -> None:
@@ -229,7 +272,7 @@ def test_component_plan_topup_keeps_independent_cursors_and_mints_identically() 
         "max_decoded_bytes_per_file": 8_000_000_000,
         "max_canonical_bytes_per_file": 4_000_000_000,
         "max_durable_bytes_per_file": 10_000_000_000,
-        "scratch_cap_bytes": 16_000_000_000,
+        "scratch_cap_bytes": 20_000_000_000,
         "processing_growth": ProcessingGrowth(
             output_bytes=8_000_000_000, source_max_bytes=1_000_000_000
         ).model_dump(),
@@ -268,6 +311,33 @@ def test_component_plan_topup_keeps_independent_cursors_and_mints_identically() 
     )
     first = planner.build_plan(**kwargs)
     assert len(first["selection"]["files"]) == 6
+    assert first["expected"]["transfer_bytes"] == 6_000_000_000
+    assert set(first["expected"]["components"]) == set(COMPONENTS)
+    assert first["limits"]["download_workers"] == first["limits"]["process_workers"] == 1
+    from xlm.data.acquisition import component_transport as ct
+
+    modeled = ct.evaluate(
+        component,
+        layout,
+        tp.Requirement(PIN.source_id, 1_320_000_000, 1.15),
+        models(),
+        benchmark_reserved=0,
+        durable_budget_bytes=None,
+    )
+    assert len(modeled["candidates"]) == 1
+    candidate = modeled["candidates"][0]
+    assert candidate["transfer_bytes"] == 6_000_000_000
+    assert candidate["files"] == 6
+    assert modeled["ceilings"]["scratch_bytes"] == 20_000_000_000
+    with pytest.raises(tp.PolicyError, match="no transport mode"):
+        ct.evaluate(
+            component,
+            layout,
+            tp.Requirement(PIN.source_id, 1_320_000_000, 1.15),
+            models(),
+            benchmark_reserved=0,
+            durable_budget_bytes=1,
+        )
     assert planner.minted_from_record(first).plan_hash == first["acquisition_plan"]["plan_hash"]
     before = planner.Predecessor(first, 1_000_000_000, 6, "b" * 64)
     second = planner.build_plan(
@@ -327,6 +397,15 @@ def test_component_license_admission_still_requires_explicit_operator_review(
     result = AdmissionGate.evaluate(evidence, decision)
     assert result.admitted, result.reasons
     assert ce.record_from_receipt(bridge) == evidence
+    cli = _load("mix01_source")
+    monkeypatch.setattr(cli, "stored_receipt", lambda *_: (PIN, bridge))
+    monkeypatch.setattr(cli, "load_probe_evidence", lambda *_: evidence)
+    monkeypatch.setattr(cli, "load_admission_decision", lambda *_: decision)
+    spec = cli.spec_of("common_pile")
+    original_identity = cli.current_admission(spec, None)
+    assert original_identity["admission_decision_digest"]
+    decision.operator_notes += " renewed operator review"
+    assert cli.current_admission(spec, None) != original_identity
     evidence.view_id = "unreviewed_view"
     assert not AdmissionGate.evaluate(evidence, decision).admitted
     evidence.view_id = PIN.view_id

@@ -763,6 +763,10 @@ def plan_limits(
         bounds = reviewed_bounds["bounds"]
         policy.update(bounds)
         policy["reviewed_bounds_digest"] = reviewed_bounds["digest"]
+        policy.update(
+            download_workers=1, process_workers=1, download_workers_max=1, process_workers_max=1
+        )
+        policy["max_in_flight_files"] = min(files, 2)
         if max(known_file_bytes, default=0) > bounds["max_file_bytes"]:
             raise PlanError("selected file exceeds reviewed source bound")
         growth = ProcessingGrowth.model_validate(bounds["processing_growth"])
@@ -788,6 +792,7 @@ def plan_limits(
                 + growth.run_peak,
                 "max_decompression_ratio": bounds["max_decompression_ratio"],
                 "max_record_bytes": bounds["max_record_bytes"],
+                "max_workers": 1,
                 "overall_deadline_seconds": bounds["plan_deadline_seconds"],
             }
         )
@@ -817,6 +822,7 @@ def minted_from_record(record: Mapping[str, Any]) -> AcquisitionPlan:
         else repair_note(int(record["sequence"]), int(repair["plan_sequence"]), repair["ranks"]),
         processing_growth=record["limits"].get("processing_growth"),
         expected_file_digests=record["acquisition_plan"].get("expected_file_digests"),
+        selected_file_limit=record["acquisition_plan"].get("selected_file_limit", 256),
     )
     if minted.plan_hash != record["acquisition_plan"]["plan_hash"]:
         raise PlanError("plan record does not reproduce its acquisition plan hash")
@@ -832,6 +838,7 @@ def acquisition_plan(
     attempt: int = 1,
     processing_growth: Mapping[str, Any] | None = None,
     expected_file_digests: Mapping[str, str] | None = None,
+    selected_file_limit: int = 256,
 ) -> AcquisitionPlan:
     """The production ``AcquisitionPlan`` of these whole files.
 
@@ -849,6 +856,7 @@ def acquisition_plan(
         revision=pin["revision"],
         mode=AcquisitionMode.WHOLE_FILE,
         selected_files=list(files),
+        selected_file_limit=selected_file_limit,
         sampling_frame=SamplingFrame(
             selected_files=list(files), selection_seed=seed, coverage_notes=coverage
         ),
@@ -1017,6 +1025,8 @@ def _record(
         record["acquisition_plan"]["expected_file_digests"] = dict(
             sorted(minted.expected_file_digests.items())
         )
+    if minted.selected_file_limit != 256:
+        record["acquisition_plan"]["selected_file_limit"] = minted.selected_file_limit
     if requirement.view_id is not None and requirement.split_digest is not None:
         record["inputs"]["requirement_split"] = {
             "view_id": requirement.view_id,
@@ -1229,6 +1239,7 @@ def build_plan(
         int(inventory["seed"]),
         coverage_note(sequence, start, stop),
         processing_growth=policy_limits["processing_growth"],
+        selected_file_limit=max(256, len(files)) if component_policy else 256,
     )
     record = _record(
         source_key=source_key,
@@ -1261,6 +1272,7 @@ def build_plan(
         minted=minted,
     )
     if selected_components is not None and component_policy is not None:
+        record["expected"] = cp.expected_selection(component_policy["calibration"], files, files)
         record["selection"].update(
             {
                 "rule": "independent component prefixes under the reviewed "
@@ -1438,6 +1450,7 @@ def build_repair_plan(
         repair_note(sequence, int(prior["sequence"]), ranks),
         processing_growth=policy_limits["processing_growth"],
         expected_file_digests=repaired.retained,
+        selected_file_limit=max(256, len(files)) if component_policy else 256,
     )
     downloads = [name for name in files if name not in repaired.retained]
     record = _record(
@@ -1483,6 +1496,9 @@ def build_repair_plan(
         "unsealed ranks are sealed only by this plan, and it no longer runs",
     }
     if component_policy is not None:
+        record["expected"] = cp.expected_selection(
+            component_policy["calibration"], files, downloads
+        )
         record["inputs"]["component_split"] = component_policy["component_split"]
         record["inputs"]["reviewed_bounds"] = component_policy["reviewed_bounds"]
         for key in ("component_cursors", "component_cursors_before"):

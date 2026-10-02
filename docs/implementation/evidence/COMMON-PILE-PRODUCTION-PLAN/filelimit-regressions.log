@@ -1,0 +1,205 @@
+bringing up nodes...
+bringing up nodes...
+
+........................................................................ [ 40%]
+........................................................................ [ 80%]
+..................F...F.F.........                                       [100%]
+================================== FAILURES ===================================
+________________ test_production_fetch_with_verified_admission ________________
+[gw1] win32 -- Python 3.12.13 F:\Project\xlm-common-pile\.venv\Scripts\python.exe
+
+server = ('http://127.0.0.1:57248', [], {'/rows.jsonl': b'{"text":"authored A"}\n{"text":"authored B"}\n', '/rows.parquet': b'P...00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00|+w<<`\xa2\x8f\xac\x86\x01\x00"})
+tmp_path = WindowsPath('C:/Users/gamma/AppData/Local/Temp/pytest-of-gamma/pytest-229/popen-gw1/test_production_fetch_with_ver0')
+
+    def test_production_fetch_with_verified_admission(server: Any, tmp_path: Path) -> None:
+        url, _, _ = server
+        home = tmp_path / "home"
+        _plant_production_admission(home, url)
+        unsigned = _production_cli(
+            home, *_production_plan_args(tmp_path, url, ["--output", str(tmp_path / "plan0.json")])
+        )
+        behavior_hash = [
+            line.split("Behavior Hash:")[1].strip()
+            for line in unsigned.stdout.splitlines()
+            if "Behavior Hash:" in line
+        ][0]
+        plan_path = tmp_path / "plan.json"
+        _production_cli(
+            home,
+            *_production_plan_args(
+                tmp_path,
+                url,
+                ["--authorization-hash", behavior_hash, "--output", str(plan_path)],
+            ),
+        )
+        plan = json.loads(plan_path.read_text(encoding="utf-8"))
+        assert plan["is_pilot"] is False
+>       _production_cli(home, "data", "fetch", "--plan", str(plan_path))
+
+tests\test_acquisition_bounds.py:993:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+home = WindowsPath('C:/Users/gamma/AppData/Local/Temp/pytest-of-gamma/pytest-229/popen-gw1/test_production_fetch_with_ver0/home')
+success = True
+args = ('data', 'fetch', '--plan', 'C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-229\\popen-gw1\\test_production_fetch_with_ver0\\plan.json')
+
+    def _production_cli(
+        home: Path, *args: str, success: bool = True
+    ) -> subprocess.CompletedProcess[str]:
+        """Run the public CLI with an isolated home; refusals keep their output."""
+        result = subprocess.run(
+            [sys.executable, "-m", "xlm.cli.main", *args],
+            cwd=Path(__file__).resolve().parents[1],
+            env={**os.environ, "XLM_HOME": str(home)},
+            capture_output=True,
+            encoding="utf-8",
+            errors="replace",
+            check=False,
+            timeout=120,
+        )
+>       assert (result.returncode == 0) == success, result.stdout + result.stderr
+E       AssertionError: <frozen runpy>:128: RuntimeWarning: 'xlm.cli.main' found in sys.modules after import of package 'xlm.cli', but prior to execution of 'xlm.cli.main'; this may result in unpredictable behaviour
+E         Acquisition failed: [Errno 2] No such file or directory: 'C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-229\\popen-gw1\\test_production_fetch_with_ver0\\home\\acquisition\\plan_authored_default_https_2b29bc7736d1b2de61a0\\scratch\\journals\\plan_authored_default_https_2b29bc7736d1b2de61a0.progress.json.39916f1e728d42df8200c9df2578ae88.tmp'
+E
+E       assert (1 == 0) == True
+E        +  where 1 = CompletedProcess(args=['F:\\Project\\xlm-common-pile\\.venv\\Scripts\\python.exe', '-m', 'xlm.cli.main', 'data', 'fetc...\\\journals\\\\plan_authored_default_https_2b29bc7736d1b2de61a0.progress.json.39916f1e728d42df8200c9df2578ae88.tmp'\n").returncode
+
+tests\test_acquisition_bounds.py:863: AssertionError
+________ test_explicit_production_file_limit_is_bounded_and_hash_bound ________
+[gw8] win32 -- Python 3.12.13 F:\Project\xlm-common-pile\.venv\Scripts\python.exe
+
+    def test_explicit_production_file_limit_is_bounded_and_hash_bound() -> None:
+        base = _attempt_plan_base() | {
+            "is_pilot": False,
+            "selected_files": [f"news/file{i}.jsonl.gz" for i in range(268)],
+        }
+        with pytest.raises(ValidationError, match="at most 256"):
+            AcquisitionPlan(**base)
+>       plan = AcquisitionPlan(**(base | {"selected_file_limit": 268}))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       pydantic_core._pydantic_core.ValidationError: 1 validation error for AcquisitionPlan
+E         Value error, selected records require an explicit row range for every file [type=value_error, input_value={'plan_id': 'plan_attempt...lected_file_limit': 268}, input_type=dict]
+E           For further information visit https://errors.pydantic.dev/2.13/v/value_error
+
+tests\test_acquisition_plan.py:662: ValidationError
+________________ test_public_plan_fetch_status_verify_prepare _________________
+[gw11] win32 -- Python 3.12.13 F:\Project\xlm-common-pile\.venv\Scripts\python.exe
+
+server = ('http://127.0.0.1:57316', [], {'/rows.jsonl': b'{"text":"authored A"}\n{"text":"authored B"}\n', '/rows.parquet': b'P...00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00|+w<<`\xa2\x8f\xac\x86\x01\x00"})
+tmp_path = WindowsPath('C:/Users/gamma/AppData/Local/Temp/pytest-of-gamma/pytest-229/popen-gw11/test_public_plan_fetch_status_0')
+
+    def test_public_plan_fetch_status_verify_prepare(server: Any, tmp_path: Path) -> None:
+        url, _, _ = server
+        root = Path(__file__).resolve().parents[1]
+        home = tmp_path / "home"
+        commands = tmp_path / "commands"
+        commands.mkdir()
+
+        def cli(*args: str, success: bool = True) -> subprocess.CompletedProcess[str]:
+            result = subprocess.run(
+                [sys.executable, "-m", "xlm.cli.main", *args],
+                cwd=root,
+                env={**os.environ, "XLM_HOME": str(home)},
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+            (commands / f"{len(list(commands.iterdir())):02}.json").write_text(
+                json.dumps(
+                    {
+                        "argv": args,
+                        "exit": result.returncode,
+                        "stdout": result.stdout,
+                        "stderr": result.stderr,
+                    }
+                ),
+                encoding="utf-8",
+            )
+            assert (result.returncode == 0) == success, result.stdout + result.stderr
+            return result
+
+        catalog = tmp_path / "catalog.json"
+        catalog.write_text(
+            json.dumps(
+                {
+                    "catalog_id": "authored",
+                    "sources": [
+                        {
+                            "candidate_number": 1,
+                            "source_id": "authored",
+                            "provider": "https",
+                            "repository": url,
+                            "revision": "authored-fixture-v1",
+                        }
+                    ],
+                }
+            ),
+            encoding="utf-8",
+        )
+        ranges = tmp_path / "ranges.json"
+        ranges.write_text('{"rows.jsonl":[1,2]}', encoding="utf-8")
+        plan_path = tmp_path / "plan.json"
+        cli(
+            "data",
+            "plan",
+            "--source",
+            "authored",
+            "--catalog",
+            str(catalog),
+            "--files",
+            "rows.jsonl",
+            "--mode",
+            "selected_records",
+            "--row-ranges",
+            str(ranges),
+            "--max-bytes",
+            "4096",
+            "--max-records",
+            "1",
+            "--output",
+            str(plan_path),
+        )
+        plan = AcquisitionPlan.model_validate_json(plan_path.read_text())
+        raw = home / "acquisition" / plan.plan_id / "raw"
+        cli("data", "fetch", "--plan", str(plan_path), success=False)
+>       cli("data", "fetch", "--plan", str(plan_path), "--pilot-approved")
+
+tests\test_acquisition_bounds.py:527:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+success = True
+args = ('data', 'fetch', '--plan', 'C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-229\\popen-gw11\\test_public_plan_fetch_status_0\\plan.json', '--pilot-approved')
+
+    def cli(*args: str, success: bool = True) -> subprocess.CompletedProcess[str]:
+        result = subprocess.run(
+            [sys.executable, "-m", "xlm.cli.main", *args],
+            cwd=root,
+            env={**os.environ, "XLM_HOME": str(home)},
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        (commands / f"{len(list(commands.iterdir())):02}.json").write_text(
+            json.dumps(
+                {
+                    "argv": args,
+                    "exit": result.returncode,
+                    "stdout": result.stdout,
+                    "stderr": result.stderr,
+                }
+            ),
+            encoding="utf-8",
+        )
+>       assert (result.returncode == 0) == success, result.stdout + result.stderr
+E       AssertionError: <frozen runpy>:128: RuntimeWarning: 'xlm.cli.main' found in sys.modules after import of package 'xlm.cli', but prior to execution of 'xlm.cli.main'; this may result in unpredictable behaviour
+E         Acquisition failed: [Errno 2] No such file or directory: 'C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-229\\popen-gw11\\test_public_plan_fetch_status_0\\home\\acquisition\\plan_authored_default_https_e7c666916d94dd333ab0\\scratch\\journals\\plan_authored_default_https_e7c666916d94dd333ab0.progress.json.0dec9edce5744c568293df1ec336c585.tmp'
+E
+E       assert (1 == 0) == True
+E        +  where 1 = CompletedProcess(args=['F:\\Project\\xlm-common-pile\\.venv\\Scripts\\python.exe', '-m', 'xlm.cli.main', 'data', 'fetc...\\\journals\\\\plan_authored_default_https_e7c666916d94dd333ab0.progress.json.0dec9edce5744c568293df1ec336c585.tmp'\n").returncode
+
+tests\test_acquisition_bounds.py:480: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_acquisition_bounds.py::test_production_fetch_with_verified_admission
+FAILED tests/test_acquisition_plan.py::test_explicit_production_file_limit_is_bounded_and_hash_bound
+FAILED tests/test_acquisition_bounds.py::test_public_plan_fetch_status_verify_prepare
+3 failed, 175 passed in 20.21s

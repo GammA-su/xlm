@@ -1,0 +1,25 @@
+[
+  {
+    "fastest_modeled": {
+      "executable": true,
+      "mode": "whole_file_local",
+      "wall_seconds": 3313.884255554526
+    },
+    "modes": {
+      "whole_file_local": {
+        "byte_amplification": 1.141,
+        "durable_raw_bytes": 545786978944,
+        "feasible": true,
+        "requests": 536,
+        "rows_processed": 190919,
+        "scratch_peak_bytes": 3828713572,
+        "transfer_bytes": 654061594,
+        "wall_seconds": 3313.9
+      }
+    },
+    "reason": "smallest modeled wall time among feasible modes (3314 s)",
+    "required_canonical_bytes": 1320000000,
+    "selected_mode": "whole_file_local",
+    "source_id": "common_pile"
+  }
+]

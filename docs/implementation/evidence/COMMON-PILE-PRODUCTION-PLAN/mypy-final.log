@@ -1,0 +1,3 @@
+docs\implementation\evidence\COMMON-PILE-PRODUCTION-PLAN\audit.py:24: error: Module has no attribute "write"  [attr-defined]
+pyproject.toml: note: unused section(s): module = ['lm_eval', 'lm_eval.*', 'tokenizers', 'tokenizers.*', 'torch', 'torch.*']
+Found 1 error in 1 file (checked 7 source files)

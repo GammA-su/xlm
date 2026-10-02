@@ -1,0 +1,17 @@
+plan 1 of common_pile: G:\XLM\plans\common_pile\p01\plan.json
+transport mode      whole_file_local (modeled policy)
+policy digest       2d14a2c7e2036f94262d3ae16f28635a6afb59501cd9af5914ef2e76ee68436b
+component allowlist b2bb7c0dc532a6263ca17b78816186fa194c12c09c74614baaeb29c76cdaab04 (bound by the inventory digest)
+sizing basis        calibration estimate
+inventory ranks     [0, 382) of 384 (268 whole files); next top-up cursor 382
+expected            654,061,594 B transfer, 536 requests, 190,919 rows, 441,567,613 est. tokens
+transfer ceiling    49,085,594,940 B
+request ceiling     4,288
+per-file ceiling    122,103,470 B, 5,612 rows
+size anchor         largest selected file 120,202,522 B > estimate ceiling 42,991,616 B (calibration file 21,176,557 B)
+scratch ceiling     3,828,713,572 B (+34,359,738,368 B kept free)
+durable ceiling     545,786,978,944 B (raw + canonical)
+canonical ceiling   172,826,498,928 B
+concurrency         1 streams, 1 processes
+PLAN DIGEST: c38eb2be01a28579ffa77a319c0713e5fef2df0f4da9ac3ed3b3089ab04edaa7
+STOP - USER MUST REVIEW PLAN DIGEST BEFORE AUTHORIZATION

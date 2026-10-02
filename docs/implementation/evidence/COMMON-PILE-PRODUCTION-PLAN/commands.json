@@ -1,0 +1,38 @@
+{
+  "policy-model": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/mix01_source.py policy model --source-key common_pile --data-root G:/XLM --scratch-root C:/XLM-scratch",
+    "exit": 0,
+    "seconds": 2.062,
+    "sampled_tree_peak_rss_bytes": 165892096
+  },
+  "policy-freeze": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/mix01_source.py policy freeze --source-key common_pile --data-root G:/XLM --scratch-root C:/XLM-scratch",
+    "exit": 0,
+    "seconds": 3.219,
+    "sampled_tree_peak_rss_bytes": 175841280
+  },
+  "plan": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/mix01_source.py plan --source-key common_pile --data-root G:/XLM --scratch-root C:/XLM-scratch",
+    "exit": 1,
+    "seconds": 2.297,
+    "sampled_tree_peak_rss_bytes": 165974016
+  },
+  "integrity-after-filelimit": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python docs\\implementation\\evidence\\COMMON-PILE-PRODUCTION-PLAN\\audit.py",
+    "exit": 0,
+    "seconds": 5.515,
+    "sampled_tree_peak_rss_bytes": 178634752
+  },
+  "plan-corrected": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/mix01_source.py plan --source-key common_pile --data-root G:/XLM --scratch-root C:/XLM-scratch",
+    "exit": 0,
+    "seconds": 2.188,
+    "sampled_tree_peak_rss_bytes": 165818368
+  },
+  "resume-check": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/mix01_source.py resume-check --plan 1 --source-key common_pile --data-root G:/XLM --scratch-root C:/XLM-scratch",
+    "exit": 0,
+    "seconds": 0.812,
+    "sampled_tree_peak_rss_bytes": 94281728
+  }
+}

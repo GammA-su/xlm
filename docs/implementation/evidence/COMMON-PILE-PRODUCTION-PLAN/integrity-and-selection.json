@@ -1,0 +1,1483 @@
+{
+  "admission": {
+    "adapter_id": "common_pile",
+    "adapter_version": "1",
+    "benchmark_risk": "suspect_with_mitigation",
+    "contamination_mitigation": {
+      "before_official_benchmark_claims": true,
+      "before_training": true,
+      "benchmarks": [
+        "BLiMP",
+        "ARC-Easy",
+        "HellaSwag",
+        "PIQA"
+      ],
+      "mechanism": "xlm.data.exclusion",
+      "receipt_verifier": "xlm.data.exclusion.receipt.verify_benchmark_claim",
+      "scope": "eventually_frozen_mix01_canonical_training_pool",
+      "version": "c04-benchmark-risk-v3"
+    },
+    "contract_version": "c04-benchmark-risk-v3",
+    "decision_timestamp": "2026-10-02T12:16:41.393253+00:00",
+    "immutable_revision": "5afc546db324e7f39f297ba757c9a60547151e7c",
+    "legal_disclaimer": "The software records evidence and policy status; it must not purport to certify legal rights.",
+    "license_review": "approved",
+    "operator_approved": true,
+    "operator_notes": "mix01 source review mix01-source-review-v1; operator=GammA; review sha256 attribution=aa313beeb2b568dd5104278cb406c3a31d835ebe6168d3ba89a5f92f8c4129ef benchmark_risk=3a047ee431402d013111e5278c9e6b7ebf921f3fac86a2075dd9573f07813192 external_evidence=94c7fa013a49f257cfcd7f59bc324bfdba64330351bf7bfb898c97b04630e205 source_rights=c2b12ec4ef37d2024d22a8e76616c45cb5b246f84871ca732bc39ae925f93f38; certified evidence 12ff9163353bf6e56979dc66b66307c12e9d57dd92e38c348b4b7927c70838f3; license approval covers research pretraining under the reviewed component allowlist basis and clears no underlying content rights; suspect_with_mitigation records possible contamination, not zero contamination; a C05 exclusion receipt over the frozen Mix-01 pool is required before any uncontaminated benchmark claim",
+    "probe_fingerprint": "72ddc7186f38e59d54c599a3ed309e15dd1aae2b9141bb69ef2957c7f6eb0d39",
+    "provenance_review": "approved",
+    "provider": "huggingface",
+    "repository": "common-pile/comma_v0.1_training_dataset",
+    "resource_contract": "C04/C13; exact limits and matching authorization required",
+    "reviews_sha256": {
+      "attribution": "aa313beeb2b568dd5104278cb406c3a31d835ebe6168d3ba89a5f92f8c4129ef",
+      "benchmark_risk": "3a047ee431402d013111e5278c9e6b7ebf921f3fac86a2075dd9573f07813192",
+      "certified_evidence": "12ff9163353bf6e56979dc66b66307c12e9d57dd92e38c348b4b7927c70838f3",
+      "external_evidence": "94c7fa013a49f257cfcd7f59bc324bfdba64330351bf7bfb898c97b04630e205",
+      "source_rights": "c2b12ec4ef37d2024d22a8e76616c45cb5b246f84871ca732bc39ae925f93f38"
+    },
+    "selector_binding": null,
+    "source_id": "common_pile",
+    "usage_policy": "strict_research",
+    "view_id": "common_pile_prose"
+  },
+  "admission_canonical_digest": "1f3c9f6e47ff6d2306c86efe0f11aacef5bea0bac1f0a916ca7e835072e6811f",
+  "component_digests": {
+    "calibration": "c8a32cced2bae62c21b4e4396d46f0803f11745117e52d468adf3912dde0541d",
+    "component_split": "d64b2b6ee53c7dd22d6b0ef193f09f4fb86a8fa512a6920daf40f048baa28e77",
+    "reviewed_bounds": "0f1467e65b1c0b4b79ed4bd2aeb4d0399b2995fb41c4df6472b73390b46a966c"
+  },
+  "components": {
+    "libretexts": {
+      "canonical_bytes": 257155526.52921566,
+      "compressed_bytes": 87207314,
+      "files": 46,
+      "first_file": "libretexts/libretexts.chunk.39.jsonl.gz",
+      "headroom_after_safety_bytes": 4155526.5292156935,
+      "headroom_bytes": 37155526.52921566,
+      "last_file": "libretexts/libretexts.chunk.49.jsonl.gz",
+      "next_cursor": 266,
+      "projected_tokens": 64288881.632303916,
+      "required_bytes": 220000000,
+      "rows": 28762.30672823218
+    },
+    "news": {
+      "canonical_bytes": 247415757.40188414,
+      "compressed_bytes": 98602096,
+      "files": 64,
+      "first_file": "news/news.chunk.29.jsonl.gz",
+      "headroom_after_safety_bytes": 1.0018841624259949,
+      "headroom_bytes": 32271621.40188414,
+      "last_file": "news/news.chunk.32.jsonl.gz",
+      "next_cursor": 381,
+      "projected_tokens": 61853939.350471035,
+      "required_bytes": 215144136,
+      "rows": 120835.90196078428
+    },
+    "oercommons": {
+      "canonical_bytes": 51258376.13592791,
+      "compressed_bytes": 17149251,
+      "files": 64,
+      "first_file": "oercommons/oercommons.chunk.49.jsonl.gz",
+      "headroom_after_safety_bytes": 1.1359279155731201,
+      "headroom_bytes": 6685876.135927908,
+      "last_file": "oercommons/oercommons.chunk.18.jsonl.gz",
+      "next_cursor": 377,
+      "projected_tokens": 12814594.033981977,
+      "required_bytes": 44572500,
+      "rows": 4513.504585206843
+    },
+    "pressbooks": {
+      "canonical_bytes": 254009903.98326117,
+      "compressed_bytes": 88695527,
+      "files": 28,
+      "first_file": "pressbooks/pressbooks.chunk.18.jsonl.gz",
+      "headroom_after_safety_bytes": 1009903.9832611978,
+      "headroom_bytes": 34009903.98326117,
+      "last_file": "pressbooks/pressbooks.chunk.60.jsonl.gz",
+      "next_cursor": 185,
+      "projected_tokens": 63502475.99581529,
+      "required_bytes": 220000000,
+      "rows": 27579.45491293532
+    },
+    "project_gutenberg": {
+      "canonical_bytes": 949409949.801374,
+      "compressed_bytes": 359530917,
+      "files": 3,
+      "first_file": "project_gutenberg/project_gutenberg.chunk.43.jsonl.gz",
+      "headroom_after_safety_bytes": 243105019.80137396,
+      "headroom_bytes": 335231749.80137396,
+      "last_file": "project_gutenberg/project_gutenberg.chunk.52.jsonl.gz",
+      "next_cursor": 16,
+      "projected_tokens": 237352487.4503435,
+      "required_bytes": 614178200,
+      "rows": 8261.280261948528
+    },
+    "public_domain_review": {
+      "canonical_bytes": 7020939.182866959,
+      "compressed_bytes": 2876489,
+      "files": 63,
+      "first_file": "public_domain_review/public_domain_review.chunk.26.jsonl.gz",
+      "headroom_after_safety_bytes": 0.5828669592738152,
+      "headroom_bytes": 915775.1828669589,
+      "last_file": "public_domain_review/public_domain_review.chunk.07.jsonl.gz",
+      "next_cursor": 382,
+      "projected_tokens": 1755234.7957167397,
+      "required_bytes": 6105164,
+      "rows": 966.3333918686772
+    }
+  },
+  "expected": {
+    "basis": "exact selected inventory sizes; component-specific biased prefix densities; rows rounded up, canonical bytes rounded down; /4 token estimates; actual yields and costs require production receipts",
+    "canonical_bytes": 1766270453,
+    "components": {
+      "libretexts": {
+        "canonical_bytes": 257155526.52921566,
+        "compressed_bytes": 87207314,
+        "files": 46,
+        "rows": 28762.30672823218
+      },
+      "news": {
+        "canonical_bytes": 247415757.40188414,
+        "compressed_bytes": 98602096,
+        "files": 64,
+        "rows": 120835.90196078428
+      },
+      "oercommons": {
+        "canonical_bytes": 51258376.13592791,
+        "compressed_bytes": 17149251,
+        "files": 64,
+        "rows": 4513.504585206843
+      },
+      "pressbooks": {
+        "canonical_bytes": 254009903.98326117,
+        "compressed_bytes": 88695527,
+        "files": 28,
+        "rows": 27579.45491293532
+      },
+      "project_gutenberg": {
+        "canonical_bytes": 949409949.801374,
+        "compressed_bytes": 359530917,
+        "files": 3,
+        "rows": 8261.280261948528
+      },
+      "public_domain_review": {
+        "canonical_bytes": 7020939.182866959,
+        "compressed_bytes": 2876489,
+        "files": 63,
+        "rows": 966.3333918686772
+      }
+    },
+    "estimated_tokens": 441567613,
+    "files": 268,
+    "requests": 536,
+    "rows": 190919,
+    "transfer_bytes": 654061594
+  },
+  "historical": {
+    "finepdfs": {
+      "identity": {
+        "benchmark_risk": "suspect_with_mitigation",
+        "bridge_receipt_digest": "283df718f73b548885f4eb576c72a8c4b5af76abc9bb997d101d168087429dc4",
+        "decision_contract": "c04-benchmark-risk-v3",
+        "probe_fingerprint": "5f390e6c3b3c7caf24fe30e9672a3f2256c7800b2e6a830f59ce0a990a0caa77"
+      },
+      "status": "PASS"
+    },
+    "finewiki": {
+      "identity": {
+        "benchmark_risk": "suspect_with_mitigation",
+        "bridge_receipt_digest": "f36584a5eea3dd69a863ff37d56eadc80916fdce28641fa5b2aa816fc560fab7",
+        "decision_contract": "c04-benchmark-risk-v3",
+        "probe_fingerprint": "11a0b610ed08b53a5c4c195dcb631f9529bf215202b82e88f7a28dbea0976a60"
+      },
+      "status": "PASS"
+    },
+    "ifm_general": {
+      "identity": {
+        "benchmark_risk": "suspect_with_mitigation",
+        "bridge_receipt_digest": "93441dfbd0ab143eec24a8dbee03caa427dca4ed4156a6b6bcf51349c3c9a7ea",
+        "decision_contract": "c04-benchmark-risk-v3",
+        "probe_fingerprint": "cca8d4cbf241d00dc3f6a964f4a42f7380198dac2d7d49a02e9021a5433f913b"
+      },
+      "status": "PASS"
+    },
+    "ifm_planning": {
+      "identity": {
+        "benchmark_risk": "suspect_with_mitigation",
+        "bridge_receipt_digest": "7925617b10c6482441a5616150538b932000ca7c2935260423362e1746f10116",
+        "decision_contract": "c04-benchmark-risk-v3",
+        "probe_fingerprint": "1284634eab55314bac7d013ade482a18c8bde7aecf3bfb254f98509e3087bf35"
+      },
+      "status": "PASS"
+    },
+    "simple_stories": {
+      "identity": {
+        "benchmark_risk": "suspect_with_mitigation",
+        "bridge_receipt_digest": "66f0c419c70e8b764fc7b8e6c5432b877c59bd1998ce1f6cefb4d2e44404a60a",
+        "decision_contract": "c04-benchmark-risk-v3",
+        "probe_fingerprint": "44ffe8574a1a97e99efc8a19f5a09e7a03b0e86ff9bdfdb23641294c3a4f0cae"
+      },
+      "status": "PASS"
+    },
+    "synth": {
+      "identity": {
+        "benchmark_risk": "suspect_with_mitigation",
+        "bridge_receipt_digest": "c749c999a8323ff0740832916ee60d26e8755fda6cddd03573558b0d1d1526dc",
+        "decision_contract": "c04-benchmark-risk-v3",
+        "probe_fingerprint": "322c9873d86a4d08cc193bc9c0368428a8422b2bbc3ff79ea830516f2adfb238"
+      },
+      "status": "PASS"
+    },
+    "ultrax": {
+      "identity": {
+        "benchmark_risk": "suspect_with_mitigation",
+        "bridge_receipt_digest": "b874f47e8d9a2a58c809a80f34a905353e591d71bd66c7a4645acc1c56c3ecf9",
+        "decision_contract": "c04-benchmark-risk-v3",
+        "probe_fingerprint": "ca72a0e89cc8e37fd66a5650978d13920665ee12042e9ed5ed62b6e92dc841f8"
+      },
+      "status": "PASS"
+    },
+    "wiki_rewrite": {
+      "identity": {
+        "benchmark_risk": "suspect_with_mitigation",
+        "bridge_receipt_digest": "c6eb1f46e440ff6c3cd376421eeb2b36de1f4ffdcc653f34083df119d6661602",
+        "decision_contract": "c04-benchmark-risk-v3",
+        "probe_fingerprint": "07d8ae8dc2ed41d351d1351143345e9c5e7cf34a5d47e914f93104cb0498378f"
+      },
+      "status": "PASS"
+    }
+  },
+  "identities": {
+    "backup": {
+      "path": "G:\\XLM\\calib\\calibration.pre-common-pile.json",
+      "sha256": "e6f7d3c1f7c5651edb89861bf2e65f1ed6de520582f9bf9ae30a8cac2550c552",
+      "status": "PASS"
+    },
+    "estimate": {
+      "path": "G:\\XLM\\calib\\headroom_estimate.json",
+      "sha256": "f887246171bea265d02b1cb69e9a8f5342a046c38c76ae4f76682c088aadaa6d",
+      "status": "PASS"
+    },
+    "measurement": {
+      "path": "G:\\XLM\\calib\\common_pile_prose\\measurement.json",
+      "sha256": "a99e994e3f1d43b5f50bc659ac7b1371a55cd05282e95f48c3a933d3a9bc7a42",
+      "status": "PASS"
+    },
+    "shared_calibration": {
+      "path": "G:\\XLM\\calib\\calibration.json",
+      "sha256": "73a3c5ab3f3f297437d1baaae90996cd1464950c576bc07d93aa2d9be89b764a",
+      "status": "PASS"
+    }
+  },
+  "network": false,
+  "policy_model": {
+    "candidates": [
+      {
+        "byte_amplification": 1.1414903670366017,
+        "durable_raw_bytes": 545786978944,
+        "feasible": true,
+        "files": 268,
+        "mode": "whole_file_local",
+        "model": {
+          "aggregate_bytes_per_second": 197380.90648606408,
+          "basis": "observed_transfer prefix rate; fallback adaptation rate; estimate",
+          "per_stream_bytes_per_second": 197380.90648606408,
+          "processes": 1,
+          "rows_per_process_second": 5814.0,
+          "seconds_per_request": 0,
+          "streams": 1
+        },
+        "network_seconds": 3313.7024530089466,
+        "note": "independent component prefixes; exact inventory transfer; projected rows; reviewed worst-case scratch/durable envelopes, including temporary/state files",
+        "processing_seconds": 32.83780529755762,
+        "refusals": [],
+        "request_latency_seconds": 0.0,
+        "requests": 536,
+        "rows_processed": 190919,
+        "scratch_peak_bytes": 3828713572,
+        "transfer_bytes": 654061594,
+        "wall_seconds": 3313.884255554526
+      }
+    ],
+    "ceilings": {
+      "durable_bytes": null,
+      "in_flight_files": 2,
+      "max_requests": 20000,
+      "scratch_bytes": 3828713572
+    },
+    "component_selection": {
+      "component_split_digest": "d64b2b6ee53c7dd22d6b0ef193f09f4fb86a8fa512a6920daf40f048baa28e77",
+      "cursors": {
+        "libretexts": 266,
+        "news": 381,
+        "oercommons": 377,
+        "pressbooks": 185,
+        "project_gutenberg": 16,
+        "public_domain_review": 382
+      },
+      "expected": {
+        "basis": "exact selected inventory sizes; component-specific biased prefix densities; rows rounded up, canonical bytes rounded down; /4 token estimates; actual yields and costs require production receipts",
+        "canonical_bytes": 1766270453,
+        "components": {
+          "libretexts": {
+            "canonical_bytes": 257155526.52921566,
+            "compressed_bytes": 87207314,
+            "files": 46,
+            "rows": 28762.30672823218
+          },
+          "news": {
+            "canonical_bytes": 247415757.40188414,
+            "compressed_bytes": 98602096,
+            "files": 64,
+            "rows": 120835.90196078428
+          },
+          "oercommons": {
+            "canonical_bytes": 51258376.13592791,
+            "compressed_bytes": 17149251,
+            "files": 64,
+            "rows": 4513.504585206843
+          },
+          "pressbooks": {
+            "canonical_bytes": 254009903.98326117,
+            "compressed_bytes": 88695527,
+            "files": 28,
+            "rows": 27579.45491293532
+          },
+          "project_gutenberg": {
+            "canonical_bytes": 949409949.801374,
+            "compressed_bytes": 359530917,
+            "files": 3,
+            "rows": 8261.280261948528
+          },
+          "public_domain_review": {
+            "canonical_bytes": 7020939.182866959,
+            "compressed_bytes": 2876489,
+            "files": 63,
+            "rows": 966.3333918686772
+          }
+        },
+        "estimated_tokens": 441567613,
+        "files": 268,
+        "requests": 536,
+        "rows": 190919,
+        "transfer_bytes": 654061594
+      },
+      "reviewed_bounds_digest": "0f1467e65b1c0b4b79ed4bd2aeb4d0399b2995fb41c4df6472b73390b46a966c",
+      "small_source_direct": "inapplicable: eligible source exceeds 2 GiB or differs from the selected population"
+    },
+    "fastest_modeled": {
+      "executable": true,
+      "mode": "whole_file_local",
+      "wall_seconds": 3313.884255554526
+    },
+    "layout": {
+      "canonical_bytes_per_row": 53078.4369827931,
+      "evidence": {
+        "component_calibration": "756f7066a7b39986ddb98ad260595cfc4d5fd6981ad21771e7b75836697d7060"
+      },
+      "file_bytes": 21176557,
+      "group_bytes": 21176557,
+      "group_rows": 1057,
+      "metadata_bytes_per_file": 0,
+      "metadata_requests_per_file": 1,
+      "projected_group_bytes": 21176557,
+      "range_record_bytes_per_row": 53078.4369827931,
+      "range_requests_per_group": 1.0,
+      "rows_per_file_estimate": 1057,
+      "rows_per_file_measured": 1057,
+      "source_files": 384,
+      "source_id": "common_pile"
+    },
+    "planned_canonical_bytes": 1518000000.0,
+    "policy": "mix01-transport-policy-v1",
+    "reason": "smallest modeled wall time among feasible modes (3314 s)",
+    "required_canonical_bytes": 1320000000,
+    "required_rows": 28600,
+    "safety_margin": 1.15,
+    "selected_mode": "whole_file_local",
+    "source_id": "common_pile"
+  },
+  "published_bridge_digest": "12ff9163353bf6e56979dc66b66307c12e9d57dd92e38c348b4b7927c70838f3",
+  "reviews_sha256": {
+    "attribution": "aa313beeb2b568dd5104278cb406c3a31d835ebe6168d3ba89a5f92f8c4129ef",
+    "benchmark_risk": "3a047ee431402d013111e5278c9e6b7ebf921f3fac86a2075dd9573f07813192",
+    "external_evidence": "94c7fa013a49f257cfcd7f59bc324bfdba64330351bf7bfb898c97b04630e205",
+    "source_rights": "c2b12ec4ef37d2024d22a8e76616c45cb5b246f84871ca732bc39ae925f93f38"
+  },
+  "selected_files": [
+    {
+      "file": "project_gutenberg/project_gutenberg.chunk.43.jsonl.gz",
+      "rank": 0
+    },
+    {
+      "file": "libretexts/libretexts.chunk.39.jsonl.gz",
+      "rank": 1
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.26.jsonl.gz",
+      "rank": 2
+    },
+    {
+      "file": "news/news.chunk.29.jsonl.gz",
+      "rank": 3
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.04.jsonl.gz",
+      "rank": 4
+    },
+    {
+      "file": "news/news.chunk.44.jsonl.gz",
+      "rank": 5
+    },
+    {
+      "file": "project_gutenberg/project_gutenberg.chunk.27.jsonl.gz",
+      "rank": 6
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.18.jsonl.gz",
+      "rank": 7
+    },
+    {
+      "file": "oercommons/oercommons.chunk.49.jsonl.gz",
+      "rank": 8
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.26.jsonl.gz",
+      "rank": 9
+    },
+    {
+      "file": "news/news.chunk.48.jsonl.gz",
+      "rank": 10
+    },
+    {
+      "file": "libretexts/libretexts.chunk.40.jsonl.gz",
+      "rank": 11
+    },
+    {
+      "file": "news/news.chunk.27.jsonl.gz",
+      "rank": 12
+    },
+    {
+      "file": "news/news.chunk.38.jsonl.gz",
+      "rank": 13
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.23.jsonl.gz",
+      "rank": 14
+    },
+    {
+      "file": "project_gutenberg/project_gutenberg.chunk.52.jsonl.gz",
+      "rank": 15
+    },
+    {
+      "file": "oercommons/oercommons.chunk.24.jsonl.gz",
+      "rank": 19
+    },
+    {
+      "file": "oercommons/oercommons.chunk.33.jsonl.gz",
+      "rank": 20
+    },
+    {
+      "file": "news/news.chunk.57.jsonl.gz",
+      "rank": 21
+    },
+    {
+      "file": "oercommons/oercommons.chunk.62.jsonl.gz",
+      "rank": 22
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.47.jsonl.gz",
+      "rank": 23
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.12.jsonl.gz",
+      "rank": 24
+    },
+    {
+      "file": "news/news.chunk.21.jsonl.gz",
+      "rank": 25
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.43.jsonl.gz",
+      "rank": 26
+    },
+    {
+      "file": "oercommons/oercommons.chunk.35.jsonl.gz",
+      "rank": 27
+    },
+    {
+      "file": "oercommons/oercommons.chunk.48.jsonl.gz",
+      "rank": 28
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.32.jsonl.gz",
+      "rank": 29
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.57.jsonl.gz",
+      "rank": 30
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.51.jsonl.gz",
+      "rank": 31
+    },
+    {
+      "file": "oercommons/oercommons.chunk.26.jsonl.gz",
+      "rank": 33
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.52.jsonl.gz",
+      "rank": 34
+    },
+    {
+      "file": "libretexts/libretexts.chunk.06.jsonl.gz",
+      "rank": 35
+    },
+    {
+      "file": "news/news.chunk.33.jsonl.gz",
+      "rank": 37
+    },
+    {
+      "file": "oercommons/oercommons.chunk.07.jsonl.gz",
+      "rank": 38
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.22.jsonl.gz",
+      "rank": 39
+    },
+    {
+      "file": "news/news.chunk.39.jsonl.gz",
+      "rank": 41
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.59.jsonl.gz",
+      "rank": 42
+    },
+    {
+      "file": "news/news.chunk.23.jsonl.gz",
+      "rank": 43
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.46.jsonl.gz",
+      "rank": 44
+    },
+    {
+      "file": "libretexts/libretexts.chunk.04.jsonl.gz",
+      "rank": 45
+    },
+    {
+      "file": "news/news.chunk.51.jsonl.gz",
+      "rank": 46
+    },
+    {
+      "file": "news/news.chunk.42.jsonl.gz",
+      "rank": 47
+    },
+    {
+      "file": "oercommons/oercommons.chunk.37.jsonl.gz",
+      "rank": 50
+    },
+    {
+      "file": "news/news.chunk.50.jsonl.gz",
+      "rank": 51
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.34.jsonl.gz",
+      "rank": 52
+    },
+    {
+      "file": "libretexts/libretexts.chunk.23.jsonl.gz",
+      "rank": 54
+    },
+    {
+      "file": "libretexts/libretexts.chunk.18.jsonl.gz",
+      "rank": 56
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.19.jsonl.gz",
+      "rank": 57
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.30.jsonl.gz",
+      "rank": 58
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.11.jsonl.gz",
+      "rank": 59
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.33.jsonl.gz",
+      "rank": 61
+    },
+    {
+      "file": "libretexts/libretexts.chunk.33.jsonl.gz",
+      "rank": 62
+    },
+    {
+      "file": "libretexts/libretexts.chunk.44.jsonl.gz",
+      "rank": 63
+    },
+    {
+      "file": "libretexts/libretexts.chunk.50.jsonl.gz",
+      "rank": 64
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.16.jsonl.gz",
+      "rank": 67
+    },
+    {
+      "file": "news/news.chunk.53.jsonl.gz",
+      "rank": 68
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.17.jsonl.gz",
+      "rank": 69
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.06.jsonl.gz",
+      "rank": 70
+    },
+    {
+      "file": "news/news.chunk.61.jsonl.gz",
+      "rank": 71
+    },
+    {
+      "file": "oercommons/oercommons.chunk.17.jsonl.gz",
+      "rank": 72
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.31.jsonl.gz",
+      "rank": 73
+    },
+    {
+      "file": "oercommons/oercommons.chunk.34.jsonl.gz",
+      "rank": 74
+    },
+    {
+      "file": "oercommons/oercommons.chunk.61.jsonl.gz",
+      "rank": 75
+    },
+    {
+      "file": "libretexts/libretexts.chunk.16.jsonl.gz",
+      "rank": 76
+    },
+    {
+      "file": "oercommons/oercommons.chunk.42.jsonl.gz",
+      "rank": 77
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.44.jsonl.gz",
+      "rank": 78
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.23.jsonl.gz",
+      "rank": 80
+    },
+    {
+      "file": "libretexts/libretexts.chunk.07.jsonl.gz",
+      "rank": 82
+    },
+    {
+      "file": "oercommons/oercommons.chunk.04.jsonl.gz",
+      "rank": 83
+    },
+    {
+      "file": "libretexts/libretexts.chunk.01.jsonl.gz",
+      "rank": 84
+    },
+    {
+      "file": "oercommons/oercommons.chunk.56.jsonl.gz",
+      "rank": 85
+    },
+    {
+      "file": "libretexts/libretexts.chunk.08.jsonl.gz",
+      "rank": 86
+    },
+    {
+      "file": "news/news.chunk.06.jsonl.gz",
+      "rank": 87
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.25.jsonl.gz",
+      "rank": 89
+    },
+    {
+      "file": "oercommons/oercommons.chunk.13.jsonl.gz",
+      "rank": 90
+    },
+    {
+      "file": "libretexts/libretexts.chunk.51.jsonl.gz",
+      "rank": 91
+    },
+    {
+      "file": "news/news.chunk.18.jsonl.gz",
+      "rank": 92
+    },
+    {
+      "file": "oercommons/oercommons.chunk.00.jsonl.gz",
+      "rank": 93
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.42.jsonl.gz",
+      "rank": 94
+    },
+    {
+      "file": "oercommons/oercommons.chunk.16.jsonl.gz",
+      "rank": 95
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.24.jsonl.gz",
+      "rank": 96
+    },
+    {
+      "file": "news/news.chunk.56.jsonl.gz",
+      "rank": 98
+    },
+    {
+      "file": "oercommons/oercommons.chunk.20.jsonl.gz",
+      "rank": 99
+    },
+    {
+      "file": "libretexts/libretexts.chunk.25.jsonl.gz",
+      "rank": 100
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.10.jsonl.gz",
+      "rank": 101
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.03.jsonl.gz",
+      "rank": 102
+    },
+    {
+      "file": "libretexts/libretexts.chunk.02.jsonl.gz",
+      "rank": 103
+    },
+    {
+      "file": "oercommons/oercommons.chunk.08.jsonl.gz",
+      "rank": 104
+    },
+    {
+      "file": "libretexts/libretexts.chunk.37.jsonl.gz",
+      "rank": 105
+    },
+    {
+      "file": "libretexts/libretexts.chunk.31.jsonl.gz",
+      "rank": 106
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.28.jsonl.gz",
+      "rank": 107
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.13.jsonl.gz",
+      "rank": 108
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.43.jsonl.gz",
+      "rank": 109
+    },
+    {
+      "file": "libretexts/libretexts.chunk.32.jsonl.gz",
+      "rank": 110
+    },
+    {
+      "file": "oercommons/oercommons.chunk.40.jsonl.gz",
+      "rank": 111
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.25.jsonl.gz",
+      "rank": 112
+    },
+    {
+      "file": "oercommons/oercommons.chunk.09.jsonl.gz",
+      "rank": 113
+    },
+    {
+      "file": "libretexts/libretexts.chunk.63.jsonl.gz",
+      "rank": 115
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.08.jsonl.gz",
+      "rank": 116
+    },
+    {
+      "file": "libretexts/libretexts.chunk.20.jsonl.gz",
+      "rank": 118
+    },
+    {
+      "file": "oercommons/oercommons.chunk.03.jsonl.gz",
+      "rank": 119
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.20.jsonl.gz",
+      "rank": 120
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.56.jsonl.gz",
+      "rank": 121
+    },
+    {
+      "file": "libretexts/libretexts.chunk.46.jsonl.gz",
+      "rank": 122
+    },
+    {
+      "file": "libretexts/libretexts.chunk.15.jsonl.gz",
+      "rank": 123
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.35.jsonl.gz",
+      "rank": 124
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.02.jsonl.gz",
+      "rank": 125
+    },
+    {
+      "file": "oercommons/oercommons.chunk.23.jsonl.gz",
+      "rank": 126
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.57.jsonl.gz",
+      "rank": 127
+    },
+    {
+      "file": "news/news.chunk.01.jsonl.gz",
+      "rank": 129
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.61.jsonl.gz",
+      "rank": 130
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.14.jsonl.gz",
+      "rank": 132
+    },
+    {
+      "file": "libretexts/libretexts.chunk.13.jsonl.gz",
+      "rank": 133
+    },
+    {
+      "file": "oercommons/oercommons.chunk.12.jsonl.gz",
+      "rank": 134
+    },
+    {
+      "file": "oercommons/oercommons.chunk.28.jsonl.gz",
+      "rank": 135
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.50.jsonl.gz",
+      "rank": 136
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.49.jsonl.gz",
+      "rank": 137
+    },
+    {
+      "file": "news/news.chunk.41.jsonl.gz",
+      "rank": 138
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.53.jsonl.gz",
+      "rank": 139
+    },
+    {
+      "file": "news/news.chunk.25.jsonl.gz",
+      "rank": 140
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.32.jsonl.gz",
+      "rank": 141
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.38.jsonl.gz",
+      "rank": 142
+    },
+    {
+      "file": "libretexts/libretexts.chunk.57.jsonl.gz",
+      "rank": 143
+    },
+    {
+      "file": "news/news.chunk.07.jsonl.gz",
+      "rank": 144
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.54.jsonl.gz",
+      "rank": 147
+    },
+    {
+      "file": "libretexts/libretexts.chunk.35.jsonl.gz",
+      "rank": 148
+    },
+    {
+      "file": "libretexts/libretexts.chunk.48.jsonl.gz",
+      "rank": 150
+    },
+    {
+      "file": "news/news.chunk.46.jsonl.gz",
+      "rank": 151
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.29.jsonl.gz",
+      "rank": 152
+    },
+    {
+      "file": "news/news.chunk.19.jsonl.gz",
+      "rank": 153
+    },
+    {
+      "file": "oercommons/oercommons.chunk.05.jsonl.gz",
+      "rank": 155
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.48.jsonl.gz",
+      "rank": 157
+    },
+    {
+      "file": "oercommons/oercommons.chunk.01.jsonl.gz",
+      "rank": 158
+    },
+    {
+      "file": "libretexts/libretexts.chunk.29.jsonl.gz",
+      "rank": 159
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.42.jsonl.gz",
+      "rank": 160
+    },
+    {
+      "file": "libretexts/libretexts.chunk.00.jsonl.gz",
+      "rank": 161
+    },
+    {
+      "file": "news/news.chunk.17.jsonl.gz",
+      "rank": 162
+    },
+    {
+      "file": "news/news.chunk.08.jsonl.gz",
+      "rank": 163
+    },
+    {
+      "file": "news/news.chunk.03.jsonl.gz",
+      "rank": 164
+    },
+    {
+      "file": "oercommons/oercommons.chunk.54.jsonl.gz",
+      "rank": 165
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.41.jsonl.gz",
+      "rank": 169
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.08.jsonl.gz",
+      "rank": 170
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.24.jsonl.gz",
+      "rank": 172
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.00.jsonl.gz",
+      "rank": 174
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.31.jsonl.gz",
+      "rank": 175
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.27.jsonl.gz",
+      "rank": 176
+    },
+    {
+      "file": "news/news.chunk.58.jsonl.gz",
+      "rank": 177
+    },
+    {
+      "file": "libretexts/libretexts.chunk.58.jsonl.gz",
+      "rank": 178
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.63.jsonl.gz",
+      "rank": 179
+    },
+    {
+      "file": "news/news.chunk.63.jsonl.gz",
+      "rank": 180
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.36.jsonl.gz",
+      "rank": 181
+    },
+    {
+      "file": "libretexts/libretexts.chunk.24.jsonl.gz",
+      "rank": 182
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.09.jsonl.gz",
+      "rank": 183
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.60.jsonl.gz",
+      "rank": 184
+    },
+    {
+      "file": "news/news.chunk.34.jsonl.gz",
+      "rank": 185
+    },
+    {
+      "file": "news/news.chunk.26.jsonl.gz",
+      "rank": 187
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.10.jsonl.gz",
+      "rank": 188
+    },
+    {
+      "file": "oercommons/oercommons.chunk.29.jsonl.gz",
+      "rank": 190
+    },
+    {
+      "file": "news/news.chunk.54.jsonl.gz",
+      "rank": 191
+    },
+    {
+      "file": "libretexts/libretexts.chunk.60.jsonl.gz",
+      "rank": 192
+    },
+    {
+      "file": "libretexts/libretexts.chunk.19.jsonl.gz",
+      "rank": 194
+    },
+    {
+      "file": "oercommons/oercommons.chunk.27.jsonl.gz",
+      "rank": 195
+    },
+    {
+      "file": "news/news.chunk.05.jsonl.gz",
+      "rank": 196
+    },
+    {
+      "file": "libretexts/libretexts.chunk.61.jsonl.gz",
+      "rank": 197
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.15.jsonl.gz",
+      "rank": 199
+    },
+    {
+      "file": "oercommons/oercommons.chunk.53.jsonl.gz",
+      "rank": 200
+    },
+    {
+      "file": "oercommons/oercommons.chunk.02.jsonl.gz",
+      "rank": 205
+    },
+    {
+      "file": "oercommons/oercommons.chunk.30.jsonl.gz",
+      "rank": 206
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.45.jsonl.gz",
+      "rank": 208
+    },
+    {
+      "file": "libretexts/libretexts.chunk.14.jsonl.gz",
+      "rank": 209
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.33.jsonl.gz",
+      "rank": 210
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.01.jsonl.gz",
+      "rank": 211
+    },
+    {
+      "file": "news/news.chunk.47.jsonl.gz",
+      "rank": 212
+    },
+    {
+      "file": "oercommons/oercommons.chunk.52.jsonl.gz",
+      "rank": 214
+    },
+    {
+      "file": "libretexts/libretexts.chunk.56.jsonl.gz",
+      "rank": 215
+    },
+    {
+      "file": "oercommons/oercommons.chunk.10.jsonl.gz",
+      "rank": 216
+    },
+    {
+      "file": "news/news.chunk.31.jsonl.gz",
+      "rank": 218
+    },
+    {
+      "file": "oercommons/oercommons.chunk.50.jsonl.gz",
+      "rank": 219
+    },
+    {
+      "file": "news/news.chunk.02.jsonl.gz",
+      "rank": 220
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.55.jsonl.gz",
+      "rank": 222
+    },
+    {
+      "file": "news/news.chunk.24.jsonl.gz",
+      "rank": 224
+    },
+    {
+      "file": "libretexts/libretexts.chunk.28.jsonl.gz",
+      "rank": 228
+    },
+    {
+      "file": "oercommons/oercommons.chunk.25.jsonl.gz",
+      "rank": 230
+    },
+    {
+      "file": "libretexts/libretexts.chunk.41.jsonl.gz",
+      "rank": 231
+    },
+    {
+      "file": "libretexts/libretexts.chunk.30.jsonl.gz",
+      "rank": 232
+    },
+    {
+      "file": "libretexts/libretexts.chunk.43.jsonl.gz",
+      "rank": 233
+    },
+    {
+      "file": "news/news.chunk.43.jsonl.gz",
+      "rank": 234
+    },
+    {
+      "file": "libretexts/libretexts.chunk.12.jsonl.gz",
+      "rank": 235
+    },
+    {
+      "file": "oercommons/oercommons.chunk.21.jsonl.gz",
+      "rank": 236
+    },
+    {
+      "file": "libretexts/libretexts.chunk.27.jsonl.gz",
+      "rank": 237
+    },
+    {
+      "file": "news/news.chunk.04.jsonl.gz",
+      "rank": 238
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.06.jsonl.gz",
+      "rank": 240
+    },
+    {
+      "file": "news/news.chunk.40.jsonl.gz",
+      "rank": 241
+    },
+    {
+      "file": "oercommons/oercommons.chunk.06.jsonl.gz",
+      "rank": 243
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.21.jsonl.gz",
+      "rank": 245
+    },
+    {
+      "file": "oercommons/oercommons.chunk.38.jsonl.gz",
+      "rank": 246
+    },
+    {
+      "file": "libretexts/libretexts.chunk.22.jsonl.gz",
+      "rank": 248
+    },
+    {
+      "file": "oercommons/oercommons.chunk.44.jsonl.gz",
+      "rank": 251
+    },
+    {
+      "file": "news/news.chunk.12.jsonl.gz",
+      "rank": 253
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.37.jsonl.gz",
+      "rank": 254
+    },
+    {
+      "file": "oercommons/oercommons.chunk.31.jsonl.gz",
+      "rank": 255
+    },
+    {
+      "file": "libretexts/libretexts.chunk.03.jsonl.gz",
+      "rank": 257
+    },
+    {
+      "file": "oercommons/oercommons.chunk.59.jsonl.gz",
+      "rank": 258
+    },
+    {
+      "file": "libretexts/libretexts.chunk.53.jsonl.gz",
+      "rank": 259
+    },
+    {
+      "file": "oercommons/oercommons.chunk.36.jsonl.gz",
+      "rank": 260
+    },
+    {
+      "file": "news/news.chunk.30.jsonl.gz",
+      "rank": 261
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.18.jsonl.gz",
+      "rank": 262
+    },
+    {
+      "file": "news/news.chunk.10.jsonl.gz",
+      "rank": 263
+    },
+    {
+      "file": "libretexts/libretexts.chunk.49.jsonl.gz",
+      "rank": 265
+    },
+    {
+      "file": "news/news.chunk.11.jsonl.gz",
+      "rank": 267
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.51.jsonl.gz",
+      "rank": 268
+    },
+    {
+      "file": "oercommons/oercommons.chunk.57.jsonl.gz",
+      "rank": 269
+    },
+    {
+      "file": "news/news.chunk.28.jsonl.gz",
+      "rank": 271
+    },
+    {
+      "file": "news/news.chunk.35.jsonl.gz",
+      "rank": 273
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.62.jsonl.gz",
+      "rank": 276
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.29.jsonl.gz",
+      "rank": 277
+    },
+    {
+      "file": "news/news.chunk.20.jsonl.gz",
+      "rank": 281
+    },
+    {
+      "file": "oercommons/oercommons.chunk.41.jsonl.gz",
+      "rank": 282
+    },
+    {
+      "file": "oercommons/oercommons.chunk.19.jsonl.gz",
+      "rank": 284
+    },
+    {
+      "file": "news/news.chunk.60.jsonl.gz",
+      "rank": 285
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.40.jsonl.gz",
+      "rank": 286
+    },
+    {
+      "file": "oercommons/oercommons.chunk.15.jsonl.gz",
+      "rank": 289
+    },
+    {
+      "file": "news/news.chunk.52.jsonl.gz",
+      "rank": 291
+    },
+    {
+      "file": "news/news.chunk.37.jsonl.gz",
+      "rank": 299
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.53.jsonl.gz",
+      "rank": 300
+    },
+    {
+      "file": "news/news.chunk.16.jsonl.gz",
+      "rank": 301
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.05.jsonl.gz",
+      "rank": 305
+    },
+    {
+      "file": "news/news.chunk.14.jsonl.gz",
+      "rank": 306
+    },
+    {
+      "file": "oercommons/oercommons.chunk.14.jsonl.gz",
+      "rank": 307
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.52.jsonl.gz",
+      "rank": 308
+    },
+    {
+      "file": "oercommons/oercommons.chunk.46.jsonl.gz",
+      "rank": 310
+    },
+    {
+      "file": "news/news.chunk.45.jsonl.gz",
+      "rank": 311
+    },
+    {
+      "file": "oercommons/oercommons.chunk.45.jsonl.gz",
+      "rank": 312
+    },
+    {
+      "file": "oercommons/oercommons.chunk.60.jsonl.gz",
+      "rank": 313
+    },
+    {
+      "file": "oercommons/oercommons.chunk.32.jsonl.gz",
+      "rank": 314
+    },
+    {
+      "file": "news/news.chunk.55.jsonl.gz",
+      "rank": 317
+    },
+    {
+      "file": "oercommons/oercommons.chunk.51.jsonl.gz",
+      "rank": 318
+    },
+    {
+      "file": "oercommons/oercommons.chunk.22.jsonl.gz",
+      "rank": 321
+    },
+    {
+      "file": "oercommons/oercommons.chunk.11.jsonl.gz",
+      "rank": 322
+    },
+    {
+      "file": "news/news.chunk.59.jsonl.gz",
+      "rank": 323
+    },
+    {
+      "file": "news/news.chunk.15.jsonl.gz",
+      "rank": 324
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.39.jsonl.gz",
+      "rank": 327
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.13.jsonl.gz",
+      "rank": 330
+    },
+    {
+      "file": "oercommons/oercommons.chunk.43.jsonl.gz",
+      "rank": 332
+    },
+    {
+      "file": "news/news.chunk.62.jsonl.gz",
+      "rank": 333
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.58.jsonl.gz",
+      "rank": 334
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.09.jsonl.gz",
+      "rank": 335
+    },
+    {
+      "file": "news/news.chunk.36.jsonl.gz",
+      "rank": 337
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.03.jsonl.gz",
+      "rank": 339
+    },
+    {
+      "file": "oercommons/oercommons.chunk.39.jsonl.gz",
+      "rank": 340
+    },
+    {
+      "file": "oercommons/oercommons.chunk.47.jsonl.gz",
+      "rank": 342
+    },
+    {
+      "file": "news/news.chunk.13.jsonl.gz",
+      "rank": 343
+    },
+    {
+      "file": "oercommons/oercommons.chunk.63.jsonl.gz",
+      "rank": 349
+    },
+    {
+      "file": "oercommons/oercommons.chunk.55.jsonl.gz",
+      "rank": 350
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.44.jsonl.gz",
+      "rank": 353
+    },
+    {
+      "file": "news/news.chunk.49.jsonl.gz",
+      "rank": 354
+    },
+    {
+      "file": "news/news.chunk.00.jsonl.gz",
+      "rank": 356
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.38.jsonl.gz",
+      "rank": 358
+    },
+    {
+      "file": "news/news.chunk.22.jsonl.gz",
+      "rank": 361
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.50.jsonl.gz",
+      "rank": 363
+    },
+    {
+      "file": "oercommons/oercommons.chunk.58.jsonl.gz",
+      "rank": 364
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.41.jsonl.gz",
+      "rank": 367
+    },
+    {
+      "file": "news/news.chunk.09.jsonl.gz",
+      "rank": 368
+    },
+    {
+      "file": "oercommons/oercommons.chunk.18.jsonl.gz",
+      "rank": 376
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.28.jsonl.gz",
+      "rank": 377
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.49.jsonl.gz",
+      "rank": 379
+    },
+    {
+      "file": "news/news.chunk.32.jsonl.gz",
+      "rank": 380
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.07.jsonl.gz",
+      "rank": 381
+    }
+  ],
+  "status": "PASS"
+}

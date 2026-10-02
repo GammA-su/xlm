@@ -1,0 +1,1368 @@
+{
+  "completion_percent": 0.0,
+  "plan_digest": "c38eb2be01a28579ffa77a319c0713e5fef2df0f4da9ac3ed3b3089ab04edaa7",
+  "remaining": [
+    {
+      "file": "project_gutenberg/project_gutenberg.chunk.43.jsonl.gz",
+      "rank": 0
+    },
+    {
+      "file": "libretexts/libretexts.chunk.39.jsonl.gz",
+      "rank": 1
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.26.jsonl.gz",
+      "rank": 2
+    },
+    {
+      "file": "news/news.chunk.29.jsonl.gz",
+      "rank": 3
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.04.jsonl.gz",
+      "rank": 4
+    },
+    {
+      "file": "news/news.chunk.44.jsonl.gz",
+      "rank": 5
+    },
+    {
+      "file": "project_gutenberg/project_gutenberg.chunk.27.jsonl.gz",
+      "rank": 6
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.18.jsonl.gz",
+      "rank": 7
+    },
+    {
+      "file": "oercommons/oercommons.chunk.49.jsonl.gz",
+      "rank": 8
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.26.jsonl.gz",
+      "rank": 9
+    },
+    {
+      "file": "news/news.chunk.48.jsonl.gz",
+      "rank": 10
+    },
+    {
+      "file": "libretexts/libretexts.chunk.40.jsonl.gz",
+      "rank": 11
+    },
+    {
+      "file": "news/news.chunk.27.jsonl.gz",
+      "rank": 12
+    },
+    {
+      "file": "news/news.chunk.38.jsonl.gz",
+      "rank": 13
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.23.jsonl.gz",
+      "rank": 14
+    },
+    {
+      "file": "project_gutenberg/project_gutenberg.chunk.52.jsonl.gz",
+      "rank": 15
+    },
+    {
+      "file": "oercommons/oercommons.chunk.24.jsonl.gz",
+      "rank": 19
+    },
+    {
+      "file": "oercommons/oercommons.chunk.33.jsonl.gz",
+      "rank": 20
+    },
+    {
+      "file": "news/news.chunk.57.jsonl.gz",
+      "rank": 21
+    },
+    {
+      "file": "oercommons/oercommons.chunk.62.jsonl.gz",
+      "rank": 22
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.47.jsonl.gz",
+      "rank": 23
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.12.jsonl.gz",
+      "rank": 24
+    },
+    {
+      "file": "news/news.chunk.21.jsonl.gz",
+      "rank": 25
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.43.jsonl.gz",
+      "rank": 26
+    },
+    {
+      "file": "oercommons/oercommons.chunk.35.jsonl.gz",
+      "rank": 27
+    },
+    {
+      "file": "oercommons/oercommons.chunk.48.jsonl.gz",
+      "rank": 28
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.32.jsonl.gz",
+      "rank": 29
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.57.jsonl.gz",
+      "rank": 30
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.51.jsonl.gz",
+      "rank": 31
+    },
+    {
+      "file": "oercommons/oercommons.chunk.26.jsonl.gz",
+      "rank": 33
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.52.jsonl.gz",
+      "rank": 34
+    },
+    {
+      "file": "libretexts/libretexts.chunk.06.jsonl.gz",
+      "rank": 35
+    },
+    {
+      "file": "news/news.chunk.33.jsonl.gz",
+      "rank": 37
+    },
+    {
+      "file": "oercommons/oercommons.chunk.07.jsonl.gz",
+      "rank": 38
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.22.jsonl.gz",
+      "rank": 39
+    },
+    {
+      "file": "news/news.chunk.39.jsonl.gz",
+      "rank": 41
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.59.jsonl.gz",
+      "rank": 42
+    },
+    {
+      "file": "news/news.chunk.23.jsonl.gz",
+      "rank": 43
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.46.jsonl.gz",
+      "rank": 44
+    },
+    {
+      "file": "libretexts/libretexts.chunk.04.jsonl.gz",
+      "rank": 45
+    },
+    {
+      "file": "news/news.chunk.51.jsonl.gz",
+      "rank": 46
+    },
+    {
+      "file": "news/news.chunk.42.jsonl.gz",
+      "rank": 47
+    },
+    {
+      "file": "oercommons/oercommons.chunk.37.jsonl.gz",
+      "rank": 50
+    },
+    {
+      "file": "news/news.chunk.50.jsonl.gz",
+      "rank": 51
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.34.jsonl.gz",
+      "rank": 52
+    },
+    {
+      "file": "libretexts/libretexts.chunk.23.jsonl.gz",
+      "rank": 54
+    },
+    {
+      "file": "libretexts/libretexts.chunk.18.jsonl.gz",
+      "rank": 56
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.19.jsonl.gz",
+      "rank": 57
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.30.jsonl.gz",
+      "rank": 58
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.11.jsonl.gz",
+      "rank": 59
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.33.jsonl.gz",
+      "rank": 61
+    },
+    {
+      "file": "libretexts/libretexts.chunk.33.jsonl.gz",
+      "rank": 62
+    },
+    {
+      "file": "libretexts/libretexts.chunk.44.jsonl.gz",
+      "rank": 63
+    },
+    {
+      "file": "libretexts/libretexts.chunk.50.jsonl.gz",
+      "rank": 64
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.16.jsonl.gz",
+      "rank": 67
+    },
+    {
+      "file": "news/news.chunk.53.jsonl.gz",
+      "rank": 68
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.17.jsonl.gz",
+      "rank": 69
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.06.jsonl.gz",
+      "rank": 70
+    },
+    {
+      "file": "news/news.chunk.61.jsonl.gz",
+      "rank": 71
+    },
+    {
+      "file": "oercommons/oercommons.chunk.17.jsonl.gz",
+      "rank": 72
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.31.jsonl.gz",
+      "rank": 73
+    },
+    {
+      "file": "oercommons/oercommons.chunk.34.jsonl.gz",
+      "rank": 74
+    },
+    {
+      "file": "oercommons/oercommons.chunk.61.jsonl.gz",
+      "rank": 75
+    },
+    {
+      "file": "libretexts/libretexts.chunk.16.jsonl.gz",
+      "rank": 76
+    },
+    {
+      "file": "oercommons/oercommons.chunk.42.jsonl.gz",
+      "rank": 77
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.44.jsonl.gz",
+      "rank": 78
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.23.jsonl.gz",
+      "rank": 80
+    },
+    {
+      "file": "libretexts/libretexts.chunk.07.jsonl.gz",
+      "rank": 82
+    },
+    {
+      "file": "oercommons/oercommons.chunk.04.jsonl.gz",
+      "rank": 83
+    },
+    {
+      "file": "libretexts/libretexts.chunk.01.jsonl.gz",
+      "rank": 84
+    },
+    {
+      "file": "oercommons/oercommons.chunk.56.jsonl.gz",
+      "rank": 85
+    },
+    {
+      "file": "libretexts/libretexts.chunk.08.jsonl.gz",
+      "rank": 86
+    },
+    {
+      "file": "news/news.chunk.06.jsonl.gz",
+      "rank": 87
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.25.jsonl.gz",
+      "rank": 89
+    },
+    {
+      "file": "oercommons/oercommons.chunk.13.jsonl.gz",
+      "rank": 90
+    },
+    {
+      "file": "libretexts/libretexts.chunk.51.jsonl.gz",
+      "rank": 91
+    },
+    {
+      "file": "news/news.chunk.18.jsonl.gz",
+      "rank": 92
+    },
+    {
+      "file": "oercommons/oercommons.chunk.00.jsonl.gz",
+      "rank": 93
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.42.jsonl.gz",
+      "rank": 94
+    },
+    {
+      "file": "oercommons/oercommons.chunk.16.jsonl.gz",
+      "rank": 95
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.24.jsonl.gz",
+      "rank": 96
+    },
+    {
+      "file": "news/news.chunk.56.jsonl.gz",
+      "rank": 98
+    },
+    {
+      "file": "oercommons/oercommons.chunk.20.jsonl.gz",
+      "rank": 99
+    },
+    {
+      "file": "libretexts/libretexts.chunk.25.jsonl.gz",
+      "rank": 100
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.10.jsonl.gz",
+      "rank": 101
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.03.jsonl.gz",
+      "rank": 102
+    },
+    {
+      "file": "libretexts/libretexts.chunk.02.jsonl.gz",
+      "rank": 103
+    },
+    {
+      "file": "oercommons/oercommons.chunk.08.jsonl.gz",
+      "rank": 104
+    },
+    {
+      "file": "libretexts/libretexts.chunk.37.jsonl.gz",
+      "rank": 105
+    },
+    {
+      "file": "libretexts/libretexts.chunk.31.jsonl.gz",
+      "rank": 106
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.28.jsonl.gz",
+      "rank": 107
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.13.jsonl.gz",
+      "rank": 108
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.43.jsonl.gz",
+      "rank": 109
+    },
+    {
+      "file": "libretexts/libretexts.chunk.32.jsonl.gz",
+      "rank": 110
+    },
+    {
+      "file": "oercommons/oercommons.chunk.40.jsonl.gz",
+      "rank": 111
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.25.jsonl.gz",
+      "rank": 112
+    },
+    {
+      "file": "oercommons/oercommons.chunk.09.jsonl.gz",
+      "rank": 113
+    },
+    {
+      "file": "libretexts/libretexts.chunk.63.jsonl.gz",
+      "rank": 115
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.08.jsonl.gz",
+      "rank": 116
+    },
+    {
+      "file": "libretexts/libretexts.chunk.20.jsonl.gz",
+      "rank": 118
+    },
+    {
+      "file": "oercommons/oercommons.chunk.03.jsonl.gz",
+      "rank": 119
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.20.jsonl.gz",
+      "rank": 120
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.56.jsonl.gz",
+      "rank": 121
+    },
+    {
+      "file": "libretexts/libretexts.chunk.46.jsonl.gz",
+      "rank": 122
+    },
+    {
+      "file": "libretexts/libretexts.chunk.15.jsonl.gz",
+      "rank": 123
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.35.jsonl.gz",
+      "rank": 124
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.02.jsonl.gz",
+      "rank": 125
+    },
+    {
+      "file": "oercommons/oercommons.chunk.23.jsonl.gz",
+      "rank": 126
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.57.jsonl.gz",
+      "rank": 127
+    },
+    {
+      "file": "news/news.chunk.01.jsonl.gz",
+      "rank": 129
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.61.jsonl.gz",
+      "rank": 130
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.14.jsonl.gz",
+      "rank": 132
+    },
+    {
+      "file": "libretexts/libretexts.chunk.13.jsonl.gz",
+      "rank": 133
+    },
+    {
+      "file": "oercommons/oercommons.chunk.12.jsonl.gz",
+      "rank": 134
+    },
+    {
+      "file": "oercommons/oercommons.chunk.28.jsonl.gz",
+      "rank": 135
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.50.jsonl.gz",
+      "rank": 136
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.49.jsonl.gz",
+      "rank": 137
+    },
+    {
+      "file": "news/news.chunk.41.jsonl.gz",
+      "rank": 138
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.53.jsonl.gz",
+      "rank": 139
+    },
+    {
+      "file": "news/news.chunk.25.jsonl.gz",
+      "rank": 140
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.32.jsonl.gz",
+      "rank": 141
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.38.jsonl.gz",
+      "rank": 142
+    },
+    {
+      "file": "libretexts/libretexts.chunk.57.jsonl.gz",
+      "rank": 143
+    },
+    {
+      "file": "news/news.chunk.07.jsonl.gz",
+      "rank": 144
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.54.jsonl.gz",
+      "rank": 147
+    },
+    {
+      "file": "libretexts/libretexts.chunk.35.jsonl.gz",
+      "rank": 148
+    },
+    {
+      "file": "libretexts/libretexts.chunk.48.jsonl.gz",
+      "rank": 150
+    },
+    {
+      "file": "news/news.chunk.46.jsonl.gz",
+      "rank": 151
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.29.jsonl.gz",
+      "rank": 152
+    },
+    {
+      "file": "news/news.chunk.19.jsonl.gz",
+      "rank": 153
+    },
+    {
+      "file": "oercommons/oercommons.chunk.05.jsonl.gz",
+      "rank": 155
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.48.jsonl.gz",
+      "rank": 157
+    },
+    {
+      "file": "oercommons/oercommons.chunk.01.jsonl.gz",
+      "rank": 158
+    },
+    {
+      "file": "libretexts/libretexts.chunk.29.jsonl.gz",
+      "rank": 159
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.42.jsonl.gz",
+      "rank": 160
+    },
+    {
+      "file": "libretexts/libretexts.chunk.00.jsonl.gz",
+      "rank": 161
+    },
+    {
+      "file": "news/news.chunk.17.jsonl.gz",
+      "rank": 162
+    },
+    {
+      "file": "news/news.chunk.08.jsonl.gz",
+      "rank": 163
+    },
+    {
+      "file": "news/news.chunk.03.jsonl.gz",
+      "rank": 164
+    },
+    {
+      "file": "oercommons/oercommons.chunk.54.jsonl.gz",
+      "rank": 165
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.41.jsonl.gz",
+      "rank": 169
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.08.jsonl.gz",
+      "rank": 170
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.24.jsonl.gz",
+      "rank": 172
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.00.jsonl.gz",
+      "rank": 174
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.31.jsonl.gz",
+      "rank": 175
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.27.jsonl.gz",
+      "rank": 176
+    },
+    {
+      "file": "news/news.chunk.58.jsonl.gz",
+      "rank": 177
+    },
+    {
+      "file": "libretexts/libretexts.chunk.58.jsonl.gz",
+      "rank": 178
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.63.jsonl.gz",
+      "rank": 179
+    },
+    {
+      "file": "news/news.chunk.63.jsonl.gz",
+      "rank": 180
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.36.jsonl.gz",
+      "rank": 181
+    },
+    {
+      "file": "libretexts/libretexts.chunk.24.jsonl.gz",
+      "rank": 182
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.09.jsonl.gz",
+      "rank": 183
+    },
+    {
+      "file": "pressbooks/pressbooks.chunk.60.jsonl.gz",
+      "rank": 184
+    },
+    {
+      "file": "news/news.chunk.34.jsonl.gz",
+      "rank": 185
+    },
+    {
+      "file": "news/news.chunk.26.jsonl.gz",
+      "rank": 187
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.10.jsonl.gz",
+      "rank": 188
+    },
+    {
+      "file": "oercommons/oercommons.chunk.29.jsonl.gz",
+      "rank": 190
+    },
+    {
+      "file": "news/news.chunk.54.jsonl.gz",
+      "rank": 191
+    },
+    {
+      "file": "libretexts/libretexts.chunk.60.jsonl.gz",
+      "rank": 192
+    },
+    {
+      "file": "libretexts/libretexts.chunk.19.jsonl.gz",
+      "rank": 194
+    },
+    {
+      "file": "oercommons/oercommons.chunk.27.jsonl.gz",
+      "rank": 195
+    },
+    {
+      "file": "news/news.chunk.05.jsonl.gz",
+      "rank": 196
+    },
+    {
+      "file": "libretexts/libretexts.chunk.61.jsonl.gz",
+      "rank": 197
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.15.jsonl.gz",
+      "rank": 199
+    },
+    {
+      "file": "oercommons/oercommons.chunk.53.jsonl.gz",
+      "rank": 200
+    },
+    {
+      "file": "oercommons/oercommons.chunk.02.jsonl.gz",
+      "rank": 205
+    },
+    {
+      "file": "oercommons/oercommons.chunk.30.jsonl.gz",
+      "rank": 206
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.45.jsonl.gz",
+      "rank": 208
+    },
+    {
+      "file": "libretexts/libretexts.chunk.14.jsonl.gz",
+      "rank": 209
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.33.jsonl.gz",
+      "rank": 210
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.01.jsonl.gz",
+      "rank": 211
+    },
+    {
+      "file": "news/news.chunk.47.jsonl.gz",
+      "rank": 212
+    },
+    {
+      "file": "oercommons/oercommons.chunk.52.jsonl.gz",
+      "rank": 214
+    },
+    {
+      "file": "libretexts/libretexts.chunk.56.jsonl.gz",
+      "rank": 215
+    },
+    {
+      "file": "oercommons/oercommons.chunk.10.jsonl.gz",
+      "rank": 216
+    },
+    {
+      "file": "news/news.chunk.31.jsonl.gz",
+      "rank": 218
+    },
+    {
+      "file": "oercommons/oercommons.chunk.50.jsonl.gz",
+      "rank": 219
+    },
+    {
+      "file": "news/news.chunk.02.jsonl.gz",
+      "rank": 220
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.55.jsonl.gz",
+      "rank": 222
+    },
+    {
+      "file": "news/news.chunk.24.jsonl.gz",
+      "rank": 224
+    },
+    {
+      "file": "libretexts/libretexts.chunk.28.jsonl.gz",
+      "rank": 228
+    },
+    {
+      "file": "oercommons/oercommons.chunk.25.jsonl.gz",
+      "rank": 230
+    },
+    {
+      "file": "libretexts/libretexts.chunk.41.jsonl.gz",
+      "rank": 231
+    },
+    {
+      "file": "libretexts/libretexts.chunk.30.jsonl.gz",
+      "rank": 232
+    },
+    {
+      "file": "libretexts/libretexts.chunk.43.jsonl.gz",
+      "rank": 233
+    },
+    {
+      "file": "news/news.chunk.43.jsonl.gz",
+      "rank": 234
+    },
+    {
+      "file": "libretexts/libretexts.chunk.12.jsonl.gz",
+      "rank": 235
+    },
+    {
+      "file": "oercommons/oercommons.chunk.21.jsonl.gz",
+      "rank": 236
+    },
+    {
+      "file": "libretexts/libretexts.chunk.27.jsonl.gz",
+      "rank": 237
+    },
+    {
+      "file": "news/news.chunk.04.jsonl.gz",
+      "rank": 238
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.06.jsonl.gz",
+      "rank": 240
+    },
+    {
+      "file": "news/news.chunk.40.jsonl.gz",
+      "rank": 241
+    },
+    {
+      "file": "oercommons/oercommons.chunk.06.jsonl.gz",
+      "rank": 243
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.21.jsonl.gz",
+      "rank": 245
+    },
+    {
+      "file": "oercommons/oercommons.chunk.38.jsonl.gz",
+      "rank": 246
+    },
+    {
+      "file": "libretexts/libretexts.chunk.22.jsonl.gz",
+      "rank": 248
+    },
+    {
+      "file": "oercommons/oercommons.chunk.44.jsonl.gz",
+      "rank": 251
+    },
+    {
+      "file": "news/news.chunk.12.jsonl.gz",
+      "rank": 253
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.37.jsonl.gz",
+      "rank": 254
+    },
+    {
+      "file": "oercommons/oercommons.chunk.31.jsonl.gz",
+      "rank": 255
+    },
+    {
+      "file": "libretexts/libretexts.chunk.03.jsonl.gz",
+      "rank": 257
+    },
+    {
+      "file": "oercommons/oercommons.chunk.59.jsonl.gz",
+      "rank": 258
+    },
+    {
+      "file": "libretexts/libretexts.chunk.53.jsonl.gz",
+      "rank": 259
+    },
+    {
+      "file": "oercommons/oercommons.chunk.36.jsonl.gz",
+      "rank": 260
+    },
+    {
+      "file": "news/news.chunk.30.jsonl.gz",
+      "rank": 261
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.18.jsonl.gz",
+      "rank": 262
+    },
+    {
+      "file": "news/news.chunk.10.jsonl.gz",
+      "rank": 263
+    },
+    {
+      "file": "libretexts/libretexts.chunk.49.jsonl.gz",
+      "rank": 265
+    },
+    {
+      "file": "news/news.chunk.11.jsonl.gz",
+      "rank": 267
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.51.jsonl.gz",
+      "rank": 268
+    },
+    {
+      "file": "oercommons/oercommons.chunk.57.jsonl.gz",
+      "rank": 269
+    },
+    {
+      "file": "news/news.chunk.28.jsonl.gz",
+      "rank": 271
+    },
+    {
+      "file": "news/news.chunk.35.jsonl.gz",
+      "rank": 273
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.62.jsonl.gz",
+      "rank": 276
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.29.jsonl.gz",
+      "rank": 277
+    },
+    {
+      "file": "news/news.chunk.20.jsonl.gz",
+      "rank": 281
+    },
+    {
+      "file": "oercommons/oercommons.chunk.41.jsonl.gz",
+      "rank": 282
+    },
+    {
+      "file": "oercommons/oercommons.chunk.19.jsonl.gz",
+      "rank": 284
+    },
+    {
+      "file": "news/news.chunk.60.jsonl.gz",
+      "rank": 285
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.40.jsonl.gz",
+      "rank": 286
+    },
+    {
+      "file": "oercommons/oercommons.chunk.15.jsonl.gz",
+      "rank": 289
+    },
+    {
+      "file": "news/news.chunk.52.jsonl.gz",
+      "rank": 291
+    },
+    {
+      "file": "news/news.chunk.37.jsonl.gz",
+      "rank": 299
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.53.jsonl.gz",
+      "rank": 300
+    },
+    {
+      "file": "news/news.chunk.16.jsonl.gz",
+      "rank": 301
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.05.jsonl.gz",
+      "rank": 305
+    },
+    {
+      "file": "news/news.chunk.14.jsonl.gz",
+      "rank": 306
+    },
+    {
+      "file": "oercommons/oercommons.chunk.14.jsonl.gz",
+      "rank": 307
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.52.jsonl.gz",
+      "rank": 308
+    },
+    {
+      "file": "oercommons/oercommons.chunk.46.jsonl.gz",
+      "rank": 310
+    },
+    {
+      "file": "news/news.chunk.45.jsonl.gz",
+      "rank": 311
+    },
+    {
+      "file": "oercommons/oercommons.chunk.45.jsonl.gz",
+      "rank": 312
+    },
+    {
+      "file": "oercommons/oercommons.chunk.60.jsonl.gz",
+      "rank": 313
+    },
+    {
+      "file": "oercommons/oercommons.chunk.32.jsonl.gz",
+      "rank": 314
+    },
+    {
+      "file": "news/news.chunk.55.jsonl.gz",
+      "rank": 317
+    },
+    {
+      "file": "oercommons/oercommons.chunk.51.jsonl.gz",
+      "rank": 318
+    },
+    {
+      "file": "oercommons/oercommons.chunk.22.jsonl.gz",
+      "rank": 321
+    },
+    {
+      "file": "oercommons/oercommons.chunk.11.jsonl.gz",
+      "rank": 322
+    },
+    {
+      "file": "news/news.chunk.59.jsonl.gz",
+      "rank": 323
+    },
+    {
+      "file": "news/news.chunk.15.jsonl.gz",
+      "rank": 324
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.39.jsonl.gz",
+      "rank": 327
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.13.jsonl.gz",
+      "rank": 330
+    },
+    {
+      "file": "oercommons/oercommons.chunk.43.jsonl.gz",
+      "rank": 332
+    },
+    {
+      "file": "news/news.chunk.62.jsonl.gz",
+      "rank": 333
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.58.jsonl.gz",
+      "rank": 334
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.09.jsonl.gz",
+      "rank": 335
+    },
+    {
+      "file": "news/news.chunk.36.jsonl.gz",
+      "rank": 337
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.03.jsonl.gz",
+      "rank": 339
+    },
+    {
+      "file": "oercommons/oercommons.chunk.39.jsonl.gz",
+      "rank": 340
+    },
+    {
+      "file": "oercommons/oercommons.chunk.47.jsonl.gz",
+      "rank": 342
+    },
+    {
+      "file": "news/news.chunk.13.jsonl.gz",
+      "rank": 343
+    },
+    {
+      "file": "oercommons/oercommons.chunk.63.jsonl.gz",
+      "rank": 349
+    },
+    {
+      "file": "oercommons/oercommons.chunk.55.jsonl.gz",
+      "rank": 350
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.44.jsonl.gz",
+      "rank": 353
+    },
+    {
+      "file": "news/news.chunk.49.jsonl.gz",
+      "rank": 354
+    },
+    {
+      "file": "news/news.chunk.00.jsonl.gz",
+      "rank": 356
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.38.jsonl.gz",
+      "rank": 358
+    },
+    {
+      "file": "news/news.chunk.22.jsonl.gz",
+      "rank": 361
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.50.jsonl.gz",
+      "rank": 363
+    },
+    {
+      "file": "oercommons/oercommons.chunk.58.jsonl.gz",
+      "rank": 364
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.41.jsonl.gz",
+      "rank": 367
+    },
+    {
+      "file": "news/news.chunk.09.jsonl.gz",
+      "rank": 368
+    },
+    {
+      "file": "oercommons/oercommons.chunk.18.jsonl.gz",
+      "rank": 376
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.28.jsonl.gz",
+      "rank": 377
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.49.jsonl.gz",
+      "rank": 379
+    },
+    {
+      "file": "news/news.chunk.32.jsonl.gz",
+      "rank": 380
+    },
+    {
+      "file": "public_domain_review/public_domain_review.chunk.07.jsonl.gz",
+      "rank": 381
+    }
+  ],
+  "restart": {
+    "counts": {
+      "fresh_download": 268,
+      "local_complete_reuse": 0,
+      "local_processing_retry": 0,
+      "resumable_partial": 0,
+      "sealed_skip": 0
+    },
+    "known_network_bytes": 0,
+    "resumable_verified_bytes": 0,
+    "units": {
+      "fresh_download": [
+        "f00000",
+        "f00001",
+        "f00002",
+        "f00003",
+        "f00004",
+        "f00005",
+        "f00006",
+        "f00007",
+        "f00008",
+        "f00009",
+        "f00010",
+        "f00011",
+        "f00012",
+        "f00013",
+        "f00014",
+        "f00015",
+        "f00019",
+        "f00020",
+        "f00021",
+        "f00022",
+        "f00023",
+        "f00024",
+        "f00025",
+        "f00026",
+        "f00027",
+        "f00028",
+        "f00029",
+        "f00030",
+        "f00031",
+        "f00033",
+        "f00034",
+        "f00035",
+        "f00037",
+        "f00038",
+        "f00039",
+        "f00041",
+        "f00042",
+        "f00043",
+        "f00044",
+        "f00045",
+        "f00046",
+        "f00047",
+        "f00050",
+        "f00051",
+        "f00052",
+        "f00054",
+        "f00056",
+        "f00057",
+        "f00058",
+        "f00059",
+        "f00061",
+        "f00062",
+        "f00063",
+        "f00064",
+        "f00067",
+        "f00068",
+        "f00069",
+        "f00070",
+        "f00071",
+        "f00072",
+        "f00073",
+        "f00074",
+        "f00075",
+        "f00076",
+        "f00077",
+        "f00078",
+        "f00080",
+        "f00082",
+        "f00083",
+        "f00084",
+        "f00085",
+        "f00086",
+        "f00087",
+        "f00089",
+        "f00090",
+        "f00091",
+        "f00092",
+        "f00093",
+        "f00094",
+        "f00095",
+        "f00096",
+        "f00098",
+        "f00099",
+        "f00100",
+        "f00101",
+        "f00102",
+        "f00103",
+        "f00104",
+        "f00105",
+        "f00106",
+        "f00107",
+        "f00108",
+        "f00109",
+        "f00110",
+        "f00111",
+        "f00112",
+        "f00113",
+        "f00115",
+        "f00116",
+        "f00118",
+        "f00119",
+        "f00120",
+        "f00121",
+        "f00122",
+        "f00123",
+        "f00124",
+        "f00125",
+        "f00126",
+        "f00127",
+        "f00129",
+        "f00130",
+        "f00132",
+        "f00133",
+        "f00134",
+        "f00135",
+        "f00136",
+        "f00137",
+        "f00138",
+        "f00139",
+        "f00140",
+        "f00141",
+        "f00142",
+        "f00143",
+        "f00144",
+        "f00147",
+        "f00148",
+        "f00150",
+        "f00151",
+        "f00152",
+        "f00153",
+        "f00155",
+        "f00157",
+        "f00158",
+        "f00159",
+        "f00160",
+        "f00161",
+        "f00162",
+        "f00163",
+        "f00164",
+        "f00165",
+        "f00169",
+        "f00170",
+        "f00172",
+        "f00174",
+        "f00175",
+        "f00176",
+        "f00177",
+        "f00178",
+        "f00179",
+        "f00180",
+        "f00181",
+        "f00182",
+        "f00183",
+        "f00184",
+        "f00185",
+        "f00187",
+        "f00188",
+        "f00190",
+        "f00191",
+        "f00192",
+        "f00194",
+        "f00195",
+        "f00196",
+        "f00197",
+        "f00199",
+        "f00200",
+        "f00205",
+        "f00206",
+        "f00208",
+        "f00209",
+        "f00210",
+        "f00211",
+        "f00212",
+        "f00214",
+        "f00215",
+        "f00216",
+        "f00218",
+        "f00219",
+        "f00220",
+        "f00222",
+        "f00224",
+        "f00228",
+        "f00230",
+        "f00231",
+        "f00232",
+        "f00233",
+        "f00234",
+        "f00235",
+        "f00236",
+        "f00237",
+        "f00238",
+        "f00240",
+        "f00241",
+        "f00243",
+        "f00245",
+        "f00246",
+        "f00248",
+        "f00251",
+        "f00253",
+        "f00254",
+        "f00255",
+        "f00257",
+        "f00258",
+        "f00259",
+        "f00260",
+        "f00261",
+        "f00262",
+        "f00263",
+        "f00265",
+        "f00267",
+        "f00268",
+        "f00269",
+        "f00271",
+        "f00273",
+        "f00276",
+        "f00277",
+        "f00281",
+        "f00282",
+        "f00284",
+        "f00285",
+        "f00286",
+        "f00289",
+        "f00291",
+        "f00299",
+        "f00300",
+        "f00301",
+        "f00305",
+        "f00306",
+        "f00307",
+        "f00308",
+        "f00310",
+        "f00311",
+        "f00312",
+        "f00313",
+        "f00314",
+        "f00317",
+        "f00318",
+        "f00321",
+        "f00322",
+        "f00323",
+        "f00324",
+        "f00327",
+        "f00330",
+        "f00332",
+        "f00333",
+        "f00334",
+        "f00335",
+        "f00337",
+        "f00339",
+        "f00340",
+        "f00342",
+        "f00343",
+        "f00349",
+        "f00350",
+        "f00353",
+        "f00354",
+        "f00356",
+        "f00358",
+        "f00361",
+        "f00363",
+        "f00364",
+        "f00367",
+        "f00368",
+        "f00376",
+        "f00377",
+        "f00379",
+        "f00380",
+        "f00381"
+      ],
+      "local_complete_reuse": [],
+      "local_processing_retry": [],
+      "resumable_partial": [],
+      "sealed_skip": []
+    },
+    "worst_case_network_bytes": 32723729960
+  },
+  "sealed": 0,
+  "total": 268
+}

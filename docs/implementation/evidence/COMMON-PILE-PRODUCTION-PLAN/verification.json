@@ -1,0 +1,498 @@
+{
+  "adapter": {
+    "adapter_id": "common_pile",
+    "code_sha256": {
+      "xlm.data.adapters.columns": "3e594f755eea797ac0d29d819c28b4ccf8e387cfc7889470dfc58e8657e58db1",
+      "xlm.data.adapters.common_pile_adapters": "89ae45abf7a2fd8e533a5d50ef6e37ae99e4ef5c701c365ad854cdb36157a05a",
+      "xlm.data.adapters.mix01_adapters": "3651ff2af4fcb46c207404e052caa59e1ec42f2ac5a429e5dec752f7e83a7ef6"
+    },
+    "contract": {
+      "adapter_id": "common_pile",
+      "required_fields": [
+        "text"
+      ],
+      "structured_renderer": null,
+      "text_field": "text"
+    },
+    "projected_columns": [
+      "text"
+    ],
+    "row_sets": {
+      "sample:libretexts/libretexts.chunk.39.jsonl.gz": {
+        "accepted": 256,
+        "canonical_bytes": 2184351,
+        "documents_sha256": "add39712f09428ad9e356107df96b04fbd454917a30f911db6ce8a7ea80f4d22",
+        "rejected": 0,
+        "rejection_counts_by_code": {},
+        "reproduces_recorded_documents": true,
+        "rows": 256
+      },
+      "sample:libretexts/libretexts.chunk.40.jsonl.gz": {
+        "accepted": 256,
+        "canonical_bytes": 2393294,
+        "documents_sha256": "5093be9de47a79cc361300828d24f22a261de6a9e74c59221bd796a852d630af",
+        "rejected": 0,
+        "rejection_counts_by_code": {},
+        "reproduces_recorded_documents": true,
+        "rows": 256
+      },
+      "sample:news/news.chunk.29.jsonl.gz": {
+        "accepted": 256,
+        "canonical_bytes": 543892,
+        "documents_sha256": "ae73ffb43de42027c1148091abf6b35cc500b168cf87b7bf892f5677d3a59e8b",
+        "rejected": 0,
+        "rejection_counts_by_code": {},
+        "reproduces_recorded_documents": true,
+        "rows": 256
+      },
+      "sample:news/news.chunk.44.jsonl.gz": {
+        "accepted": 256,
+        "canonical_bytes": 504446,
+        "documents_sha256": "d7b4d62a694943166d6ddbb5ddd9c1ed04f7c48cbf360321c0daaa6c6f79d08b",
+        "rejected": 0,
+        "rejection_counts_by_code": {},
+        "reproduces_recorded_documents": true,
+        "rows": 256
+      },
+      "sample:oercommons/oercommons.chunk.24.jsonl.gz": {
+        "accepted": 83,
+        "canonical_bytes": 880878,
+        "documents_sha256": "bef34defcf749d6506701d24334733e2f1a84f20c82f08927049eaee30385a2c",
+        "rejected": 0,
+        "rejection_counts_by_code": {},
+        "reproduces_recorded_documents": true,
+        "rows": 83
+      },
+      "sample:oercommons/oercommons.chunk.49.jsonl.gz": {
+        "accepted": 83,
+        "canonical_bytes": 1004329,
+        "documents_sha256": "66e044c6519235027ada0bd0983a157d76b0cc9b02d794418788f8a35c297ee0",
+        "rejected": 0,
+        "rejection_counts_by_code": {},
+        "reproduces_recorded_documents": true,
+        "rows": 83
+      },
+      "sample:pressbooks/pressbooks.chunk.18.jsonl.gz": {
+        "accepted": 256,
+        "canonical_bytes": 2206391,
+        "documents_sha256": "a5c8a6ca3efeddd7b4788daa316fcea0bc2b9c2c45f190e80344861e6a124daf",
+        "rejected": 0,
+        "rejection_counts_by_code": {},
+        "reproduces_recorded_documents": true,
+        "rows": 256
+      },
+      "sample:pressbooks/pressbooks.chunk.26.jsonl.gz": {
+        "accepted": 255,
+        "canonical_bytes": 2509187,
+        "documents_sha256": "14bea3c7489ff0f9a4fd0142e0163a37dda658cc0527590b9e873551962b84d2",
+        "rejected": 1,
+        "rejection_counts_by_code": {
+          "CommonPileEmptyTextError": 1
+        },
+        "reproduces_recorded_documents": true,
+        "rows": 256
+      },
+      "sample:project_gutenberg/project_gutenberg.chunk.27.jsonl.gz": {
+        "accepted": 32,
+        "canonical_bytes": 3615091,
+        "documents_sha256": "0deea4ff5a2fe58acb1fc721111d1e5f04ca0f695f7c76c72c908986d6308497",
+        "rejected": 0,
+        "rejection_counts_by_code": {},
+        "reproduces_recorded_documents": true,
+        "rows": 32
+      },
+      "sample:project_gutenberg/project_gutenberg.chunk.43.jsonl.gz": {
+        "accepted": 32,
+        "canonical_bytes": 3739972,
+        "documents_sha256": "dd42b0e81b681ace32416f5c6843b00862186a5fa00319217fae311028f63619",
+        "rejected": 0,
+        "rejection_counts_by_code": {},
+        "reproduces_recorded_documents": true,
+        "rows": 32
+      },
+      "sample:public_domain_review/public_domain_review.chunk.04.jsonl.gz": {
+        "accepted": 22,
+        "canonical_bytes": 148907,
+        "documents_sha256": "a9922474410b5e6f35593a3772776f4c02cdfa6db50dfb23f5f4d62c4be60763",
+        "rejected": 0,
+        "rejection_counts_by_code": {},
+        "reproduces_recorded_documents": true,
+        "rows": 22
+      },
+      "sample:public_domain_review/public_domain_review.chunk.26.jsonl.gz": {
+        "accepted": 22,
+        "canonical_bytes": 170777,
+        "documents_sha256": "807c2cf07a4363309ec33d476a843d0884b17c49b0487cc5b525ea0e833c1054",
+        "rejected": 0,
+        "rejection_counts_by_code": {},
+        "reproduces_recorded_documents": true,
+        "rows": 22
+      }
+    }
+  },
+  "allowlist_digest": "b2bb7c0dc532a6263ca17b78816186fa194c12c09c74614baaeb29c76cdaab04",
+  "digest": "db676f7e7342cbdc86ae0cc8563ddfd6c4e4bf67baa3912c5e0e091e47baaeca",
+  "inputs": [
+    {
+      "bytes": 999649,
+      "path": "G:\\XLM\\calib\\common_pile_cal01\\sample-receipt.json",
+      "sha256": "a0729adf240b60f8acb2fae481957b54a3720881f22ce9b622124b7c4815a1c0"
+    },
+    {
+      "bytes": 13003247,
+      "path": "G:\\XLM\\calib\\common_pile_cal01\\real-records.jsonl",
+      "sha256": "4479a1a851156d4fc641244ef7e619f50bc0e0e95fd16e1eed57a1eab60743c9"
+    },
+    {
+      "bytes": 41083,
+      "path": "G:\\XLM\\calib\\common_pile_cal02\\sample-receipt.json",
+      "sha256": "958213b091f1fed750620147cc0de7ad2cf6e2745df53e88d829f58df241f017"
+    },
+    {
+      "bytes": 7533663,
+      "path": "G:\\XLM\\calib\\common_pile_cal02\\real-records.jsonl",
+      "sha256": "ffe6fc6d7cefb3a547e5ca06120013ec29a8735e89e522f863e844799fac989a"
+    }
+  ],
+  "inventory_digest": "c0984aa33fb3598a9e724b9518df8cd8a0f2af52b5708ec211fb7fd693df7637",
+  "kind": "common-pile-post-calibration-verification-v1",
+  "limitations": [
+    "Original compressed sample streams were not retained; offline replay verifies receipts and saved adapter rows, not gzip CRC anew.",
+    "Original upstream line hashes remain receipt evidence; saved JSON serialization is not the upstream byte representation."
+  ],
+  "metadata": {
+    "artifact_id": "probe_common_pile_common_pile_prose",
+    "file_sha256": "bf2a0b51dfbcaf06531ac279f5a605d41371573a18cf5eb3e11e459d2bd74438",
+    "record": {
+      "conversion_status": null,
+      "declared_license": null,
+      "evidence_type": "real_observed",
+      "immutable_revision": "5afc546db324e7f39f297ba757c9a60547151e7c",
+      "is_gated": false,
+      "observed_files_count": 2,
+      "observed_timestamp": "2026-10-02T11:26:24.852696+00:00",
+      "outcome": "partial",
+      "probe_fingerprint": null,
+      "provider": "huggingface",
+      "reason": null,
+      "repository": "common-pile/comma_v0.1_training_dataset",
+      "resource_metrics": {
+        "bytes_transferred": 127456,
+        "decompressed_bytes": 0,
+        "elapsed_seconds": 0.422,
+        "measurement": "application response-body bytes; no TCP/TLS wire accounting",
+        "outstanding_reservations": {
+          "cache_hits": 0,
+          "control_disk_bytes": 806,
+          "decompressed_bytes": 0,
+          "journal_bytes": 806,
+          "output_disk_bytes": 0,
+          "published_artifact_bytes": 0,
+          "reserved_transfer_bytes": 0,
+          "temp_disk_bytes": 0,
+          "transferred_bytes": 127456
+        },
+        "requests_made": 2
+      },
+      "sample_preview": [],
+      "source_id": "common_pile",
+      "total_files_count_declared": 2,
+      "unresolved_requirements": [
+        "adapter_contract_unassigned"
+      ],
+      "verified_schema": null,
+      "view_id": "common_pile_prose"
+    },
+    "status": "VERIFIED"
+  },
+  "network": false,
+  "samples": {
+    "common_pile_cal01": {
+      "digest": "f7d74b4a2e2614e10a8231653ef36831aecb7546955feef73d6df89f9b4be289",
+      "files": [
+        {
+          "adapter": {
+            "accepted": 256,
+            "canonical_bytes": 2184351,
+            "documents_sha256": "add39712f09428ad9e356107df96b04fbd454917a30f911db6ce8a7ea80f4d22",
+            "rejected": 0,
+            "rejection_counts_by_code": {}
+          },
+          "file": "libretexts/libretexts.chunk.39.jsonl.gz",
+          "rows": 256,
+          "rows_requested": 256,
+          "transfer": {
+            "compressed_bytes_decoded": 733184,
+            "decoded_bytes": 2246974,
+            "redirects": 6,
+            "requests": 12,
+            "seconds": 3.984,
+            "transferred_bytes": 786432
+          },
+          "whole_file_read": false
+        },
+        {
+          "adapter": {
+            "accepted": 256,
+            "canonical_bytes": 2393294,
+            "documents_sha256": "5093be9de47a79cc361300828d24f22a261de6a9e74c59221bd796a852d630af",
+            "rejected": 0,
+            "rejection_counts_by_code": {}
+          },
+          "file": "libretexts/libretexts.chunk.40.jsonl.gz",
+          "rows": 256,
+          "rows_requested": 256,
+          "transfer": {
+            "compressed_bytes_decoded": 819200,
+            "decoded_bytes": 2450617,
+            "redirects": 7,
+            "requests": 14,
+            "seconds": 4.265,
+            "transferred_bytes": 917504
+          },
+          "whole_file_read": false
+        },
+        {
+          "adapter": {
+            "accepted": 256,
+            "canonical_bytes": 543892,
+            "documents_sha256": "ae73ffb43de42027c1148091abf6b35cc500b168cf87b7bf892f5677d3a59e8b",
+            "rejected": 0,
+            "rejection_counts_by_code": {}
+          },
+          "file": "news/news.chunk.29.jsonl.gz",
+          "rows": 256,
+          "rows_requested": 256,
+          "transfer": {
+            "compressed_bytes_decoded": 217088,
+            "decoded_bytes": 580043,
+            "redirects": 2,
+            "requests": 4,
+            "seconds": 1.5,
+            "transferred_bytes": 262144
+          },
+          "whole_file_read": false
+        },
+        {
+          "adapter": {
+            "accepted": 256,
+            "canonical_bytes": 504446,
+            "documents_sha256": "d7b4d62a694943166d6ddbb5ddd9c1ed04f7c48cbf360321c0daaa6c6f79d08b",
+            "rejected": 0,
+            "rejection_counts_by_code": {}
+          },
+          "file": "news/news.chunk.44.jsonl.gz",
+          "rows": 256,
+          "rows_requested": 256,
+          "transfer": {
+            "compressed_bytes_decoded": 200704,
+            "decoded_bytes": 537189,
+            "redirects": 2,
+            "requests": 4,
+            "seconds": 1.594,
+            "transferred_bytes": 262144
+          },
+          "whole_file_read": false
+        },
+        {
+          "adapter": {
+            "accepted": 83,
+            "canonical_bytes": 1004329,
+            "documents_sha256": "66e044c6519235027ada0bd0983a157d76b0cc9b02d794418788f8a35c297ee0",
+            "rejected": 0,
+            "rejection_counts_by_code": {}
+          },
+          "file": "oercommons/oercommons.chunk.49.jsonl.gz",
+          "rows": 83,
+          "rows_requested": 256,
+          "transfer": {
+            "compressed_bytes_decoded": 336135,
+            "decoded_bytes": 1018978,
+            "redirects": 3,
+            "requests": 6,
+            "seconds": 1.922,
+            "transferred_bytes": 336135
+          },
+          "whole_file_read": true
+        },
+        {
+          "adapter": {
+            "accepted": 83,
+            "canonical_bytes": 880878,
+            "documents_sha256": "bef34defcf749d6506701d24334733e2f1a84f20c82f08927049eaee30385a2c",
+            "rejected": 0,
+            "rejection_counts_by_code": {}
+          },
+          "file": "oercommons/oercommons.chunk.24.jsonl.gz",
+          "rows": 83,
+          "rows_requested": 256,
+          "transfer": {
+            "compressed_bytes_decoded": 294589,
+            "decoded_bytes": 893474,
+            "redirects": 3,
+            "requests": 6,
+            "seconds": 1.875,
+            "transferred_bytes": 294589
+          },
+          "whole_file_read": true
+        },
+        {
+          "adapter": {
+            "accepted": 256,
+            "canonical_bytes": 2206391,
+            "documents_sha256": "a5c8a6ca3efeddd7b4788daa316fcea0bc2b9c2c45f190e80344861e6a124daf",
+            "rejected": 0,
+            "rejection_counts_by_code": {}
+          },
+          "file": "pressbooks/pressbooks.chunk.18.jsonl.gz",
+          "rows": 256,
+          "rows_requested": 256,
+          "transfer": {
+            "compressed_bytes_decoded": 765952,
+            "decoded_bytes": 2252471,
+            "redirects": 6,
+            "requests": 12,
+            "seconds": 3.719,
+            "transferred_bytes": 786432
+          },
+          "whole_file_read": false
+        },
+        {
+          "adapter": {
+            "accepted": 255,
+            "canonical_bytes": 2509187,
+            "documents_sha256": "14bea3c7489ff0f9a4fd0142e0163a37dda658cc0527590b9e873551962b84d2",
+            "rejected": 1,
+            "rejection_counts_by_code": {
+              "CommonPileEmptyTextError": 1
+            }
+          },
+          "file": "pressbooks/pressbooks.chunk.26.jsonl.gz",
+          "rows": 256,
+          "rows_requested": 256,
+          "transfer": {
+            "compressed_bytes_decoded": 880640,
+            "decoded_bytes": 2574698,
+            "redirects": 7,
+            "requests": 14,
+            "seconds": 4.547,
+            "transferred_bytes": 917504
+          },
+          "whole_file_read": false
+        },
+        {
+          "adapter": {
+            "accepted": 22,
+            "canonical_bytes": 170777,
+            "documents_sha256": "807c2cf07a4363309ec33d476a843d0884b17c49b0487cc5b525ea0e833c1054",
+            "rejected": 0,
+            "rejection_counts_by_code": {}
+          },
+          "file": "public_domain_review/public_domain_review.chunk.26.jsonl.gz",
+          "rows": 22,
+          "rows_requested": 256,
+          "transfer": {
+            "compressed_bytes_decoded": 69642,
+            "decoded_bytes": 175016,
+            "redirects": 1,
+            "requests": 2,
+            "seconds": 0.734,
+            "transferred_bytes": 69642
+          },
+          "whole_file_read": true
+        },
+        {
+          "adapter": {
+            "accepted": 22,
+            "canonical_bytes": 148907,
+            "documents_sha256": "a9922474410b5e6f35593a3772776f4c02cdfa6db50dfb23f5f4d62c4be60763",
+            "rejected": 0,
+            "rejection_counts_by_code": {}
+          },
+          "file": "public_domain_review/public_domain_review.chunk.04.jsonl.gz",
+          "rows": 22,
+          "rows_requested": 256,
+          "transfer": {
+            "compressed_bytes_decoded": 61343,
+            "decoded_bytes": 153364,
+            "redirects": 1,
+            "requests": 2,
+            "seconds": 0.703,
+            "transferred_bytes": 61343
+          },
+          "whole_file_read": true
+        }
+      ],
+      "status": "VERIFIED",
+      "totals": {
+        "files": 10,
+        "requests": 76,
+        "rows": 1746,
+        "transferred_bytes": 4693869
+      }
+    },
+    "common_pile_cal02": {
+      "digest": "5d57e4ea82e509e28faf69aa1e7c9ee95da38bbb26e4a7367a0dea0894071b67",
+      "files": [
+        {
+          "adapter": {
+            "accepted": 32,
+            "canonical_bytes": 3739972,
+            "documents_sha256": "dd42b0e81b681ace32416f5c6843b00862186a5fa00319217fae311028f63619",
+            "rejected": 0,
+            "rejection_counts_by_code": {}
+          },
+          "file": "project_gutenberg/project_gutenberg.chunk.43.jsonl.gz",
+          "rows": 32,
+          "rows_requested": 32,
+          "transfer": {
+            "compressed_bytes_decoded": 1417216,
+            "decoded_bytes": 3844012,
+            "redirects": 11,
+            "requests": 22,
+            "seconds": 6.766,
+            "transferred_bytes": 1441792
+          },
+          "whole_file_read": false
+        },
+        {
+          "adapter": {
+            "accepted": 32,
+            "canonical_bytes": 3615091,
+            "documents_sha256": "0deea4ff5a2fe58acb1fc721111d1e5f04ca0f695f7c76c72c908986d6308497",
+            "rejected": 0,
+            "rejection_counts_by_code": {}
+          },
+          "file": "project_gutenberg/project_gutenberg.chunk.27.jsonl.gz",
+          "rows": 32,
+          "rows_requested": 32,
+          "transfer": {
+            "compressed_bytes_decoded": 1368064,
+            "decoded_bytes": 3718122,
+            "redirects": 11,
+            "requests": 22,
+            "seconds": 6.781,
+            "transferred_bytes": 1441792
+          },
+          "whole_file_read": false
+        }
+      ],
+      "status": "VERIFIED",
+      "totals": {
+        "files": 2,
+        "requests": 44,
+        "rows": 64,
+        "transferred_bytes": 2883584
+      }
+    }
+  },
+  "source": {
+    "adapter_id": "common_pile",
+    "component_id": "common_pile_prose",
+    "provider": "huggingface",
+    "repository": "common-pile/comma_v0.1_training_dataset",
+    "revision": "5afc546db324e7f39f297ba757c9a60547151e7c",
+    "source_id": "common_pile",
+    "view_id": "common_pile_prose"
+  }
+}

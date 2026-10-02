@@ -1,3 +1,13 @@
+# Current production-planning handoff (2026-10-02)
+
+**The post-calibration handoff below is superseded by
+[COMMON-PILE-PRODUCTION-PLAN.md](COMMON-PILE-PRODUCTION-PLAN.md).**
+Operator Strategy C, reviewed bounds, publication, reviews and admission have
+been verified. Policy is frozen and p01 is created, unauthorized and not run.
+See that report and its exact operator commands for the current stop point.
+
+---
+
 # Common Pile real post-calibration handoff (2026-10-02)
 
 The six-component real calibration is verified and built. **C is the technical recommendation; no operator allocation or bounds decision has been recorded.** This continuation was entirely offline. The operator performed the preceding live samples and metadata probe. No admission, production policy freeze, production plan, production authorization/run, C05, tokenizer, training, or push occurred.

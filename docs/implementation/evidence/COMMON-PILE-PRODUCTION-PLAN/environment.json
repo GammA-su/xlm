@@ -1,0 +1,18 @@
+{
+  "python": "3.12.13 (main, Aug  7 2026, 02:26:41) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "HF_HUB_OFFLINE": "1",
+  "HF_DATASETS_OFFLINE": "1",
+  "UV_OFFLINE": "1",
+  "TRANSFORMERS_OFFLINE": "1",
+  "extras": [
+    "cpu",
+    "eval"
+  ],
+  "threads": 1,
+  "TOKENIZERS_PARALLELISM": "false",
+  "fixture_kind": "authored synthetic including local loopback HTTP; real evidence replay separate",
+  "production_network": false,
+  "cuda": "NOT RUN",
+  "full_repository_acceptance": "NOT RUN"
+}

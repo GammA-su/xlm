@@ -1,3 +1,19 @@
+> **COMMON PILE PRODUCTION PLAN (2026-10-02): READY FOR OPERATOR AUTHORIZATION.**
+>
+> Real operator C split/bounds/reviews/admission and eight historical admissions
+> verified offline. Deterministic whole-file policy frozen; p01 created for 268
+> component-selected files, 654,061,594 expected compressed B, 1,766,270,453
+> projected canonical B. PLAN DIGEST `c38eb2be01a28579ffa77a319c0713e5fef2df0f4da9ac3ed3b3089ab04edaa7`.
+> Resume: 268 fresh, all reuse/partial/sealed classes zero. No authorization/run.
+> Corrected selected-file estimates, bounded concurrency, full admission identity,
+> and explicit hash-bound production file-count capacity; historical identities
+> preserved. 587 related / 81 and 40 focused / 178 final related tests passed
+> (overlapping selections); final static checks pass. No external network, live
+> acquisition, C05, tokenizer, training or push. Authored loopback tests are separate.
+> [Production report](reports/COMMON-PILE-PRODUCTION-PLAN.md) and
+> [exact operator commands](evidence/COMMON-PILE-PRODUCTION-PLAN/operator-commands.md).
+> Next: operator reviews and personally authorizes p01. Earlier entries are historical.
+
 > **COMMON PILE REAL CALIBRATION (2026-10-02, offline continuation):
 > COMMON PILE CALIBRATION READY FOR OPERATOR MIXTURE DECISION.**
 >

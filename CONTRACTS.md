@@ -187,6 +187,19 @@ receipt accounting enforce top-ups; excess in one component never fills
 another's deficit. Repair preserves the split and cursors. Exact token
 down-selection remains after C05 and tokenizer freeze.
 
+**C04 component production planning clarification (2026-10-02).**
+Component plans project exact selected inventory sizes at each component's own
+calibrated density, including retained-source exclusions from repair transfer
+cost. Policy workloads use the same component selection and reviewed scratch/
+durable envelopes. Common Pile concurrency is one downloader and one processor,
+with two in-flight slots; plans bind the complete current admission decision
+digest in addition to the bridge identity. The acquisition model retains its
+256-file default and pilot cap. An explicit production `selected_file_limit`
+may be at most 384 and enters the behavioral hash when nondefault; the component
+driver sets the exact selected count above 256. No executing plan automatically
+widens this limit or any operator-reviewed resource ceiling. Older default
+behavioral identities remain byte-identical.
+
 **C04 license amendment `c04-common-pile-component-license-v1` (2026-10-02).**
 Only `common_pile/common_pile_prose` at
 `common-pile/comma_v0.1_training_dataset@5afc546db324e7f39f297ba757c9a60547151e7c`

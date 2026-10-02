@@ -1,3 +1,16 @@
+## Current Common Pile p01 handoff (2026-10-02)
+
+The operator has recorded C, bounds, reviews and admission. The offline agent
+verified all bindings and created p01. Follow the
+[production report](../implementation/reports/COMMON-PILE-PRODUCTION-PLAN.md)
+and [operator commands](../implementation/evidence/COMMON-PILE-PRODUCTION-PLAN/operator-commands.md).
+Plan digest: `c38eb2be01a28579ffa77a319c0713e5fef2df0f4da9ac3ed3b3089ab04edaa7`. It is not authorized or run.
+268 exact files, one downloader/one processor, independent component cursors.
+The explicit production selected-file limit is 268 (maximum supported 384);
+legacy/default and pilot limit remains 256. Byte/row/line/growth/deadline bounds
+remain the operator's accepted values. Do not execute older preview/record
+sequences against the now-recorded write-once decisions.
+
 # Mix-01 source acquisition (non-Essential sources)
 
 Operator guide for `scripts/mix01_source.py`: certified-evidence admission,

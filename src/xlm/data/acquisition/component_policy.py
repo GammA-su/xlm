@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from typing import Any
 
 from xlm.data.acquisition import component_calibration as cc
@@ -232,3 +232,39 @@ def select_files(
     if not selected:
         raise ComponentPolicyError("all component first-pass requirements are already met")
     return sorted(selected, key=lambda e: e["rank"]), following
+
+
+def expected_selection(
+    calibration: Mapping[str, Any], files: Sequence[str], downloads: Sequence[str]
+) -> dict[str, Any]:
+    """Exact inventory transfer; each component retains its own sampled density."""
+    inventory = {e["file"]: e for e in calibration["inventory_snapshot"]["files"]}
+    if len(set(files)) != len(files) or not set(downloads) <= set(files):
+        raise ComponentPolicyError("duplicate selected files or foreign downloads")
+    if len(set(downloads)) != len(downloads) or not set(files) <= inventory.keys():
+        raise ComponentPolicyError("duplicate downloads or files outside calibrated inventory")
+    components: dict[str, Any] = {}
+    for name in files:
+        component = name.split("/")[0]
+        measured = calibration["components"][component]["measured"]
+        entry = components.setdefault(
+            component, {"files": 0, "compressed_bytes": 0, "canonical_bytes": 0.0, "rows": 0.0}
+        )
+        size = inventory[name]["size_bytes"]
+        entry["files"] += 1
+        entry["compressed_bytes"] += size
+        entry["canonical_bytes"] += size * measured["canonical_bytes_per_compressed_byte"]
+        entry["rows"] += size / measured["compressed_bytes_per_row"]
+    canonical_bytes = math.floor(sum(e["canonical_bytes"] for e in components.values()))
+    return {
+        "files": len(files),
+        "rows": math.ceil(sum(e["rows"] for e in components.values())),
+        "canonical_bytes": canonical_bytes,
+        "estimated_tokens": canonical_bytes // 4,
+        "transfer_bytes": sum(inventory[name]["size_bytes"] for name in downloads),
+        "requests": 2 * len(downloads),
+        "components": components,
+        "basis": "exact selected inventory sizes; component-specific biased prefix densities; "
+        "rows rounded up, canonical bytes rounded down; /4 token estimates; "
+        "actual yields and costs require production receipts",
+    }

@@ -13,7 +13,7 @@ journal, plan file, and receipt are never modified for telemetry.
 Bounds (all enforced by construction):
 - No per-request or per-row lists. Only aggregate counters plus the slowest
   few request opens (``MAX_SLOWEST_REQUESTS``) and per-file aggregates
-  (files are already capped at 256 by plan validation).
+  (plan validation caps files at 256 by default, or an explicit production limit <=384).
 - Never persist URLs, query strings, credentials, tokens, or response
   bodies. Only lowercased hostnames and caller-supplied fixed categories.
 - All rates divide safely: a zero or missing duration yields 0.0, never an

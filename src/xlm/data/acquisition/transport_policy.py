@@ -315,6 +315,8 @@ def evaluate(
     ceilings: Ceilings,
     models: Mapping[TransportMode, ThroughputModel],
     executable: frozenset[TransportMode] = EXECUTABLE_MODES,
+    *,
+    selected_workloads: Sequence[ModeWorkload] | None = None,
 ) -> dict[str, Any]:
     """Per-mode estimates, the selected mode with its reason, and the fastest modeled mode.
 
@@ -324,7 +326,11 @@ def evaluate(
     """
     rows = required_rows(layout, requirement)
     candidates: list[dict[str, Any]] = []
-    for work in workloads(layout, requirement, ceilings):
+    for work in (
+        workloads(layout, requirement, ceilings)
+        if selected_workloads is None
+        else selected_workloads
+    ):
         model = models.get(work.mode)
         if model is None:
             continue
