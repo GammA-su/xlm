@@ -17,6 +17,7 @@ from tokenizers.pre_tokenizers import ByteLevel
 from tokenizers.trainers import BpeTrainer
 
 from xlm.core.contracts import CanonicalDocument
+from xlm.data.exclusion.gates import MembershipGate, screened_documents
 from xlm.data.normalization import canonical_normalize, compute_sha256
 from xlm.tokenizers.base import BaseTokenizer
 
@@ -344,6 +345,7 @@ class ByteLevelBPETokenizer(BaseTokenizer):
         max_train_docs: int = 100_000,
         max_train_bytes: int = 500 * 1024 * 1024,
         is_production_baseline: bool = False,
+        c05_gate: MembershipGate | None = None,
     ) -> ByteLevelBPETokenizer:
         """Train a ByteLevel BPE tokenizer from canonical training documents.
 
@@ -368,6 +370,7 @@ class ByteLevelBPETokenizer(BaseTokenizer):
             show_progress=False,
         )
 
+        documents = screened_documents(documents, c05_gate, required=is_production_baseline)
         with _fit_text_stream(documents, max_train_docs, max_train_bytes) as (
             texts,
             training_input_hash,

@@ -1,0 +1,999 @@
+{
+  "benchmark_receipt": {
+    "$defs": {
+      "Isolation": {
+        "additionalProperties": false,
+        "properties": {
+          "access_controls_verified": {
+            "const": true,
+            "title": "Access Controls Verified",
+            "type": "boolean"
+          },
+          "attestation_sha256": {
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Attestation Sha256",
+            "type": "string"
+          },
+          "denied_agent_principal": {
+            "minLength": 1,
+            "title": "Denied Agent Principal",
+            "type": "string"
+          },
+          "mode": {
+            "enum": [
+              "protected",
+              "authored"
+            ],
+            "title": "Mode",
+            "type": "string"
+          },
+          "operator_principal": {
+            "minLength": 1,
+            "title": "Operator Principal",
+            "type": "string"
+          }
+        },
+        "required": [
+          "mode",
+          "operator_principal",
+          "denied_agent_principal",
+          "attestation_sha256",
+          "access_controls_verified"
+        ],
+        "title": "Isolation",
+        "type": "object"
+      },
+      "MaterialFile": {
+        "additionalProperties": false,
+        "properties": {
+          "bytes": {
+            "exclusiveMinimum": 0,
+            "title": "Bytes",
+            "type": "integer"
+          },
+          "config": {
+            "minLength": 1,
+            "title": "Config",
+            "type": "string"
+          },
+          "items": {
+            "exclusiveMinimum": 0,
+            "title": "Items",
+            "type": "integer"
+          },
+          "path": {
+            "minLength": 1,
+            "title": "Path",
+            "type": "string"
+          },
+          "repository": {
+            "title": "Repository",
+            "type": "string"
+          },
+          "revision": {
+            "pattern": "^[0-9a-f]{40}$",
+            "title": "Revision",
+            "type": "string"
+          },
+          "sha256": {
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Sha256",
+            "type": "string"
+          },
+          "split": {
+            "minLength": 1,
+            "title": "Split",
+            "type": "string"
+          },
+          "task": {
+            "enum": [
+              "arc_easy",
+              "blimp",
+              "hellaswag",
+              "piqa"
+            ],
+            "title": "Task",
+            "type": "string"
+          }
+        },
+        "required": [
+          "task",
+          "repository",
+          "revision",
+          "config",
+          "split",
+          "path",
+          "sha256",
+          "bytes",
+          "items"
+        ],
+        "title": "MaterialFile",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "all_published_configs_splits_reviewed": {
+        "const": true,
+        "title": "All Published Configs Splits Reviewed",
+        "type": "boolean"
+      },
+      "code_commit": {
+        "pattern": "^[0-9a-f]{40}$",
+        "title": "Code Commit",
+        "type": "string"
+      },
+      "code_identity": {
+        "pattern": "^[0-9a-f]{64}$",
+        "title": "Code Identity",
+        "type": "string"
+      },
+      "dependency_sha256": {
+        "pattern": "^[0-9a-f]{64}$",
+        "title": "Dependency Sha256",
+        "type": "string"
+      },
+      "duplicate_items": {
+        "minimum": 0,
+        "title": "Duplicate Items",
+        "type": "integer"
+      },
+      "files": {
+        "items": {
+          "$ref": "#/$defs/MaterialFile"
+        },
+        "title": "Files",
+        "type": "array"
+      },
+      "index_bytes": {
+        "exclusiveMinimum": 0,
+        "title": "Index Bytes",
+        "type": "integer"
+      },
+      "index_sha256": {
+        "pattern": "^[0-9a-f]{64}$",
+        "title": "Index Sha256",
+        "type": "string"
+      },
+      "index_version": {
+        "const": "protected-pattern-jsonl-v2",
+        "default": "protected-pattern-jsonl-v2",
+        "title": "Index Version",
+        "type": "string"
+      },
+      "isolation": {
+        "$ref": "#/$defs/Isolation"
+      },
+      "issuer": {
+        "minLength": 1,
+        "title": "Issuer",
+        "type": "string"
+      },
+      "items": {
+        "exclusiveMinimum": 0,
+        "title": "Items",
+        "type": "integer"
+      },
+      "items_without_patterns": {
+        "minimum": 0,
+        "title": "Items Without Patterns",
+        "type": "integer"
+      },
+      "kind": {
+        "const": "c05_benchmark_preparation_v2",
+        "default": "c05_benchmark_preparation_v2",
+        "title": "Kind",
+        "type": "string"
+      },
+      "lm_eval": {
+        "const": "0.4.13",
+        "default": "0.4.13",
+        "title": "Lm Eval",
+        "type": "string"
+      },
+      "normalization": {
+        "const": "match-view-v1",
+        "default": "match-view-v1",
+        "title": "Normalization",
+        "type": "string"
+      },
+      "patterns": {
+        "exclusiveMinimum": 0,
+        "title": "Patterns",
+        "type": "integer"
+      },
+      "policy_digest": {
+        "pattern": "^[0-9a-f]{64}$",
+        "title": "Policy Digest",
+        "type": "string"
+      },
+      "publisher_inventory_sha256": {
+        "pattern": "^[0-9a-f]{64}$",
+        "title": "Publisher Inventory Sha256",
+        "type": "string"
+      },
+      "renderer": {
+        "const": "task-render-v2",
+        "default": "task-render-v2",
+        "title": "Renderer",
+        "type": "string"
+      },
+      "variants": {
+        "exclusiveMinimum": 0,
+        "title": "Variants",
+        "type": "integer"
+      }
+    },
+    "required": [
+      "files",
+      "publisher_inventory_sha256",
+      "all_published_configs_splits_reviewed",
+      "policy_digest",
+      "index_sha256",
+      "index_bytes",
+      "items",
+      "duplicate_items",
+      "variants",
+      "patterns",
+      "items_without_patterns",
+      "code_commit",
+      "code_identity",
+      "dependency_sha256",
+      "isolation",
+      "issuer"
+    ],
+    "title": "BenchmarkReceipt",
+    "type": "object"
+  },
+  "execution_plan": {
+    "$defs": {
+      "Informativeness": {
+        "additionalProperties": false,
+        "properties": {
+          "characters": {
+            "maximum": 1024,
+            "minimum": 1,
+            "title": "Characters",
+            "type": "integer"
+          },
+          "distinct": {
+            "maximum": 64,
+            "minimum": 1,
+            "title": "Distinct",
+            "type": "integer"
+          },
+          "tokens": {
+            "maximum": 64,
+            "minimum": 1,
+            "title": "Tokens",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "tokens",
+          "characters",
+          "distinct"
+        ],
+        "title": "Informativeness",
+        "type": "object"
+      },
+      "InputFile": {
+        "additionalProperties": false,
+        "properties": {
+          "canonical_bytes": {
+            "minimum": 0,
+            "title": "Canonical Bytes",
+            "type": "integer"
+          },
+          "component": {
+            "title": "Component",
+            "type": "string"
+          },
+          "documents": {
+            "minimum": 0,
+            "title": "Documents",
+            "type": "integer"
+          },
+          "documents_sha256": {
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Documents Sha256",
+            "type": "string"
+          },
+          "file_bytes": {
+            "minimum": 0,
+            "title": "File Bytes",
+            "type": "integer"
+          },
+          "path": {
+            "title": "Path",
+            "type": "string"
+          },
+          "source_file": {
+            "title": "Source File",
+            "type": "string"
+          },
+          "source_id": {
+            "title": "Source Id",
+            "type": "string"
+          },
+          "source_key": {
+            "title": "Source Key",
+            "type": "string"
+          },
+          "source_revision": {
+            "title": "Source Revision",
+            "type": "string"
+          },
+          "upstream_component": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Upstream Component"
+          },
+          "view": {
+            "title": "View",
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "source_key",
+          "source_id",
+          "source_revision",
+          "component",
+          "view",
+          "source_file",
+          "documents_sha256",
+          "file_bytes",
+          "canonical_bytes",
+          "documents"
+        ],
+        "title": "InputFile",
+        "type": "object"
+      },
+      "MatcherPolicy": {
+        "additionalProperties": false,
+        "properties": {
+          "answer": {
+            "$ref": "#/$defs/Informativeness",
+            "default": {
+              "characters": 40,
+              "distinct": 5,
+              "tokens": 8
+            }
+          },
+          "background": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Background",
+            "type": "array"
+          },
+          "combined": {
+            "$ref": "#/$defs/Informativeness",
+            "default": {
+              "characters": 40,
+              "distinct": 5,
+              "tokens": 8
+            }
+          },
+          "fuzzy_auto_exclusion": {
+            "const": false,
+            "default": false,
+            "title": "Fuzzy Auto Exclusion",
+            "type": "boolean"
+          },
+          "max_item_variants": {
+            "default": 64,
+            "maximum": 1024,
+            "minimum": 1,
+            "title": "Max Item Variants",
+            "type": "integer"
+          },
+          "max_variant_bytes": {
+            "default": 65536,
+            "minimum": 1,
+            "title": "Max Variant Bytes",
+            "type": "integer"
+          },
+          "normalization": {
+            "const": "match-view-v1",
+            "default": "match-view-v1",
+            "title": "Normalization",
+            "type": "string"
+          },
+          "prompt": {
+            "$ref": "#/$defs/Informativeness",
+            "default": {
+              "characters": 16,
+              "distinct": 3,
+              "tokens": 4
+            }
+          },
+          "renderer": {
+            "const": "task-render-v2",
+            "default": "task-render-v2",
+            "title": "Renderer",
+            "type": "string"
+          },
+          "sentence": {
+            "$ref": "#/$defs/Informativeness",
+            "default": {
+              "characters": 12,
+              "distinct": 3,
+              "tokens": 3
+            }
+          },
+          "span_tokens": {
+            "default": 13,
+            "maximum": 64,
+            "minimum": 5,
+            "title": "Span Tokens",
+            "type": "integer"
+          },
+          "spans_per_variant": {
+            "default": 32,
+            "maximum": 512,
+            "minimum": 1,
+            "title": "Spans Per Variant",
+            "type": "integer"
+          },
+          "stride": {
+            "default": 6,
+            "maximum": 64,
+            "minimum": 1,
+            "title": "Stride",
+            "type": "integer"
+          },
+          "version": {
+            "const": "c05-matcher-v2",
+            "default": "c05-matcher-v2",
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "title": "MatcherPolicy",
+        "type": "object"
+      },
+      "ProductionPolicy": {
+        "additionalProperties": false,
+        "properties": {
+          "audit_bytes": {
+            "default": 5242880,
+            "minimum": 0,
+            "title": "Audit Bytes",
+            "type": "integer"
+          },
+          "bands": {
+            "default": 32,
+            "title": "Bands",
+            "type": "integer"
+          },
+          "dedup_version": {
+            "const": "disk-minhash-v2",
+            "default": "disk-minhash-v2",
+            "title": "Dedup Version",
+            "type": "string"
+          },
+          "diagnostic_bytes": {
+            "default": 52428800,
+            "minimum": 0,
+            "title": "Diagnostic Bytes",
+            "type": "integer"
+          },
+          "gutenberg": {
+            "default": "known_groups_only",
+            "enum": [
+              "known_groups_only",
+              "require_book_ids"
+            ],
+            "title": "Gutenberg",
+            "type": "string"
+          },
+          "lineage": {
+            "const": "known-lineage-v2",
+            "default": "known-lineage-v2",
+            "title": "Lineage",
+            "type": "string"
+          },
+          "matcher": {
+            "$ref": "#/$defs/MatcherPolicy",
+            "default": {
+              "answer": {
+                "characters": 40,
+                "distinct": 5,
+                "tokens": 8
+              },
+              "background": [],
+              "combined": {
+                "characters": 40,
+                "distinct": 5,
+                "tokens": 8
+              },
+              "fuzzy_auto_exclusion": false,
+              "max_item_variants": 64,
+              "max_variant_bytes": 65536,
+              "normalization": "match-view-v1",
+              "prompt": {
+                "characters": 16,
+                "distinct": 3,
+                "tokens": 4
+              },
+              "renderer": "task-render-v2",
+              "sentence": {
+                "characters": 12,
+                "distinct": 3,
+                "tokens": 3
+              },
+              "span_tokens": 13,
+              "spans_per_variant": 32,
+              "stride": 6,
+              "version": "c05-matcher-v2"
+            }
+          },
+          "max_bucket_size": {
+            "default": 256,
+            "maximum": 4096,
+            "minimum": 2,
+            "title": "Max Bucket Size",
+            "type": "integer"
+          },
+          "max_candidates_per_document": {
+            "default": 64,
+            "maximum": 4096,
+            "minimum": 1,
+            "title": "Max Candidates Per Document",
+            "type": "integer"
+          },
+          "near_threshold": {
+            "default": 0.8,
+            "exclusiveMinimum": 0,
+            "maximum": 1,
+            "title": "Near Threshold",
+            "type": "number"
+          },
+          "oversized_bucket": {
+            "const": "skip_and_count",
+            "default": "skip_and_count",
+            "title": "Oversized Bucket",
+            "type": "string"
+          },
+          "permutations": {
+            "default": 128,
+            "title": "Permutations",
+            "type": "integer"
+          },
+          "quick_bytes": {
+            "default": 5242880,
+            "minimum": 0,
+            "title": "Quick Bytes",
+            "type": "integer"
+          },
+          "seed": {
+            "default": 20260919,
+            "title": "Seed",
+            "type": "integer"
+          },
+          "shingle_size": {
+            "default": 5,
+            "title": "Shingle Size",
+            "type": "integer"
+          },
+          "split_version": {
+            "const": "group-hash-v2",
+            "default": "group-hash-v2",
+            "title": "Split Version",
+            "type": "string"
+          },
+          "survivor": {
+            "const": "longest-source-doc-v1",
+            "default": "longest-source-doc-v1",
+            "title": "Survivor",
+            "type": "string"
+          },
+          "version": {
+            "const": "c05-production-v2",
+            "default": "c05-production-v2",
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "title": "ProductionPolicy",
+        "type": "object"
+      },
+      "Resources": {
+        "additionalProperties": false,
+        "properties": {
+          "attempted_records": {
+            "default": 32000000,
+            "minimum": 1,
+            "title": "Attempted Records",
+            "type": "integer"
+          },
+          "automaton_nodes": {
+            "default": 8000000,
+            "minimum": 1,
+            "title": "Automaton Nodes",
+            "type": "integer"
+          },
+          "benchmark_bytes": {
+            "default": 2147483648,
+            "minimum": 1,
+            "title": "Benchmark Bytes",
+            "type": "integer"
+          },
+          "benchmark_patterns": {
+            "default": 2000000,
+            "minimum": 1,
+            "title": "Benchmark Patterns",
+            "type": "integer"
+          },
+          "comparisons": {
+            "default": 1000000000,
+            "minimum": 1,
+            "title": "Comparisons",
+            "type": "integer"
+          },
+          "document_bytes": {
+            "default": 67108864,
+            "minimum": 1,
+            "title": "Document Bytes",
+            "type": "integer"
+          },
+          "document_tokens": {
+            "default": 2000000,
+            "minimum": 1,
+            "title": "Document Tokens",
+            "type": "integer"
+          },
+          "files": {
+            "default": 4096,
+            "minimum": 1,
+            "title": "Files",
+            "type": "integer"
+          },
+          "free_bytes": {
+            "default": 34359738368,
+            "minimum": 0,
+            "title": "Free Bytes",
+            "type": "integer"
+          },
+          "index_bytes": {
+            "default": 137438953472,
+            "minimum": 1,
+            "title": "Index Bytes",
+            "type": "integer"
+          },
+          "journal_bytes": {
+            "default": 34359738368,
+            "minimum": 1,
+            "title": "Journal Bytes",
+            "type": "integer"
+          },
+          "output_bytes": {
+            "default": 34359738368,
+            "minimum": 1,
+            "title": "Output Bytes",
+            "type": "integer"
+          },
+          "overall_seconds": {
+            "default": 259200,
+            "exclusiveMinimum": 0,
+            "title": "Overall Seconds",
+            "type": "number"
+          },
+          "ram_bytes": {
+            "default": 25769803776,
+            "minimum": 1,
+            "title": "Ram Bytes",
+            "type": "integer"
+          },
+          "records": {
+            "default": 16000000,
+            "minimum": 1,
+            "title": "Records",
+            "type": "integer"
+          },
+          "review_candidates": {
+            "default": 100000,
+            "minimum": 0,
+            "title": "Review Candidates",
+            "type": "integer"
+          },
+          "scratch_bytes": {
+            "default": 206158430208,
+            "minimum": 1,
+            "title": "Scratch Bytes",
+            "type": "integer"
+          },
+          "stage_seconds": {
+            "default": 86400,
+            "exclusiveMinimum": 0,
+            "title": "Stage Seconds",
+            "type": "number"
+          },
+          "workers": {
+            "const": 1,
+            "default": 1,
+            "title": "Workers",
+            "type": "integer"
+          }
+        },
+        "title": "Resources",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "authorization_contract": {
+        "const": "signed-plan-digest-v2",
+        "default": "signed-plan-digest-v2",
+        "title": "Authorization Contract",
+        "type": "string"
+      },
+      "benchmark_receipt_digest": {
+        "pattern": "^[0-9a-f]{64}$",
+        "title": "Benchmark Receipt Digest",
+        "type": "string"
+      },
+      "code_commit": {
+        "pattern": "^[0-9a-f]{40}$",
+        "title": "Code Commit",
+        "type": "string"
+      },
+      "code_identity": {
+        "pattern": "^[0-9a-f]{64}$",
+        "title": "Code Identity",
+        "type": "string"
+      },
+      "data_root": {
+        "title": "Data Root",
+        "type": "string"
+      },
+      "dependency_sha256": {
+        "pattern": "^[0-9a-f]{64}$",
+        "title": "Dependency Sha256",
+        "type": "string"
+      },
+      "files": {
+        "items": {
+          "$ref": "#/$defs/InputFile"
+        },
+        "title": "Files",
+        "type": "array"
+      },
+      "index_sha256": {
+        "pattern": "^[0-9a-f]{64}$",
+        "title": "Index Sha256",
+        "type": "string"
+      },
+      "input_manifest_digest": {
+        "pattern": "^[0-9a-f]{64}$",
+        "title": "Input Manifest Digest",
+        "type": "string"
+      },
+      "kind": {
+        "const": "c05_execution_plan_v2",
+        "default": "c05_execution_plan_v2",
+        "title": "Kind",
+        "type": "string"
+      },
+      "mode": {
+        "enum": [
+          "protected",
+          "authored"
+        ],
+        "title": "Mode",
+        "type": "string"
+      },
+      "output_contract": {
+        "const": "c05_membership_v2",
+        "default": "c05_membership_v2",
+        "title": "Output Contract",
+        "type": "string"
+      },
+      "output_root": {
+        "title": "Output Root",
+        "type": "string"
+      },
+      "policy": {
+        "$ref": "#/$defs/ProductionPolicy"
+      },
+      "resources": {
+        "$ref": "#/$defs/Resources"
+      },
+      "scratch_root": {
+        "title": "Scratch Root",
+        "type": "string"
+      },
+      "sequence": {
+        "minimum": 1,
+        "title": "Sequence",
+        "type": "integer"
+      },
+      "source_seals": {
+        "additionalProperties": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "title": "Source Seals",
+        "type": "object"
+      }
+    },
+    "required": [
+      "sequence",
+      "mode",
+      "input_manifest_digest",
+      "source_seals",
+      "files",
+      "benchmark_receipt_digest",
+      "index_sha256",
+      "policy",
+      "resources",
+      "data_root",
+      "scratch_root",
+      "output_root",
+      "code_commit",
+      "code_identity",
+      "dependency_sha256"
+    ],
+    "title": "ExecutionPlan",
+    "type": "object"
+  },
+  "material_spec": {
+    "$defs": {
+      "Isolation": {
+        "additionalProperties": false,
+        "properties": {
+          "access_controls_verified": {
+            "const": true,
+            "title": "Access Controls Verified",
+            "type": "boolean"
+          },
+          "attestation_sha256": {
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Attestation Sha256",
+            "type": "string"
+          },
+          "denied_agent_principal": {
+            "minLength": 1,
+            "title": "Denied Agent Principal",
+            "type": "string"
+          },
+          "mode": {
+            "enum": [
+              "protected",
+              "authored"
+            ],
+            "title": "Mode",
+            "type": "string"
+          },
+          "operator_principal": {
+            "minLength": 1,
+            "title": "Operator Principal",
+            "type": "string"
+          }
+        },
+        "required": [
+          "mode",
+          "operator_principal",
+          "denied_agent_principal",
+          "attestation_sha256",
+          "access_controls_verified"
+        ],
+        "title": "Isolation",
+        "type": "object"
+      },
+      "MaterialFile": {
+        "additionalProperties": false,
+        "properties": {
+          "bytes": {
+            "exclusiveMinimum": 0,
+            "title": "Bytes",
+            "type": "integer"
+          },
+          "config": {
+            "minLength": 1,
+            "title": "Config",
+            "type": "string"
+          },
+          "items": {
+            "exclusiveMinimum": 0,
+            "title": "Items",
+            "type": "integer"
+          },
+          "path": {
+            "minLength": 1,
+            "title": "Path",
+            "type": "string"
+          },
+          "repository": {
+            "title": "Repository",
+            "type": "string"
+          },
+          "revision": {
+            "pattern": "^[0-9a-f]{40}$",
+            "title": "Revision",
+            "type": "string"
+          },
+          "sha256": {
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Sha256",
+            "type": "string"
+          },
+          "split": {
+            "minLength": 1,
+            "title": "Split",
+            "type": "string"
+          },
+          "task": {
+            "enum": [
+              "arc_easy",
+              "blimp",
+              "hellaswag",
+              "piqa"
+            ],
+            "title": "Task",
+            "type": "string"
+          }
+        },
+        "required": [
+          "task",
+          "repository",
+          "revision",
+          "config",
+          "split",
+          "path",
+          "sha256",
+          "bytes",
+          "items"
+        ],
+        "title": "MaterialFile",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "all_published_configs_splits_reviewed": {
+        "title": "All Published Configs Splits Reviewed",
+        "type": "boolean"
+      },
+      "files": {
+        "items": {
+          "$ref": "#/$defs/MaterialFile"
+        },
+        "title": "Files",
+        "type": "array"
+      },
+      "isolation": {
+        "$ref": "#/$defs/Isolation"
+      },
+      "max_record_bytes": {
+        "default": 1048576,
+        "minimum": 1,
+        "title": "Max Record Bytes",
+        "type": "integer"
+      },
+      "publisher_inventory_sha256": {
+        "pattern": "^[0-9a-f]{64}$",
+        "title": "Publisher Inventory Sha256",
+        "type": "string"
+      }
+    },
+    "required": [
+      "files",
+      "publisher_inventory_sha256",
+      "all_published_configs_splits_reviewed",
+      "isolation"
+    ],
+    "title": "MaterialSpec",
+    "type": "object"
+  }
+}

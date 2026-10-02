@@ -1,0 +1,102 @@
+{
+  "benchmark_requirements": {
+    "network_acquisition_required": "unknown until isolated operator local inventory",
+    "operator_preparation_required": true,
+    "pins_file_sha256": "f230cea66b4bc24a484cff89d6780991e5ceeae89aa120ad4034ec51af1150dd",
+    "tasks": {
+      "arc_easy": {
+        "configuration_requirement": "ARC-Easy",
+        "expected_text_fields_to_validate": [
+          "question",
+          "choices.text"
+        ],
+        "index_identity": null,
+        "material_sha256": null,
+        "repository": "allenai/ai2_arc",
+        "revision": "210d026faf9955653af8916fad021475a3f00453",
+        "split_requirement": "all publisher splits, including train and final",
+        "status": "PINNED_METADATA_ONLY",
+        "verified_configs": null,
+        "verified_item_count": null,
+        "verified_splits": null
+      },
+      "blimp": {
+        "configuration_requirement": "all subdatasets",
+        "expected_text_fields_to_validate": [
+          "sentence_good",
+          "sentence_bad"
+        ],
+        "index_identity": null,
+        "material_sha256": null,
+        "repository": "nyu-mll/blimp",
+        "revision": "877fba0801ffb7cbd8c39c1ff314a46f053f6036",
+        "split_requirement": "all publisher splits, including train and final",
+        "status": "PINNED_METADATA_ONLY",
+        "verified_configs": null,
+        "verified_item_count": null,
+        "verified_splits": null
+      },
+      "hellaswag": {
+        "configuration_requirement": "publisher configuration",
+        "expected_text_fields_to_validate": [
+          "ctx",
+          "ctx_a",
+          "ctx_b",
+          "endings"
+        ],
+        "index_identity": null,
+        "material_sha256": null,
+        "repository": "Rowan/hellaswag",
+        "revision": "218ec52e09a7e7462a5400043bb9a69a41d06b76",
+        "split_requirement": "all publisher splits, including train and final",
+        "status": "PINNED_METADATA_ONLY",
+        "verified_configs": null,
+        "verified_item_count": null,
+        "verified_splits": null
+      },
+      "piqa": {
+        "configuration_requirement": "publisher configuration",
+        "expected_text_fields_to_validate": [
+          "goal",
+          "sol1",
+          "sol2"
+        ],
+        "index_identity": null,
+        "material_sha256": null,
+        "repository": "baber/piqa",
+        "revision": "142f6d7367fd9877f0fb3b5734ea6a545f54cdd1",
+        "split_requirement": "all publisher splits, including train and final",
+        "status": "PINNED_METADATA_ONLY",
+        "verified_configs": null,
+        "verified_item_count": null,
+        "verified_splits": null
+      }
+    }
+  },
+  "blockers": [
+    "No verified protected benchmark material/index receipt, exact config/split coverage or counts",
+    "SQLite spill/temp accounting and maximum-record/index resource certification incomplete",
+    "Protected plan/authorize/run operator workflow and final-receipt integration incomplete",
+    "Downstream CLI/parallel proof transport and complete quota enforcement pending; low-level tokenizer/token/exposure gates implemented",
+    "Bounded fuzzy review queue not implemented; no paraphrase detection claim",
+    "Gutenberg whole-book lineage unknown; known-group policy needs explicit plan review"
+  ],
+  "digest": "6ac34d2e3a38d6f4c625a4946898106b25441bf3c4fbe8d8e31d4c8a400291d8",
+  "executable": false,
+  "execution_authorized": false,
+  "input_manifest_digest": "11724d92c011dd01e8e8c3ab944ac2adeef76aa8ff4abc921bf882eb0ac84152",
+  "kind": "c05_preparation_audit",
+  "limitations": [
+    "Metadata inventory is not corpus-content revalidation or global deduplication",
+    "No exclusions, kept membership, split freeze or protected receipt have been produced",
+    "No task material, raw signature hashes or benchmark labels were opened"
+  ],
+  "plan_digest": null,
+  "resource_observations": {
+    "canonical_bytes": 81859652239,
+    "documents": 15097174,
+    "file_bytes": 104506534003
+  },
+  "status": "BLOCKED",
+  "version": 2
+}

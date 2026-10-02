@@ -1,0 +1,21 @@
+{
+  "attempted_records": 32000000,
+  "automaton_nodes": 8000000,
+  "benchmark_bytes": 2147483648,
+  "benchmark_patterns": 2000000,
+  "comparisons": 1000000000,
+  "document_bytes": 67108864,
+  "document_tokens": 2000000,
+  "files": 4096,
+  "free_bytes": 34359738368,
+  "index_bytes": 137438953472,
+  "journal_bytes": 34359738368,
+  "output_bytes": 34359738368,
+  "overall_seconds": 259200.0,
+  "ram_bytes": 25769803776,
+  "records": 16000000,
+  "review_candidates": 100000,
+  "scratch_bytes": 206158430208,
+  "stage_seconds": 86400.0,
+  "workers": 1
+}

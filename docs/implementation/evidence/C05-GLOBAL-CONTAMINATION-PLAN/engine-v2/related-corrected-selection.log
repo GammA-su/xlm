@@ -1,0 +1,4 @@
+bringing up nodes...
+
+! xdist.dsession.Interrupted: tests/test_eval_suites.py::test_installed_harness_version_matches_the_pin_when_present requires audited --dist=loadgroup or -n 0 !
+no tests ran in 11.79s

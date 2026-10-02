@@ -138,7 +138,7 @@ def test_ordinary_english_sharing_a_common_phrase_is_not_excluded() -> None:
         make_doc(f"ordinary_{i}", f"Paper {i} argues the theorem is {common}, which many dispute.")
         for i in range(8)
     ]
-    matcher = BenchmarkExclusionMatcher()
+    matcher = BenchmarkExclusionMatcher(ExclusionConfig(background_phrases=(common,)))
     matcher.index_examples([example])
     report = matcher.scan(corpus)
 
@@ -146,8 +146,8 @@ def test_ordinary_english_sharing_a_common_phrase_is_not_excluded() -> None:
     assert report.spans_suppressed_as_common > 0
 
 
-def test_span_frequency_suppression_threshold_is_configurable() -> None:
-    """The commonness threshold is policy, and it actually changes behaviour."""
+def test_corpus_frequency_cannot_suppress_repeated_benchmark_copies() -> None:
+    """V2 keeps every copy even with the historical frequency field set low."""
     phrase = "the quarterly report describes an unusual seasonal variation in observed demand"
     example = BenchmarkExample(
         example_id="freq_ex", task_id="synthetic_task", prompt=phrase, candidate_answers=["A", "B"]
@@ -163,7 +163,8 @@ def test_span_frequency_suppression_threshold_is_configurable() -> None:
 
     strict = BenchmarkExclusionMatcher(ExclusionConfig(max_corpus_span_frequency=2))
     strict.index_examples([example])
-    assert strict.scan(corpus).excluded_doc_ids == []
+    assert strict.scan(corpus).excluded_doc_ids == [f"doc_{i}" for i in range(5)]
+    assert strict.scan(corpus[:1]).excluded_doc_ids == ["doc_0"]
 
 
 def test_short_span_length_is_rejected_by_the_schema() -> None:

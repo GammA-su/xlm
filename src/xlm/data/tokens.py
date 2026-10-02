@@ -17,6 +17,7 @@ from typing import Any
 from filelock import FileLock
 
 from xlm.core.contracts import CanonicalDocument, TokenShardManifest
+from xlm.data.exclusion.gates import MembershipGate, screened_documents
 from xlm.tokenizers.base import BaseTokenizer
 
 
@@ -47,12 +48,14 @@ class TokenShardWriter:
         pool_hash: str = "p02_local_pool",
         max_output_bytes: int | None = None,
         batch_size: int = 1,
+        c05_gate: MembershipGate | None = None,
     ) -> None:
         self.output_dir = output_dir
         self.shard_id = shard_id
         self.source_id = source_id
         self.tokenizer = tokenizer
         self.pool_hash = pool_hash
+        self.c05_gate = c05_gate
         if max_output_bytes is not None and max_output_bytes < 1:
             raise ValueError("max_output_bytes must be positive")
         self.max_output_bytes = max_output_bytes
@@ -84,7 +87,8 @@ class TokenShardWriter:
         directory power-loss persistence is not claimed by this portable API.
         """
         with _token_stage(self.output_dir) as stage:
-            manifest = self._write_documents(documents, add_special_tokens, stage)
+            screened = screened_documents(documents, self.c05_gate)
+            manifest = self._write_documents(screened, add_special_tokens, stage)
         return manifest
 
     def _write_documents(
@@ -168,6 +172,11 @@ class TokenShardWriter:
                     "eos_positions": eos_positions,
                     "split": doc.split,
                 }
+                if self.c05_gate is not None:
+                    from xlm.data.evidence_v2.canonical import digest
+
+                    idx_record["c05_content"] = digest(doc.to_dict())
+                    idx_record["c05_receipt"] = self.c05_gate.receipt_digest
                 idx_line = (json.dumps(idx_record, ensure_ascii=False) + "\n").encode("utf-8")
                 charge(len(idx_line))
                 idx_f.write(idx_line)
@@ -226,6 +235,11 @@ class TokenShardWriter:
         counter_text = json.dumps(counters, indent=2, sort_keys=True)
         charge(len(counter_text.replace("\n", os.linesep).encode("utf-8")))
         _write_synced(directory / "shard_counters.json", counter_text)
+        if self.c05_gate is not None:
+            proof = self.c05_gate.seal_token_shard(manifest.to_dict(), counters)
+            proof_text = json.dumps(proof, sort_keys=True)
+            charge(len(proof_text.encode()))
+            _write_synced(directory / "c05-attestation.json", proof_text)
         return manifest
 
     def _encoded_documents(
@@ -266,11 +280,13 @@ def _token_stage(directory: Path) -> Iterator[Path]:
     names = ("tokens.bin", "offsets.jsonl", "shard_counters.json", "shard_manifest.json")
     lock = directory.parent / f".{directory.name}.writer.lock"
     with FileLock(str(lock), timeout=10):
-        if any((directory / name).exists() for name in names):
+        if any((directory / name).exists() for name in (*names, "c05-attestation.json")):
             raise FileExistsError(f"Token shard already contains payloads: {directory}")
         with tempfile.TemporaryDirectory(prefix=".token-stage-", dir=directory) as temp:
             stage = Path(temp)
             yield stage
+            if (stage / "c05-attestation.json").exists():
+                os.replace(stage / "c05-attestation.json", directory / "c05-attestation.json")
             for name in names:
                 os.replace(stage / name, directory / name)
                 if name == "shard_counters.json":

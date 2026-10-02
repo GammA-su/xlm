@@ -1,5 +1,69 @@
 # Global C05 preparation
 
+The engine continuation now has authored streaming/recovery and low-level gate
+tests. **Protected plan creation/execution remain disabled in code.** The missing
+benchmark receipt is not the only blocker: production resource certification,
+fuzzy review and operator/parallel/final-receipt/quota integration remain incomplete.
+The report's current section supersedes its retained historical audit.
+
+## New offline schema and local-material tools
+
+The commands below do not download anything or authorize C05. Use the existing
+offline environment settings shown later in this runbook. Schema export is safe
+in the agent workspace; the existing committed schema is under the report's
+`engine-v2/artifact-schemas.json`. A fresh export is write-once:
+
+```powershell
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator schema --output C:/XLM-scratch/c05-artifact-schemas.json
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator plan-readiness
+```
+
+Expected exits are 0 and 2 respectively. `plan-readiness` explicitly reports no
+executable plan; it is not benchmark coverage verification.
+
+Only on the separate operator identity/machine, prepare `material-spec.json` from
+the exact local publisher inventory using the exported `MaterialSpec` schema.
+Every entry needs task, repository, immutable revision, actual config/split,
+relative JSONL path, SHA-256, byte size and item count. Include the publisher
+inventory digest, explicit all-published-coverage review and isolation attestation.
+Do not populate unknown fields with sample counts or example configurations.
+The following proposed private paths must already be outside agent access:
+
+```powershell
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator inspect-local --spec C:/XLM-operator-private/c05/material-spec.json --material-root C:/XLM-operator-private/c05/material --output C:/XLM-operator-private/c05/local-inspection.json
+```
+
+This checks existence/size only. It does not certify material hashes or completeness.
+Local availability is presently unknown; no payload acquisition command is
+authorized or inferred. Publisher formats other than reviewed JSONL need an
+explicit adapter/conversion and provenance review before this builder can be used.
+
+`build-local` implements the authored-tested JSONL preparation path. It requires
+the specification, explicit matcher/resource JSON files, destination, trusted
+issuer and signing-key environment variable, plus actual code/dependency identity.
+Inspect its exact arguments with:
+
+```powershell
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator build-local --help
+uv run --offline --locked --no-sync --extra cpu --extra eval python -c "import json; from xlm.data.exclusion.identity import implementation_identity; print(json.dumps(implementation_identity()))"
+```
+
+Do not run protected building as the agent or send the key, raw index, examples,
+labels, per-item signatures or private decisions back to the agent. A reviewed
+operator build must run with a separate principal and proven denied agent access;
+the code verifies the principal and checks the supplied source/dependency identity.
+Return only `benchmark-preparation.receipt.json` and content-free inspection metadata.
+The expected handoff location is `G:/XLM/c05/benchmark-preparation.receipt.json`;
+it was absent when checked. This is a proposed handoff path, not a claim that
+material is absent on every machine.
+
+There is still no accepted protected `plan/authorize/run/resume` CLI or valid
+execution digest. Do not call the authored Python authorization helper with real
+inputs as a workaround. Keep the explicit protected refusal until the remaining
+engineering and acceptance checks are completed.
+
+## Existing inventory verification and historical preparation notes
+
 Current state: **blocked preparation, not an executable C05 plan**. See the
 [audit and requirement ledger](../implementation/reports/C05-GLOBAL-CONTAMINATION-PLAN.md).
 The source input manifest is not an exclusion receipt or permission to train.

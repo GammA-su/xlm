@@ -215,6 +215,16 @@ the review mechanism; it records no operator approval.
 
 ## C05 — Duplicate clusters, exclusions and splits
 
+Implementation note (2026-10-02): the versioned C05 streaming extension has
+authored matcher, disk-grouping, recovery and membership-gate tests. Benchmark
+repetition must never suppress a signature using training-corpus frequency.
+Known-lineage v2 includes all parents and available SYNTH seed URLs; it does not
+invent missing book identities. Detailed decisions remain private; only kept
+membership and aggregate results may be exported. Protected execution remains
+disabled pending full production acceptance; these tests do not satisfy the
+scientific requirements below or authorize tokenizer/training operations. See
+`docs/implementation/reports/C05-GLOBAL-CONTAMINATION-PLAN.md` for the current ledger.
+
 Deduplicate across all selected source families before assigning final train/validation splits. Implement exact hashes and a scalable near-duplicate method such as shingled MinHash/LSH with bounded candidate verification; do not use an all-pairs comparison. Algorithm, seeds, thresholds and deterministic survivor selection are frozen. Retain all source aliases and provenance of the surviving document.
 
 Keep known derivatives, books/chapters, conversations, URL/article versions and paraphrases sharing a seed in one lineage group where available. Near-duplicate detection has false positives/negatives: report estimates and sampled audits, not a perfect-clean guarantee. If new sources later merge formerly separate groups, refreeze the affected pool and invalidate comparisons; never quietly reuse now-leaking splits.

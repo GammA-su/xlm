@@ -1,3 +1,229 @@
+# Global C05 engine continuation (2026-10-02)
+
+**The engine has substantial authored validation, but production acceptance is
+incomplete. No executable protected C05 plan exists.** Protected plan construction
+and execution refuse in code; a benchmark receipt alone does not remove that
+refusal. This continuation must not be reported as engine-ready or authorized.
+
+Starting HEAD: `3c8deaf83e73767473f1c9df9a6278917c112f11`, clean branch
+`feat/c05-global-preparation`, `F:\Project\xlm-c05-global`. The final commit is
+reported in the chat handoff; it contains this report without rewriting history.
+This continuation's exact commit manifest is
+[engine-v2/changed-files.txt](../evidence/C05-GLOBAL-CONTAMINATION-PLAN/engine-v2/changed-files.txt).
+
+All work remained offline. No full C05 scan, real benchmark material/index access,
+source-pool mutation, final mixture freeze, production tokenizer/model training,
+CUDA, upload or push occurred. Tiny tokenizer/trainer operations inside authored
+regression tests are not production training. Acquisitions in tests use loopback
+fixtures. The unrelated worktrees were not edited.
+
+## What changed and what the checks establish
+
+`streaming.py` implements a token Aho-Corasick automaton bounded by pattern/node
+ceilings, with resource callbacks during construction and failure-link traversal.
+Its provenance map is immutable and retains duplicate benchmark references. Every
+scan uses the same frozen index; corpus repetition never removes signatures.
+Authored tests detect 1/1, 4/4 and 100/100 repeated prompts, with normalized case,
+punctuation, token boundaries, embedded prompts and reordered options.
+
+The legacy development matcher also no longer suppresses spans using corpus
+frequency or materializes the entire input iterator. Its version advances to 2;
+historical frequency settings remain identity fields but cannot suppress evidence.
+An independently frozen background-phrase list now supplies the common-phrase
+negative control. That interface remains a development report API; the new runner
+uses the immutable streaming matcher.
+
+Draft matcher policy, explicitly serialized and digest-bound: prompt minimum
+4 tokens / 16 characters / 3 distinct tokens; BLiMP sentence minimum 3 / 12 / 3;
+answer and combined-render minimum 8 / 40 / 5. Long variants use 13-token spans,
+stride 6, at most 32 spans/variant, 64 variants/item and 65,536 B/variant. All ARC
+choices, both PIQA solutions, both BLiMP sentences and HellaSwag context/endings
+participate without selecting a gold answer. These thresholds passed authored
+controls; they are not measured population false-positive rates or operator-frozen
+production choices. Items lacking any signature block protected receipt admission.
+
+The automatic guarantee is exact normalized token-boundary containment of an
+actually compiled signature, followed by propagation over known groups. It is not
+universal full-example, paraphrase, semantic or unseen-lineage coverage. Truncation,
+informativeness floors and a reviewed background policy are explicit limitations.
+Fuzzy automatic deletion is forbidden. A bounded fuzzy review queue remains
+unimplemented; its resource field is a proposed ceiling, not proof of a detector.
+
+`disk.py` stores document facts, signatures, band postings, all aliases and union-find
+parents in SQLite. MinHash retains 5-word shingles, 128 permutations, 32 bands,
+seed 20260919 and estimated-Jaccard threshold 0.8; candidate and bucket limits are
+64 and 256. Skipped oversized bands and candidate-cap documents are counted.
+Shingle hashing is reduced in chunks of 2,048 to bound the existing vectorized
+permutations-by-shingles temporary. Cross-source exact and near matching, threshold
+boundaries and survivor ordering have authored checks. Survivors are longest text,
+then smallest source ID, then document ID. Near matching remains a capped heuristic.
+
+Every document is benchmark-screened before survivor publication. Duplicate and
+known-lineage unions then propagate any direct hit to the whole known group,
+including a would-be survivor. Group-safe diagnostic, nested quick and audit
+assignment follows exclusion; it does not depend on mixture weights. Known lineage
+v2 uses every explicit parent and recognized metadata relation, plus SYNTH
+`query_seed_url` and `additional_seed_url`. URL keys may bridge sources. No URL or
+parent means no invented relationship. Gutenberg rows receive no fabricated book
+ID or shard-wide grouping. Whole-book policy refuses rows without real book IDs;
+the alternative known-group treatment still requires operator review.
+
+## Artifacts, recovery and downstream checks
+
+`artifacts.py` defines strict extra-field-rejecting preparation, file, policy,
+resource and plan schemas. HMAC-SHA256 envelopes bind canonical payload digests to
+explicit trusted issuers. Authored and protected modes are distinct. The protected
+builder checks the separate operator principal and declared isolation attestation,
+and actual local source/dependency identities. This is operator attestation, not
+automatic proof that OS access controls were correctly configured.
+
+The content-free preparation receipt binds repository/revision/config/split/file
+hashes and sizes, item/duplicate/render/pattern counts, empty-signature count,
+publisher inventory digest and all-published-coverage review, policy/index identity,
+code/dependencies, harness version, isolation and issuer. No counts/configurations
+were invented for real benchmarks. The local builder currently supports reviewed
+JSONL material; unknown publisher formats/conversion provenance still need review.
+It never invokes dataset remote code, acquires payloads or accepts licenses.
+Machine-readable schemas are in
+[artifact-schemas.json](../evidence/C05-GLOBAL-CONTAMINATION-PLAN/engine-v2/artifact-schemas.json).
+
+The runner scans one bounded JSONL record at a time, verifies complete file hashes
+and exact row/text-byte counters, and commits each file transaction with a signed
+fact/posting/lineage digest. Resume rehashes reusable source files and verifies those
+signed facts. Grouping has a signed digest and an all-or-nothing transaction.
+The plan lock, benchmark index identity, code/dependency identity and signed journal
+must agree. Interrupted files restart; completed files reuse verified facts.
+Row/comparison reservations are persisted before work in blocks of up to 1,024;
+unused credits are conservatively spent after a crash. Stage and overall deadlines
+survive restart. Tests use both raised interruptions and actual `os._exit(29)` at
+row, file-commit, grouping and pre-publication boundaries.
+
+Private scratch retains `facts.sqlite` and `decisions.jsonl`; detailed match keys
+and exclusion decisions stay private. Publication exports **only kept rows** in
+sorted `membership.jsonl` and a signed `completion.json` with aggregate counts,
+input/plan/index-receipt/policy bindings and membership SHA-256. Component, view and
+Common Pile upstream allocation identifiers survive. Files are fsynced before a
+directory rename publishes completion. Windows directory-entry persistence after
+power loss is not certified. A crash before publication has no completed artifact.
+
+`MembershipGate` validates the trusted completion, exact current input-manifest
+digest and membership bytes, then uses a bounded disk lookup. Whole canonical
+record identity and train membership must match; excluded, changed, renamed,
+new/top-up and repeated rows fail. Tokenizer-fit selection, BPE fitting and
+TokenShardWriter use this gate; baseline first-pass source IDs cannot silently
+take the development route. Exact token counting also requires a protected gate.
+Token shards carry signed attestations binding current C05 receipt, shard manifest
+and counters, plus per-offset original-record hashes. Exposure and matched-plan
+compilation refuse unverified baseline/Mix-01 availability. Authored trust fixtures
+exercise acceptance/refusal; they are not real protected receipts.
+
+The complete operator CLI, parallel tokenization proof transport, official final
+receipt bridge and final component/IFM/Common Pile quota workflow remain incomplete.
+The low-level gates do not certify those missing paths. Top-ups still require a
+new reviewed acquisition and global re-screening; changed group bridges invalidate
+affected membership/splits. No substitution, repetition, renormalization or quota
+amendment was performed.
+
+## Resources, evidence and current refusal
+
+`storage.py` now creates large indexes on empty tables and maintains them during
+insertion. Read queries must have index-backed order: a query plan requiring a
+temporary B-tree or automatic index is refused. TEMP is memory-only as defense in
+depth, automatic indexes and mmap are disabled, and page caches are 8 MiB. This
+avoids reliance on hidden SQLite external sort files without changing a process-
+global temporary-directory setting. Database page ceilings, rollback journals,
+private ledger, staged/final publication overlap and the benchmark index contribute
+to resource checks. Maximum-size and full-population resource certification is
+still incomplete; the protected path remains disabled.
+
+Draft defaults are 24 GiB process-tree RAM, 192 GiB aggregate scratch, 128 GiB
+database, 32 GiB journal, 32 GiB output and 32 GiB free-space reserve; 64 MiB record,
+2M normalized tokens/record, 16M unique rows, 32M attempted-row reservations, 4,096
+files, 1B comparisons, 2 GiB benchmark index, 2M patterns and 8M automaton nodes.
+One worker, 86,400 s/stage and 259,200 s overall. These are proposed configuration,
+not frozen real-plan limits or guaranteed feasibility. RSS is sampled at 50 ms,
+disk at 250 ms and explicit boundaries; sampled peaks can miss short allocations.
+
+The authored 430-document pilot has 300 independent clean rows, 20 duplicate
+aliases, 100 direct hits and 10 linked derivatives. Expected outcome: 300 kept,
+20 duplicates, 110 excluded. Its first measurement was 70.101 s; replacing costly
+per-operation process-tree enumeration with 50 ms sampling reduced this to 9.129 s,
+87,384,064 B sampled runner RSS and 3,590,221 B then-accounted scratch. Both passed;
+the later index-order/privacy/aggregate-accounting changes passed the final pilot
+in 8.132 s (12.015 s command wrapper), 87,134,208 B sampled runner RSS,
+3,664,461 B sampled aggregate scratch and 100,120 B exported kept membership.
+The wrapper sampled 111,525,888 B process-tree RSS. This is authored evidence, not live-source or
+104.5 GB performance certification.
+
+The source inventory reverified unchanged, exit 0: digest
+`11724d92c011dd01e8e8c3ab944ac2adeef76aa8ff4abc921bf882eb0ac84152`.
+All ten seals, eleven components and 2,035 file sizes remain bound. No 104.5 GB
+content rehash was performed. The four benchmark pins and source quotas remain
+unchanged. Only the proposed content-free receipt path
+`G:/XLM/c05/benchmark-preparation.receipt.json` was checked for existence (absent);
+real material availability elsewhere remains unknown. No protected cache was opened.
+
+Evidence under [engine-v2](../evidence/C05-GLOBAL-CONTAMINATION-PLAN/engine-v2/)
+contains exact argument arrays, exits, environment, logs, wall times and sampled
+process-tree RSS. Validation selections overlap and must not be added as unique
+tests. The broad related selection passed 404 tests; its complementary serial
+selection passed 4 (405 deselected), including installed-harness and process/CLI
+regressions. Subsequent focused regressions cover publication/privacy/storage
+changes: the final focused selection passed 94 tests (one separately run pilot
+deselected), exit 0, 11.453 s wrapper and 188,481,536 B sampled process-tree RSS.
+Strict mypy, Ruff check and format passed over all 20 touched Python files.
+Exact commands, totals and static results are in `validation-summary.json`.
+Complete repository acceptance, real C05, live benchmarks and CUDA were NOT RUN.
+
+Failures are retained: an initial test selection named nonexistent
+`test_operator_final.py` and ran no tests (exit 5); the corrected list initially
+used the wrong optional marker and was refused before execution (exit 2).
+The correct marker is `optional_dependency`; the affected tests then ran serially,
+not omitted. Initial Ruff formatting findings and strict-mypy reader/writer variable
+reuse and fixture-inference errors were fixed without suppressions. One editing
+command omitted the shared-environment setting and uv created an ignored local
+`.venv`; no dependency sync/install occurred. All validation reused the existing
+CPU/eval environment. No failure was called a flake or converted to a pass.
+The final diff check also exposed CRLF as trailing whitespace under this repository's
+Git settings; touched text files were normalized to LF without changing JSON values
+or canonical artifact digests. The failed check is retained, followed by the clean
+check; no whitespace rule was disabled.
+
+| Requirement | Current status |
+|---|---|
+| Frozen input/seal/size reproduction | VERIFIED metadata-only, unchanged |
+| Immutable task-aware matcher and repeated-copy repair | IMPLEMENTED / VERIFIED authored scope |
+| Disk facts/union-find, capped near dedup, alias/survivor ordering | IMPLEMENTED / VERIFIED authored scope |
+| SYNTH/all-parent lineage and hit propagation | IMPLEMENTED / VERIFIED authored scope |
+| Gutenberg whole-book completeness | BLOCKED: genuine lineage absent |
+| File journals, hard process interruption, stale-state refusal | IMPLEMENTED / VERIFIED authored scope |
+| Private decisions and atomic kept-membership publication | IMPLEMENTED / VERIFIED authored scope |
+| Protected material schemas and local JSONL builder | IMPLEMENTED / VERIFIED authored scope |
+| Real complete benchmark material/receipt | BLOCKED: not supplied |
+| Low-level tokenizer/token/count/exposure gates | IMPLEMENTED / VERIFIED authored scope |
+| Complete CLI/parallel/final-receipt/quota integration | BLOCKED: engineering incomplete |
+| Bounded fuzzy candidate review | NOT IMPLEMENTED; no automatic fuzzy deletion |
+| Maximum-record/index and population-scale resource certification | NOT RUN / BLOCKED |
+| Protected executable plan/authorization/run | BLOCKED in code; sequence/path/digest absent |
+| Production tokenizer/final freeze/training/network/push | OUT OF SCOPE / NOT RUN |
+
+The next step is engineering completion plus isolated content-free preparation,
+not authorization of a placeholder plan. See the updated runbook for exact schema,
+local inspection and verification commands. There is no valid future C05 run
+command or plan digest to authorize at this stop point.
+
+Continuation: preserve the current implementation and evidence; finish production
+resource certification, bounded fuzzy review, operator plan/authorize/run/resume,
+downstream proof transport, final-receipt and quota integration. Keep the protected
+refusal until acceptance establishes those paths. Obtain only a content-free
+benchmark inventory/receipt from the isolated operator environment. No full C05,
+network, source mutation, production tokenizer/training or push is authorized.
+
+## Historical preparation audit (retained below)
+
+The following is the prior committed audit. Its code-gap descriptions are
+historical; the continuation above is the current implementation state.
+
 # Global C05 preparation audit (2026-10-02)
 
 **C05 is partially implemented. No executable global plan exists yet.**

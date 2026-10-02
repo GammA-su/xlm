@@ -13,10 +13,13 @@ contract forbids.
 from __future__ import annotations
 
 import hashlib
-from collections.abc import Iterator
+from collections.abc import Iterator, Mapping
 from dataclasses import asdict, dataclass, field
+from pathlib import Path
 from typing import Any
 
+from xlm.data.exclusion.gates import PRODUCTION_COMPONENTS, MembershipGate
+from xlm.data.exclusion.policy import C05Error
 from xlm.data.sampling.mixture import (
     MixtureRecipe,
     MixtureValidation,
@@ -120,11 +123,40 @@ def _order_key(seed: int, value: str) -> str:
     return hashlib.blake2b(f"{seed}:{value}".encode(), digest_size=16).hexdigest()
 
 
+def _verify_c05(
+    recipe: MixtureRecipe,
+    validation: MixtureValidation,
+    c05_gate: MembershipGate | None,
+    c05_shards: Mapping[str, Path] | None,
+) -> None:
+    production = recipe.mixture_id.casefold().replace("_", "-").startswith("mix-01") or any(
+        c.source_id in PRODUCTION_COMPONENTS for c in recipe.components
+    )
+    if production:
+        if c05_gate is None or c05_shards is None:
+            raise C05Error("final baseline mixture requires verified C05 token membership")
+        for component in recipe.components:
+            if component.source_id not in c05_shards:
+                raise C05Error("C05 token shard missing for mixture component")
+            proof = c05_gate.verify_token_shard(c05_shards[component.source_id])
+            available = validation.availability[component.source_id]
+            if (
+                proof["manifest"]["source_id"] != component.source_id
+                or proof["manifest"]["shard_id"] != available.shard_id
+                or proof["manifest"]["num_documents"] != available.num_documents
+                or proof["counters"]["valid_targets"] != available.valid_targets
+            ):
+                raise C05Error("mixture availability differs from screened shard")
+
+
 def compile_exposure_plan(
     recipe: MixtureRecipe,
     validation: MixtureValidation,
     budget_targets: int,
     block_size: int = 8192,
+    *,
+    c05_gate: MembershipGate | None = None,
+    c05_shards: Mapping[str, Path] | None = None,
 ) -> ExposurePlan:
     """Compile a validated recipe into a deterministic exposure plan.
 
@@ -132,6 +164,7 @@ def compile_exposure_plan(
     generator (:func:`iter_exposure_blocks`), so plan size is independent of budget.
     """
     validation.raise_if_invalid()
+    _verify_c05(recipe, validation, c05_gate, c05_shards)
     if budget_targets <= 0:
         raise ValueError(f"budget_targets must be positive, got {budget_targets}")
     if block_size <= 0:
@@ -433,6 +466,9 @@ def compile_matched_plan(
     validation: MixtureValidation,
     budget: int,
     basis: str = "canonical_bytes",
+    *,
+    c05_gate: MembershipGate | None = None,
+    c05_shards: Mapping[str, Path] | None = None,
 ) -> MatchedExposurePlan:
     """Compile a matched-canonical-byte or matched-document exposure plan.
 
@@ -443,6 +479,7 @@ def compile_matched_plan(
     source's measured bytes-per-document.
     """
     validation.raise_if_invalid()
+    _verify_c05(recipe, validation, c05_gate, c05_shards)
     if basis not in MATCHED_BASES:
         raise ValueError(f"unknown matched basis '{basis}'; supported: {', '.join(MATCHED_BASES)}")
     if budget <= 0:

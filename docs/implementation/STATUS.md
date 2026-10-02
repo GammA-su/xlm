@@ -1,3 +1,21 @@
+> **GLOBAL C05 ENGINE CONTINUATION (2026-10-02): PRODUCTION ACCEPTANCE INCOMPLETE.**
+>
+> Streaming matcher v2 fixes corpus-frequency suppression; typed plans/receipts,
+> disk-backed dedup/known-lineage groups, signed resume journals, private decisions,
+> kept-membership publication and low-level downstream gates have authored tests.
+> The 430-document pilot produced 300 kept / 20 duplicate / 110 excluded records.
+> Related regressions: 404 parallel and 4 complementary serial passed; later
+> focused checks cover privacy and SQLite ordered-query enforcement.
+> Input manifest/seals/quotas/pins remain unchanged. Protected plan creation and
+> execution refuse: production resource certification, fuzzy review and complete
+> operator/parallel/final-receipt/quota integration remain engineering work.
+> Real protected benchmark inventory/receipt is also missing. No executable plan,
+> real scan, external network, source mutation, production training or push.
+> [Current report](reports/C05-GLOBAL-CONTAMINATION-PLAN.md),
+> [evidence](evidence/C05-GLOBAL-CONTAMINATION-PLAN/engine-v2/) and
+> [runbook](../runbooks/c05-global-preparation.md) contain the exact continuation.
+> Earlier entries below are historical.
+
 > **GLOBAL C05 PREPARATION AUDIT (2026-10-02): NEEDS FURTHER WORK.**
 >
 > All baseline first-pass seals are now present and their metadata cross-bindings

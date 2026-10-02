@@ -1,0 +1,51 @@
+{
+  "audit_bytes": 5242880,
+  "bands": 32,
+  "dedup_version": "disk-minhash-v2",
+  "diagnostic_bytes": 52428800,
+  "gutenberg": "known_groups_only",
+  "lineage": "known-lineage-v2",
+  "matcher": {
+    "answer": {
+      "characters": 40,
+      "distinct": 5,
+      "tokens": 8
+    },
+    "background": [],
+    "combined": {
+      "characters": 40,
+      "distinct": 5,
+      "tokens": 8
+    },
+    "fuzzy_auto_exclusion": false,
+    "max_item_variants": 64,
+    "max_variant_bytes": 65536,
+    "normalization": "match-view-v1",
+    "prompt": {
+      "characters": 16,
+      "distinct": 3,
+      "tokens": 4
+    },
+    "renderer": "task-render-v2",
+    "sentence": {
+      "characters": 12,
+      "distinct": 3,
+      "tokens": 3
+    },
+    "span_tokens": 13,
+    "spans_per_variant": 32,
+    "stride": 6,
+    "version": "c05-matcher-v2"
+  },
+  "max_bucket_size": 256,
+  "max_candidates_per_document": 64,
+  "near_threshold": 0.8,
+  "oversized_bucket": "skip_and_count",
+  "permutations": 128,
+  "quick_bytes": 5242880,
+  "seed": 20260919,
+  "shingle_size": 5,
+  "split_version": "group-hash-v2",
+  "survivor": "longest-source-doc-v1",
+  "version": "c05-production-v2"
+}

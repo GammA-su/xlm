@@ -1,5 +1,16 @@
 # Evaluation policy and holdout isolation
 
+**C05 engine continuation (2026-10-02):** authored fixtures now exercise immutable
+benchmark matching, known-group propagation, crash recovery and kept-membership
+gates. They are not protected benchmark evidence. Real preparation must still
+occur under the separate operator identity/machine required below, with a trusted
+content-free receipt. Raw indexes, pattern digests and detailed exclusion decisions
+remain protected; exported kept membership is frozen against the complete source
+manifest before any query. The new completion/token-shard attestations do not
+replace the official evaluation `FinalExclusionReceipt` gate: that integration is
+still incomplete and protected execution is disabled. See the current
+[C05 ledger](docs/implementation/reports/C05-GLOBAL-CONTAMINATION-PLAN.md).
+
 **P35 research selection:** [xlm-science-v1](docs/implementation/reports/P35-SCIENTIFIC-CONTRACT.md)
 specifies fixed-distribution held-out text CE as the same-tokenizer 50M primary
 endpoint, text BPB for tokenizer comparisons, and independent training-pair

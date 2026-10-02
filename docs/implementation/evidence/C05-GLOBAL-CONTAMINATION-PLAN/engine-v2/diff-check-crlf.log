@@ -1,0 +1,112 @@
+src/xlm/data/exclusion/benchmark.py:12: trailing whitespace.
++  be diagnostic. Independently frozen background phrases may be excluded; corpus
+src/xlm/data/exclusion/benchmark.py:13: trailing whitespace.
++  repetition never suppresses benchmark evidence.
+src/xlm/data/exclusion/benchmark.py:33: trailing whitespace.
++EXCLUSION_POLICY_VERSION = "2"
+src/xlm/data/exclusion/benchmark.py:54: trailing whitespace.
++        description=("Historical identity field; v2 never suppresses based on corpus frequency."),
+src/xlm/data/exclusion/benchmark.py:56: trailing whitespace.
++    background_phrases: tuple[str, ...] = ()
+src/xlm/data/exclusion/benchmark.py:65: trailing whitespace.
++            f"full={self.match_full_example}:spans={self.match_informative_spans}:"
+src/xlm/data/exclusion/benchmark.py:66: trailing whitespace.
++            f"background={self.background_phrases!r}"
+src/xlm/data/exclusion/benchmark.py:184: trailing whitespace.
++        self._suppressed = 0
+src/xlm/data/exclusion/benchmark.py:185: trailing whitespace.
++        self._examples = 0
+src/xlm/data/exclusion/benchmark.py:190: trailing whitespace.
++            self._examples += 1
+src/xlm/data/exclusion/benchmark.py:204: trailing whitespace.
++                        background = [match_normalize(p) for p in self.config.background_phrases]
+src/xlm/data/exclusion/benchmark.py:205: trailing whitespace.
++                        if any(
+src/xlm/data/exclusion/benchmark.py:206: trailing whitespace.
++                            b and (f" {span} " in f" {b} " or f" {b} " in f" {span} ")
+src/xlm/data/exclusion/benchmark.py:207: trailing whitespace.
++                            for b in background
+src/xlm/data/exclusion/benchmark.py:208: trailing whitespace.
++                        ):
+src/xlm/data/exclusion/benchmark.py:209: trailing whitespace.
++                            self._suppressed += 1
+src/xlm/data/exclusion/benchmark.py:210: trailing whitespace.
++                            continue
+src/xlm/data/exclusion/benchmark.py:217: trailing whitespace.
++        """Compatibility method: corpus frequency never suppresses benchmark evidence.
+src/xlm/data/exclusion/benchmark.py:219: trailing whitespace.
++        Only independently frozen ``background_phrases`` act at index construction.
+src/xlm/data/exclusion/benchmark.py:220: trailing whitespace.
++        The historical frequency option is retained in identity for explicit migration.
+src/xlm/data/exclusion/benchmark.py:222: trailing whitespace.
++        return 0
+src/xlm/data/exclusion/benchmark.py:226: trailing whitespace.
++        scanned = 0
+src/xlm/data/exclusion/benchmark.py:231: trailing whitespace.
++        for doc in documents:
+src/xlm/data/exclusion/benchmark.py:232: trailing whitespace.
++            scanned += 1
+src/xlm/data/exclusion/benchmark.py:251: trailing whitespace.
++                if f" {span} " in f" {normalized} ":
+src/xlm/data/exclusion/benchmark.py:269: trailing whitespace.
++            documents_scanned=scanned,
+src/xlm/data/exclusion/benchmark.py:270: trailing whitespace.
++            examples_indexed=self._examples,
+src/xlm/data/exclusion/benchmark.py:274: trailing whitespace.
++            spans_suppressed_as_common=self._suppressed,
+src/xlm/data/pools/tokenizer_fit.py:24: trailing whitespace.
++from xlm.data.exclusion.gates import MembershipGate, screened_documents
+src/xlm/data/pools/tokenizer_fit.py:145: trailing whitespace.
++    *,
+src/xlm/data/pools/tokenizer_fit.py:146: trailing whitespace.
++    c05_gate: MembershipGate | None = None,
+src/xlm/data/pools/tokenizer_fit.py:147: trailing whitespace.
++    production: bool = False,
+src/xlm/data/pools/tokenizer_fit.py:156: trailing whitespace.
++    documents = screened_documents(documents, c05_gate, required=production)
+src/xlm/data/tokens.py:20: trailing whitespace.
++from xlm.data.exclusion.gates import MembershipGate, screened_documents
+src/xlm/data/tokens.py:51: trailing whitespace.
++        c05_gate: MembershipGate | None = None,
+src/xlm/data/tokens.py:58: trailing whitespace.
++        self.c05_gate = c05_gate
+src/xlm/data/tokens.py:90: trailing whitespace.
++            screened = screened_documents(documents, self.c05_gate)
+src/xlm/data/tokens.py:91: trailing whitespace.
++            manifest = self._write_documents(screened, add_special_tokens, stage)
+src/xlm/data/tokens.py:175: trailing whitespace.
++                if self.c05_gate is not None:
+src/xlm/data/tokens.py:176: trailing whitespace.
++                    from xlm.data.evidence_v2.canonical import digest
+src/xlm/data/tokens.py:177: trailing whitespace.
++
+src/xlm/data/tokens.py:178: trailing whitespace.
++                    idx_record["c05_content"] = digest(doc.to_dict())
+src/xlm/data/tokens.py:179: trailing whitespace.
++                    idx_record["c05_receipt"] = self.c05_gate.receipt_digest
+src/xlm/data/tokens.py:238: trailing whitespace.
++        if self.c05_gate is not None:
+src/xlm/data/tokens.py:239: trailing whitespace.
++            proof = self.c05_gate.seal_token_shard(manifest.to_dict(), counters)
+src/xlm/data/tokens.py:240: trailing whitespace.
++            proof_text = json.dumps(proof, sort_keys=True)
+src/xlm/data/tokens.py:241: trailing whitespace.
++            charge(len(proof_text.encode()))
+src/xlm/data/tokens.py:242: trailing whitespace.
++            _write_synced(directory / "c05-attestation.json", proof_text)
+src/xlm/data/tokens.py:283: trailing whitespace.
++        if any((directory / name).exists() for name in (*names, "c05-attestation.json")):
+src/xlm/data/tokens.py:288: trailing whitespace.
++            if (stage / "c05-attestation.json").exists():
+src/xlm/data/tokens.py:289: trailing whitespace.
++                os.replace(stage / "c05-attestation.json", directory / "c05-attestation.json")
+tests/test_exclusion_benchmark.py:141: trailing whitespace.
++    matcher = BenchmarkExclusionMatcher(ExclusionConfig(background_phrases=(common,)))
+tests/test_exclusion_benchmark.py:149: trailing whitespace.
++def test_corpus_frequency_cannot_suppress_repeated_benchmark_copies() -> None:
+tests/test_exclusion_benchmark.py:150: trailing whitespace.
++    """V2 keeps every copy even with the historical frequency field set low."""
+tests/test_exclusion_benchmark.py:166: trailing whitespace.
++    assert strict.scan(corpus).excluded_doc_ids == [f"doc_{i}" for i in range(5)]
+tests/test_exclusion_benchmark.py:167: trailing whitespace.
++    assert strict.scan(corpus[:1]).excluded_doc_ids == ["doc_0"]

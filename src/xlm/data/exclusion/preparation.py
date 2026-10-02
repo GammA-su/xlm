@@ -1,7 +1,7 @@
 """Offline C05 preparation CLI; deliberately has no execution/authorization verb.
 
-The current exclusion engine is development-only. An audit artifact is never
-an executable plan. Official benchmark material and detailed matches belong to
+The streaming engine has authored validation, but production acceptance is
+incomplete. An audit artifact is never an executable plan. Official material belongs to
 the isolated operator environment defined by EVALUATION_POLICY.md.
 """
 
@@ -76,7 +76,7 @@ def preparation_audit(manifest: dict[str, Any], pins_path: Path) -> dict[str, An
     benchmark = benchmark_requirements(pins_path)
     body: dict[str, Any] = {
         "kind": "c05_preparation_audit",
-        "version": 1,
+        "version": 2,
         "input_manifest_digest": manifest["digest"],
         "benchmark_requirements": benchmark,
         "status": "BLOCKED",
@@ -85,13 +85,14 @@ def preparation_audit(manifest: dict[str, Any], pins_path: Path) -> dict[str, An
         "blockers": [
             "No verified protected benchmark material/index receipt, "
             "exact config/split coverage or counts",
-            "Development matcher is in-memory and suppresses repeated benchmark spans "
-            "using corpus frequency",
-            "No bounded global C05 scan journal, crash recovery or protected "
-            "atomic publication integration",
-            "No end-to-end C05 kept-membership gate in tokenizer/final-mixture production tooling",
-            "Unknown Gutenberg book lineage and SYNTH seed-URL grouping "
-            "require explicit policy treatment",
+            "SQLite spill/temp accounting and maximum-record/index resource "
+            "certification incomplete",
+            "Protected plan/authorize/run operator workflow and final-receipt "
+            "integration incomplete",
+            "Downstream CLI/parallel proof transport and complete quota enforcement pending; "
+            "low-level tokenizer/token/exposure gates implemented",
+            "Bounded fuzzy review queue not implemented; no paraphrase detection claim",
+            "Gutenberg whole-book lineage unknown; known-group policy needs explicit plan review",
         ],
         "resource_observations": manifest["totals"],
         "execution_authorized": False,

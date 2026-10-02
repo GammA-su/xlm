@@ -21,6 +21,7 @@ from pydantic import Field, model_validator
 
 from xlm.config.schemas import StrictConfigModel
 from xlm.core.contracts import CanonicalDocument
+from xlm.data.exclusion.gates import MembershipGate, screened_documents
 
 TOKENIZER_FIT_POLICY_VERSION = "1"
 
@@ -141,6 +142,9 @@ def build_tokenizer_fit_manifest(
     declared_shares: dict[str, float],
     pool_id: str,
     config: TokenizerFitConfig | None = None,
+    *,
+    c05_gate: MembershipGate | None = None,
+    production: bool = False,
 ) -> TokenizerFitManifest:
     """Select a balanced, training-only tokenizer-fit sample.
 
@@ -149,6 +153,7 @@ def build_tokenizer_fit_manifest(
     diagnostic comparison unsound (C05, C06).
     """
     cfg = config or TokenizerFitConfig()
+    documents = screened_documents(documents, c05_gate, required=production)
     # Selection never reads text or provenance. Keep last-ID-wins behavior while
     # releasing each caller-owned document as the input iterator advances.
     by_id = {doc.doc_id: _FitCandidate(doc.split, doc.utf8_byte_count) for doc in documents}

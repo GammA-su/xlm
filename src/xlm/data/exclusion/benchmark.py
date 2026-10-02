@@ -9,8 +9,8 @@ Two matchers run together:
 * **Full-example hash** -- the whole benchmark example, rendered as prompt plus every
   candidate answer, hashed over the match view. Exact and cheap.
 * **Informative span** -- contiguous n-grams from the example that are rare enough to
-  be diagnostic. Commonness is estimated from the corpus itself, so a span like
-  "one of the most important" is not treated as evidence of contamination.
+  be diagnostic. Independently frozen background phrases may be excluded; corpus
+  repetition never suppresses benchmark evidence.
 
 This is a *development-mode* facility operating on locally available benchmark text.
 It cannot prove the absence of paraphrased benchmark material, and it never produces
@@ -30,7 +30,7 @@ from xlm.config.schemas import StrictConfigModel
 from xlm.core.contracts import CanonicalDocument
 from xlm.data.dedup.matchview import MATCH_VIEW_VERSION, match_normalize, match_tokens
 
-EXCLUSION_POLICY_VERSION = "1"
+EXCLUSION_POLICY_VERSION = "2"
 
 
 class ExclusionConfig(StrictConfigModel):
@@ -51,11 +51,9 @@ class ExclusionConfig(StrictConfigModel):
     max_corpus_span_frequency: int = Field(
         default=3,
         ge=1,
-        description=(
-            "A span occurring in more than this many corpus documents is treated as "
-            "common English, not as benchmark evidence."
-        ),
+        description=("Historical identity field; v2 never suppresses based on corpus frequency."),
     )
+    background_phrases: tuple[str, ...] = ()
     match_full_example: bool = Field(default=True)
     match_informative_spans: bool = Field(default=True)
 
@@ -64,7 +62,8 @@ class ExclusionConfig(StrictConfigModel):
             f"exclusion:v{EXCLUSION_POLICY_VERSION}:view{MATCH_VIEW_VERSION}:"
             f"span={self.span_length}:minchars={self.min_span_characters}:"
             f"maxspans={self.max_spans_per_example}:freq={self.max_corpus_span_frequency}:"
-            f"full={self.match_full_example}:spans={self.match_informative_spans}"
+            f"full={self.match_full_example}:spans={self.match_informative_spans}:"
+            f"background={self.background_phrases!r}"
         )
         return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:32]
 
@@ -182,10 +181,13 @@ class BenchmarkExclusionMatcher:
         self._full_hashes: dict[str, BenchmarkExample] = {}
         self._span_index: dict[str, list[BenchmarkExample]] = {}
         self.spans_indexed = 0
+        self._suppressed = 0
+        self._examples = 0
 
     def index_examples(self, examples: Iterable[BenchmarkExample]) -> None:
         """Index benchmark examples for matching."""
         for example in examples:
+            self._examples += 1
             if self.config.match_full_example:
                 self._full_hashes[example.full_hash()] = example
             if self.config.match_informative_spans:
@@ -199,48 +201,35 @@ class BenchmarkExclusionMatcher:
                         self.config.min_span_characters,
                         self.config.max_spans_per_example - collected,
                     ):
+                        background = [match_normalize(p) for p in self.config.background_phrases]
+                        if any(
+                            b and (f" {span} " in f" {b} " or f" {b} " in f" {span} ")
+                            for b in background
+                        ):
+                            self._suppressed += 1
+                            continue
                         if span not in self._span_index:
                             collected += 1
                         self._span_index.setdefault(span, []).append(example)
         self.spans_indexed = len(self._span_index)
 
     def suppress_common_spans(self, documents: Sequence[CanonicalDocument]) -> int:
-        """Drop indexed spans that are common in the corpus itself.
+        """Compatibility method: corpus frequency never suppresses benchmark evidence.
 
-        Without this, an informative-span matcher deletes ordinary English that
-        happens to share a stock phrase with a benchmark prompt. Frequency is counted
-        over documents, not occurrences, so one repetitive document cannot by itself
-        mark a span as common.
+        Only independently frozen ``background_phrases`` act at index construction.
+        The historical frequency option is retained in identity for explicit migration.
         """
-        if not self._span_index:
-            return 0
-
-        frequencies = dict.fromkeys(self._span_index, 0)
-        for doc in documents:
-            normalized = match_normalize(doc.text)
-            for span in frequencies:
-                if span in normalized:
-                    frequencies[span] += 1
-
-        suppressed = [
-            span
-            for span, count in frequencies.items()
-            if count > self.config.max_corpus_span_frequency
-        ]
-        for span in suppressed:
-            del self._span_index[span]
-        self.spans_indexed = len(self._span_index)
-        return len(suppressed)
+        return 0
 
     def scan(self, documents: Iterable[CanonicalDocument]) -> ExclusionReport:
         """Scan ``documents`` and report contamination hits."""
-        doc_list = list(documents)
-        suppressed = self.suppress_common_spans(doc_list)
+        scanned = 0
 
         hits: list[ExclusionHit] = []
         excluded: set[str] = set()
 
-        for doc in doc_list:
+        for doc in documents:
+            scanned += 1
             normalized = match_normalize(doc.text)
             doc_hash = hashlib.sha256(normalized.encode("utf-8")).hexdigest()
 
@@ -259,7 +248,7 @@ class BenchmarkExclusionMatcher:
                 continue
 
             for span, examples in self._span_index.items():
-                if span in normalized:
+                if f" {span} " in f" {normalized} ":
                     matched = examples[0]
                     hits.append(
                         ExclusionHit(
@@ -277,12 +266,12 @@ class BenchmarkExclusionMatcher:
         hits.sort(key=lambda h: (h.doc_id, h.example_id))
         return ExclusionReport(
             policy_identity=self.config.identity(),
-            documents_scanned=len(doc_list),
-            examples_indexed=len(self._full_hashes) or len(self._span_index),
+            documents_scanned=scanned,
+            examples_indexed=self._examples,
             hits=hits,
             excluded_doc_ids=sorted(excluded),
             spans_indexed=self.spans_indexed,
-            spans_suppressed_as_common=suppressed,
+            spans_suppressed_as_common=self._suppressed,
             coverage_notes=[
                 "Development-mode matching over locally available benchmark text only.",
                 "Exact and informative-span matching cannot detect paraphrased benchmark "

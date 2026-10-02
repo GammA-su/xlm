@@ -18,6 +18,7 @@ from urllib.parse import urlsplit, urlunsplit
 from xlm.core.contracts import CanonicalDocument
 
 LINEAGE_RULE_VERSION = "1"
+LINEAGE_V2 = "known-lineage-v2"
 
 # Metadata keys inspected, in priority order. The first present, non-empty key wins,
 # so an explicit lineage_id always overrides a derived one.
@@ -88,3 +89,36 @@ def lineage_key(doc: CanonicalDocument) -> tuple[str, str]:
         return "parent", f"parent:{doc.source_id}:{sorted(doc.parent_ids)[0]}"
 
     return "singleton", f"doc:{doc.source_id}:{doc.doc_id}"
+
+
+def lineage_keys_v2(doc: CanonicalDocument) -> tuple[str, ...]:
+    """All known links, including SYNTH seed URLs and every explicit parent.
+
+    V1 remains available for historical freezes. No shard adjacency, synth_id or
+    fabricated book identity participates. URL keys intentionally cross sources.
+    """
+    keys = {f"parent-doc:{doc.doc_id}"}
+    keys.update(f"parent-doc:{p}" for p in doc.parent_ids if p)
+    for rule, names in _LINEAGE_KEYS:
+        for name in names:
+            value = doc.source_metadata.get(name)
+            if isinstance(value, bool) or not isinstance(value, (str, int)):
+                continue
+            text = str(value).strip()
+            if text:
+                keys.add(
+                    f"url:{canonical_url(text)}"
+                    if rule == "url"
+                    else f"{rule}:{doc.source_id}:{text}"
+                )
+    if doc.source_id == "synth":
+        for name in ("query_seed_url", "additional_seed_url"):
+            value = doc.source_metadata.get(name)
+            if isinstance(value, str) and value.strip():
+                parsed = urlsplit(value)
+                if parsed.scheme.lower() in ("http", "https") and parsed.netloc:
+                    keys.add(f"url:{canonical_url(value)}")
+    for name, value in doc.cluster_ids.items():
+        if name in ("duplicate_cluster", "split_group") and value:
+            keys.add(f"cluster:{name}:{value}")
+    return tuple(sorted(keys))

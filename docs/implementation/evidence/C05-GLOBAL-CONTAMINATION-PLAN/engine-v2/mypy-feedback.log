@@ -1,0 +1,5 @@
+src\xlm\data\exclusion\runner.py:337: error: Incompatible types in assignment (expression has type "BufferedWriter[_BufferedWriterStream]", variable has type "BufferedReader[_BufferedReaderStream]")  [assignment]
+src\xlm\data\exclusion\protected.py:166: error: Incompatible types in assignment (expression has type "BufferedWriter[_BufferedWriterStream]", variable has type "BufferedReader[_BufferedReaderStream]")  [assignment]
+tests\test_c05_engine.py:618: error: Unsupported operand types for + ("str" and "Sequence[str]")  [operator]
+pyproject.toml: note: unused section(s): module = ['lm_eval', 'lm_eval.*']
+Found 3 errors in 3 files (checked 18 source files)
