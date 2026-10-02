@@ -201,9 +201,13 @@ class PlanError(ValueError):
 def inventory_digest(inventory: Mapping[str, Any]) -> str:
     """Recompute the frozen inventory digest exactly as ``mix01_inventory.py freeze`` does."""
     entries = inventory["files"]
+    # An allowlist-filtered inventory binds its component allowlist's digest;
+    # inventories without one keep their historical digests unchanged.
+    binding = inventory.get("component_allowlist")
+    bound = f"|allowlist:{binding['digest']}" if binding is not None else ""
     text = (
         f"v{inventory['inventory_version']}|{inventory['source_id']}|{inventory['repository']}"
-        f"|{inventory['revision']}|{inventory['seed']}|{len(entries)}\n"
+        f"|{inventory['revision']}|{inventory['seed']}{bound}|{len(entries)}\n"
         + "".join(
             f"{e['order_key']} {e['size_bytes'] if e['size_bytes'] is not None else -1}"
             f" {e['file']}\n"

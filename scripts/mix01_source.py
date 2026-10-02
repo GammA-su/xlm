@@ -17,6 +17,10 @@ Sequence (UltraX shown; other sources use their own key):
      -> authorize -> run the repair; the failed plan is never edited)
     (a latest plan never authorized or run, whose inputs or rules changed:
      plan-supersede -> authorize the new plan; the old one is kept, never run)
+    (a multi-corpus source such as Common Pile first needs the operator's
+     write-once component allowlist: allowlist preview -> allowlist record ->
+     mix01_inventory.py freeze --listing --allowlist; every inventory consumer
+     refuses an inventory that does not bind it)
 
 Nothing here edits a plan, renormalizes a quota or re-probes a source.
 """
@@ -37,6 +41,7 @@ import yaml
 
 from xlm.artifacts.store import ArtifactStore
 from xlm.core.paths import ArtifactPaths
+from xlm.data.acquisition import component_allowlist as allow
 from xlm.data.acquisition import range_reach as reach
 from xlm.data.acquisition import source_benchmark as bench
 from xlm.data.acquisition import source_parquet as sp
@@ -48,6 +53,7 @@ from xlm.data.acquisition.sampling import SamplingRefusal, discover_layout_local
 from xlm.data.acquisition.source_dashboard import ObservedScratch
 from xlm.data.adapters.columns import columns_for
 from xlm.data.sources import certified_evidence as ce
+from xlm.data.sources import hf_inventory
 from xlm.data.sources import mix01_admission as review
 from xlm.data.sources.admission import (
     AdmissionGate,
@@ -100,7 +106,23 @@ SOURCES = {
         "simple_stories", "default", "simple_stories", "simple_stories", 7
     ),
 }
-BLOCKED = {"common_pile": "license/provenance and component allowlist unresolved (C04)"}
+BLOCKED = {
+    "common_pile": (
+        "license/provenance review, operator component allowlist, calibration and admission "
+        "are outstanding (C04; docs/implementation/reports/COMMON-PILE-PROSE-ALLOWLIST-AUDIT.md)"
+    )
+}
+#: Sources whose repository consolidates independently licensed top-level
+#: components. Production sees only an operator allowlist's components; the
+#: value is the committed evidence matrix that allowlist is decided against.
+ALLOWLIST_REQUIRED = {
+    "common_pile": REPO
+    / "docs"
+    / "implementation"
+    / "evidence"
+    / "COMMON-PILE-PROSE-ALLOWLIST-AUDIT"
+    / "license-matrix.json",
+}
 
 
 class DriverError(RuntimeError):
@@ -405,6 +427,134 @@ def cmd_requirement(args: argparse.Namespace) -> int:
     return 0
 
 
+# ------------------------------------------------------------------ allowlist
+
+
+def allowlist_path(args: argparse.Namespace, source_key: str) -> Path:
+    """Write-once home of a source's operator component allowlist."""
+    if getattr(args, "allowlist", None):
+        return Path(str(args.allowlist))
+    return data_root(args) / "calib" / "component_allowlists" / f"{source_key}.json"
+
+
+def discovery_listing(args: argparse.Namespace, source_key: str) -> dict[str, Any]:
+    """The frozen full-repository listing an allowlist is decided against."""
+    explicit = getattr(args, "listing", None)
+    path = (
+        Path(str(explicit))
+        if explicit
+        else data_root(args) / "inventories" / f"{source_key}.discovery.listing.json"
+    )
+    try:
+        return hf_inventory.read_listing(path)
+    except hf_inventory.HfInventoryError as exc:
+        raise DriverError(str(exc)) from exc
+
+
+def names_of(value: str) -> list[str]:
+    return [item.strip() for item in str(value or "").split(",") if item.strip()]
+
+
+def cmd_allowlist(args: argparse.Namespace) -> int:
+    """OFFLINE: preview, record or show a source's write-once component allowlist."""
+    key = str(args.source_key)
+    if key not in ALLOWLIST_REQUIRED:
+        raise DriverError(
+            f"'{key}' takes no component allowlist; known: {sorted(ALLOWLIST_REQUIRED)}"
+        )
+    views = [v for v in load_mix01_views(VIEWS).views if v.source_id == key]
+    if len(views) != 1:
+        raise DriverError(f"'{key}' needs exactly one registry view to bind an allowlist")
+    view = views[0]
+    listing = discovery_listing(args, key)
+    if (listing["source_id"], listing["repository"], listing["resolved_revision"]) != (
+        key,
+        view.repository,
+        view.observed_revision,
+    ):
+        raise DriverError("the discovery listing is not the registry's pinned source revision")
+    path = allowlist_path(args, key)
+    try:
+        if args.action == "show":
+            if not path.is_file():
+                raise DriverError(f"no component allowlist is recorded for '{key}' -> {path}")
+            emit(allow.check_allowlist(allow.read_json(path), listing))
+            return 0
+        matrix_path = (
+            Path(args.evidence_matrix) if args.evidence_matrix else ALLOWLIST_REQUIRED[key]
+        )
+        record = allow.build_allowlist(
+            source_key=key,
+            component_id=view.component_id,
+            listing=listing,
+            matrix=allow.read_json(matrix_path),
+            matrix_sha256=allow.file_sha256(matrix_path),
+            included=names_of(args.include),
+            accepted_flags=names_of(args.accept_flagged),
+            operator=str(args.operator or ""),
+            rationale=str(args.rationale or ""),
+        )
+        if args.action == "preview":
+            emit(record)
+            print("preview only: nothing written (use 'allowlist record')")
+            return 0
+        written = allow.write_once(path, record)
+    except allow.AllowlistError as exc:
+        raise DriverError(str(exc)) from exc
+    state = "recorded" if written else "identical allowlist already recorded; nothing written"
+    print(f"component allowlist of {key}: {state} -> {path}")
+    for name in record["included"]:
+        entry = record["evidence"][name]
+        print(
+            f"  include {name}: {record['universe'][name]['bytes']:,} B in "
+            f"{record['universe'][name]['files']} files ({entry['license_class']}, "
+            f"{entry['content_fit']}, {entry['provenance_confidence']})"
+        )
+    print(f"  exclude {len(record['excluded'])} components: {', '.join(record['excluded'])}")
+    print(f"ALLOWLIST DIGEST {record['digest']}")
+    return 0
+
+
+def allowlist_gate(
+    args: argparse.Namespace, pin: ce.SourcePin, inventory: dict[str, Any]
+) -> str | None:
+    """Refuse a production inventory that is not its source's allowlisted inventory."""
+    if pin.source_id not in ALLOWLIST_REQUIRED:
+        if "component_allowlist" in inventory:
+            raise DriverError(
+                f"inventory binds a component allowlist, but '{pin.source_id}' takes none"
+            )
+        return None
+    path = allowlist_path(args, args.source_key)
+    if not path.is_file():
+        raise DriverError(
+            f"'{pin.source_id}' production needs the operator component allowlist: "
+            f"record it with 'allowlist record' -> {path}"
+        )
+    listing = discovery_listing(args, args.source_key)
+    try:
+        record = allow.check_allowlist(allow.read_json(path), listing)
+        if (record["repository"], record["revision"], record["component_id"]) != (
+            pin.repository,
+            pin.revision,
+            pin.component_id,
+        ):
+            raise DriverError("the component allowlist is not bound to this source pin")
+        allow.check_inventory_binding(record, listing, inventory)
+    except allow.AllowlistError as exc:
+        raise DriverError(str(exc)) from exc
+    return str(record["digest"])
+
+
+def production_inventory(
+    args: argparse.Namespace, pin: ce.SourcePin
+) -> tuple[dict[str, Any], Path, str | None]:
+    """The source's production inventory after the component-allowlist gate."""
+    path = data_root(args) / "inventories" / f"{args.source_key}.inventory.json"
+    inventory = load_json(path)
+    return inventory, path, allowlist_gate(args, pin, inventory)
+
+
 # --------------------------------------------------------------------- policy
 
 
@@ -628,14 +778,14 @@ def cmd_plan(args: argparse.Namespace) -> int:
     target = store()
     pin = pin_of(spec)
     frozen = runner.read_json(roots.plans / "transport-policy.json")
-    inventory_path = data_root(args) / "inventories" / f"{args.source_key}.inventory.json"
+    inventory, inventory_path, allowlist_digest = production_inventory(args, pin)
     layout, extra = layout_of(args, spec)
     superseded = superseded_of(roots, args.plan) if args.command == "plan-supersede" else None
     record = planner.build_plan(
         source_key=args.source_key,
         pin=pin.as_dict(),
         requirement=requirement_of(args, spec),
-        inventory=load_json(inventory_path),
+        inventory=inventory,
         inventory_sha256=sha256(inventory_path),
         layout=layout,
         calibration=extra["evidence"],
@@ -663,6 +813,8 @@ def cmd_plan(args: argparse.Namespace) -> int:
     print(f"plan {record['sequence']} of {args.source_key}: {path}")
     print(f"transport mode      {record['transport_mode']} ({frozen['basis']} policy)")
     print(f"policy digest       {frozen['digest']}")
+    if allowlist_digest is not None:
+        print(f"component allowlist {allowlist_digest} (bound by the inventory digest)")
     sizing = record["inputs"].get("sizing")
     print(
         "sizing basis        "
@@ -776,14 +928,14 @@ def cmd_plan_repair(args: argparse.Namespace) -> int:
     target = store()
     pin = pin_of(spec)
     frozen = runner.read_json(roots.plans / "transport-policy.json")
-    inventory_path = data_root(args) / "inventories" / f"{args.source_key}.inventory.json"
+    inventory, inventory_path, _ = production_inventory(args, pin)
     layout, extra = layout_of(args, spec)
     repaired = repaired_of(roots, args.plan)
     record = planner.build_repair_plan(
         source_key=args.source_key,
         pin=pin.as_dict(),
         requirement=requirement_of(args, spec),
-        inventory=load_json(inventory_path),
+        inventory=inventory,
         inventory_sha256=sha256(inventory_path),
         layout=layout,
         calibration=extra["evidence"],
@@ -846,8 +998,8 @@ def cmd_authorize(args: argparse.Namespace) -> int:
     roots = roots_of(args)
     record = runner.load_plan(roots, args.plan)
     # A plan whose own file bound excludes a known selected size can only fail closed.
-    inventory_path = data_root(args) / "inventories" / f"{args.source_key}.inventory.json"
-    planner.check_selected_file_bounds(record, load_json(inventory_path))
+    inventory, _, _ = production_inventory(args, pin_of(spec))
+    planner.check_selected_file_bounds(record, inventory)
     check = admission_check(spec, store(), dict(record["inputs"]["admission"]))
     plan = runner.authorize(roots, args.plan, args.digest, args.operator, check)
     print(f"authorized plan {args.plan}: acquisition plan {plan.plan_hash}")
@@ -963,12 +1115,15 @@ def cmd_benchmark(args: argparse.Namespace) -> int:
     if args.action == "plan":
         pin = pin_of(spec)
         layout, _ = layout_of(args, spec)
-        inventory_path = data_root(args) / "inventories" / f"{args.source_key}.inventory.json"
         if args.file:
+            if pin.source_id in ALLOWLIST_REQUIRED:
+                inventory, _, _ = production_inventory(args, pin)
+                if args.file not in {str(e["file"]) for e in inventory["files"]}:
+                    raise DriverError("a named benchmark file must be in the allowlisted inventory")
             entries = [{"rank": None, "file": args.file, "reason": "named calibration file"}]
             seed = 0
         else:
-            inventory = load_json(inventory_path)
+            inventory, _, _ = production_inventory(args, pin)
             ordered = planner.check_inventory(
                 inventory, pin.source_id, pin.repository, pin.revision
             )
@@ -1145,6 +1300,27 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--operator", default="")
     p.add_argument("--rationale", default="")
     p.set_defaults(func=cmd_requirement)
+
+    p = sub.add_parser(
+        "allowlist", help="OFFLINE: preview/record/show a write-once component allowlist"
+    )
+    p.add_argument("action", choices=("preview", "record", "show"))
+    p.add_argument("--source-key", required=True)
+    p.add_argument("--data-root")
+    p.add_argument(
+        "--allowlist", default="", help="override <data-root>/calib/component_allowlists"
+    )
+    p.add_argument("--listing", default="", help="override the frozen discovery listing path")
+    p.add_argument("--evidence-matrix", default="", help="override the committed evidence matrix")
+    p.add_argument("--include", default="", help="exact top-level components, comma separated")
+    p.add_argument(
+        "--accept-flagged",
+        default="",
+        help="included components the evidence flags, named again to accept them",
+    )
+    p.add_argument("--operator", default="")
+    p.add_argument("--rationale", default="")
+    p.set_defaults(func=cmd_allowlist)
 
     p = common(sub.add_parser("policy", help="OFFLINE: model or freeze the transport policy"))
     p.add_argument("action", choices=("model", "freeze"))

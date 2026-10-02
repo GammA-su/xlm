@@ -1,0 +1,55 @@
+{
+  "components": {
+    "doab": {
+      "discovery_rank": 66,
+      "file": "doab/doab.chunk.56.jsonl.gz",
+      "size_bytes": 56416455
+    },
+    "foodista": {
+      "discovery_rank": 25,
+      "file": "foodista/foodista.chunk.38.jsonl.gz",
+      "size_bytes": 484977
+    },
+    "library_of_congress": {
+      "discovery_rank": 8,
+      "file": "library_of_congress/library_of_congress.chunk.24.jsonl.gz",
+      "size_bytes": 200991985
+    },
+    "oercommons": {
+      "discovery_rank": 79,
+      "file": "oercommons/oercommons.chunk.49.jsonl.gz",
+      "size_bytes": 336135
+    },
+    "pre_1929_books": {
+      "discovery_rank": 26,
+      "file": "pre_1929_books/pre_1929_books.chunk.37.jsonl.gz",
+      "size_bytes": 260750771
+    },
+    "pressbooks": {
+      "discovery_rank": 74,
+      "file": "pressbooks/pressbooks.chunk.18.jsonl.gz",
+      "size_bytes": 2995813
+    },
+    "project_gutenberg": {
+      "discovery_rank": 0,
+      "file": "project_gutenberg/project_gutenberg.chunk.43.jsonl.gz",
+      "size_bytes": 119634630
+    },
+    "uk_hansard": {
+      "discovery_rank": 15,
+      "file": "uk_hansard/uk_hansard.chunk.56.jsonl.gz",
+      "size_bytes": 48541219
+    },
+    "youtube": {
+      "discovery_rank": 49,
+      "file": "youtube/youtube.chunk.20.jsonl.gz",
+      "size_bytes": 98653194
+    }
+  },
+  "inventory_digest": "d81e5c8417785ab75deb69bd30b52639299b98cafd9bbf7c46ae3912a1c7e33a",
+  "rows": [
+    0,
+    16
+  ],
+  "rule": "first file of each component in frozen discovery-inventory order (= first in any allowlist-filtered inventory); rows [0, 16)"
+}

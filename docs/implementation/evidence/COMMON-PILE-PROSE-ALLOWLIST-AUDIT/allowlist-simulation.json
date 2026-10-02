@@ -1,0 +1,382 @@
+{
+  "allowlists": [
+    {
+      "allowlist": "A_conservative",
+      "available_over_requirement": 0.942,
+      "available_over_requirement_with_safety": 0.819,
+      "components": [
+        "libretexts",
+        "news",
+        "oercommons",
+        "pressbooks",
+        "public_domain_review"
+      ],
+      "compressed_bytes_available": 442374375,
+      "est_canonical_bytes_available": 1242800000,
+      "est_comma_tokens_available": 310700000,
+      "files_available": 320,
+      "first_plan_composition": {
+        "libretexts": {
+          "compressed_bytes": 122167467,
+          "est_canonical_share": 0.2993,
+          "files": 64
+        },
+        "news": {
+          "compressed_bytes": 98602096,
+          "est_canonical_share": 0.206,
+          "files": 64
+        },
+        "oercommons": {
+          "compressed_bytes": 17149251,
+          "est_canonical_share": 0.0386,
+          "files": 64
+        },
+        "pressbooks": {
+          "compressed_bytes": 201539814,
+          "est_canonical_share": 0.4506,
+          "files": 64
+        },
+        "public_domain_review": {
+          "compressed_bytes": 2915747,
+          "est_canonical_share": 0.0055,
+          "files": 64
+        }
+      },
+      "first_plan_est_canonical_bytes": 1242800000,
+      "first_plan_files": 320,
+      "first_plan_whole_inventory": true,
+      "planner_mean_canonical_bytes_per_file": 3883750
+    },
+    {
+      "allowlist": "B_balanced",
+      "available_over_requirement": 18.214,
+      "available_over_requirement_with_safety": 15.838,
+      "components": [
+        "libretexts",
+        "news",
+        "oercommons",
+        "pressbooks",
+        "project_gutenberg",
+        "public_domain_review"
+      ],
+      "compressed_bytes_available": 8131797849,
+      "est_canonical_bytes_available": 24042800000,
+      "est_comma_tokens_available": 6010700000,
+      "files_available": 384,
+      "first_plan_composition": {
+        "libretexts": {
+          "compressed_bytes": 3746205,
+          "est_canonical_share": 0.0052,
+          "files": 2
+        },
+        "news": {
+          "compressed_bytes": 9259371,
+          "est_canonical_share": 0.011,
+          "files": 6
+        },
+        "oercommons": {
+          "compressed_bytes": 1208761,
+          "est_canonical_share": 0.0015,
+          "files": 4
+        },
+        "pressbooks": {
+          "compressed_bytes": 6201866,
+          "est_canonical_share": 0.0079,
+          "files": 2
+        },
+        "project_gutenberg": {
+          "compressed_bytes": 718849342,
+          "est_canonical_share": 0.9741,
+          "files": 6
+        },
+        "public_domain_review": {
+          "compressed_bytes": 261767,
+          "est_canonical_share": 0.0003,
+          "files": 5
+        }
+      },
+      "first_plan_est_canonical_bytes": 2188142186,
+      "first_plan_files": 25,
+      "first_plan_whole_inventory": false,
+      "planner_mean_canonical_bytes_per_file": 62611458
+    },
+    {
+      "allowlist": "C_maximal_reasonable",
+      "available_over_requirement": 114.957,
+      "available_over_requirement_with_safety": 99.962,
+      "components": [
+        "doab",
+        "foodista",
+        "library_of_congress",
+        "libretexts",
+        "news",
+        "oercommons",
+        "pre_1929_books",
+        "pressbooks",
+        "project_gutenberg",
+        "public_domain_review",
+        "uk_hansard",
+        "youtube"
+      ],
+      "compressed_bytes_available": 50637140450,
+      "est_canonical_bytes_available": 151742800000,
+      "est_comma_tokens_available": 37935700000,
+      "files_available": 768,
+      "first_plan_composition": {
+        "library_of_congress": {
+          "compressed_bytes": 404622705,
+          "est_canonical_share": 0.6464,
+          "files": 2
+        },
+        "libretexts": {
+          "compressed_bytes": 1806742,
+          "est_canonical_share": 0.003,
+          "files": 1
+        },
+        "news": {
+          "compressed_bytes": 1543613,
+          "est_canonical_share": 0.0022,
+          "files": 1
+        },
+        "project_gutenberg": {
+          "compressed_bytes": 119634630,
+          "est_canonical_share": 0.1921,
+          "files": 1
+        },
+        "public_domain_review": {
+          "compressed_bytes": 69642,
+          "est_canonical_share": 0.0001,
+          "files": 1
+        },
+        "uk_hansard": {
+          "compressed_bytes": 97350723,
+          "est_canonical_share": 0.1563,
+          "files": 2
+        }
+      },
+      "first_plan_est_canonical_bytes": 1846968161,
+      "first_plan_files": 8,
+      "first_plan_whole_inventory": false,
+      "planner_mean_canonical_bytes_per_file": 197581771
+    },
+    {
+      "allowlist": "B_plus_doab",
+      "available_over_requirement": 27.305,
+      "available_over_requirement_with_safety": 23.744,
+      "components": [
+        "doab",
+        "libretexts",
+        "news",
+        "oercommons",
+        "pressbooks",
+        "project_gutenberg",
+        "public_domain_review"
+      ],
+      "compressed_bytes_available": 11644752591,
+      "est_canonical_bytes_available": 36042800000,
+      "est_comma_tokens_available": 9010700000,
+      "files_available": 448,
+      "first_plan_composition": {
+        "doab": {
+          "compressed_bytes": 219670753,
+          "est_canonical_share": 0.4969,
+          "files": 4
+        },
+        "libretexts": {
+          "compressed_bytes": 3746205,
+          "est_canonical_share": 0.0076,
+          "files": 2
+        },
+        "news": {
+          "compressed_bytes": 7748128,
+          "est_canonical_share": 0.0133,
+          "files": 5
+        },
+        "oercommons": {
+          "compressed_bytes": 336135,
+          "est_canonical_share": 0.0006,
+          "files": 1
+        },
+        "pressbooks": {
+          "compressed_bytes": 6201866,
+          "est_canonical_share": 0.0114,
+          "files": 2
+        },
+        "project_gutenberg": {
+          "compressed_bytes": 239328395,
+          "est_canonical_share": 0.4699,
+          "files": 2
+        },
+        "public_domain_review": {
+          "compressed_bytes": 170088,
+          "est_canonical_share": 0.0003,
+          "files": 3
+        }
+      },
+      "first_plan_est_canonical_bytes": 1510108549,
+      "first_plan_files": 19,
+      "first_plan_whole_inventory": false,
+      "planner_mean_canonical_bytes_per_file": 80452679
+    }
+  ],
+  "basis": "Comma v0.1 card main-stage tokens x 4 B/token; planner emulated with the true per-file mean; required 1,320,000,000 B x safety 1.15",
+  "inventory_digest": "d81e5c8417785ab75deb69bd30b52639299b98cafd9bbf7c46ae3912a1c7e33a",
+  "kind": "ESTIMATE_NOT_MEASUREMENT",
+  "within_component_file_bytes": {
+    "arxiv_abstracts": {
+      "max": 13971472,
+      "max_over_min": 1.01,
+      "min": 13832877
+    },
+    "arxiv_papers": {
+      "max": 96070701,
+      "max_over_min": 1.045,
+      "min": 91941774
+    },
+    "biodiversity_heritage_library": {
+      "max": 227481446,
+      "max_over_min": 1.008,
+      "min": 225673100
+    },
+    "caselaw_access_project": {
+      "max": 392499021,
+      "max_over_min": 1.015,
+      "min": 386876760
+    },
+    "cccc": {
+      "max": 329187576,
+      "max_over_min": 1.024,
+      "min": 321379814
+    },
+    "data_provenance_initiative": {
+      "max": 20248347,
+      "max_over_min": 1.048,
+      "min": 19328172
+    },
+    "doab": {
+      "max": 56953177,
+      "max_over_min": 1.087,
+      "min": 52415773
+    },
+    "foodista": {
+      "max": 536850,
+      "max_over_min": 1.143,
+      "min": 469498
+    },
+    "github_archive": {
+      "max": 215732326,
+      "max_over_min": 1.011,
+      "min": 213335767
+    },
+    "library_of_congress": {
+      "max": 203630720,
+      "max_over_min": 1.022,
+      "min": 199344615
+    },
+    "libretexts": {
+      "max": 2310353,
+      "max_over_min": 1.396,
+      "min": 1655115
+    },
+    "news": {
+      "max": 1634787,
+      "max_over_min": 1.157,
+      "min": 1413314
+    },
+    "oercommons": {
+      "max": 384546,
+      "max_over_min": 2.57,
+      "min": 149650
+    },
+    "peS2o": {
+      "max": 868199070,
+      "max_over_min": 1.007,
+      "min": 862198011
+    },
+    "pre_1929_books": {
+      "max": 263922728,
+      "max_over_min": 1.02,
+      "min": 258704475
+    },
+    "pressbooks": {
+      "max": 3471027,
+      "max_over_min": 1.231,
+      "min": 2820598
+    },
+    "project_gutenberg": {
+      "max": 122103470,
+      "max_over_min": 1.032,
+      "min": 118296936
+    },
+    "public_domain_review": {
+      "max": 69642,
+      "max_over_min": 3.286,
+      "min": 21196
+    },
+    "pubmed": {
+      "max": 672537585,
+      "max_over_min": 1.009,
+      "min": 666712742
+    },
+    "python_enhancement_proposals": {
+      "max": 95058,
+      "max_over_min": 2.764,
+      "min": 34389
+    },
+    "regulations": {
+      "max": 21628716,
+      "max_over_min": 1.118,
+      "min": 19342147
+    },
+    "stackexchange": {
+      "max": 507006075,
+      "max_over_min": 1.007,
+      "min": 503343040
+    },
+    "stackv2_edu": {
+      "max": 998076757,
+      "max_over_min": 1.006,
+      "min": 991936219
+    },
+    "stackv2_html": {
+      "max": 24504447,
+      "max_over_min": 1.077,
+      "min": 22744855
+    },
+    "ubuntu_irc": {
+      "max": 30056839,
+      "max_over_min": 1.142,
+      "min": 26328049
+    },
+    "uk_hansard": {
+      "max": 50078418,
+      "max_over_min": 1.059,
+      "min": 47294836
+    },
+    "usgpo": {
+      "max": 165832763,
+      "max_over_min": 1.059,
+      "min": 156627308
+    },
+    "uspto": {
+      "max": 2307925193,
+      "max_over_min": 1.008,
+      "min": 2290365501
+    },
+    "wikimedia": {
+      "max": 337193569,
+      "max_over_min": 1.027,
+      "min": 328421873
+    },
+    "wikiteam": {
+      "max": 91791169,
+      "max_over_min": 1.025,
+      "min": 89571299
+    },
+    "youtube": {
+      "max": 100834502,
+      "max_over_min": 1.048,
+      "min": 96239084
+    }
+  }
+}

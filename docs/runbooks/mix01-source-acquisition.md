@@ -23,7 +23,27 @@ runbooks still set them to `0` only around network steps so the state is explici
 | `ifm_general`, `ifm_planning` | `ifm_behaviors` / `general`, `planning` | `ifm_general`, `ifm_planning` | 698 / 1,903-row fetches |
 | `simple_stories` | `simple_stories` / `default` | `simple_stories` | 1,000-row fetch |
 
-`common_pile` is refused (license/provenance and component allowlist unresolved).
+`common_pile` is refused for every production command (license/provenance
+review, operator component allowlist, calibration, `.jsonl.gz` production
+transport and admission are outstanding; see
+`docs/implementation/reports/COMMON-PILE-PROSE-ALLOWLIST-AUDIT.md`). Its only
+working commands are offline and record the operator's component allowlist:
+
+    uv run --offline --locked --extra cpu --extra eval python scripts/mix01_source.py allowlist preview --source-key common_pile --data-root G:\XLM --include <c1,c2,...> [--accept-flagged <flagged,...>] --operator <name> --rationale "<text>"
+    uv run --offline --locked --extra cpu --extra eval python scripts/mix01_source.py allowlist record  --source-key common_pile --data-root G:\XLM --include <c1,c2,...> [--accept-flagged <flagged,...>] --operator <name> --rationale "<text>"
+    uv run --offline --locked --extra cpu --extra eval python scripts/mix01_source.py allowlist show    --source-key common_pile --data-root G:\XLM
+    uv run --offline --locked --extra cpu --extra eval python scripts/mix01_inventory.py freeze --source common_pile --repo common-pile/comma_v0.1_training_dataset --revision 5afc546db324e7f39f297ba757c9a60547151e7c --seed 20260918 --listing G:\XLM\inventories\common_pile.discovery.listing.json --allowlist G:\XLM\calib\component_allowlists\common_pile.json --output G:\XLM\inventories\common_pile.inventory.json
+
+The allowlist is write-once (`G:\XLM\calib\component_allowlists\common_pile.json`):
+it names exact top-level components of the frozen discovery listing, embeds
+the committed evidence matrix entry of every component, and refuses a
+flagged component (license class outside the open classes, or content fit
+outside FIT/PARTIAL_FIT) unless `--accept-flagged` names it again. The
+filtered inventory keeps the discovery hash order and seed and its digest
+binds the allowlist digest; `plan`, `plan-supersede`, `plan-repair`,
+`authorize` and `benchmark plan` refuse any inventory that does not bind it,
+so an excluded component can never enter a later top-up.
+
 IFM policy/planning refuses until the operator records an explicit per-view
 requirement split (the 50/50 split is an assumption, not a decision).
 

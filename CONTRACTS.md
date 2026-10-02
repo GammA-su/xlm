@@ -139,6 +139,24 @@ only: no source, revision, selector, membership, mixture, quota or stop-target
 changes. Common Pile stays blocked by license/provenance and component
 allowlist.
 
+**C04 component-allowlist amendment `mix01-component-allowlist-v1` (2026-10-02).**
+A Mix-01 source whose repository consolidates independently licensed
+top-level corpora (Common Pile) has no single license, so production sees only
+the components named in a write-once, self-digested operator allowlist decided
+against the frozen complete discovery listing at the pinned revision. Every
+listed component carries its evidence-matrix entry (content fit, license
+class, provenance confidence, cited evidence); a component the evidence flags
+is included only if the operator names it again. The production inventory is
+the discovery listing filtered by exact first path segment (no filename
+patterns), frozen with the same seed and revision, and its digest binds the
+allowlist digest; every plan, repair, authorization and benchmark plan
+re-verifies that binding, so an excluded component cannot enter a later
+top-up. An allowlist is an operator policy decision and never an admission:
+real adapter certification of every included component, calibration,
+license/provenance review and admission still gate production. Changing the
+allowlist means a new allowlist, a new inventory and a new plan lineage; a
+recorded one is never edited.
+
 ## C05 — Duplicate clusters, exclusions and splits
 
 Deduplicate across all selected source families before assigning final train/validation splits. Implement exact hashes and a scalable near-duplicate method such as shingled MinHash/LSH with bounded candidate verification; do not use an all-pairs comparison. Algorithm, seeds, thresholds and deterministic survivor selection are frozen. Retain all source aliases and provenance of the surviving document.

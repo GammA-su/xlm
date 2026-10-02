@@ -100,8 +100,11 @@ def dupe_str(dupes: list[str]) -> str:
 def cmd_freeze(args: argparse.Namespace) -> int:
     listing_path = getattr(args, "listing", None)
     files_path = getattr(args, "files", None)
+    allowlist_path = getattr(args, "allowlist", None)
     if listing_path is not None and files_path is not None:
         return _fail("pass either --files or --listing, not both")
+    if allowlist_path is not None and listing_path is None:
+        return _fail("--allowlist filters a --listing; pass the listing it was decided against")
     if listing_path is not None:
         try:
             from xlm.data.sources import hf_inventory as _hfi
@@ -123,15 +126,27 @@ def cmd_freeze(args: argparse.Namespace) -> int:
                 return _fail("freeze --revision differs from the listing resolved revision")
             if getattr(args, "sizes", None) is not None:
                 return _fail("--listing already carries sizes; do not also pass --sizes")
+            binding: dict[str, Any] | None = None
+            if allowlist_path is not None:
+                # Exact top-level component membership, decided by the operator
+                # against this very listing; never a filename pattern.
+                from xlm.data.acquisition import component_allowlist as _allow
+
+                record = _allow.read_json(allowlist_path)
+                names, sizes = _allow.filtered_freeze_inputs(record, receipt)
+                binding = _allow.inventory_binding(record)
         except ValueError as exc:
             return _fail(str(exc))
         if not names:
             return _fail("listing holds no file; refusing to freeze an empty inventory")
-        payload = freeze_inventory(args.source, args.repo, revision, args.seed, names, sizes)
+        payload = freeze_inventory(
+            args.source, args.repo, revision, args.seed, names, sizes, allowlist=binding
+        )
         _atomic_write_json(args.output, payload)
+        bound = f" allowlist: {binding['digest']}" if binding is not None else ""
         print(
             f"source: {args.source} files: {len(names)} "
-            f"digest: {payload['inventory_digest']} from-listing: {receipt['digest']}"
+            f"digest: {payload['inventory_digest']} from-listing: {receipt['digest']}{bound}"
         )
         return 0
     try:
@@ -146,7 +161,7 @@ def cmd_freeze(args: argparse.Namespace) -> int:
     if len(set(names)) != len(names):
         dupes = sorted({n for n in names if names.count(n) > 1})
         return _fail(f"duplicate file names in inventory input: {dupe_str(dupes)}")
-    sizes: dict[str, int] = {}
+    sizes = {}
     if args.sizes is not None:
         try:
             raw_sizes = json.loads(args.sizes.read_text(encoding="utf-8"))
@@ -173,8 +188,14 @@ def freeze_inventory(
     seed: int,
     names: list[str],
     sizes: dict[str, int],
+    allowlist: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Existing production inventory format, also usable for offline adoption."""
+    """Existing production inventory format, also usable for offline adoption.
+
+    ``allowlist`` is the component-allowlist binding of a filtered inventory;
+    its digest enters the inventory digest. Without one the format and digest
+    are exactly the historical ones.
+    """
     _checked_sha(revision, "revision")
     if not names or len(set(names)) != len(names):
         raise ValueError("inventory requires nonempty distinct paths")
@@ -189,8 +210,9 @@ def freeze_inventory(
         for name in names
     ]
     entries.sort(key=lambda e: (str(e["order_key"]), str(e["file"])))
+    bound = f"|allowlist:{allowlist['digest']}" if allowlist is not None else ""
     digest_input = (
-        f"v{INVENTORY_VERSION}|{source}|{repository}|{revision}|{seed}"
+        f"v{INVENTORY_VERSION}|{source}|{repository}|{revision}|{seed}{bound}"
         f"|{len(entries)}\n"
         + "".join(
             f"{e['order_key']} {e['size_bytes'] if e['size_bytes'] is not None else -1}"
@@ -211,6 +233,8 @@ def freeze_inventory(
         "known_size_bytes": sum(known) if len(known) == len(entries) else None,
         "inventory_digest": hashlib.sha256(digest_input.encode("utf-8")).hexdigest(),
     }
+    if allowlist is not None:
+        payload["component_allowlist"] = allowlist
     return payload
 
 
@@ -909,6 +933,13 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=None,
         help="Frozen listing receipt (from list-hf); replaces --files/--sizes.",
+    )
+    freeze.add_argument(
+        "--allowlist",
+        type=Path,
+        default=None,
+        help="Operator component allowlist: keep only its included top-level components "
+        "of --listing and bind its digest into the inventory digest.",
     )
     freeze.add_argument("--output", type=Path, required=True)
     freeze.set_defaults(func=cmd_freeze)

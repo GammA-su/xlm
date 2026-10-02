@@ -1,0 +1,202 @@
+{
+  "component_count": 31,
+  "components": [
+    {
+      "component": "arxiv_abstracts",
+      "compressed_bytes": 889633257,
+      "files": 64,
+      "percent_of_repository_bytes": 0.1723
+    },
+    {
+      "component": "arxiv_papers",
+      "compressed_bytes": 5996196704,
+      "files": 64,
+      "percent_of_repository_bytes": 1.1613
+    },
+    {
+      "component": "biodiversity_heritage_library",
+      "compressed_bytes": 14500293977,
+      "files": 64,
+      "percent_of_repository_bytes": 2.8084
+    },
+    {
+      "component": "caselaw_access_project",
+      "compressed_bytes": 24956737971,
+      "files": 64,
+      "percent_of_repository_bytes": 4.8335
+    },
+    {
+      "component": "cccc",
+      "compressed_bytes": 20819212852,
+      "files": 64,
+      "percent_of_repository_bytes": 4.0322
+    },
+    {
+      "component": "data_provenance_initiative",
+      "compressed_bytes": 1266390817,
+      "files": 64,
+      "percent_of_repository_bytes": 0.2453
+    },
+    {
+      "component": "doab",
+      "compressed_bytes": 3512954742,
+      "files": 64,
+      "percent_of_repository_bytes": 0.6804
+    },
+    {
+      "component": "foodista",
+      "compressed_bytes": 31880650,
+      "files": 64,
+      "percent_of_repository_bytes": 0.0062
+    },
+    {
+      "component": "github_archive",
+      "compressed_bytes": 13709650508,
+      "files": 64,
+      "percent_of_repository_bytes": 2.6552
+    },
+    {
+      "component": "library_of_congress",
+      "compressed_bytes": 12879350670,
+      "files": 64,
+      "percent_of_repository_bytes": 2.4944
+    },
+    {
+      "component": "libretexts",
+      "compressed_bytes": 122167467,
+      "files": 64,
+      "percent_of_repository_bytes": 0.0237
+    },
+    {
+      "component": "news",
+      "compressed_bytes": 98602096,
+      "files": 64,
+      "percent_of_repository_bytes": 0.0191
+    },
+    {
+      "component": "oercommons",
+      "compressed_bytes": 17149251,
+      "files": 64,
+      "percent_of_repository_bytes": 0.0033
+    },
+    {
+      "component": "peS2o",
+      "compressed_bytes": 55339172580,
+      "files": 64,
+      "percent_of_repository_bytes": 10.7178
+    },
+    {
+      "component": "pre_1929_books",
+      "compressed_bytes": 16718436810,
+      "files": 64,
+      "percent_of_repository_bytes": 3.238
+    },
+    {
+      "component": "pressbooks",
+      "compressed_bytes": 201539814,
+      "files": 64,
+      "percent_of_repository_bytes": 0.039
+    },
+    {
+      "component": "project_gutenberg",
+      "compressed_bytes": 7689423474,
+      "files": 64,
+      "percent_of_repository_bytes": 1.4893
+    },
+    {
+      "component": "public_domain_review",
+      "compressed_bytes": 2915747,
+      "files": 64,
+      "percent_of_repository_bytes": 0.0006
+    },
+    {
+      "component": "pubmed",
+      "compressed_bytes": 42841411375,
+      "files": 64,
+      "percent_of_repository_bytes": 8.2973
+    },
+    {
+      "component": "python_enhancement_proposals",
+      "compressed_bytes": 3743588,
+      "files": 64,
+      "percent_of_repository_bytes": 0.0007
+    },
+    {
+      "component": "regulations",
+      "compressed_bytes": 1310483072,
+      "files": 64,
+      "percent_of_repository_bytes": 0.2538
+    },
+    {
+      "component": "stackexchange",
+      "compressed_bytes": 32354037772,
+      "files": 64,
+      "percent_of_repository_bytes": 6.2662
+    },
+    {
+      "component": "stackv2_edu",
+      "compressed_bytes": 63655535965,
+      "files": 64,
+      "percent_of_repository_bytes": 12.3285
+    },
+    {
+      "component": "stackv2_html",
+      "compressed_bytes": 1513090235,
+      "files": 64,
+      "percent_of_repository_bytes": 0.293
+    },
+    {
+      "component": "ubuntu_irc",
+      "compressed_bytes": 1812469483,
+      "files": 64,
+      "percent_of_repository_bytes": 0.351
+    },
+    {
+      "component": "uk_hansard",
+      "compressed_bytes": 3101805340,
+      "files": 64,
+      "percent_of_repository_bytes": 0.6007
+    },
+    {
+      "component": "usgpo",
+      "compressed_bytes": 10383314469,
+      "files": 64,
+      "percent_of_repository_bytes": 2.011
+    },
+    {
+      "component": "uspto",
+      "compressed_bytes": 147270341710,
+      "files": 64,
+      "percent_of_repository_bytes": 28.5227
+    },
+    {
+      "component": "wikimedia",
+      "compressed_bytes": 21265747440,
+      "files": 64,
+      "percent_of_repository_bytes": 4.1187
+    },
+    {
+      "component": "wikiteam",
+      "compressed_bytes": 5802685412,
+      "files": 64,
+      "percent_of_repository_bytes": 1.1238
+    },
+    {
+      "component": "youtube",
+      "compressed_bytes": 6260914389,
+      "files": 64,
+      "percent_of_repository_bytes": 1.2126
+    }
+  ],
+  "file_count": 1984,
+  "inventory_digest": "d81e5c8417785ab75deb69bd30b52639299b98cafd9bbf7c46ae3912a1c7e33a",
+  "inventory_rederived_from_listing": true,
+  "inventory_sha256": "ea44bd6556a08cb6ce2eceaa33d7ab0a527ac13093f01ac6b3d6edb89cb504d8",
+  "listing_digest": "a32b9b12649da4b72a07fbbe41bd3bbd9d7df9da9df32136fa8080802d8b5038",
+  "listing_file_list_digest": "4c343e0caecad29c777da2e53ae30833973193852f853f26adc6cf74d2f23b09",
+  "listing_sha256": "422bd036216ae058928f7ea8212434eaf647b73dd44c7345b874a506586fde22",
+  "repository": "common-pile/comma_v0.1_training_dataset",
+  "revision": "5afc546db324e7f39f297ba757c9a60547151e7c",
+  "seed": 20260918,
+  "total_compressed_bytes": 516327289637
+}

@@ -1,3 +1,36 @@
+> **COMMON PILE PROSE ALLOWLIST AUDIT (2026-10-02, documentation-only network):
+> COMMON PILE ALLOWLIST READY FOR OPERATOR DECISION.**
+>
+> - **Universe.** The pinned `comma_v0.1_training_dataset@5afc546d` has 31
+>   top-level components of 64 files each: 1,984 files, 516,327,289,637 B. The
+>   discovery inventory re-derives from the listing.
+> - **Key facts.** Rows are text-only, so licensing is decided per component;
+>   no per-document filtering is possible. The `cccc` copy predates an upstream
+>   licensing correction (`EXCLUDE_PROVENANCE`). Only news, libretexts and
+>   public_domain_review have real certified rows.
+> - **Candidate lists (none recorded).**
+>   - A: libretexts, news, oercommons, pressbooks, public_domain_review. About
+>     0.94x the requirement (estimate), so too small.
+>   - B: A + project_gutenberg, the recommended list. Its first plan is about
+>     97% Gutenberg under the current planner.
+>   - C: B + doab plus five flagged components (foodista, LoC, pre-1929,
+>     hansard, youtube).
+> - **Code.** A write-once component allowlist
+>   (`component_allowlist.py`, `mix01_source.py allowlist preview|record|show`)
+>   and `mix01_inventory.py freeze --allowlist`, whose inventory digest binds
+>   the allowlist. Plan, repair, authorize and benchmark plans refuse an
+>   unbound inventory. `common_pile` stays BLOCKED.
+> - **Still blocking after a choice.** Real certification of uncertified
+>   included components (commands prepared, NOT RUN), calibration, a
+>   `.jsonl.gz` production transport (the runner is parquet-only), a
+>   `SourceSpec` and catalog pin, and admission.
+> - **Tests.** 33 new tests pass. Related run: 452 passed, 1 failed (a
+>   pre-existing CRLF byte-size test that also fails on base). Ruff, format,
+>   strict mypy and `git diff --check` pass.
+>
+> [Report](reports/COMMON-PILE-PROSE-ALLOWLIST-AUDIT.md). Next: the operator
+> runs `allowlist preview` and then `allowlist record` with a chosen list (§11).
+
 > **IFM GENERAL EMPTY-TEXT RECOVERY (2026-10-02, offline): IFM GENERAL SEMANTIC
 > RECOVERY READY FOR OPERATOR REVIEW.**
 >
