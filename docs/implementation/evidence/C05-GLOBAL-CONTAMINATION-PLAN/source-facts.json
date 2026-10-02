@@ -1,0 +1,475 @@
+{
+  "headroom": {
+    "common_pile_prose": {
+      "canonical_bytes": 1757435959,
+      "documents": 194842,
+      "estimated_final_target_bytes": 1200000000,
+      "file_bytes": 1996220115,
+      "first_pass_target_bytes": 1320000000,
+      "loss_fraction_to_estimated_final_target": 0.317187067981235,
+      "loss_fraction_to_first_pass_target": 0.24890577477935855
+    },
+    "essential_practical": {
+      "canonical_bytes": 6962804542,
+      "documents": 1278649,
+      "estimated_final_target_bytes": 2400000000,
+      "file_bytes": 9506438985,
+      "first_pass_target_bytes": 2640000000,
+      "loss_fraction_to_estimated_final_target": 0.6553113065973524,
+      "loss_fraction_to_first_pass_target": 0.6208424372570877
+    },
+    "essential_prose": {
+      "canonical_bytes": 20071278364,
+      "documents": 4239644,
+      "estimated_final_target_bytes": 1200000000,
+      "file_bytes": 28316314222,
+      "first_pass_target_bytes": 1320000000,
+      "loss_fraction_to_estimated_final_target": 0.9402130757076077,
+      "loss_fraction_to_first_pass_target": 0.9342343832783685
+    },
+    "essential_science": {
+      "canonical_bytes": 2692218118,
+      "documents": 315173,
+      "estimated_final_target_bytes": 2400000000,
+      "file_bytes": 3320991538,
+      "first_pass_target_bytes": 2640000000,
+      "loss_fraction_to_estimated_final_target": 0.10854176934857103,
+      "loss_fraction_to_first_pass_target": 0.01939594628342814
+    },
+    "finepdfs_en": {
+      "canonical_bytes": 5633801338,
+      "documents": 444748,
+      "estimated_final_target_bytes": 3600000000,
+      "file_bytes": 6219817269,
+      "first_pass_target_bytes": 3960000000,
+      "loss_fraction_to_estimated_final_target": 0.36099983225926097,
+      "loss_fraction_to_first_pass_target": 0.29709981548518705
+    },
+    "finewiki_en": {
+      "canonical_bytes": 5416221771,
+      "documents": 864344,
+      "estimated_final_target_bytes": 1200000000,
+      "file_bytes": 6089886268,
+      "first_pass_target_bytes": 1320000000,
+      "loss_fraction_to_estimated_final_target": 0.7784433409973825,
+      "loss_fraction_to_first_pass_target": 0.7562876750971208
+    },
+    "ifm_behaviors_general_planning": {
+      "canonical_bytes": 18970441585,
+      "documents": 1355028,
+      "estimated_final_target_bytes": 1200000000,
+      "file_bytes": 20411830116,
+      "first_pass_target_bytes": 1320000000,
+      "loss_fraction_to_estimated_final_target": 0.9367436970497912,
+      "loss_fraction_to_first_pass_target": 0.9304180667547702
+    },
+    "nemotron_wiki_rewrite": {
+      "canonical_bytes": 3635905169,
+      "documents": 1000000,
+      "estimated_final_target_bytes": 1920000000,
+      "file_bytes": 4867927612,
+      "first_pass_target_bytes": 2112000000,
+      "loss_fraction_to_estimated_final_target": 0.4719334221447622,
+      "loss_fraction_to_first_pass_target": 0.41912676435923846
+    },
+    "simple_stories": {
+      "canonical_bytes": 1121786829,
+      "documents": 906728,
+      "estimated_final_target_bytes": 480000000,
+      "file_bytes": 2537106627,
+      "first_pass_target_bytes": 528000000,
+      "loss_fraction_to_estimated_final_target": 0.5721112179326541,
+      "loss_fraction_to_first_pass_target": 0.5293223397259196
+    },
+    "synth_en_explanations": {
+      "canonical_bytes": 4771301422,
+      "documents": 1751337,
+      "estimated_final_target_bytes": 3600000000,
+      "file_bytes": 6645960857,
+      "first_pass_target_bytes": 3960000000,
+      "loss_fraction_to_estimated_final_target": 0.24548887576023698,
+      "loss_fraction_to_first_pass_target": 0.17003776333626067
+    },
+    "ultrax_ultrafineweb": {
+      "canonical_bytes": 10826457142,
+      "documents": 2746681,
+      "estimated_final_target_bytes": 4800000000,
+      "file_bytes": 14594040394,
+      "first_pass_target_bytes": 5280000000,
+      "loss_fraction_to_estimated_final_target": 0.5566416661477419,
+      "loss_fraction_to_first_pass_target": 0.5123058327625161
+    }
+  },
+  "input_manifest_digest": "11724d92c011dd01e8e8c3ab944ac2adeef76aa8ff4abc921bf882eb0ac84152",
+  "provenance_samples": [
+    {
+      "bytes_read": 7793,
+      "cluster_keys": [],
+      "file": "canonical/ew-fast/b0000/f00000/essential_practical/documents.jsonl",
+      "has_document_id": true,
+      "has_parent_ids": false,
+      "source_file": "data/crawl=CC-MAIN-2019-09/train-02494-of-02577.parquet",
+      "source_key": "ew-fast",
+      "source_metadata_keys": [
+        "bloom_cognitive_process_primary",
+        "bloom_knowledge_domain_primary",
+        "document_type_v2_primary",
+        "essential_web_selector",
+        "essential_web_selector_freeze_digest",
+        "essential_web_selector_policy_digest",
+        "fasttext_dclm",
+        "fasttext_eai_general_math",
+        "fasttext_eai_open_web_math",
+        "fasttext_eai_web_code",
+        "fasttext_english",
+        "fasttext_fineweb_edu_approx",
+        "fdc_level_1",
+        "fdc_level_2",
+        "fdc_primary_code",
+        "language_provenance",
+        "mix01_component",
+        "pid",
+        "snapshot_id",
+        "source_domain",
+        "upstream_id"
+      ],
+      "source_revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+      "source_row": 98
+    },
+    {
+      "bytes_read": 4051,
+      "cluster_keys": [],
+      "file": "canonical/ultrax/p01/f00000/documents.jsonl",
+      "has_document_id": true,
+      "has_parent_ids": false,
+      "source_file": "data/UltraX-Ultra-FineWeb/UltraX-Ultra-FineWeb-en-part-0048-of-0104.parquet",
+      "source_key": "ultrax",
+      "source_metadata_keys": [
+        "config_name",
+        "language_provenance",
+        "license_provenance",
+        "mix01_component",
+        "processed_functions",
+        "uid",
+        "upstream_source"
+      ],
+      "source_revision": "a88527587389fd4ab352e9ad1273f4c0a234d8df",
+      "source_row": 0
+    },
+    {
+      "bytes_read": 13921,
+      "cluster_keys": [],
+      "file": "canonical/finepdfs/p01/f00001/documents.jsonl",
+      "has_document_id": true,
+      "has_parent_ids": false,
+      "source_file": "data/eng_Latn/train/000_00037.parquet",
+      "source_key": "finepdfs",
+      "source_metadata_keys": [
+        "config_name",
+        "extractor",
+        "is_truncated",
+        "language_provenance",
+        "mix01_component",
+        "upstream_full_doc_lid",
+        "upstream_full_doc_lid_score",
+        "upstream_page_average_lid",
+        "upstream_page_average_lid_score",
+        "upstream_token_count"
+      ],
+      "source_revision": "9cfabe2127faca99b3d5c4dc6d1fcb397399ebde",
+      "source_row": 0
+    },
+    {
+      "bytes_read": 3216,
+      "cluster_keys": [],
+      "file": "canonical/synth/p01/f00000/documents.jsonl",
+      "has_document_id": true,
+      "has_parent_ids": false,
+      "source_file": "synth_273.parquet",
+      "source_key": "synth",
+      "source_metadata_keys": [
+        "additional_seed_url",
+        "config_name",
+        "exercise",
+        "mix01_component",
+        "model",
+        "query_seed_url",
+        "reasoning_treatment",
+        "seed_license",
+        "synth_id",
+        "words"
+      ],
+      "source_revision": "0d6813a2966662c39f22f0b9af28a0c1c9f7a437",
+      "source_row": 0
+    },
+    {
+      "bytes_read": 7797,
+      "cluster_keys": [],
+      "file": "canonical/wiki_rewrite/p01/f00000/documents.jsonl",
+      "has_document_id": true,
+      "has_parent_ids": false,
+      "source_file": "Nemotron-Pretraining-Wiki-Rewrite/part_000002.parquet",
+      "source_key": "wiki_rewrite",
+      "source_metadata_keys": [
+        "category",
+        "config_name",
+        "language_provenance",
+        "mix01_component",
+        "models_used",
+        "upstream_license",
+        "upstream_uuid"
+      ],
+      "source_revision": "9ed3718b5f2ae29074c5e34e64115432b7c4320f",
+      "source_row": 0
+    },
+    {
+      "bytes_read": 1707,
+      "cluster_keys": [],
+      "file": "canonical/finewiki/p02/f00000/documents.jsonl",
+      "has_document_id": true,
+      "has_parent_ids": false,
+      "source_file": "data/enwiki/000_00014.parquet",
+      "source_key": "finewiki",
+      "source_metadata_keys": [
+        "config_name",
+        "mix01_component"
+      ],
+      "source_revision": "8bd13e72e6a002407649b3e898535f42ceb1aeb9",
+      "source_row": 0
+    },
+    {
+      "bytes_read": 20646,
+      "cluster_keys": [],
+      "file": "canonical/ifm_general/p02/f00001/documents.jsonl",
+      "has_document_id": true,
+      "has_parent_ids": false,
+      "source_file": "general/general_full.chunk0-bdbff8a5c6-00146.parquet",
+      "source_key": "ifm_general",
+      "source_metadata_keys": [
+        "language_provenance",
+        "mix01_component",
+        "subset",
+        "upstream_token_count"
+      ],
+      "source_revision": "3345e13d7f3f6d0ecb5fdd67b37aed289f3191f5",
+      "source_row": 0
+    },
+    {
+      "bytes_read": 8080,
+      "cluster_keys": [],
+      "file": "canonical/ifm_planning/p03/f00000/documents.jsonl",
+      "has_document_id": true,
+      "has_parent_ids": false,
+      "source_file": "planning/planning.chunk0-160f3594ed-00058.parquet",
+      "source_key": "ifm_planning",
+      "source_metadata_keys": [
+        "language_provenance",
+        "mix01_component",
+        "subset",
+        "upstream_token_count"
+      ],
+      "source_revision": "3345e13d7f3f6d0ecb5fdd67b37aed289f3191f5",
+      "source_row": 0
+    },
+    {
+      "bytes_read": 69941,
+      "cluster_keys": [],
+      "file": "canonical/common_pile/p01/f00000/documents.jsonl",
+      "has_document_id": true,
+      "has_parent_ids": false,
+      "source_file": "project_gutenberg/project_gutenberg.chunk.43.jsonl.gz",
+      "source_key": "common_pile",
+      "source_metadata_keys": [
+        "language_provenance",
+        "license_provenance",
+        "mix01_component",
+        "upstream_component"
+      ],
+      "source_revision": "5afc546db324e7f39f297ba757c9a60547151e7c",
+      "source_row": 0
+    },
+    {
+      "bytes_read": 3914,
+      "cluster_keys": [],
+      "file": "canonical/simple_stories/p01/f00000/documents.jsonl",
+      "has_document_id": true,
+      "has_parent_ids": false,
+      "source_file": "data/train-00002-of-00007.parquet",
+      "source_key": "simple_stories",
+      "source_metadata_keys": [
+        "avg_sentence_length",
+        "avg_word_length",
+        "character_count",
+        "dale_chall_readability_score",
+        "expected_num_stories_in_completion",
+        "feature",
+        "flesch_kincaid_grade",
+        "flesch_reading_ease",
+        "generation_id",
+        "grammar",
+        "initial_letter",
+        "initial_word_type",
+        "language_provenance",
+        "license_provenance",
+        "mix01_component",
+        "model",
+        "num_paragraphs",
+        "num_stories_in_completion",
+        "persona",
+        "style",
+        "theme",
+        "topic",
+        "word_count"
+      ],
+      "source_revision": "e63b8adc3b1a1bdc7cac5b500d150b71346b0628",
+      "source_row": 0
+    }
+  ],
+  "sample_bias": "prefix-only; no full corpus compatibility or hash certification",
+  "sample_bytes_read": 141066,
+  "sample_limit": "first row of first file per source key; at most 10 rows, 2 MiB each",
+  "sources": [
+    {
+      "seal_digest": "a77c78f7636695ef0ab241c176e07cc9bcfd1815907a13f55dc2f6f7c28c7516",
+      "source": {
+        "adapter_id": "essential_web_bnormal",
+        "canonicalization": "EssentialWebSelectedAdapter -> EssentialWebAdapter -> CanonicalDocument",
+        "repository": "EssentialAI/essential-web-v1.0",
+        "revision": "ce4eccc7e9604667b6d7f32cb6274b8b41f3113d",
+        "selector": {
+          "condition": "B-normal",
+          "evaluator_sha256": "5a63e78560ea9e12b0ec03b5e7e63204b5c75554bee02192c12bb4ab0853bf9c",
+          "freeze_digest": "c6f32a65f083c99b64245e25151f2cc73275093e1013d68b625c6d6f63d10a0c",
+          "freeze_version": "essential-web-selector-fasttrack-v1",
+          "policy_digest": "f4357f61f434d5105d823266153dac6372e122f12767187631e8796b4899dd07",
+          "selector_id": "essential-web-b-normal"
+        },
+        "source_id": "essential_web",
+        "views": [
+          "essential_science",
+          "essential_practical",
+          "essential_prose"
+        ]
+      },
+      "source_key": "ew-fast"
+    },
+    {
+      "seal_digest": "efdb99dbf1bc8380985925fcbbe654536d02c5b0c87162eecc9e92e858302f1f",
+      "source": {
+        "adapter_id": "ultrax_ultrafineweb",
+        "component_id": "ultrax_ultrafineweb",
+        "provider": "huggingface",
+        "repository": "openbmb/UltraX-Preview",
+        "revision": "a88527587389fd4ab352e9ad1273f4c0a234d8df",
+        "source_id": "ultrax_ultrafineweb",
+        "view_id": "UltraX-Ultra-FineWeb"
+      },
+      "source_key": "ultrax"
+    },
+    {
+      "seal_digest": "9c2e38c36d2a6528027416347d20850ebd1f08cd036cf7aac1e98c6509fa3b3b",
+      "source": {
+        "adapter_id": "finepdfs_en",
+        "component_id": "finepdfs_en",
+        "provider": "huggingface",
+        "repository": "HuggingFaceFW/finepdfs-edu",
+        "revision": "9cfabe2127faca99b3d5c4dc6d1fcb397399ebde",
+        "source_id": "finepdfs_edu",
+        "view_id": "eng_Latn"
+      },
+      "source_key": "finepdfs"
+    },
+    {
+      "seal_digest": "b020a96fcb14699fd56dfec72a917916f216eb50fd8b3d86bb53077daba6178a",
+      "source": {
+        "adapter_id": "synth_en",
+        "component_id": "synth_en_explanations",
+        "provider": "huggingface",
+        "repository": "PleIAs/SYNTH",
+        "revision": "0d6813a2966662c39f22f0b9af28a0c1c9f7a437",
+        "source_id": "synth",
+        "view_id": "default"
+      },
+      "source_key": "synth"
+    },
+    {
+      "seal_digest": "08895109ddb498d6cc018b884f121905969435d13e969df5345278120f98f42e",
+      "source": {
+        "adapter_id": "wiki_rewrite",
+        "component_id": "nemotron_wiki_rewrite",
+        "provider": "huggingface",
+        "repository": "nvidia/Nemotron-Pretraining-Specialized-v1",
+        "revision": "9ed3718b5f2ae29074c5e34e64115432b7c4320f",
+        "source_id": "nemotron_specialized",
+        "view_id": "Nemotron-Pretraining-Wiki-Rewrite"
+      },
+      "source_key": "wiki_rewrite"
+    },
+    {
+      "seal_digest": "18321fb27a5ac535190232ccb79ca1387469aa16cf1c45381d4d2f1666de1bf0",
+      "source": {
+        "adapter_id": "finewiki_en",
+        "component_id": "finewiki_en",
+        "provider": "huggingface",
+        "repository": "HuggingFaceFW/finewiki",
+        "revision": "8bd13e72e6a002407649b3e898535f42ceb1aeb9",
+        "source_id": "finewiki",
+        "view_id": "en"
+      },
+      "source_key": "finewiki"
+    },
+    {
+      "seal_digest": "7498428c0934be0b660e67154a1c1120ad2be06fd95d74ea958e426e804f3b81",
+      "source": {
+        "adapter_id": "ifm_general",
+        "component_id": "ifm_behaviors_general_planning",
+        "provider": "huggingface",
+        "repository": "IFM/Pretrain-Behaviors",
+        "revision": "3345e13d7f3f6d0ecb5fdd67b37aed289f3191f5",
+        "source_id": "ifm_behaviors",
+        "view_id": "general"
+      },
+      "source_key": "ifm_general"
+    },
+    {
+      "seal_digest": "8ee097ba90403280ccfdeb578e64a80c7551777775ddf8a53b932e296c5dcc09",
+      "source": {
+        "adapter_id": "ifm_planning",
+        "component_id": "ifm_behaviors_general_planning",
+        "provider": "huggingface",
+        "repository": "IFM/Pretrain-Behaviors",
+        "revision": "3345e13d7f3f6d0ecb5fdd67b37aed289f3191f5",
+        "source_id": "ifm_behaviors",
+        "view_id": "planning"
+      },
+      "source_key": "ifm_planning"
+    },
+    {
+      "seal_digest": "bd63336113131532c1470ff25d1e38c29bd3498a215deff9dcf54154d13491dd",
+      "source": {
+        "adapter_id": "common_pile",
+        "component_id": "common_pile_prose",
+        "provider": "huggingface",
+        "repository": "common-pile/comma_v0.1_training_dataset",
+        "revision": "5afc546db324e7f39f297ba757c9a60547151e7c",
+        "source_id": "common_pile",
+        "view_id": "common_pile_prose"
+      },
+      "source_key": "common_pile"
+    },
+    {
+      "seal_digest": "069fd0c7960a750ae24cc630921aa9086db0e44c6e56cf1d034afc346331d56d",
+      "source": {
+        "adapter_id": "simple_stories",
+        "component_id": "simple_stories",
+        "provider": "huggingface",
+        "repository": "SimpleStories/SimpleStories",
+        "revision": "e63b8adc3b1a1bdc7cac5b500d150b71346b0628",
+        "source_id": "simple_stories",
+        "view_id": "default"
+      },
+      "source_key": "simple_stories"
+    }
+  ],
+  "token_basis": "four canonical UTF-8 bytes per token; exact tokenizer counts unknown"
+}

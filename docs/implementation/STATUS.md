@@ -1,3 +1,21 @@
+> **GLOBAL C05 PREPARATION AUDIT (2026-10-02): NEEDS FURTHER WORK.**
+>
+> All baseline first-pass seals are now present and their metadata cross-bindings
+> verified: 11 components, 2,035 canonical files, 15,097,174 documents,
+> 81,859,652,239 text B / 104,506,534,003 JSONL B. New read-only inventory and
+> preflight bind sources/plans/accounting/receipts/sizes; no full content rehash.
+> Manifest `11724d92c011dd01e8e8c3ab944ac2adeef76aa8ff4abc921bf882eb0ac84152`.
+> C05 is partial: authored audit exposes repeated-span suppression and short-prompt
+> misses, plus SYNTH seed-URL lineage gap. Protected benchmark material/index
+> evidence, global resumable runner and downstream membership gates remain blocked.
+> No executable plan/authorization exists; preflight explicitly exits 2.
+> Related tests: 237 parallel + 1 complementary serial passed; no selected skips.
+> No external network, full C05 scan, source mutation, tokenizer, training or push.
+> [Audit/report](reports/C05-GLOBAL-CONTAMINATION-PLAN.md) and
+> [offline verification / operator boundary](../runbooks/c05-global-preparation.md).
+> Next: complete production integration and obtain isolated content-free benchmark
+> inventory evidence. The earlier Common Pile planning status below is historical.
+
 > **COMMON PILE PRODUCTION PLAN (2026-10-02): READY FOR OPERATOR AUTHORIZATION.**
 >
 > Real operator C split/bounds/reviews/admission and eight historical admissions

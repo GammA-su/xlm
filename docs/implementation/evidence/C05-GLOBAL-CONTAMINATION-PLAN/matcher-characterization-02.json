@@ -1,0 +1,33 @@
+{
+  "command": [
+    "uv",
+    "run",
+    "--offline",
+    "--locked",
+    "--no-sync",
+    "python",
+    "scripts/c05_matcher_audit.py",
+    "--output",
+    "docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-coverage.json"
+  ],
+  "cwd": "F:\\Project\\xlm-c05-global",
+  "environment": {
+    "HF_DATASETS_OFFLINE": "1",
+    "HF_HUB_OFFLINE": "1",
+    "MKL_NUM_THREADS": "1",
+    "NUMEXPR_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "PYTHONPATH": "F:/Project/xlm-c05-global/src",
+    "TOKENIZERS_PARALLELISM": "false",
+    "TRANSFORMERS_OFFLINE": "1",
+    "UV_OFFLINE": "1",
+    "UV_PROJECT_ENVIRONMENT": "F:/Project/xlm-common-pile/.venv"
+  },
+  "exit_status": 0,
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.12.13",
+  "sampled_peak_process_tree_rss_bytes": 90984448,
+  "sampling_interval_seconds": 0.05,
+  "wall_seconds": 0.7029999999795109
+}

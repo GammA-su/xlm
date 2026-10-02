@@ -1,0 +1,66 @@
+{
+  "cases": [
+    {
+      "case": "whole_rendered_example",
+      "common_spans_suppressed": 0,
+      "documents": 1,
+      "excluded": 1,
+      "expected_for_production_requirement": 1,
+      "production_requirement_met": true
+    },
+    {
+      "case": "normalized_prompt_in_context",
+      "common_spans_suppressed": 0,
+      "documents": 1,
+      "excluded": 1,
+      "expected_for_production_requirement": 1,
+      "production_requirement_met": true
+    },
+    {
+      "case": "option_permutation_long_prompt",
+      "common_spans_suppressed": 0,
+      "documents": 1,
+      "excluded": 1,
+      "expected_for_production_requirement": 1,
+      "production_requirement_met": true
+    },
+    {
+      "case": "four_cross_source_prompt_copies",
+      "common_spans_suppressed": 1,
+      "documents": 4,
+      "excluded": 0,
+      "expected_for_production_requirement": 4,
+      "production_requirement_met": false
+    },
+    {
+      "case": "paraphrase_no_exact_span",
+      "common_spans_suppressed": 0,
+      "documents": 1,
+      "excluded": 0,
+      "expected_for_production_requirement": null,
+      "production_requirement_met": null
+    },
+    {
+      "case": "short_prompt_without_answers",
+      "common_spans_suppressed": 0,
+      "documents": 1,
+      "excluded": 0,
+      "expected_for_production_requirement": 1,
+      "production_requirement_met": false
+    },
+    {
+      "case": "short_answer_labels_common_phrases",
+      "common_spans_suppressed": 0,
+      "documents": 5,
+      "excluded": 0,
+      "expected_for_production_requirement": 0,
+      "production_requirement_met": true
+    }
+  ],
+  "evidence_class": "authored synthetic fixtures only; no benchmark material",
+  "generic_negative_fixture_count": 5,
+  "generic_negative_fixture_false_positives": 0,
+  "population_false_positive_rate": null,
+  "production_ready": false,
+  "synth_query_seed_url_grouped": false
+}

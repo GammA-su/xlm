@@ -1,0 +1,1282 @@
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:1: trailing whitespace.
++{
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:2: trailing whitespace.
++  "command": [
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:3: trailing whitespace.
++    "uv",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:4: trailing whitespace.
++    "run",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:5: trailing whitespace.
++    "--offline",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:6: trailing whitespace.
++    "--locked",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:7: trailing whitespace.
++    "--no-sync",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:8: trailing whitespace.
++    "--extra",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:9: trailing whitespace.
++    "cpu",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:10: trailing whitespace.
++    "--extra",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:11: trailing whitespace.
++    "eval",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:12: trailing whitespace.
++    "python",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:13: trailing whitespace.
++    "-m",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:14: trailing whitespace.
++    "pytest",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:15: trailing whitespace.
++    "tests/test_c05_inputs.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:16: trailing whitespace.
++    "-n",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:17: trailing whitespace.
++    "0",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:18: trailing whitespace.
++    "-q",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:19: trailing whitespace.
++    "--basetemp",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:20: trailing whitespace.
++    "C:/XLM-scratch/c05check01"
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:21: trailing whitespace.
++  ],
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:22: trailing whitespace.
++  "cwd": "F:\\Project\\xlm-c05-global",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:23: trailing whitespace.
++  "environment": {
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:24: trailing whitespace.
++    "HF_DATASETS_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:25: trailing whitespace.
++    "HF_HUB_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:26: trailing whitespace.
++    "MKL_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:27: trailing whitespace.
++    "NUMEXPR_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:28: trailing whitespace.
++    "OMP_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:29: trailing whitespace.
++    "OPENBLAS_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:30: trailing whitespace.
++    "PYTHONPATH": "F:/Project/xlm-c05-global/src",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:31: trailing whitespace.
++    "TOKENIZERS_PARALLELISM": "false",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:32: trailing whitespace.
++    "TRANSFORMERS_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:33: trailing whitespace.
++    "UV_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:34: trailing whitespace.
++    "UV_PROJECT_ENVIRONMENT": "F:/Project/xlm-common-pile/.venv"
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:35: trailing whitespace.
++  },
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:36: trailing whitespace.
++  "exit_status": 0,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:37: trailing whitespace.
++  "platform": "Windows-11-10.0.26200-SP0",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:38: trailing whitespace.
++  "python": "3.12.13",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:39: trailing whitespace.
++  "sampled_peak_process_tree_rss_bytes": 156307456,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:40: trailing whitespace.
++  "sampling_interval_seconds": 0.05,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:41: trailing whitespace.
++  "wall_seconds": 4.842999999993481
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.json:42: trailing whitespace.
++}
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.log:1: trailing whitespace.
++.................                                                        [100%]
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/focused-01.log:2: trailing whitespace.
++17 passed in 4.22s
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:1: trailing whitespace.
++{
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:2: trailing whitespace.
++  "command": [
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:3: trailing whitespace.
++    "uv",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:4: trailing whitespace.
++    "run",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:5: trailing whitespace.
++    "--offline",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:6: trailing whitespace.
++    "--locked",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:7: trailing whitespace.
++    "--no-sync",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:8: trailing whitespace.
++    "ruff",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:9: trailing whitespace.
++    "format",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:10: trailing whitespace.
++    "--check",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:11: trailing whitespace.
++    "src/xlm/data/exclusion/inputs.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:12: trailing whitespace.
++    "src/xlm/data/exclusion/preparation.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:13: trailing whitespace.
++    "scripts/c05_record_command.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:14: trailing whitespace.
++    "scripts/c05_matcher_audit.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:15: trailing whitespace.
++    "scripts/c05_source_facts.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:16: trailing whitespace.
++    "tests/test_c05_inputs.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:17: trailing whitespace.
++    "tests/test_c05_essential_inputs.py"
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:18: trailing whitespace.
++  ],
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:19: trailing whitespace.
++  "cwd": "F:\\Project\\xlm-c05-global",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:20: trailing whitespace.
++  "environment": {
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:21: trailing whitespace.
++    "HF_DATASETS_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:22: trailing whitespace.
++    "HF_HUB_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:23: trailing whitespace.
++    "MKL_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:24: trailing whitespace.
++    "NUMEXPR_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:25: trailing whitespace.
++    "OMP_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:26: trailing whitespace.
++    "OPENBLAS_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:27: trailing whitespace.
++    "PYTHONPATH": "F:/Project/xlm-c05-global/src",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:28: trailing whitespace.
++    "TOKENIZERS_PARALLELISM": "false",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:29: trailing whitespace.
++    "TRANSFORMERS_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:30: trailing whitespace.
++    "UV_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:31: trailing whitespace.
++    "UV_PROJECT_ENVIRONMENT": "F:/Project/xlm-common-pile/.venv"
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:32: trailing whitespace.
++  },
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:33: trailing whitespace.
++  "exit_status": 0,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:34: trailing whitespace.
++  "platform": "Windows-11-10.0.26200-SP0",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:35: trailing whitespace.
++  "python": "3.12.13",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:36: trailing whitespace.
++  "sampled_peak_process_tree_rss_bytes": 18952192,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:37: trailing whitespace.
++  "sampling_interval_seconds": 0.05,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:38: trailing whitespace.
++  "wall_seconds": 0.0779999999795109
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/format-check.json:39: trailing whitespace.
++}
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:1: trailing whitespace.
++{
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:2: trailing whitespace.
++  "command": [
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:3: trailing whitespace.
++    "uv",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:4: trailing whitespace.
++    "run",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:5: trailing whitespace.
++    "--offline",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:6: trailing whitespace.
++    "--locked",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:7: trailing whitespace.
++    "--no-sync",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:8: trailing whitespace.
++    "python",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:9: trailing whitespace.
++    "-m",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:10: trailing whitespace.
++    "xlm.data.exclusion.preparation",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:11: trailing whitespace.
++    "inventory",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:12: trailing whitespace.
++    "--data-root",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:13: trailing whitespace.
++    "G:/XLM",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:14: trailing whitespace.
++    "--scratch-root",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:15: trailing whitespace.
++    "C:/XLM-scratch",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:16: trailing whitespace.
++    "--manifest",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:17: trailing whitespace.
++    "docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/input-manifest.json"
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:18: trailing whitespace.
++  ],
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:19: trailing whitespace.
++  "cwd": "F:\\Project\\xlm-c05-global",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:20: trailing whitespace.
++  "environment": {
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:21: trailing whitespace.
++    "HF_DATASETS_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:22: trailing whitespace.
++    "HF_HUB_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:23: trailing whitespace.
++    "MKL_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:24: trailing whitespace.
++    "NUMEXPR_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:25: trailing whitespace.
++    "OMP_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:26: trailing whitespace.
++    "OPENBLAS_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:27: trailing whitespace.
++    "PYTHONPATH": "F:/Project/xlm-c05-global/src",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:28: trailing whitespace.
++    "TOKENIZERS_PARALLELISM": "false",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:29: trailing whitespace.
++    "TRANSFORMERS_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:30: trailing whitespace.
++    "UV_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:31: trailing whitespace.
++    "UV_PROJECT_ENVIRONMENT": "F:/Project/xlm-common-pile/.venv"
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:32: trailing whitespace.
++  },
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:33: trailing whitespace.
++  "exit_status": 0,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:34: trailing whitespace.
++  "platform": "Windows-11-10.0.26200-SP0",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:35: trailing whitespace.
++  "python": "3.12.13",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:36: trailing whitespace.
++  "sampled_peak_process_tree_rss_bytes": 106254336,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:37: trailing whitespace.
++  "sampling_interval_seconds": 0.05,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:38: trailing whitespace.
++  "wall_seconds": 3.5160000000032596
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.json:39: trailing whitespace.
++}
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/inventory.log:1: trailing whitespace.
++{"manifest_digest": "11724d92c011dd01e8e8c3ab944ac2adeef76aa8ff4abc921bf882eb0ac84152", "totals": {"documents": 15097174, "canonical_bytes": 81859652239, "file_bytes": 104506534003}}
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization-02.json:1: trailing whitespace.
++{
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization-02.json:2: trailing whitespace.
++  "command": [
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization-02.json:3: trailing whitespace.
++    "uv",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization-02.json:4: trailing whitespace.
++    "run",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization-02.json:5: trailing whitespace.
++    "--offline",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization-02.json:6: trailing whitespace.
++    "--locked",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization-02.json:7: trailing whitespace.
++    "--no-sync",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization-02.json:8: trailing whitespace.
++    "python",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization-02.json:9: trailing whitespace.
++    "scripts/c05_matcher_audit.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization-02.json:10: trailing whitespace.
++    "--output",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization-02.json:11: trailing whitespace.
++    "docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-coverage.json"
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization-02.json:12: trailing whitespace.
++  ],
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization-02.json:13: trailing whitespace.
++  "cwd": "F:\\Project\\xlm-c05-global",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization-02.json:14: trailing whitespace.
++  "environment": {
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization-02.json:15: trailing whitespace.
++    "HF_DATASETS_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization-02.json:16: trailing whitespace.
++    "HF_HUB_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization-02.json:17: trailing whitespace.
++    "MKL_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization-02.json:18: trailing whitespace.
++    "NUMEXPR_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization-02.json:19: trailing whitespace.
++    "OMP_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization-02.json:20: trailing whitespace.
++    "OPENBLAS_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization-02.json:21: trailing whitespace.
++    "PYTHONPATH": "F:/Project/xlm-c05-global/src",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization-02.json:22: trailing whitespace.
++    "TOKENIZERS_PARALLELISM": "false",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization-02.json:23: trailing whitespace.
++    "TRANSFORMERS_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization-02.json:24: trailing whitespace.
++    "UV_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization-02.json:25: trailing whitespace.
++    "UV_PROJECT_ENVIRONMENT": "F:/Project/xlm-common-pile/.venv"
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization-02.json:26: trailing whitespace.
++  },
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization-02.json:27: trailing whitespace.
++  "exit_status": 0,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization-02.json:28: trailing whitespace.
++  "platform": "Windows-11-10.0.26200-SP0",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization-02.json:29: trailing whitespace.
++  "python": "3.12.13",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization-02.json:30: trailing whitespace.
++  "sampled_peak_process_tree_rss_bytes": 90984448,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization-02.json:31: trailing whitespace.
++  "sampling_interval_seconds": 0.05,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization-02.json:32: trailing whitespace.
++  "wall_seconds": 0.7029999999795109
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization-02.json:33: trailing whitespace.
++}
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization-02.log:1: trailing whitespace.
++{'evidence_class': 'authored synthetic fixtures only; no benchmark material', 'cases': [{'case': 'whole_rendered_example', 'documents': 1, 'excluded': 1, 'expected_for_production_requirement': 1, 'production_requirement_met': True, 'common_spans_suppressed': 0}, {'case': 'normalized_prompt_in_context', 'documents': 1, 'excluded': 1, 'expected_for_production_requirement': 1, 'production_requirement_met': True, 'common_spans_suppressed': 0}, {'case': 'option_permutation_long_prompt', 'documents': 1, 'excluded': 1, 'expected_for_production_requirement': 1, 'production_requirement_met': True, 'common_spans_suppressed': 0}, {'case': 'four_cross_source_prompt_copies', 'documents': 4, 'excluded': 0, 'expected_for_production_requirement': 4, 'production_requirement_met': False, 'common_spans_suppressed': 1}, {'case': 'paraphrase_no_exact_span', 'documents': 1, 'excluded': 0, 'expected_for_production_requirement': None, 'production_requirement_met': None, 'common_spans_suppressed': 0}, {'case': 'short_prompt_without_answers', 'documents': 1, 'excluded': 0, 'expected_for_production_requirement': 1, 'production_requirement_met': False, 'common_spans_suppressed': 0}, {'case': 'short_answer_labels_common_phrases', 'documents': 5, 'excluded': 0, 'expected_for_production_requirement': 0, 'production_requirement_met': True, 'common_spans_suppressed': 0}], 'generic_negative_fixture_false_positives': 0, 'generic_negative_fixture_count': 5, 'population_false_positive_rate': None, 'synth_query_seed_url_grouped': False, 'production_ready': False}
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.json:1: trailing whitespace.
++{
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.json:2: trailing whitespace.
++  "command": [
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.json:3: trailing whitespace.
++    "uv",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.json:4: trailing whitespace.
++    "run",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.json:5: trailing whitespace.
++    "--offline",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.json:6: trailing whitespace.
++    "--locked",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.json:7: trailing whitespace.
++    "--no-sync",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.json:8: trailing whitespace.
++    "python",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.json:9: trailing whitespace.
++    "scripts/c05_matcher_audit.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.json:10: trailing whitespace.
++    "--output",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.json:11: trailing whitespace.
++    "docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-coverage.json"
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.json:12: trailing whitespace.
++  ],
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.json:13: trailing whitespace.
++  "cwd": "F:\\Project\\xlm-c05-global",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.json:14: trailing whitespace.
++  "environment": {
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.json:15: trailing whitespace.
++    "HF_DATASETS_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.json:16: trailing whitespace.
++    "HF_HUB_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.json:17: trailing whitespace.
++    "MKL_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.json:18: trailing whitespace.
++    "NUMEXPR_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.json:19: trailing whitespace.
++    "OMP_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.json:20: trailing whitespace.
++    "OPENBLAS_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.json:21: trailing whitespace.
++    "PYTHONPATH": "F:/Project/xlm-c05-global/src",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.json:22: trailing whitespace.
++    "TOKENIZERS_PARALLELISM": "false",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.json:23: trailing whitespace.
++    "TRANSFORMERS_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.json:24: trailing whitespace.
++    "UV_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.json:25: trailing whitespace.
++    "UV_PROJECT_ENVIRONMENT": "F:/Project/xlm-common-pile/.venv"
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.json:26: trailing whitespace.
++  },
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.json:27: trailing whitespace.
++  "exit_status": 1,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.json:28: trailing whitespace.
++  "platform": "Windows-11-10.0.26200-SP0",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.json:29: trailing whitespace.
++  "python": "3.12.13",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.json:30: trailing whitespace.
++  "sampled_peak_process_tree_rss_bytes": 89358336,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.json:31: trailing whitespace.
++  "sampling_interval_seconds": 0.05,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.json:32: trailing whitespace.
++  "wall_seconds": 0.7189999999827705
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.json:33: trailing whitespace.
++}
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.log:1: trailing whitespace.
++Traceback (most recent call last):
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.log:2: trailing whitespace.
++  File "F:\Project\xlm-c05-global\scripts\c05_matcher_audit.py", line 133, in <module>
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.log:3: trailing whitespace.
++    raise SystemExit(main())
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.log:4: trailing whitespace.
++                     ^^^^^^
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.log:5: trailing whitespace.
++  File "F:\Project\xlm-c05-global\scripts\c05_matcher_audit.py", line 126, in main
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.log:6: trailing whitespace.
++    result = audit()
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.log:7: trailing whitespace.
++             ^^^^^^^
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.log:8: trailing whitespace.
++  File "F:\Project\xlm-c05-global\scripts\c05_matcher_audit.py", line 92, in audit
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.log:9: trailing whitespace.
++    doc.source_id = f"authored-source-{i}"
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.log:10: trailing whitespace.
++    ^^^^^^^^^^^^^
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.log:11: trailing whitespace.
++  File "<string>", line 4, in __setattr__
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/matcher-characterization.log:12: trailing whitespace.
++dataclasses.FrozenInstanceError: cannot assign to field 'source_id'
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:1: trailing whitespace.
++{
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:2: trailing whitespace.
++  "command": [
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:3: trailing whitespace.
++    "uv",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:4: trailing whitespace.
++    "run",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:5: trailing whitespace.
++    "--offline",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:6: trailing whitespace.
++    "--locked",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:7: trailing whitespace.
++    "--no-sync",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:8: trailing whitespace.
++    "mypy",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:9: trailing whitespace.
++    "--strict",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:10: trailing whitespace.
++    "src/xlm/data/exclusion/inputs.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:11: trailing whitespace.
++    "src/xlm/data/exclusion/preparation.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:12: trailing whitespace.
++    "scripts/c05_record_command.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:13: trailing whitespace.
++    "scripts/c05_matcher_audit.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:14: trailing whitespace.
++    "scripts/c05_source_facts.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:15: trailing whitespace.
++    "tests/test_c05_inputs.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:16: trailing whitespace.
++    "tests/test_c05_essential_inputs.py"
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:17: trailing whitespace.
++  ],
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:18: trailing whitespace.
++  "cwd": "F:\\Project\\xlm-c05-global",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:19: trailing whitespace.
++  "environment": {
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:20: trailing whitespace.
++    "HF_DATASETS_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:21: trailing whitespace.
++    "HF_HUB_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:22: trailing whitespace.
++    "MKL_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:23: trailing whitespace.
++    "NUMEXPR_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:24: trailing whitespace.
++    "OMP_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:25: trailing whitespace.
++    "OPENBLAS_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:26: trailing whitespace.
++    "PYTHONPATH": "F:/Project/xlm-c05-global/src",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:27: trailing whitespace.
++    "TOKENIZERS_PARALLELISM": "false",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:28: trailing whitespace.
++    "TRANSFORMERS_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:29: trailing whitespace.
++    "UV_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:30: trailing whitespace.
++    "UV_PROJECT_ENVIRONMENT": "F:/Project/xlm-common-pile/.venv"
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:31: trailing whitespace.
++  },
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:32: trailing whitespace.
++  "exit_status": 0,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:33: trailing whitespace.
++  "platform": "Windows-11-10.0.26200-SP0",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:34: trailing whitespace.
++  "python": "3.12.13",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:35: trailing whitespace.
++  "sampled_peak_process_tree_rss_bytes": 745115648,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:36: trailing whitespace.
++  "sampling_interval_seconds": 0.05,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:37: trailing whitespace.
++  "wall_seconds": 28.0
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.json:38: trailing whitespace.
++}
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.log:1: trailing whitespace.
++pyproject.toml: note: unused section(s): module = ['lm_eval', 'lm_eval.*']
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/mypy.log:2: trailing whitespace.
++Success: no issues found in 7 source files
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:1: trailing whitespace.
++{
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:2: trailing whitespace.
++  "command": [
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:3: trailing whitespace.
++    "uv",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:4: trailing whitespace.
++    "run",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:5: trailing whitespace.
++    "--offline",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:6: trailing whitespace.
++    "--locked",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:7: trailing whitespace.
++    "--no-sync",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:8: trailing whitespace.
++    "python",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:9: trailing whitespace.
++    "-m",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:10: trailing whitespace.
++    "xlm.data.exclusion.preparation",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:11: trailing whitespace.
++    "preflight",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:12: trailing whitespace.
++    "--data-root",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:13: trailing whitespace.
++    "G:/XLM",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:14: trailing whitespace.
++    "--scratch-root",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:15: trailing whitespace.
++    "C:/XLM-scratch",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:16: trailing whitespace.
++    "--manifest",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:17: trailing whitespace.
++    "docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/input-manifest.json",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:18: trailing whitespace.
++    "--audit-output",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:19: trailing whitespace.
++    "docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preparation-audit.json"
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:20: trailing whitespace.
++  ],
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:21: trailing whitespace.
++  "cwd": "F:\\Project\\xlm-c05-global",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:22: trailing whitespace.
++  "environment": {
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:23: trailing whitespace.
++    "HF_DATASETS_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:24: trailing whitespace.
++    "HF_HUB_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:25: trailing whitespace.
++    "MKL_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:26: trailing whitespace.
++    "NUMEXPR_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:27: trailing whitespace.
++    "OMP_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:28: trailing whitespace.
++    "OPENBLAS_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:29: trailing whitespace.
++    "PYTHONPATH": "F:/Project/xlm-c05-global/src",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:30: trailing whitespace.
++    "TOKENIZERS_PARALLELISM": "false",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:31: trailing whitespace.
++    "TRANSFORMERS_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:32: trailing whitespace.
++    "UV_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:33: trailing whitespace.
++    "UV_PROJECT_ENVIRONMENT": "F:/Project/xlm-common-pile/.venv"
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:34: trailing whitespace.
++  },
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:35: trailing whitespace.
++  "exit_status": 2,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:36: trailing whitespace.
++  "platform": "Windows-11-10.0.26200-SP0",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:37: trailing whitespace.
++  "python": "3.12.13",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:38: trailing whitespace.
++  "sampled_peak_process_tree_rss_bytes": 108609536,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:39: trailing whitespace.
++  "sampling_interval_seconds": 0.05,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:40: trailing whitespace.
++  "wall_seconds": 3.5160000000032596
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.json:41: trailing whitespace.
++}
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:1: trailing whitespace.
++{
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:2: trailing whitespace.
++  "benchmark_requirements": {
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:3: trailing whitespace.
++    "network_acquisition_required": "unknown until isolated operator local inventory",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:4: trailing whitespace.
++    "operator_preparation_required": true,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:5: trailing whitespace.
++    "pins_file_sha256": "f230cea66b4bc24a484cff89d6780991e5ceeae89aa120ad4034ec51af1150dd",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:6: trailing whitespace.
++    "tasks": {
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:7: trailing whitespace.
++      "arc_easy": {
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:8: trailing whitespace.
++        "configuration_requirement": "ARC-Easy",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:9: trailing whitespace.
++        "expected_text_fields_to_validate": [
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:10: trailing whitespace.
++          "question",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:11: trailing whitespace.
++          "choices.text"
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:12: trailing whitespace.
++        ],
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:13: trailing whitespace.
++        "index_identity": null,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:14: trailing whitespace.
++        "material_sha256": null,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:15: trailing whitespace.
++        "repository": "allenai/ai2_arc",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:16: trailing whitespace.
++        "revision": "210d026faf9955653af8916fad021475a3f00453",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:17: trailing whitespace.
++        "split_requirement": "all publisher splits, including train and final",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:18: trailing whitespace.
++        "status": "PINNED_METADATA_ONLY",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:19: trailing whitespace.
++        "verified_configs": null,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:20: trailing whitespace.
++        "verified_item_count": null,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:21: trailing whitespace.
++        "verified_splits": null
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:22: trailing whitespace.
++      },
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:23: trailing whitespace.
++      "blimp": {
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:24: trailing whitespace.
++        "configuration_requirement": "all subdatasets",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:25: trailing whitespace.
++        "expected_text_fields_to_validate": [
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:26: trailing whitespace.
++          "sentence_good",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:27: trailing whitespace.
++          "sentence_bad"
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:28: trailing whitespace.
++        ],
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:29: trailing whitespace.
++        "index_identity": null,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:30: trailing whitespace.
++        "material_sha256": null,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:31: trailing whitespace.
++        "repository": "nyu-mll/blimp",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:32: trailing whitespace.
++        "revision": "877fba0801ffb7cbd8c39c1ff314a46f053f6036",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:33: trailing whitespace.
++        "split_requirement": "all publisher splits, including train and final",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:34: trailing whitespace.
++        "status": "PINNED_METADATA_ONLY",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:35: trailing whitespace.
++        "verified_configs": null,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:36: trailing whitespace.
++        "verified_item_count": null,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:37: trailing whitespace.
++        "verified_splits": null
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:38: trailing whitespace.
++      },
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:39: trailing whitespace.
++      "hellaswag": {
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:40: trailing whitespace.
++        "configuration_requirement": "publisher configuration",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:41: trailing whitespace.
++        "expected_text_fields_to_validate": [
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:42: trailing whitespace.
++          "ctx",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:43: trailing whitespace.
++          "ctx_a",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:44: trailing whitespace.
++          "ctx_b",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:45: trailing whitespace.
++          "endings"
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:46: trailing whitespace.
++        ],
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:47: trailing whitespace.
++        "index_identity": null,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:48: trailing whitespace.
++        "material_sha256": null,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:49: trailing whitespace.
++        "repository": "Rowan/hellaswag",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:50: trailing whitespace.
++        "revision": "218ec52e09a7e7462a5400043bb9a69a41d06b76",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:51: trailing whitespace.
++        "split_requirement": "all publisher splits, including train and final",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:52: trailing whitespace.
++        "status": "PINNED_METADATA_ONLY",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:53: trailing whitespace.
++        "verified_configs": null,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:54: trailing whitespace.
++        "verified_item_count": null,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:55: trailing whitespace.
++        "verified_splits": null
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:56: trailing whitespace.
++      },
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:57: trailing whitespace.
++      "piqa": {
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:58: trailing whitespace.
++        "configuration_requirement": "publisher configuration",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:59: trailing whitespace.
++        "expected_text_fields_to_validate": [
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:60: trailing whitespace.
++          "goal",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:61: trailing whitespace.
++          "sol1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:62: trailing whitespace.
++          "sol2"
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:63: trailing whitespace.
++        ],
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:64: trailing whitespace.
++        "index_identity": null,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:65: trailing whitespace.
++        "material_sha256": null,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:66: trailing whitespace.
++        "repository": "baber/piqa",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:67: trailing whitespace.
++        "revision": "142f6d7367fd9877f0fb3b5734ea6a545f54cdd1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:68: trailing whitespace.
++        "split_requirement": "all publisher splits, including train and final",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:69: trailing whitespace.
++        "status": "PINNED_METADATA_ONLY",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:70: trailing whitespace.
++        "verified_configs": null,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:71: trailing whitespace.
++        "verified_item_count": null,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:72: trailing whitespace.
++        "verified_splits": null
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:73: trailing whitespace.
++      }
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:74: trailing whitespace.
++    }
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:75: trailing whitespace.
++  },
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:76: trailing whitespace.
++  "blockers": [
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:77: trailing whitespace.
++    "No verified protected benchmark material/index receipt, exact config/split coverage or counts",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:78: trailing whitespace.
++    "Development matcher is in-memory and suppresses repeated benchmark spans using corpus frequency",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:79: trailing whitespace.
++    "No bounded global C05 scan journal, crash recovery or protected atomic publication integration",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:80: trailing whitespace.
++    "No end-to-end C05 kept-membership gate in tokenizer/final-mixture production tooling",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:81: trailing whitespace.
++    "Unknown Gutenberg book lineage and SYNTH seed-URL grouping require explicit policy treatment"
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:82: trailing whitespace.
++  ],
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:83: trailing whitespace.
++  "digest": "76ca1070bdfc7060b01b2fffa71994836d8d6423577a48ada9476e94a8ad3bc0",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:84: trailing whitespace.
++  "executable": false,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:85: trailing whitespace.
++  "execution_authorized": false,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:86: trailing whitespace.
++  "input_manifest_digest": "11724d92c011dd01e8e8c3ab944ac2adeef76aa8ff4abc921bf882eb0ac84152",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:87: trailing whitespace.
++  "kind": "c05_preparation_audit",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:88: trailing whitespace.
++  "limitations": [
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:89: trailing whitespace.
++    "Metadata inventory is not corpus-content revalidation or global deduplication",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:90: trailing whitespace.
++    "No exclusions, kept membership, split freeze or protected receipt have been produced",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:91: trailing whitespace.
++    "No task material, raw signature hashes or benchmark labels were opened"
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:92: trailing whitespace.
++  ],
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:93: trailing whitespace.
++  "plan_digest": null,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:94: trailing whitespace.
++  "resource_observations": {
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:95: trailing whitespace.
++    "canonical_bytes": 81859652239,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:96: trailing whitespace.
++    "documents": 15097174,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:97: trailing whitespace.
++    "file_bytes": 104506534003
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:98: trailing whitespace.
++  },
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:99: trailing whitespace.
++  "status": "BLOCKED",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:100: trailing whitespace.
++  "version": 1
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/preflight.log:101: trailing whitespace.
++}
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:1: trailing whitespace.
++{
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:2: trailing whitespace.
++  "command": [
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:3: trailing whitespace.
++    "uv",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:4: trailing whitespace.
++    "run",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:5: trailing whitespace.
++    "--offline",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:6: trailing whitespace.
++    "--locked",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:7: trailing whitespace.
++    "--no-sync",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:8: trailing whitespace.
++    "--extra",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:9: trailing whitespace.
++    "cpu",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:10: trailing whitespace.
++    "--extra",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:11: trailing whitespace.
++    "eval",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:12: trailing whitespace.
++    "python",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:13: trailing whitespace.
++    "-m",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:14: trailing whitespace.
++    "pytest",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:15: trailing whitespace.
++    "tests/test_c05_inputs.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:16: trailing whitespace.
++    "tests/test_c05_essential_inputs.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:17: trailing whitespace.
++    "tests/test_exclusion_benchmark.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:18: trailing whitespace.
++    "tests/test_exclusion_receipt.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:19: trailing whitespace.
++    "tests/test_dedup_engine.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:20: trailing whitespace.
++    "tests/test_dedup_lineage.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:21: trailing whitespace.
++    "tests/test_pool_splits.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:22: trailing whitespace.
++    "tests/test_pool_freeze_regime.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:23: trailing whitespace.
++    "tests/test_tokenizer_regime.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:24: trailing whitespace.
++    "tests/test_eval_suites.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:25: trailing whitespace.
++    "tests/test_operator.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:26: trailing whitespace.
++    "-m",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:27: trailing whitespace.
++    "serial or optional_dependency",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:28: trailing whitespace.
++    "-n",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:29: trailing whitespace.
++    "0",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:30: trailing whitespace.
++    "-q",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:31: trailing whitespace.
++    "--basetemp",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:32: trailing whitespace.
++    "C:/XLM-scratch/c05serial01"
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:33: trailing whitespace.
++  ],
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:34: trailing whitespace.
++  "cwd": "F:\\Project\\xlm-c05-global",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:35: trailing whitespace.
++  "environment": {
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:36: trailing whitespace.
++    "HF_DATASETS_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:37: trailing whitespace.
++    "HF_HUB_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:38: trailing whitespace.
++    "MKL_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:39: trailing whitespace.
++    "NUMEXPR_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:40: trailing whitespace.
++    "OMP_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:41: trailing whitespace.
++    "OPENBLAS_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:42: trailing whitespace.
++    "PYTHONPATH": "F:/Project/xlm-c05-global/src",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:43: trailing whitespace.
++    "TOKENIZERS_PARALLELISM": "false",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:44: trailing whitespace.
++    "TRANSFORMERS_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:45: trailing whitespace.
++    "UV_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:46: trailing whitespace.
++    "UV_PROJECT_ENVIRONMENT": "F:/Project/xlm-common-pile/.venv"
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:47: trailing whitespace.
++  },
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:48: trailing whitespace.
++  "exit_status": 0,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:49: trailing whitespace.
++  "platform": "Windows-11-10.0.26200-SP0",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:50: trailing whitespace.
++  "python": "3.12.13",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:51: trailing whitespace.
++  "sampled_peak_process_tree_rss_bytes": 114925568,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:52: trailing whitespace.
++  "sampling_interval_seconds": 0.05,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:53: trailing whitespace.
++  "wall_seconds": 1.8439999999827705
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.json:54: trailing whitespace.
++}
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.log:1: trailing whitespace.
++.                                                                        [100%]
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-serial.log:2: trailing whitespace.
++1 passed, 237 deselected in 1.31s
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:1: trailing whitespace.
++{
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:2: trailing whitespace.
++  "command": [
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:3: trailing whitespace.
++    "uv",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:4: trailing whitespace.
++    "run",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:5: trailing whitespace.
++    "--offline",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:6: trailing whitespace.
++    "--locked",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:7: trailing whitespace.
++    "--no-sync",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:8: trailing whitespace.
++    "--extra",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:9: trailing whitespace.
++    "cpu",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:10: trailing whitespace.
++    "--extra",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:11: trailing whitespace.
++    "eval",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:12: trailing whitespace.
++    "python",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:13: trailing whitespace.
++    "-m",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:14: trailing whitespace.
++    "pytest",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:15: trailing whitespace.
++    "tests/test_c05_inputs.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:16: trailing whitespace.
++    "tests/test_c05_essential_inputs.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:17: trailing whitespace.
++    "tests/test_exclusion_benchmark.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:18: trailing whitespace.
++    "tests/test_exclusion_receipt.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:19: trailing whitespace.
++    "tests/test_dedup_engine.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:20: trailing whitespace.
++    "tests/test_dedup_lineage.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:21: trailing whitespace.
++    "tests/test_pool_splits.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:22: trailing whitespace.
++    "tests/test_pool_freeze_regime.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:23: trailing whitespace.
++    "tests/test_tokenizer_regime.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:24: trailing whitespace.
++    "tests/test_eval_suites.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:25: trailing whitespace.
++    "tests/test_operator.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:26: trailing whitespace.
++    "-m",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:27: trailing whitespace.
++    "not serial and not optional_dependency",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:28: trailing whitespace.
++    "-n",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:29: trailing whitespace.
++    "16",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:30: trailing whitespace.
++    "--dist=worksteal",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:31: trailing whitespace.
++    "--max-worker-restart=0",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:32: trailing whitespace.
++    "-q",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:33: trailing whitespace.
++    "--basetemp",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:34: trailing whitespace.
++    "C:/XLM-scratch/c05related02"
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:35: trailing whitespace.
++  ],
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:36: trailing whitespace.
++  "cwd": "F:\\Project\\xlm-c05-global",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:37: trailing whitespace.
++  "environment": {
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:38: trailing whitespace.
++    "HF_DATASETS_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:39: trailing whitespace.
++    "HF_HUB_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:40: trailing whitespace.
++    "MKL_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:41: trailing whitespace.
++    "NUMEXPR_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:42: trailing whitespace.
++    "OMP_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:43: trailing whitespace.
++    "OPENBLAS_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:44: trailing whitespace.
++    "PYTHONPATH": "F:/Project/xlm-c05-global/src",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:45: trailing whitespace.
++    "TOKENIZERS_PARALLELISM": "false",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:46: trailing whitespace.
++    "TRANSFORMERS_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:47: trailing whitespace.
++    "UV_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:48: trailing whitespace.
++    "UV_PROJECT_ENVIRONMENT": "F:/Project/xlm-common-pile/.venv"
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:49: trailing whitespace.
++  },
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:50: trailing whitespace.
++  "exit_status": 0,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:51: trailing whitespace.
++  "platform": "Windows-11-10.0.26200-SP0",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:52: trailing whitespace.
++  "python": "3.12.13",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:53: trailing whitespace.
++  "sampled_peak_process_tree_rss_bytes": 2075328512,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:54: trailing whitespace.
++  "sampling_interval_seconds": 0.05,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:55: trailing whitespace.
++  "wall_seconds": 13.21899999998277
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.json:56: trailing whitespace.
++}
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.log:1: trailing whitespace.
++bringing up nodes...
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.log:2: trailing whitespace.
++bringing up nodes...
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.log:3: trailing whitespace.
++
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.log:4: trailing whitespace.
++........................................................................ [ 30%]
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.log:5: trailing whitespace.
++........................................................................ [ 60%]
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.log:6: trailing whitespace.
++........................................................................ [ 91%]
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.log:7: trailing whitespace.
++.....................                                                    [100%]
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests-02.log:8: trailing whitespace.
++237 passed in 12.68s
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:1: trailing whitespace.
++{
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:2: trailing whitespace.
++  "command": [
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:3: trailing whitespace.
++    "uv",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:4: trailing whitespace.
++    "run",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:5: trailing whitespace.
++    "--offline",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:6: trailing whitespace.
++    "--locked",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:7: trailing whitespace.
++    "--no-sync",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:8: trailing whitespace.
++    "--extra",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:9: trailing whitespace.
++    "cpu",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:10: trailing whitespace.
++    "--extra",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:11: trailing whitespace.
++    "eval",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:12: trailing whitespace.
++    "python",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:13: trailing whitespace.
++    "-m",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:14: trailing whitespace.
++    "pytest",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:15: trailing whitespace.
++    "tests/test_c05_inputs.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:16: trailing whitespace.
++    "tests/test_c05_essential_inputs.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:17: trailing whitespace.
++    "tests/test_exclusion_benchmark.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:18: trailing whitespace.
++    "tests/test_exclusion_receipt.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:19: trailing whitespace.
++    "tests/test_dedup_engine.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:20: trailing whitespace.
++    "tests/test_dedup_lineage.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:21: trailing whitespace.
++    "tests/test_pool_splits.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:22: trailing whitespace.
++    "tests/test_pool_freeze_regime.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:23: trailing whitespace.
++    "tests/test_tokenizer_regime.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:24: trailing whitespace.
++    "tests/test_eval_suites.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:25: trailing whitespace.
++    "tests/test_operator.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:26: trailing whitespace.
++    "-m",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:27: trailing whitespace.
++    "not serial",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:28: trailing whitespace.
++    "-n",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:29: trailing whitespace.
++    "16",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:30: trailing whitespace.
++    "--dist=worksteal",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:31: trailing whitespace.
++    "--max-worker-restart=0",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:32: trailing whitespace.
++    "-q",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:33: trailing whitespace.
++    "--basetemp",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:34: trailing whitespace.
++    "C:/XLM-scratch/c05related01"
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:35: trailing whitespace.
++  ],
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:36: trailing whitespace.
++  "cwd": "F:\\Project\\xlm-c05-global",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:37: trailing whitespace.
++  "environment": {
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:38: trailing whitespace.
++    "HF_DATASETS_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:39: trailing whitespace.
++    "HF_HUB_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:40: trailing whitespace.
++    "MKL_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:41: trailing whitespace.
++    "NUMEXPR_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:42: trailing whitespace.
++    "OMP_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:43: trailing whitespace.
++    "OPENBLAS_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:44: trailing whitespace.
++    "PYTHONPATH": "F:/Project/xlm-c05-global/src",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:45: trailing whitespace.
++    "TOKENIZERS_PARALLELISM": "false",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:46: trailing whitespace.
++    "TRANSFORMERS_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:47: trailing whitespace.
++    "UV_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:48: trailing whitespace.
++    "UV_PROJECT_ENVIRONMENT": "F:/Project/xlm-common-pile/.venv"
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:49: trailing whitespace.
++  },
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:50: trailing whitespace.
++  "exit_status": 2,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:51: trailing whitespace.
++  "platform": "Windows-11-10.0.26200-SP0",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:52: trailing whitespace.
++  "python": "3.12.13",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:53: trailing whitespace.
++  "sampled_peak_process_tree_rss_bytes": 1767632896,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:54: trailing whitespace.
++  "sampling_interval_seconds": 0.05,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:55: trailing whitespace.
++  "wall_seconds": 6.48499999998603
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.json:56: trailing whitespace.
++}
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.log:1: trailing whitespace.
++bringing up nodes...
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.log:2: trailing whitespace.
++
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.log:3: trailing whitespace.
++! xdist.dsession.Interrupted: tests/test_eval_suites.py::test_installed_harness_version_matches_the_pin_when_present requires audited --dist=loadgroup or -n 0 !
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/related-tests.log:4: trailing whitespace.
++no tests ran in 5.94s
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:1: trailing whitespace.
++{
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:2: trailing whitespace.
++  "command": [
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:3: trailing whitespace.
++    "uv",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:4: trailing whitespace.
++    "run",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:5: trailing whitespace.
++    "--offline",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:6: trailing whitespace.
++    "--locked",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:7: trailing whitespace.
++    "--no-sync",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:8: trailing whitespace.
++    "ruff",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:9: trailing whitespace.
++    "check",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:10: trailing whitespace.
++    "src/xlm/data/exclusion/inputs.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:11: trailing whitespace.
++    "src/xlm/data/exclusion/preparation.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:12: trailing whitespace.
++    "scripts/c05_record_command.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:13: trailing whitespace.
++    "scripts/c05_matcher_audit.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:14: trailing whitespace.
++    "scripts/c05_source_facts.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:15: trailing whitespace.
++    "tests/test_c05_inputs.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:16: trailing whitespace.
++    "tests/test_c05_essential_inputs.py"
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:17: trailing whitespace.
++  ],
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:18: trailing whitespace.
++  "cwd": "F:\\Project\\xlm-c05-global",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:19: trailing whitespace.
++  "environment": {
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:20: trailing whitespace.
++    "HF_DATASETS_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:21: trailing whitespace.
++    "HF_HUB_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:22: trailing whitespace.
++    "MKL_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:23: trailing whitespace.
++    "NUMEXPR_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:24: trailing whitespace.
++    "OMP_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:25: trailing whitespace.
++    "OPENBLAS_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:26: trailing whitespace.
++    "PYTHONPATH": "F:/Project/xlm-c05-global/src",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:27: trailing whitespace.
++    "TOKENIZERS_PARALLELISM": "false",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:28: trailing whitespace.
++    "TRANSFORMERS_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:29: trailing whitespace.
++    "UV_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:30: trailing whitespace.
++    "UV_PROJECT_ENVIRONMENT": "F:/Project/xlm-common-pile/.venv"
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:31: trailing whitespace.
++  },
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:32: trailing whitespace.
++  "exit_status": 0,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:33: trailing whitespace.
++  "platform": "Windows-11-10.0.26200-SP0",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:34: trailing whitespace.
++  "python": "3.12.13",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:35: trailing whitespace.
++  "sampled_peak_process_tree_rss_bytes": 18944000,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:36: trailing whitespace.
++  "sampling_interval_seconds": 0.05,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:37: trailing whitespace.
++  "wall_seconds": 0.0779999999795109
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/ruff-check.json:38: trailing whitespace.
++}
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.json:1: trailing whitespace.
++{
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.json:2: trailing whitespace.
++  "command": [
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.json:3: trailing whitespace.
++    "uv",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.json:4: trailing whitespace.
++    "run",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.json:5: trailing whitespace.
++    "--offline",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.json:6: trailing whitespace.
++    "--locked",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.json:7: trailing whitespace.
++    "--no-sync",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.json:8: trailing whitespace.
++    "python",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.json:9: trailing whitespace.
++    "scripts/c05_source_facts.py",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.json:10: trailing whitespace.
++    "--manifest",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.json:11: trailing whitespace.
++    "docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/input-manifest.json",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.json:12: trailing whitespace.
++    "--quotas",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.json:13: trailing whitespace.
++    "recipes/mixtures/mix01_quotas_6b.yaml",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.json:14: trailing whitespace.
++    "--output",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.json:15: trailing whitespace.
++    "docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts.json"
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.json:16: trailing whitespace.
++  ],
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.json:17: trailing whitespace.
++  "cwd": "F:\\Project\\xlm-c05-global",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.json:18: trailing whitespace.
++  "environment": {
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.json:19: trailing whitespace.
++    "HF_DATASETS_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.json:20: trailing whitespace.
++    "HF_HUB_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.json:21: trailing whitespace.
++    "MKL_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.json:22: trailing whitespace.
++    "NUMEXPR_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.json:23: trailing whitespace.
++    "OMP_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.json:24: trailing whitespace.
++    "OPENBLAS_NUM_THREADS": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.json:25: trailing whitespace.
++    "PYTHONPATH": "F:/Project/xlm-c05-global/src",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.json:26: trailing whitespace.
++    "TOKENIZERS_PARALLELISM": "false",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.json:27: trailing whitespace.
++    "TRANSFORMERS_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.json:28: trailing whitespace.
++    "UV_OFFLINE": "1",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.json:29: trailing whitespace.
++    "UV_PROJECT_ENVIRONMENT": "F:/Project/xlm-common-pile/.venv"
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.json:30: trailing whitespace.
++  },
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.json:31: trailing whitespace.
++  "exit_status": 0,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.json:32: trailing whitespace.
++  "platform": "Windows-11-10.0.26200-SP0",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.json:33: trailing whitespace.
++  "python": "3.12.13",
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.json:34: trailing whitespace.
++  "sampled_peak_process_tree_rss_bytes": 97087488,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.json:35: trailing whitespace.
++  "sampling_interval_seconds": 0.05,
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.json:36: trailing whitespace.
++  "wall_seconds": 0.7660000000032596
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.json:37: trailing whitespace.
++}
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts-command.log:1: trailing whitespace.
++Saved metadata facts; 10 prefix rows, 141066 bytes
+docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/source-facts.log:1: trailing whitespace.
++Saved metadata facts; 10 prefix rows, 141066 bytes

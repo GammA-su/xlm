@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "F:\Project\xlm-c05-global\scripts\c05_matcher_audit.py", line 133, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "F:\Project\xlm-c05-global\scripts\c05_matcher_audit.py", line 126, in main
+    result = audit()
+             ^^^^^^^
+  File "F:\Project\xlm-c05-global\scripts\c05_matcher_audit.py", line 92, in audit
+    doc.source_id = f"authored-source-{i}"
+    ^^^^^^^^^^^^^
+  File "<string>", line 4, in __setattr__
+dataclasses.FrozenInstanceError: cannot assign to field 'source_id'
