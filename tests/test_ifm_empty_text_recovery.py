@@ -181,11 +181,16 @@ def frozen_identity() -> dict[str, str]:
 
 
 def test_registry_overrides_only_the_ifm_adapters() -> None:
+    from xlm.data.adapters import common_pile_adapters
+
     assert set(registry.ADAPTERS_BY_ID) == set(mix01_adapters.ADAPTERS_BY_ID)
     for adapter_id, factory in registry.ADAPTERS_BY_ID.items():
         if adapter_id in ("ifm_general", "ifm_planning"):
             assert factory is ifm_adapters.ADAPTERS_BY_ID[adapter_id]
             assert issubclass(factory, mix01_adapters.ADAPTERS_BY_ID[adapter_id])
+        elif adapter_id == "common_pile":
+            assert factory is common_pile_adapters.CommonPileAdapter
+            assert issubclass(factory, mix01_adapters.CommonPileAdapter)
         else:
             assert factory is mix01_adapters.ADAPTERS_BY_ID[adapter_id]
     # Production adaptation resolves through the registry, Essential-Web keeps the frozen one.
@@ -195,6 +200,8 @@ def test_registry_overrides_only_the_ifm_adapters() -> None:
 
 
 def test_only_ifm_code_identity_changes() -> None:
+    from xlm.data.adapters import common_pile_adapters
+
     frozen = frozen_identity()
     for adapter_id in registry.ADAPTERS_BY_ID:
         identity = ce.adapter_code_identity(adapter_id)
@@ -207,6 +214,14 @@ def test_only_ifm_code_identity_changes() -> None:
             assert identity != frozen
             assert {k: identity[k] for k in frozen} == frozen
             assert set(identity) - set(frozen) == {"xlm.data.adapters.ifm_adapters"}
+        elif adapter_id == "common_pile":
+            assert registry.adapter_code_modules(adapter_id) == (
+                mix01_adapters,
+                columns,
+                common_pile_adapters,
+            )
+            assert {k: identity[k] for k in frozen} == frozen
+            assert set(identity) - set(frozen) == {"xlm.data.adapters.common_pile_adapters"}
         else:
             assert registry.adapter_code_modules(adapter_id) == (mix01_adapters, columns)
             assert identity == frozen  # every non-IFM bridge still verifies
@@ -359,7 +374,7 @@ class IfmWorld:
         self.roots = runner.Roots(tmp_path / "data", tmp_path / "scratch", "ifm_general")
         names = [f"general/general_full.chunk0-test-{i:05d}.parquet" for i in range(5)]
         seed = 20260918
-        entries = sorted(
+        entries: list[dict[str, Any]] = sorted(
             (
                 {
                     "file": name,

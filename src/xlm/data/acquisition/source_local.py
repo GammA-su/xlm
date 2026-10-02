@@ -88,7 +88,7 @@ from xlm.data.acquisition.source_rowgroups import (
 )
 from xlm.data.adapters.columns import columns_for
 from xlm.data.adapters.mix01_adapters import RecordRejectedError
-from xlm.data.adapters.registry import ADAPTERS_BY_ID
+from xlm.data.adapters.registry import ADAPTERS_BY_ID as ADAPTERS_BY_ID
 from xlm.data.adapters.rejections import (
     DOCUMENTS_FILENAME,
     SUMMARY_FILENAME,

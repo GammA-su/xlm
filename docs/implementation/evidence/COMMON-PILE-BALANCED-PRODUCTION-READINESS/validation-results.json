@@ -1,0 +1,93 @@
+{
+  "changed_python_files": [
+    "docs/implementation/evidence/COMMON-PILE-BALANCED-PRODUCTION-READINESS/audit_local.py",
+    "docs/implementation/evidence/COMMON-PILE-BALANCED-PRODUCTION-READINESS/compare_strategies.py",
+    "docs/implementation/evidence/COMMON-PILE-BALANCED-PRODUCTION-READINESS/prepare_calibration.py",
+    "docs/implementation/evidence/COMMON-PILE-BALANCED-PRODUCTION-READINESS/validate_readiness.py",
+    "docs/implementation/evidence/COMMON-PILE-BALANCED-PRODUCTION-READINESS/verify_operator_artifacts.py",
+    "scripts/component_calibration.py",
+    "scripts/jsonl_gz_sample.py",
+    "scripts/mix01_inventory.py",
+    "scripts/mix01_source.py",
+    "src/xlm/data/acquisition/component_calibration.py",
+    "src/xlm/data/acquisition/component_policy.py",
+    "src/xlm/data/acquisition/jsonl_gz.py",
+    "src/xlm/data/acquisition/jsonl_gz_sample.py",
+    "src/xlm/data/acquisition/source_benchmark.py",
+    "src/xlm/data/acquisition/source_formats.py",
+    "src/xlm/data/acquisition/source_local.py",
+    "src/xlm/data/acquisition/source_plan.py",
+    "src/xlm/data/acquisition/source_reservations.py",
+    "src/xlm/data/acquisition/source_run.py",
+    "src/xlm/data/adapters/common_pile_adapters.py",
+    "src/xlm/data/adapters/registry.py",
+    "src/xlm/data/sources/admission.py",
+    "src/xlm/data/sources/certified_evidence.py",
+    "src/xlm/data/sources/common_pile_evidence.py",
+    "src/xlm/data/sources/common_pile_license.py",
+    "src/xlm/data/sources/mix01_admission.py",
+    "tests/test_component_allowlist.py",
+    "tests/test_component_calibration.py",
+    "tests/test_component_policy.py",
+    "tests/test_ifm_empty_text_recovery.py",
+    "tests/test_ifm_production_bounds.py",
+    "tests/test_jsonl_gz.py",
+    "tests/test_mix01_source_cli.py",
+    "tests/test_source_jsonl_gz_run.py"
+  ],
+  "cuda": false,
+  "network_acquisition": false,
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.12.13",
+  "results": {
+    "diff-final": {
+      "command": "git diff --check",
+      "exit": 0,
+      "sampled_tree_peak_rss_bytes": 10051584,
+      "seconds": 0.125
+    },
+    "evidence-show": {
+      "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/mix01_source.py evidence show --source-key common_pile --data-root G:/XLM --scratch-root C:/XLM-scratch",
+      "exit": 1,
+      "sampled_tree_peak_rss_bytes": 98029568,
+      "seconds": 0.922
+    },
+    "format-final": {
+      "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python -m ruff format --check docs/implementation/evidence/COMMON-PILE-BALANCED-PRODUCTION-READINESS/audit_local.py docs/implementation/evidence/COMMON-PILE-BALANCED-PRODUCTION-READINESS/compare_strategies.py docs/implementation/evidence/COMMON-PILE-BALANCED-PRODUCTION-READINESS/prepare_calibration.py docs/implementation/evidence/COMMON-PILE-BALANCED-PRODUCTION-READINESS/validate_readiness.py docs/implementation/evidence/COMMON-PILE-BALANCED-PRODUCTION-READINESS/verify_operator_artifacts.py scripts/component_calibration.py scripts/jsonl_gz_sample.py scripts/mix01_inventory.py scripts/mix01_source.py src/xlm/data/acquisition/component_calibration.py src/xlm/data/acquisition/component_policy.py src/xlm/data/acquisition/jsonl_gz.py src/xlm/data/acquisition/jsonl_gz_sample.py src/xlm/data/acquisition/source_benchmark.py src/xlm/data/acquisition/source_formats.py src/xlm/data/acquisition/source_local.py src/xlm/data/acquisition/source_plan.py src/xlm/data/acquisition/source_reservations.py src/xlm/data/acquisition/source_run.py src/xlm/data/adapters/common_pile_adapters.py src/xlm/data/adapters/registry.py src/xlm/data/sources/admission.py src/xlm/data/sources/certified_evidence.py src/xlm/data/sources/common_pile_evidence.py src/xlm/data/sources/common_pile_license.py src/xlm/data/sources/mix01_admission.py tests/test_component_allowlist.py tests/test_component_calibration.py tests/test_component_policy.py tests/test_ifm_empty_text_recovery.py tests/test_ifm_production_bounds.py tests/test_jsonl_gz.py tests/test_mix01_source_cli.py tests/test_source_jsonl_gz_run.py",
+      "exit": 0,
+      "sampled_tree_peak_rss_bytes": 18939904,
+      "seconds": 0.125
+    },
+    "mypy-final": {
+      "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python -m mypy --strict docs/implementation/evidence/COMMON-PILE-BALANCED-PRODUCTION-READINESS/audit_local.py docs/implementation/evidence/COMMON-PILE-BALANCED-PRODUCTION-READINESS/compare_strategies.py docs/implementation/evidence/COMMON-PILE-BALANCED-PRODUCTION-READINESS/prepare_calibration.py docs/implementation/evidence/COMMON-PILE-BALANCED-PRODUCTION-READINESS/validate_readiness.py docs/implementation/evidence/COMMON-PILE-BALANCED-PRODUCTION-READINESS/verify_operator_artifacts.py scripts/component_calibration.py scripts/jsonl_gz_sample.py scripts/mix01_inventory.py scripts/mix01_source.py src/xlm/data/acquisition/component_calibration.py src/xlm/data/acquisition/component_policy.py src/xlm/data/acquisition/jsonl_gz.py src/xlm/data/acquisition/jsonl_gz_sample.py src/xlm/data/acquisition/source_benchmark.py src/xlm/data/acquisition/source_formats.py src/xlm/data/acquisition/source_local.py src/xlm/data/acquisition/source_plan.py src/xlm/data/acquisition/source_reservations.py src/xlm/data/acquisition/source_run.py src/xlm/data/adapters/common_pile_adapters.py src/xlm/data/adapters/registry.py src/xlm/data/sources/admission.py src/xlm/data/sources/certified_evidence.py src/xlm/data/sources/common_pile_evidence.py src/xlm/data/sources/common_pile_license.py src/xlm/data/sources/mix01_admission.py tests/test_component_allowlist.py tests/test_component_calibration.py tests/test_component_policy.py tests/test_ifm_empty_text_recovery.py tests/test_ifm_production_bounds.py tests/test_jsonl_gz.py tests/test_mix01_source_cli.py tests/test_source_jsonl_gz_run.py",
+      "exit": 0,
+      "sampled_tree_peak_rss_bytes": 73113600,
+      "seconds": 0.469
+    },
+    "plan-refusal": {
+      "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/mix01_source.py plan --source-key common_pile --data-root G:/XLM --scratch-root C:/XLM-scratch",
+      "exit": 1,
+      "sampled_tree_peak_rss_bytes": 98213888,
+      "seconds": 0.937
+    },
+    "related-final": {
+      "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python -m pytest tests/test_component_allowlist.py tests/test_component_calibration.py tests/test_component_policy.py tests/test_jsonl_gz.py tests/test_source_jsonl_gz_run.py tests/test_source_plan.py tests/test_source_run.py tests/test_source_repair.py tests/test_source_file_bounds.py tests/test_source_record_bound.py tests/test_source_growth.py tests/test_source_growth_integration.py tests/test_source_rowgroups.py tests/test_mix01_source_cli.py tests/test_mix01_inventory.py tests/test_source_admission.py tests/test_mix01_admission.py tests/test_source_discovery.py tests/test_mix01_views.py tests/test_production_ingest.py tests/test_ifm_requirement_split.py tests/test_ifm_production_bounds.py tests/test_ifm_empty_text_recovery.py tests/test_synth_adapter_semantics.py tests/test_certified_evidence.py tests/test_essential_web_bulk.py -n 16 --dist=worksteal --max-worker-restart=0 -m \"not serial\" -q",
+      "exit": 0,
+      "sampled_tree_peak_rss_bytes": 3852455936,
+      "seconds": 25.735
+    },
+    "ruff-final": {
+      "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python -m ruff check docs/implementation/evidence/COMMON-PILE-BALANCED-PRODUCTION-READINESS/audit_local.py docs/implementation/evidence/COMMON-PILE-BALANCED-PRODUCTION-READINESS/compare_strategies.py docs/implementation/evidence/COMMON-PILE-BALANCED-PRODUCTION-READINESS/prepare_calibration.py docs/implementation/evidence/COMMON-PILE-BALANCED-PRODUCTION-READINESS/validate_readiness.py docs/implementation/evidence/COMMON-PILE-BALANCED-PRODUCTION-READINESS/verify_operator_artifacts.py scripts/component_calibration.py scripts/jsonl_gz_sample.py scripts/mix01_inventory.py scripts/mix01_source.py src/xlm/data/acquisition/component_calibration.py src/xlm/data/acquisition/component_policy.py src/xlm/data/acquisition/jsonl_gz.py src/xlm/data/acquisition/jsonl_gz_sample.py src/xlm/data/acquisition/source_benchmark.py src/xlm/data/acquisition/source_formats.py src/xlm/data/acquisition/source_local.py src/xlm/data/acquisition/source_plan.py src/xlm/data/acquisition/source_reservations.py src/xlm/data/acquisition/source_run.py src/xlm/data/adapters/common_pile_adapters.py src/xlm/data/adapters/registry.py src/xlm/data/sources/admission.py src/xlm/data/sources/certified_evidence.py src/xlm/data/sources/common_pile_evidence.py src/xlm/data/sources/common_pile_license.py src/xlm/data/sources/mix01_admission.py tests/test_component_allowlist.py tests/test_component_calibration.py tests/test_component_policy.py tests/test_ifm_empty_text_recovery.py tests/test_ifm_production_bounds.py tests/test_jsonl_gz.py tests/test_mix01_source_cli.py tests/test_source_jsonl_gz_run.py",
+      "exit": 0,
+      "sampled_tree_peak_rss_bytes": 18948096,
+      "seconds": 0.234
+    },
+    "serial-final": {
+      "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python -m pytest tests/test_component_allowlist.py tests/test_component_calibration.py tests/test_component_policy.py tests/test_jsonl_gz.py tests/test_source_jsonl_gz_run.py tests/test_source_plan.py tests/test_source_run.py tests/test_source_repair.py tests/test_source_file_bounds.py tests/test_source_record_bound.py tests/test_source_growth.py tests/test_source_growth_integration.py tests/test_source_rowgroups.py tests/test_mix01_source_cli.py tests/test_mix01_inventory.py tests/test_source_admission.py tests/test_mix01_admission.py tests/test_source_discovery.py tests/test_mix01_views.py tests/test_production_ingest.py tests/test_ifm_requirement_split.py tests/test_ifm_production_bounds.py tests/test_ifm_empty_text_recovery.py tests/test_synth_adapter_semantics.py tests/test_certified_evidence.py tests/test_essential_web_bulk.py -n 0 -m serial -q",
+      "exit": 5,
+      "sampled_tree_peak_rss_bytes": 114536448,
+      "seconds": 2.531
+    }
+  },
+  "test_basis": "authored offline fixtures; related selection, not whole repository"
+}

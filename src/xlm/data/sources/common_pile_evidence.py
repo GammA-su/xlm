@@ -27,18 +27,17 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from xlm.data.acquisition import component_allowlist as allow
-from xlm.data.evidence_v2 import canonical
+from xlm.data.acquisition import component_calibration as cc
 from xlm.data.sources import certified_evidence as ce
 
 SAMPLE_CERTIFICATION = "jsonl-gz-prefix-sample-v1"
 
 
 def _check_receipt(receipt: Mapping[str, Any]) -> None:
-    body = dict(receipt)
-    if body.pop("digest", None) != canonical.digest(body):
-        raise ce.BridgeRefusal("prefix sample receipt digest does not verify")
-    if receipt.get("kind") != "jsonl_gz_prefix_sample" or receipt.get("version") != 1:
-        raise ce.BridgeRefusal("not a version-1 prefix sample receipt")
+    try:
+        cc.check_sample_receipt(receipt)
+    except cc.CalibrationError as exc:
+        raise ce.BridgeRefusal(str(exc)) from exc
 
 
 def translate_component_samples(
@@ -49,6 +48,10 @@ def translate_component_samples(
     inventory: Mapping[str, Any],
 ) -> ce.CertifiedFacts:
     """Facts of ``(receipt bytes, saved rows bytes)`` pairs covering every allowlisted component."""
+    try:
+        cc.check_inputs(allowlist, inventory)
+    except cc.CalibrationError as exc:
+        raise ce.BridgeRefusal(str(exc)) from exc
     if (pin.repository, pin.revision, pin.component_id) != (
         allowlist["repository"],
         allowlist["revision"],
@@ -72,9 +75,14 @@ def translate_component_samples(
     )
     covered: set[str] = set()
     receipts: list[dict[str, str]] = []
+    seen_files: set[str] = set()
+    seen_labels: set[str] = set()
     for receipt_bytes, rows_bytes in samples:
         receipt = json.loads(receipt_bytes.decode("utf-8"))
         _check_receipt(receipt)
+        if receipt["label"] in seen_labels:
+            raise ce.BridgeRefusal("duplicate sample receipt label")
+        seen_labels.add(receipt["label"])
         bindings = receipt.get("bindings") or {}
         if (
             receipt["repository"] != pin.repository
@@ -92,15 +100,27 @@ def translate_component_samples(
                 continue
             row = json.loads(line.decode("utf-8"))
             key = (str(row.pop("_cert_source_file")), int(row.pop("_cert_source_row")))
-            row.pop("_cert_component", None)
+            if key in saved:
+                raise ce.BridgeRefusal("duplicate saved sample row identity")
+            if row.pop("_cert_component", None) != allow.component_of(key[0]):
+                raise ce.BridgeRefusal("saved sample component disagrees with its file")
             if row.pop("_cert_revision", pin.revision) != pin.revision:
                 raise ce.BridgeRefusal("saved sample row names another revision")
             saved[key] = row
+            if set(row) != {"text"} or not isinstance(row["text"], str):
+                raise ce.BridgeRefusal("saved sample schema must be text-only strings")
         expected = sum(int(f["rows"]) for f in receipt["files"])
         if len(saved) != expected:
             raise ce.BridgeRefusal("saved sample rows differ from the receipt's row count")
         for entry in receipt["files"]:
+            try:
+                cc.check_sample(entry)
+            except cc.CalibrationError as exc:
+                raise ce.BridgeRefusal(str(exc)) from exc
             name = str(entry["file"])
+            if name in seen_files:
+                raise ce.BridgeRefusal("duplicate sample file certification")
+            seen_files.add(name)
             if sizes.get(name) != entry["identity"]["total_bytes"]:
                 raise ce.BridgeRefusal(f"'{name}' is not a file of the production inventory")
             component = allow.component_of(name)
@@ -151,4 +171,7 @@ def translate_component_samples(
         "components": sorted(covered),
         "receipts": [r["digest"] for r in receipts],
     }
+    # Re-run the current adapter now: translation itself must refuse stale
+    # document identities, even before a metadata probe permits a bridge.
+    ce.certify_adapter(pin, facts, ce.view_schema(pin, facts))
     return facts

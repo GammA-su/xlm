@@ -169,8 +169,8 @@ def test_operator_cli_offline_path(
         return captured.out
 
     # Unknown or blocked keys refuse.
-    assert cli.main(["status", "--source-key", "common_pile"]) == 1
-    assert "license/provenance" in capsys.readouterr().err
+    assert cli.main(["status", "--source-key", "common_pile"]) == 0
+    assert '"plans": []' in capsys.readouterr().out
 
     out = run("evidence", "show", *common, "--probe-dir", str(probe_dir))
     assert "show only: nothing written" in out

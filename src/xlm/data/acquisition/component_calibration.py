@@ -29,6 +29,7 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from xlm.data.acquisition import component_allowlist as allow
+from xlm.data.acquisition import source_plan
 from xlm.data.acquisition.transport_policy import SourceLayout
 from xlm.data.evidence_v2 import canonical
 
@@ -45,17 +46,106 @@ class CalibrationError(ValueError):
     """Calibration inputs are missing, foreign or inconsistent; nothing is written."""
 
 
-def _verified(receipt: Mapping[str, Any]) -> None:
+def check_sample_receipt(receipt: Mapping[str, Any]) -> None:
     body = dict(receipt)
     if body.pop("digest", None) != canonical.digest(body):
         raise CalibrationError("prefix sample receipt digest does not verify")
     if receipt.get("kind") != SAMPLE_KIND or receipt.get("version") != 1:
         raise CalibrationError("not a version-1 prefix sample receipt")
+    entries = receipt["files"]
+    expected = {
+        "files": len(entries),
+        "rows": sum(e["rows"] for e in entries),
+        "requests": sum(e["transfer"]["requests"] for e in entries),
+        "transferred_bytes": sum(e["transfer"]["transferred_bytes"] for e in entries),
+    }
+    if receipt.get("totals") != expected:
+        raise CalibrationError("prefix sample receipt totals disagree with file accounting")
 
 
 def _quantile(values: Sequence[int], q: float) -> int:
     ordered = sorted(values)
     return ordered[min(len(ordered) - 1, math.floor(q * len(ordered)))]
+
+
+def check_inputs(allowlist: Mapping[str, Any], inventory: Mapping[str, Any]) -> None:
+    """Verify identities even when the caller already checked the discovery listing."""
+    body = dict(allowlist)
+    if body.pop("digest", None) != canonical.digest(body):
+        raise CalibrationError("component allowlist digest does not verify")
+    included = allowlist["included"]
+    if not included or len(set(included)) != len(included):
+        raise CalibrationError("empty or duplicate component allowlist")
+    if inventory.get("component_allowlist") != allow.inventory_binding(allowlist):
+        raise CalibrationError("inventory does not bind this component allowlist")
+    try:
+        names = source_plan.check_inventory(
+            inventory, allowlist["source_id"], allowlist["repository"], allowlist["revision"]
+        )
+    except source_plan.PlanError as exc:
+        raise CalibrationError(str(exc)) from exc
+    if {allow.component_of(n) for n in names} != set(included):
+        raise CalibrationError("inventory components differ from the allowlist")
+
+
+def _integer(value: Any, name: str, minimum: int = 0) -> int:
+    if type(value) is not int or value < minimum:
+        raise CalibrationError(f"{name} must be an integer >= {minimum}")
+    return int(value)
+
+
+def check_sample(entry: Mapping[str, Any]) -> None:
+    """Check receipt accounting, row identities and strictly positive useful evidence."""
+    rows = _integer(entry["rows"], "rows", 1)
+    details = entry["rows_detail"]
+    if len(details) != rows or [d["row"] for d in details] != list(range(rows)):
+        raise CalibrationError("sample row identities/counts disagree")
+    if entry["component"] != allow.component_of(entry["file"]):
+        raise CalibrationError("sample component disagrees with its file")
+    adapter = entry["adapter"]
+    accepted = _integer(adapter["accepted"], "accepted", 1)
+    rejected = _integer(adapter["rejected"], "rejected")
+    if accepted + rejected != rows:
+        raise CalibrationError("accepted/rejected accounting disagrees with rows")
+    if sum(d["outcome"] == "accepted" for d in details) != accepted:
+        raise CalibrationError("row outcomes disagree with accepted count")
+    _integer(adapter["canonical_bytes"], "canonical_bytes", 1)
+    transfer = entry["transfer"]
+    transferred = _integer(transfer["transferred_bytes"], "transferred_bytes", 1)
+    identity = entry["identity"]
+    etag = identity.get("etag")
+    if not isinstance(etag, str) or not etag or etag.startswith("W/"):
+        raise CalibrationError("sample needs a strong source identity")
+    if transferred > _integer(identity["total_bytes"], "file bytes", 1):
+        raise CalibrationError("sample transfer exceeds file identity size")
+    if not 0 < transfer["compressed_bytes_decoded"] <= transferred:
+        raise CalibrationError("sample compressed decoding exceeds transfer")
+    if _integer(transfer["decoded_bytes"], "decoded_bytes", 1) < sum(
+        d["line_bytes"] + 1 for d in details
+    ):
+        raise CalibrationError("sample decoded bytes do not cover sampled lines")
+    _integer(transfer["requests"], "requests", 1)
+    seconds = transfer["seconds"]
+    if isinstance(seconds, bool) or not isinstance(seconds, (int, float)):
+        raise CalibrationError("sample seconds must be numeric")
+    if not math.isfinite(seconds) or seconds < 0:
+        raise CalibrationError("sample seconds must be finite and nonnegative")
+    previous = 0
+    for detail in details:
+        compressed = _integer(detail["compressed_bytes_at_row_end"], "compressed row end", 1)
+        if not previous <= compressed <= transferred:
+            raise CalibrationError("compressed row boundaries disagree with transfer")
+        previous = compressed
+        _integer(detail["line_bytes"], "line_bytes", 1)
+        _integer(detail["text_utf8_bytes"], "text_utf8_bytes")
+        if detail["keys"] != ["text"] or detail["text_type"] != "str":
+            raise CalibrationError("sample row schema must be text-only strings")
+    if entry["schema"] != {"key_sets": [["text"]], "text_types": ["str"]}:
+        raise CalibrationError("sample schema must be text-only strings")
+    if adapter["canonical_bytes"] != sum(
+        d["text_utf8_bytes"] for d in details if d["outcome"] == "accepted"
+    ):
+        raise CalibrationError("canonical byte accounting differs from accepted text")
 
 
 def build_calibration(
@@ -67,30 +157,34 @@ def build_calibration(
     """The self-digested calibration record of every allowlisted component."""
     if not receipts:
         raise CalibrationError("calibration needs at least one prefix sample receipt")
+    check_inputs(allowlist, inventory)
     binding = inventory.get("component_allowlist") or {}
     if binding.get("digest") != allowlist.get("digest"):
         raise CalibrationError("inventory does not bind this component allowlist")
     included = list(allowlist["included"])
     sizes = {str(e["file"]): e["size_bytes"] for e in inventory["files"]}
-    if any(size is None for size in sizes.values()):
+    if any(type(size) is not int or size <= 0 for size in sizes.values()):
         raise CalibrationError("component calibration needs every inventory file size")
     samples: dict[str, list[dict[str, Any]]] = {c: [] for c in included}
     used: list[dict[str, str]] = []
     seen: set[str] = set()
     for receipt in receipts:
-        _verified(receipt)
+        check_sample_receipt(receipt)
         bindings = receipt.get("bindings") or {}
         if (
-            receipt["repository"] != allowlist["repository"]
+            receipt["source_id"] != allowlist["source_id"]
+            or receipt["repository"] != allowlist["repository"]
             or receipt["revision"] != allowlist["revision"]
             or bindings.get("component_allowlist_digest") != allowlist["digest"]
             or bindings.get("production_inventory_digest") != inventory["inventory_digest"]
         ):
             raise CalibrationError(
-                f"receipt {receipt['digest'][:12]} is bound to another allowlist, inventory or revision"
+                f"receipt {receipt['digest'][:12]} is bound to another "
+                "allowlist, inventory or revision"
             )
         used.append({"label": str(receipt["label"]), "digest": str(receipt["digest"])})
         for entry in receipt["files"]:
+            check_sample(entry)
             name = str(entry["file"])
             if name in seen:
                 raise CalibrationError(f"'{name}' is sampled by more than one receipt")
@@ -110,6 +204,7 @@ def build_calibration(
     components: dict[str, Any] = {}
     files_total = len(sizes)
     for component, entries in sorted(samples.items()):
+        entries = sorted(entries, key=lambda entry: entry["file"])
         rows = sum(int(e["rows"]) for e in entries)
         accepted = sum(int(e["adapter"]["accepted"]) for e in entries)
         canonical_bytes = sum(int(e["adapter"]["canonical_bytes"]) for e in entries)
@@ -130,6 +225,10 @@ def build_calibration(
                 "canonical_bytes": canonical_bytes,
                 "compressed_bytes_to_last_row": compressed,
                 "decoded_line_bytes": decoded,
+                "transferred_bytes": sum(e["transfer"]["transferred_bytes"] for e in entries),
+                "decoded_bytes": sum(e["transfer"]["decoded_bytes"] for e in entries),
+                "canonical_bytes_per_transferred_byte": canonical_bytes
+                / sum(e["transfer"]["transferred_bytes"] for e in entries),
                 "accepted_fraction": accepted / rows,
                 "canonical_bytes_per_row": canonical_per_row,
                 "compressed_bytes_per_row": per_row_compressed,
@@ -178,7 +277,10 @@ def build_calibration(
         "revision": str(allowlist["revision"]),
         "component_allowlist_digest": str(allowlist["digest"]),
         "production_inventory_digest": str(inventory["inventory_digest"]),
-        "receipts": used,
+        "receipts": sorted(used, key=lambda r: (r["digest"], r["label"])),
+        "sample_receipts": sorted((dict(r) for r in receipts), key=lambda r: r["digest"]),
+        "allowlist": dict(allowlist),
+        "inventory_snapshot": dict(inventory),
         "observed_transfer": {
             "requests": sum(
                 int(e["transfer"]["requests"]) for entries in samples.values() for e in entries
@@ -208,7 +310,8 @@ def build_calibration(
             "estimated_tokens": canonical_total / BYTES_PER_ESTIMATED_TOKEN,
         },
         "proposed_file_bounds": {
-            "rule": f"ceil({BOUND_MARGIN} x the largest per-component estimate of the largest file)",
+            "rule": f"ceil({BOUND_MARGIN} x the largest per-component estimate "
+            "of the largest file)",
             "max_rows_per_file": proposed_rows,
             "max_canonical_bytes_per_file": proposed_canonical,
         },
@@ -227,12 +330,20 @@ def check_calibration(
         raise CalibrationError("component calibration digest does not verify")
     if record.get("kind") != CALIBRATION_KIND or record.get("version") != CALIBRATION_VERSION:
         raise CalibrationError("not a version-1 component calibration")
+    check_inputs(allowlist, inventory)
+    for key in ("source_id", "component_id", "repository", "revision"):
+        if record.get(key) != allowlist[key]:
+            raise CalibrationError(f"component calibration belongs to another {key}")
     if (
         record["component_allowlist_digest"] != allowlist["digest"]
         or record["production_inventory_digest"] != inventory["inventory_digest"]
         or sorted(record["components"]) != sorted(allowlist["included"])
     ):
         raise CalibrationError("component calibration belongs to another allowlist or inventory")
+    if record != build_calibration(
+        record["sample_receipts"], allowlist=allowlist, inventory=inventory
+    ):
+        raise CalibrationError("component calibration does not reproduce its sample receipts")
     return dict(record)
 
 
@@ -293,5 +404,6 @@ def measurement(record: Mapping[str, Any]) -> dict[str, Any]:
         "extra_survival": 1.0,
         "transfer_basis": TRANSFER_BASIS,
         "component_calibration_digest": str(record["digest"]),
+        "component_calibration": dict(record),
         "avg_file_bytes": round(record["combined"]["mean_file_bytes"]),
     }

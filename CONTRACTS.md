@@ -157,6 +157,49 @@ license/provenance review and admission still gate production. Changing the
 allowlist means a new allowlist, a new inventory and a new plan lineage; a
 recorded one is never edited.
 
+**C04 JSONL.GZ amendment `mix01-source-raw-artifact-jsonl-gz-v1` (2026-10-02).**
+For Common Pile, `verified_source_jsonl_gz` retains the unmodified compressed
+file with repository, immutable revision, path, remote length/strong validator
+and local SHA-256. An independent expected SHA-256 is checked when available;
+an ETag is never silently treated as that hash. Only `whole_file_local` and
+`small_source_direct` apply. Mixed-format plans, Parquet row ranges and
+row-group parallelism refuse. Compressed download may resume at its verified
+checkpoint. Decompression always restarts at byte zero of the complete,
+verified local file. A processing failure retains that file for local retry.
+CRC/truncation, strict UTF-8/JSON objects, duplicate keys, non-finite numbers,
+compressed/decoded/line/row bounds, canonical/ledger/output growth, scratch,
+durable space and deadlines remain hard limits. No incomplete unit publishes.
+
+**C04 component calibration and allocation (2026-10-02).**
+`mix01_component_calibration` binds every included component's prefix-sample
+receipts, source file identities, allowlist, production inventory and revision.
+Stored rates must reproduce the embedded receipts. Inventory weighting never
+uses one component's density for all other components. Estimates and prefix
+bias are explicit; proposed bounds are not authorization or measured maxima.
+`mix01-component-reviewed-bounds-v1` records an operator's explicit complete
+resource envelope, bound to the calibration digest. No global registry is
+mutated and no production bound is fabricated when calibration is absent.
+`mix01-upstream-component-requirements-v1` records either an explicit legacy
+hash-prefix choice or exact per-component final/first-pass token requirements.
+The latter total 300M/330M for Common Pile and require four canonical bytes per
+estimated first-pass token. Independent inventory cursors and per-component
+receipt accounting enforce top-ups; excess in one component never fills
+another's deficit. Repair preserves the split and cursors. Exact token
+down-selection remains after C05 and tokenizer freeze.
+
+**C04 license amendment `c04-common-pile-component-license-v1` (2026-10-02).**
+Only `common_pile/common_pile_prose` at
+`common-pile/comma_v0.1_training_dataset@5afc546db324e7f39f297ba757c9a60547151e7c`
+may use `component_allowlist_review` with `declared_repository_license=null`.
+The basis binds the exact six Balanced components, the self-verifying
+allowlist and current committed evidence-matrix SHA-256. It establishes no
+repository-wide or row-level license. Real schema certification, a pinned
+live metadata probe, current adapter identity, four bound reviews and explicit
+operator license/provenance decisions are still required. Unrelated null-license
+sources remain blocked. Changed allowlist, evidence matrix, revision or adapter
+invalidates the corresponding review/production gate. This contract supplies
+the review mechanism; it records no operator approval.
+
 ## C05 — Duplicate clusters, exclusions and splits
 
 Deduplicate across all selected source families before assigning final train/validation splits. Implement exact hashes and a scalable near-duplicate method such as shingled MinHash/LSH with bounded candidate verification; do not use an all-pairs comparison. Algorithm, seeds, thresholds and deterministic survivor selection are frozen. Retain all source aliases and provenance of the surviving document.

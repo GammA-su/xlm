@@ -1,0 +1,196 @@
+{
+  "A_actual_prefix_files": 25,
+  "A_estimated_prefix_canonical_bytes": 2188142185.7623434,
+  "A_estimated_prefix_tokens": 547035546.4405859,
+  "A_inventory_compressed_shares": {
+    "libretexts": 0.01502342646343864,
+    "news": 0.012125497685868507,
+    "oercommons": 0.0021089126068362498,
+    "pressbooks": 0.02478416430688623,
+    "project_gutenberg": 0.9455994377609374,
+    "public_domain_review": 0.0003585611760329927
+  },
+  "A_prefix_canonical_shares": {
+    "libretexts": 0.0052131878040775756,
+    "news": 0.010986510240740242,
+    "oercommons": 0.0015461833089671336,
+    "pressbooks": 0.00787542523604624,
+    "project_gutenberg": 0.9740996971177817,
+    "public_domain_review": 0.0002789962923872708
+  },
+  "A_prefix_compressed_shares": {
+    "libretexts": 0.005065674978073021,
+    "news": 0.012520661305880207,
+    "oercommons": 0.001634504879516877,
+    "pressbooks": 0.008386256868901145,
+    "project_gutenberg": 0.9720389366768918,
+    "public_domain_review": 0.00035396529073695657
+  },
+  "B_volume_limited": [
+    "oercommons",
+    "public_domain_review"
+  ],
+  "basis": "ESTIMATE: pinned publisher Comma token counts; not XLM tokens; canonical proxy = publisher tokens x 4; must be replaced by calibration",
+  "operator_choice_recorded": false,
+  "strategies": {
+    "A_hash_prefix": {
+      "components": {
+        "libretexts": {
+          "available_canonical_byte_proxy": 372000000,
+          "available_token_proxy": 93000000,
+          "eligible_token_proxy": 93000000.0,
+          "final_tokens": 1563956,
+          "first_pass_tokens": 1720352,
+          "required_canonical_bytes": 6881408
+        },
+        "news": {
+          "available_canonical_byte_proxy": 256000000,
+          "available_token_proxy": 64000000,
+          "eligible_token_proxy": 64000000.0,
+          "final_tokens": 3295953,
+          "first_pass_tokens": 3625548,
+          "required_canonical_bytes": 14502192
+        },
+        "oercommons": {
+          "available_canonical_byte_proxy": 48000000,
+          "available_token_proxy": 12000000,
+          "eligible_token_proxy": 12000000.0,
+          "final_tokens": 463855,
+          "first_pass_tokens": 510240,
+          "required_canonical_bytes": 2040960
+        },
+        "pressbooks": {
+          "available_canonical_byte_proxy": 560000000,
+          "available_token_proxy": 140000000,
+          "eligible_token_proxy": 137706711.885722,
+          "final_tokens": 2362628,
+          "first_pass_tokens": 2598890,
+          "required_canonical_bytes": 10395560
+        },
+        "project_gutenberg": {
+          "available_canonical_byte_proxy": 22800000000,
+          "available_token_proxy": 5700000000,
+          "eligible_token_proxy": 5700000000.0,
+          "final_tokens": 292229909,
+          "first_pass_tokens": 321452901,
+          "required_canonical_bytes": 1285811604
+        },
+        "public_domain_review": {
+          "available_canonical_byte_proxy": 6800000,
+          "available_token_proxy": 1700000,
+          "eligible_token_proxy": 1677110.977049792,
+          "final_tokens": 83699,
+          "first_pass_tokens": 92069,
+          "required_canonical_bytes": 368276
+        }
+      },
+      "gutenberg_percent": 97.40997
+    },
+    "B_equal": {
+      "components": {
+        "libretexts": {
+          "available_canonical_byte_proxy": 372000000,
+          "available_token_proxy": 93000000,
+          "eligible_token_proxy": 93000000.0,
+          "final_tokens": 50000000,
+          "first_pass_tokens": 55000000,
+          "required_canonical_bytes": 220000000
+        },
+        "news": {
+          "available_canonical_byte_proxy": 256000000,
+          "available_token_proxy": 64000000,
+          "eligible_token_proxy": 64000000.0,
+          "final_tokens": 50000000,
+          "first_pass_tokens": 55000000,
+          "required_canonical_bytes": 220000000
+        },
+        "oercommons": {
+          "available_canonical_byte_proxy": 48000000,
+          "available_token_proxy": 12000000,
+          "eligible_token_proxy": 12000000.0,
+          "final_tokens": 50000000,
+          "first_pass_tokens": 55000000,
+          "required_canonical_bytes": 220000000
+        },
+        "pressbooks": {
+          "available_canonical_byte_proxy": 560000000,
+          "available_token_proxy": 140000000,
+          "eligible_token_proxy": 137706711.885722,
+          "final_tokens": 50000000,
+          "first_pass_tokens": 55000000,
+          "required_canonical_bytes": 220000000
+        },
+        "project_gutenberg": {
+          "available_canonical_byte_proxy": 22800000000,
+          "available_token_proxy": 5700000000,
+          "eligible_token_proxy": 5700000000.0,
+          "final_tokens": 50000000,
+          "first_pass_tokens": 55000000,
+          "required_canonical_bytes": 220000000
+        },
+        "public_domain_review": {
+          "available_canonical_byte_proxy": 6800000,
+          "available_token_proxy": 1700000,
+          "eligible_token_proxy": 1677110.977049792,
+          "final_tokens": 50000000,
+          "first_pass_tokens": 55000000,
+          "required_canonical_bytes": 220000000
+        }
+      },
+      "gutenberg_percent": 16.666666666666668
+    },
+    "C_capacity_capped_core": {
+      "components": {
+        "libretexts": {
+          "available_canonical_byte_proxy": 372000000,
+          "available_token_proxy": 93000000,
+          "eligible_token_proxy": 93000000.0,
+          "final_tokens": 50000000,
+          "first_pass_tokens": 55000000,
+          "required_canonical_bytes": 220000000
+        },
+        "news": {
+          "available_canonical_byte_proxy": 256000000,
+          "available_token_proxy": 64000000,
+          "eligible_token_proxy": 64000000.0,
+          "final_tokens": 50000000,
+          "first_pass_tokens": 55000000,
+          "required_canonical_bytes": 220000000
+        },
+        "oercommons": {
+          "available_canonical_byte_proxy": 48000000,
+          "available_token_proxy": 12000000,
+          "eligible_token_proxy": 12000000.0,
+          "final_tokens": 9486165,
+          "first_pass_tokens": 10434782,
+          "required_canonical_bytes": 41739128
+        },
+        "pressbooks": {
+          "available_canonical_byte_proxy": 560000000,
+          "available_token_proxy": 140000000,
+          "eligible_token_proxy": 137706711.885722,
+          "final_tokens": 50000000,
+          "first_pass_tokens": 55000000,
+          "required_canonical_bytes": 220000000
+        },
+        "project_gutenberg": {
+          "available_canonical_byte_proxy": 22800000000,
+          "available_token_proxy": 5700000000,
+          "eligible_token_proxy": 5700000000.0,
+          "final_tokens": 139188056,
+          "first_pass_tokens": 153106861,
+          "required_canonical_bytes": 612427444
+        },
+        "public_domain_review": {
+          "available_canonical_byte_proxy": 6800000,
+          "available_token_proxy": 1700000,
+          "eligible_token_proxy": 1677110.977049792,
+          "final_tokens": 1325779,
+          "first_pass_tokens": 1458357,
+          "required_canonical_bytes": 5833428
+        }
+      },
+      "gutenberg_percent": 46.39601848484848
+    }
+  }
+}

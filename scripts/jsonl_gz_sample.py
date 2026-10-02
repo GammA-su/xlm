@@ -76,6 +76,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--max-line-bytes", type=int, default=64 * MIB)
     parser.add_argument("--timeout", type=float, default=30.0)
     parser.add_argument("--deadline", type=float, default=600.0)
+    parser.add_argument("--max-output-bytes", type=int, default=128 * MIB)
+    parser.add_argument("--max-total-decoded-bytes", type=int, default=128 * MIB)
     args = parser.parse_args(argv)
 
     if os.environ.get("HF_HUB_OFFLINE") == "1" or os.environ.get("HF_DATASETS_OFFLINE") == "1":
@@ -86,6 +88,10 @@ def main(argv: list[str] | None = None) -> int:
     output = args.output_dir.resolve()
     if output.is_relative_to(REPO.resolve()):
         return _fail("--output-dir holds corpus text and must be outside the code checkout")
+    if any((output / name).exists() for name in ("real-records.jsonl", "sample-receipt.json")):
+        return _fail(
+            "sample destination already holds evidence; inspect/reuse it without refetching"
+        )
     authorized = {c.strip() for c in str(args.authorized_components).split(",") if c.strip()}
     root: Path = args.data_root
     try:
@@ -121,6 +127,7 @@ def main(argv: list[str] | None = None) -> int:
     revision = str(record["revision"])
     samples: list[sampler.PrefixSample] = []
     spent = 0
+    decoded = 0
     for target in targets:
         remaining = int(args.max_total_bytes) - spent
         if remaining < limits.chunk_bytes:
@@ -141,6 +148,9 @@ def main(argv: list[str] | None = None) -> int:
         except sampler.PrefixSampleError as exc:
             return _fail(str(exc))
         spent += sample.transferred_bytes
+        decoded += sample.decoded_bytes
+        if decoded > args.max_total_decoded_bytes:
+            return _fail("aggregate decoded sample exceeds its authorized byte ceiling")
         samples.append(sample)
         print(
             f"{target}: {len(sample.lines)} rows, {sample.requests} requests, "
@@ -162,6 +172,7 @@ def main(argv: list[str] | None = None) -> int:
         limits=limits,
     )
     rows: list[bytes] = []
+    output_bytes = 0
     for sample in samples:
         for index, line in enumerate(sample.lines):
             value: dict[str, Any] = {
@@ -171,7 +182,11 @@ def main(argv: list[str] | None = None) -> int:
                 "_cert_revision": revision,
                 **json.loads(line.decode("utf-8")),
             }
-            rows.append(json.dumps(value, ensure_ascii=False, sort_keys=True).encode("utf-8"))
+            rendered_row = json.dumps(value, ensure_ascii=False, sort_keys=True).encode("utf-8")
+            output_bytes += len(rendered_row) + 1
+            if output_bytes > args.max_output_bytes:
+                return _fail("saved sample exceeds its authorized output byte ceiling")
+            rows.append(rendered_row)
     _write_once(output / "real-records.jsonl", b"\n".join(rows) + b"\n")
     rendered = (json.dumps(receipt, indent=2, sort_keys=True) + "\n").encode("utf-8")
     _write_once(output / "sample-receipt.json", rendered)

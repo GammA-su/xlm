@@ -460,6 +460,16 @@ def _load_measurement(path: Path) -> dict[str, Any]:
         if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
             raise ValueError("component measurement does not name its calibration digest")
         _strict_int(payload.get("avg_file_bytes"), "avg_file_bytes", 1)
+        from xlm.data.acquisition import component_calibration as cc
+
+        record = payload.get("component_calibration")
+        if not isinstance(record, dict):
+            raise ValueError("component measurement needs its verifiable calibration")
+        cc.check_calibration(
+            record, allowlist=record["allowlist"], inventory=record["inventory_snapshot"]
+        )
+        if payload != cc.measurement(record):
+            raise ValueError("component measurement does not reproduce its calibration")
         return payload
     if "transfer_basis" in payload:
         if payload["transfer_basis"] != WINDOW_TRANSFER_BASIS:
@@ -492,7 +502,35 @@ def cmd_record(args: argparse.Namespace) -> int:
         args.canonical = measured["canonical_bytes"]
         args.survival = measured["extra_survival"]
         if measured.get("transfer_basis") == COMPONENT_TRANSFER_BASIS:
+            from xlm.data.acquisition import component_calibration as cc
+
+            record = measured["component_calibration"]
+            if args.source != record["component_id"]:
+                return _fail("component measurement belongs to another logical component")
+            root = args.calibration.parent.parent
+            try:
+                current_allow = json.loads(
+                    (root / "calib/component_allowlists" / f"{record['source_id']}.json").read_text(
+                        encoding="utf-8"
+                    )
+                )
+                current_inventory = json.loads(
+                    (root / "inventories" / f"{record['source_id']}.inventory.json").read_text(
+                        encoding="utf-8"
+                    )
+                )
+                cc.check_calibration(record, allowlist=current_allow, inventory=current_inventory)
+                stored_calibration = json.loads(
+                    (
+                        root / "calib" / record["component_id"] / "component-calibration.json"
+                    ).read_text(encoding="utf-8")
+                )
+                if stored_calibration != record:
+                    raise ValueError("measurement names a stale component calibration")
+            except (OSError, ValueError, KeyError) as exc:
+                return _fail(f"component measurement current identity: {exc}")
             disclosure = {key: measured[key] for key in COMPONENT_FIELDS}
+            disclosure["component_calibration"] = record
             if args.avg_file is None:
                 args.avg_file = measured["avg_file_bytes"]
         else:

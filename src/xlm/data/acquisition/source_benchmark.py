@@ -105,12 +105,15 @@ def build_benchmark(
     download_workers: int,
     process_workers: int,
     retained_scratch_bytes: int = 0,
+    reviewed_bounds: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """A bounded, self-digested whole-file benchmark plan; authorized like production."""
     if not label.isidentifier() or not 1 <= len(entries) <= MAX_BENCHMARK_FILES:
         raise RunError(f"benchmark needs a plain label and 1..{MAX_BENCHMARK_FILES} files")
     files = [str(e["file"]) for e in entries]
-    policy, limits = plan_limits(len(files), layout, TransportMode.WHOLE_FILE_LOCAL, pin)
+    policy, limits = plan_limits(
+        len(files), layout, TransportMode.WHOLE_FILE_LOCAL, pin, reviewed_bounds=reviewed_bounds
+    )
     # One stream and at most one process per file: record the effective concurrency.
     policy["download_workers"] = min(download_workers, len(files))
     policy["process_workers"] = min(process_workers, len(files))
@@ -123,7 +126,10 @@ def build_benchmark(
     if retained_scratch_bytes < 0:
         raise RunError("retained scratch allowance must be nonnegative")
     policy["scratch_retained_bytes"] = retained_scratch_bytes
-    policy["scratch_cap_bytes"] += retained_scratch_bytes
+    if reviewed_bounds is None:
+        policy["scratch_cap_bytes"] += retained_scratch_bytes
+    elif retained_scratch_bytes >= policy["scratch_cap_bytes"]:
+        raise RunError("retained scratch exhausts the reviewed component scratch ceiling")
     limits = limits.model_copy(update={"max_temp_disk_bytes": policy["scratch_cap_bytes"]})
     minted = acquisition_plan(
         pin,

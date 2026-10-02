@@ -1424,6 +1424,27 @@ def sufficiency(roots: Roots) -> dict[str, Any]:
     status = ("SUFFICIENT" if acquired >= required else "TOP_UP") if complete else "INCOMPLETE"
     repairs = repairs_of(records)
     extra: dict[str, Any] = {}
+    split = records[-1]["inputs"].get("component_split")
+    if split is not None and split.get("strategy") != "hash_prefix":
+        component_bytes = {c: 0 for c in split["components"]}
+        for record in records:
+            if record["inputs"].get("component_split") != split:
+                raise RunError("component split changed within production lineage")
+            for receipt in resume_state(roots, record)["receipts"]:
+                component = str(receipt["file"]).split("/")[0]
+                if component not in component_bytes:
+                    raise RunError("sealed file belongs to an excluded component")
+                component_bytes[component] += int(receipt["canonical_bytes"])
+        extra["component_canonical_bytes"] = component_bytes
+        if complete:
+            status = (
+                "SUFFICIENT"
+                if all(
+                    component_bytes[c] >= e["required_canonical_bytes"]
+                    for c, e in split["components"].items()
+                )
+                else "TOP_UP"
+            )
     if repairs:
         extra["repairs"] = [
             {

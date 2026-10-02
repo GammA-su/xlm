@@ -42,6 +42,8 @@ import yaml
 from xlm.artifacts.store import ArtifactStore
 from xlm.core.paths import ArtifactPaths
 from xlm.data.acquisition import component_allowlist as allow
+from xlm.data.acquisition import component_calibration as cc
+from xlm.data.acquisition import component_policy as cp
 from xlm.data.acquisition import range_reach as reach
 from xlm.data.acquisition import source_benchmark as bench
 from xlm.data.acquisition import source_plan as planner
@@ -53,6 +55,8 @@ from xlm.data.acquisition.source_dashboard import ObservedScratch
 from xlm.data.acquisition.source_formats import load_durable
 from xlm.data.adapters.columns import columns_for
 from xlm.data.sources import certified_evidence as ce
+from xlm.data.sources import common_pile_evidence as cpe
+from xlm.data.sources import common_pile_license as cpl
 from xlm.data.sources import hf_inventory
 from xlm.data.sources import mix01_admission as review
 from xlm.data.sources.admission import (
@@ -87,6 +91,7 @@ class SourceSpec:
 
 
 SOURCES = {
+    "common_pile": SourceSpec("common_pile", "common_pile_prose", "common_pile", "component", None),
     "ultrax": SourceSpec(
         "ultrax_ultrafineweb", "UltraX-Ultra-FineWeb", "ultrax_ultrafineweb", "ultrax", 104, True
     ),
@@ -106,12 +111,7 @@ SOURCES = {
         "simple_stories", "default", "simple_stories", "simple_stories", 7
     ),
 }
-BLOCKED = {
-    "common_pile": (
-        "license/provenance review, operator component allowlist, calibration and admission "
-        "are outstanding (C04; docs/implementation/reports/COMMON-PILE-PROSE-ALLOWLIST-AUDIT.md)"
-    )
-}
+BLOCKED: dict[str, str] = {}
 #: Sources whose repository consolidates independently licensed top-level
 #: components. Production sees only an operator allowlist's components; the
 #: value is the committed evidence matrix that allowlist is decided against.
@@ -217,6 +217,48 @@ def build_bridge(
     args: argparse.Namespace, spec: SourceSpec, target: ArtifactStore
 ) -> tuple[ce.SourcePin, dict[str, Any], Any]:
     pin = pin_of(spec)
+    if spec.calibration == "component":
+        inventory, _, _ = production_inventory(args, pin)
+        allowlist = allow.read_json(allowlist_path(args, args.source_key))
+        directories = [Path(p) for p in getattr(args, "sample_dir", [])]
+        if not directories:
+            directories = [
+                data_root(args) / "calib" / name
+                for name in ("common_pile_cal01", "common_pile_cal02")
+            ]
+        inputs = [
+            p / name for p in directories for name in ("sample-receipt.json", "real-records.jsonl")
+        ]
+        if any(not p.is_file() for p in inputs):
+            raise DriverError(
+                "six-component certification needs --sample-dir receipts and "
+                "saved rows; run the authorized calibration commands first"
+            )
+        ce.inputs_outside(inputs, REPO)
+        facts = cpe.translate_component_samples(
+            pin,
+            [
+                (
+                    p.joinpath("sample-receipt.json").read_bytes(),
+                    p.joinpath("real-records.jsonl").read_bytes(),
+                )
+                for p in directories
+            ],
+            allowlist=allowlist,
+            inventory=inventory,
+        )
+        facts.probe["component_license_basis"] = cpl.build_basis(allowlist)
+        metadata = ce.generic_probe_record(target, pin.source_id, pin.view_id)
+        if metadata is None:
+            raise DriverError(
+                "Common Pile live metadata probe missing; operator must run "
+                "python -m xlm.cli.main data probe --live at the catalog pin"
+            )
+        facts = ce.translate_store_probe(pin, facts, *metadata)
+        receipt, evidence_record = ce.build_bridge(
+            pin, facts, evidence_type=EvidenceType.REAL_OBSERVED
+        )
+        return pin, receipt, evidence_record
     files = calibration_files(args, spec)
     probe_dir = Path(args.probe_dir) if getattr(args, "probe_dir", None) else DEFAULT_PROBE_DIR
     inputs = [files["plan"], files["journal"], files["records"], files["summary"]]
@@ -561,6 +603,14 @@ def production_inventory(
 def layout_of(
     args: argparse.Namespace, spec: SourceSpec
 ) -> tuple[policy.SourceLayout, dict[str, Any]]:
+    if spec.calibration == "component":
+        record, path = component_calibration(args, spec)
+        names = {"component_calibration": sha256(path)}
+        return cc.layout_of(record, record_sha256=sha256(path)), {
+            "perf": record["observed_transfer"],
+            "adapt_rate": FALLBACK_ADAPT_ROWS_PER_SECOND,
+            "evidence": names,
+        }
     files = calibration_files(args, spec)
     measurement = load_json(data_root(args) / "calib" / "calibration.json")["sources"][
         spec.calibration if spec.calibration != "ultrax" else "ultrax_ultrafineweb"
@@ -582,6 +632,72 @@ def layout_of(
         else None
     )
     return layout, {"perf": perf, "adapt_rate": rate, "evidence": names}
+
+
+def component_calibration(
+    args: argparse.Namespace, spec: SourceSpec
+) -> tuple[dict[str, Any], Path]:
+    pin = pin_of(spec)
+    inventory, _, _ = production_inventory(args, pin)
+    allowlist = allow.read_json(allowlist_path(args, args.source_key))
+    cpl.build_basis(allowlist)
+    path = data_root(args) / "calib" / pin.component_id / "component-calibration.json"
+    if not path.is_file():
+        raise DriverError(
+            f"component calibration missing: {path}; authorize the twelve "
+            "bounded prefix samples, then run scripts/component_calibration.py build"
+        )
+    return cc.check_calibration(load_json(path), allowlist=allowlist, inventory=inventory), path
+
+
+def component_ready(args: argparse.Namespace, spec: SourceSpec) -> dict[str, Any]:
+    record, path = component_calibration(args, spec)
+    bounds_path = path.with_name("reviewed-bounds.json")
+    if not bounds_path.is_file():
+        raise DriverError(
+            f"reviewed source bounds missing: {bounds_path}; "
+            "review calibration then use component-bounds record"
+        )
+    bounds = cp.check_bounds(load_json(bounds_path), record)
+    split_path = path.with_name("component-split.json")
+    if not split_path.is_file():
+        raise DriverError(
+            "Common Pile component allocation decision missing: compare A/B/C "
+            "and use component-split record; no allocation is chosen by software"
+        )
+    split = cp.check_split(load_json(split_path), record)
+    # Rebuilding must reproduce the published bridge; merely accepting a newer
+    # valid sample would leave an older operator review silently in force.
+    target = store()
+    ce.verify_current(target, pin_of(spec), rebuild=lambda: build_bridge(args, spec, target)[1:])
+    current_admission(spec, target)
+    return {"calibration": record, "reviewed_bounds": bounds, "component_split": split}
+
+
+def cmd_component_policy(args: argparse.Namespace) -> int:
+    spec = spec_of(args.source_key)
+    if spec.calibration != "component":
+        raise DriverError("component bounds/split applies only to component-calibrated sources")
+    calibration, path = component_calibration(args, spec)
+    is_bounds = args.command == "component-bounds"
+    target = path.with_name("reviewed-bounds.json" if is_bounds else "component-split.json")
+    checker = cp.check_bounds if is_bounds else cp.check_split
+    if args.action == "show":
+        record = checker(load_json(target), calibration)
+    else:
+        if not args.input:
+            raise DriverError("preview/record needs --input with reviewed ceilings or token shares")
+        builder = cp.build_bounds if is_bounds else cp.build_split
+        record = builder(
+            calibration,
+            load_json(Path(args.input)),
+            operator=args.operator,
+            rationale=args.rationale,
+        )
+        if args.action == "record":
+            runner.write_once(target, record)
+    emit(record)
+    return 0
 
 
 def split_path(args: argparse.Namespace, component_id: str) -> Path:
@@ -679,6 +795,21 @@ def evaluate_policy(
         # The whole-file measurement, not the small calibration, sizes the workloads.
         layout = planner.sized_layout(layout, measured.sizing)
         models = measured.models
+    elif spec.calibration == "component":
+        perf = extra["perf"]
+        if perf["seconds"] <= 0:
+            raise DriverError("component calibration has no positive observed transfer duration")
+        rate = perf["transferred_bytes"] / perf["seconds"]
+        model = policy.ThroughputModel(
+            streams=1,
+            per_stream_bytes_per_second=rate,
+            aggregate_bytes_per_second=rate,
+            seconds_per_request=0,
+            rows_per_process_second=FALLBACK_ADAPT_ROWS_PER_SECOND,
+            processes=1,
+            basis="observed_transfer prefix rate; fallback adaptation rate; estimate",
+        )
+        models = {mode: model for mode in planner.JSONL_GZ_MODES}
     else:
         rate = extra["adapt_rate"] or FALLBACK_ADAPT_ROWS_PER_SECOND
         models = policy.modeled_models(
@@ -691,11 +822,16 @@ def evaluate_policy(
     ceilings = policy.Ceilings(
         scratch_bytes=planner.SCRATCH_CAP_BYTES, durable_bytes=args.durable_budget_bytes
     )
+    if spec.calibration == "component":
+        models = {mode: model for mode, model in models.items() if mode in planner.JSONL_GZ_MODES}
     return policy.evaluate(layout, requirement, ceilings, models)
 
 
 def cmd_policy(args: argparse.Namespace) -> int:
     spec = spec_of(args.source_key)
+    component = None
+    if spec.calibration == "component" and args.action == "freeze":
+        component = component_ready(args, spec)
     measured = measured_basis(args, spec) if args.basis == "measured" else None
     report = evaluate_policy(args, spec, measured)
     emit(policy.summarize([report]))
@@ -724,6 +860,12 @@ def cmd_policy(args: argparse.Namespace) -> int:
             inputs = {
                 "model": "named prior measurements (transport_policy.ESSENTIAL_WEB_MEASUREMENTS)"
             }
+            if component is not None:
+                inputs = {
+                    key: component[key]["digest"]
+                    for key in ("calibration", "reviewed_bounds", "component_split")
+                }
+                inputs["model"] = "observed prefix transfer; fallback adaptation rate; estimate"
             record = policy.freeze(report, basis=args.basis, inputs=inputs)
         roots = roots_of(args)
         runner.write_once(roots.plans / "transport-policy.json", record)
@@ -774,6 +916,7 @@ def superseded_of(roots: runner.Roots, sequence: int) -> planner.Superseded:
 
 def cmd_plan(args: argparse.Namespace) -> int:
     spec = spec_of(args.source_key)
+    component = component_ready(args, spec) if spec.calibration == "component" else None
     roots = roots_of(args)
     target = store()
     pin = pin_of(spec)
@@ -781,6 +924,14 @@ def cmd_plan(args: argparse.Namespace) -> int:
     inventory, inventory_path, allowlist_digest = production_inventory(args, pin)
     layout, extra = layout_of(args, spec)
     superseded = superseded_of(roots, args.plan) if args.command == "plan-supersede" else None
+    component_acquired: dict[str, int] = {}
+    if component is not None:
+        for seq in roots.sequences():
+            for receipt in runner.resume_state(roots, runner.load_plan(roots, seq))["receipts"]:
+                name = allow.component_of(receipt["file"])
+                component_acquired[name] = (
+                    component_acquired.get(name, 0) + receipt["canonical_bytes"]
+                )
     record = planner.build_plan(
         source_key=args.source_key,
         pin=pin.as_dict(),
@@ -793,6 +944,8 @@ def cmd_plan(args: argparse.Namespace) -> int:
         admission=current_admission(spec, target),
         predecessor=None if superseded is not None else predecessor(roots),
         superseded=superseded,
+        component_policy=component,
+        component_acquired=component_acquired if component else None,
     )
     path = runner.store_plan(roots, record)
     supersedes = record.get("supersedes")
@@ -924,6 +1077,7 @@ def repaired_of(roots: runner.Roots, sequence: int) -> planner.Repaired:
 
 def cmd_plan_repair(args: argparse.Namespace) -> int:
     spec = spec_of(args.source_key)
+    component = component_ready(args, spec) if spec.calibration == "component" else None
     roots = roots_of(args)
     target = store()
     pin = pin_of(spec)
@@ -942,6 +1096,7 @@ def cmd_plan_repair(args: argparse.Namespace) -> int:
         policy=frozen,
         admission=current_admission(spec, target),
         repaired=repaired,
+        component_policy=component,
     )
     path = runner.store_plan(roots, record)
     repair, limits = record["repair"], record["limits"]
@@ -997,6 +1152,11 @@ def cmd_authorize(args: argparse.Namespace) -> int:
     spec = spec_of(args.source_key)
     roots = roots_of(args)
     record = runner.load_plan(roots, args.plan)
+    if spec.calibration == "component":
+        current = component_ready(args, spec)
+        for key in ("component_split", "reviewed_bounds"):
+            if record["inputs"].get(key) != current[key]:
+                raise DriverError(f"Common Pile {key} changed after planning")
     # A plan whose own file bound excludes a known selected size can only fail closed.
     inventory, _, _ = production_inventory(args, pin_of(spec))
     planner.check_selected_file_bounds(record, inventory)
@@ -1025,6 +1185,11 @@ def cmd_run(args: argparse.Namespace) -> int:
     spec = spec_of(args.source_key)
     roots = roots_of(args)
     record = runner.load_plan(roots, args.plan)
+    if spec.calibration == "component":
+        current = component_ready(args, spec)
+        for key in ("component_split", "reviewed_bounds"):
+            if record["inputs"].get(key) != current[key]:
+                raise DriverError(f"Common Pile {key} changed after planning")
     prior = sum(
         int(runner.account(roots, runner.load_plan(roots, s))["canonical_bytes"])
         for s in roots.sequences()
@@ -1110,6 +1275,9 @@ def cmd_seal(args: argparse.Namespace) -> int:
 
 def cmd_benchmark(args: argparse.Namespace) -> int:
     spec = spec_of(args.source_key)
+    component = component_ready(args, spec) if spec.calibration == "component" else None
+    if component and args.action in ("range-reach", "record-range"):
+        raise DriverError("Common Pile jsonl.gz has no Parquet range benchmark mode")
     roots = roots_of(args)
     target = store()
     if args.action == "plan":
@@ -1142,6 +1310,7 @@ def cmd_benchmark(args: argparse.Namespace) -> int:
             download_workers=args.download_workers,
             process_workers=args.process_workers,
             retained_scratch_bytes=ObservedScratch(roots.scratch(), 1, 0).occupied(),
+            reviewed_bounds=component["reviewed_bounds"] if component else None,
         )
         path = bench.store_benchmark(roots, record)
         print(f"benchmark {args.label}: {[e['file'] for e in entries]} -> {path}")
@@ -1151,6 +1320,11 @@ def cmd_benchmark(args: argparse.Namespace) -> int:
         print("STOP - USER MUST REVIEW BENCHMARK DIGEST BEFORE AUTHORIZATION")
         return 0
     record = runner.read_json(bench.benchmark_dir(roots, args.label) / "benchmark.json")
+    if (
+        component
+        and record["limits"].get("reviewed_bounds_digest") != component["reviewed_bounds"]["digest"]
+    ):
+        raise DriverError("Common Pile benchmark reviewed bounds changed after planning")
     expected = dict(record["inputs"]["admission"])
     if args.action == "authorize":
         bench.authorize_benchmark(
@@ -1270,6 +1444,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p.add_argument("action", choices=("show", "publish", "verify"))
     p.add_argument("--probe-dir")
+    p.add_argument("--sample-dir", action="append", default=[])
     p.set_defaults(func=cmd_evidence)
 
     p = common(sub.add_parser("review", help="OFFLINE: operator review facts and decisions"))
@@ -1321,6 +1496,14 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--operator", default="")
     p.add_argument("--rationale", default="")
     p.set_defaults(func=cmd_allowlist)
+
+    for command in ("component-bounds", "component-split"):
+        p = common(sub.add_parser(command, help="OFFLINE: write-once reviewed component policy"))
+        p.add_argument("action", choices=("preview", "record", "show"))
+        p.add_argument("--input", default="")
+        p.add_argument("--operator", default="")
+        p.add_argument("--rationale", default="")
+        p.set_defaults(func=cmd_component_policy)
 
     p = common(sub.add_parser("policy", help="OFFLINE: model or freeze the transport policy"))
     p.add_argument("action", choices=("model", "freeze"))
@@ -1427,6 +1610,11 @@ def main(argv: list[str] | None = None) -> int:
         planner.PlanError,
         policy.PolicyError,
         runner.RunError,
+        cc.CalibrationError,
+        cp.ComponentPolicyError,
+        cpl.LicenseBasisError,
+        allow.AllowlistError,
+        OSError,
     ) as exc:
         print(f"mix01_source: refused: {exc}", file=sys.stderr)
         return 1

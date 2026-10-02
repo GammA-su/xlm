@@ -545,3 +545,14 @@ def test_zlib_raw_deflate_is_not_gzip() -> None:
     raw = zlib.compress(rows_bytes(texts(2)))
     with pytest.raises(jsonl_gz.JsonlGzError, match="not gzip"):
         decode_all(raw)
+
+
+def test_small_expansion_over_ratio_has_no_one_mib_exemption() -> None:
+    bounds = jsonl_gz.JsonlGzBounds(1024**2, 1024**2, 10, 2)
+    with pytest.raises(jsonl_gz.JsonlGzError, match="decompressed bytes"):
+        decode_all(gz(rows_bytes([{"text": "x" * 10000}])), bounds)
+
+
+def test_standard_numeric_syntax_cannot_overflow_to_infinity() -> None:
+    with pytest.raises(jsonl_gz.JsonlGzError, match="non-finite"):
+        jsonl_gz.parse_record(b'{"value": 1e999}', 0)

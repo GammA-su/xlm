@@ -22,12 +22,54 @@ runbooks still set them to `0` only around network steps so the state is explici
 | `finewiki` | `finewiki` / `en` | `finewiki_en` | 1,000-row fetch |
 | `ifm_general`, `ifm_planning` | `ifm_behaviors` / `general`, `planning` | `ifm_general`, `ifm_planning` | 698 / 1,903-row fetches |
 | `simple_stories` | `simple_stories` / `default` | `simple_stories` | 1,000-row fetch |
+| `common_pile` | `common_pile` / `common_pile_prose` | `common_pile` v2 | all six components; two pinned files each |
 
-`common_pile` is refused for every production command (license/provenance
-review, operator component allowlist, calibration, `.jsonl.gz` production
-transport and admission are outstanding; see
-`docs/implementation/reports/COMMON-PILE-PROSE-ALLOWLIST-AUDIT.md`). Its only
-working commands are offline and record the operator's component allowlist:
+Common Pile has a frozen Balanced allowlist and production inventory, adapter
+v2 and `.jsonl.gz` transport. Production still refuses until component
+calibration, reviewed bounds, explicit A/B/C allocation, live metadata,
+license/provenance review and admission pass. The six components are
+libretexts, news, oercommons, pressbooks, project_gutenberg and
+public_domain_review. Do not re-record or replace the existing allowlist.
+Its digest is `b2bb7c0dc532a6263ca17b78816186fa194c12c09c74614baaeb29c76cdaab04`;
+inventory digest is `c0984aa33fb3598a9e724b9518df8cd8a0f2af52b5708ec211fb7fd693df7637`.
+
+The exact twelve targets, budgets and copy/paste PowerShell network commands
+are in [the readiness handoff](../implementation/reports/COMMON-PILE-BALANCED-PRODUCTION-READINESS.md)
+and its `operator-calibration.ps1` artifact. They are prepared, **not executed**.
+Paste the reviewed commands into PowerShell if script execution is disabled;
+do not change machine execution policy. They use Python module invocation for
+the metadata probe and restore both HF offline variables in `finally`.
+
+After the operator runs those commands, the next offline sequence is:
+
+```powershell
+uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/component_calibration.py build --source-key common_pile --data-root G:\XLM --receipt G:\XLM\calib\common_pile_cal01\sample-receipt.json --receipt G:\XLM\calib\common_pile_cal02\sample-receipt.json
+uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/component_calibration.py show --source-key common_pile --data-root G:\XLM
+uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/mix01_inventory.py record --source common_pile_prose --calibration G:\XLM\calib\calibration.json --measurement G:\XLM\calib\common_pile_prose\measurement.json
+uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/mix01_inventory.py estimate --quotas recipes/mixtures/mix01_quotas_6b.yaml --calibration G:\XLM\calib\calibration.json --output G:\XLM\calib\headroom_estimate.json
+uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/mix01_source.py evidence show --source-key common_pile --data-root G:\XLM --sample-dir G:\XLM\calib\common_pile_cal01 --sample-dir G:\XLM\calib\common_pile_cal02
+```
+
+Then review the measured component rates, bounds and mixture alternatives.
+`component-bounds preview|record|show` and `component-split preview|record|show`
+take `--source-key common_pile --data-root G:\XLM`. Preview/record also need
+`--input <reviewed-json> --operator <name> --rationale <text>`.
+The bounds JSON contains every field of `component_policy.BOUND_FIELDS` and a
+`processing_growth` object; values must come from reviewed evidence.
+For B/C, split JSON maps each of the six names to positive integer
+`final_tokens` and `first_pass_tokens`. Totals must be exactly 300M/330M.
+For A, the explicit input is `{"strategy":"hash_prefix"}`; it supplies no
+component-share guarantee. Software selects no option for the operator.
+These records go beside `component-calibration.json`, are write-once, and are
+bound into plans. Calibration alone does not admit or authorize production.
+
+Common Pile preserves `declared_repository_license=null`. Its C04 basis is
+the exact component allowlist and committed evidence matrix. The operator
+must still record `approve_research_pretraining` or `reject`, plus provenance
+`approved` or `rejected`, through the existing review workflow. Later admission,
+policy freeze, planning and digest authorization remain separate operator steps.
+
+Historical allowlist commands (already completed for this Balanced selection):
 
     uv run --offline --locked --extra cpu --extra eval python scripts/mix01_source.py allowlist preview --source-key common_pile --data-root G:\XLM --include <c1,c2,...> [--accept-flagged <flagged,...>] --operator <name> --rationale "<text>"
     uv run --offline --locked --extra cpu --extra eval python scripts/mix01_source.py allowlist record  --source-key common_pile --data-root G:\XLM --include <c1,c2,...> [--accept-flagged <flagged,...>] --operator <name> --rationale "<text>"

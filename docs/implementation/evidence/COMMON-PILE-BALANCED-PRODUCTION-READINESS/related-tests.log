@@ -1,0 +1,55 @@
+bringing up nodes...
+bringing up nodes...
+
+........................................................................ [ 11%]
+........................................................................ [ 23%]
+........................................................F......F........ [ 35%]
+........................................................................ [ 47%]
+........................................................................ [ 59%]
+........................................................................ [ 71%]
+........................................................................ [ 83%]
+........................................................................ [ 95%]
+..............................                                           [100%]
+================================== FAILURES ===================================
+________________ test_registry_overrides_only_the_ifm_adapters ________________
+[gw11] win32 -- Python 3.12.13 F:\Project\xlm-common-pile\.venv\Scripts\python.exe
+
+    def test_registry_overrides_only_the_ifm_adapters() -> None:
+        assert set(registry.ADAPTERS_BY_ID) == set(mix01_adapters.ADAPTERS_BY_ID)
+        for adapter_id, factory in registry.ADAPTERS_BY_ID.items():
+            if adapter_id in ("ifm_general", "ifm_planning"):
+                assert factory is ifm_adapters.ADAPTERS_BY_ID[adapter_id]
+                assert issubclass(factory, mix01_adapters.ADAPTERS_BY_ID[adapter_id])
+            else:
+>               assert factory is mix01_adapters.ADAPTERS_BY_ID[adapter_id]
+E               AssertionError: assert <class 'xlm.data.adapters.common_pile_adapters.CommonPileAdapter'> is <class 'xlm.data.adapters.mix01_adapters.CommonPileAdapter'>
+
+tests\test_ifm_empty_text_recovery.py:190: AssertionError
+_____________________ test_only_ifm_code_identity_changes _____________________
+[gw11] win32 -- Python 3.12.13 F:\Project\xlm-common-pile\.venv\Scripts\python.exe
+
+    def test_only_ifm_code_identity_changes() -> None:
+        frozen = frozen_identity()
+        for adapter_id in registry.ADAPTERS_BY_ID:
+            identity = ce.adapter_code_identity(adapter_id)
+            if adapter_id in ("ifm_general", "ifm_planning"):
+                assert registry.adapter_code_modules(adapter_id) == (
+                    mix01_adapters,
+                    columns,
+                    ifm_adapters,
+                )
+                assert identity != frozen
+                assert {k: identity[k] for k in frozen} == frozen
+                assert set(identity) - set(frozen) == {"xlm.data.adapters.ifm_adapters"}
+            else:
+>               assert registry.adapter_code_modules(adapter_id) == (mix01_adapters, columns)
+E               AssertionError: assert (<module 'xlm...adapters.py'>) == (<module 'xlm...\columns.py'>)
+E
+E                 Left contains one more item: <module 'xlm.data.adapters.common_pile_adapters' from 'F:\\Project\\xlm-common-pile\\src\\xlm\\data\\adapters\\common_pile_adapters.py'>
+E                 Use -v to get more diff
+
+tests\test_ifm_empty_text_recovery.py:211: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_ifm_empty_text_recovery.py::test_registry_overrides_only_the_ifm_adapters
+FAILED tests/test_ifm_empty_text_recovery.py::test_only_ifm_code_identity_changes
+2 failed, 604 passed in 25.92s

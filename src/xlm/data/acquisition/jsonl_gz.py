@@ -26,6 +26,7 @@ record is ever repaired, skipped or reordered here.
 from __future__ import annotations
 
 import json
+import math
 import zlib
 from collections.abc import Iterator
 from dataclasses import dataclass
@@ -87,7 +88,7 @@ class GzipLineDecoder:
 
     def _decoded_limit(self) -> int:
         relative = int(self.counters.compressed_bytes * self.bounds.max_decompression_ratio)
-        return min(self.bounds.max_decoded_bytes, max(relative, PULL_BYTES))
+        return min(self.bounds.max_decoded_bytes, relative)
 
     def _lines(self, data: bytes) -> list[bytes]:
         out: list[bytes] = []
@@ -190,6 +191,13 @@ def _no_constant(name: str) -> Any:
     raise JsonlGzError(f"non-finite JSON number {name}")
 
 
+def _finite_float(value: str) -> float:
+    parsed = float(value)
+    if not math.isfinite(parsed):
+        raise JsonlGzError("JSON number overflows to a non-finite value")
+    return parsed
+
+
 def parse_record(line: bytes, row: int) -> dict[str, Any]:
     """One strict JSON object from one line; refuses anything else."""
     if not line.strip():
@@ -199,7 +207,12 @@ def parse_record(line: bytes, row: int) -> dict[str, Any]:
     except UnicodeDecodeError as exc:
         raise JsonlGzError(f"line {row} is not valid UTF-8") from exc
     try:
-        value = json.loads(text, object_pairs_hook=_no_duplicates, parse_constant=_no_constant)
+        value = json.loads(
+            text,
+            object_pairs_hook=_no_duplicates,
+            parse_constant=_no_constant,
+            parse_float=_finite_float,
+        )
     except ValueError as exc:
         if isinstance(exc, JsonlGzError):
             raise

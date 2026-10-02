@@ -20,8 +20,8 @@ from typing import Any
 import pytest
 
 from test_mix01_source_cli import load_cli
+from test_source_plan import PIN as RUN_PIN
 from test_source_plan import models
-from test_source_run import PIN as RUN_PIN
 from test_source_run import (  # noqa: F401 - pytest fixtures
     World,
     admitted,
@@ -96,7 +96,7 @@ def inventory(view: str, count: int = 12) -> dict[str, Any]:
     rank the calibration shard's (the inventory minimum)."""
     seed = 20260918
     names = [f"{view}/{view}.chunk0-test-{i:05d}.parquet" for i in range(count)]
-    entries = sorted(
+    entries: list[dict[str, Any]] = sorted(
         (
             {
                 "file": name,

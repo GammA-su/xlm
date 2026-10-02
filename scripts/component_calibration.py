@@ -99,11 +99,13 @@ def main(argv: list[str] | None = None) -> int:
         )
     print(
         f"ESTIMATE {combined['estimated_canonical_bytes']:,.0f} canonical B "
-        f"({combined['estimated_tokens']:,.0f} est. tokens) over {combined['inventory_files']} files"
+        f"({combined['estimated_tokens']:,.0f} est. tokens) "
+        f"over {combined['inventory_files']} files"
     )
     print(
         "PROPOSED SOURCE_FILE_BOUNDS "
-        f"rows {bounds['max_rows_per_file']:,}, canonical {bounds['max_canonical_bytes_per_file']:,} "
+        f"rows {bounds['max_rows_per_file']:,}, "
+        f"canonical {bounds['max_canonical_bytes_per_file']:,} "
         f"({bounds['rule']}); review, then add them with this calibration's digest as evidence"
     )
     return 0

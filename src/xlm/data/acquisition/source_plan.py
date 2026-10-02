@@ -659,6 +659,7 @@ def plan_limits(
     pin: Mapping[str, str],
     *,
     known_file_bytes: Sequence[int] = (),
+    reviewed_bounds: Mapping[str, Any] | None = None,
 ) -> tuple[dict[str, Any], AcquisitionLimits]:
     """Every resource ceiling of one plan, derived by the versioned planner rules.
 
@@ -758,6 +759,38 @@ def plan_limits(
         max_record_bytes=record_bytes,
         max_parser_bytes=MAX_PARSER_BYTES,
     )
+    if reviewed_bounds is not None:
+        bounds = reviewed_bounds["bounds"]
+        policy.update(bounds)
+        policy["reviewed_bounds_digest"] = reviewed_bounds["digest"]
+        if max(known_file_bytes, default=0) > bounds["max_file_bytes"]:
+            raise PlanError("selected file exceeds reviewed source bound")
+        growth = ProcessingGrowth.model_validate(bounds["processing_growth"])
+        envelope = bounds["max_file_bytes"] + growth.processing_peak + growth.state_peak
+        if envelope > bounds["scratch_cap_bytes"]:
+            raise PlanError("reviewed scratch cannot hold one unit")
+        limits = AcquisitionLimits.model_validate(
+            {
+                **limits.model_dump(),
+                "max_transferred_bytes": math.ceil(
+                    files * bounds["max_file_bytes"] * TRANSFER_FACTOR
+                ),
+                "max_decompressed_bytes": files * bounds["max_decoded_bytes_per_file"],
+                "max_records": files * bounds["max_rows_per_file"],
+                "max_scanned_records": files * bounds["max_rows_per_file"],
+                "max_temp_disk_bytes": bounds["scratch_cap_bytes"],
+                "max_output_disk_bytes": files
+                * (
+                    bounds["max_durable_bytes_per_file"]
+                    + bounds["max_file_bytes"]
+                    + 3 * growth.metadata_bytes
+                )
+                + growth.run_peak,
+                "max_decompression_ratio": bounds["max_decompression_ratio"],
+                "max_record_bytes": bounds["max_record_bytes"],
+                "overall_deadline_seconds": bounds["plan_deadline_seconds"],
+            }
+        )
     return policy, limits
 
 
@@ -1078,6 +1111,8 @@ def build_plan(
     predecessor: Predecessor | None = None,
     benchmark_reserved: int = BENCHMARK_RESERVED_POSITIONS,
     superseded: Superseded | None = None,
+    component_policy: Mapping[str, Any] | None = None,
+    component_acquired: Mapping[str, int] | None = None,
 ) -> dict[str, Any]:
     """The next deterministic plan of this source; refuses rather than guesses.
 
@@ -1133,19 +1168,59 @@ def build_plan(
         )
         previous_digest = prior["digest"]
     deficit = requirement.required_canonical_bytes - acquired
-    if deficit <= 0:
+    if deficit <= 0 and component_policy is None:
         raise PlanError("sealed canonical bytes already meet the first-pass requirement")
     per_file = layout.rows_per_file * layout.canonical_bytes_per_row
     wanted = math.ceil(deficit * requirement.safety_margin / per_file)
-    if start + wanted > eligible:
+    if start + wanted > eligible and component_policy is None:
         raise PlanError(
             f"the frozen inventory has {eligible - start} plannable files left; "
             f"{wanted} are needed (benchmark-reserved positions are never planned)"
         )
     stop = start + wanted
     files = ordered[start:stop]
+    selected_components: list[dict[str, Any]] | None = None
+    component_cursors: dict[str, int] = {}
+    if component_policy is not None:
+        from xlm.data.acquisition import component_policy as cp
+
+        if (requirement.first_pass_tokens, requirement.required_canonical_bytes) != (
+            330_000_000,
+            1_320_000_000,
+        ):
+            raise PlanError("component split totals differ from the frozen source requirement")
+        cal = component_policy["calibration"]
+        cp.check_bounds(component_policy["reviewed_bounds"], cal)
+        cp.check_split(component_policy["component_split"], cal)
+        if any(cal[k] != pin[k] for k in ("source_id", "repository", "revision", "component_id")):
+            raise PlanError("component policy belongs to another source pin")
+        old = predecessor.plan if predecessor else (superseded.plan if superseded else None)
+        if old is not None:
+            if old["inputs"].get("component_split") != component_policy["component_split"]:
+                raise PlanError("component split changed within a plan lineage")
+            if component_acquired is None:
+                raise PlanError("component top-up needs receipt-derived per-component accounting")
+            component_cursors = dict(old["selection"]["component_cursors"])
+            if superseded is not None:
+                component_cursors = dict(old["selection"]["component_cursors_before"])
+        selected_components, following = cp.select_files(
+            component_policy,
+            inventory,
+            acquired=component_acquired or {},
+            cursors=component_cursors,
+            safety=requirement.safety_margin,
+            eligible=eligible,
+        )
+        files = [e["file"] for e in selected_components]
+        start = min(e["rank"] for e in selected_components)
+        stop = max(e["rank"] for e in selected_components) + 1
     policy_limits, limits = plan_limits(
-        len(files), layout, frozen.mode, pin, known_file_bytes=known_sizes(inventory, files)
+        len(files),
+        layout,
+        frozen.mode,
+        pin,
+        known_file_bytes=known_sizes(inventory, files),
+        reviewed_bounds=component_policy["reviewed_bounds"] if component_policy else None,
     )
     minted = acquisition_plan(
         pin,
@@ -1185,6 +1260,19 @@ def build_plan(
         policy_limits=policy_limits,
         minted=minted,
     )
+    if selected_components is not None and component_policy is not None:
+        record["selection"].update(
+            {
+                "rule": "independent component prefixes under the reviewed "
+                "component requirement split",
+                "files": selected_components,
+                "component_cursors": following,
+                "component_cursors_before": component_cursors,
+            }
+        )
+        record["inputs"]["component_split"] = component_policy["component_split"]
+        record["inputs"]["reviewed_bounds"] = component_policy["reviewed_bounds"]
+        record["acquired_before"]["components"] = dict(component_acquired or {})
     if superseded is not None:
         prior = json.loads(json.dumps(superseded.plan))
         stored = json.loads(json.dumps(record))  # compare JSON values, as stored
@@ -1261,6 +1349,7 @@ def build_repair_plan(
     admission: Mapping[str, str],
     repaired: Repaired,
     benchmark_reserved: int = BENCHMARK_RESERVED_POSITIONS,
+    component_policy: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """A new plan for exactly the unsealed ranks of ``repaired``, under today's limits.
 
@@ -1280,6 +1369,15 @@ def build_repair_plan(
     frozen = _frozen(pin, policy, layout, inventory)
     layout, ordered = frozen.layout, frozen.ordered
     prior = repaired.plan
+    if "component_split" in prior["inputs"]:
+        from xlm.data.acquisition import component_policy as cp
+
+        if component_policy is None:
+            raise PlanError("component repair needs current reviewed bounds and component split")
+        cp.check_bounds(component_policy["reviewed_bounds"], component_policy["calibration"])
+        cp.check_split(component_policy["component_split"], component_policy["calibration"])
+        if prior["inputs"]["component_split"] != component_policy["component_split"]:
+            raise PlanError("component repair cannot change its requirement split")
     check_plan(prior)
     if (prior["source_key"], prior["source"], prior["inventory"]["digest"]) != (
         source_key,
@@ -1314,7 +1412,12 @@ def build_repair_plan(
     files = [name for _, name in remaining]
     ranks = [rank for rank, _ in remaining]
     policy_limits, limits = plan_limits(
-        len(files), layout, frozen.mode, pin, known_file_bytes=known_sizes(inventory, files)
+        len(files),
+        layout,
+        frozen.mode,
+        pin,
+        known_file_bytes=known_sizes(inventory, files),
+        reviewed_bounds=component_policy["reviewed_bounds"] if component_policy else None,
     )
     changed = {
         key: {"from": prior["limits"].get(key), "to": policy_limits.get(key)}
@@ -1379,6 +1482,11 @@ def build_repair_plan(
         "rule": "the repaired plan is never edited; its sealed units stay valid, its "
         "unsealed ranks are sealed only by this plan, and it no longer runs",
     }
+    if component_policy is not None:
+        record["inputs"]["component_split"] = component_policy["component_split"]
+        record["inputs"]["reviewed_bounds"] = component_policy["reviewed_bounds"]
+        for key in ("component_cursors", "component_cursors_before"):
+            record["selection"][key] = prior["selection"][key]
     if changed_admission:
         # Present only for an admission repair, so limit repairs keep their digests.
         record["repair"]["changed_admission"] = changed_admission

@@ -320,7 +320,7 @@
       "source_id": "common_pile",
       "provider": "huggingface",
       "repository": "common-pile/comma_v0.1_training_dataset",
-      "revision": null,
+      "revision": "5afc546db324e7f39f297ba757c9a60547151e7c",
       "subset_hints": [],
       "actual_split": null,
       "selected_files": [],

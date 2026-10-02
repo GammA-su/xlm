@@ -94,14 +94,17 @@ class PrefixSample:
 class _Redirects(SafeRedirectHandler):
     """Allowlisted redirects whose repository link headers are kept."""
 
-    def __init__(self) -> None:
+    def __init__(self, max_hops: int) -> None:
         super().__init__()
         self.hops = 0
+        self.max_hops = max_hops
         self.linked: dict[str, str] = {}
 
     def redirect_request(
         self, req: urllib.request.Request, fp: Any, code: int, msg: str, headers: Any, newurl: str
     ) -> urllib.request.Request | None:
+        if self.hops >= self.max_hops:
+            raise PrefixSampleError("redirect would exceed the request ceiling")
         self.hops += 1
         for name in _LINKED:
             value = headers.get(name)
@@ -162,7 +165,7 @@ def sample_prefix(
             }
             if sample.etag is not None:
                 headers["If-Range"] = sample.etag
-            redirects = _Redirects()
+            redirects = _Redirects(limits.max_requests - sample.requests - 1)
             sample.requests += 1
             try:
                 response = opener(
@@ -238,7 +241,11 @@ def _checked_body(
         linked.get("X-Repo-Commit", revision) != revision
     ):
         raise PrefixSampleError(f"'{sample.source_file}' changed between requests")
-    body: bytes = response.read(end - offset + 2)
+    # Never consume a sentinel byte beyond the authorized Range budget.
+    # A declared response length must agree before any body byte is read.
+    if response.headers.get("Content-Length") != str(end - offset + 1):
+        raise PrefixSampleError(f"'{sample.source_file}': inconsistent response length")
+    body: bytes = response.read(end - offset + 1)
     if len(body) != end - offset + 1:
         raise PrefixSampleError(f"'{sample.source_file}': short or oversized range body")
     return bytes(body)

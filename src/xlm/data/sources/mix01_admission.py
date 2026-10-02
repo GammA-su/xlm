@@ -114,6 +114,11 @@ def review_facts(
         "source": pin.as_dict(),
         "bridge_receipt_digest": receipt["digest"],
         "declared_repository_license": receipt["declared_license"],
+        **(
+            {"component_license_basis": probe["component_license_basis"]}
+            if "component_license_basis" in probe
+            else {}
+        ),
         "declared_license_scope": "the dataset repository's metadata declaration only; it does "
         "not establish the license of every underlying document",
         "license_caveat_from_evidence": receipt["license_caveat"],
@@ -349,8 +354,13 @@ def build_decision(
         operator_notes=(
             f"mix01 source review {REVIEW_VERSION}; operator={operator}; review sha256 {hashes}; "
             f"certified evidence {receipt['digest']}; license approval covers research "
-            "pretraining under the declared repository license only and clears no underlying "
-            "content rights; suspect_with_mitigation records possible contamination, not zero "
+            + (
+                "pretraining under the reviewed component allowlist basis and clears no underlying "
+                if "component_license_basis" in receipt["certification"]["probe"]
+                else "pretraining under the declared repository license only "
+                "and clears no underlying "
+            )
+            + "content rights; suspect_with_mitigation records possible contamination, not zero "
             "contamination; a C05 exclusion receipt over the frozen Mix-01 pool is required "
             "before any uncontaminated benchmark claim"
         ),

@@ -281,6 +281,21 @@ class AdmissionGate:
             review_status=decision.license_review,
             usage_policy=usage_policy,
         )
+        if evidence.declared_license is None:
+            from xlm.data.sources.common_pile_license import valid_basis
+
+            basis = evidence.resource_metrics.get("component_license_basis")
+            if evidence.view_id == "common_pile_prose" and valid_basis(
+                basis, evidence.source_id, evidence.repository, evidence.immutable_revision
+            ):
+                is_lic_ok = (
+                    decision.license_review == LicenseReviewStatus.APPROVED
+                    and decision.provenance_review == "approved"
+                    and decision.reviews_sha256.get("certified_evidence")
+                    == evidence.resource_metrics.get("bridge_receipt_digest")
+                    and bool(decision.reviews_sha256.get("certified_evidence"))
+                )
+                lic_msg = "Common Pile component license/provenance review is not approved/bound."
         if not is_lic_ok:
             reasons.append(lic_msg)
 

@@ -1,3 +1,24 @@
+> **COMMON PILE BALANCED CALIBRATION READINESS (2026-10-02, offline):
+> COMMON PILE BALANCED SOURCE READY FOR CALIBRATION AUTHORIZATION.**
+>
+> Balanced allowlist/inventory reverified unchanged; all 57 saved real schema
+> rows replayed read-only. Adapter v2, bounded gzip transport, component
+> calibration/evidence, source registration/catalog pin, reviewed bounds,
+> A/B/C decision mechanism and narrow C04 component-license basis are implemented.
+> Final authored related selection: 579 passed; additional hash-choice test:
+> 1 passed; final gate repairs: 80 focused passed (overlapping selection).
+> No serial nodes selected (exit 5, not a pass). Ruff/format/strict
+> mypy and diff-check pass. Eight historical source admission gates still pass.
+> Real calibration, metadata, operator bounds/allocation/license review,
+> admission and production remain blocked and unrecorded. No network, C05,
+> tokenizer, training or push occurred. Next: operator reviews and runs only
+> the prepared twelve-sample/probe block, then stops for offline review.
+>
+> [Readiness handoff](reports/COMMON-PILE-BALANCED-PRODUCTION-READINESS.md)
+> contains exact paths, ceilings, commands, tests, identities and continuation.
+>
+> The older Common Pile entry below is historical and superseded.
+
 > **COMMON PILE PROSE ALLOWLIST AUDIT (2026-10-02, documentation-only network):
 > COMMON PILE ALLOWLIST READY FOR OPERATOR DECISION.**
 >

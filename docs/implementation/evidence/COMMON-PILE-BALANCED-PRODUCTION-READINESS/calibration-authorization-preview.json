@@ -1,0 +1,143 @@
+{
+  "adapter_code_identity": {
+    "xlm.data.adapters.columns": "3e594f755eea797ac0d29d819c28b4ccf8e387cfc7889470dfc58e8657e58db1",
+    "xlm.data.adapters.common_pile_adapters": "89ae45abf7a2fd8e533a5d50ef6e37ae99e4ef5c701c365ad854cdb36157a05a",
+    "xlm.data.adapters.mix01_adapters": "3651ff2af4fcb46c207404e052caa59e1ec42f2ac5a429e5dec752f7e83a7ef6"
+  },
+  "allowlist_digest": "b2bb7c0dc532a6263ca17b78816186fa194c12c09c74614baaeb29c76cdaab04",
+  "certification_receipt_digest": "f52a0622a138575835307f0b430482f92debdf7d0aeb7e780db663f53cdacfe1",
+  "configured_sample_byte_ceiling": 50331648,
+  "digest": "a050c68e4061afc159837be0bd6a5e3610b5c7e98f476a496a615126721a9d0b",
+  "inventory_digest": "c0984aa33fb3598a9e724b9518df8cd8a0f2af52b5708ec211fb7fd693df7637",
+  "kind": "common-pile-calibration-authorization-preview-v1",
+  "max_sample_body_bytes": 22169148,
+  "max_sample_requests_including_redirects": 1536,
+  "max_total_body_bytes": 30557756,
+  "max_total_requests": 1556,
+  "metadata_probe_bytes": 8388608,
+  "metadata_probe_requests": 20,
+  "network_executed": false,
+  "revision": "5afc546db324e7f39f297ba757c9a60547151e7c",
+  "targets": [
+    {
+      "chunk_bytes": 131072,
+      "component": "libretexts",
+      "destination": "G:\\XLM\\calib\\common_pile_cal01",
+      "file": "libretexts/libretexts.chunk.39.jsonl.gz",
+      "inventory_size_bytes": 1806742,
+      "max_requests": 128,
+      "max_transferred_bytes": 1806742,
+      "rows_requested": 256
+    },
+    {
+      "chunk_bytes": 131072,
+      "component": "libretexts",
+      "destination": "G:\\XLM\\calib\\common_pile_cal01",
+      "file": "libretexts/libretexts.chunk.40.jsonl.gz",
+      "inventory_size_bytes": 1939463,
+      "max_requests": 128,
+      "max_transferred_bytes": 1939463,
+      "rows_requested": 256
+    },
+    {
+      "chunk_bytes": 131072,
+      "component": "news",
+      "destination": "G:\\XLM\\calib\\common_pile_cal01",
+      "file": "news/news.chunk.29.jsonl.gz",
+      "inventory_size_bytes": 1543613,
+      "max_requests": 128,
+      "max_transferred_bytes": 1543613,
+      "rows_requested": 256
+    },
+    {
+      "chunk_bytes": 131072,
+      "component": "news",
+      "destination": "G:\\XLM\\calib\\common_pile_cal01",
+      "file": "news/news.chunk.44.jsonl.gz",
+      "inventory_size_bytes": 1527147,
+      "max_requests": 128,
+      "max_transferred_bytes": 1527147,
+      "rows_requested": 256
+    },
+    {
+      "chunk_bytes": 131072,
+      "component": "oercommons",
+      "destination": "G:\\XLM\\calib\\common_pile_cal01",
+      "file": "oercommons/oercommons.chunk.49.jsonl.gz",
+      "inventory_size_bytes": 336135,
+      "max_requests": 128,
+      "max_transferred_bytes": 336135,
+      "rows_requested": 256
+    },
+    {
+      "chunk_bytes": 131072,
+      "component": "oercommons",
+      "destination": "G:\\XLM\\calib\\common_pile_cal01",
+      "file": "oercommons/oercommons.chunk.24.jsonl.gz",
+      "inventory_size_bytes": 294589,
+      "max_requests": 128,
+      "max_transferred_bytes": 294589,
+      "rows_requested": 256
+    },
+    {
+      "chunk_bytes": 131072,
+      "component": "pressbooks",
+      "destination": "G:\\XLM\\calib\\common_pile_cal01",
+      "file": "pressbooks/pressbooks.chunk.18.jsonl.gz",
+      "inventory_size_bytes": 2995813,
+      "max_requests": 128,
+      "max_transferred_bytes": 2995813,
+      "rows_requested": 256
+    },
+    {
+      "chunk_bytes": 131072,
+      "component": "pressbooks",
+      "destination": "G:\\XLM\\calib\\common_pile_cal01",
+      "file": "pressbooks/pressbooks.chunk.26.jsonl.gz",
+      "inventory_size_bytes": 3206053,
+      "max_requests": 128,
+      "max_transferred_bytes": 3206053,
+      "rows_requested": 256
+    },
+    {
+      "chunk_bytes": 131072,
+      "component": "project_gutenberg",
+      "destination": "G:\\XLM\\calib\\common_pile_cal02",
+      "file": "project_gutenberg/project_gutenberg.chunk.43.jsonl.gz",
+      "inventory_size_bytes": 119634630,
+      "max_requests": 128,
+      "max_transferred_bytes": 4194304,
+      "rows_requested": 32
+    },
+    {
+      "chunk_bytes": 131072,
+      "component": "project_gutenberg",
+      "destination": "G:\\XLM\\calib\\common_pile_cal02",
+      "file": "project_gutenberg/project_gutenberg.chunk.27.jsonl.gz",
+      "inventory_size_bytes": 119693765,
+      "max_requests": 128,
+      "max_transferred_bytes": 4194304,
+      "rows_requested": 32
+    },
+    {
+      "chunk_bytes": 131072,
+      "component": "public_domain_review",
+      "destination": "G:\\XLM\\calib\\common_pile_cal01",
+      "file": "public_domain_review/public_domain_review.chunk.26.jsonl.gz",
+      "inventory_size_bytes": 69642,
+      "max_requests": 128,
+      "max_transferred_bytes": 69642,
+      "rows_requested": 256
+    },
+    {
+      "chunk_bytes": 131072,
+      "component": "public_domain_review",
+      "destination": "G:\\XLM\\calib\\common_pile_cal01",
+      "file": "public_domain_review/public_domain_review.chunk.04.jsonl.gz",
+      "inventory_size_bytes": 61343,
+      "max_requests": 128,
+      "max_transferred_bytes": 61343,
+      "rows_requested": 256
+    }
+  ]
+}

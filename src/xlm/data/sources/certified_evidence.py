@@ -602,11 +602,17 @@ def translate_store_probe(
     if record.outcome not in (ProbeOutcome.PARTIAL, ProbeOutcome.ACCESSIBLE) or record.is_gated:
         raise BridgeRefusal(f"the stored metadata probe outcome is '{record.outcome.value}'")
     declared = (record.declared_license or "").strip().lower()
-    if not declared:
+    from xlm.data.sources.common_pile_license import valid_basis
+
+    component_basis = facts.probe.get("component_license_basis")
+    if not declared and not (
+        pin.view_id == "common_pile_prose"
+        and valid_basis(component_basis, pin.source_id, pin.repository, pin.revision)
+    ):
         raise BridgeRefusal("the stored metadata probe declares no license")
     if facts.declared_license is not None and facts.declared_license.strip().lower() != declared:
         raise BridgeRefusal("certified evidence and metadata probe declare different licenses")
-    facts.declared_license = declared
+    facts.declared_license = declared or None
     facts.inputs["metadata_probe"] = {
         "artifact_id": artifact_id,
         "sha256": file_sha256,
@@ -788,7 +794,14 @@ def build_bridge(
     pin: SourcePin, facts: CertifiedFacts, *, evidence_type: EvidenceType
 ) -> tuple[dict[str, Any], ProbeEvidenceRecord]:
     """The bridge receipt and the admission evidence record it justifies."""
-    if not facts.declared_license:
+    from xlm.data.sources.common_pile_license import valid_basis
+
+    component_basis = facts.probe.get("component_license_basis")
+    if not facts.declared_license and not (
+        pin.view_id == "common_pile_prose"
+        and valid_basis(component_basis, pin.source_id, pin.repository, pin.revision)
+        and "metadata_probe" in facts.inputs
+    ):
         raise BridgeRefusal("no real evidence declares the license; bind the metadata probe")
     if not facts.observed_files:
         raise BridgeRefusal("no real fetch observed a file identity; bind a calibration fetch")
@@ -844,6 +857,7 @@ def build_bridge(
         verified_schema=schema,
         declared_license=facts.declared_license,
         resource_metrics={
+            **({"component_license_basis": component_basis} if component_basis else {}),
             "producer": PRODUCER,
             "bridge_receipt_digest": receipt["digest"],
             "certification_kind": facts.kind,
@@ -884,6 +898,15 @@ def record_from_receipt(receipt: Mapping[str, Any]) -> ProbeEvidenceRecord:
         verified_schema=schema,
         declared_license=receipt["declared_license"],
         resource_metrics={
+            **(
+                {
+                    "component_license_basis": receipt["certification"]["probe"][
+                        "component_license_basis"
+                    ]
+                }
+                if "component_license_basis" in receipt["certification"]["probe"]
+                else {}
+            ),
             "producer": PRODUCER,
             "bridge_receipt_digest": receipt["digest"],
             "certification_kind": receipt["certification"]["kind"],

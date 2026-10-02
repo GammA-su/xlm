@@ -7,7 +7,8 @@ was decided against the committed evidence matrix, and the production
 inventory is exactly the allowlist-filtered freeze of that listing.
 
     uv run --offline --locked --extra cpu --extra eval python \
-        <evidence-dir>/verify_operator_artifacts.py --data-root G:/XLM --output <evidence-dir>/operator-artifacts.json
+        <evidence-dir>/verify_operator_artifacts.py --data-root G:/XLM \
+        --output <evidence-dir>/operator-artifacts.json
 """
 
 from __future__ import annotations

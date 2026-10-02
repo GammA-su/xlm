@@ -420,10 +420,12 @@ def test_gate_leaves_other_sources_alone_but_refuses_stray_bindings(tmp_path: Pa
         cli.allowlist_gate(args, other, _freeze(_listing(), _record()))
 
 
-def test_common_pile_stays_blocked_for_every_production_command() -> None:
-    with pytest.raises(cli.DriverError, match="license/provenance"):
-        cli.spec_of("common_pile")
-    assert "common_pile" not in cli.SOURCES
+def test_common_pile_registered_but_missing_artifacts_refuse(tmp_path: Path) -> None:
+    spec = cli.spec_of("common_pile")
+    assert spec.calibration == "component"
+    args = argparse.Namespace(data_root=str(tmp_path), source_key="common_pile")
+    with pytest.raises(FileNotFoundError):
+        cli.component_ready(args, spec)
 
 
 # ---------------------------------------------------------------------- CLI
