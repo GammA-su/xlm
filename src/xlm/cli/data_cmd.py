@@ -4006,7 +4006,7 @@ def tokenize_cmd(
         shard_dir = output_dir / source_id
         from xlm.data.exclusion.transport import open_gate
 
-        with open_gate(c05_proof) as gate:
+        with open_gate(c05_proof, consumes=(input_path, tokenizer_dir, shard_dir)) as gate:
             writer = TokenShardWriter(
                 shard_dir,
                 shard_id=f"shard_{source_id}",

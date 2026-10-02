@@ -7,7 +7,6 @@ to be local. No network, dataset execution or automatic license acceptance.
 
 from __future__ import annotations
 
-import getpass
 import os
 import shutil
 import time
@@ -19,8 +18,18 @@ import psutil
 from pydantic import Field
 
 from xlm.data.evidence_v2 import canonical
-from xlm.data.exclusion.artifacts import BenchmarkReceipt, Isolation, MaterialFile, Sha, signed
+from xlm.data.exclusion.artifacts import BenchmarkReceipt, MaterialFile, Sha, signed
 from xlm.data.exclusion.inputs import contained
+from xlm.data.exclusion.isolation import (
+    AnyIsolation,
+    DetachedVolumeIsolation,
+    VolumeInspector,
+    checkout_root,
+    overlaps,
+    require_operator,
+    verify_protected_root,
+    verify_separation,
+)
 from xlm.data.exclusion.policy import C05Error, FrozenModel, MatcherPolicy, Resources, ReviewPolicy
 from xlm.data.exclusion.runner import file_sha
 from xlm.data.exclusion.storage import connect
@@ -31,7 +40,7 @@ class MaterialSpec(FrozenModel):
     files: tuple[MaterialFile, ...]
     publisher_inventory_sha256: Sha
     all_published_configs_splits_reviewed: bool
-    isolation: Isolation
+    isolation: AnyIsolation
     max_record_bytes: int = Field(default=1024 * 1024, ge=1)
 
 
@@ -101,6 +110,31 @@ def material_rows(
                 yield row
 
 
+def detached_preparation(
+    isolation: DetachedVolumeIsolation,
+    material: Path,
+    destination: Path,
+    receipt_export: Path | None,
+    inspector: VolumeInspector | None,
+) -> None:
+    """Material, index and scratch stay inside the verified detached protected root."""
+    protected = verify_protected_root(isolation.protected_root, inspector)
+    root = Path(protected.path).resolve()
+    for name, path in (("benchmark material", material), ("protected index", destination)):
+        if not path.resolve().is_relative_to(root) or path.resolve() == root:
+            raise C05Error(f"{name} must stay inside the protected benchmark root")
+    if receipt_export is not None and overlaps(receipt_export, root):
+        raise C05Error("receipt export is the content-free copy outside the protected root")
+    if overlaps(checkout_root(), root):
+        raise C05Error("protected benchmark root overlaps the running repository checkout")
+    # Preparation-time isolation attestation: every declared root is re-measured now.
+    measured = verify_separation(
+        protected, ((r.role, r.path) for r in isolation.separated_roots), inspector
+    )
+    if [m.volume for m in measured] != [r.volume for r in isolation.separated_roots]:
+        raise C05Error("declared separated-root filesystem identity changed")
+
+
 def build(
     spec: MaterialSpec,
     root: Path,
@@ -114,19 +148,24 @@ def build(
     code_identity: str,
     dependency_sha256: str,
     review_policy: ReviewPolicy | None = None,
+    receipt_export: Path | None = None,
+    inspector: VolumeInspector | None = None,
 ) -> dict[str, Any]:
-    """Write a protected index and a content-free signed receipt, never snippets."""
+    """Write a protected index and a content-free signed receipt, never snippets.
+
+    ``receipt_export`` is the only artifact that may be written outside a detached
+    protected root: a byte-identical copy of the content-free signed receipt.
+    """
     if not spec.all_published_configs_splits_reviewed:
         raise C05Error("publisher config/split coverage has not been reviewed")
+    if isinstance(spec.isolation, DetachedVolumeIsolation):
+        detached_preparation(spec.isolation, root, destination, receipt_export, inspector)
+    elif receipt_export is not None:
+        raise C05Error("receipt export is defined only for detached-volume preparation")
     if spec.isolation.mode == "protected":
         from xlm.data.exclusion.identity import implementation_identity
 
-        if (
-            getpass.getuser().casefold() != spec.isolation.operator_principal.casefold()
-            or spec.isolation.operator_principal.casefold()
-            == spec.isolation.denied_agent_principal.casefold()
-        ):
-            raise C05Error("protected preparation requires a separate operator identity")
+        require_operator(spec.isolation)
         actual = implementation_identity()
         if (code_commit, code_identity, dependency_sha256) != (
             actual["code_commit"],
@@ -252,6 +291,9 @@ def build(
         )
         envelope = signed(receipt.model_dump(mode="json"), issuer, key)
         canonical.write_canonical_json(destination / "benchmark-preparation.receipt.json", envelope)
+        if receipt_export is not None:
+            # Content-free: aggregate counts, digests and isolation identity only.
+            canonical.write_canonical_json(receipt_export, envelope)
         return envelope
     finally:
         db.close()

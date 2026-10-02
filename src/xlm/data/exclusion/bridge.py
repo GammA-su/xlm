@@ -116,6 +116,15 @@ def final_receipt(
                 if selection is not None
                 else []
             ),
+            *(
+                [
+                    "Benchmark isolation: detached_volume_v1 (detached-volume operational "
+                    "isolation; same OS principal permitted; accidental/process-level "
+                    "protection, not adversarial security)."
+                ]
+                if benchmark["payload"]["isolation"].get("mechanism") == "detached_volume_v1"
+                else []
+            ),
         ],
         c05_binding=bindings,
         selection_binding=selection,

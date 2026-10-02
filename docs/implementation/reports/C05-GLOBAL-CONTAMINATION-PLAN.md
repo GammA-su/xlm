@@ -1,3 +1,83 @@
+# Detached-volume protected isolation (`detached_volume_v1`, 2026-10-02)
+
+Starting HEAD `1d722c5a8583de755a363e13d4e918d2a4e93c39` (clean). The operator chose
+not to create a second Windows account. Only the protected benchmark-isolation
+mechanism changed; C05 membership proofs, quotas, the allocation chain and the
+engineering gate are untouched.
+
+**Threat model.** `detached_volume_v1` is *detached-volume operational isolation*
+against accidental/process-level contamination. It is not adversarial security: the
+same Windows user can mount, copy or read the volume, and the receipt records
+`agent_os_access_denial: "not_asserted"`. The invariant it serves is that benchmark
+examples, labels and detailed signatures never become tokenizer or training
+membership; C05 membership proof stays the primary control.
+
+**Schema.** Before: one `Isolation` model, i.e. `separate_principal_v1` by contract
+(`mode`, `operator_principal`, `denied_agent_principal`, `attestation_sha256`,
+`access_controls_verified`). After: a discriminated union (`isolation.AnyIsolation`).
+A payload without `mechanism` keeps exactly the historical model and meaning; one
+with `mechanism: "detached_volume_v1"` must satisfy `DetachedVolumeIsolation`:
+fixed claim/threat-model/access-policy literals, operator and agent principal (may
+be equal), the protected root (logical id, absolute path, SHA-256 of the write-once
+`C05-PROTECTED-ROOT.json` marker holding a random identity nonce, filesystem device =
+`os.stat` volume serial), declared separated roots with their devices (repository
+and data root required), and the operator attestation digest. No key is serialized.
+The receipt kind is unchanged; `ExecutionPlan` gains `isolation: PlanIsolation | None`
+(protected root + index path relative to it), dropped from the digest when absent,
+so historical plan digests are unchanged.
+
+**Contract (validated in the model, at preparation, at plan creation and at run):**
+the root must not overlap any repository, data, training, scratch or output root;
+data/training roots and the C05 output must be on another device; the C05 scratch
+must be on the protected device. That last rule is a finding of this change: the
+facts database stores per-document match identities and, with review enabled,
+`review_patterns` (raw signature tokens), so scratch outside the volume would export
+detailed matches. Preparation keeps material and index inside the root, re-measures
+every declared root and the running checkout, and may write outside the root only
+the content-free receipt copy (`--receipt-export`). `plan --index` binds the index
+in place. `run`/`resume-check` require the plan-bound root, the exact bound index
+path, a matching live marker/device and still-separated roots before any job file.
+Where a device cannot be established (`st_dev` 0), detached mode refuses.
+
+**Same principal.** `separate_principal_v1` still refuses operator == agent at
+preparation, `verify_benchmark` and run. `detached_volume_v1` permits it, but the
+running user must equal the recorded operator.
+
+**Downstream guard (defense in depth).** `open_gate` (every C05-proof consumer:
+tokenizer fit/count, tokenization incl. parallel, mixture, training input, frozen
+execution, allocation chain) and the tokenizer CLI's pre-read `guard_proof` refuse
+while the bound root path is accessible, and refuse proof/input/output paths inside
+the root or the C05 scratch. Limitation: only the bound path is probed; the volume
+mounted at another letter/folder is not detected.
+
+**Other limitations.** Device identity is the volume serial (changes on reformat;
+cloned volumes can share it). The marker nonce identifies a root, it is not a
+secret. The C05 scratch worst case (about 338 GiB with the proposed resources plus
+the reserve) must fit on the protected volume. `detached_volume_v1` does not
+satisfy the separate **Isolated final** evaluation requirement. The schema-3 official
+claim gate is unchanged (a detached protected completion alone refuses).
+
+| Run | Result |
+|---|---|
+| `test_c05_detached_volume.py` (15 tests; fixture volume inspector, real current OS user, real implementation identity, synthetic keys) | 15 passed |
+| Mutation check: disable mount refusal / live root verification / separate-principal refusal | each targeted test fails (3/3 caught); sources restored byte-for-byte |
+| Related parallel (38 files) | 594 passed, exit 0, 41 s |
+| Serial complement (`serial or optional_dependency`, `-n 0`) | 19 passed, 595 deselected, exit 0, 683 s |
+| Synthetic flow (historical separate-principal authored chain) | exit 0, 9 s; 383/349/17/17; 17/17 EXACT; 10,000 targets; claim-check exit 1 |
+| Real metadata-only `plan-readiness` | exit 2; `engineering_blockers: []`; only the protected benchmark preparation receipt missing (operator decision files are now present at `G:/XLM/c05`, verified only at `plan`) |
+| Ruff format `--check` / Ruff check (36 files); mypy `--strict` (34 files); `git diff --check` | 0 / 0 / 0 / 0 (first strict run: 17 typing findings in new code, fixed without suppressions) |
+
+Tests map: same principal + v1 refuses; same principal + valid detached accepts and
+completes a protected run; root overlapping data/scratch/output refuses (plan and
+model); wrong device or marker, unmounted root refuse before any job file; changed or
+relocated index refuses; only the receipt copy and kept membership/completion leave
+the protected volume and none contains benchmark words; tokenizer/training paths
+inside the root or scratch refuse; mounted → refuse, detached → the gate opens;
+historical isolation parses as `separate_principal_v1` and historical plan digests
+are unchanged; a protected detached completion yields schema 2 that cannot claim.
+NOT RUN: real volume, real benchmark material, real C05, tokenizer, training,
+network, full repository acceptance selection.
+
 # Global C05 independent engineering acceptance audit (2026-10-02)
 
 **Result: C05 engineering independently accepted after four bounded fixes; protected

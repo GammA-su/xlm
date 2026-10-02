@@ -47,6 +47,9 @@ def tokenize_selection(
     from xlm.data.tokens import TokenShardWriter
 
     selection = SelectionGate(gate, selection_dir)
+    from xlm.data.exclusion.transport import protected_guard
+
+    protected_guard(gate.plan, (selection_dir, tokenizer_dir, output_root))
     tokenizer, identity = tokenizer_identity(tokenizer_dir, gate)
     if identity != selection.body["tokenizer"]:
         raise C05Error("tokenization tokenizer differs from the exact-count tokenizer")
@@ -249,7 +252,9 @@ def verify_training_freeze(
     proof, frozen = data.get("c05_proof"), data.get("c05_freeze")
     if not isinstance(proof, str) or not isinstance(frozen, str):
         raise C05Error("final training requires explicit C05 proof and freeze paths")
-    with open_gate(Path(proof), allow_authored=not production) as gate:
+    with open_gate(
+        Path(proof), allow_authored=not production, consumes=(frozen, *sources.values())
+    ) as gate:
         if gate is None:
             raise C05Error("C05 proof absent")
         envelope = verify_freeze(Path(frozen), gate)

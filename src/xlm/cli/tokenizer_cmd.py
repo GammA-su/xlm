@@ -12,7 +12,7 @@ from xlm.artifacts.store import ArtifactStore
 from xlm.core.paths import ArtifactPaths
 from xlm.data.canonical_io import CanonicalDatasetReader
 from xlm.data.exclusion.gates import screened_documents
-from xlm.data.exclusion.transport import open_gate
+from xlm.data.exclusion.transport import guard_proof, open_gate
 from xlm.data.normalization import canonical_normalize, compute_sha256
 from xlm.tokenizers.base import BaseTokenizer
 from xlm.tokenizers.bpe import ByteLevelBPETokenizer
@@ -96,6 +96,14 @@ def train(
         typer.echo(f"Error: Canonical documents JSONL file not found at {jsonl_file}", err=True)
         raise typer.Exit(code=1)
 
+    staging_dir = output_dir or (Path(".staging") / f"tokenizer_{tok_type}_{vocab_size}")
+    try:
+        # Detached-volume C05 plans: refuse before reading any byte of the corpus.
+        guard_proof(c05_proof, (jsonl_file, staging_dir))
+    except ValueError as exc:
+        typer.echo(f"Error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+
     # Read and explicitly select ONLY train documents
     total_count = train_count = 0
     for doc in CanonicalDatasetReader.read_jsonl(jsonl_file):
@@ -108,11 +116,10 @@ def train(
 
     typer.echo(f"Loaded {train_count} training documents (filtered from {total_count} total).")
 
-    staging_dir = output_dir or (Path(".staging") / f"tokenizer_{tok_type}_{vocab_size}")
     staging_dir.mkdir(parents=True, exist_ok=True)
 
     if tok_type == "byte":
-        with open_gate(c05_proof) as gate:
+        with open_gate(c05_proof, consumes=(jsonl_file, staging_dir)) as gate:
             for _ in screened_documents(
                 (d for d in CanonicalDatasetReader.read_jsonl(jsonl_file) if d.split == "train"),
                 gate,
@@ -123,7 +130,7 @@ def train(
         tokenizer.save(staging_dir)
     elif tok_type == "bpe":
         try:
-            with open_gate(c05_proof) as gate:
+            with open_gate(c05_proof, consumes=(jsonl_file, staging_dir)) as gate:
                 tokenizer = ByteLevelBPETokenizer.train_from_documents(
                     documents=(
                         d
@@ -206,7 +213,7 @@ def count_exact(
     from xlm.data.exclusion.gates import count_exact_tokens
 
     try:
-        with open_gate(c05_proof) as gate:
+        with open_gate(c05_proof, consumes=(data_path, tokenizer_dir, output)) as gate:
             if gate is None:
                 raise ValueError("C05 proof missing")
             result = count_exact_tokens(

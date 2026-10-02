@@ -6,7 +6,6 @@ plans exercise the same scan/group/publication code, but cannot issue protected 
 
 from __future__ import annotations
 
-import getpass
 import hashlib
 import os
 import shutil
@@ -33,6 +32,7 @@ from xlm.data.exclusion.capacity import (
 )
 from xlm.data.exclusion.disk import DiskGroups
 from xlm.data.exclusion.inputs import contained, read_metadata
+from xlm.data.exclusion.isolation import VolumeInspector
 from xlm.data.exclusion.policy import C05Error, require_engine_acceptance
 from xlm.data.exclusion.review import ReviewQueue, queue_digest
 from xlm.data.exclusion.streaming import Pattern, StreamingMatcher
@@ -128,6 +128,55 @@ class Budget:
             raise C05Error("unaccounted SQLite WAL/shared-memory file")
 
 
+def isolation_check(
+    plan: ExecutionPlan,
+    receipt: Mapping[str, Any],
+    index: Path,
+    inspector: VolumeInspector | None = None,
+) -> None:
+    """Versioned isolation contract of the verified benchmark receipt, live.
+
+    Protected separate_principal_v1 needs a distinct denied agent identity;
+    detached_volume_v1 permits the same principal only with the plan-bound protected
+    root mounted, its index read in place and every plan root still separated.
+    """
+    from pydantic import TypeAdapter
+
+    from xlm.data.exclusion.isolation import (
+        AnyIsolation,
+        DetachedVolumeIsolation,
+        Isolation,
+        require_operator,
+        verify_protected_root,
+        verify_separation,
+    )
+
+    raw = receipt["isolation"]
+    detached = isinstance(raw, Mapping) and "mechanism" in raw
+    if plan.mode != "protected" and not detached and plan.isolation is None:
+        return  # Historical authored fixtures carry a minimal isolation record.
+    isolation: Isolation | DetachedVolumeIsolation = TypeAdapter(AnyIsolation).validate_python(raw)
+    if isinstance(isolation, DetachedVolumeIsolation):
+        if plan.isolation is None or plan.isolation.protected_root != isolation.protected_root:
+            raise C05Error("plan does not bind the receipt's protected benchmark root")
+        if index.resolve() != plan.isolation.index_path().resolve():
+            raise C05Error("C05 must read the plan-bound index on the protected volume")
+        protected = verify_protected_root(isolation.protected_root, inspector)
+        verify_separation(
+            protected,
+            (
+                ("data_root", plan.data_root),
+                ("c05_scratch", plan.scratch_root),
+                ("c05_output", plan.output_root),
+            ),
+            inspector,
+        )
+    elif plan.isolation is not None:
+        raise C05Error("plan binds a detached volume but the receipt does not")
+    if plan.mode == "protected":
+        require_operator(isolation)
+
+
 def run(
     plan: ExecutionPlan,
     authorization: Mapping[str, Any],
@@ -140,6 +189,7 @@ def run(
     current_code: str,
     current_dependencies: str,
     checkpoint: Callable[[str], None] = lambda event: None,
+    inspector: VolumeInspector | None = None,
 ) -> dict[str, Any]:
     """Resume a plan without resetting spent time; reusable files are rehashed.
 
@@ -165,6 +215,7 @@ def run(
         raise C05Error("benchmark receipt/index identity changed")
     if receipt["isolation"]["mode"] != plan.mode:
         raise C05Error("benchmark protection mode mismatch")
+    isolation_check(plan, receipt, index, inspector)
     if plan.mode == "protected":
         from xlm.data.exclusion.identity import implementation_identity
 
@@ -175,13 +226,6 @@ def run(
             actual["dependency_sha256"],
         ):
             raise C05Error("protected runtime code/dependencies differ")
-        isolation = receipt["isolation"]
-        if (
-            getpass.getuser().casefold() != str(isolation["operator_principal"]).casefold()
-            or str(isolation["operator_principal"]).casefold()
-            == str(isolation["denied_agent_principal"]).casefold()
-        ):
-            raise C05Error("protected runner principal mismatch")
     work = Path(plan.scratch_root) / identity
     output = Path(plan.output_root)
     from xlm.artifacts.manifest import ensure_plain_path
@@ -613,6 +657,7 @@ def resume_check(
     index: Path,
     benchmark: Mapping[str, Any],
     trusted: Mapping[str, bytes],
+    inspector: VolumeInspector | None = None,
 ) -> dict[str, Any]:
     """Read-only authentication of every reusable stage, never starts a scan stage."""
     from xlm.data.exclusion.identity import implementation_identity
@@ -637,6 +682,7 @@ def resume_check(
         or receipt["index_sha256"] != plan.index_sha256
     ):
         raise C05Error("resume benchmark changed")
+    isolation_check(plan, receipt, index, inspector)
     if index.stat().st_size != receipt["index_bytes"] or file_sha(index) != plan.index_sha256:
         raise C05Error("resume protected index changed")
     work = Path(plan.scratch_root) / identity

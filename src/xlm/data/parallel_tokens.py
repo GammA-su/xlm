@@ -132,7 +132,11 @@ def _lane(
     manifests = []
     for entry, allowance in entries:
         shard_id = f"shard-{entry.ordinal:05d}"
-        with open_gate(c05_proof, allow_authored=c05_selection is not None) as gate:
+        with open_gate(
+            c05_proof,
+            allow_authored=c05_selection is not None,
+            consumes=(input_dir, output_dir),
+        ) as gate:
             selection = None
             if c05_selection is not None:
                 from xlm.data.exclusion.selection import SelectionGate
@@ -329,7 +333,9 @@ def tokenize_shards(
     ordered = sorted(item for result in results for item in result["manifests"])
     if [i for i, _ in ordered] != [e.ordinal for e in manifest.shards]:
         raise ValueError("tokenization worker results are incomplete")
-    with open_gate(c05_proof, allow_authored=c05_selection is not None) as gate:
+    with open_gate(
+        c05_proof, allow_authored=c05_selection is not None, consumes=(input_dir, output_dir)
+    ) as gate:
         if gate is not None:
             gate.db.execute("DELETE FROM seen")
             for i, _ in ordered:
@@ -505,7 +511,11 @@ def tokenize_to_single_shard(
             c05_selection=c05_selection,
         )
         start = time.perf_counter()
-        with open_gate(c05_proof, allow_authored=c05_selection is not None) as gate:
+        with open_gate(
+            c05_proof,
+            allow_authored=c05_selection is not None,
+            consumes=(input_dir, output_dir),
+        ) as gate:
             manifest = _assemble(
                 parts,
                 result["index"]["shards"],

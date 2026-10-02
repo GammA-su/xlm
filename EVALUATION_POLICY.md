@@ -3,8 +3,13 @@
 **C05 engine continuation (2026-10-02):** authored fixtures now exercise immutable
 benchmark matching, known-group propagation, crash recovery and kept-membership
 gates. They are not protected benchmark evidence. Real preparation must still
-occur under the separate operator identity/machine required below, with a trusted
-content-free receipt. Raw indexes, pattern digests and detailed exclusion decisions
+occur under a versioned protected isolation mechanism with a trusted content-free
+receipt: `separate_principal_v1` (the separate operator identity/machine below) or,
+since 2026-10-02, `detached_volume_v1` (same Windows account; benchmark material,
+protected index and C05 scratch on a dedicated volume mounted only for preparation
+and the C05 run). The latter is *detached-volume operational isolation* against
+accidental/process-level contamination, not adversarial security against the same
+user, and it does not satisfy the **Isolated final** evaluation requirement below. Raw indexes, pattern digests and detailed exclusion decisions
 remain protected; exported kept membership is frozen against the complete source
 manifest before any query. The new completion/token-shard attestations do not
 replace the official evaluation `FinalExclusionReceipt` gate. C05 engineering is

@@ -206,7 +206,9 @@ def resolve_execution_config(config: dict[str, Any]) -> tuple[dict[str, Any], di
             data.get("c05_freeze")
         ) and not data_source.recipe.mixture_id.casefold().replace("_", "-").startswith("mix-01")
         with open_gate(
-            Path(data["c05_proof"]) if data.get("c05_proof") else None, allow_authored=rehearsal
+            Path(data["c05_proof"]) if data.get("c05_proof") else None,
+            allow_authored=rehearsal,
+            consumes=[r.directory for r in data_source.readers.values()],
         ) as gate:
             expected = compile_exposure_plan(
                 data_source.recipe,

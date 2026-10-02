@@ -1,7 +1,9 @@
 """Operator-side final exclusion receipts.
 
 EVALUATION_POLICY: decontamination against protected final data happens in an
-isolated preparation environment under a different OS identity. Its ordinary output
+isolated preparation environment: a different OS identity (``separate_principal_v1``)
+or, for C05 benchmark preparation, a detached protected volume under the same
+identity (``detached_volume_v1``, operational isolation only). Its ordinary output
 is an opaque receipt, aggregate counts and corpus keep/drop decisions -- never
 benchmark labels, raw final hashes or matching snippets.
 

@@ -86,6 +86,53 @@ def readiness_report(args: argparse.Namespace) -> dict[str, Any]:
     }
 
 
+def protected_root_command(args: argparse.Namespace) -> dict[str, Any]:
+    """Create the root marker, or describe a measured detached-volume isolation.
+
+    ``describe`` is a proposal for the material spec: content-free paths, device
+    identities and the marker digest. ``build-local`` re-measures all of it.
+    """
+    from xlm.data.exclusion.isolation import (
+        DetachedVolumeIsolation,
+        Role,
+        RootIdentity,
+        init_protected_root,
+        inspect_protected_root,
+        os_volume,
+    )
+
+    if args.action == "init":
+        if not args.logical_id:
+            raise C05Error("--logical-id is required to initialize a protected root")
+        marker = init_protected_root(args.root, args.logical_id)
+        return {"initialized": str(args.root), "logical_id": marker["logical_id"]}
+    if not args.operator or not args.attestation_sha256:
+        raise C05Error("describe requires --operator and --attestation-sha256")
+    declared: tuple[tuple[Role, list[Path]], ...] = (
+        ("repository", args.repository),
+        ("data_root", args.data_root),
+        ("training_data", args.training_data),
+        ("c05_scratch", args.c05_scratch),
+        ("c05_output", args.c05_output),
+    )
+    roots = [
+        RootIdentity(role=role, path=str(path.resolve()), volume=os_volume(path))
+        for role, paths in declared
+        for path in paths
+    ]
+    isolation = DetachedVolumeIsolation(
+        mechanism="detached_volume_v1",
+        mode=args.mode,
+        operator_principal=args.operator,
+        # Same Windows account by deployment choice; no agent OS denial is claimed.
+        agent_principal=args.operator,
+        protected_root=inspect_protected_root(args.root),
+        separated_roots=tuple(roots),
+        attestation_sha256=args.attestation_sha256,
+    )
+    return {"proposal_only": True, "isolation": isolation.model_dump(mode="json")}
+
+
 def main(argv: list[str] | None = None) -> int:
     arguments = list(sys.argv[1:] if argv is None else argv)
     if arguments and arguments[0] in {
@@ -131,6 +178,17 @@ def main(argv: list[str] | None = None) -> int:
     build_parser.add_argument("--code-commit", required=True)
     build_parser.add_argument("--code-identity", required=True)
     build_parser.add_argument("--dependency-sha256", required=True)
+    # detached_volume_v1 only: the content-free receipt copy outside the protected root.
+    build_parser.add_argument("--receipt-export", type=Path)
+    root_parser = sub.add_parser("protected-root")
+    root_parser.add_argument("action", choices=["init", "describe"])
+    root_parser.add_argument("--root", type=Path, required=True)
+    root_parser.add_argument("--logical-id")
+    root_parser.add_argument("--operator")
+    root_parser.add_argument("--attestation-sha256")
+    root_parser.add_argument("--mode", choices=["protected", "authored"], default="protected")
+    for role in ("repository", "data-root", "training-data", "c05-scratch", "c05-output"):
+        root_parser.add_argument("--" + role, type=Path, action="append", default=[])
     readiness = sub.add_parser("plan-readiness")
     readiness.add_argument(
         "--benchmark-receipt",
@@ -168,6 +226,9 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "plan-readiness":
             print(json.dumps(readiness_report(args), sort_keys=True))
             return 2
+        if args.command == "protected-root":
+            print(json.dumps(protected_root_command(args), sort_keys=True))
+            return 0
         spec = MaterialSpec.model_validate(read_metadata(args.spec, digested=False))
         if args.command == "inspect-local":
             inspection = inspect(spec, args.material_root)
@@ -192,6 +253,7 @@ def main(argv: list[str] | None = None) -> int:
             )
             if args.review_policy
             else None,
+            receipt_export=args.receipt_export,
         )
         print(json.dumps({"prepared": True, "mode": spec.isolation.mode}))
         return 0

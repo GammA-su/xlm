@@ -154,7 +154,7 @@ def plan_cmd(
         raise typer.Exit(code=1)
 
     try:
-        with open_gate(c05_proof) as gate:
+        with open_gate(c05_proof, consumes=(shard_root,)) as gate:
             plan = compile_exposure_plan(
                 recipe,
                 validation,
@@ -234,7 +234,7 @@ def matched_plan_cmd(
         raise typer.Exit(code=1)
 
     try:
-        with open_gate(c05_proof) as gate:
+        with open_gate(c05_proof, consumes=(shard_root,)) as gate:
             plan = compile_matched_plan(
                 recipe,
                 validation,
@@ -401,7 +401,7 @@ def preview_cmd(
         typer.echo("Error: mixture is invalid; cannot preview.", err=True)
         raise typer.Exit(code=1)
 
-    with open_gate(c05_proof) as gate:
+    with open_gate(c05_proof, consumes=(shard_root,)) as gate:
         plan = compile_exposure_plan(
             recipe,
             validation,

@@ -13,6 +13,15 @@ from pydantic import Field
 from xlm.data.evidence_v2 import canonical
 from xlm.data.exclusion.capacity import StorageGeometry, admit_plan
 from xlm.data.exclusion.inputs import read_metadata
+from xlm.data.exclusion.isolation import (
+    AnyIsolation,
+    DetachedVolumeIsolation,
+    Isolation,
+    ProtectedRoot,
+    VolumeInspector,
+    verify_protected_root,
+    verify_separation,
+)
 from xlm.data.exclusion.policy import (
     C05Error,
     FrozenModel,
@@ -25,12 +34,23 @@ Sha = Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
 Revision = Annotated[str, Field(pattern=r"^[0-9a-f]{40}$")]
 
 
-class Isolation(FrozenModel):
-    mode: Literal["protected", "authored"]
-    operator_principal: str = Field(min_length=1)
-    denied_agent_principal: str = Field(min_length=1)
-    attestation_sha256: Sha
-    access_controls_verified: Literal[True]
+class PlanIsolation(FrozenModel):
+    """Detached-volume binding of a plan: protected root and its immutable index.
+
+    Absent (``None``) for historical ``separate_principal_v1``/authored plans, whose
+    plan digests are therefore unchanged.
+    """
+
+    mechanism: Literal["detached_volume_v1"] = "detached_volume_v1"
+    protected_root: ProtectedRoot
+    index_relpath: str = Field(min_length=1)
+
+    def index_path(self) -> Path:
+        root = Path(self.protected_root.path)
+        relative = Path(self.index_relpath)
+        if relative.is_absolute() or not (root / relative).resolve().is_relative_to(root.resolve()):
+            raise C05Error("protected index path escapes the protected root")
+        return root / relative
 
 
 class MaterialFile(FrozenModel):
@@ -68,7 +88,8 @@ class BenchmarkReceipt(FrozenModel):
     code_identity: Sha
     dependency_sha256: Sha
     lm_eval: Literal["0.4.13"] = "0.4.13"
-    isolation: Isolation
+    # Versioned: no ``mechanism`` = separate_principal_v1; else detached_volume_v1.
+    isolation: AnyIsolation
     issuer: str = Field(min_length=1)
 
 
@@ -108,6 +129,7 @@ class ExecutionPlan(FrozenModel):
     output_contract: Literal["c05_membership_v2"] = "c05_membership_v2"
     review_decisions: dict[str, Sha] = Field(default_factory=dict)
     authorization_contract: Literal["signed-plan-digest-v2"] = "signed-plan-digest-v2"
+    isolation: PlanIsolation | None = None
 
     def identity(self) -> str:
         self.policy.identity()
@@ -130,7 +152,18 @@ class ExecutionPlan(FrozenModel):
             path = Path(f.path)
             if path.is_absolute() or not (roots[0] / path).resolve().is_relative_to(roots[0]):
                 raise C05Error("input path escapes root")
-        return canonical.digest(self.model_dump(mode="json"))
+        body = self.model_dump(mode="json")
+        if self.isolation is None:
+            del body["isolation"]  # Historical plan digests stay unchanged.
+        else:
+            self.isolation.index_path()
+            protected = self.isolation.protected_root.path
+            for role, root in zip(("data root", "scratch", "C05 output"), roots, strict=True):
+                if root.is_relative_to(Path(protected).resolve()) or Path(
+                    protected
+                ).resolve().is_relative_to(root):
+                    raise C05Error(f"protected benchmark root overlaps {role}")
+        return canonical.digest(body)
 
 
 def signed(body: Mapping[str, Any], issuer: str, key: bytes) -> dict[str, Any]:
@@ -177,9 +210,13 @@ def verify_benchmark(
         raise C05Error("benchmark fuzzy review policy mismatch")
     if mode == "protected" and receipt.items_without_patterns:
         raise C05Error("benchmark items without frozen signatures require policy review")
+    # separate_principal_v1 keeps its historical contract; detached_volume_v1 permits
+    # one principal only with its validated root/device separation (model checks).
     if (
         mode == "protected"
-        and receipt.isolation.operator_principal == receipt.isolation.denied_agent_principal
+        and isinstance(receipt.isolation, Isolation)
+        and receipt.isolation.operator_principal.casefold()
+        == receipt.isolation.denied_agent_principal.casefold()
     ):
         raise C05Error("same-principal isolation is not protected")
     if {f.task for f in receipt.files} != set(pins):
@@ -222,6 +259,8 @@ def make_plan(
     code_identity: str,
     dependency_sha256: str,
     mode: Literal["protected", "authored"] = "protected",
+    index: Path | None = None,
+    inspector: VolumeInspector | None = None,
 ) -> ExecutionPlan:
     require_engine_acceptance(mode)
     if manifest.get("digest") != canonical.self_digest(manifest):
@@ -257,9 +296,40 @@ def make_plan(
         code_commit=code_commit,
         code_identity=code_identity,
         dependency_sha256=dependency_sha256,
+        isolation=detached_binding(
+            receipt, index, manifest["data_root"], scratch, output, inspector
+        ),
     )
     plan.identity()
     return plan
+
+
+def detached_binding(
+    receipt: BenchmarkReceipt,
+    index: Path | None,
+    data_root: str,
+    scratch: Path,
+    output: Path,
+    inspector: VolumeInspector | None = None,
+) -> PlanIsolation | None:
+    """Bind and live-verify a detached-volume receipt's root, index and plan roots."""
+    if not isinstance(receipt.isolation, DetachedVolumeIsolation):
+        return None
+    if index is None:
+        raise C05Error("detached-volume plans must name the protected index on its volume")
+    protected = verify_protected_root(receipt.isolation.protected_root, inspector)
+    root = Path(protected.path).resolve()
+    if not index.resolve().is_relative_to(root):
+        raise C05Error("protected index must stay inside the protected benchmark root")
+    verify_separation(
+        protected,
+        (("data_root", data_root), ("c05_scratch", scratch), ("c05_output", output)),
+        inspector,
+    )
+    return PlanIsolation(
+        protected_root=protected,
+        index_relpath=index.resolve().relative_to(root).as_posix(),
+    )
 
 
 def load_envelope(path: Path) -> dict[str, Any]:

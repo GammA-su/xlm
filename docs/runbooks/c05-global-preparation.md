@@ -10,6 +10,51 @@ reviewed resource decision (plus trusted keys and plan authorization). A run ref
 if job files exist without signed `state.json`; never delete it to "restart" — use a
 new plan. Sections further below are historical unless they say otherwise.
 
+## Detached-volume isolation (`detached_volume_v1`, same Windows account)
+
+Chosen deployment: no second Windows account. The protected benchmark material,
+protected index **and the C05 scratch** (it stores detailed match facts and, with
+review enabled, raw signature tokens) live on a dedicated volume, e.g. `X:`, that is
+attached only for protected preparation and the C05 run. This is *detached-volume
+operational isolation* against accidental/process-level contamination; it does not
+deny the agent OS access and is not adversarial security against the same user.
+
+Contract, enforced at preparation, plan creation and run time (fixture-tested):
+
+* `X:\C05-Protected` (benchmark root) carries the write-once marker
+  `C05-PROTECTED-ROOT.json`; its marker digest, logical id and filesystem device
+  (`os.stat` volume serial) are bound into the receipt and the plan.
+* Benchmark material and the prepared index stay inside the root; the only
+  artifact written outside is the content-free receipt copy (`--receipt-export`).
+* The C05 scratch (e.g. `X:\C05-Scratch`) must be on the protected device and must
+  not overlap the root; the C05 output (kept membership, completion) and the data
+  root `G:/XLM` must be on another device; no repository checkout may overlap.
+* `plan --index` binds the index *in place*; `run` refuses any other index path,
+  a different marker/device, an unmounted root or roots that moved volumes.
+* The same OS principal is permitted only under this mechanism and must equal the
+  recorded operator; `separate_principal_v1` receipts keep refusing one principal.
+* Downstream (tokenizer, counting, tokenization, mixture, training): every C05
+  proof consumer refuses while `X:\C05-Protected` is accessible and refuses paths
+  inside the root or the C05 scratch. Only that bound path is probed; mounting the
+  volume elsewhere is not detected. Detach `X:` before any tokenizer/training work.
+* Capacity: the C05 scratch worst case (about 338 GiB with the proposed resource
+  values, plus the reserve) must fit on the protected volume.
+
+```powershell
+$op = 'uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator'
+# 1. Once: create the root marker (content-free random identity nonce).
+Invoke-Expression "$op protected-root init --root X:/C05-Protected --logical-id c05-protected-v1"
+# 2. Measure a content-free isolation proposal; paste its "isolation" into material-spec.json.
+Invoke-Expression "$op protected-root describe --root X:/C05-Protected --operator $env:USERNAME --attestation-sha256 <sha256-of-signed-operator-attestation> --repository F:/Project/xlm-c05-global --repository F:/Project/xlm-data-ultrax --data-root G:/XLM --c05-scratch X:/C05-Scratch --c05-output G:/XLM/c05/output"
+# 3. Prepare inside the root; export only the content-free receipt.
+Invoke-Expression "$op build-local --spec X:/C05-Protected/material-spec.json --material-root X:/C05-Protected/material --output X:/C05-Protected/prepared --policy <matcher-policy.json> --resources <resources.json> --issuer <issuer> --key-env <KEY_ENV> --code-commit <commit> --code-identity <identity> --dependency-sha256 <deps> --receipt-export G:/XLM/c05/benchmark-preparation.receipt.json"
+# 4. Plan binds root + index in place; run reads the index from the mounted volume.
+Invoke-Expression "$op plan --mode protected --index X:/C05-Protected/prepared/index.jsonl --scratch X:/C05-Scratch --output G:/XLM/c05/output <other plan arguments>"
+```
+
+After `verify`, detach `X:` before `count-tokens`, tokenizer fitting, tokenization,
+freeze or training; those commands refuse while it is mounted.
+
 ## Readiness check (metadata only)
 
 ```powershell

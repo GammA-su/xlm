@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import uuid
-from collections.abc import Iterator, Mapping
+from collections.abc import Iterable, Iterator, Mapping
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
@@ -27,14 +27,61 @@ class ProofSpec(FrozenModel):
     signer_key_env: str | None = None
 
 
+def protected_guard(plan: ExecutionPlan, consumes: Iterable[Path | str]) -> None:
+    """Defense in depth for detached_volume_v1 plans; C05 membership stays primary.
+
+    Downstream (tokenizer fitting/counting, tokenization, mixture, training) refuses
+    while the plan's protected benchmark root is accessible at its bound path, and
+    refuses any input/output path inside that root or the C05 scratch, which holds
+    detailed matches. Only the bound path is probed: the same volume mounted at
+    another drive letter or folder is not detected (operational isolation, not
+    adversarial security).
+    """
+    if plan.isolation is None:
+        return
+    from xlm.data.exclusion.isolation import overlaps
+
+    root = plan.isolation.protected_root.path
+    if Path(root).exists():
+        raise C05Error(
+            "protected benchmark volume is mounted; detach it before tokenizer or training work"
+        )
+    for item in consumes:
+        for blocked, name in (
+            (root, "protected benchmark root"),
+            (plan.scratch_root, "C05 protected scratch"),
+        ):
+            if overlaps(item, blocked):
+                raise C05Error(f"{name} path cannot be tokenizer/training material")
+
+
+def guard_proof(path: Path | None, consumes: Iterable[Path | str] = ()) -> None:
+    """Cheap pre-read guard: the proof's plan only, before any corpus byte is read."""
+    if path is None:
+        return
+    spec = ProofSpec.model_validate(read_metadata(path, digested=False))
+    plan = ExecutionPlan.model_validate(read_metadata(Path(spec.plan), digested=False))
+    if plan.identity() != spec.plan_digest:
+        raise C05Error("C05 proof plan changed")
+    protected_guard(
+        plan,
+        (path, spec.plan, spec.manifest, spec.completion, spec.trust, spec.scratch, *consumes),
+    )
+
+
 @contextmanager
 def open_gate(
-    path: Path | None, *, allow_authored: bool = False
+    path: Path | None,
+    *,
+    allow_authored: bool = False,
+    consumes: Iterable[Path | str] = (),
 ) -> Iterator[MembershipGate | None]:
     """Open the verified kept-membership lookup named by a proof specification.
 
     Protected plans only, unless the caller explicitly runs an authored chain whose
     every artifact then carries ``mode="authored"`` and fails protected consumers.
+    ``consumes`` names the caller's corpus/tokenizer/shard paths for the
+    detached-volume guard.
     """
     if path is None:
         yield None
@@ -43,6 +90,10 @@ def open_gate(
     plan = ExecutionPlan.model_validate(read_metadata(Path(spec.plan), digested=False))
     if plan.identity() != spec.plan_digest:
         raise C05Error("C05 proof plan changed")
+    protected_guard(
+        plan,
+        (path, spec.plan, spec.manifest, spec.completion, spec.trust, spec.scratch, *consumes),
+    )
     if plan.mode == "authored" and not allow_authored:
         raise C05Error("development evidence cannot satisfy protected C05")
     trust = trust_from_file(Path(spec.trust))
@@ -84,7 +135,7 @@ def verify_training_shards(
         return None
     if not isinstance(reference, str):
         raise C05Error("production training requires explicit C05 proof transport")
-    with open_gate(Path(reference)) as gate:
+    with open_gate(Path(reference), consumes=shards.values()) as gate:
         if gate is None:
             raise C05Error("C05 proof absent")
         gate.db.execute("DELETE FROM seen")

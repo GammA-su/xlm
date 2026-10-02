@@ -126,11 +126,15 @@ def create_plan(args: argparse.Namespace, trust: dict[str, bytes]) -> ExecutionP
             policy,
             Resources.model_validate(decisions["resources"].value),
             sequence=sequence,
+            # A detached-volume receipt binds the index read in place on its volume.
+            index=args.index,
             # Measured on the actual scratch volume; the run re-measures and refuses drift.
             storage=probe_geometry(args.scratch),
             scratch=args.scratch,
             output=args.output,
-            **actual,
+            code_commit=actual["code_commit"],
+            code_identity=actual["code_identity"],
+            dependency_sha256=actual["dependency_sha256"],
             mode=args.mode,
         )
         plan = plan.model_copy(
@@ -190,6 +194,8 @@ def parser() -> argparse.ArgumentParser:
     ):
         plan.add_argument("--" + name, type=Path, required=True)
     plan.add_argument("--source-scratch", type=Path, default=Path("C:/XLM-scratch"))
+    # Required for detached_volume_v1 receipts: the index inside the protected root.
+    plan.add_argument("--index", type=Path)
     plan.add_argument("--pins", type=Path, default=Path("manifests/eval_dataset_pins.yaml"))
     plan.add_argument("--mode", choices=["protected", "authored"], default="protected")
     _trust(plan)
@@ -265,7 +271,20 @@ def allocation_command(args: argparse.Namespace) -> int:
 
     # Authored chains run the identical code; every artifact records the mode and
     # protected consumers (Mix-01 training, official claims) refuse authored ones.
-    with open_gate(args.c05_proof, allow_authored=True) as gate:
+    consumes = [
+        getattr(args, name)
+        for name in (
+            "tokenizer",
+            "scratch",
+            "output",
+            "counts",
+            "selection",
+            "output_root",
+            "shards",
+        )
+        if getattr(args, name, None) is not None
+    ]
+    with open_gate(args.c05_proof, allow_authored=True, consumes=consumes) as gate:
         if gate is None:
             raise C05Error("C05 proof absent")
         if args.command == "claim-binding":

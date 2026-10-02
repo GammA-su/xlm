@@ -1,3 +1,18 @@
+> **C05 DETACHED-VOLUME ISOLATION (2026-10-02): READY; PROTECTED BENCHMARK RECEIPT REQUIRED.**
+>
+> New versioned isolation mechanism `detached_volume_v1` beside the historical
+> `separate_principal_v1` (receipts without `mechanism`, meaning unchanged). Same
+> Windows account permitted only with a marked protected root (`X:\C05-Protected`)
+> and C05 scratch on a dedicated volume, data/output on other devices, no overlap
+> with repositories/data/scratch/output, index read in place; bound into receipt and
+> plan and re-verified at preparation, plan and run. Downstream C05-proof consumers
+> refuse while the root is mounted or for paths inside it/scratch. Operational
+> isolation only, not adversarial security. 15 new tests; related parallel 594
+> passed; Ruff/mypy strict clean. Engineering remains accepted. Operator decision
+> files now exist at `G:/XLM/c05` (verified at `plan`); the protected benchmark
+> receipt is the remaining evidence. [Report](reports/C05-GLOBAL-CONTAMINATION-PLAN.md),
+> [runbook](../runbooks/c05-global-preparation.md).
+
 > **GLOBAL C05 INDEPENDENT ENGINEERING ACCEPTANCE AUDIT (2026-10-02): ENGINEERING ACCEPTED; OPERATOR EVIDENCE/DECISIONS REQUIRED.**
 >
 > Independent audit of `c811947`. Falsification tests found and fixed four bounded
