@@ -15,7 +15,7 @@ from typing import Any
 
 from xlm.data.dedup.matchview import match_tokens
 from xlm.data.evidence_v2.canonical import digest
-from xlm.data.exclusion.policy import C05Error, Informativeness, MatcherPolicy
+from xlm.data.exclusion.policy import C05Error, Informativeness, MatcherPolicy, MatcherPolicyV4
 
 
 @dataclass(frozen=True)
@@ -24,26 +24,34 @@ class Pattern:
     provenance: tuple[str, ...]
 
 
+def _string(row: Mapping[str, Any], name: str) -> str:
+    value = row.get(name)
+    if not isinstance(value, str) or not value.strip():
+        raise C05Error("benchmark text field absent or invalid")
+    return value
+
+
+def _answers(row: Mapping[str, Any], name: str) -> list[str]:
+    value = row.get(name)
+    if isinstance(value, dict):
+        value = value.get("text")
+    if (
+        not isinstance(value, list)
+        or not value
+        or any(not isinstance(x, str) or not x.strip() for x in value)
+    ):
+        raise C05Error("benchmark answer list absent or invalid")
+    return list(value)
+
+
 def render(task: str, row: Mapping[str, Any]) -> list[tuple[str, str]]:
     """Task render v3; all options plus raw/0.4.13-preprocessed HellaSwag variants."""
 
     def string(name: str) -> str:
-        value = row.get(name)
-        if not isinstance(value, str) or not value.strip():
-            raise C05Error("benchmark text field absent or invalid")
-        return value
+        return _string(row, name)
 
     def answers(name: str) -> list[str]:
-        value = row.get(name)
-        if isinstance(value, dict):
-            value = value.get("text")
-        if (
-            not isinstance(value, list)
-            or not value
-            or any(not isinstance(x, str) or not x.strip() for x in value)
-        ):
-            raise C05Error("benchmark answer list absent or invalid")
-        return list(value)
+        return _answers(row, name)
 
     if task == "blimp":
         return [("sentence", string("sentence_good")), ("sentence", string("sentence_bad"))]
@@ -95,7 +103,9 @@ def informative(tokens: tuple[str, ...], floor: Informativeness) -> bool:
 
 
 def patterns(
-    variants: Iterable[tuple[str, str]], reference: str, policy: MatcherPolicy
+    variants: Iterable[tuple[str, str]],
+    reference: str,
+    policy: MatcherPolicy | MatcherPolicyV4,
 ) -> Iterator[Pattern]:
     background = {tuple(match_tokens(s)) for s in policy.background}
     for variant_no, (kind, text) in enumerate(variants):
@@ -118,6 +128,65 @@ def patterns(
                 continue
             if informative(candidate, floor):
                 yield Pattern(candidate, (f"{reference}:{kind}",))
+
+
+def composite(task: str, row: Mapping[str, Any]) -> str:
+    """item-composite-v1: label-free whole-item text in publisher field order.
+
+    Reads only content fields (never answerKey/label/scores). Fields are joined
+    by one space, which match-view normalization treats as an ordinary token
+    boundary, so naturally copied item text can still match exactly.
+    """
+    if task == "arc_easy":
+        parts = [_string(row, "question"), *_answers(row, "choices")]
+    elif task == "blimp":
+        parts = [_string(row, "sentence_good"), _string(row, "sentence_bad")]
+    elif task == "piqa":
+        parts = [_string(row, "goal"), _string(row, "sol1"), _string(row, "sol2")]
+    elif task == "hellaswag":
+        if "ctx" in row:
+            parts = [_string(row, "ctx")]
+        elif "ctx_a" in row and "ctx_b" in row:
+            suffix = row["ctx_b"]
+            if not isinstance(suffix, str):
+                raise C05Error("HellaSwag context suffix invalid")
+            parts = [_string(row, "ctx_a"), suffix]
+        else:
+            raise C05Error("HellaSwag context missing")
+        parts.extend(_answers(row, "endings"))
+    else:
+        raise C05Error("unsupported benchmark task")
+    return " ".join(part for part in parts if part.strip())
+
+
+def item_patterns(
+    task: str,
+    row: Mapping[str, Any],
+    reference: str,
+    policy: MatcherPolicy | MatcherPolicyV4,
+) -> tuple[list[tuple[str, str]], list[Pattern], int, bool]:
+    """Return (rendered variants, unique patterns, raw candidate emissions, fallback used).
+
+    Exact per-item dedup on (tokens, provenance) is lossless: the protected index
+    stores one line per distinct (pattern identity, provenance) and every
+    provenance embeds this item's globally unique reference. The v4 fallback is
+    consulted only when the v3 normal signatures are empty.
+    """
+    rendered = render(task, row)
+    raw = list(patterns(rendered, reference, policy))
+    unique = list(dict.fromkeys(raw))
+    if unique or not isinstance(policy, MatcherPolicyV4):
+        return rendered, unique, len(raw), False
+    text = composite(task, row)
+    if len(text.encode()) > policy.max_variant_bytes:
+        raise C05Error("benchmark variant limit exceeded")
+    tokens = tuple(match_tokens(text))
+    background = {tuple(match_tokens(s)) for s in policy.background}
+    if not informative(tokens, policy.fallback) or any(
+        b and _contains(tokens, b) for b in background
+    ):
+        return rendered, [], 0, False
+    return rendered, [Pattern(tokens, (f"{reference}:item_fallback",))], 1, True
 
 
 def _contains(tokens: tuple[str, ...], part: tuple[str, ...]) -> bool:

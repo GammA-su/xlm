@@ -100,8 +100,38 @@ It never shows text, tokens, hashes or provenance:
 [C05 prepare] process | files 18/76 | rows 42,381/153,182 (27.7%) | patterns 615,202 | workers 16/16 | 2,940 rows/s | elapsed 00:00:14 | ETA 00:00:38
 ```
 
-`patterns` counts generated patterns before de-duplication, which is the quantity
-capped by `benchmark_patterns`. The receipt's `patterns` is the unique index-line count.
+`patterns` counts pattern/provenance records after exact per-item dedup, which is
+the quantity capped by `benchmark_patterns`. It equals the final `index.jsonl` line
+count and the receipt's `patterns`. `build` asserts the equality. `fallback items`
+counts c05-matcher-v4 whole-item fallback signatures.
+
+## Matcher v4 and the content-free signature audit
+
+`c05-matcher-v4` keeps every v3 normal signature unchanged. For an item with **zero**
+normal signatures only, it adds one exact whole-item fallback over the label-free
+`item-composite-v1`:
+
+* ARC: question + choices.
+* BLiMP: good + bad sentence.
+* PIQA: goal + sol1 + sol2.
+* HellaSwag: context + endings.
+
+The floor is 4 tokens / 16 characters / 3 distinct. There are no sliding windows.
+`c05-matcher-v3` keeps its historical meaning and identity. In protected mode,
+`build-local` refuses before writing the index/receipt/export if any item stays
+unsigned. The real counts (813 unsigned under v3) are operator measurements, not
+agent-tested. Rerun the audit before freezing a v4 policy or resources:
+
+```powershell
+Invoke-Expression "$op benchmark-audit-local --spec X:/C05-Protected/material-spec.json --material-root X:/C05-Protected/material --policy <v4-matcher-policy.json> --resources <resources.json> --workers 16 > G:/XLM/c05/benchmark-audit-v4.json"
+```
+
+The audit writes nothing and needs no key. Stdout is aggregate counts only, with
+no text, labels, tokens, signatures, hashes, provenance or rows. It exits 0 when
+every item is signed and 2 otherwise. Size `benchmark_patterns` from
+`totals.emitted_patterns_after_lossless_dedup`, then sign new resource and policy
+decisions binding the v4 matcher and rerun `build-local` into a fresh destination.
+Details: [report](../implementation/reports/C05-MATCHER-V4.md).
 
 Interrupted or failed preparation: Ctrl+C (exit 130), worker error, malformed row,
 changed file, ceiling refusal or SQLite error terminates every worker and fails

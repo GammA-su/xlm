@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, TypeAdapter
 
 from xlm.data.dedup.minhash import MinHashConfig
 from xlm.data.evidence_v2.canonical import digest
@@ -20,8 +20,9 @@ class Informativeness(FrozenModel):
     distinct: int = Field(ge=1, le=64)
 
 
-class MatcherPolicy(FrozenModel):
-    version: Literal["c05-matcher-v3"] = "c05-matcher-v3"
+class _MatcherFields(FrozenModel):
+    """Normal-signature fields shared by every matcher version (identity is sorted-key)."""
+
     renderer: Literal["task-render-v3"] = "task-render-v3"
     normalization: Literal["match-view-v1"] = "match-view-v1"
     prompt: Informativeness = Informativeness(tokens=4, characters=16, distinct=3)
@@ -40,6 +41,35 @@ class MatcherPolicy(FrozenModel):
 
     def identity(self) -> str:
         return digest(self.model_dump(mode="json"))
+
+
+class MatcherPolicy(_MatcherFields):
+    """Historical c05-matcher-v3: normal signatures only, never an item fallback."""
+
+    version: Literal["c05-matcher-v3"] = "c05-matcher-v3"
+
+
+class MatcherPolicyV4(_MatcherFields):
+    """c05-matcher-v4: v3 normal signatures plus one exact whole-item fallback.
+
+    The fallback is consulted only for an item whose normal v3 signatures are
+    empty; it is one exact pattern over the label-free item composite, never
+    sliding windows.
+    """
+
+    version: Literal["c05-matcher-v4"] = "c05-matcher-v4"
+    fallback_renderer: Literal["item-composite-v1"] = "item-composite-v1"
+    fallback_mode: Literal["exact-whole-item-only"] = "exact-whole-item-only"
+    fallback: Informativeness = Informativeness(tokens=4, characters=16, distinct=3)
+
+
+AnyMatcherPolicy = Annotated[MatcherPolicy | MatcherPolicyV4, Field(discriminator="version")]
+_MATCHER_ADAPTER: TypeAdapter[MatcherPolicy | MatcherPolicyV4] = TypeAdapter(AnyMatcherPolicy)
+
+
+def matcher_policy(data: Any) -> MatcherPolicy | MatcherPolicyV4:
+    """Validate a frozen matcher policy by its explicit version; no default version."""
+    return _MATCHER_ADAPTER.validate_python(data)
 
 
 class ReviewPolicy(FrozenModel):
@@ -64,7 +94,7 @@ class ProductionPolicy(FrozenModel):
     stage_order: Literal["hash-match-facts/group-propagate-split/publish-v1"] = (
         "hash-match-facts/group-propagate-split/publish-v1"
     )
-    matcher: MatcherPolicy = MatcherPolicy()
+    matcher: AnyMatcherPolicy = MatcherPolicy()
     lineage: Literal["known-lineage-v3"] = "known-lineage-v3"
     dedup_version: Literal["disk-minhash-v2"] = "disk-minhash-v2"
     shingle_size: int = 5
@@ -123,6 +153,9 @@ class Resources(FrozenModel):
     bytes_read: int = Field(default=512 * 1024**3, ge=1)
     oversized_buckets: int = Field(default=1_000_000_000, ge=0)
     benchmark_bytes: int = Field(default=2 * 1024**3, ge=1)
+    # Pattern/provenance records that reach index.jsonl (and StreamingMatcher):
+    # emissions after exact per-item (tokens, provenance) dedup. Raw candidates are
+    # bounded per item by the matcher policy (max_item_variants x spans_per_variant).
     benchmark_patterns: int = Field(default=2_000_000, ge=1)
     automaton_nodes: int = Field(default=8_000_000, ge=1)
     review_candidates: int = Field(default=100_000, ge=0)

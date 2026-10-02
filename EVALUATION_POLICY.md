@@ -1,5 +1,13 @@
 # Evaluation policy and holdout isolation
 
+**C05 matcher v4 (2026-10-02):** `c05-matcher-v4` keeps the v3 normal signatures
+unchanged. Only for an item with zero normal signatures, it adds one exact
+whole-item fallback over a label-free composite of every textual alternative (floor
+4 tokens / 16 characters / 3 distinct, no sliding windows). This mainly protects
+against row/item-level leakage, not partial spans. Protected preparation refuses
+while any item is unsigned. `c05-matcher-v3` keeps its historical meaning.
+[Report](docs/implementation/reports/C05-MATCHER-V4.md).
+
 **C05 engine continuation (2026-10-02):** authored fixtures now exercise immutable
 benchmark matching, known-group propagation, crash recovery and kept-membership
 gates. They are not protected benchmark evidence. Real preparation must still

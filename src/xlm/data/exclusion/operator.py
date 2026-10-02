@@ -21,9 +21,9 @@ from xlm.data.exclusion.inputs import read_metadata
 from xlm.data.exclusion.policy import (
     ENGINEERING_BLOCKERS,
     C05Error,
-    MatcherPolicy,
     Resources,
     ReviewPolicy,
+    matcher_policy,
 )
 from xlm.data.exclusion.protected import MaterialSpec, build, inspect
 
@@ -183,6 +183,15 @@ def main(argv: list[str] | None = None) -> int:
     # Operational display only (stderr); never part of any artifact or receipt.
     build_parser.add_argument("--progress-interval", type=float, default=1.0)
     build_parser.add_argument("--no-progress", action="store_true")
+    # Content-free signature-coverage audit: reads protected material, writes nothing.
+    audit_parser = sub.add_parser("benchmark-audit-local")
+    audit_parser.add_argument("--spec", type=Path, required=True)
+    audit_parser.add_argument("--material-root", type=Path, required=True)
+    audit_parser.add_argument("--policy", type=Path, required=True)
+    audit_parser.add_argument("--resources", type=Path, required=True)
+    audit_parser.add_argument("--workers", type=int, choices=range(1, 17))
+    audit_parser.add_argument("--progress-interval", type=float, default=1.0)
+    audit_parser.add_argument("--no-progress", action="store_true")
     root_parser = sub.add_parser("protected-root")
     root_parser.add_argument("action", choices=["init", "describe"])
     root_parser.add_argument("--root", type=Path, required=True)
@@ -237,6 +246,28 @@ def main(argv: list[str] | None = None) -> int:
             inspection = inspect(spec, args.material_root)
             write_once(args.output, inspection)
             return 0 if inspection["complete_local_sizes"] else 2
+        if args.command == "benchmark-audit-local":
+            from xlm.data.exclusion.prepare_workers import Progress
+            from xlm.data.exclusion.protected import audit
+
+            resources = Resources.model_validate(read_metadata(args.resources, digested=False))
+            if args.workers is not None:
+                resources = resources.model_copy(update={"workers": args.workers})
+            reporter = Progress(
+                files=len(spec.files),
+                rows=sum(f.items for f in spec.files),
+                workers=resources.workers,
+                interval=args.progress_interval,
+            )
+            result = audit(
+                spec,
+                args.material_root,
+                policy=matcher_policy(read_metadata(args.policy, digested=False)),
+                resources=resources,
+                progress=None if args.no_progress else reporter.update,
+            )
+            print(json.dumps(result, sort_keys=True))
+            return 0 if result["totals"]["items_without_patterns"] == 0 else 2
         key = os.environ.get(args.key_env)
         if key is None or len(key) < 32:
             raise C05Error("protected signing key missing or too short")
@@ -253,7 +284,7 @@ def main(argv: list[str] | None = None) -> int:
             spec,
             args.material_root,
             args.output,
-            policy=MatcherPolicy.model_validate(read_metadata(args.policy, digested=False)),
+            policy=matcher_policy(read_metadata(args.policy, digested=False)),
             resources=resources,
             issuer=args.issuer,
             key=key.encode(),

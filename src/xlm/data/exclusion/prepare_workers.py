@@ -25,16 +25,17 @@ import psutil
 
 from xlm.data.evidence_v2 import canonical
 from xlm.data.exclusion.artifacts import MaterialFile
-from xlm.data.exclusion.policy import C05Error, MatcherPolicy
-from xlm.data.exclusion.streaming import patterns, render
+from xlm.data.exclusion.policy import C05Error, MatcherPolicy, MatcherPolicyV4, matcher_policy
+from xlm.data.exclusion.streaming import item_patterns
 
 BATCH_ROWS = 32  # rows per result batch; patterns per row are policy-bounded
 QUEUED_BATCHES_PER_WORKER = 2  # result-queue capacity is workers x this
 POLL_SECONDS = 0.25  # writer re-checks ceilings at least this often while waiting
 STOP_SECONDS = 10.0
 
-# (item hash, variant count, ((pattern identity, canonical tokens, provenance), ...))
-RowResult = tuple[str, int, tuple[tuple[str, str, tuple[str, ...]], ...]]
+# (item hash, variant count, raw candidate emissions, fallback used,
+#  ((pattern identity, canonical tokens, provenance), ...) after exact per-item dedup)
+RowResult = tuple[str, int, int, bool, tuple[tuple[str, str, tuple[str, ...]], ...]]
 
 
 @dataclass(frozen=True)
@@ -142,22 +143,27 @@ def _rows(task: Task, max_record: int, check: Callable[[], None]) -> Iterator[di
 
 
 def task_batches(
-    task: Task, policy: MatcherPolicy, max_record: int, check: Callable[[], None]
+    task: Task,
+    policy: MatcherPolicy | MatcherPolicyV4,
+    max_record: int,
+    check: Callable[[], None],
 ) -> Iterator[list[RowResult]]:
     """Render, hash and derive patterns for one task in batches of BATCH_ROWS rows."""
     batch: list[RowResult] = []
     for offset, row in enumerate(_rows(task, max_record, check)):
-        rendered = render(task.entry["task"], row)
         reference = canonical.digest([task.entry, task.first + offset])
+        rendered, unique, raw, fallback = item_patterns(task.entry["task"], row, reference, policy)
         found = tuple(
             (
                 canonical.digest(p.tokens),
                 canonical.canonical_bytes(p.tokens).decode(),
                 p.provenance,
             )
-            for p in patterns(rendered, reference, policy)
+            for p in unique
         )
-        batch.append((canonical.digest([task.entry["task"], rendered]), len(rendered), found))
+        # The item hash keeps its historical v3 definition (task + rendered variants).
+        item = canonical.digest([task.entry["task"], rendered])
+        batch.append((item, len(rendered), raw, fallback, found))
         if len(batch) >= BATCH_ROWS:
             yield batch
             batch = []
@@ -178,7 +184,7 @@ def _worker(
 ) -> None:
     """Child entry point; reports only an exception type and a fixed C05 reason."""
     try:
-        policy = MatcherPolicy.model_validate(policy_json)
+        policy = matcher_policy(policy_json)
         results.put(("ready", os.getpid()))
         if barrier is not None:
             barrier.wait(60)
@@ -203,7 +209,7 @@ def run_tasks(
     tasks: Sequence[Task],
     *,
     workers: int,
-    policy: MatcherPolicy,
+    policy: MatcherPolicy | MatcherPolicyV4,
     max_record: int,
     check: Callable[[], None],
     barrier: bool = False,
@@ -312,6 +318,7 @@ class Progress:
         rows: int = 0,
         patterns: int = 0,
         active: int = 0,
+        fallback: int = 0,
         force: bool = False,
     ) -> None:
         now = self.clock()
@@ -325,6 +332,7 @@ class Progress:
         line = (
             f"[C05 prepare] {phase} | files {files}/{self.files} | "
             f"rows {rows:,}/{self.rows:,} ({percent:.1f}%) | patterns {patterns:,} | "
+            f"fallback items {fallback:,} | "
             f"workers {active}/{self.workers} | {rate:,.0f} rows/s | "
             f"elapsed {_clock(elapsed)} | ETA {_clock(eta) if eta is not None else '--:--:--'}"
         )

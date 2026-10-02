@@ -1,3 +1,21 @@
+> **C05 MATCHER V4 (2026-10-02): READY; OPERATOR AUDIT AND NEW POLICY/RESOURCES REQUIRED.**
+>
+> New `c05-matcher-v4` keeps the v3 normal signatures. Only for an item with zero
+> normal signatures, it adds one exact whole-item fallback (`item-composite-v1`,
+> label-free, floor 4/16/3, no sliding windows). `c05-matcher-v3` and
+> `ProductionPolicy()` identities are unchanged. Exact per-item
+> `(tokens, provenance)` dedup is lossless: v3 index bytes are unchanged, and
+> `benchmark_patterns` now bounds the emitted index records (asserted equal to
+> the `index.jsonl` line count). In protected mode, `build-local` refuses while
+> any item is unsigned, before the index/receipt/export. New content-free
+> `benchmark-audit-local`. Authored tests: 24 new; all C05 tests gave 210 passed
+> and 1 load-sensitive deadline test failed under `-n 16`. That test passed
+> serially. Ruff/mypy strict clean. The real 813 → 0 rescue is an operator
+> measurement, NOT agent-tested. Next: the operator runs `benchmark-audit-local`
+> with a v4 policy, sizes `benchmark_patterns`, signs new decisions and reruns
+> `build-local`. [Report](reports/C05-MATCHER-V4.md),
+> [runbook](../runbooks/c05-global-preparation.md).
+
 > **C05 PARALLEL PROTECTED PREPARATION (2026-10-02): READY; NEW REVIEWED RESOURCES REQUIRED.**
 >
 > `build-local` now honors `Resources.workers` (validated 1..16). Spawned worker
