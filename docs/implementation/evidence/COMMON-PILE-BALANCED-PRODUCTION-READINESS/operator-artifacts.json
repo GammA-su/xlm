@@ -1,0 +1,32 @@
+{
+  "allowlist_digest": "b2bb7c0dc532a6263ca17b78816186fa194c12c09c74614baaeb29c76cdaab04",
+  "allowlist_operator": "GammA",
+  "allowlist_sha256": "ccc92b33a49fb9e6df57d787244896359f484e0c34c0d00b50c93164c616bb6a",
+  "evidence_matrix_sha256": "3066a5098d585dbadbc8042427101e28c52684c6fb471533df1818dd1e9dbbbd",
+  "excluded_count": 25,
+  "included": [
+    "libretexts",
+    "news",
+    "oercommons",
+    "pressbooks",
+    "project_gutenberg",
+    "public_domain_review"
+  ],
+  "inventory_digest": "c0984aa33fb3598a9e724b9518df8cd8a0f2af52b5708ec211fb7fd693df7637",
+  "inventory_file_count": 384,
+  "inventory_files_per_component": {
+    "libretexts": 64,
+    "news": 64,
+    "oercommons": 64,
+    "pressbooks": 64,
+    "project_gutenberg": 64,
+    "public_domain_review": 64
+  },
+  "inventory_known_size_bytes": 8131797849,
+  "inventory_rederived": true,
+  "inventory_sha256": "31219cbe836535fea59f3d2194d12e8518c165a49659e25c8db862cdfef67737",
+  "listing_digest": "a32b9b12649da4b72a07fbbe41bd3bbd9d7df9da9df32136fa8080802d8b5038",
+  "listing_sha256": "422bd036216ae058928f7ea8212434eaf647b73dd44c7345b874a506586fde22",
+  "repository": "common-pile/comma_v0.1_training_dataset",
+  "revision": "5afc546db324e7f39f297ba757c9a60547151e7c"
+}

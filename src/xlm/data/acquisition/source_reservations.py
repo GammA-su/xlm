@@ -15,6 +15,26 @@ from xlm.data.acquisition.source_parquet import (
 )
 from xlm.data.sources.essential_web_local import Unit
 
+_EXTENDED = "\\\\?\\"
+_EXTENDED_UNC = "\\\\?\\UNC\\"
+
+
+def plain_resolve(path: Path) -> Path:
+    """``path.resolve()`` without the Windows extended-length prefix.
+
+    On Windows a non-strict resolve keeps the ``\\\\?\\`` prefix when the file it
+    resolved vanishes before the prefix is re-checked, which happens to the
+    transient ``*.state.json.tmp`` a download thread writes and renames. The
+    prefix names the same path; comparing it raw made containment checks fail
+    intermittently.
+    """
+    text = str(path.resolve())
+    if text.startswith(_EXTENDED_UNC):
+        text = "\\\\" + text[len(_EXTENDED_UNC) :]
+    elif text.startswith(_EXTENDED):
+        text = text[len(_EXTENDED) :]
+    return Path(text)
+
 
 def reserve_metadata(directory: Path, growth: ProcessingGrowth, min_free: int) -> ScratchBudget:
     marker = directory / ".reserved-growth"
@@ -113,8 +133,8 @@ class SourceReservations:
         held: list[tuple[ScratchBudget, str]] = []
         try:
             for budget, key, amount, path in proposals:
-                resolved = path.resolve()
-                if not resolved.is_relative_to(budget.root.resolve()):
+                resolved = plain_resolve(path)
+                if not resolved.is_relative_to(plain_resolve(budget.root)):
                     raise ScratchCapError("reservation path escapes its budget root")
                 if any(
                     owner == id(budget)

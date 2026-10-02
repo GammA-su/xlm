@@ -44,13 +44,13 @@ from xlm.core.paths import ArtifactPaths
 from xlm.data.acquisition import component_allowlist as allow
 from xlm.data.acquisition import range_reach as reach
 from xlm.data.acquisition import source_benchmark as bench
-from xlm.data.acquisition import source_parquet as sp
 from xlm.data.acquisition import source_plan as planner
 from xlm.data.acquisition import source_run as runner
 from xlm.data.acquisition import transport_policy as policy
 from xlm.data.acquisition.plan import AcquisitionPlan
 from xlm.data.acquisition.sampling import SamplingRefusal, discover_layout_local
 from xlm.data.acquisition.source_dashboard import ObservedScratch
+from xlm.data.acquisition.source_formats import load_durable
 from xlm.data.adapters.columns import columns_for
 from xlm.data.sources import certified_evidence as ce
 from xlm.data.sources import hf_inventory
@@ -901,7 +901,7 @@ def repaired_of(roots: runner.Roots, sequence: int) -> planner.Repaired:
     pin = record["source"]
     for entry in resume["remaining"]:
         # Re-hashes the whole retained file against its identity sidecar.
-        source = sp.load_durable_source(roots.raw_path(str(entry["file"])))
+        source = load_durable(roots.raw_path(str(entry["file"])), str(entry["file"]))
         if source is None:
             continue
         if (source["source_file"], source["repository"], source["revision"]) != (

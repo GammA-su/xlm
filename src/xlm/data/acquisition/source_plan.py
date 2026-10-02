@@ -40,6 +40,7 @@ from xlm.data.acquisition.plan import (
     SamplingFrame,
     plan_requires_production_admission,
 )
+from xlm.data.acquisition.source_formats import JSONL_GZ, SourceFormatError, source_format
 from xlm.data.acquisition.source_growth import ProcessingGrowth
 from xlm.data.acquisition.source_rowgroups import RowGroupError, RowGroupParallel, check_adapter
 from xlm.data.acquisition.transport_policy import (
@@ -874,7 +875,27 @@ def _frozen(
         check_sizing(sizing, pin)
         layout = sized_layout(layout, sizing)
     ordered = check_inventory(inventory, pin["source_id"], pin["repository"], pin["revision"])
+    check_format_modes(ordered, mode, pin)
     return _Frozen(mode, layout, sizing, ordered)
+
+
+#: Modes a whole ``.jsonl.gz`` file can take: it has no row groups to select.
+JSONL_GZ_MODES = frozenset({TransportMode.WHOLE_FILE_LOCAL, TransportMode.SMALL_SOURCE_DIRECT})
+
+
+def check_format_modes(files: Sequence[str], mode: TransportMode, pin: Mapping[str, str]) -> None:
+    """One file format per inventory; ``.jsonl.gz`` only in whole-file modes, serially."""
+    try:
+        kinds = {source_format(name) for name in files}
+    except SourceFormatError as exc:
+        raise PlanError(str(exc)) from exc
+    if len(kinds) > 1:
+        raise PlanError(f"inventory mixes file formats {sorted(kinds)}")
+    if kinds == {JSONL_GZ}:
+        if mode not in JSONL_GZ_MODES:
+            raise PlanError(f"a .jsonl.gz source cannot take transport mode '{mode.value}'")
+        if (pin["source_id"], pin["view_id"]) in SOURCE_ROW_GROUP_PARALLEL:
+            raise PlanError("row-group parallelism applies to Parquet sources only")
 
 
 def _record(

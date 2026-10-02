@@ -17,6 +17,14 @@ A plan may bind intra-file row-group parallelism
 row groups exactly as the serial loop does, and the coordinator replays their
 rows in file order through the same bounds, writer and digests, so documents,
 ledger, summary and the first raised error equal the serial ones.
+
+A verified ``.jsonl.gz`` source (:mod:`~xlm.data.acquisition.jsonl_gz`) is
+decoded serially to its verified end: every gzip member, CRC and length
+trailer is checked, the decompressed bytes, line bytes, row count and
+expansion ratio are bounded by the plan's limits, and each line must be one
+strict JSON object. It always covers the whole file. Rows are located by
+their zero-based line index and then follow exactly the serial loop above
+(same selected-record serialization, adapter, ledger and summary).
 """
 
 from __future__ import annotations
@@ -27,7 +35,7 @@ import os
 import pickle
 import time
 import uuid
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Iterator, Mapping
 from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -37,6 +45,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 
 from xlm.artifacts.manifest import ensure_plain_path
+from xlm.data.acquisition import jsonl_gz
 from xlm.data.acquisition.projection import (
     ProjectionRefusal,
     parquet_field_leaves,
@@ -44,6 +53,12 @@ from xlm.data.acquisition.projection import (
 )
 from xlm.data.acquisition.records import RecordLimitError, StreamingJsonlWriter
 from xlm.data.acquisition.sampling import discover_layout_local
+from xlm.data.acquisition.source_formats import (
+    JSONL_GZ,
+    REPRESENTATIONS,
+    SourceFormatError,
+    source_format,
+)
 from xlm.data.acquisition.source_growth import (
     GrowthLimitError,
     OutputBudget,
@@ -119,6 +134,84 @@ def check_layout(
     if int(record["rows"]) > int(limits["max_rows_per_file"]):
         raise SourceAdaptError(f"{source_file}: row count exceeds the per-file bound")
     return record
+
+
+def jsonl_gz_bounds(limits: Mapping[str, Any]) -> jsonl_gz.JsonlGzBounds:
+    """The decode bounds a plan's processing limits impose on one ``.jsonl.gz`` file."""
+    return jsonl_gz.JsonlGzBounds(
+        max_decoded_bytes=int(limits["max_decoded_bytes_per_file"]),
+        max_line_bytes=int(limits["max_record_bytes"]),
+        max_rows=int(limits["max_rows_per_file"]),
+        max_decompression_ratio=float(limits["max_decompression_ratio"]),
+    )
+
+
+def check_jsonl_gz_layout(path: Path, source_file: str) -> dict[str, Any]:
+    """Pre-decode checks of a verified ``.jsonl.gz``; it has no footer, so rows are counted."""
+    try:
+        jsonl_gz.check_gzip_header(path)
+    except jsonl_gz.JsonlGzError as exc:
+        raise SourceAdaptError(f"{source_file}: {exc}") from exc
+    return {"rows": None, "groups": [], "compressed_bytes": path.stat().st_size}
+
+
+def jsonl_gz_payloads(
+    path: Path,
+    *,
+    source_file: str,
+    locator: Mapping[str, Any],
+    etag: str,
+    max_record_bytes: int,
+    bounds: jsonl_gz.JsonlGzBounds,
+    counters: dict[str, int] | None = None,
+) -> Iterator[tuple[int, bytes]]:
+    """``(row_index, selected-record line)`` of every row of a verified local ``.jsonl.gz``.
+
+    The serialization is the one :func:`selected_payloads` uses; the locator
+    names the zero-based line index and the decompressed byte offset of the
+    line. A format or bound violation refuses the whole file.
+    """
+    decoded = jsonl_gz.DecodeCounters()
+    offset = 0
+    try:
+        with path.open("rb") as stream:
+            for row, record, line in jsonl_gz.iter_records(stream, bounds, decoded):
+                try:
+                    raw, payload = located_record(
+                        record,
+                        {
+                            "row_index": row,
+                            "decoded_byte_offset": offset,
+                            "format": jsonl_gz.FORMAT,
+                            "etag": etag,
+                            "original_record_hash_convention": (
+                                "canonical JSON serialization, not compressed bytes"
+                            ),
+                            **locator,
+                            "source_file": source_file,
+                        },
+                    )
+                except ValueError as exc:
+                    raise SourceAdaptError(f"{source_file} row {row}: {exc}") from exc
+                offset += len(line) + 1
+                if len(raw) > max_record_bytes:
+                    raise RecordLimitError(
+                        f"JSONL record byte bound exceeded: row={row} "
+                        f"encoded_bytes={len(raw)} limit={max_record_bytes}"
+                    )
+                if len(payload) > max_record_bytes + 8192:
+                    raise RecordLimitError(
+                        "selected record plus locator exceeds bounded serialization"
+                    )
+                yield row, payload
+    except jsonl_gz.JsonlGzError as exc:
+        raise SourceAdaptError(f"{source_file}: {exc}") from exc
+    finally:
+        if counters is not None:
+            counters["decoded_bytes"] = decoded.decoded_bytes
+            counters["compressed_bytes"] = decoded.compressed_bytes
+            counters["gzip_members"] = decoded.members
+            counters["max_line_bytes"] = decoded.max_line_bytes
 
 
 def _write_bytes(path: Path, data: bytes) -> None:
@@ -463,13 +556,26 @@ def adapt_source_file(
     if budget is not None:
         budget.charge(reserved_tail_bytes)
     parallel = configured(limits)
+    try:
+        kind = source_format(source_file)
+    except SourceFormatError as exc:
+        raise SourceAdaptError(str(exc)) from exc
     if parallel is not None:
+        if kind == JSONL_GZ:
+            raise SourceAdaptError("row-group parallelism applies to Parquet sources only")
         try:
             check_adapter(adapter_id)
         except RowGroupError as exc:
             raise SourceAdaptError(str(exc)) from exc
-    layout = check_layout(path, source_file, adapter_id, view_id, limits)
-    start, stop = row_range or (0, int(layout["rows"]))
+    if kind == JSONL_GZ:
+        if row_range is not None:
+            raise SourceAdaptError(f"{source_file}: a .jsonl.gz unit covers the whole file")
+        layout = check_jsonl_gz_layout(path, source_file)
+        # The row count is known only once the verified stream ends.
+        start, stop = 0, -1
+    else:
+        layout = check_layout(path, source_file, adapter_id, view_id, limits)
+        start, stop = row_range or (0, int(layout["rows"]))
     output_dir.mkdir(parents=True)
     factory: Any = ADAPTERS_BY_ID[adapter_id]
     adapter = factory()
@@ -497,7 +603,8 @@ def adapt_source_file(
             return
         snapshot = {
             "rows": tally.rows,
-            "total": stop - start,
+            # A .jsonl.gz total is unknown until its end: rows so far stand in for it.
+            "total": stop - start if stop >= 0 else tally.rows,
             "documents": tally.accepted,
             "canonical_bytes": tally.canonical_bytes,
             "rejected": tally.rows - tally.accepted,
@@ -539,18 +646,31 @@ def adapt_source_file(
                 progress=progress,
             )
         else:
-            for row_index, payload in selected_payloads(
-                path,
-                source_file=source_file,
-                locator=locator,
-                etag=str(identity["etag"]),
-                columns=columns_for(adapter_id, view_id),
-                max_record_bytes=int(limits["max_record_bytes"]),
-                max_parser_bytes=int(limits["max_parser_bytes"]),
-                max_decoded_bytes=int(limits["max_decoded_bytes_per_file"]),
-                row_range=(start, stop),
-                counters=counters,
-            ):
+            payloads = (
+                jsonl_gz_payloads(
+                    path,
+                    source_file=source_file,
+                    locator=locator,
+                    etag=str(identity["etag"]),
+                    max_record_bytes=int(limits["max_record_bytes"]),
+                    bounds=jsonl_gz_bounds(limits),
+                    counters=counters,
+                )
+                if kind == JSONL_GZ
+                else selected_payloads(
+                    path,
+                    source_file=source_file,
+                    locator=locator,
+                    etag=str(identity["etag"]),
+                    columns=columns_for(adapter_id, view_id),
+                    max_record_bytes=int(limits["max_record_bytes"]),
+                    max_parser_bytes=int(limits["max_parser_bytes"]),
+                    max_decoded_bytes=int(limits["max_decoded_bytes_per_file"]),
+                    row_range=(start, stop),
+                    counters=counters,
+                )
+            )
+            for row_index, payload in payloads:
                 tally.raw_digest.update(payload)
                 tally.raw_bytes += len(payload)
                 tally.max_record = max(tally.max_record, len(payload))
@@ -612,6 +732,11 @@ def adapt_source_file(
         tally.canonical_bytes,
         tally.codes,
     )
+    if kind == JSONL_GZ:
+        if rows < 1:
+            raise SourceAdaptError(f"{source_file}: the verified stream holds no row")
+        stop = rows
+        layout["rows"] = rows
     if rows != stop - start:
         raise SourceAdaptError(f"{source_file}: decoded rows differ from the footer row count")
     documents.close()
@@ -643,7 +768,7 @@ def adapt_source_file(
     summary["adaptation_summary_version"] = SUMMARY_VERSION
     summary["view"] = view_id
     summary["input"] = {
-        "kind": "verified_source_parquet",
+        "kind": REPRESENTATIONS[kind],
         "source_file": source_file,
         "sha256": identity["sha256"],
         "etag": identity["etag"],
@@ -672,9 +797,9 @@ def adapt_source_file(
         "row_range": [start, stop],
         "file_rows": int(layout["rows"]),
         "row_groups": len(layout["groups"]),
-        "projected_compressed_bytes": sum(
-            int(group["projected_compressed_bytes"]) for group in layout["groups"]
-        ),
+        "projected_compressed_bytes": int(layout["compressed_bytes"])
+        if kind == JSONL_GZ
+        else sum(int(group["projected_compressed_bytes"]) for group in layout["groups"]),
         "selected_records_sha256": tally.raw_digest.hexdigest(),
         "selected_records_bytes": tally.raw_bytes,
         "max_selected_record_bytes": tally.max_record,

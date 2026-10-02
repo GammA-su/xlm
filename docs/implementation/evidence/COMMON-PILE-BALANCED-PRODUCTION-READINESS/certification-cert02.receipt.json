@@ -1,0 +1,901 @@
+{
+  "adapter_id": "common_pile",
+  "bindings": {
+    "authorized_components": "oercommons,pressbooks,project_gutenberg",
+    "component_allowlist_digest": "b2bb7c0dc532a6263ca17b78816186fa194c12c09c74614baaeb29c76cdaab04",
+    "discovery_listing_digest": "a32b9b12649da4b72a07fbbe41bd3bbd9d7df9da9df32136fa8080802d8b5038",
+    "production_inventory_digest": "c0984aa33fb3598a9e724b9518df8cd8a0f2af52b5708ec211fb7fd693df7637"
+  },
+  "content_policy": "no corpus text; rows are described by lengths, key sets and SHA-256",
+  "digest": "f52a0622a138575835307f0b430482f92debdf7d0aeb7e780db663f53cdacfe1",
+  "files": [
+    {
+      "adapter": {
+        "accepted": 16,
+        "canonical_bytes": 167816,
+        "documents_sha256": "e2bb05a14c792004fb2432484f1d6a4a53dd54a22749210c147e64e91cb91d8d",
+        "rejected": 0,
+        "rejection_counts_by_code": {}
+      },
+      "component": "oercommons",
+      "file": "oercommons/oercommons.chunk.49.jsonl.gz",
+      "identity": {
+        "etag": "\"298cd2927d5281bf4562d28b2463e6ddcd9a7a8d266b437cdf8969ff65ce0696\"",
+        "linked": {
+          "X-Linked-ETag": "\"90f586c5b32a2d731ffd7bf058290c6db5e3397122151c1bbc6c2a1a94f7a016\"",
+          "X-Linked-Size": "336135",
+          "X-Repo-Commit": "5afc546db324e7f39f297ba757c9a60547151e7c",
+          "X-Xet-Hash": "298cd2927d5281bf4562d28b2463e6ddcd9a7a8d266b437cdf8969ff65ce0696"
+        },
+        "total_bytes": 336135
+      },
+      "row_indices": [
+        0,
+        16
+      ],
+      "rows": 16,
+      "rows_detail": [
+        {
+          "compressed_bytes_at_row_end": 4096,
+          "doc_id": "common_pile:v1:ae6a94840d38bc20:0",
+          "document_sha256": "b01168b7a18808f4f6167d1ce4acd56bcd367ffeb4839c6336fcfd18c48b907a",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 2860,
+          "line_sha256": "0c7f71ba9b80b2debbbdab5456690d4d17d498c1b691bb98a58b1cdb2e49716f",
+          "outcome": "accepted",
+          "row": 0,
+          "text_type": "str",
+          "text_utf8_bytes": 2820,
+          "upstream_component": "oercommons"
+        },
+        {
+          "compressed_bytes_at_row_end": 4096,
+          "doc_id": "common_pile:v1:ae6a94840d38bc20:1",
+          "document_sha256": "68e2cbdc95412b4facd0f8c1a21e4dd69279668138ed7a821cfa51ccc9d1a0ad",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 5662,
+          "line_sha256": "b5174a2affe2ead66ab16043b76a07873123c3894e01e45c7207ea170dc0c47d",
+          "outcome": "accepted",
+          "row": 1,
+          "text_type": "str",
+          "text_utf8_bytes": 5577,
+          "upstream_component": "oercommons"
+        },
+        {
+          "compressed_bytes_at_row_end": 8192,
+          "doc_id": "common_pile:v1:ae6a94840d38bc20:2",
+          "document_sha256": "9513cd7a57e3e3e1c719030684dd8da14096385170dc972b000d70e1da06be05",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 2721,
+          "line_sha256": "1522cf9174d2f67069b4ce8e2bf841fe6e8edcc7a5ffaed614738e40f311c24e",
+          "outcome": "accepted",
+          "row": 2,
+          "text_type": "str",
+          "text_utf8_bytes": 2682,
+          "upstream_component": "oercommons"
+        },
+        {
+          "compressed_bytes_at_row_end": 12288,
+          "doc_id": "common_pile:v1:ae6a94840d38bc20:3",
+          "document_sha256": "6bab0c7dcd77a286f981c3b5257afd8fd3c08bf1fa4efe2195ded2bc55dee333",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 27104,
+          "line_sha256": "564f43af8ae5ce5bbdcb5fc63f132a7db774c0fb007041eae152de1adf693878",
+          "outcome": "accepted",
+          "row": 3,
+          "text_type": "str",
+          "text_utf8_bytes": 26713,
+          "upstream_component": "oercommons"
+        },
+        {
+          "compressed_bytes_at_row_end": 12288,
+          "doc_id": "common_pile:v1:ae6a94840d38bc20:4",
+          "document_sha256": "6175339322a04cf782d35926f265fba86f1307b53cda1b0959718568c86a5d5c",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 5538,
+          "line_sha256": "349269050eb5409fa140def6f0963b7637571639994465f7179e09be5fca1d56",
+          "outcome": "accepted",
+          "row": 4,
+          "text_type": "str",
+          "text_utf8_bytes": 5485,
+          "upstream_component": "oercommons"
+        },
+        {
+          "compressed_bytes_at_row_end": 16384,
+          "doc_id": "common_pile:v1:ae6a94840d38bc20:5",
+          "document_sha256": "399629c0a47c0cd6aa5667cd650ca2caa9b72262b5ba23601d07e6aeb89848ea",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 7390,
+          "line_sha256": "36d2d8fa29b225a3bd49e15233f9803ccfdaee5dc0a97c29f51e8fb5aeba0535",
+          "outcome": "accepted",
+          "row": 5,
+          "text_type": "str",
+          "text_utf8_bytes": 7307,
+          "upstream_component": "oercommons"
+        },
+        {
+          "compressed_bytes_at_row_end": 32768,
+          "doc_id": "common_pile:v1:ae6a94840d38bc20:6",
+          "document_sha256": "226d2742e257860974bf86f600020ec2f420c92a039b1075a5bc73e59f9eb401",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 49739,
+          "line_sha256": "46c89f83e1dfa80e0e0fe3be837852474fe900fe7093be0535aa652e0a8f4b49",
+          "outcome": "accepted",
+          "row": 6,
+          "text_type": "str",
+          "text_utf8_bytes": 49446,
+          "upstream_component": "oercommons"
+        },
+        {
+          "compressed_bytes_at_row_end": 32768,
+          "doc_id": "common_pile:v1:ae6a94840d38bc20:7",
+          "document_sha256": "d8636cd271257a0b55232c027822d1781c827add2e63b11c31bdce64c3a46ad5",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 2687,
+          "line_sha256": "7ade574841ef6182b5f805cd35e1678bb2d210bb6b1c78a1b523a9fcb134d838",
+          "outcome": "accepted",
+          "row": 7,
+          "text_type": "str",
+          "text_utf8_bytes": 2643,
+          "upstream_component": "oercommons"
+        },
+        {
+          "compressed_bytes_at_row_end": 32768,
+          "doc_id": "common_pile:v1:ae6a94840d38bc20:8",
+          "document_sha256": "b8960b7bc2ac9e05069f1a1006fe6eebf8b00effc6eed715d223c32ed00b6995",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 1244,
+          "line_sha256": "0d903f6c446c7c88cfa7a7922b3e249cd28295df8de8ac2d5437fcb7bba88b82",
+          "outcome": "accepted",
+          "row": 8,
+          "text_type": "str",
+          "text_utf8_bytes": 1205,
+          "upstream_component": "oercommons"
+        },
+        {
+          "compressed_bytes_at_row_end": 36864,
+          "doc_id": "common_pile:v1:ae6a94840d38bc20:9",
+          "document_sha256": "e7583ac8341f4c190dee61e6615a725fa6af2ac10088f92d85edb6c38623b8f8",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 7666,
+          "line_sha256": "6f6f68177d225124dac0b9591b3b025c2ba372234a18d62f7c6e54f01a2eacd4",
+          "outcome": "accepted",
+          "row": 9,
+          "text_type": "str",
+          "text_utf8_bytes": 7602,
+          "upstream_component": "oercommons"
+        },
+        {
+          "compressed_bytes_at_row_end": 36864,
+          "doc_id": "common_pile:v1:ae6a94840d38bc20:10",
+          "document_sha256": "e3dbc979901d477ceb259784d99aa695e8d49450b134f72675c305e7eb06552f",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 1396,
+          "line_sha256": "fdec66dc167368284b249575f6dee6caf9bdd8bc17db633af8e2228cab8cefb2",
+          "outcome": "accepted",
+          "row": 10,
+          "text_type": "str",
+          "text_utf8_bytes": 1372,
+          "upstream_component": "oercommons"
+        },
+        {
+          "compressed_bytes_at_row_end": 45056,
+          "doc_id": "common_pile:v1:ae6a94840d38bc20:11",
+          "document_sha256": "d2f4acbf356aecdc78a01c12fa313abaaa5f98937882874eb483485f59a0be07",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 21982,
+          "line_sha256": "8fd54caa2a9c80d645e978784496d6a9a8326f1cc06bd348f1e3f49a63cedd8e",
+          "outcome": "accepted",
+          "row": 11,
+          "text_type": "str",
+          "text_utf8_bytes": 21685,
+          "upstream_component": "oercommons"
+        },
+        {
+          "compressed_bytes_at_row_end": 53248,
+          "doc_id": "common_pile:v1:ae6a94840d38bc20:12",
+          "document_sha256": "c7e3a40c4268cebec1d2a307ffe08af3a1a5f84736b74e5e2bc839bf2477e9f9",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 22001,
+          "line_sha256": "fe9e3f85884266eee4c59195c9d29e54e5c6ef252084dc10ba75a7cb2375c77b",
+          "outcome": "accepted",
+          "row": 12,
+          "text_type": "str",
+          "text_utf8_bytes": 21634,
+          "upstream_component": "oercommons"
+        },
+        {
+          "compressed_bytes_at_row_end": 53248,
+          "doc_id": "common_pile:v1:ae6a94840d38bc20:13",
+          "document_sha256": "ff3fd62c93e443d41d41aff94196eead01f20e65b59cec8f18ec060d1e7f90ee",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 1195,
+          "line_sha256": "d24c7a6404a8c0d0a2ddd251676d44cad02dc74aad11fa2f8e1313d04dff555b",
+          "outcome": "accepted",
+          "row": 13,
+          "text_type": "str",
+          "text_utf8_bytes": 1128,
+          "upstream_component": "oercommons"
+        },
+        {
+          "compressed_bytes_at_row_end": 53248,
+          "doc_id": "common_pile:v1:ae6a94840d38bc20:14",
+          "document_sha256": "61b1cf932ef8b69af361827f425d5c482695a973a080a3aa1fe4dce6cab95933",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 9535,
+          "line_sha256": "3119a49c141baa232d7ba36f59130449ae9a9884da2e381fa8902b1f22771033",
+          "outcome": "accepted",
+          "row": 14,
+          "text_type": "str",
+          "text_utf8_bytes": 9364,
+          "upstream_component": "oercommons"
+        },
+        {
+          "compressed_bytes_at_row_end": 57344,
+          "doc_id": "common_pile:v1:ae6a94840d38bc20:15",
+          "document_sha256": "6654c52eb6064f3acec721d10f23715e59e38eed04093b436f2ab5877d08615f",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 1181,
+          "line_sha256": "a8033cf49e1c7ebc3567bf7021e3de3787ac2f9f644e2e32e9bf47b71e76f63c",
+          "outcome": "accepted",
+          "row": 15,
+          "text_type": "str",
+          "text_utf8_bytes": 1153,
+          "upstream_component": "oercommons"
+        }
+      ],
+      "rows_requested": 16,
+      "schema": {
+        "key_sets": [
+          [
+            "text"
+          ]
+        ],
+        "text_types": [
+          "str"
+        ]
+      },
+      "transfer": {
+        "compressed_bytes_decoded": 57344,
+        "decoded_bytes": 182481,
+        "redirects": 1,
+        "requests": 2,
+        "seconds": 1.031,
+        "transferred_bytes": 131072
+      },
+      "url": "https://huggingface.co/datasets/common-pile/comma_v0.1_training_dataset/resolve/5afc546db324e7f39f297ba757c9a60547151e7c/oercommons/oercommons.chunk.49.jsonl.gz",
+      "whole_file_read": false
+    },
+    {
+      "adapter": {
+        "accepted": 16,
+        "canonical_bytes": 169726,
+        "documents_sha256": "ca21e52e5dbedf06b3a5d020b2087c6297fd53af97b080f31544459d975ddee9",
+        "rejected": 0,
+        "rejection_counts_by_code": {}
+      },
+      "component": "pressbooks",
+      "file": "pressbooks/pressbooks.chunk.18.jsonl.gz",
+      "identity": {
+        "etag": "\"ec104a73433768dbfea4f527f65ab87622b128ff12cd0e1ebbeceac2726fc32a\"",
+        "linked": {
+          "X-Linked-ETag": "\"518b865f2918c7ede38f134ca76e164a9c3f2545aeae1fecb244e9acbf966e87\"",
+          "X-Linked-Size": "2995813",
+          "X-Repo-Commit": "5afc546db324e7f39f297ba757c9a60547151e7c",
+          "X-Xet-Hash": "ec104a73433768dbfea4f527f65ab87622b128ff12cd0e1ebbeceac2726fc32a"
+        },
+        "total_bytes": 2995813
+      },
+      "row_indices": [
+        0,
+        16
+      ],
+      "rows": 16,
+      "rows_detail": [
+        {
+          "compressed_bytes_at_row_end": 12288,
+          "doc_id": "common_pile:v1:4d61e01f6617fbd7:0",
+          "document_sha256": "c498ece69ed8677c1bb09ba3c3f135395f83d002d7675636d767dc0309dfa0e0",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 35298,
+          "line_sha256": "c8f8589aa9a49cdbfab879a84b6859943815b281ad913146a83de6d2f59c9a74",
+          "outcome": "accepted",
+          "row": 0,
+          "text_type": "str",
+          "text_utf8_bytes": 34785,
+          "upstream_component": "pressbooks"
+        },
+        {
+          "compressed_bytes_at_row_end": 16384,
+          "doc_id": "common_pile:v1:4d61e01f6617fbd7:1",
+          "document_sha256": "87aad6c36e9c0210adbcfc7ec2647196306a62b70f2e5f254eb92020a00f15c5",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 1648,
+          "line_sha256": "f20bcaca481794b52e653129e4d94fdae63b3765a9a3bd008095aff386665767",
+          "outcome": "accepted",
+          "row": 1,
+          "text_type": "str",
+          "text_utf8_bytes": 1618,
+          "upstream_component": "pressbooks"
+        },
+        {
+          "compressed_bytes_at_row_end": 20480,
+          "doc_id": "common_pile:v1:4d61e01f6617fbd7:2",
+          "document_sha256": "2aacee47d1bca5190cec37d849220c94157522d2e35f08818f7ad9341c2c21f6",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 16827,
+          "line_sha256": "f47d80c259d783a1049ce8531e81b721191879575c54ed81eaecf8c7be3fd3f6",
+          "outcome": "accepted",
+          "row": 2,
+          "text_type": "str",
+          "text_utf8_bytes": 16588,
+          "upstream_component": "pressbooks"
+        },
+        {
+          "compressed_bytes_at_row_end": 20480,
+          "doc_id": "common_pile:v1:4d61e01f6617fbd7:3",
+          "document_sha256": "cdee6179ca659e270bbdb29e6acc399faa0d4e41bc9399e1bde0678939acdaf1",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 6498,
+          "line_sha256": "017c0bff9329d8877d053da8ce998453a1baef5c60930ab1697893207b74dd16",
+          "outcome": "accepted",
+          "row": 3,
+          "text_type": "str",
+          "text_utf8_bytes": 6427,
+          "upstream_component": "pressbooks"
+        },
+        {
+          "compressed_bytes_at_row_end": 28672,
+          "doc_id": "common_pile:v1:4d61e01f6617fbd7:4",
+          "document_sha256": "eb0091d50304facbf6e52d9d8a5cdce0cc70c1bba6385634b0e6882f51519cd9",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 15643,
+          "line_sha256": "1d779dc9ed093cc1a3f9237408ef35919280cd18103e11a0f8796201f5901da1",
+          "outcome": "accepted",
+          "row": 4,
+          "text_type": "str",
+          "text_utf8_bytes": 15433,
+          "upstream_component": "pressbooks"
+        },
+        {
+          "compressed_bytes_at_row_end": 28672,
+          "doc_id": "common_pile:v1:4d61e01f6617fbd7:5",
+          "document_sha256": "7f7e6407b5edf4d2fdae0a1846c13523bc212fd31bb0aced13c4bd7b2f94b095",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 4907,
+          "line_sha256": "25b949aa92ddb4787e67c434201ebde8cd30eeda2a618811897a9311146ad0e7",
+          "outcome": "accepted",
+          "row": 5,
+          "text_type": "str",
+          "text_utf8_bytes": 4812,
+          "upstream_component": "pressbooks"
+        },
+        {
+          "compressed_bytes_at_row_end": 28672,
+          "doc_id": "common_pile:v1:4d61e01f6617fbd7:6",
+          "document_sha256": "8fa7e0ec659479e3e4d03a14d753e8889a1c613d244afb126b0832c06f79effa",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 2593,
+          "line_sha256": "a91f58a4caab832f01731286826bd8c1f3012ec5a0b9beb048f1edece0a4c5f2",
+          "outcome": "accepted",
+          "row": 6,
+          "text_type": "str",
+          "text_utf8_bytes": 2551,
+          "upstream_component": "pressbooks"
+        },
+        {
+          "compressed_bytes_at_row_end": 28672,
+          "doc_id": "common_pile:v1:4d61e01f6617fbd7:7",
+          "document_sha256": "088891bba200e3e107155e74911130b4bb4465b16735db1331b29cd4fe2fc3b0",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 721,
+          "line_sha256": "805a55843c73895e29edaa55a85e7cd38639bc590ded543ff700a87a3705450d",
+          "outcome": "accepted",
+          "row": 7,
+          "text_type": "str",
+          "text_utf8_bytes": 692,
+          "upstream_component": "pressbooks"
+        },
+        {
+          "compressed_bytes_at_row_end": 32768,
+          "doc_id": "common_pile:v1:4d61e01f6617fbd7:8",
+          "document_sha256": "475439383119dbbef8b9fa8ea257dd9976ce8b140c35ba40d907ebbf4e0ad280",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 11814,
+          "line_sha256": "3e19c4f13802b3a99d088eede81d9ccbe39abeb6ad2097f34720ad27c43c0556",
+          "outcome": "accepted",
+          "row": 8,
+          "text_type": "str",
+          "text_utf8_bytes": 11569,
+          "upstream_component": "pressbooks"
+        },
+        {
+          "compressed_bytes_at_row_end": 45056,
+          "doc_id": "common_pile:v1:4d61e01f6617fbd7:9",
+          "document_sha256": "74e30739b461c6e56bfd723cb111bbceaf3391e88a7cdec3a2c2b8a881f93e64",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 37584,
+          "line_sha256": "d8dbf08c4942154ac1b12ee1760d1a63e42ccebe0e6a054431acd76ff74a35f3",
+          "outcome": "accepted",
+          "row": 9,
+          "text_type": "str",
+          "text_utf8_bytes": 36404,
+          "upstream_component": "pressbooks"
+        },
+        {
+          "compressed_bytes_at_row_end": 45056,
+          "doc_id": "common_pile:v1:4d61e01f6617fbd7:10",
+          "document_sha256": "c12f861313e1391eaa0bd2a0f5361c9970826565bd441b96d2c4541d3179ef91",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 4005,
+          "line_sha256": "0588386d4e9998c45db8c79afd0dab76a72f4a7428daa0436cb5b2ec1ddaae69",
+          "outcome": "accepted",
+          "row": 10,
+          "text_type": "str",
+          "text_utf8_bytes": 3921,
+          "upstream_component": "pressbooks"
+        },
+        {
+          "compressed_bytes_at_row_end": 45056,
+          "doc_id": "common_pile:v1:4d61e01f6617fbd7:11",
+          "document_sha256": "39428d3e0145856ea50745452ebee6338c09bb77710d1d5a8657b610fd8b03fb",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 1588,
+          "line_sha256": "c1f0b4a4c9497de19e8caadfe5ac142024af86ce4b437a972fa05a53fefd6bf3",
+          "outcome": "accepted",
+          "row": 11,
+          "text_type": "str",
+          "text_utf8_bytes": 1568,
+          "upstream_component": "pressbooks"
+        },
+        {
+          "compressed_bytes_at_row_end": 49152,
+          "doc_id": "common_pile:v1:4d61e01f6617fbd7:12",
+          "document_sha256": "bb1cb098d784573f7c8ef6c09a34e19de867f0e893c598ce4d8be6c6577fde35",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 12781,
+          "line_sha256": "6d21523c01fc9a60e2ecffd66166d384ca97b91b6ac7b18d6ef5b3f73f385eec",
+          "outcome": "accepted",
+          "row": 12,
+          "text_type": "str",
+          "text_utf8_bytes": 12396,
+          "upstream_component": "pressbooks"
+        },
+        {
+          "compressed_bytes_at_row_end": 49152,
+          "doc_id": "common_pile:v1:4d61e01f6617fbd7:13",
+          "document_sha256": "82b496daa8dfab7b40063bf8e41877eba75ecbfa5510e5bed350be280ccc8126",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 1167,
+          "line_sha256": "9a6d220cf50c621e789970ad6f3d90b0e0f894c6db419e09de2469b443ee1221",
+          "outcome": "accepted",
+          "row": 13,
+          "text_type": "str",
+          "text_utf8_bytes": 1126,
+          "upstream_component": "pressbooks"
+        },
+        {
+          "compressed_bytes_at_row_end": 53248,
+          "doc_id": "common_pile:v1:4d61e01f6617fbd7:14",
+          "document_sha256": "868e34781e3d65b9c5867916339b43e2eaf41a175fd61cbccacb71f2a3b1d22a",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 3204,
+          "line_sha256": "9bb2ab78ccf4be9645f8700310960f3262e5a60f10f541e8c802186cd71e968a",
+          "outcome": "accepted",
+          "row": 14,
+          "text_type": "str",
+          "text_utf8_bytes": 3152,
+          "upstream_component": "pressbooks"
+        },
+        {
+          "compressed_bytes_at_row_end": 57344,
+          "doc_id": "common_pile:v1:4d61e01f6617fbd7:15",
+          "document_sha256": "31346007471a8160e79f4f8889dee7459c81a35071a22ede16472f1c24efae66",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 17149,
+          "line_sha256": "7e6ae05a824fcfba0306e11b4cf14750c6b767c6dadd4b852cc6da37629c9d2e",
+          "outcome": "accepted",
+          "row": 15,
+          "text_type": "str",
+          "text_utf8_bytes": 16684,
+          "upstream_component": "pressbooks"
+        }
+      ],
+      "rows_requested": 16,
+      "schema": {
+        "key_sets": [
+          [
+            "text"
+          ]
+        ],
+        "text_types": [
+          "str"
+        ]
+      },
+      "transfer": {
+        "compressed_bytes_decoded": 57344,
+        "decoded_bytes": 180098,
+        "redirects": 1,
+        "requests": 2,
+        "seconds": 0.844,
+        "transferred_bytes": 131072
+      },
+      "url": "https://huggingface.co/datasets/common-pile/comma_v0.1_training_dataset/resolve/5afc546db324e7f39f297ba757c9a60547151e7c/pressbooks/pressbooks.chunk.18.jsonl.gz",
+      "whole_file_read": false
+    },
+    {
+      "adapter": {
+        "accepted": 16,
+        "canonical_bytes": 1908718,
+        "documents_sha256": "aac5a883482e6d63513ac9e0b1b94d9b33e63bbcafccf878702ce57188c63a49",
+        "rejected": 0,
+        "rejection_counts_by_code": {}
+      },
+      "component": "project_gutenberg",
+      "file": "project_gutenberg/project_gutenberg.chunk.43.jsonl.gz",
+      "identity": {
+        "etag": "\"30e732d5c98f4dcf447e447468844cebab2dedad7d2caa86881a60a03e4c0410\"",
+        "linked": {
+          "X-Linked-ETag": "\"1eab9d5599ab48ef9c8f2c9aa84011430e1e4cb25d8467443c191723421ee8ac\"",
+          "X-Linked-Size": "119634630",
+          "X-Repo-Commit": "5afc546db324e7f39f297ba757c9a60547151e7c",
+          "X-Xet-Hash": "30e732d5c98f4dcf447e447468844cebab2dedad7d2caa86881a60a03e4c0410"
+        },
+        "total_bytes": 119634630
+      },
+      "row_indices": [
+        0,
+        16
+      ],
+      "rows": 16,
+      "rows_detail": [
+        {
+          "compressed_bytes_at_row_end": 28672,
+          "doc_id": "common_pile:v1:47d731a153091527:0",
+          "document_sha256": "62e872e0cc9d8ebfc20deb7bf36bc3d7d1bce97fb224c31c95a6e42b924bd84a",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 69287,
+          "line_sha256": "f22a3f3d55af28a8b47e57d46fb119a7dffc8b9377a0d20ae4c3472ce52c7c9f",
+          "outcome": "accepted",
+          "row": 0,
+          "text_type": "str",
+          "text_utf8_bytes": 67488,
+          "upstream_component": "project_gutenberg"
+        },
+        {
+          "compressed_bytes_at_row_end": 77824,
+          "doc_id": "common_pile:v1:47d731a153091527:1",
+          "document_sha256": "a59d747f5b08533bb8457aa93eb0d06d5389d00818e4ac01c39bb7011a847e07",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 131046,
+          "line_sha256": "7793a338a11a37fa3d80656b64afd1f7c81b0a19db3a7d5a62ca2dc41d5b25ea",
+          "outcome": "accepted",
+          "row": 1,
+          "text_type": "str",
+          "text_utf8_bytes": 127961,
+          "upstream_component": "project_gutenberg"
+        },
+        {
+          "compressed_bytes_at_row_end": 122880,
+          "doc_id": "common_pile:v1:47d731a153091527:2",
+          "document_sha256": "a7c8e45cd14bf4f5d261da6c5693aee3f8ecc278b371fc2ba1e4e5432bf302f2",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 131838,
+          "line_sha256": "9a14e693f7707f08a78dd7197a79d0c00797d7a90738c71420e2af57c9b55a98",
+          "outcome": "accepted",
+          "row": 2,
+          "text_type": "str",
+          "text_utf8_bytes": 128602,
+          "upstream_component": "project_gutenberg"
+        },
+        {
+          "compressed_bytes_at_row_end": 172032,
+          "doc_id": "common_pile:v1:47d731a153091527:3",
+          "document_sha256": "fece71c1a688a43c2b238833b68987f336d52072ff582f945b34500082b60d9f",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 131467,
+          "line_sha256": "dea9a7c06547b01ccd42a293ce64e828e679d0f3fcad2373e6f4830810ffd9b5",
+          "outcome": "accepted",
+          "row": 3,
+          "text_type": "str",
+          "text_utf8_bytes": 128409,
+          "upstream_component": "project_gutenberg"
+        },
+        {
+          "compressed_bytes_at_row_end": 221184,
+          "doc_id": "common_pile:v1:47d731a153091527:4",
+          "document_sha256": "68709b3c3f12e43be3d207fc914c95c74a38e0ae4ac2db110e7feec271431c1b",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 132219,
+          "line_sha256": "f310696665e3ead92ad1a2fea71d8d9c5d2b64d0a26b8d5e704514df14cbc429",
+          "outcome": "accepted",
+          "row": 4,
+          "text_type": "str",
+          "text_utf8_bytes": 127988,
+          "upstream_component": "project_gutenberg"
+        },
+        {
+          "compressed_bytes_at_row_end": 270336,
+          "doc_id": "common_pile:v1:47d731a153091527:5",
+          "document_sha256": "c2aa5362cacf5d5d752847cd409ddf0a2280f577b81e7fc00d198656b51f0581",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 131204,
+          "line_sha256": "89f7bee7c856305a3da3ba97c09184ce2cc4a0e80cc02d564feaccdfeed5b12a",
+          "outcome": "accepted",
+          "row": 5,
+          "text_type": "str",
+          "text_utf8_bytes": 128012,
+          "upstream_component": "project_gutenberg"
+        },
+        {
+          "compressed_bytes_at_row_end": 315392,
+          "doc_id": "common_pile:v1:47d731a153091527:6",
+          "document_sha256": "9d82d4401ff5907c549c3de64e3db996380cf09924cde91eb3141b95beb7ad23",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 130129,
+          "line_sha256": "6f8bea2733950dec6192ba7b3d77fb0ca2966a1c0e67a66f3e5e8d9db812335c",
+          "outcome": "accepted",
+          "row": 6,
+          "text_type": "str",
+          "text_utf8_bytes": 127964,
+          "upstream_component": "project_gutenberg"
+        },
+        {
+          "compressed_bytes_at_row_end": 368640,
+          "doc_id": "common_pile:v1:47d731a153091527:7",
+          "document_sha256": "40fee9532b76e8f1a0b38c9d9004cf161566a0fc20851642a18ed9a0fed43e5a",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 132658,
+          "line_sha256": "253e7086a297a3f9f549032e6f534c545a727e67a8840bf31c68eb1a6460e4b3",
+          "outcome": "accepted",
+          "row": 7,
+          "text_type": "str",
+          "text_utf8_bytes": 127934,
+          "upstream_component": "project_gutenberg"
+        },
+        {
+          "compressed_bytes_at_row_end": 417792,
+          "doc_id": "common_pile:v1:47d731a153091527:8",
+          "document_sha256": "c6dd97a403c220d0b23ebaddeb5d17ca99a60f90d1147154cab85da9bbd79cac",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 130589,
+          "line_sha256": "7bda4953ff694b2ead9bd4b23ae0d3d3014e4acd6957b82bdffd12f860645ba0",
+          "outcome": "accepted",
+          "row": 8,
+          "text_type": "str",
+          "text_utf8_bytes": 127930,
+          "upstream_component": "project_gutenberg"
+        },
+        {
+          "compressed_bytes_at_row_end": 466944,
+          "doc_id": "common_pile:v1:47d731a153091527:9",
+          "document_sha256": "02142b4302419ff709adb617066784311c9c672034c293706623e481f40da0a2",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 130934,
+          "line_sha256": "4462d68bcc6e46b64a2291db489c59b8bd8535ac52d4e8212b20e259e785258f",
+          "outcome": "accepted",
+          "row": 9,
+          "text_type": "str",
+          "text_utf8_bytes": 127989,
+          "upstream_component": "project_gutenberg"
+        },
+        {
+          "compressed_bytes_at_row_end": 516096,
+          "doc_id": "common_pile:v1:47d731a153091527:10",
+          "document_sha256": "072d48e56569aaab2b59a79b05aea7c655e2907469e0f19f45ee2c6d4e630704",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 132988,
+          "line_sha256": "cd28c635a471055add0e35cd6937979550fc96dc0ea6f0538070b50899a8fe1d",
+          "outcome": "accepted",
+          "row": 10,
+          "text_type": "str",
+          "text_utf8_bytes": 128014,
+          "upstream_component": "project_gutenberg"
+        },
+        {
+          "compressed_bytes_at_row_end": 561152,
+          "doc_id": "common_pile:v1:47d731a153091527:11",
+          "document_sha256": "deb9f34927c26fa3775d8b8407bcd1758a51b7bce0bc888372fe21bfd5145da7",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 118282,
+          "line_sha256": "4e8cc97d62dbabd014b088920ed6f0222ab32b3089cdfe1b4dfc26caf9f20339",
+          "outcome": "accepted",
+          "row": 11,
+          "text_type": "str",
+          "text_utf8_bytes": 115836,
+          "upstream_component": "project_gutenberg"
+        },
+        {
+          "compressed_bytes_at_row_end": 610304,
+          "doc_id": "common_pile:v1:47d731a153091527:12",
+          "document_sha256": "8662973e21080c7caa2cfa02261b4ee27ea6a69b3acb52af25a601fd88b9c714",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 130210,
+          "line_sha256": "a8ce9c499ba7d9f23f60f99b84be9fc7bd9fcf1165962be39e6913b8918b6006",
+          "outcome": "accepted",
+          "row": 12,
+          "text_type": "str",
+          "text_utf8_bytes": 128026,
+          "upstream_component": "project_gutenberg"
+        },
+        {
+          "compressed_bytes_at_row_end": 655360,
+          "doc_id": "common_pile:v1:47d731a153091527:13",
+          "document_sha256": "80d6b60e417636a4947e05df841dba4b751259079cb72c234daea12349806b56",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 134864,
+          "line_sha256": "8895b8b1f326570921a02ed1c9a935029f7ccb9a6090afe9c7c63a082e9c857c",
+          "outcome": "accepted",
+          "row": 13,
+          "text_type": "str",
+          "text_utf8_bytes": 127997,
+          "upstream_component": "project_gutenberg"
+        },
+        {
+          "compressed_bytes_at_row_end": 688128,
+          "doc_id": "common_pile:v1:47d731a153091527:14",
+          "document_sha256": "0745e93673f921710f17649c91904c10ce46ff5688f2582396b5fec86d97f498",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 84220,
+          "line_sha256": "d50dd3ee6d4bf515d71399f40c824e50dc17aabe7849e312da5535aa46897ab0",
+          "outcome": "accepted",
+          "row": 14,
+          "text_type": "str",
+          "text_utf8_bytes": 81838,
+          "upstream_component": "project_gutenberg"
+        },
+        {
+          "compressed_bytes_at_row_end": 729088,
+          "doc_id": "common_pile:v1:47d731a153091527:15",
+          "document_sha256": "7639ecdda2110fcb636c06528813dad40594e9da58e3f0cc944694b0a91a7f14",
+          "keys": [
+            "text"
+          ],
+          "line_bytes": 109119,
+          "line_sha256": "e03ce6f517637ebe2f6c6027a32e5c7137165248e912a9c1ed599d34a8435276",
+          "outcome": "accepted",
+          "row": 15,
+          "text_type": "str",
+          "text_utf8_bytes": 106730,
+          "upstream_component": "project_gutenberg"
+        }
+      ],
+      "rows_requested": 16,
+      "schema": {
+        "key_sets": [
+          [
+            "text"
+          ]
+        ],
+        "text_types": [
+          "str"
+        ]
+      },
+      "transfer": {
+        "compressed_bytes_decoded": 729088,
+        "decoded_bytes": 1965191,
+        "redirects": 6,
+        "requests": 12,
+        "seconds": 3.843,
+        "transferred_bytes": 786432
+      },
+      "url": "https://huggingface.co/datasets/common-pile/comma_v0.1_training_dataset/resolve/5afc546db324e7f39f297ba757c9a60547151e7c/project_gutenberg/project_gutenberg.chunk.43.jsonl.gz",
+      "whole_file_read": false
+    }
+  ],
+  "kind": "jsonl_gz_prefix_sample",
+  "label": "common-pile-cert02",
+  "limits": {
+    "chunk_bytes": 131072,
+    "deadline_seconds": 600.0,
+    "max_bytes_per_file": 25165824,
+    "max_decompression_ratio": 15.0,
+    "max_line_bytes": 67108864,
+    "max_requests_per_file": 200,
+    "timeout_seconds": 30.0
+  },
+  "repository": "common-pile/comma_v0.1_training_dataset",
+  "revision": "5afc546db324e7f39f297ba757c9a60547151e7c",
+  "source_id": "common_pile",
+  "totals": {
+    "files": 3,
+    "requests": 16,
+    "rows": 48,
+    "transferred_bytes": 1048576
+  },
+  "version": 1
+}

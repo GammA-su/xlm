@@ -37,6 +37,7 @@ from xlm.data.acquisition.plan import (
     validate_plan_authorization,
 )
 from xlm.data.acquisition.source_dashboard import ObservedScratch
+from xlm.data.acquisition.source_formats import identity_record_for, partial_name
 from xlm.data.acquisition.source_growth import ProcessingGrowth, bounded_json, check_result
 from xlm.data.acquisition.source_local import process_source_unit, scan_documents
 from xlm.data.acquisition.source_parquet import (
@@ -46,7 +47,6 @@ from xlm.data.acquisition.source_parquet import (
     TransferMeter,
     TransferResult,
     file_sha256,
-    identity_record,
     inspect_source,
 )
 from xlm.data.acquisition.source_plan import acquisition_plan, plan_limits
@@ -281,7 +281,7 @@ def _adopt_benchmark_download(roots: Roots, label: str, donor: str) -> dict[str,
         name = str(entry["file"])
         key = unit_key(int(entry["rank"]) if entry.get("rank") is not None else i)
         donor_key = _scratch_key(donor_record["files"], name)
-        part = donor_directory / f"{donor_key}.parquet.part"
+        part = donor_directory / partial_name(donor_key, name)
         state = read_json(donor_directory / f"{donor_key}.state.json")
         declared = _LINKED_SHA256.fullmatch(str(state.get("linked_etag") or ""))
         sha256, length = str(state.get("sha256")), int(state.get("length", -1))
@@ -312,7 +312,7 @@ def _adopt_benchmark_download(roots: Roots, label: str, donor: str) -> dict[str,
             raise RunError(f"{name}: donor bytes/state do not match verified identity") from exc
         if verified.kind != "local_complete_reuse":
             raise RunError(f"{name}: donor source is not verified complete reuse")
-        target = roots.scratch(f"bench-{label}", f"{key}.parquet.part")
+        target = roots.scratch(f"bench-{label}", partial_name(key, name))
         target_state = roots.scratch(f"bench-{label}", f"{key}.state.json")
         if target.exists() or target_state.exists():
             raise RunError(f"{name}: benchmark {label} already holds a download; refusing")
@@ -462,7 +462,7 @@ def run_benchmark(
                 scratch=scratch,
                 meter=meter,
                 deadline_seconds=plan.limits.overall_deadline_seconds,
-                identity_for=lambda unit, transfer: identity_record(
+                identity_for=lambda unit, transfer: identity_record_for(
                     transfer.identity,
                     source_file=unit.source_file,
                     repository=plan.repository,

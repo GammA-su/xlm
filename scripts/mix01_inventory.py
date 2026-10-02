@@ -54,6 +54,9 @@ MEASURED_FIELDS = (
 #: Window-decode disclosure carried from measurement into the calibration entry.
 WINDOW_TRANSFER_BASIS = "calibration_window_retained_share"
 WINDOW_FIELDS = ("transfer_basis", "raw_transferred_bytes", "records_scanned")
+#: Component-weighted prefix-sample disclosure (``component_calibration.measurement``).
+COMPONENT_TRANSFER_BASIS = "component_weighted_prefix_samples"
+COMPONENT_FIELDS = ("transfer_basis", "component_calibration_digest")
 
 
 def _fail(message: str) -> int:
@@ -450,6 +453,14 @@ def _load_measurement(path: Path) -> dict[str, Any]:
     survival = payload.get("extra_survival")
     if isinstance(survival, bool) or not isinstance(survival, (int, float)):
         raise ValueError("measurement 'extra_survival' must be a number")
+    if payload.get("transfer_basis") == COMPONENT_TRANSFER_BASIS:
+        # A component-weighted estimate of a multi-component source: its counts are
+        # rounded reweightings of real prefix samples, bound to their calibration.
+        digest = payload.get("component_calibration_digest")
+        if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
+            raise ValueError("component measurement does not name its calibration digest")
+        _strict_int(payload.get("avg_file_bytes"), "avg_file_bytes", 1)
+        return payload
     if "transfer_basis" in payload:
         if payload["transfer_basis"] != WINDOW_TRANSFER_BASIS:
             raise ValueError(f"measurement transfer_basis {payload['transfer_basis']!r} unknown")
@@ -480,7 +491,12 @@ def cmd_record(args: argparse.Namespace) -> int:
         args.transferred = measured["transferred_bytes"]
         args.canonical = measured["canonical_bytes"]
         args.survival = measured["extra_survival"]
-        disclosure = {key: measured[key] for key in WINDOW_FIELDS if key in measured}
+        if measured.get("transfer_basis") == COMPONENT_TRANSFER_BASIS:
+            disclosure = {key: measured[key] for key in COMPONENT_FIELDS}
+            if args.avg_file is None:
+                args.avg_file = measured["avg_file_bytes"]
+        else:
+            disclosure = {key: measured[key] for key in WINDOW_FIELDS if key in measured}
     elif any(value is None for value in explicit):
         return _fail(
             "pass --measurement, or all of --records-sampled/--accepted/--rejected/"

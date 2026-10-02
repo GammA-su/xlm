@@ -19,9 +19,11 @@ Durable layout under the data root (``G:\\XLM``), per source key:
     acq-raw/<key>/source/<file>          verified upstream Parquet + identity sidecar
     canonical/<key>/pNN/fRRRRR/          documents, compressed ledger, summary, receipt
 
-Scratch (``C:\\XLM-scratch``) holds only ``<key>/pNN/fRRRRR.parquet.part`` and
-its state file until the unit is sealed. Nothing sealed is ever redone,
-rewritten or deleted; a failed run keeps every verified byte.
+Scratch (``C:\\XLM-scratch``) holds only ``<key>/pNN/fRRRRR.parquet.part`` (or
+``.jsonl.gz.part``) and its state file until the unit is sealed. The transport
+moves opaque bytes; the file format (:mod:`~xlm.data.acquisition.source_formats`)
+only names the identity, the raw representation and the local decoder. Nothing
+sealed is ever redone, rewritten or deleted; a failed run keeps every verified byte.
 """
 
 from __future__ import annotations
@@ -65,6 +67,15 @@ from xlm.data.acquisition.source_dashboard import (
     fatal_lines,
     free_bytes,
 )
+from xlm.data.acquisition.source_formats import (
+    PARQUET,
+    RAW_CONTRACTS,
+    REPRESENTATIONS,
+    identity_record_for,
+    load_durable,
+    partial_name,
+    source_format,
+)
 from xlm.data.acquisition.source_growth import ProcessingGrowth, bounded_json, check_result
 from xlm.data.acquisition.source_local import (
     LEDGER_FILENAME,
@@ -80,8 +91,6 @@ from xlm.data.acquisition.source_parquet import (
     TransferResult,
     file_sha256,
     identity_path,
-    identity_record,
-    load_durable_source,
 )
 from xlm.data.acquisition.source_plan import check_plan, minted_from_record
 from xlm.data.acquisition.source_reservations import SourceReservations, reserve_metadata
@@ -464,7 +473,7 @@ def inherited_scratch(
         return None
     prior = f"p{int(repair['plan_sequence']):02d}"
     partial, state = (
-        roots.scratch(prior, f"{key}.parquet.part"),
+        roots.scratch(prior, partial_name(key, name)),
         roots.scratch(prior, f"{key}.state.json"),
     )
     if not state.is_file():
@@ -489,12 +498,12 @@ def adopt_inherited_scratch(
         key, name = unit_key(int(entry["rank"])), str(entry["file"])
         inherited = inherited_scratch(roots, record, key, name)
         # A retained durable source is reused as is; its scratch copy is not inherited.
-        if inherited is None or load_durable_source(roots.raw_path(name)) is not None:
+        if inherited is None or load_durable(roots.raw_path(name), name) is not None:
             continue
         partial, state = inherited
         roots.scratch(label).mkdir(parents=True, exist_ok=True)
         if partial.is_file():
-            os.replace(partial, roots.scratch(label, f"{key}.parquet.part"))
+            os.replace(partial, roots.scratch(label, partial_name(key, name)))
         os.replace(state, roots.scratch(label, f"{key}.state.json"))
         adopted.append(key)
     return adopted
@@ -511,7 +520,7 @@ def classify(
     max_file = int(record["limits"]["max_file_bytes"])
     for entry in resume["remaining"]:
         key, name = unit_key(int(entry["rank"])), str(entry["file"])
-        retained = load_durable_source(roots.raw_path(name))
+        retained = load_durable(roots.raw_path(name), name)
         if retained is not None:
             if (retained["source_file"], retained["repository"], retained["revision"]) != (
                 name,
@@ -521,7 +530,7 @@ def classify(
                 raise RunError(f"retained source identity differs for {key}")
             units[LOCAL_PROCESSING_RETRY].append(key)
             continue
-        partial = roots.scratch(label, f"{key}.parquet.part")
+        partial = roots.scratch(label, partial_name(key, name))
         state_path = roots.scratch(label, f"{key}.state.json")
         inherited = inherited_scratch(roots, record, key, name)
         if inherited is not None:
@@ -596,7 +605,7 @@ def prepare_units(
     for entry in entries:
         rank, name = int(entry["rank"]), str(entry["file"])
         key = unit_key(rank)
-        partial = roots.scratch(label, f"{key}.parquet.part")
+        partial = roots.scratch(label, partial_name(key, name))
         state = roots.scratch(label, f"{key}.state.json")
         ranks[key] = rank
         if state.is_file():
@@ -616,7 +625,7 @@ def prepare_units(
             "row_range": None,
             "progress_path": str(staging / key / "progress.json"),
         }
-        retained = load_durable_source(roots.raw_path(name)) if durable else None
+        retained = load_durable(roots.raw_path(name), name) if durable else None
         if retained is not None:
             if (retained["source_file"], retained["repository"], retained["revision"]) != (
                 name,
@@ -722,8 +731,8 @@ def unit_receipt(
             "file": source["source_file"],
             "identity": dict(source),
             "raw": {
-                "contract_id": RAW_CONTRACT_ID,
-                "representation": RAW_REPRESENTATION,
+                "contract_id": RAW_CONTRACTS[source_format(str(source["source_file"]))],
+                "representation": REPRESENTATIONS[source_format(str(source["source_file"]))],
                 "path": raw_path,
                 "bytes": int(source["length"]),
                 "sha256": source["sha256"],
@@ -1015,8 +1024,10 @@ class Monitor:
         for unit in units:
             if unit.identity_record is not None and unit.job is not None:
                 self.lengths[unit.key] = int(unit.identity_record["length"])
-                with pq.ParquetFile(unit.job["source_path"]) as parquet:
-                    self.rows[unit.key] = int(parquet.metadata.num_rows)
+                # A .jsonl.gz has no footer: its rows are known once it is processed.
+                if source_format(unit.source_file) == PARQUET:
+                    with pq.ParquetFile(unit.job["source_path"]) as parquet:
+                        self.rows[unit.key] = int(parquet.metadata.num_rows)
         self.dashboard.event(
             "resume" if resume["sealed"] else "run",
             sealed=resume["sealed"],
@@ -1310,7 +1321,7 @@ def _execute(
                 scratch=scratch,
                 meter=meter,
                 deadline_seconds=plan.limits.overall_deadline_seconds,
-                identity_for=lambda unit, transfer: identity_record(
+                identity_for=lambda unit, transfer: identity_record_for(
                     transfer.identity,
                     source_file=unit.source_file,
                     repository=plan.repository,
@@ -1565,6 +1576,10 @@ def first_pass_seal(roots: Roots, *, content: bool = True) -> dict[str, Any]:
     files = [str(r["file"]) for r in receipts]
     if len(set(files)) != len(files):
         raise RunError("a source file is sealed in more than one unit; nothing sealed")
+    contracts = {str(r["raw"]["contract_id"]) for r in receipts}
+    if len(contracts) > 1:
+        raise RunError(f"sealed units mix raw-artifact contracts {sorted(contracts)}")
+    raw_contract = contracts.pop() if contracts else RAW_CONTRACT_ID
     seal = self_digest(
         {
             "kind": SEAL_KIND,
@@ -1572,7 +1587,7 @@ def first_pass_seal(roots: Roots, *, content: bool = True) -> dict[str, Any]:
             "stage": "first_pass_canonical_availability",
             "source_key": roots.source_key,
             "source": records[-1]["source"],
-            "raw_contract": RAW_CONTRACT_ID,
+            "raw_contract": raw_contract,
             "plans": plans,
             "units": [
                 {

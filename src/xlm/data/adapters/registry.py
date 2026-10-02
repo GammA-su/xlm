@@ -23,11 +23,12 @@ import sys
 from types import ModuleType
 from typing import Any
 
-from xlm.data.adapters import columns, ifm_adapters, mix01_adapters
+from xlm.data.adapters import columns, common_pile_adapters, ifm_adapters, mix01_adapters
 
 ADAPTERS_BY_ID: dict[str, Any] = {
     **mix01_adapters.ADAPTERS_BY_ID,
     **ifm_adapters.ADAPTERS_BY_ID,
+    **common_pile_adapters.ADAPTERS_BY_ID,
 }
 
 
