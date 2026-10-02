@@ -210,6 +210,8 @@ def resolve_training_input(data: dict[str, Any], paths: ArtifactPaths) -> tuple[
         "exposure_plan",
         "tokenizer",
         "document_order",
+        "c05_proof",
+        "c05_binding",
     }
     if unsupported:
         raise ValueError(f"unsupported training data fields: {sorted(unsupported)}; no fallback")
@@ -294,6 +296,15 @@ def resolve_training_input(data: dict[str, Any], paths: ArtifactPaths) -> tuple[
             "mixture": recipe.model_dump(mode="json"),
             "exposure": exposure,
         }
+        from xlm.data.exclusion.transport import verify_training_shards
+
+        proof = verify_training_shards(
+            data,
+            {name: r.directory for name, r in readers.items()},
+            production=recipe.mixture_id.casefold().replace("_", "-").startswith("mix-01"),
+        )
+        if proof is not None:
+            identity["c05"] = proof
         order_manifest = None
         if data.get("document_order") is not None:
             from xlm.data.ordering import resolve_document_order
@@ -313,6 +324,8 @@ def resolve_training_input(data: dict[str, Any], paths: ArtifactPaths) -> tuple[
     tokens = data.get("synthetic_tokens")
     shard = data.get("pool_artifact")
     if tokens is not None:
+        if data.get("c05_proof") or data.get("c05_binding"):
+            raise ValueError("synthetic token lists cannot carry corpus C05 proof")
         if shard:
             raise ValueError("choose one explicit synthetic_tokens list or pool_artifact")
         if not isinstance(tokens, list) or not 2 <= len(tokens) <= 200_000:
@@ -326,7 +339,14 @@ def resolve_training_input(data: dict[str, Any], paths: ArtifactPaths) -> tuple[
         )
     path = _source_path(shard, paths)
     reader = _shard(path)
+    from xlm.data.exclusion.transport import verify_training_shards
+
+    proof = verify_training_shards(data, {reader.manifest.source_id: path})
     data["pool_artifact"] = str(path.resolve())
+    if proof is not None:
+        from xlm.data.evidence_v2.canonical import digest
+
+        return reader, digest({"shard": asdict(reader.manifest), "c05": proof})
     return reader, hashlib.sha256(
         json.dumps(asdict(reader.manifest), sort_keys=True).encode()
     ).hexdigest()

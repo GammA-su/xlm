@@ -11,6 +11,7 @@ import getpass
 import os
 import shutil
 import time
+from collections.abc import Callable, Iterator
 from pathlib import Path
 from typing import Any
 
@@ -20,7 +21,7 @@ from pydantic import Field
 from xlm.data.evidence_v2 import canonical
 from xlm.data.exclusion.artifacts import BenchmarkReceipt, Isolation, MaterialFile, Sha, signed
 from xlm.data.exclusion.inputs import contained
-from xlm.data.exclusion.policy import C05Error, FrozenModel, MatcherPolicy, Resources
+from xlm.data.exclusion.policy import C05Error, FrozenModel, MatcherPolicy, Resources, ReviewPolicy
 from xlm.data.exclusion.runner import file_sha
 from xlm.data.exclusion.storage import connect
 from xlm.data.exclusion.streaming import patterns, render
@@ -38,6 +39,23 @@ def inspect(spec: MaterialSpec, root: Path) -> dict[str, Any]:
     """Only file existence and size; no protected text is opened."""
     return {
         "spec_digest": canonical.digest(spec.model_dump(mode="json")),
+        "complete_local_sizes": all(
+            contained(root, f.path).is_file() and contained(root, f.path).stat().st_size == f.bytes
+            for f in spec.files
+        ),
+        "missing_material": [
+            {
+                "task": f.task,
+                "repository": f.repository,
+                "revision": f.revision,
+                "config": f.config,
+                "split": f.split,
+                "path": f.path,
+                "expected_bytes": f.bytes,
+            }
+            for f in sorted(spec.files, key=lambda f: (f.task, f.config, f.split, f.path))
+            if not contained(root, f.path).is_file()
+        ],
         "files": [
             {
                 "path": f.path,
@@ -48,6 +66,39 @@ def inspect(spec: MaterialSpec, root: Path) -> dict[str, Any]:
             for f in spec.files
         ],
     }
+
+
+def material_rows(
+    path: Path, entry: MaterialFile, max_record: int, check: Callable[[], None]
+) -> Iterator[dict[str, Any]]:
+    if entry.format == "jsonl":
+        with path.open("rb") as stream:
+            while raw := stream.readline(max_record + 1):
+                check()
+                if len(raw) > max_record:
+                    raise C05Error("benchmark material record ceiling")
+                row = canonical.loads_bytes_strict(raw)
+                if not isinstance(row, dict):
+                    raise C05Error("benchmark row must be an object")
+                yield row
+        return
+    import pyarrow.parquet as pq
+
+    # Validate decompressed row-group size before decoding. This intentionally
+    # refuses large row groups rather than silently widening memory bounds.
+    with pq.ParquetFile(path) as parquet:
+        if parquet.metadata.num_rows != entry.items:
+            raise C05Error("benchmark parquet item count mismatch")
+        for number in range(parquet.metadata.num_row_groups):
+            check()
+            if parquet.metadata.row_group(number).total_byte_size > max_record:
+                raise C05Error("benchmark parquet decompressed row-group ceiling")
+            for batch in parquet.iter_batches(batch_size=1, row_groups=[number], use_threads=False):
+                check()
+                row = batch.to_pylist()[0]
+                if len(canonical.canonical_bytes(row)) > max_record:
+                    raise C05Error("benchmark material record ceiling")
+                yield row
 
 
 def build(
@@ -62,6 +113,7 @@ def build(
     code_commit: str,
     code_identity: str,
     dependency_sha256: str,
+    review_policy: ReviewPolicy | None = None,
 ) -> dict[str, Any]:
     """Write a protected index and a content-free signed receipt, never snippets."""
     if not spec.all_published_configs_splits_reviewed:
@@ -123,41 +175,37 @@ def build(
                 if path.stat().st_size != entry.bytes or file_sha(path) != entry.sha256:
                     raise C05Error("protected material file identity mismatch")
                 count = 0
-                with path.open("rb") as stream:
-                    while raw := stream.readline(spec.max_record_bytes + 1):
-                        check()
-                        if len(raw) > spec.max_record_bytes:
-                            raise C05Error("benchmark material record ceiling")
-                        count += 1
-                        if count > entry.items:
-                            raise C05Error("benchmark material item ceiling")
-                        row = canonical.loads_bytes_strict(raw)
-                        rendered = render(entry.task, row)
-                        item_hash = canonical.digest([entry.task, rendered])
-                        duplicate_items += int(
-                            db.execute("SELECT 1 FROM items WHERE hash=?", (item_hash,)).fetchone()
-                            is not None
+                for row in material_rows(path, entry, spec.max_record_bytes, check):
+                    check()
+                    count += 1
+                    if count > entry.items:
+                        raise C05Error("benchmark material item ceiling")
+                    rendered = render(entry.task, row)
+                    item_hash = canonical.digest([entry.task, rendered])
+                    duplicate_items += int(
+                        db.execute("SELECT 1 FROM items WHERE hash=?", (item_hash,)).fetchone()
+                        is not None
+                    )
+                    db.execute("INSERT OR IGNORE INTO items VALUES(?)", (item_hash,))
+                    reference = canonical.digest([entry.model_dump(mode="json"), count])
+                    found = False
+                    for pattern in patterns(rendered, reference, policy):
+                        found = True
+                        pattern_count += 1
+                        if pattern_count > resources.benchmark_patterns:
+                            raise C05Error("protected pattern generation ceiling")
+                        identity = canonical.digest(pattern.tokens)
+                        db.execute(
+                            "INSERT OR IGNORE INTO patterns VALUES(?,?)",
+                            (identity, canonical.canonical_bytes(pattern.tokens).decode()),
                         )
-                        db.execute("INSERT OR IGNORE INTO items VALUES(?)", (item_hash,))
-                        reference = canonical.digest([entry.model_dump(mode="json"), count])
-                        found = False
-                        for pattern in patterns(rendered, reference, policy):
-                            found = True
-                            pattern_count += 1
-                            if pattern_count > resources.benchmark_patterns:
-                                raise C05Error("protected pattern generation ceiling")
-                            identity = canonical.digest(pattern.tokens)
-                            db.execute(
-                                "INSERT OR IGNORE INTO patterns VALUES(?,?)",
-                                (identity, canonical.canonical_bytes(pattern.tokens).decode()),
-                            )
-                            db.executemany(
-                                "INSERT INTO refs VALUES(?,?) ON CONFLICT DO NOTHING",
-                                ((identity, ref) for ref in pattern.provenance),
-                            )
-                        empty += int(not found)
-                        variants += len(rendered)
-                        items += 1
+                        db.executemany(
+                            "INSERT INTO refs VALUES(?,?) ON CONFLICT DO NOTHING",
+                            ((identity, ref) for ref in pattern.provenance),
+                        )
+                    empty += int(not found)
+                    variants += len(rendered)
+                    items += 1
                 if count != entry.items or file_sha(path) != entry.sha256:
                     raise C05Error("benchmark material changed during preparation")
         index = destination / "index.jsonl"
@@ -188,6 +236,7 @@ def build(
             publisher_inventory_sha256=spec.publisher_inventory_sha256,
             all_published_configs_splits_reviewed=True,
             policy_digest=policy.identity(),
+            fuzzy_policy_digest=(review_policy or ReviewPolicy()).identity(),
             index_sha256=file_sha(index),
             index_bytes=written,
             items=items,

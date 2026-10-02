@@ -25,6 +25,7 @@ from xlm.data.exclusion.artifacts import ExecutionPlan, signed, verify_signed
 from xlm.data.exclusion.disk import DiskGroups
 from xlm.data.exclusion.inputs import contained, read_metadata
 from xlm.data.exclusion.policy import C05Error, require_engine_acceptance
+from xlm.data.exclusion.review import ReviewQueue, queue_digest
 from xlm.data.exclusion.streaming import Pattern, StreamingMatcher
 
 
@@ -158,6 +159,10 @@ def run(
             raise C05Error("protected runner principal mismatch")
     work = Path(plan.scratch_root) / identity
     output = Path(plan.output_root)
+    from xlm.artifacts.manifest import ensure_plain_path
+
+    for path in (work, output, work / "facts.sqlite", work / "state.json"):
+        ensure_plain_path(path)
     work.mkdir(parents=True, exist_ok=True)
     output.mkdir(parents=True, exist_ok=True)
     with FileLock(str(work / "run.lock"), timeout=0):
@@ -193,21 +198,37 @@ def _locked(
         canonical.write_canonical_json(state_path, signed(state, issuer, key))
     budget = Budget(plan, work, output, state)
     budget.benchmark_bytes = index.stat().st_size
-    credits = {"attempted_records": 0, "comparisons": 0}
+    credits = {"attempted_records": 0, "comparisons": 0, "bytes_read": 0}
 
-    def spend(name: str) -> None:
+    def spend(name: str, amount_needed: int = 1) -> None:
         # Reserve before work in fsynced blocks. Unused credits are conservatively
         # lost after interruption; replay can never reset spent work accounting.
-        if credits[name] == 0:
+        if credits[name] < amount_needed:
             maximum = int(getattr(plan.resources, name))
             spent = int(state.get("spent_" + name, 0))
-            amount = min(1024, maximum - spent)
-            if amount <= 0:
+            block = 1024 * 1024 if name == "bytes_read" else 1024
+            amount = min(max(block, amount_needed - credits[name]), maximum - spent)
+            if amount < amount_needed - credits[name]:
                 raise C05Error("spent " + name + " ceiling")
             state["spent_" + name] = spent + amount
             canonical.write_canonical_json(state_path, signed(state, issuer, key))
-            credits[name] = amount
-        credits[name] -= 1
+            credits[name] += amount
+        credits[name] -= amount_needed
+
+    def input_hash(path: Path) -> str:
+        value = hashlib.sha256()
+        with path.open("rb") as stream:
+            remaining = path.stat().st_size
+            while remaining:
+                size = min(1024 * 1024, remaining)
+                spend("bytes_read", size)
+                block = stream.read(size)
+                if not block:
+                    raise C05Error("input truncated while hashing")
+                remaining -= len(block)
+                value.update(block)
+                budget.check()
+        return value.hexdigest()
 
     budget.check(disk=True)
     if (
@@ -226,6 +247,9 @@ def _locked(
     budget.check(disk=True)
     groups = DiskGroups(work / "facts.sqlite", plan.policy, plan.resources, budget.check)
     try:
+        review = ReviewQueue(groups.db, plan.policy.review, plan.resources)
+        if plan.policy.review.enabled:
+            review.compile(index_patterns(index, plan.resources.document_bytes), budget.check)
         for item in plan.files:
             path = contained(Path(plan.data_root), item.path)
             if path.stat().st_size != item.file_bytes:
@@ -234,10 +258,7 @@ def _locked(
                 "SELECT sha,attestation FROM files WHERE path=?", (item.path,)
             ).fetchone()
             if done:
-                if (
-                    done[0] != item.documents_sha256
-                    or file_sha(path, budget.check) != item.documents_sha256
-                ):
+                if done[0] != item.documents_sha256 or input_hash(path) != item.documents_sha256:
                     raise C05Error("reusable input hash changed")
                 facts = verify_signed(canonical.loads_strict(done[1]), trusted)
                 if facts != {
@@ -255,6 +276,9 @@ def _locked(
             rows = text_bytes = 0
             with groups.db:
                 with path.open("rb") as stream:
+                    # Reserve the complete frozen file before the first read. Failed
+                    # attempts conservatively spend it; restart never resets I/O.
+                    spend("bytes_read", item.file_bytes)
                     while raw := stream.readline(plan.resources.document_bytes + 1):
                         spend("attempted_records")
                         budget.check()
@@ -262,6 +286,8 @@ def _locked(
                             raise C05Error("canonical record ceiling")
                         actual.update(raw)
                         doc = CanonicalDocument(**canonical.loads_bytes_strict(raw))
+                        if len(doc.text.encode("utf-8")) != doc.utf8_byte_count:
+                            raise C05Error("canonical text byte count mismatch")
                         if (
                             doc.source_id != item.source_id
                             or doc.source_revision != item.source_revision
@@ -284,6 +310,8 @@ def _locked(
                             hit=matcher.match(tokens),
                             upstream=item.upstream_component,
                         )
+                        if plan.policy.review.enabled:
+                            review.consider(doc.doc_id, tokens, lambda: spend("comparisons"))
                         checkpoint("row")
                 if (actual.hexdigest(), rows, text_bytes) != (
                     item.documents_sha256,
@@ -314,7 +342,13 @@ def _locked(
             with groups.db:
                 groups.group(budget.check, lambda: spend("comparisons"))
                 seal = signed(
-                    {"plan": identity, "groups": groups.group_digest(budget.check)}, issuer, key
+                    {
+                        "plan": identity,
+                        "groups": groups.group_digest(budget.check),
+                        "review_queue_digest": review.private_digest(),
+                    },
+                    issuer,
+                    key,
                 )
                 groups.db.execute(
                     "INSERT OR REPLACE INTO seals VALUES(?,?)",
@@ -327,13 +361,29 @@ def _locked(
         stored_group = groups.db.execute("SELECT value FROM seals WHERE key='groups'").fetchone()
         if stored_group is None or verify_signed(
             canonical.loads_strict(stored_group[0]), trusted
-        ) != {"plan": identity, "groups": groups.group_digest(budget.check), "issuer": issuer}:
+        ) != {
+            "plan": identity,
+            "groups": groups.group_digest(budget.check),
+            "issuer": issuer,
+            "review_queue_digest": review.private_digest(),
+        }:
             raise C05Error("group journal changed")
         final = output / identity
         if final.exists():
             return verify_completion(final, plan, trusted)
         staging = output / (identity + ".partial")
+        from xlm.artifacts.manifest import ensure_plain_path
+
+        ensure_plain_path(staging)
         staging.mkdir(exist_ok=True)
+        if any(
+            p.name not in {"membership.jsonl", "completion.json", "completion.json.tmp"}
+            or not p.is_file()
+            for p in staging.iterdir()
+        ):
+            raise C05Error("unexpected orphan staging entry")
+        for staged_file in staging.iterdir():
+            ensure_plain_path(staged_file)
         # Only our two exact staging files are rewritten. No recursive deletion.
         membership = staging / "membership.jsonl"
         total = kept = excluded = duplicate = written = 0
@@ -427,6 +477,10 @@ def _locked(
                 "components": by_component,
                 "allocations": by_allocation,
                 "policy_digest": plan.policy.identity(),
+                "source_seals": plan.source_seals,
+                "index_sha256": plan.index_sha256,
+                "review": review.summary(),
+                "review_decisions": plan.review_decisions,
                 "dedup_stats": dict(groups.db.execute("SELECT key,value FROM stats")),
                 "peak_rss_sampled": budget.peak_rss,
                 "peak_scratch_sampled": budget.peak_scratch,
@@ -458,9 +512,123 @@ def verify_completion(
     ):
         raise C05Error("completion plan/mode mismatch")
     membership = directory / "membership.jsonl"
+    for name, expected in {
+        "input_manifest_digest": plan.input_manifest_digest,
+        "benchmark_receipt_digest": plan.benchmark_receipt_digest,
+        "policy_digest": plan.policy.identity(),
+        "source_seals": plan.source_seals,
+        "index_sha256": plan.index_sha256,
+        "review_decisions": plan.review_decisions,
+        "documents": sum(f.documents for f in plan.files),
+    }.items():
+        if body.get(name) != expected:
+            raise C05Error("completion binding mismatch: " + name)
+    if body["kept"] + body["excluded"] + body["duplicates"] != body["documents"]:
+        raise C05Error("completion aggregate mismatch")
     if (
         membership.stat().st_size != body["membership_bytes"]
         or file_sha(membership) != body["membership_sha256"]
     ):
         raise C05Error("completion membership changed")
     return envelope
+
+
+def resume_check(
+    plan: ExecutionPlan,
+    authorization: Mapping[str, Any],
+    *,
+    index: Path,
+    benchmark: Mapping[str, Any],
+    trusted: Mapping[str, bytes],
+) -> dict[str, Any]:
+    """Read-only authentication of every reusable stage, never starts a scan stage."""
+    from xlm.data.exclusion.identity import implementation_identity
+
+    identity = plan.identity()
+    actual = implementation_identity()
+    if (actual["code_identity"], actual["dependency_sha256"]) != (
+        plan.code_identity,
+        plan.dependency_sha256,
+    ):
+        raise C05Error("resume code/dependencies changed")
+    auth = verify_signed(authorization, trusted)
+    if (auth.get("kind"), auth.get("plan_digest"), auth.get("mode")) != (
+        "c05_authorization_v2",
+        identity,
+        plan.mode,
+    ):
+        raise C05Error("resume authorization mismatch")
+    receipt = verify_signed(benchmark, trusted)
+    if (
+        benchmark["digest"] != plan.benchmark_receipt_digest
+        or receipt["index_sha256"] != plan.index_sha256
+    ):
+        raise C05Error("resume benchmark changed")
+    if index.stat().st_size != receipt["index_bytes"] or file_sha(index) != plan.index_sha256:
+        raise C05Error("resume protected index changed")
+    work = Path(plan.scratch_root) / identity
+    if not (work / "state.json").is_file():
+        raise C05Error("no signed state to resume")
+    with FileLock(str(work / "run.lock"), timeout=0):
+        state = verify_signed(read_metadata(work / "state.json", digested=False), trusted)
+        if state.get("plan") != identity or state.get("stage") not in {"scan", "group", "publish"}:
+            raise C05Error("resume stage/plan mismatch")
+        budget = Budget(plan, work, Path(plan.output_root), state)
+        budget.benchmark_bytes = index.stat().st_size
+        budget.check(disk=True)
+        groups = DiskGroups(
+            work / "facts.sqlite", plan.policy, plan.resources, budget.check, read_only=True
+        )
+        verified = 0
+        try:
+            for item in plan.files:
+                source = contained(Path(plan.data_root), item.path)
+                if source.stat().st_size != item.file_bytes:
+                    raise C05Error("resume input size changed")
+                row = groups.db.execute(
+                    "SELECT sha,attestation FROM files WHERE path=?", (item.path,)
+                ).fetchone()
+                if row is None:
+                    if state["stage"] != "scan":
+                        raise C05Error("resume missing file in completed stage")
+                    continue
+                if (
+                    row[0] != item.documents_sha256
+                    or file_sha(source, budget.check) != item.documents_sha256
+                ):
+                    raise C05Error("resume reusable source changed")
+                facts = verify_signed(canonical.loads_strict(row[1]), trusted)
+                if any(
+                    facts.get(k) != v
+                    for k, v in {
+                        "plan": identity,
+                        "file": item.path,
+                        "sha": item.documents_sha256,
+                        "facts": groups.facts_digest(item.path, budget.check),
+                    }.items()
+                ):
+                    raise C05Error("resume reusable facts changed")
+                verified += 1
+            if state["stage"] == "publish":
+                seal = groups.db.execute("SELECT value FROM seals WHERE key='groups'").fetchone()
+                if seal is None:
+                    raise C05Error("resume group seal missing")
+                sealed_group = verify_signed(canonical.loads_strict(seal[0]), trusted)
+                if (
+                    sealed_group.get("plan") != identity
+                    or sealed_group.get("groups") != groups.group_digest(budget.check)
+                    or sealed_group.get("review_queue_digest") != queue_digest(groups.db)
+                ):
+                    raise C05Error("resume group seal changed")
+            final = Path(plan.output_root) / identity
+            if final.exists():
+                verify_completion(final, plan, trusted)
+        finally:
+            groups.close()
+    return {
+        "plan_digest": identity,
+        "stage": state["stage"],
+        "reusable_files_verified": verified,
+        "resume_checked": True,
+        "execution_performed": False,
+    }

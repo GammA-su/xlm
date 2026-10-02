@@ -64,6 +64,8 @@ class MembershipGate:
         self.receipt_digest = str(completion["digest"])
         self.plan_digest = plan.identity()
         self.mode = plan.mode
+        self.completion = completion["payload"]
+        self.input_manifest = dict(manifest)
         self.trusted = dict(trusted)
         self.signer = signer
         if signer is not None and self.trusted.get(signer[0]) != signer[1]:
@@ -75,9 +77,11 @@ class MembershipGate:
         self.db.execute("PRAGMA cache_size=-8192")
         self.db.execute(f"PRAGMA max_page_count={max(1, plan.resources.index_bytes // 4096)}")
         self.db.execute(
-            "CREATE TABLE membership(id TEXT PRIMARY KEY,content TEXT,decision TEXT,split TEXT)"
+            "CREATE TABLE membership(id TEXT PRIMARY KEY,content TEXT,decision TEXT,split TEXT,"
+            "component TEXT,view TEXT,upstream TEXT)"
         )
         self.db.execute("CREATE TABLE seen(id TEXT PRIMARY KEY)")
+        self.db.execute("CREATE INDEX allocation ON membership(component,view,upstream,split)")
         count = 0
         try:
             with self.db, (directory / "membership.jsonl").open("rb") as stream:
@@ -86,8 +90,16 @@ class MembershipGate:
                         raise C05Error("membership record ceiling")
                     row = canonical.loads_bytes_strict(raw)
                     self.db.execute(
-                        "INSERT INTO membership VALUES(?,?,?,?)",
-                        (row["doc_id"], row["content"], row["decision"], row["split"]),
+                        "INSERT INTO membership VALUES(?,?,?,?,?,?,?)",
+                        (
+                            row["doc_id"],
+                            row["content"],
+                            row["decision"],
+                            row["split"],
+                            row["component"],
+                            row["view"],
+                            row["upstream_component"],
+                        ),
                     )
                     count += 1
                     if count > plan.resources.records:
@@ -111,7 +123,7 @@ class MembershipGate:
         ):
             raise C05Error("document is not exact screened training membership")
 
-    def verify_token_shard(self, directory: Path) -> dict[str, Any]:
+    def verify_token_shard(self, directory: Path, *, reset_seen: bool = True) -> dict[str, Any]:
         """Verify shard bytes plus every document against current kept membership.
 
         Token offsets bind original record content, not a receipt-ID assertion.
@@ -132,7 +144,8 @@ class MembershipGate:
         ):
             raise C05Error("token shard protected attestation mismatch")
         count = 0
-        self.db.execute("DELETE FROM seen")
+        if reset_seen:
+            self.db.execute("DELETE FROM seen")
         for offset in reader.iter_document_offsets():
             row = self.db.execute(
                 "SELECT content,decision,split FROM membership WHERE id=?", (offset["doc_id"],)

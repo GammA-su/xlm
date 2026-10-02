@@ -9,6 +9,7 @@ from typing import Annotated, Any
 import typer
 import yaml
 
+from xlm.data.exclusion.transport import open_gate
 from xlm.data.sampling import (
     MATCHED_BASES,
     MixtureRecipe,
@@ -57,6 +58,8 @@ def _discover_availability(shard_root: Path) -> dict[str, SourceAvailability]:
         if not (candidate / "shard_manifest.json").is_file():
             continue
         reader = TokenShardReader(candidate)
+        if reader.manifest.source_id in availability or len(availability) >= 64:
+            raise ValueError("duplicate source shard or source ceiling exceeded")
         counters = reader.counters
         availability[reader.manifest.source_id] = SourceAvailability(
             source_id=reader.manifest.source_id,
@@ -73,6 +76,14 @@ def _discover_availability(shard_root: Path) -> dict[str, SourceAvailability]:
     if not availability:
         raise FileNotFoundError(f"no token shards found under: {shard_root}")
     return availability
+
+
+def _c05_shards(root: Path) -> dict[str, Path]:
+    return {
+        TokenShardReader(p).manifest.source_id: p
+        for p in sorted(root.iterdir())
+        if (p / "shard_manifest.json").is_file()
+    }
 
 
 def _load_inputs(
@@ -131,6 +142,7 @@ def plan_cmd(
     block_size: Annotated[
         int, typer.Option("--block-size", help="Tokens per exposure block.")
     ] = 8192,
+    c05_proof: Annotated[Path | None, typer.Option("--c05-proof")] = None,
 ) -> None:
     """Compile a deterministic exposure plan for a token budget."""
     recipe, availability = _load_inputs(recipe_path, shard_root)
@@ -142,7 +154,15 @@ def plan_cmd(
         raise typer.Exit(code=1)
 
     try:
-        plan = compile_exposure_plan(recipe, validation, budget_targets, block_size)
+        with open_gate(c05_proof) as gate:
+            plan = compile_exposure_plan(
+                recipe,
+                validation,
+                budget_targets,
+                block_size,
+                c05_gate=gate,
+                c05_shards=_c05_shards(shard_root) if gate else None,
+            )
     except ValueError as e:
         typer.echo(f"Error: {e}", err=True)
         raise typer.Exit(code=1) from e
@@ -198,6 +218,7 @@ def matched_plan_cmd(
     output_path: Annotated[
         Path | None, typer.Option("--output", "-o", help="Where to write the matched plan.")
     ] = None,
+    c05_proof: Annotated[Path | None, typer.Option("--c05-proof")] = None,
 ) -> None:
     """Compile a matched-canonical-byte or matched-document plan (C07).
 
@@ -213,7 +234,15 @@ def matched_plan_cmd(
         raise typer.Exit(code=1)
 
     try:
-        plan = compile_matched_plan(recipe, validation, budget, basis=basis)
+        with open_gate(c05_proof) as gate:
+            plan = compile_matched_plan(
+                recipe,
+                validation,
+                budget,
+                basis=basis,
+                c05_gate=gate,
+                c05_shards=_c05_shards(shard_root) if gate else None,
+            )
     except ValueError as e:
         typer.echo(f"Error: {e}", err=True)
         raise typer.Exit(code=1) from e
@@ -363,6 +392,7 @@ def preview_cmd(
     block_size: Annotated[
         int, typer.Option("--block-size", help="Tokens per exposure block.")
     ] = 8192,
+    c05_proof: Annotated[Path | None, typer.Option("--c05-proof")] = None,
 ) -> None:
     """Preview the observed source shares a plan would produce."""
     recipe, availability = _load_inputs(recipe_path, shard_root)
@@ -371,7 +401,15 @@ def preview_cmd(
         typer.echo("Error: mixture is invalid; cannot preview.", err=True)
         raise typer.Exit(code=1)
 
-    plan = compile_exposure_plan(recipe, validation, budget_targets, block_size)
+    with open_gate(c05_proof) as gate:
+        plan = compile_exposure_plan(
+            recipe,
+            validation,
+            budget_targets,
+            block_size,
+            c05_gate=gate,
+            c05_shards=_c05_shards(shard_root) if gate else None,
+        )
     summary = summarize_plan_blocks(plan, availability, max_blocks=max_blocks)
 
     typer.echo("============================================================")

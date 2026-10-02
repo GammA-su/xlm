@@ -199,12 +199,19 @@ def resolve_execution_config(config: dict[str, Any]) -> tuple[dict[str, Any], di
 
         exposure = data["exposure_plan"]
         batcher = MixtureBatcher(data_source.recipe, data_source.readers)
-        expected = compile_exposure_plan(
-            data_source.recipe,
-            validate_mixture(data_source.recipe, batcher.availability),
-            training["budget"]["max_valid_targets"],
-            block_size=int(exposure.get("block_size", 8192)),
-        ).to_dict()
+        from xlm.data.exclusion.transport import open_gate
+
+        with open_gate(Path(data["c05_proof"]) if data.get("c05_proof") else None) as gate:
+            expected = compile_exposure_plan(
+                data_source.recipe,
+                validate_mixture(data_source.recipe, batcher.availability),
+                training["budget"]["max_valid_targets"],
+                block_size=int(exposure.get("block_size", 8192)),
+                c05_gate=gate,
+                c05_shards={s: r.directory for s, r in data_source.readers.items()}
+                if gate
+                else None,
+            ).to_dict()
         if exposure != expected:
             raise ValueError(
                 "exposure plan differs from recomputed token budget/source projections"

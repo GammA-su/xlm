@@ -1,0 +1,211 @@
+........F...F.....F                                                      [100%]
+================================== FAILURES ===================================
+______ test_public_queue_and_diagnostic_receipt_keep_separate_provenance ______
+
+tmp_path = WindowsPath('C:/Users/gamma/AppData/Local/Temp/pytest-of-gamma/pytest-246/test_public_queue_and_diagnost0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001C3D6581A60>
+
+    @pytest.mark.serial
+    def test_public_queue_and_diagnostic_receipt_keep_separate_provenance(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        from typer.testing import CliRunner
+
+        from xlm.artifacts.manifest import identity_digest
+        from xlm.cli.main import app
+
+        plan, _, _, _, snapshot = frozen_fixture(tmp_path, 'print("TRAINING_A", flush=True)')
+        plan.resolved_config["model"]["vocab_size"] = 260
+        plan.resolved_config["data"]["tokenizer_artifact"] = "byte"
+        freeze_execution(plan, snapshot, ["cpu"])
+        path = plan.save(tmp_path / "public-plan.json")
+        home = tmp_path / "public-home"
+        monkeypatch.setenv("XLM_HOME", str(home))
+        runner = CliRunner()
+        submitted = runner.invoke(
+            app, ["experiment", "submit", str(path), "--snapshot-dir", str(snapshot), "--device", "cpu"]
+        )
+        assert submitted.exit_code == 0, (submitted.output, submitted.exception)
+        executed = runner.invoke(app, ["queue", "run", "--once"])
+        assert executed.exit_code == 0, (executed.output, executed.exception)
+        records = list((home / "runs").glob("*/run_record.json"))
+        assert len(records) == 1
+        record = json.loads(records[0].read_text())
+        assert record["status"] == "SUCCEEDED", record
+        checkpoint = next((records[0].parent / "artifacts/checkpoints").glob("*_final"))
+        evaluated = runner.invoke(
+            app, ["evaluate", str(checkpoint), "--json", "--suite", "synthetic_mc"]
+        )
+>       assert evaluated.exit_code == 0, (evaluated.output, evaluated.exception)
+E       AssertionError: ('', FileNotFoundError(2, 'No such file or directory'))
+E       assert 1 == 0
+E        +  where 1 = <Result FileNotFoundError(2, 'No such file or directory')>.exit_code
+
+tests\test_frozen_execution.py:309: AssertionError
+____ test_relocated_locked_environment_ignores_editable_hooks_and_bytecode ____
+
+tmp_path = WindowsPath('C:/Users/gamma/AppData/Local/Temp/pytest-of-gamma/pytest-246/test_relocated_locked_environm0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001C3D1C44320>
+frozen_seed = FrozenSeed(files=(('plan.json', b'{\r\n  "blockers": [],\r\n  "budget_max_seconds": 10.0,\r\n  "budget_valid_targets":...e = "2026-09-15T19:34:59.616Z" },\n]\n')), identity='17c3aa63d2c60d6d23e67cfe46807d329558fc829c4cc8153f286513981a6353')
+
+    @pytest.mark.serial
+    @pytest.mark.environment_setup
+    def test_relocated_locked_environment_ignores_editable_hooks_and_bytecode(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, frozen_seed: FrozenSeed
+    ) -> None:
+        import py_compile
+        import subprocess
+
+        from xlm.experiments import environment
+
+        plan, queue, _, _, snapshot = frozen_fixture(tmp_path, seed=frozen_seed)
+        venv = tmp_path / "relocated-venv"
+        result = subprocess.run(
+            ["uv", "sync", "--offline", "--locked", "--extra", "cpu", "--extra", "eval"],
+            cwd=ROOT,
+            env={**os.environ, "UV_PROJECT_ENVIRONMENT": str(venv)},
+            capture_output=True,
+            timeout=180,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr.decode(errors="replace")
+        (tmp_path / "uv-sync.log").write_bytes(result.stdout + result.stderr)
+        site = venv / ("Lib/site-packages" if os.name == "nt" else "lib/python3.12/site-packages")
+        python = venv / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+        # Break any installer hardlink before authoring a private poison hook.
+        hook = site / "_editable_impl_xlm.pth"
+        hook.unlink(missing_ok=True)
+        hook.write_text("import os; os._exit(86)\n", encoding="utf-8")
+        poison = site / "xlm"
+        poison.mkdir(exist_ok=True)
+        (poison / "__init__.py").write_text('raise RuntimeError("wrong installed XLM")\n')
+        authored = tmp_path / "bytecode_poison.py"
+        authored.write_text('raise RuntimeError("unchecked bytecode executed")\n')
+        cache = site / "filelock/__pycache__/__init__.cpython-312.pyc"
+        cache.parent.mkdir(exist_ok=True)
+        cache.unlink(missing_ok=True)
+        py_compile.compile(
+            str(authored),
+            cfile=str(cache),
+            invalidation_mode=py_compile.PycInvalidationMode.UNCHECKED_HASH,
+        )
+        assert plan.execution_envelope is not None
+>       observed = environment.installed_runtime(snapshot / "code/uv.lock", ["cpu"], site)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_frozen_execution.py:512:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\xlm\experiments\environment.py:124: in installed_runtime
+    _hash_batch(pending, site, files, pool)
+src\xlm\experiments\environment.py:185: in _hash_batch
+    for (path, file_size), digest in zip(selected, pool.map(hash_one, selected), strict=True):
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\concurrent\futures\_base.py:619: in result_iterator
+    yield _result_or_cancel(fs.pop())
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\concurrent\futures\_base.py:317: in _result_or_cancel
+    return fut.result(timeout)
+           ^^^^^^^^^^^^^^^^^^^
+C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\concurrent\futures\_base.py:449: in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\concurrent\futures\_base.py:401: in __get_result
+    raise self._exception
+C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\concurrent\futures\thread.py:59: in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src\xlm\experiments\environment.py:183: in hash_one
+    return compute_file_sha256(entry[0], max_bytes=entry[1])
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src\xlm\artifacts\store.py:100: in compute_file_sha256
+    with path.open("rb") as file:
+         ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = WindowsPath('C:/Users/gamma/AppData/Local/Temp/pytest-of-gamma/pytest-246/test_relocated_locked_environm0/relocated-ve..._leaderboard_light/arabic_leaderboard_arabic_mt_openbook_qa_light/arabic_leaderboard_arabic_mt_openbook_qa_light.yaml')
+mode = 'rb', buffering = -1, encoding = None, errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-246\\test_relocated_locked_environm0\\relocated-venv\\Lib\\site-packages\\lm_eval\\tasks\\arabic_leaderboard_light\\arabic_leaderboard_arabic_mt_openbook_qa_light\\arabic_leaderboard_arabic_mt_openbook_qa_light.yaml'
+
+C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\pathlib.py:1013: FileNotFoundError
+________________ test_public_cli_executes_registered_objective ________________
+
+tmp_path = WindowsPath('C:/Users/gamma/AppData/Local/Temp/pytest-of-gamma/pytest-246/test_public_cli_executes_regis0')
+
+    @pytest.mark.serial
+    def test_public_cli_executes_registered_objective(tmp_path: Path) -> None:
+        from xlm.config import schemas  # register the existing built-ins
+        from xlm.core.registry import objectives
+
+        assert schemas is not None and objectives.get("noop_objective", "1").factory is not None
+        plan = {
+            "id": "d03_registered_objective",
+            "model": {
+                "architecture": "transformer_baseline",
+                "vocab_size": 64,
+                "hidden_size": 16,
+                "intermediate_size": 32,
+                "num_layers": 1,
+                "num_attention_heads": 2,
+                "context_length": 8,
+                "attention_backend": "eager",
+            },
+            "objective": {"type": "noop_objective", "version": "1"},
+            "optimizer": {"type": "adamw", "lr": 0.01},
+            "data": {"synthetic_tokens": [4 + i % 50 for i in range(64)]},
+            "training": {
+                "device": "cpu",
+                "precision": "fp32",
+                "context_length": 8,
+                "global_batch_valid_targets": 8,
+                "budget": {"max_valid_targets": 8, "max_train_seconds": 10},
+                "schedule": {
+                    "type": "warmup_cosine",
+                    "warmup_valid_targets": 0,
+                    "horizon_valid_targets": 8,
+                },
+            },
+        }
+        path = tmp_path / "plan.json"
+        path.write_text(json.dumps(plan), encoding="utf-8")
+        result = subprocess.run(
+            [sys.executable, "-m", "xlm.cli.main", "train", str(path), "--device", "cpu"],
+            env={**os.environ, "XLM_HOME": str(tmp_path / "home")},
+            capture_output=True,
+            text=True,
+            timeout=180,
+        )
+        (tmp_path / "observed.json").write_text(
+            json.dumps(
+                {
+                    "returncode": result.returncode,
+                    "stdout": result.stdout,
+                    "stderr": result.stderr,
+                    "checkpoints": [str(p) for p in (tmp_path / "home").rglob("model.pt")],
+                }
+            ),
+            encoding="utf-8",
+        )
+>       assert result.returncode == 0, result.stderr
+E       AssertionError: <frozen runpy>:128: RuntimeWarning: 'xlm.cli.main' found in sys.modules after import of package 'xlm.cli', but prior to execution of 'xlm.cli.main'; this may result in unpredictable behaviour
+E         Error: [Errno 2] No such file or directory: 'C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-246\\test_public_cli_executes_regis0\\home\\runs\\direct-73195d5f6a0c4d45b33a03ec52907bc9\\.capture-69a4ce8176824a3ea403f8b4f7b1e83b\\code\\recipes\\science_comparisons\\draft_science_v1_microbatch_b8_b16_b32.yaml'
+E
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['F:\\Project\\xlm-common-pile\\.venv\\Scripts\\python.exe', '-m', 'xlm.cli.main', 'train', 'C:\...176824a3ea403f8b4f7b1e83b\\\\code\\\\recipes\\\\science_comparisons\\\\draft_science_v1_microbatch_b8_b16_b32.yaml'\n").returncode
+
+tests\test_configurable_training.py:144: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_frozen_execution.py::test_public_queue_and_diagnostic_receipt_keep_separate_provenance
+FAILED tests/test_frozen_execution.py::test_relocated_locked_environment_ignores_editable_hooks_and_bytecode
+FAILED tests/test_configurable_training.py::test_public_cli_executes_registered_objective
+3 failed, 16 passed, 492 deselected in 529.19s (0:08:49)

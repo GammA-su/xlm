@@ -36,6 +36,8 @@ class OrderedConnection(sqlite3.Connection):
 def connect(
     path: Path, ceiling: int, check: Callable[[], None] = lambda: None
 ) -> OrderedConnection:
+    if ceiling < 4096:
+        raise C05Error("SQLite index ceiling is below one page")
     db = sqlite3.connect(path, factory=OrderedConnection)
     db.check = check
     db.execute("PRAGMA journal_mode=DELETE")

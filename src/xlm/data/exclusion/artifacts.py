@@ -42,6 +42,7 @@ class MaterialFile(FrozenModel):
     sha256: Sha
     bytes: int = Field(gt=0)
     items: int = Field(gt=0)
+    format: Literal["jsonl", "parquet"] = "jsonl"
 
 
 class BenchmarkReceipt(FrozenModel):
@@ -49,9 +50,11 @@ class BenchmarkReceipt(FrozenModel):
     files: tuple[MaterialFile, ...]
     publisher_inventory_sha256: Sha
     all_published_configs_splits_reviewed: Literal[True]
-    renderer: Literal["task-render-v2"] = "task-render-v2"
+    renderer: Literal["task-render-v3"] = "task-render-v3"
     normalization: Literal["match-view-v1"] = "match-view-v1"
     policy_digest: Sha
+    fuzzy_policy_digest: Sha = Field(default_factory=lambda: ProductionPolicy().review.identity())
+    automatic_disposition: Literal["AUTOMATIC_EXACT_EXCLUSION"] = "AUTOMATIC_EXACT_EXCLUSION"
     index_sha256: Sha
     index_bytes: int = Field(gt=0)
     items: int = Field(gt=0)
@@ -101,6 +104,7 @@ class ExecutionPlan(FrozenModel):
     code_identity: Sha
     dependency_sha256: Sha
     output_contract: Literal["c05_membership_v2"] = "c05_membership_v2"
+    review_decisions: dict[str, Sha] = Field(default_factory=dict)
     authorization_contract: Literal["signed-plan-digest-v2"] = "signed-plan-digest-v2"
 
     def identity(self) -> str:
@@ -114,6 +118,8 @@ class ExecutionPlan(FrozenModel):
             raise C05Error("input file ceiling")
         if sum(f.documents for f in self.files) > self.resources.records:
             raise C05Error("input record ceiling")
+        if sum(f.file_bytes for f in self.files) > self.resources.bytes_read:
+            raise C05Error("input byte ceiling")
         if len({f.path for f in self.files}) != len(self.files):
             raise C05Error("duplicate input path")
         for f in self.files:
@@ -163,6 +169,8 @@ def verify_benchmark(
     receipt = BenchmarkReceipt.model_validate(verify_signed(envelope, trusted))
     if receipt.isolation.mode != mode or receipt.policy_digest != policy.matcher.identity():
         raise C05Error("benchmark mode or matcher policy mismatch")
+    if receipt.fuzzy_policy_digest != policy.review.identity():
+        raise C05Error("benchmark fuzzy review policy mismatch")
     if mode == "protected" and receipt.items_without_patterns:
         raise C05Error("benchmark items without frozen signatures require policy review")
     if (

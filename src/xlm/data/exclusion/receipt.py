@@ -77,10 +77,15 @@ class FinalExclusionReceipt:
     aggregate_counts: dict[str, int] = field(default_factory=dict)
     notes: list[str] = field(default_factory=list)
     signature: str | None = None
+    c05_binding: dict[str, Any] | None = None
 
     def signing_payload(self) -> str:
         """Canonical, signature-excluding serialization used for signing."""
-        body = {k: v for k, v in asdict(self).items() if k != "signature"}
+        body = {
+            k: v
+            for k, v in asdict(self).items()
+            if k != "signature" and not (k == "c05_binding" and v is None)
+        }
         return json.dumps(body, sort_keys=True, separators=(",", ":"))
 
     def to_dict(self) -> dict[str, Any]:
@@ -147,7 +152,7 @@ def verify_receipt(
     an unsigned receipt is tolerated, but the receipt is then explicitly not a
     final-exclusion claim.
     """
-    if receipt.schema_version != RECEIPT_SCHEMA_VERSION:
+    if receipt.schema_version not in {RECEIPT_SCHEMA_VERSION, "2"}:
         raise ReceiptValidationError(
             f"unsupported receipt schema version '{receipt.schema_version}'; "
             f"expected '{RECEIPT_SCHEMA_VERSION}'"
@@ -157,7 +162,32 @@ def verify_receipt(
         if not getattr(receipt, required):
             raise ReceiptValidationError(f"receipt is malformed: '{required}' is empty")
 
-    if receipt.documents_dropped != len(receipt.dropped_doc_ids):
+    if receipt.schema_version == "2":
+        binding = receipt.c05_binding
+        required_bindings = {
+            "plan_digest",
+            "completion_digest",
+            "benchmark_receipt_digest",
+            "source_seals",
+            "input_manifest_digest",
+            "membership_sha256",
+            "policy_digest",
+            "index_sha256",
+            "review_decisions",
+        }
+        if binding is None or set(binding) != required_bindings or receipt.dropped_doc_ids:
+            raise ReceiptValidationError("v2 requires content-free completion binding")
+        for name, expected in {
+            "input_manifest_digest": receipt.corpus_input_digest,
+            "membership_sha256": receipt.output_membership_digest,
+            "policy_digest": receipt.exclusion_policy_identity,
+            "index_sha256": receipt.exclusion_index_identity,
+        }.items():
+            if binding[name] != expected:
+                raise ReceiptValidationError("v2 completion binding mismatch")
+        if receipt.documents_dropped < 0 or receipt.documents_considered < 0:
+            raise ReceiptValidationError("invalid v2 document counts")
+    elif receipt.documents_dropped != len(receipt.dropped_doc_ids):
         raise ReceiptValidationError(
             f"receipt is inconsistent: documents_dropped={receipt.documents_dropped} "
             f"but {len(receipt.dropped_doc_ids)} dropped IDs listed"

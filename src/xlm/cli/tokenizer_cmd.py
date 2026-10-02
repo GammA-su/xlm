@@ -11,6 +11,8 @@ import typer
 from xlm.artifacts.store import ArtifactStore
 from xlm.core.paths import ArtifactPaths
 from xlm.data.canonical_io import CanonicalDatasetReader
+from xlm.data.exclusion.gates import screened_documents
+from xlm.data.exclusion.transport import open_gate
 from xlm.data.normalization import canonical_normalize, compute_sha256
 from xlm.tokenizers.base import BaseTokenizer
 from xlm.tokenizers.bpe import ByteLevelBPETokenizer
@@ -78,6 +80,9 @@ def train(
         bool,
         typer.Option("--is-production/--no-is-production", help="Certify as production baseline."),
     ] = False,
+    c05_proof: Annotated[
+        Path | None, typer.Option("--c05-proof", help="Verified C05 proof specification.")
+    ] = None,
 ) -> None:
     """Train a BPE or Byte tokenizer on canonical training documents."""
     resolved_data_dir = _resolve_target_dir(data_path)
@@ -107,18 +112,40 @@ def train(
     staging_dir.mkdir(parents=True, exist_ok=True)
 
     if tok_type == "byte":
+        with open_gate(c05_proof) as gate:
+            for _ in screened_documents(
+                (d for d in CanonicalDatasetReader.read_jsonl(jsonl_file) if d.split == "train"),
+                gate,
+                required=is_production,
+            ):
+                pass
         tokenizer: BaseTokenizer = ByteTokenizer()
         tokenizer.save(staging_dir)
     elif tok_type == "bpe":
         try:
-            tokenizer = ByteLevelBPETokenizer.train_from_documents(
-                documents=(
-                    d for d in CanonicalDatasetReader.read_jsonl(jsonl_file) if d.split == "train"
-                ),
-                target_vocab_size=vocab_size,
-                is_production_baseline=is_production,
-            )
-            tokenizer.save(staging_dir)
+            with open_gate(c05_proof) as gate:
+                tokenizer = ByteLevelBPETokenizer.train_from_documents(
+                    documents=(
+                        d
+                        for d in CanonicalDatasetReader.read_jsonl(jsonl_file)
+                        if d.split == "train"
+                    ),
+                    target_vocab_size=vocab_size,
+                    is_production_baseline=is_production,
+                    c05_gate=gate,
+                )
+                tokenizer.save(staging_dir)
+                if gate is not None:
+                    from xlm.data.acquisition.source_run import write_once
+
+                    write_once(
+                        staging_dir / "c05-binding.json",
+                        {
+                            "plan_digest": gate.plan_digest,
+                            "completion_digest": gate.receipt_digest,
+                            "tokenizer_fingerprint": tokenizer.fingerprint,
+                        },
+                    )
         except Exception as e:
             typer.echo(f"Error training BPE tokenizer: {e}", err=True)
             raise typer.Exit(code=1) from e
@@ -151,6 +178,9 @@ def train(
         tok_json = staging_dir / "tokenizer.json"
         if tok_json.is_file():
             files_map["tokenizer.json"] = tok_json
+        binding_file = staging_dir / "c05-binding.json"
+        if binding_file.is_file():
+            files_map[binding_file.name] = binding_file
 
         published_dir = store.publish_artifact(
             artifact_id=artifact_id,
@@ -162,6 +192,31 @@ def train(
             metadata=meta,
         )
         typer.echo(f"Published immutable artifact to: {published_dir}")
+
+
+@app.command("count-exact")
+def count_exact(
+    data_path: Annotated[Path, typer.Option("--data-path")],
+    tokenizer_dir: Annotated[Path, typer.Option("--tokenizer")],
+    c05_proof: Annotated[Path, typer.Option("--c05-proof")],
+    output: Annotated[Path, typer.Option("--output")],
+) -> None:
+    """Count unique exact screened training records with a frozen tokenizer."""
+    from xlm.data.acquisition.source_run import write_once
+    from xlm.data.exclusion.gates import count_exact_tokens
+
+    try:
+        with open_gate(c05_proof) as gate:
+            if gate is None:
+                raise ValueError("C05 proof missing")
+            result = count_exact_tokens(
+                CanonicalDatasetReader.read_jsonl(data_path), _load_tokenizer(tokenizer_dir), gate
+            )
+            write_once(output, result)
+        typer.echo(json.dumps(result))
+    except (ValueError, OSError) as exc:
+        typer.echo(f"Exact count refused: {type(exc).__name__}", err=True)
+        raise typer.Exit(1) from exc
 
 
 @app.command("inspect")

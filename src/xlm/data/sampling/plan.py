@@ -93,6 +93,7 @@ class ExposurePlan:
     projected_storage_bytes: int
     warnings: list[str] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
+    c05_binding: dict[str, str] | None = None
 
     @property
     def requires_repetition(self) -> bool:
@@ -100,6 +101,7 @@ class ExposurePlan:
 
     def to_dict(self) -> dict[str, Any]:
         return {
+            **({"c05_binding": self.c05_binding} if self.c05_binding is not None else {}),
             "plan_id": self.plan_id,
             "mixture_id": self.mixture_id,
             "mixture_identity": self.mixture_identity,
@@ -128,17 +130,20 @@ def _verify_c05(
     validation: MixtureValidation,
     c05_gate: MembershipGate | None,
     c05_shards: Mapping[str, Path] | None,
-) -> None:
+) -> dict[str, str] | None:
     production = recipe.mixture_id.casefold().replace("_", "-").startswith("mix-01") or any(
         c.source_id in PRODUCTION_COMPONENTS for c in recipe.components
     )
-    if production:
+    if production or c05_gate is not None:
         if c05_gate is None or c05_shards is None:
             raise C05Error("final baseline mixture requires verified C05 token membership")
+        c05_gate.db.execute("DELETE FROM seen")
+        shard_bindings = {}
         for component in recipe.components:
             if component.source_id not in c05_shards:
                 raise C05Error("C05 token shard missing for mixture component")
-            proof = c05_gate.verify_token_shard(c05_shards[component.source_id])
+            proof = c05_gate.verify_token_shard(c05_shards[component.source_id], reset_seen=False)
+            shard_bindings[component.source_id] = proof
             available = validation.availability[component.source_id]
             if (
                 proof["manifest"]["source_id"] != component.source_id
@@ -147,6 +152,14 @@ def _verify_c05(
                 or proof["counters"]["valid_targets"] != available.valid_targets
             ):
                 raise C05Error("mixture availability differs from screened shard")
+        from xlm.data.evidence_v2.canonical import digest
+
+        return {
+            "plan_digest": c05_gate.plan_digest,
+            "completion_digest": c05_gate.receipt_digest,
+            "shards_digest": digest(shard_bindings),
+        }
+    return None
 
 
 def compile_exposure_plan(
@@ -164,7 +177,7 @@ def compile_exposure_plan(
     generator (:func:`iter_exposure_blocks`), so plan size is independent of budget.
     """
     validation.raise_if_invalid()
-    _verify_c05(recipe, validation, c05_gate, c05_shards)
+    c05_binding = _verify_c05(recipe, validation, c05_gate, c05_shards)
     if budget_targets <= 0:
         raise ValueError(f"budget_targets must be positive, got {budget_targets}")
     if block_size <= 0:
@@ -251,7 +264,14 @@ def compile_exposure_plan(
         ).hexdigest()[:20]
     )
 
+    if c05_binding is not None:
+        from xlm.data.evidence_v2.canonical import digest
+
+        if total_repeated:
+            raise C05Error("screened final mixture has a component deficit; no repetition")
+        plan_id = "plan_" + digest([plan_id, c05_binding])[:20]
     return ExposurePlan(
+        c05_binding=c05_binding,
         plan_id=plan_id,
         mixture_id=recipe.mixture_id,
         mixture_identity=recipe.identity(),
@@ -434,6 +454,7 @@ class MatchedExposurePlan:
     exact_bytes_available: bool = True
     warnings: list[str] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
+    c05_binding: dict[str, str] | None = None
 
     @property
     def token_budget(self) -> int:
@@ -442,6 +463,7 @@ class MatchedExposurePlan:
 
     def to_dict(self) -> dict[str, Any]:
         return {
+            **({"c05_binding": self.c05_binding} if self.c05_binding is not None else {}),
             "plan_id": self.plan_id,
             "mixture_id": self.mixture_id,
             "mixture_identity": self.mixture_identity,
@@ -479,7 +501,7 @@ def compile_matched_plan(
     source's measured bytes-per-document.
     """
     validation.raise_if_invalid()
-    _verify_c05(recipe, validation, c05_gate, c05_shards)
+    c05_binding = _verify_c05(recipe, validation, c05_gate, c05_shards)
     if basis not in MATCHED_BASES:
         raise ValueError(f"unknown matched basis '{basis}'; supported: {', '.join(MATCHED_BASES)}")
     if budget <= 0:
@@ -547,7 +569,12 @@ def compile_matched_plan(
         ).hexdigest()[:20]
     )
 
+    if c05_binding is not None:
+        from xlm.data.evidence_v2.canonical import digest
+
+        plan_id = "matched_" + digest([plan_id, c05_binding])[:20]
     return MatchedExposurePlan(
+        c05_binding=c05_binding,
         plan_id=plan_id,
         mixture_id=recipe.mixture_id,
         mixture_identity=recipe.identity(),

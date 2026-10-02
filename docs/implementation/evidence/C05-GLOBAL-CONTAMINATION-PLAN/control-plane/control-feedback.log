@@ -1,0 +1,23 @@
+.F...................................................................... [ 86%]
+...........                                                              [100%]
+================================== FAILURES ===================================
+_________ test_review_queue_caps_do_not_exclude_and_replay_is_unique __________
+
+tmp_path = WindowsPath('C:/Users/gamma/AppData/Local/Temp/pytest-of-gamma/pytest-242/test_review_queue_caps_do_not_0')
+
+    def test_review_queue_caps_do_not_exclude_and_replay_is_unique(tmp_path: Path) -> None:
+        policy = ProductionPolicy(diagnostic_bytes=0, quick_bytes=0, audit_bytes=0,
+            review=ReviewPolicy(enabled=True, min_tokens=5, min_distinct=3,
+                candidates_per_document=1, candidates_per_benchmark=2))
+        docs = [document(str(n), "Why do silver bridges expand during summer?") for n in range(5)]
+        plan, index, receipt = setup_run(tmp_path, docs, policy=policy,
+            resources=Resources(free_bytes=0, review_candidates=3))
+        result = engine_execute(plan, index, receipt)
+        assert result["payload"]["excluded"] == 0
+>       assert result["payload"]["review"]["candidates"] == 2
+E       assert 3 == 2
+
+tests\test_c05_control.py:48: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_c05_control.py::test_review_queue_caps_do_not_exclude_and_replay_is_unique
+1 failed, 82 passed in 8.85s

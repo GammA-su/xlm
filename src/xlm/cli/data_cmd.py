@@ -3962,6 +3962,7 @@ def tokenize_cmd(
     split: Annotated[
         str, typer.Option("--split", help="Which split to tokenize into shards.")
     ] = "train",
+    c05_proof: Annotated[Path | None, typer.Option("--c05-proof")] = None,
 ) -> None:
     """Build bounded per-source token shards from a frozen pool (C07).
 
@@ -3980,18 +3981,19 @@ def tokenize_cmd(
     tokenizer = ByteLevelBPETokenizer.load(tokenizer_dir)
 
     try:
-        documents = [d for d in _read_canonical_input(input_path) if d.split == split]
+        sources: set[str] = set()
+        for doc in _read_canonical_input(input_path):
+            if doc.split == split:
+                sources.add(doc.source_id)
+                if len(sources) > 64:
+                    raise ValueError("tokenization source ceiling")
     except (ValueError, TypeError, FileNotFoundError, NotADirectoryError) as e:
         typer.echo(f"Error loading pool documents: {e}", err=True)
         raise typer.Exit(code=1) from e
 
-    if not documents:
+    if not sources:
         typer.echo(f"Error: no documents in split '{split}'.", err=True)
         raise typer.Exit(code=1)
-
-    by_source: dict[str, list[CanonicalDocument]] = {}
-    for document in documents:
-        by_source.setdefault(document.source_id, []).append(document)
 
     output_dir.mkdir(parents=True, exist_ok=True)
     typer.echo("============================================================")
@@ -4000,16 +4002,27 @@ def tokenize_cmd(
     )
 
     total_targets = 0
-    for source_id in sorted(by_source):
+    for source_id in sorted(sources):
         shard_dir = output_dir / source_id
-        writer = TokenShardWriter(
-            shard_dir,
-            shard_id=f"shard_{source_id}",
-            source_id=source_id,
-            tokenizer=tokenizer,
-            pool_hash=pool_id,
-        )
-        manifest = writer.write_documents(by_source[source_id], add_special_tokens=True)
+        from xlm.data.exclusion.transport import open_gate
+
+        with open_gate(c05_proof) as gate:
+            writer = TokenShardWriter(
+                shard_dir,
+                shard_id=f"shard_{source_id}",
+                source_id=source_id,
+                tokenizer=tokenizer,
+                pool_hash=pool_id,
+                c05_gate=gate,
+            )
+            manifest = writer.write_documents(
+                (
+                    d
+                    for d in _read_canonical_input(input_path)
+                    if d.split == split and d.source_id == source_id
+                ),
+                add_special_tokens=True,
+            )
         counters = json.loads((shard_dir / "shard_counters.json").read_text(encoding="utf-8"))
         total_targets += counters["valid_targets"]
         typer.echo(
@@ -4019,7 +4032,7 @@ def tokenize_cmd(
             f"dtype {manifest.token_dtype}  coverage {manifest.byte_coverage_ratio:.4f}"
         )
 
-    typer.echo(f"Sources:         {len(by_source)}")
+    typer.echo(f"Sources:         {len(sources)}")
     typer.echo(f"Valid targets:   {total_targets:,}")
     typer.echo("Shards are per-source and mixture-independent; changing a mixture ratio")
     typer.echo("reuses these shards and does not require retokenization.")

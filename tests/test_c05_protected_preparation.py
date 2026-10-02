@@ -193,3 +193,44 @@ def test_authored_plan_binds_material_input_policy_limits_and_roots(tmp_path: Pa
             Resources(free_bytes=0),
             **arguments,
         )
+
+
+def test_local_parquet_and_missing_material_report(tmp_path: Path) -> None:
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+
+    root = tmp_path / "material"
+    spec, pins = authored_material(root)
+    first = spec.files[0]
+    original = root / first.path
+    rows = [canonical.loads_bytes_strict(line) for line in original.read_bytes().splitlines()]
+    parquet = root / "authored.parquet"
+    pq.write_table(pa.Table.from_pylist(rows), parquet)
+    replacement = first.model_copy(
+        update={
+            "path": parquet.name,
+            "format": "parquet",
+            "bytes": parquet.stat().st_size,
+            "sha256": file_sha(parquet),
+        }
+    )
+    spec = spec.model_copy(update={"files": (replacement, *spec.files[1:])})
+    result = prepare(spec, root, tmp_path / "prepared")
+    assert (
+        verify_benchmark(result, {"fixture": KEY}, pins, ProductionPolicy(), mode="authored").items
+        == 8
+    )
+    parquet.unlink()
+    inspection = inspect(spec, root)
+    assert not inspection["complete_local_sizes"]
+    assert inspection["missing_material"] == [
+        {
+            "task": first.task,
+            "repository": first.repository,
+            "revision": first.revision,
+            "config": first.config,
+            "split": first.split,
+            "path": parquet.name,
+            "expected_bytes": replacement.bytes,
+        }
+    ]

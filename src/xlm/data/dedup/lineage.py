@@ -122,3 +122,20 @@ def lineage_keys_v2(doc: CanonicalDocument) -> tuple[str, ...]:
         if name in ("duplicate_cluster", "split_group") and value:
             keys.add(f"cluster:{name}:{value}")
     return tuple(sorted(keys))
+
+
+def lineage_keys_v3(doc: CanonicalDocument) -> tuple[str, ...]:
+    """Revision-bound metadata/unknown parents; canonical URLs still bridge sources.
+
+    Actual cross-source parent document references are resolved by the disk engine.
+    Missing parent labels must not accidentally bridge unrelated publishers.
+    """
+    namespace = f"{doc.source_id}:{doc.source_revision}"
+    keys = {f"parent:{namespace}:{doc.doc_id}"}
+    keys.update(f"parent:{namespace}:{p}" for p in doc.parent_ids if p)
+    for key in lineage_keys_v2(doc):
+        if key.startswith("url:"):
+            keys.add(key)
+        elif not key.startswith("parent-doc:"):
+            keys.add(f"metadata:{namespace}:{key}")
+    return tuple(sorted(keys))

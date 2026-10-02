@@ -6,6 +6,7 @@ bounded document, never corpus membership. Corpus frequency cannot mutate it.
 
 from __future__ import annotations
 
+import re
 from collections import deque
 from collections.abc import Callable, Iterable, Iterator, Mapping
 from dataclasses import dataclass
@@ -24,7 +25,7 @@ class Pattern:
 
 
 def render(task: str, row: Mapping[str, Any]) -> list[tuple[str, str]]:
-    """Task render v2; all options, no gold-label selection or option-order dependency."""
+    """Task render v3; all options plus raw/0.4.13-preprocessed HellaSwag variants."""
 
     def string(name: str) -> str:
         value = row.get(name)
@@ -53,11 +54,28 @@ def render(task: str, row: Mapping[str, Any]) -> list[tuple[str, str]]:
     elif task == "hellaswag":
         prompts = [string("ctx")] if "ctx" in row else []
         if "ctx_a" in row and "ctx_b" in row:
-            a, b = string("ctx_a"), string("ctx_b")
+            a = string("ctx_a")
+            b = row["ctx_b"]
+            if not isinstance(b, str):
+                raise C05Error("HellaSwag context suffix invalid")
             prompts.extend([a, b, f"{a} {b}"])
         if not prompts:
             raise C05Error("HellaSwag context missing")
         options = answers("endings")
+
+        # lm-eval 0.4.13 hellaswag/utils.py preprocessing, inspected offline.
+        # Retain raw variants too. No labels are read or selected.
+        def preprocess(text: str) -> str:
+            return re.sub(r"\[.*?\]", "", text.strip().replace(" [title]", ". ")).replace("  ", " ")
+
+        prompts.extend(preprocess(p) for p in list(prompts))
+        activity = row.get("activity_label")
+        if activity is not None:
+            if not isinstance(activity, str):
+                raise C05Error("HellaSwag activity label invalid")
+            prompts.extend(preprocess(activity + ": " + p) for p in list(prompts))
+        options = list(dict.fromkeys([*options, *(preprocess(a) for a in options)]))
+        prompts = list(dict.fromkeys(p for p in prompts if p.strip()))
     else:
         raise C05Error("unsupported benchmark task")
     return (
@@ -72,7 +90,7 @@ def informative(tokens: tuple[str, ...], floor: Informativeness) -> bool:
     return (
         len(tokens) >= floor.tokens
         and len(" ".join(tokens)) >= floor.characters
-        and len(set(tokens)) >= floor.distinct
+        and len({t for t in tokens if sum(c.isalpha() for c in t) >= 2}) >= floor.distinct
     )
 
 

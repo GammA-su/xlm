@@ -1,0 +1,39 @@
+{
+  "command": [
+    "uv",
+    "run",
+    "--offline",
+    "--locked",
+    "--no-sync",
+    "python",
+    "scripts/c05_authored_pilot.py",
+    "--root",
+    "C:/XLM-scratch/c05-control-10000",
+    "--documents",
+    "10000",
+    "--output",
+    "docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/control-plane/pilot-10000-measurement.json"
+  ],
+  "cwd": "F:\\Project\\xlm-c05-global",
+  "environment": {
+    "HF_DATASETS_OFFLINE": "1",
+    "HF_HUB_OFFLINE": "1",
+    "MKL_NUM_THREADS": "1",
+    "NUMEXPR_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "PYTHONPATH": "F:/Project/xlm-c05-global/src",
+    "TOKENIZERS_PARALLELISM": "false",
+    "TRANSFORMERS_OFFLINE": "1",
+    "UV_OFFLINE": "1",
+    "UV_PROJECT_ENVIRONMENT": "F:/Project/xlm-common-pile/.venv"
+  },
+  "exit_status": 0,
+  "log_storage": "UTF-8, LF, trailing whitespace removed; command output content preserved",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.12.13",
+  "raw_stdout_sha256": "4f76c52c8b9bb0bbecd0f2bc6dabe1dd591d3ed2f52cd4408a9b66e343899fce",
+  "sampled_peak_process_tree_rss_bytes": 110714880,
+  "sampling_interval_seconds": 0.05,
+  "wall_seconds": 47.21899999998277
+}

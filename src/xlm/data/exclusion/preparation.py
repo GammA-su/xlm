@@ -25,6 +25,7 @@ from xlm.data.exclusion.inputs import (
     require_equal,
     verify_input_manifest,
 )
+from xlm.data.exclusion.policy import ENGINEERING_BLOCKERS
 from xlm.evaluation.suites import OFFICIAL_DATASET_REPOS, load_dataset_pins
 
 LOG = logging.getLogger(__name__)
@@ -85,13 +86,8 @@ def preparation_audit(manifest: dict[str, Any], pins_path: Path) -> dict[str, An
         "blockers": [
             "No verified protected benchmark material/index receipt, "
             "exact config/split coverage or counts",
-            "SQLite spill/temp accounting and maximum-record/index resource "
-            "certification incomplete",
-            "Protected plan/authorize/run operator workflow and final-receipt "
-            "integration incomplete",
-            "Downstream CLI/parallel proof transport and complete quota enforcement pending; "
-            "low-level tokenizer/token/exposure gates implemented",
-            "Bounded fuzzy review queue not implemented; no paraphrase detection claim",
+            *ENGINEERING_BLOCKERS,
+            "Reviewed production resource bounds missing; authored scaling is not a decision",
             "Gutenberg whole-book lineage unknown; known-group policy needs explicit plan review",
         ],
         "resource_observations": manifest["totals"],

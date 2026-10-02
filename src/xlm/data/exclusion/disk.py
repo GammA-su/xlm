@@ -7,16 +7,17 @@ candidate lists are bounded by the frozen bucket and per-document caps.
 from __future__ import annotations
 
 import hashlib
+import sqlite3
 import struct
 from collections.abc import Callable
 from pathlib import Path
 
 from xlm.core.contracts import CanonicalDocument
-from xlm.data.dedup.lineage import lineage_keys_v2
+from xlm.data.dedup.lineage import lineage_keys_v3
 from xlm.data.dedup.minhash import MinHasher, estimated_jaccard, stable_hash64
 from xlm.data.evidence_v2.canonical import digest
 from xlm.data.exclusion.policy import C05Error, ProductionPolicy, Resources
-from xlm.data.exclusion.storage import connect
+from xlm.data.exclusion.storage import OrderedConnection, connect
 
 
 class DiskGroups:
@@ -26,9 +27,21 @@ class DiskGroups:
         policy: ProductionPolicy,
         resources: Resources,
         check: Callable[[], None] = lambda: None,
+        *,
+        read_only: bool = False,
     ) -> None:
         self.policy, self.resources = policy, resources
         self.hasher = MinHasher(policy.minhash())
+        if read_only:
+            self.db = sqlite3.connect(
+                path.resolve().as_uri() + "?mode=ro", uri=True, factory=OrderedConnection
+            )
+            self.db.check = check
+            self.db.execute("PRAGMA query_only=ON")
+            self.db.execute("PRAGMA temp_store=MEMORY")
+            self.db.execute("PRAGMA automatic_index=OFF")
+            self.db.execute("PRAGMA cache_size=-8192")
+            return
         self.db = connect(path, resources.index_bytes, check)
         self.db.executescript("""
             CREATE TABLE IF NOT EXISTS files(path TEXT PRIMARY KEY, sha TEXT NOT NULL,
@@ -46,6 +59,8 @@ class DiskGroups:
             CREATE TABLE IF NOT EXISTS lineage(key TEXT, id TEXT, PRIMARY KEY(key,id));
             CREATE INDEX IF NOT EXISTS band_doc ON bands(id,key);
             CREATE INDEX IF NOT EXISTS lineage_doc ON lineage(id,key);
+            CREATE TABLE IF NOT EXISTS parent_edges(
+                child TEXT,parent TEXT,PRIMARY KEY(child,parent));
             CREATE TABLE IF NOT EXISTS families(
               id TEXT PRIMARY KEY, ordering TEXT, bytes INTEGER, hit INTEGER,
               split TEXT, quick INTEGER DEFAULT 0);
@@ -68,7 +83,10 @@ class DiskGroups:
     ) -> None:
         if (
             self.policy.gutenberg == "require_book_ids"
-            and doc.source_metadata.get("upstream_component") == "project_gutenberg"
+            and (
+                upstream == "project_gutenberg"
+                or doc.source_metadata.get("upstream_component") == "project_gutenberg"
+            )
             and not doc.source_metadata.get("book_id")
         ):
             raise C05Error("Gutenberg whole-book policy requires real book identity")
@@ -114,7 +132,11 @@ class DiskGroups:
             ((key, doc.doc_id) for key in self.hasher.band_keys(best)),
         )
         self.db.executemany(
-            "INSERT INTO lineage VALUES(?,?)", ((key, doc.doc_id) for key in lineage_keys_v2(doc))
+            "INSERT INTO lineage VALUES(?,?)", ((key, doc.doc_id) for key in lineage_keys_v3(doc))
+        )
+        self.db.executemany(
+            "INSERT OR IGNORE INTO parent_edges VALUES(?,?)",
+            ((doc.doc_id, parent) for parent in doc.parent_ids if parent),
         )
 
     def root(self, doc: str, column: str) -> str:
@@ -165,6 +187,8 @@ class DiskGroups:
                 ).fetchall()
                 if len(rows) > self.policy.max_bucket_size:
                     counts["oversized_bands"] += 1
+                    if counts["oversized_bands"] > self.resources.oversized_buckets:
+                        raise C05Error("oversized bucket event ceiling")
                     continue
                 for (other,) in rows:
                     if other >= doc or other in candidates:
@@ -193,6 +217,12 @@ class DiskGroups:
             if previous and previous[0] == key:
                 self.union(previous[1], doc, "family")
             previous = (key, doc)
+        for child, parent in self.db.execute(
+            "SELECT e.child,e.parent FROM parent_edges e JOIN docs d ON e.parent=d.id "
+            "ORDER BY e.child,e.parent"
+        ):
+            check()
+            self.union(child, parent, "family")
         for (doc,) in self.db.execute("SELECT id FROM docs ORDER BY id"):
             check()
             self.union(doc, self.root(doc, "duplicate"), "family")
@@ -260,6 +290,17 @@ class DiskGroups:
                     f"SELECT key FROM {table} WHERE id=? ORDER BY key", (row[0],)
                 ):
                     value.update(canonical_bytes([table, key]))
+            for (parent,) in self.db.execute(
+                "SELECT parent FROM parent_edges WHERE child=? ORDER BY parent", (row[0],)
+            ):
+                value.update(canonical_bytes(["parent", parent]))
+            if self.policy.review.enabled:
+                for review in self.db.execute(
+                    "SELECT ref,pattern,matched,total FROM review_queue "
+                    "WHERE doc=? ORDER BY ref,pattern",
+                    (row[0],),
+                ):
+                    value.update(canonical_bytes(["review", *review]))
         return value.hexdigest()
 
     def group_digest(self, check: Callable[[], None]) -> str:

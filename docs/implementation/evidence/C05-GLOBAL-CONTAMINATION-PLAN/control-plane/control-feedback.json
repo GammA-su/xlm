@@ -1,0 +1,42 @@
+{
+  "command": [
+    "uv",
+    "run",
+    "--offline",
+    "--locked",
+    "--no-sync",
+    "python",
+    "-m",
+    "pytest",
+    "tests/test_c05_control.py",
+    "tests/test_c05_protected_preparation.py",
+    "tests/test_exclusion_receipt.py",
+    "tests/test_mixture_planning.py",
+    "tests/test_parallel_tokens.py",
+    "-n",
+    "0",
+    "-q"
+  ],
+  "cwd": "F:\\Project\\xlm-c05-global",
+  "environment": {
+    "HF_DATASETS_OFFLINE": null,
+    "HF_HUB_OFFLINE": null,
+    "MKL_NUM_THREADS": "1",
+    "NUMEXPR_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "PYTHONPATH": "F:/Project/xlm-c05-global/src",
+    "TOKENIZERS_PARALLELISM": "false",
+    "TRANSFORMERS_OFFLINE": null,
+    "UV_OFFLINE": "1",
+    "UV_PROJECT_ENVIRONMENT": "F:/Project/xlm-common-pile/.venv"
+  },
+  "exit_status": 1,
+  "log_storage": "UTF-8, LF, trailing whitespace removed; command output content preserved",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.12.13",
+  "raw_stdout_sha256": "a8db196f6b364f30a27909627f4c5d203f478c15ca024b04a4843e9174ae4603",
+  "sampled_peak_process_tree_rss_bytes": 422330368,
+  "sampling_interval_seconds": 0.05,
+  "wall_seconds": 9.89100000000326
+}
