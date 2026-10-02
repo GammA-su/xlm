@@ -55,6 +55,63 @@ Invoke-Expression "$op plan --mode protected --index X:/C05-Protected/prepared/i
 After `verify`, detach `X:` before `count-tokens`, tokenizer fitting, tokenization,
 freeze or training; those commands refuse while it is mounted.
 
+## Parallel protected preparation (`build-local`, `Resources.workers`)
+
+`build-local` honors the reviewed `Resources.workers` value (validated 1..16; no
+CLI override exists). `workers: 1` runs in-process and serially. `workers: N > 1`
+spawns `min(N, tasks)` child processes, one task per Parquet row group or JSONL
+file, which decode, render and derive patterns. They return batches of at most 32 rows
+through a result queue bounded at `2 x workers` batches to one parent writer.
+That writer alone owns SQLite, the duplicate/pattern counters and every ceiling.
+Children receive only paths, the content-free material entry and the matcher
+policy. They write no files, and nothing protected appears on a command line.
+
+Artifacts do not depend on the worker count. The canonical index, the receipt and
+the signed envelope are byte-identical for 1, 2, 4 and 16 workers on authored
+fixtures, and identical to the pre-parallel serial implementation. The receipt
+does not contain `workers`. A plan binds the full `Resources`, so a plan made
+with a different resource decision has a different plan digest.
+
+Ceilings stay global: stage deadline, parent plus all worker RSS, free-space
+reserve, destination bytes, pattern total, item counts and file identity. The
+writer checks them after every batch and at least every 0.25 s while it waits.
+Every file is size+SHA-256 verified before any row is read and re-verified after
+its last row. A change during processing is refused.
+
+Production worker count is a reviewed resource decision:
+
+- Write a NEW reviewed `resources.json` restating every field with the chosen
+  `workers` (e.g. 16). Do not reuse the earlier `workers: 1` decision for a
+  16-worker protected run, and do not edit the reviewed file in place.
+- If the same values are used later for `plan`, sign a new resource decision.
+  The plan digest changes. The C05 scan runner itself remains single-process.
+- Measured on authored fixtures: 16 workers peaked at about 1.3 GiB process-tree
+  RSS. Keep `ram_bytes` well above that plus the parent's SQLite cache.
+
+Progress is on by default. A line goes to **stderr** at most once per
+`--progress-interval` seconds (default 1.0), plus forced lines at start, at each
+completed file, at the index phase and at completion. `--no-progress` silences
+it. Both flags are display-only and never enter an artifact. Stdout still carries
+only the final JSON object (`{"prepared": true, "mode": ...}` or a content-free
+refusal). Progress is content-free: counts, rate, elapsed time and ETA only.
+It never shows text, tokens, hashes or provenance:
+
+```text
+[C05 prepare] process | files 18/76 | rows 42,381/153,182 (27.7%) | patterns 615,202 | workers 16/16 | 2,940 rows/s | elapsed 00:00:14 | ETA 00:00:38
+```
+
+`patterns` counts generated patterns before de-duplication, which is the quantity
+capped by `benchmark_patterns`. The receipt's `patterns` is the unique index-line count.
+
+Interrupted or failed preparation: Ctrl+C (exit 130), worker error, malformed row,
+changed file, ceiling refusal or SQLite error terminates every worker and fails
+closed. The destination then keeps `PREPARATION-INCOMPLETE` and has no receipt; it
+may hold a partial `preparation.sqlite` or `index.jsonl`. **Never reuse it.**
+Delete the whole `--output` directory (inside the protected root) and, if present,
+a `--receipt-export` file from that attempt, then rerun into the empty
+destination. There is no resume. A receipt is valid only when the destination
+has no `PREPARATION-INCOMPLETE` marker.
+
 ## Readiness check (metadata only)
 
 ```powershell

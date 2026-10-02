@@ -180,6 +180,9 @@ def main(argv: list[str] | None = None) -> int:
     build_parser.add_argument("--dependency-sha256", required=True)
     # detached_volume_v1 only: the content-free receipt copy outside the protected root.
     build_parser.add_argument("--receipt-export", type=Path)
+    # Operational display only (stderr); never part of any artifact or receipt.
+    build_parser.add_argument("--progress-interval", type=float, default=1.0)
+    build_parser.add_argument("--no-progress", action="store_true")
     root_parser = sub.add_parser("protected-root")
     root_parser.add_argument("action", choices=["init", "describe"])
     root_parser.add_argument("--root", type=Path, required=True)
@@ -237,12 +240,21 @@ def main(argv: list[str] | None = None) -> int:
         key = os.environ.get(args.key_env)
         if key is None or len(key) < 32:
             raise C05Error("protected signing key missing or too short")
+        from xlm.data.exclusion.prepare_workers import Progress
+
+        resources = Resources.model_validate(read_metadata(args.resources, digested=False))
+        reporter = Progress(
+            files=len(spec.files),
+            rows=sum(f.items for f in spec.files),
+            workers=resources.workers,
+            interval=args.progress_interval,
+        )
         build(
             spec,
             args.material_root,
             args.output,
             policy=MatcherPolicy.model_validate(read_metadata(args.policy, digested=False)),
-            resources=Resources.model_validate(read_metadata(args.resources, digested=False)),
+            resources=resources,
             issuer=args.issuer,
             key=key.encode(),
             code_commit=args.code_commit,
@@ -254,6 +266,7 @@ def main(argv: list[str] | None = None) -> int:
             if args.review_policy
             else None,
             receipt_export=args.receipt_export,
+            progress=None if args.no_progress else reporter.update,
         )
         print(json.dumps({"prepared": True, "mode": spec.isolation.mode}))
         return 0
@@ -261,6 +274,10 @@ def main(argv: list[str] | None = None) -> int:
         # Do not print exception values: malformed protected JSON can contain text.
         print(json.dumps({"refused": True, "error_type": type(exc).__name__}))
         return 1
+    except KeyboardInterrupt:
+        # Workers are already terminated; the destination keeps its incomplete marker.
+        print(json.dumps({"refused": True, "error_type": "KeyboardInterrupt"}))
+        return 130
 
 
 if __name__ == "__main__":

@@ -10,11 +10,11 @@ from __future__ import annotations
 import os
 import shutil
 import time
-from collections.abc import Callable, Iterator
+from collections.abc import Callable
+from contextlib import closing
 from pathlib import Path
 from typing import Any
 
-import psutil
 from pydantic import Field
 
 from xlm.data.evidence_v2 import canonical
@@ -31,9 +31,12 @@ from xlm.data.exclusion.isolation import (
     verify_separation,
 )
 from xlm.data.exclusion.policy import C05Error, FrozenModel, MatcherPolicy, Resources, ReviewPolicy
+from xlm.data.exclusion.prepare_workers import ProcessTree, RowResult, plan_tasks, run_tasks
 from xlm.data.exclusion.runner import file_sha
 from xlm.data.exclusion.storage import connect
-from xlm.data.exclusion.streaming import patterns, render
+
+# Present from directory creation until the signed receipt (and export) exist.
+INCOMPLETE_MARKER = "PREPARATION-INCOMPLETE"
 
 
 class MaterialSpec(FrozenModel):
@@ -77,39 +80,6 @@ def inspect(spec: MaterialSpec, root: Path) -> dict[str, Any]:
     }
 
 
-def material_rows(
-    path: Path, entry: MaterialFile, max_record: int, check: Callable[[], None]
-) -> Iterator[dict[str, Any]]:
-    if entry.format == "jsonl":
-        with path.open("rb") as stream:
-            while raw := stream.readline(max_record + 1):
-                check()
-                if len(raw) > max_record:
-                    raise C05Error("benchmark material record ceiling")
-                row = canonical.loads_bytes_strict(raw)
-                if not isinstance(row, dict):
-                    raise C05Error("benchmark row must be an object")
-                yield row
-        return
-    import pyarrow.parquet as pq
-
-    # Validate decompressed row-group size before decoding. This intentionally
-    # refuses large row groups rather than silently widening memory bounds.
-    with pq.ParquetFile(path) as parquet:
-        if parquet.metadata.num_rows != entry.items:
-            raise C05Error("benchmark parquet item count mismatch")
-        for number in range(parquet.metadata.num_row_groups):
-            check()
-            if parquet.metadata.row_group(number).total_byte_size > max_record:
-                raise C05Error("benchmark parquet decompressed row-group ceiling")
-            for batch in parquet.iter_batches(batch_size=1, row_groups=[number], use_threads=False):
-                check()
-                row = batch.to_pylist()[0]
-                if len(canonical.canonical_bytes(row)) > max_record:
-                    raise C05Error("benchmark material record ceiling")
-                yield row
-
-
 def detached_preparation(
     isolation: DetachedVolumeIsolation,
     material: Path,
@@ -150,11 +120,14 @@ def build(
     review_policy: ReviewPolicy | None = None,
     receipt_export: Path | None = None,
     inspector: VolumeInspector | None = None,
+    progress: Callable[..., None] | None = None,
 ) -> dict[str, Any]:
     """Write a protected index and a content-free signed receipt, never snippets.
 
     ``receipt_export`` is the only artifact that may be written outside a detached
     protected root: a byte-identical copy of the content-free signed receipt.
+    ``resources.workers`` bounds the decode/render/pattern processes; one writer
+    owns SQLite. ``progress`` is operational display only (content-free counts).
     """
     if not spec.all_published_configs_splits_reviewed:
         raise C05Error("publisher config/split coverage has not been reviewed")
@@ -183,20 +156,29 @@ def build(
         raise C05Error("protected material aggregate ceiling")
     if destination.exists():
         raise C05Error("benchmark destination is write-once")
+    paths = [contained(root, entry.path) for entry in spec.files]
+    started = time.monotonic()
+    report = progress or (lambda *_args, **_kwargs: None)
+    total_rows = sum(f.items for f in spec.files)
+    report("verify", force=True)
     destination.mkdir(parents=True)
+    # Removed only after the signed receipt (and export) exist: a crash leaves it.
+    incomplete = destination / INCOMPLETE_MARKER
+    incomplete.write_bytes(b"")
     db = connect(destination / "preparation.sqlite", resources.index_bytes)
     db.executescript(
         "CREATE TABLE patterns(hash TEXT PRIMARY KEY,tokens TEXT);"
         "CREATE TABLE refs(hash TEXT,ref TEXT,PRIMARY KEY(hash,ref));"
         "CREATE TABLE items(hash TEXT PRIMARY KEY);"
     )
-    items = variants = duplicate_items = empty = pattern_count = 0
-    started = time.monotonic()
+    items = variants = duplicate_items = empty = pattern_count = files_done = 0
+    process_tree = ProcessTree()
 
     def check() -> None:
         if time.monotonic() - started > resources.stage_seconds:
             raise C05Error("protected preparation deadline")
-        if psutil.Process().memory_info().rss > resources.ram_bytes:
+        # Parent plus worker children: the RAM ceiling is global to the build.
+        if process_tree.rss() > resources.ram_bytes:
             raise C05Error("protected preparation RAM ceiling")
         if shutil.disk_usage(destination).free < resources.free_bytes:
             raise C05Error("protected preparation free-space reserve")
@@ -207,46 +189,94 @@ def build(
     db.check = check
 
     try:
-        with db:
-            for entry in spec.files:
-                check()
-                path = contained(root, entry.path)
-                if path.stat().st_size != entry.bytes or file_sha(path) != entry.sha256:
-                    raise C05Error("protected material file identity mismatch")
-                count = 0
-                for row in material_rows(path, entry, spec.max_record_bytes, check):
+        # Identity before any row is read; re-hashed after each file's last row.
+        for entry, path in zip(spec.files, paths, strict=True):
+            check()
+            if path.stat().st_size != entry.bytes or file_sha(path, check) != entry.sha256:
+                raise C05Error("protected material file identity mismatch")
+        tasks = plan_tasks(paths, spec.files, spec.max_record_bytes)
+        remaining = [0] * len(spec.files)
+        file_rows = [0] * len(spec.files)
+        for task in tasks:
+            remaining[task.file] += 1
+        live: set[int] = set()
+        report("process", files=0, rows=0, patterns=0, active=0, force=True)
+        with (
+            db,
+            closing(
+                run_tasks(
+                    tasks,
+                    workers=resources.workers,
+                    policy=policy,
+                    max_record=spec.max_record_bytes,
+                    check=check,
+                )
+            ) as events,
+        ):
+            for event in events:
+                if event[0] == "ready":
+                    live.add(event[1])
+                    process_tree.watch(event[1])
+                    continue
+                task = tasks[event[1]]
+                if event[0] == "batch":
+                    # Single writer; every ceiling is checked against global totals.
                     check()
-                    count += 1
-                    if count > entry.items:
+                    batch: list[RowResult] = event[2]
+                    file_rows[task.file] += len(batch)
+                    if file_rows[task.file] > spec.files[task.file].items:
                         raise C05Error("benchmark material item ceiling")
-                    rendered = render(entry.task, row)
-                    item_hash = canonical.digest([entry.task, rendered])
-                    duplicate_items += int(
-                        db.execute("SELECT 1 FROM items WHERE hash=?", (item_hash,)).fetchone()
-                        is not None
+                    pattern_count += sum(len(row[2]) for row in batch)
+                    if pattern_count > resources.benchmark_patterns:
+                        raise C05Error("protected pattern generation ceiling")
+                    before = db.total_changes
+                    db.executemany(
+                        "INSERT OR IGNORE INTO items VALUES(?)", ((row[0],) for row in batch)
                     )
-                    db.execute("INSERT OR IGNORE INTO items VALUES(?)", (item_hash,))
-                    reference = canonical.digest([entry.model_dump(mode="json"), count])
-                    found = False
-                    for pattern in patterns(rendered, reference, policy):
-                        found = True
-                        pattern_count += 1
-                        if pattern_count > resources.benchmark_patterns:
-                            raise C05Error("protected pattern generation ceiling")
-                        identity = canonical.digest(pattern.tokens)
-                        db.execute(
-                            "INSERT OR IGNORE INTO patterns VALUES(?,?)",
-                            (identity, canonical.canonical_bytes(pattern.tokens).decode()),
-                        )
-                        db.executemany(
-                            "INSERT INTO refs VALUES(?,?) ON CONFLICT DO NOTHING",
-                            ((identity, ref) for ref in pattern.provenance),
-                        )
-                    empty += int(not found)
-                    variants += len(rendered)
-                    items += 1
-                if count != entry.items or file_sha(path) != entry.sha256:
+                    # An ignored insert is exactly an item hash seen before: the
+                    # total is items minus distinct hashes, independent of order.
+                    duplicate_items += len(batch) - (db.total_changes - before)
+                    db.executemany(
+                        "INSERT OR IGNORE INTO patterns VALUES(?,?)",
+                        ((p[0], p[1]) for row in batch for p in row[2]),
+                    )
+                    db.executemany(
+                        "INSERT INTO refs VALUES(?,?) ON CONFLICT DO NOTHING",
+                        ((p[0], ref) for row in batch for p in row[2] for ref in p[2]),
+                    )
+                    items += len(batch)
+                    variants += sum(row[1] for row in batch)
+                    empty += sum(not row[2] for row in batch)
+                    report(
+                        "process",
+                        files=files_done,
+                        rows=items,
+                        patterns=pattern_count,
+                        active=len(live) or 1,
+                    )
+                    continue
+                remaining[task.file] -= 1
+                if remaining[task.file]:
+                    continue
+                entry, path = spec.files[task.file], paths[task.file]
+                if (
+                    file_rows[task.file] != entry.items
+                    or path.stat().st_size != entry.bytes
+                    or file_sha(path, check) != entry.sha256
+                ):
                     raise C05Error("benchmark material changed during preparation")
+                files_done += 1
+                report(
+                    "process",
+                    files=files_done,
+                    rows=items,
+                    patterns=pattern_count,
+                    active=len(live) or 1,
+                    force=True,
+                )
+        if files_done != len(spec.files) or items != total_rows:
+            raise C05Error("protected preparation did not complete every material file")
+        report("index", files=files_done, rows=items, patterns=pattern_count, force=True)
         index = destination / "index.jsonl"
         written = unique = 0
         with index.open("xb") as output_stream:
@@ -294,6 +324,8 @@ def build(
         if receipt_export is not None:
             # Content-free: aggregate counts, digests and isolation identity only.
             canonical.write_canonical_json(receipt_export, envelope)
+        incomplete.unlink()
+        report("done", files=files_done, rows=items, patterns=pattern_count, force=True)
         return envelope
     finally:
         db.close()

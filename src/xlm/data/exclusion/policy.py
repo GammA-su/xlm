@@ -126,7 +126,9 @@ class Resources(FrozenModel):
     benchmark_patterns: int = Field(default=2_000_000, ge=1)
     automaton_nodes: int = Field(default=8_000_000, ge=1)
     review_candidates: int = Field(default=100_000, ge=0)
-    workers: Literal[1] = 1
+    # Protected benchmark preparation (build-local) worker processes; the C05
+    # scan runner remains single-process. A reviewed value, never overridden.
+    workers: int = Field(default=1, ge=1, le=16)
     stage_seconds: float = Field(default=86400, gt=0)
     overall_seconds: float = Field(default=259200, gt=0)
 

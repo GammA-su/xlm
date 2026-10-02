@@ -1,3 +1,19 @@
+> **C05 PARALLEL PROTECTED PREPARATION (2026-10-02): READY; NEW REVIEWED RESOURCES REQUIRED.**
+>
+> `build-local` now honors `Resources.workers` (validated 1..16). Spawned worker
+> processes decode Parquet row groups/JSONL and render patterns. They feed bounded
+> batches (32 rows, queue of 2 x workers) to one SQLite writer. Ceilings stay
+> global (RAM includes worker RSS), file identity is checked before and after,
+> and any failure or interrupt terminates the workers and leaves
+> `PREPARATION-INCOMPLETE` with no receipt. Index, receipt and envelope are
+> byte-identical across 1/2/4/16 workers and to pre-change HEAD outputs on
+> authored fixtures. Content-free progress goes to stderr; stdout is unchanged.
+> On the authored 12k-row fixture: 52.3 s at HEAD, 14.4 s serial, 6.1 s with 4
+> workers. 21 new tests; all C05 tests 187 passed; Ruff/mypy strict clean. The
+> operator must write a new reviewed resource decision for workers > 1.
+> [Report](reports/C05-PARALLEL-PREPARATION.md),
+> [runbook](../runbooks/c05-global-preparation.md).
+
 > **C05 DETACHED-VOLUME ISOLATION (2026-10-02): READY; PROTECTED BENCHMARK RECEIPT REQUIRED.**
 >
 > New versioned isolation mechanism `detached_volume_v1` beside the historical
