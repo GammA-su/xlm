@@ -1544,10 +1544,13 @@ def first_pass_seal(roots: Roots, *, content: bool = True) -> dict[str, Any]:
             "authorization": authorization["plan_digest"],
             "selection": record["selection"],
         }
-        # Present only when repairs exist, so earlier seals keep their bytes.
+        # Present only when repairs exist, so earlier seals keep their bytes; an
+        # admission repair also shows the admission its units were sealed under.
         if record.get("repair") is not None:
             entry["repair_of"] = {
-                key: record["repair"][key] for key in ("plan_sequence", "plan_digest", "ranks")
+                key: record["repair"][key]
+                for key in ("plan_sequence", "plan_digest", "ranks", "changed_admission")
+                if key in record["repair"]
             }
         if record.get("supersedes") is not None:
             entry["supersedes"] = {

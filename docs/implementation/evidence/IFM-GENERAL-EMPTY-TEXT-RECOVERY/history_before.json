@@ -1,0 +1,302 @@
+{
+  "general_p01": {
+    "acquisition.plan.json": {
+      "bytes": 2532,
+      "mtime_utc": "2026-10-01T19:18:08.793427+00:00",
+      "path": "G:\\XLM\\plans\\ifm_general\\p01\\acquisition.plan.json",
+      "present": true,
+      "sha256": "22d5ddb9eefa30f2012389daebf34596470a26b6e5f3a9625896805781186de1"
+    },
+    "authorization.json": {
+      "bytes": 166,
+      "mtime_utc": "2026-10-01T19:18:08.718367+00:00",
+      "path": "G:\\XLM\\plans\\ifm_general\\p01\\authorization.json",
+      "present": true,
+      "sha256": "a3e55f6f169aa58b1a792d1e6344c39b48d128a925a640bec7127f4f3f7d1686"
+    },
+    "events.jsonl": {
+      "bytes": 751,
+      "mtime_utc": "2026-10-01T19:18:20.274537+00:00",
+      "path": "G:\\XLM\\plans\\ifm_general\\p01\\events.jsonl",
+      "present": true,
+      "sha256": "54e956e55d1a45f59bacfb7569384966b5588a141b8ff2375a208f0f8c917fb7"
+    },
+    "performance-00.json": {
+      "bytes": 3131,
+      "mtime_utc": "2026-10-01T19:18:20.275546+00:00",
+      "path": "G:\\XLM\\plans\\ifm_general\\p01\\performance-00.json",
+      "present": true,
+      "sha256": "d3d8469e71cfe96b9ac82a4cd47467ac16d5bc3d6ea21a84c4b22b73ed217704"
+    },
+    "plan.json": {
+      "bytes": 6065,
+      "mtime_utc": "2026-10-01T19:16:49.230968+00:00",
+      "path": "G:\\XLM\\plans\\ifm_general\\p01\\plan.json",
+      "present": true,
+      "sha256": "fce481dbfa271a4433bbfb923c35a411494dbf47a730faa6cbf54036dce186a0"
+    }
+  },
+  "general_p02": {
+    "acquisition.plan.json": {
+      "bytes": 2536,
+      "mtime_utc": "2026-10-01T19:56:49.920027+00:00",
+      "path": "G:\\XLM\\plans\\ifm_general\\p02\\acquisition.plan.json",
+      "present": true,
+      "sha256": "5ac0bf5dc26abe73cdf799d4a5666d5f9a4a89f723c6cde165455a63cf2b7091"
+    },
+    "authorization.json": {
+      "bytes": 166,
+      "mtime_utc": "2026-10-01T19:56:49.849783+00:00",
+      "path": "G:\\XLM\\plans\\ifm_general\\p02\\authorization.json",
+      "present": true,
+      "sha256": "5314a29a0f752c7b3a140dbacecf459e9c37c3559c5a28bed1089a0d11b49b42"
+    },
+    "events.jsonl": {
+      "bytes": 753,
+      "mtime_utc": "2026-10-01T20:00:50.476148+00:00",
+      "path": "G:\\XLM\\plans\\ifm_general\\p02\\events.jsonl",
+      "present": true,
+      "sha256": "f1851a739e4b84bb5c695043dd41fbd7480fca7950d19c2012d99e3f402af0b3"
+    },
+    "performance-00.json": {
+      "bytes": 4785,
+      "mtime_utc": "2026-10-01T20:00:50.477707+00:00",
+      "path": "G:\\XLM\\plans\\ifm_general\\p02\\performance-00.json",
+      "present": true,
+      "sha256": "a0f171b7f9057eccdf1bd9552a47052802d9ab51412f26dce22e334ad9e28546"
+    },
+    "plan.json": {
+      "bytes": 9621,
+      "mtime_utc": "2026-10-01T19:43:13.906740+00:00",
+      "path": "G:\\XLM\\plans\\ifm_general\\p02\\plan.json",
+      "present": true,
+      "sha256": "8ce5f1faf6c13b3bf563019522ed570301e70fcb4ff568e50c977581b86e0c47"
+    }
+  },
+  "general_plan_dirs": [
+    "p01",
+    "p02"
+  ],
+  "general_state": {
+    "canonical_tree": [
+      {
+        "dir": true,
+        "path": ".staging"
+      },
+      {
+        "dir": true,
+        "path": ".staging/p01"
+      },
+      {
+        "dir": true,
+        "path": ".staging/p02"
+      },
+      {
+        "dir": true,
+        "path": ".staging/p02/f00000"
+      },
+      {
+        "dir": true,
+        "path": ".staging/p02/f00000/05eb4bea0a14"
+      },
+      {
+        "bytes": 78475680,
+        "mtime_utc": "2026-10-01T19:58:18.587544+00:00",
+        "path": ".staging/p02/f00000/05eb4bea0a14/documents.jsonl",
+        "sha256": "f6c50d047d1920a449094cc62c23fca72d842f5a8899baf106dc76333fdde8c4"
+      },
+      {
+        "bytes": 94,
+        "mtime_utc": "2026-10-01T19:58:17.652732+00:00",
+        "path": ".staging/p02/f00000/progress.json",
+        "sha256": "da4590a5dc055115c47f173f08a4bfaea525755c3d0c439579d0b29045440de3"
+      },
+      {
+        "bytes": 0,
+        "mtime_utc": "2026-10-01T19:58:16.658496+00:00",
+        "path": ".staging/p02/f00000/progress.lock",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "dir": true,
+        "path": ".staging/p02/f00001"
+      },
+      {
+        "bytes": 100,
+        "mtime_utc": "2026-10-01T20:00:23.497771+00:00",
+        "path": ".staging/p02/f00001/progress.json",
+        "sha256": "3fceef6ef30bc6b7353a3b176d3342059fc358158989330f13fa54ffebd81341"
+      },
+      {
+        "bytes": 0,
+        "mtime_utc": "2026-10-01T19:58:18.069458+00:00",
+        "path": ".staging/p02/f00001/progress.lock",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "dir": true,
+        "path": "p02"
+      },
+      {
+        "dir": true,
+        "path": "p02/f00001"
+      },
+      {
+        "bytes": 0,
+        "mtime_utc": "2026-10-01T20:00:23.493006+00:00",
+        "path": "p02/f00001/adaptation_rejections.jsonl.zst",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "bytes": 1467,
+        "mtime_utc": "2026-10-01T20:00:23.495758+00:00",
+        "path": "p02/f00001/adaptation_summary.json",
+        "sha256": "dd6506f0ad17d246fb6671a93b7388c5f63f497e8ac8cd6c64bee56975ec585c"
+      },
+      {
+        "bytes": 5195802585,
+        "mtime_utc": "2026-10-01T20:00:21.520718+00:00",
+        "path": "p02/f00001/documents.jsonl",
+        "sha256": "df33f69fbcb7eb46d9c06bd32c08104d7a6490ea0facf9dd1e63cbce257c6e1e"
+      },
+      {
+        "bytes": 3366,
+        "mtime_utc": "2026-10-01T20:00:48.494496+00:00",
+        "path": "p02/f00001/receipt.json",
+        "sha256": "bea2d5d5a3382ae802b0d929cc63a1c0dca24db6c7732443cd68d29622d10dc4"
+      }
+    ],
+    "raw_tree": [
+      {
+        "dir": true,
+        "path": "source"
+      },
+      {
+        "dir": true,
+        "path": "source/general"
+      },
+      {
+        "bytes": 2013330256,
+        "mtime_utc": "2026-10-01T19:58:13.461474+00:00",
+        "path": "source/general/general_full.chunk0-bdbff8a5c6-00069.parquet",
+        "sha256": "c9a407020ec03bdeedad1daca01c2b69e62babbe724295c43d9b0247ef3da992"
+      },
+      {
+        "bytes": 851,
+        "mtime_utc": "2026-10-01T19:58:16.650780+00:00",
+        "path": "source/general/general_full.chunk0-bdbff8a5c6-00069.parquet.identity.json",
+        "sha256": "98e1faee78ca9f0630af1b6d2a77ec18fac19561bbd3d9b875c6a64cc2c03fc8"
+      },
+      {
+        "bytes": 2014409401,
+        "mtime_utc": "2026-10-01T19:58:10.262741+00:00",
+        "path": "source/general/general_full.chunk0-bdbff8a5c6-00146.parquet",
+        "sha256": "09037215b11fd9070c5fd5b3d273efcb5d583b965f5babefcb3c9e9dc9fa7a0e"
+      },
+      {
+        "bytes": 851,
+        "mtime_utc": "2026-10-01T19:58:18.064933+00:00",
+        "path": "source/general/general_full.chunk0-bdbff8a5c6-00146.parquet.identity.json",
+        "sha256": "4f4f7e8d92b26f0ee250adebe45c3cd1319163bcaafcc314e6be1fc6168a49ad"
+      }
+    ],
+    "scratch_tree": [
+      {
+        "dir": true,
+        "path": "p02"
+      },
+      {
+        "bytes": 2013330256,
+        "mtime_utc": "2026-10-01T19:58:10.570148+00:00",
+        "path": "p02/f00000.parquet.part",
+        "sha256": "c9a407020ec03bdeedad1daca01c2b69e62babbe724295c43d9b0247ef3da992"
+      },
+      {
+        "bytes": 922,
+        "mtime_utc": "2026-10-01T19:58:10.573153+00:00",
+        "path": "p02/f00000.state.json",
+        "sha256": "1d6dbcc8f8aa738246542ef9e6ad1c80fff367170f89dd6caf9260b8bfe8bece"
+      }
+    ]
+  },
+  "general_sufficiency": {
+    "bytes": 1479,
+    "mtime_utc": "2026-10-02T06:32:16.809307+00:00",
+    "path": "G:\\XLM\\plans\\ifm_general\\sufficiency.json",
+    "present": true,
+    "sha256": "095010abea76526caa6c3e4a3f3dc441a1836a3d319e1e431ec6b3599b3c37f8"
+  },
+  "general_transport_policy": {
+    "bytes": 4434,
+    "mtime_utc": "2026-10-01T19:16:45.318134+00:00",
+    "path": "G:\\XLM\\plans\\ifm_general\\transport-policy.json",
+    "present": true,
+    "sha256": "786a607419ebc7b0251dec468486d7d29a685efd110b55d8e85f112ce9605a94"
+  },
+  "planning_p01": {
+    "acquisition.plan.json": {
+      "path": "G:\\XLM\\plans\\ifm_planning\\p01\\acquisition.plan.json",
+      "present": false
+    },
+    "authorization.json": {
+      "path": "G:\\XLM\\plans\\ifm_planning\\p01\\authorization.json",
+      "present": false
+    },
+    "events.jsonl": {
+      "path": "G:\\XLM\\plans\\ifm_planning\\p01\\events.jsonl",
+      "present": false
+    },
+    "performance-00.json": {
+      "path": "G:\\XLM\\plans\\ifm_planning\\p01\\performance-00.json",
+      "present": false
+    },
+    "plan.json": {
+      "bytes": 6087,
+      "mtime_utc": "2026-10-01T19:17:05.605988+00:00",
+      "path": "G:\\XLM\\plans\\ifm_planning\\p01\\plan.json",
+      "present": true,
+      "sha256": "89ee0c6081219efb1a65f0ccc4f053599ce6b449de271a0aac51c320b8dadaea"
+    }
+  },
+  "planning_p02": {
+    "acquisition.plan.json": {
+      "path": "G:\\XLM\\plans\\ifm_planning\\p02\\acquisition.plan.json",
+      "present": false
+    },
+    "authorization.json": {
+      "path": "G:\\XLM\\plans\\ifm_planning\\p02\\authorization.json",
+      "present": false
+    },
+    "events.jsonl": {
+      "path": "G:\\XLM\\plans\\ifm_planning\\p02\\events.jsonl",
+      "present": false
+    },
+    "performance-00.json": {
+      "path": "G:\\XLM\\plans\\ifm_planning\\p02\\performance-00.json",
+      "present": false
+    },
+    "plan.json": {
+      "bytes": 11014,
+      "mtime_utc": "2026-10-01T19:43:20.961050+00:00",
+      "path": "G:\\XLM\\plans\\ifm_planning\\p02\\plan.json",
+      "present": true,
+      "sha256": "2bdd2a06a622a5674f66e01ca3c10885fc6dc1f26356571d906f530f02cb1c83"
+    }
+  },
+  "planning_plan_dirs": [
+    "p01",
+    "p02"
+  ],
+  "planning_state": {
+    "canonical_tree": [],
+    "raw_tree": [],
+    "scratch_tree": []
+  },
+  "planning_transport_policy": {
+    "bytes": 4435,
+    "mtime_utc": "2026-10-01T19:17:02.097570+00:00",
+    "path": "G:\\XLM\\plans\\ifm_planning\\transport-policy.json",
+    "present": true,
+    "sha256": "1b44cdcd54635eed9cafb5062ce099a0d78b14378e88ea44571ad89b4c40cc0f"
+  }
+}

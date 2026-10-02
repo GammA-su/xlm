@@ -803,6 +803,10 @@ def cmd_plan_repair(args: argparse.Namespace) -> int:
         print(f"failed run          {failure['receipt']} {failure['digest']} {root}")
     for key, change in repair["changed_limits"].items():
         print(f"changed limit       {key}: {change['from']} -> {change['to']}")
+    # An admission repair: the repaired plan's admission (e.g. its bridge after a
+    # versioned adapter contract) no longer verifies, so that plan cannot run.
+    for key, change in repair.get("changed_admission", {}).items():
+        print(f"changed admission   {key}: {change['from']} -> {change['to']}")
     # Plan-wide ceilings follow from the per-unit ones and the remaining file count;
     # both plans bind theirs, so these lines only display the difference.
     prior = runner.load_plan(roots, int(repair["plan_sequence"]))

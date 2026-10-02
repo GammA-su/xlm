@@ -1,0 +1,52 @@
+[
+  {
+    "footer": "general-f00000.footer.bin",
+    "footer_sha256": "6dec1098b1c7ca00780277449425f086c134578f0194be51545b88be73ec960a",
+    "groups_with_empty_text_min": [],
+    "groups_with_token_count_min_0": [
+      1,
+      47
+    ],
+    "groups_without_statistics": 0,
+    "row_groups": 80,
+    "rows": 329409,
+    "text_null_count": 0,
+    "token_count_null_count": 0
+  },
+  {
+    "footer": "general-f00001.footer.bin",
+    "footer_sha256": "7255546a630daf5e2921fe431879b4868b0624c39de403db0c9222a6648b16eb",
+    "groups_with_empty_text_min": [],
+    "groups_with_token_count_min_0": [],
+    "groups_without_statistics": 0,
+    "row_groups": 80,
+    "rows": 328568,
+    "text_null_count": 0,
+    "token_count_null_count": 0
+  },
+  {
+    "footer": "planning-f00000.footer.bin",
+    "footer_sha256": "52cadd0eac54fb4b3d415fd9bb8cd1825d768582fee51b60978e121622800ad2",
+    "groups_with_empty_text_min": [],
+    "groups_with_token_count_min_0": [],
+    "groups_without_statistics": 0,
+    "row_groups": 78,
+    "rows": 350701,
+    "text_null_count": 0,
+    "token_count_null_count": 0
+  },
+  {
+    "footer": "planning-f00001.footer.bin",
+    "footer_sha256": "b127927e10f820f187056177f9bd96124b05089fbc10bc61eb657c3232f4b605",
+    "groups_with_empty_text_min": [],
+    "groups_with_token_count_min_0": [
+      30,
+      71
+    ],
+    "groups_without_statistics": 0,
+    "row_groups": 78,
+    "rows": 346354,
+    "text_null_count": 0,
+    "token_count_null_count": 0
+  }
+]

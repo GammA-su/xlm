@@ -1,3 +1,35 @@
+> **IFM GENERAL EMPTY-TEXT RECOVERY (2026-10-02, offline): IFM GENERAL SEMANTIC
+> RECOVERY READY FOR OPERATOR REVIEW.**
+>
+> - **What failed.** General p02 rank 1 (00146) sealed: 328,568 docs, receipt
+>   `eec4fc29...79b3`. Rank 0 failed with `MissingFieldError`. The retained
+>   00069 shard (`c9a40702...a992`, local and complete) holds 2 exact-empty
+>   `text` rows of 329,409: rows 4983 and 193631, both `token_count` 0. There
+>   are no nulls, no whitespace-only rows and no schema drift.
+> - **Cause.** An adapter bug: v1 used one fatal path for a missing column and
+>   for an empty string. Footer statistics show the same signature in the
+>   selected Planning file 00295.
+> - **Fix.** Shared IFM row contract v2 (`ifm_adapters.py`): blank string
+>   `text` becomes a recorded `IfmEmptyTextError`. Absent, null or non-string
+>   `text` and a bad `token_count` stay fatal. Accepted rows are byte-identical:
+>   real f00001 reproduces `df33f69f...6e1e`. Real f00000 gives 329,407 docs
+>   and 2 rejections.
+> - **Identity.** Frozen `mix01_adapters.py` is untouched. A per-adapter code
+>   identity (`registry.py`) changes only the IFM bridges: General
+>   `1330da81` → `93441dfb...a7ea`, Planning `fb1a2b96` → `7925617b...0116`.
+>   Fingerprints are unchanged, and the 6 other admissions are identical.
+> - **Continuation.** New admission repair (`repair.changed_admission`).
+>   Rehearsed General p03 `626b3356...11dd` covers rank 0 only, keeps cursor 2
+>   and needs 0 network bytes. Planning p02 is stale and must be superseded;
+>   rehearsed p03 `86611342...faa1`.
+> - **Not done.** No publish, admission, authorization or run. p01/p02
+>   artifacts are byte-identical.
+> - **Tests.** 46 new tests pass. The related run gave 619 passed and 4 failed;
+>   all 4 also fail on base. Ruff, format and strict mypy pass.
+>
+> [Report](reports/IFM-GENERAL-EMPTY-TEXT-RECOVERY.md). Next: operator reviews,
+> then renews IFM evidence and admission (§13).
+
 > **IFM PRODUCTION BOUND RECOVERY (2026-10-01): IFM PRODUCTION BOUNDS READY FOR
 > OPERATOR DIGEST REVIEW.** General p01 `b7bb0cbf...8372` failed in `_bind`:
 > both selected files (2,013,330,256 / 2,014,409,401 B) exceed its 814,743,552 B

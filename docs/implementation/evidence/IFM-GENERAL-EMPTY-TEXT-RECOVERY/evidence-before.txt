@@ -1,0 +1,26 @@
+== ifm_general verify
+bridge verified: 1330da81815c0fdeccac36f95e88523787a16ed1f662fa210fe8eab0206e7045 fingerprint cca8d4cbf241d00dc3f6a964f4a42f7380198dac2d7d49a02e9021a5433f913b
+exit=0
+== ifm_general show
+source      ifm_behaviors:general @ 3345e13d7f3f6d0ecb5fdd67b37aed289f3191f5
+adapter     ifm_general accepted calibration_records 698/698
+schema      observed_projected_rows_of_real_fetch fields ['text', 'token_count']
+files       [('general/general_full.chunk0-bdbff8a5c6-00315.parquet', 407007573)]
+license     apache-2.0 (repository declaration only)
+fingerprint cca8d4cbf241d00dc3f6a964f4a42f7380198dac2d7d49a02e9021a5433f913b
+BRIDGE RECEIPT DIGEST 1330da81815c0fdeccac36f95e88523787a16ed1f662fa210fe8eab0206e7045
+show only: nothing written (use 'evidence publish')
+exit=0
+== ifm_planning verify
+bridge verified: fb1a2b96c6635667741d945a5be6d41462375274775cf5da09441ab2c009e65a fingerprint 1284634eab55314bac7d013ade482a18c8bde7aecf3bfb254f98509e3087bf35
+exit=0
+== ifm_planning show
+source      ifm_behaviors:planning @ 3345e13d7f3f6d0ecb5fdd67b37aed289f3191f5
+adapter     ifm_planning accepted calibration_records 1903/1903
+schema      observed_projected_rows_of_real_fetch fields ['text', 'token_count']
+files       [('planning/planning.chunk0-160f3594ed-00416.parquet', 706323152)]
+license     apache-2.0 (repository declaration only)
+fingerprint 1284634eab55314bac7d013ade482a18c8bde7aecf3bfb254f98509e3087bf35
+BRIDGE RECEIPT DIGEST fb1a2b96c6635667741d945a5be6d41462375274775cf5da09441ab2c009e65a
+show only: nothing written (use 'evidence publish')
+exit=0

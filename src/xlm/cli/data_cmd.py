@@ -1972,10 +1972,10 @@ def adapt_cmd(
     from xlm.data.acquisition.records import StreamingJsonlWriter
     from xlm.data.adapters.malformed import MalformedCounter
     from xlm.data.adapters.mix01_adapters import (
-        ADAPTERS_BY_ID,
         EssentialWebMalformedRowError,
         RecordRejectedError,
     )
+    from xlm.data.adapters.registry import ADAPTERS_BY_ID
     from xlm.data.adapters.rejections import (
         DOCUMENTS_FILENAME,
         REJECTIONS_FILENAME,

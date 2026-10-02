@@ -184,13 +184,30 @@ plan's limits (for example `RecordLimitError`), a retry fails the same way.
 `plan-repair --plan N` (offline) writes the next plan for exactly the unsealed
 ranks of plan N, under the planner's current limits. It needs N's failed
 performance receipt naming an unsealed unit and at least one changed per-unit
-limit (otherwise: resume). It keeps N's `next_cursor`, binds N's digest and
+limit or a changed admission (otherwise: resume). It keeps N's `next_cursor`, binds N's digest and
 accounting, the failed receipts, the changed limits and the SHA-256 of every
 retained verified source (in the plan hash), prints `PLAN DIGEST` and stops.
 After `authorize` and `run --plan N+1 --offline`, retained sources are
 processed with no transfer. Plan N can no longer run; its sealed units stay
 valid; `sufficiency` and `seal` bind each rank once, through the plan that
 sealed it (`repair_of`, `repaired_ranks`).
+
+**Admission repair.** A unit can also fail because the adapter contract was
+wrong, not a limit. The fix is then a versioned adapter in its own module,
+registered in `xlm.data.adapters.registry`. `mix01_adapters.py` is frozen:
+every bridge and the Essential-Web campaign bind its bytes. Each adapter's
+bridge binds `adapter_code_identity(adapter_id)`. That identity covers the
+frozen adapter and column modules plus a versioned adapter's own module, so
+only that adapter's `evidence verify`, `plan`, `authorize` and `run` refuse
+("adapter code changed"). Renew in this order: `evidence publish`, `review
+record`, `admit`. Plan N then still binds the old admission and its `run`
+refuses ("admission changed"). `plan-repair --plan N` accepts a changed
+admission as the cause, even with unchanged limits. It records
+`repair.changed_admission` (present only then), keeps the cursor, and binds
+retained sources (zero transfer). The seal's `repair_of` repeats
+`changed_admission`. An unauthorized plan under a stale admission is
+superseded instead (`changed_sections: ["inputs"]`). First use:
+[IFM General empty-text recovery](../implementation/reports/IFM-GENERAL-EMPTY-TEXT-RECOVERY.md).
 
 Record bounds: generic and UltraX 8 MiB; FinePDFs `finepdfs-record-v2` 48 MiB
 (whole-file plans only; the 32 MiB parser bound limits Thrift metadata, not a

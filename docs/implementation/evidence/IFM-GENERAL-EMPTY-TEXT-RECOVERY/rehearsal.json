@@ -1,0 +1,266 @@
+{
+  "ifm_general": {
+    "p02_digest": "6c0dfe5a3474978684d294cf8b9dffa616d6cf963b3bfdcd3ecaaea89ec79939",
+    "p03": {
+      "acquired_before": {
+        "canonical_bytes": 4842744134
+      },
+      "acquisition_limits": {
+        "max_decompressed_bytes": 8057257984,
+        "max_decompression_ratio": 15.0,
+        "max_output_disk_bytes": 12095158830,
+        "max_parser_bytes": 33554432,
+        "max_record_bytes": 8388608,
+        "max_records": 444703,
+        "max_requests": 16,
+        "max_retries": 5,
+        "max_scanned_records": 444703,
+        "max_temp_disk_bytes": 10063018542,
+        "max_transferred_bytes": 3020947456,
+        "max_workers": 16,
+        "overall_deadline_seconds": 14400.0,
+        "per_request_timeout_seconds": 30.0
+      },
+      "digest": "626b3356af422a81cadebac797d75e554c4491ede4a26130ca55c8b0030611dd",
+      "expected": {
+        "basis": "calibration yield scaled to the largest selected file's exact inventory size (selected-size anchor); transfer is the exact inventory size of every download; exact counts come from receipts",
+        "canonical_bytes": 2011387531,
+        "estimated_tokens": 502846882,
+        "files": 1,
+        "requests": 0,
+        "rows": 137419,
+        "transfer_bytes": 0
+      },
+      "expected_file_digests": {
+        "general/general_full.chunk0-bdbff8a5c6-00069.parquet": "c9a407020ec03bdeedad1daca01c2b69e62babbe724295c43d9b0247ef3da992"
+      },
+      "files": [
+        {
+          "file": "general/general_full.chunk0-bdbff8a5c6-00069.parquet",
+          "rank": 0
+        }
+      ],
+      "kind": "admission repair of p02",
+      "next_cursor": 2,
+      "ranks": [
+        0
+      ],
+      "repair": {
+        "accounting_digest": "ed30db7d76e4b89a8fcdcc831fb4828664cf228b12d18d69b8b2dbbce2b5d8ae",
+        "changed_admission": {
+          "bridge_receipt_digest": {
+            "from": "1330da81815c0fdeccac36f95e88523787a16ed1f662fa210fe8eab0206e7045",
+            "to": "93441dfbd0ab143eec24a8dbee03caa427dca4ed4156a6b6bcf51349c3c9a7ea"
+          }
+        },
+        "changed_limits": {
+          "file_deadline_seconds": {
+            "from": 6406.666666666667,
+            "to": 6403.333333333334
+          },
+          "max_decoded_bytes_per_file": {
+            "from": 8061452288,
+            "to": 8057257984
+          },
+          "max_durable_bytes_per_file": {
+            "from": 10065245718,
+            "to": 10059864622
+          },
+          "max_file_bytes": {
+            "from": 2015363072,
+            "to": 2014314496
+          },
+          "processing_growth": {
+            "from": {
+              "event_bytes": 1048576,
+              "metadata_bytes": 1048576,
+              "output_bytes": 8049882646,
+              "progress_bytes": 4096,
+              "run_metadata_bytes": 8388608,
+              "source_max_bytes": 2015363072,
+              "state_bytes": 1048576,
+              "version": 1
+            },
+            "to": {
+              "event_bytes": 1048576,
+              "metadata_bytes": 1048576,
+              "output_bytes": 8045550126,
+              "progress_bytes": 4096,
+              "run_metadata_bytes": 8388608,
+              "source_max_bytes": 2014314496,
+              "state_bytes": 1048576,
+              "version": 1
+            }
+          }
+        },
+        "failures": [
+          {
+            "digest": "9bdfe633fa6b589fca37c86cd7d0705f422876092d6ccc49c8ab604aa10669db",
+            "receipt": "performance-00.json",
+            "root_failure": {
+              "exception": "MissingFieldError",
+              "key": "f00000",
+              "root": true,
+              "site": "mix01_adapters.py:67 in _require (worker process)"
+            }
+          }
+        ],
+        "plan_digest": "6c0dfe5a3474978684d294cf8b9dffa616d6cf963b3bfdcd3ecaaea89ec79939",
+        "plan_sequence": 2,
+        "ranks": [
+          0
+        ],
+        "retained_sha256": {
+          "general/general_full.chunk0-bdbff8a5c6-00069.parquet": "c9a407020ec03bdeedad1daca01c2b69e62babbe724295c43d9b0247ef3da992"
+        },
+        "rule": "the repaired plan is never edited; its sealed units stay valid, its unsealed ranks are sealed only by this plan, and it no longer runs",
+        "sealed_ranks": [
+          1
+        ]
+      },
+      "restart": {
+        "counts": {
+          "fresh_download": 0,
+          "local_complete_reuse": 0,
+          "local_processing_retry": 1,
+          "resumable_partial": 0,
+          "sealed_skip": 0
+        },
+        "known_network_bytes": 0,
+        "resumable_verified_bytes": 0,
+        "units": {
+          "fresh_download": [],
+          "local_complete_reuse": [],
+          "local_processing_retry": [
+            "f00000"
+          ],
+          "resumable_partial": [],
+          "sealed_skip": []
+        },
+        "worst_case_network_bytes": 0
+      },
+      "sequence": 3
+    },
+    "renewal": {
+      "admission": {
+        "benchmark_risk": "suspect_with_mitigation",
+        "bridge_receipt_digest": "93441dfbd0ab143eec24a8dbee03caa427dca4ed4156a6b6bcf51349c3c9a7ea",
+        "decision_contract": "c04-benchmark-risk-v3",
+        "probe_fingerprint": "cca8d4cbf241d00dc3f6a964f4a42f7380198dac2d7d49a02e9021a5433f913b"
+      },
+      "assumption": "operator re-admits with the same decision_contract and benchmark_risk",
+      "bridge": {
+        "code_sha256": {
+          "xlm.data.adapters.columns": "3e594f755eea797ac0d29d819c28b4ccf8e387cfc7889470dfc58e8657e58db1",
+          "xlm.data.adapters.ifm_adapters": "03e113f1256ed4ae7a1822fae9e2f66c4db3174483773e157598131254aaf7ff",
+          "xlm.data.adapters.mix01_adapters": "3651ff2af4fcb46c207404e052caa59e1ec42f2ac5a429e5dec752f7e83a7ef6"
+        },
+        "digest": "93441dfbd0ab143eec24a8dbee03caa427dca4ed4156a6b6bcf51349c3c9a7ea",
+        "pin": {
+          "adapter_id": "ifm_general",
+          "component_id": "ifm_behaviors_general_planning",
+          "provider": "huggingface",
+          "repository": "IFM/Pretrain-Behaviors",
+          "revision": "3345e13d7f3f6d0ecb5fdd67b37aed289f3191f5",
+          "source_id": "ifm_behaviors",
+          "view_id": "general"
+        },
+        "probe_fingerprint": "cca8d4cbf241d00dc3f6a964f4a42f7380198dac2d7d49a02e9021a5433f913b",
+        "row_sets": {
+          "calibration_records": {
+            "accepted": 698,
+            "canonical_bytes": 10216553,
+            "documents_sha256": "ece53ad594ba68119fbf49f35a8e705e690a70e396edeb82bd144333699969c5",
+            "rejected": 0,
+            "rejection_counts_by_code": {},
+            "reproduces_recorded_documents": true,
+            "rows": 698
+          }
+        }
+      }
+    }
+  },
+  "ifm_planning": {
+    "p02_digest": "72778e8c5144033381500dfb6762120df7a0d74813b6641bf509ec6484082141",
+    "p03": {
+      "digest": "8661134201ca7bb04603df7cb753e7d6a76d3b07b78d20610e83f6688e3dfaa1",
+      "expected": {
+        "basis": "calibration yield scaled to the largest selected file's exact inventory size (selected-size anchor); transfer is the exact inventory size of every download; exact counts come from receipts",
+        "canonical_bytes": 4011908091,
+        "estimated_tokens": 1002977022,
+        "files": 2,
+        "requests": 4,
+        "rows": 300312,
+        "transfer_bytes": 4015377947
+      },
+      "kind": "supersession of unauthorized p02",
+      "selection": {
+        "files": [
+          {
+            "file": "planning/planning.chunk0-160f3594ed-00058.parquet",
+            "rank": 0
+          },
+          {
+            "file": "planning/planning.chunk1-6d580bf230-00295.parquet",
+            "rank": 1
+          }
+        ],
+        "next_cursor": 2,
+        "row_ranges": "whole files (every row of every planned file)",
+        "rule": "the next contiguous ranks of the frozen inventory order",
+        "start_rank": 0,
+        "stop_rank": 2
+      },
+      "sequence": 3,
+      "supersedes": {
+        "changed_acquisition_limits": {},
+        "changed_limits": {},
+        "changed_sections": [
+          "inputs"
+        ],
+        "plan_digest": "72778e8c5144033381500dfb6762120df7a0d74813b6641bf509ec6484082141",
+        "plan_sequence": 2,
+        "rule": "the superseded plan was never authorized or run and is never edited; it can no longer be authorized or run, and its ranks are this plan's"
+      }
+    },
+    "renewal": {
+      "admission": {
+        "benchmark_risk": "suspect_with_mitigation",
+        "bridge_receipt_digest": "7925617b10c6482441a5616150538b932000ca7c2935260423362e1746f10116",
+        "decision_contract": "c04-benchmark-risk-v3",
+        "probe_fingerprint": "1284634eab55314bac7d013ade482a18c8bde7aecf3bfb254f98509e3087bf35"
+      },
+      "assumption": "operator re-admits with the same decision_contract and benchmark_risk",
+      "bridge": {
+        "code_sha256": {
+          "xlm.data.adapters.columns": "3e594f755eea797ac0d29d819c28b4ccf8e387cfc7889470dfc58e8657e58db1",
+          "xlm.data.adapters.ifm_adapters": "03e113f1256ed4ae7a1822fae9e2f66c4db3174483773e157598131254aaf7ff",
+          "xlm.data.adapters.mix01_adapters": "3651ff2af4fcb46c207404e052caa59e1ec42f2ac5a429e5dec752f7e83a7ef6"
+        },
+        "digest": "7925617b10c6482441a5616150538b932000ca7c2935260423362e1746f10116",
+        "pin": {
+          "adapter_id": "ifm_planning",
+          "component_id": "ifm_behaviors_general_planning",
+          "provider": "huggingface",
+          "repository": "IFM/Pretrain-Behaviors",
+          "revision": "3345e13d7f3f6d0ecb5fdd67b37aed289f3191f5",
+          "source_id": "ifm_behaviors",
+          "view_id": "planning"
+        },
+        "probe_fingerprint": "1284634eab55314bac7d013ade482a18c8bde7aecf3bfb254f98509e3087bf35",
+        "row_sets": {
+          "calibration_records": {
+            "accepted": 1903,
+            "canonical_bytes": 25422431,
+            "documents_sha256": "b4e04e0858ac3150db56381fc5a8fbf72f398ed8c53fde0ee41098aaa80b6f2a",
+            "rejected": 0,
+            "rejection_counts_by_code": {},
+            "reproduces_recorded_documents": true,
+            "rows": 1903
+          }
+        }
+      }
+    }
+  },
+  "rehearsal_only": true
+}

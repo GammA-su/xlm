@@ -1186,8 +1186,8 @@ def build_plan(
 
 # -------------------------------------------------------------------- repair
 
-#: Per-unit processing limits. A repair must change at least one of them:
-#: with identical limits the predecessor is simply resumed.
+#: Per-unit processing limits. A repair must change at least one of them, or
+#: the admission (below); with both identical the predecessor is simply resumed.
 UNIT_LIMIT_KEYS = (
     "max_file_bytes",
     "max_rows_per_file",
@@ -1243,8 +1243,14 @@ def build_repair_plan(
     unsealed ranks are sealed only by this plan, which keeps its predecessor's
     ``next_cursor`` so a later top-up neither skips nor repeats a rank. A
     repair needs the authorized predecessor's failed-run evidence and at least
-    one changed per-unit limit; otherwise the predecessor is resumed. Files
-    whose verified bytes were retained are bound to that SHA-256.
+    one changed per-unit limit or a changed admission; otherwise the
+    predecessor is resumed. Files whose verified bytes were retained are bound
+    to that SHA-256.
+
+    A changed admission (a renewed bridge and decision, e.g. after a versioned
+    adapter contract changed the adapter's code identity) leaves the
+    predecessor unable to run, since its admission no longer verifies; the
+    repair records it as ``changed_admission``, present only then.
     """
     frozen = _frozen(pin, policy, layout, inventory)
     layout, ordered = frozen.layout, frozen.ordered
@@ -1290,8 +1296,11 @@ def build_repair_plan(
         for key in UNIT_LIMIT_KEYS
         if prior["limits"].get(key) != policy_limits.get(key)
     }
-    if not changed:
-        raise PlanError("per-unit limits are unchanged: resume the plan instead of repairing it")
+    changed_admission = limit_diff(prior["inputs"]["admission"], admission)
+    if not changed and not changed_admission:
+        raise PlanError(
+            "per-unit limits and admission are unchanged: resume the plan instead of repairing it"
+        )
     sequence = int(prior["sequence"]) + 1
     minted = acquisition_plan(
         pin,
@@ -1345,6 +1354,9 @@ def build_repair_plan(
         "rule": "the repaired plan is never edited; its sealed units stay valid, its "
         "unsealed ranks are sealed only by this plan, and it no longer runs",
     }
+    if changed_admission:
+        # Present only for an admission repair, so limit repairs keep their digests.
+        record["repair"]["changed_admission"] = changed_admission
     return _with_digest(record)
 
 

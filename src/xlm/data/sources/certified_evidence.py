@@ -49,10 +49,9 @@ from typing import Any
 
 from xlm.artifacts.store import ArtifactStore
 from xlm.data.acquisition.plan import AcquisitionPlan
-from xlm.data.adapters import columns as columns_module
-from xlm.data.adapters import mix01_adapters
 from xlm.data.adapters.columns import columns_for
-from xlm.data.adapters.mix01_adapters import ADAPTERS_BY_ID, AdapterError, RecordRejectedError
+from xlm.data.adapters.mix01_adapters import AdapterError, RecordRejectedError
+from xlm.data.adapters.registry import ADAPTERS_BY_ID, adapter_code_modules
 from xlm.data.adapters.rejections import serialize_document
 from xlm.data.evidence_v2 import canonical
 from xlm.data.sources.admission import (
@@ -669,10 +668,15 @@ def _observed_schema(
 # -------------------------------------------------------------- certification
 
 
-def adapter_code_identity() -> dict[str, str]:
-    """SHA-256 of the adapter and column-contract sources (LF-normalized)."""
+def adapter_code_identity(adapter_id: str) -> dict[str, str]:
+    """SHA-256 of the sources defining ``adapter_id`` (LF-normalized), by module name.
+
+    The frozen adapter and column-contract modules for every adapter, plus a
+    versioned adapter's own module (:func:`adapter_code_modules`), so a
+    corrected adapter contract changes only its own adapter's identity.
+    """
     identity: dict[str, str] = {}
-    for module in (mix01_adapters, columns_module):
+    for module in adapter_code_modules(adapter_id):
         source = inspect.getsourcefile(module)
         if source is None:
             raise BridgeRefusal("adapter source file is not available")
@@ -766,7 +770,7 @@ def certify_adapter(pin: SourcePin, facts: CertifiedFacts, schema: ViewSchema) -
         "adapter_id": pin.adapter_id,
         "contract": contract.model_dump(),
         "projected_columns": projection,
-        "code_sha256": adapter_code_identity(),
+        "code_sha256": adapter_code_identity(pin.adapter_id),
         "row_sets": sets,
     }
 
@@ -978,7 +982,7 @@ def verify_current(
         raise BridgeRefusal("the latest probe evidence of this view is not a bridge publication")
     if receipt["source"] != pin.as_dict():
         raise BridgeRefusal("stored bridge binds another source, view, revision or adapter")
-    if receipt["adapter"]["code_sha256"] != adapter_code_identity():
+    if receipt["adapter"]["code_sha256"] != adapter_code_identity(pin.adapter_id):
         raise BridgeRefusal("adapter code changed since the evidence was bridged")
     evidence = load_probe_evidence(pin.source_id, pin.view_id, store)
     if evidence is None or evidence.model_dump() != record_from_receipt(receipt).model_dump():

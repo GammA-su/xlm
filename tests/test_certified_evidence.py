@@ -247,7 +247,7 @@ def test_publication_is_immutable_idempotent_and_verifiable(
     found = ce.generic_probe_record(store, SOURCE, CONFIG)
     assert found is not None and found[1] == "probe_ultrax_ultrafineweb_UltraX-Ultra-FineWeb"
     # Changed adapter code or changed inputs fail closed.
-    monkeypatch.setattr(ce, "adapter_code_identity", lambda: {"changed": "0" * 64})
+    monkeypatch.setattr(ce, "adapter_code_identity", lambda _adapter_id: {"changed": "0" * 64})
     with pytest.raises(ce.BridgeRefusal, match="adapter code changed"):
         ce.verify_current(store, pin)
     monkeypatch.undo()

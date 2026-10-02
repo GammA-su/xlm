@@ -1,0 +1,111 @@
+{
+  "file": "G:\\XLM\\acq-raw\\ifm_general\\source\\general\\general_full.chunk0-bdbff8a5c6-00069.parquet",
+  "invalid_text_fraction": 6.0714795284888995e-06,
+  "invalid_text_rows": [
+    {
+      "category": "empty",
+      "chars": 0,
+      "row_group": 1,
+      "row_in_group": 842,
+      "row_index": 4983,
+      "token_count": 0,
+      "utf8_bytes": 0
+    },
+    {
+      "category": "empty",
+      "chars": 0,
+      "row_group": 47,
+      "row_in_group": 289,
+      "row_index": 193631,
+      "token_count": 0,
+      "utf8_bytes": 0
+    }
+  ],
+  "invalid_text_total": 2,
+  "reproduction_each_invalid": [
+    {
+      "exception": "MissingFieldError",
+      "message": "adapter 'ifm_general' requires non-empty upstream field 'text'.",
+      "record_keys": [
+        "text",
+        "token_count"
+      ],
+      "row_index": 4983,
+      "site": "mix01_adapters.py:67 in _require",
+      "text_chars": 0,
+      "text_python_type": "str"
+    },
+    {
+      "exception": "MissingFieldError",
+      "message": "adapter 'ifm_general' requires non-empty upstream field 'text'.",
+      "record_keys": [
+        "text",
+        "token_count"
+      ],
+      "row_index": 193631,
+      "site": "mix01_adapters.py:67 in _require",
+      "text_chars": 0,
+      "text_python_type": "str"
+    }
+  ],
+  "reproduction_first": {
+    "accepted_before_error": 4983,
+    "error": {
+      "exception": "MissingFieldError",
+      "message": "adapter 'ifm_general' requires non-empty upstream field 'text'.",
+      "record_keys": [
+        "text",
+        "token_count"
+      ],
+      "row_index": 4983,
+      "site": "mix01_adapters.py:67 in _require",
+      "text_chars": 0,
+      "text_python_type": "str"
+    },
+    "row_range": [
+      0,
+      4984
+    ]
+  },
+  "row_groups": 80,
+  "rows": 329409,
+  "schema": {
+    "text": "string",
+    "token_count": "int64"
+  },
+  "schema_nullable": {
+    "text": true,
+    "token_count": true
+  },
+  "seconds": 11.7,
+  "source_file": "general/general_full.chunk0-bdbff8a5c6-00069.parquet",
+  "text": {
+    "arrow_type": "string",
+    "column_exists": true,
+    "empty": 2,
+    "non_empty_valid": 329407,
+    "non_string": 0,
+    "non_string_note": "column is a string type: a non-string value is not representable",
+    "null": 0,
+    "valid_with_leading_whitespace": 0,
+    "whitespace_only": 0
+  },
+  "token_count": {
+    "arrow_type": "int64",
+    "column_exists": true,
+    "max": 7863,
+    "min": 0,
+    "negative": 0,
+    "negative_rows": [],
+    "null": 0,
+    "null_rows": [],
+    "positive": 329407,
+    "wrong_type": 0,
+    "wrong_type_note": "column is an integer type: a non-integer value is not representable",
+    "zero": 2,
+    "zero_rows": [
+      4983,
+      193631
+    ]
+  }
+}

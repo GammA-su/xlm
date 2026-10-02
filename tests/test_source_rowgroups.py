@@ -35,7 +35,7 @@ from xlm.data.acquisition.source_rowgroups import (
     check_concurrency,
 )
 from xlm.data.adapters.columns import columns_for
-from xlm.data.adapters.mix01_adapters import ADAPTERS_BY_ID
+from xlm.data.adapters.registry import ADAPTERS_BY_ID
 from xlm.data.adapters.rejections import DOCUMENTS_FILENAME, SUMMARY_FILENAME
 
 SOURCE_FILE = "data/part-0000.parquet"

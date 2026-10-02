@@ -72,7 +72,8 @@ from xlm.data.acquisition.source_rowgroups import (
     peak_rss,
 )
 from xlm.data.adapters.columns import columns_for
-from xlm.data.adapters.mix01_adapters import ADAPTERS_BY_ID, RecordRejectedError
+from xlm.data.adapters.mix01_adapters import RecordRejectedError
+from xlm.data.adapters.registry import ADAPTERS_BY_ID
 from xlm.data.adapters.rejections import (
     DOCUMENTS_FILENAME,
     SUMMARY_FILENAME,

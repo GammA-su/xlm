@@ -1,0 +1,18 @@
+{
+  "adapter": "xlm.data.adapters.ifm_adapters.IfmGeneralAdapter",
+  "canonical_bytes": 4842744134,
+  "documents": 328568,
+  "documents_file_bytes": 5195802585,
+  "documents_sha256": "df33f69fbcb7eb46d9c06bd32c08104d7a6490ea0facf9dd1e63cbce257c6e1e",
+  "estimated_tokens": 1210686033,
+  "file": "G:\\XLM\\acq-raw\\ifm_general\\source\\general\\general_full.chunk0-bdbff8a5c6-00146.parquet",
+  "rank": 1,
+  "rejected": 0,
+  "rejected_rows": [],
+  "rejection_counts_by_code": {},
+  "rejections_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "rejections_uncompressed_bytes": 0,
+  "rows": 328568,
+  "seconds": 141.9,
+  "source_file": "general/general_full.chunk0-bdbff8a5c6-00146.parquet"
+}

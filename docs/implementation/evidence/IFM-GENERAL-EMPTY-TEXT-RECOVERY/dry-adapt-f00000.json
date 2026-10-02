@@ -1,0 +1,45 @@
+{
+  "adapter": "xlm.data.adapters.ifm_adapters.IfmGeneralAdapter",
+  "canonical_bytes": 4842990792,
+  "documents": 329407,
+  "documents_file_bytes": 5196855011,
+  "documents_sha256": "c97a73c54bb028270259931b7fb25556fc1d03ecad20bd9b9915ea4321a73d58",
+  "estimated_tokens": 1210747698,
+  "file": "G:\\XLM\\acq-raw\\ifm_general\\source\\general\\general_full.chunk0-bdbff8a5c6-00069.parquet",
+  "rank": 0,
+  "rejected": 2,
+  "rejected_rows": [
+    {
+      "adapter_id": "ifm_general",
+      "input_line": 4984,
+      "original_record_sha256": "04898ac315c4e8183f89e7359723a53a90c36467a7e14f1c8e0c7d56fbbdeca7",
+      "reason": "adapter 'ifm_general' records a row whose upstream 'text' is empty (0 characters, declared token_count 0); it has no training content.",
+      "rejection_category": "policy",
+      "rejection_code": "IfmEmptyTextError",
+      "source_file": "general/general_full.chunk0-bdbff8a5c6-00069.parquet",
+      "source_id": "ifm_behaviors",
+      "source_revision": "3345e13d7f3f6d0ecb5fdd67b37aed289f3191f5",
+      "source_row": 4983
+    },
+    {
+      "adapter_id": "ifm_general",
+      "input_line": 193632,
+      "original_record_sha256": "04898ac315c4e8183f89e7359723a53a90c36467a7e14f1c8e0c7d56fbbdeca7",
+      "reason": "adapter 'ifm_general' records a row whose upstream 'text' is empty (0 characters, declared token_count 0); it has no training content.",
+      "rejection_category": "policy",
+      "rejection_code": "IfmEmptyTextError",
+      "source_file": "general/general_full.chunk0-bdbff8a5c6-00069.parquet",
+      "source_id": "ifm_behaviors",
+      "source_revision": "3345e13d7f3f6d0ecb5fdd67b37aed289f3191f5",
+      "source_row": 193631
+    }
+  ],
+  "rejection_counts_by_code": {
+    "IfmEmptyTextError": 2
+  },
+  "rejections_sha256": "da91d12bbc83da0118bdb43ed97ae442adeb3b17de75a3c976965b6624674cea",
+  "rejections_uncompressed_bytes": 1098,
+  "rows": 329409,
+  "seconds": 139.2,
+  "source_file": "general/general_full.chunk0-bdbff8a5c6-00069.parquet"
+}

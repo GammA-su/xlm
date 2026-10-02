@@ -1,0 +1,26 @@
+== ifm_general verify
+mix01_source: refused: adapter code changed since the evidence was bridged
+exit=1
+== ifm_general show
+source      ifm_behaviors:general @ 3345e13d7f3f6d0ecb5fdd67b37aed289f3191f5
+adapter     ifm_general accepted calibration_records 698/698
+schema      observed_projected_rows_of_real_fetch fields ['text', 'token_count']
+files       [('general/general_full.chunk0-bdbff8a5c6-00315.parquet', 407007573)]
+license     apache-2.0 (repository declaration only)
+fingerprint cca8d4cbf241d00dc3f6a964f4a42f7380198dac2d7d49a02e9021a5433f913b
+BRIDGE RECEIPT DIGEST 93441dfbd0ab143eec24a8dbee03caa427dca4ed4156a6b6bcf51349c3c9a7ea
+show only: nothing written (use 'evidence publish')
+exit=0
+== ifm_planning verify
+mix01_source: refused: adapter code changed since the evidence was bridged
+exit=1
+== ifm_planning show
+source      ifm_behaviors:planning @ 3345e13d7f3f6d0ecb5fdd67b37aed289f3191f5
+adapter     ifm_planning accepted calibration_records 1903/1903
+schema      observed_projected_rows_of_real_fetch fields ['text', 'token_count']
+files       [('planning/planning.chunk0-160f3594ed-00416.parquet', 706323152)]
+license     apache-2.0 (repository declaration only)
+fingerprint 1284634eab55314bac7d013ade482a18c8bde7aecf3bfb254f98509e3087bf35
+BRIDGE RECEIPT DIGEST 7925617b10c6482441a5616150538b932000ca7c2935260423362e1746f10116
+show only: nothing written (use 'evidence publish')
+exit=0
