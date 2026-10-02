@@ -225,23 +225,40 @@ def test_official_claim_gate_requires_matching_c05_and_evaluation(tmp_path: Path
         "rolling",
         "fp32",
     )
-    # Synthetic protected-shaped receipt: no real benchmark content or operator key.
-    exclusion = issue_development_receipt(["authored-doc"], [], "policy", "index")
-    exclusion.mode = "protected"
-    exclusion = sign_receipt(exclusion, b"authored-key")
-    binding = BenchmarkClaimBinding(
+    # Synthetic protected-shaped receipts: no real benchmark content or operator key.
+    from test_exclusion_receipt import claim_binding, selected_receipt
+
+    legacy = issue_development_receipt(["authored-doc"], [], "policy", "index")
+    legacy.mode = "protected"
+    legacy = sign_receipt(legacy, b"authored-key")
+    exclusion = sign_receipt(selected_receipt(issuer_id=legacy.issuer_id), b"authored-key")
+    binding = replace(
+        claim_binding(exclusion),
         checkpoint_hash=request.checkpoint_hash,
         suite_fingerprint=request.suite_fingerprint,
-        corpus_input_digest=exclusion.corpus_input_digest,
-        output_membership_digest=exclusion.output_membership_digest,
-        exclusion_policy_identity="policy",
-        exclusion_index_identity="index",
     )
+    assert isinstance(binding, BenchmarkClaimBinding)
+    verdict = verify_receipt(
+        result.to_dict(),
+        sealed["root"],
+        exclusion_receipt=legacy,
+        training_pool=replace(
+            binding,
+            corpus_input_digest=legacy.corpus_input_digest,
+            output_membership_digest=legacy.output_membership_digest,
+            exclusion_policy_identity="policy",
+            exclusion_index_identity="index",
+        ),
+        trusted_exclusion_issuers={legacy.issuer_id: b"authored-key"},
+    )
+    # Global kept membership (no exact selected training subset) cannot support claims.
+    assert verdict["valid"] is True and verdict["official_benchmark_claims_allowed"] is False
     for candidate, allowed in (
         (binding, True),
         (replace(binding, checkpoint_hash="foreign"), False),
         (replace(binding, suite_fingerprint="foreign"), False),
         (replace(binding, output_membership_digest="foreign"), False),
+        (replace(binding, selection_digest="foreign"), False),
     ):
         verdict = verify_receipt(
             result.to_dict(),

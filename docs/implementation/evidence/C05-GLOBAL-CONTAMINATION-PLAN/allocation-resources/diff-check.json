@@ -1,0 +1,30 @@
+{
+  "command": [
+    "git",
+    "diff",
+    "--cached",
+    "--check"
+  ],
+  "cwd": "F:\\Project\\xlm-c05-global",
+  "environment": {
+    "HF_DATASETS_OFFLINE": null,
+    "HF_HUB_OFFLINE": null,
+    "MKL_NUM_THREADS": null,
+    "NUMEXPR_NUM_THREADS": null,
+    "OMP_NUM_THREADS": null,
+    "OPENBLAS_NUM_THREADS": null,
+    "PYTHONPATH": null,
+    "TOKENIZERS_PARALLELISM": null,
+    "TRANSFORMERS_OFFLINE": null,
+    "UV_OFFLINE": null,
+    "UV_PROJECT_ENVIRONMENT": "F:/Project/xlm-common-pile/.venv"
+  },
+  "exit_status": 0,
+  "log_storage": "UTF-8, LF, trailing whitespace removed; command output content preserved",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.12.13",
+  "raw_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "sampled_peak_process_tree_rss_bytes": 2228224,
+  "sampling_interval_seconds": 0.05,
+  "wall_seconds": 0.0712626000167802
+}

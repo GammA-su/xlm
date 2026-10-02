@@ -1,0 +1,42 @@
+{
+  "command": [
+    "uv",
+    "run",
+    "--offline",
+    "--locked",
+    "--no-sync",
+    "--extra",
+    "cpu",
+    "--extra",
+    "eval",
+    "python",
+    "-m",
+    "scripts.c05_synthetic_flow",
+    "--root",
+    "C:/t/c05flow",
+    "--output",
+    "docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/allocation-resources/synthetic-flow-summary.json"
+  ],
+  "cwd": "F:\\Project\\xlm-c05-global",
+  "environment": {
+    "HF_DATASETS_OFFLINE": "1",
+    "HF_HUB_OFFLINE": "1",
+    "MKL_NUM_THREADS": "1",
+    "NUMEXPR_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "PYTHONPATH": "F:/Project/xlm-c05-global/src;F:/Project/xlm-c05-global",
+    "TOKENIZERS_PARALLELISM": "false",
+    "TRANSFORMERS_OFFLINE": "1",
+    "UV_OFFLINE": "1",
+    "UV_PROJECT_ENVIRONMENT": "F:/Project/xlm-common-pile/.venv"
+  },
+  "exit_status": 0,
+  "log_storage": "UTF-8, LF, trailing whitespace removed; command output content preserved",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.12.13",
+  "raw_stdout_sha256": "7dcf8f65a9f6e22aee301d1cf73eb1e797ba2edc41f4fe01d9406d18c302f5e8",
+  "sampled_peak_process_tree_rss_bytes": 271339520,
+  "sampling_interval_seconds": 0.05,
+  "wall_seconds": 8.380033200024627
+}

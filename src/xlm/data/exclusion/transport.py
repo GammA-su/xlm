@@ -28,7 +28,14 @@ class ProofSpec(FrozenModel):
 
 
 @contextmanager
-def open_gate(path: Path | None) -> Iterator[MembershipGate | None]:
+def open_gate(
+    path: Path | None, *, allow_authored: bool = False
+) -> Iterator[MembershipGate | None]:
+    """Open the verified kept-membership lookup named by a proof specification.
+
+    Protected plans only, unless the caller explicitly runs an authored chain whose
+    every artifact then carries ``mode="authored"`` and fails protected consumers.
+    """
     if path is None:
         yield None
         return
@@ -36,6 +43,8 @@ def open_gate(path: Path | None) -> Iterator[MembershipGate | None]:
     plan = ExecutionPlan.model_validate(read_metadata(Path(spec.plan), digested=False))
     if plan.identity() != spec.plan_digest:
         raise C05Error("C05 proof plan changed")
+    if plan.mode == "authored" and not allow_authored:
+        raise C05Error("development evidence cannot satisfy protected C05")
     trust = trust_from_file(Path(spec.trust))
     signer = None
     if spec.signer is not None or spec.signer_key_env is not None:
@@ -53,6 +62,7 @@ def open_gate(path: Path | None) -> Iterator[MembershipGate | None]:
         read_metadata(Path(spec.manifest)),
         trust,
         lookup,
+        authored=plan.mode == "authored",
         signer=signer,
     )
     try:

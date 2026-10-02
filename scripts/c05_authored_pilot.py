@@ -109,9 +109,11 @@ def prepare(root: Path, count: int, *, word_floor: int = 32) -> dict[str, Path]:
         attempted_records=2 * count + 4096,
         files=4096,
         index_bytes=4 * 1024**3,
-        scratch_bytes=10 * 1024**3,
+        # Admission requires the derived rollback-journal bound (~5.01 GiB here).
+        scratch_bytes=16 * 1024**3,
         output_bytes=512 * 1024**2,
-        journal_bytes=4 * 1024**3,
+        decision_bytes=1024**3,
+        journal_bytes=6 * 1024**3,
         ram_bytes=2 * 1024**3,
         comparisons=10_000_000,
         stage_seconds=1800,

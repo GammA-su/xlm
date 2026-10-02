@@ -130,19 +130,24 @@ def _verify_c05(
     validation: MixtureValidation,
     c05_gate: MembershipGate | None,
     c05_shards: Mapping[str, Path] | None,
+    rehearsal: bool = False,
 ) -> dict[str, str] | None:
-    production = recipe.mixture_id.casefold().replace("_", "-").startswith("mix-01") or any(
-        c.source_id in PRODUCTION_COMPONENTS for c in recipe.components
-    )
+    final = recipe.mixture_id.casefold().replace("_", "-").startswith("mix-01")
+    production = final or any(c.source_id in PRODUCTION_COMPONENTS for c in recipe.components)
     if production or c05_gate is not None:
         if c05_gate is None or c05_shards is None:
             raise C05Error("final baseline mixture requires verified C05 token membership")
+        # An authored rehearsal is labeled as such and can never be a Mix-01 plan.
+        if rehearsal and (final or c05_gate.mode != "authored"):
+            raise C05Error("authored rehearsal cannot compile a Mix-01 or protected plan")
         c05_gate.db.execute("DELETE FROM seen")
         shard_bindings = {}
         for component in recipe.components:
             if component.source_id not in c05_shards:
                 raise C05Error("C05 token shard missing for mixture component")
-            proof = c05_gate.verify_token_shard(c05_shards[component.source_id], reset_seen=False)
+            proof = c05_gate.verify_token_shard(
+                c05_shards[component.source_id], reset_seen=False, rehearsal=rehearsal
+            )
             shard_bindings[component.source_id] = proof
             available = validation.availability[component.source_id]
             if (
@@ -155,6 +160,7 @@ def _verify_c05(
         from xlm.data.evidence_v2.canonical import digest
 
         return {
+            **({"mode": "authored"} if rehearsal else {}),
             "plan_digest": c05_gate.plan_digest,
             "completion_digest": c05_gate.receipt_digest,
             "shards_digest": digest(shard_bindings),
@@ -170,6 +176,7 @@ def compile_exposure_plan(
     *,
     c05_gate: MembershipGate | None = None,
     c05_shards: Mapping[str, Path] | None = None,
+    c05_rehearsal: bool = False,
 ) -> ExposurePlan:
     """Compile a validated recipe into a deterministic exposure plan.
 
@@ -177,7 +184,7 @@ def compile_exposure_plan(
     generator (:func:`iter_exposure_blocks`), so plan size is independent of budget.
     """
     validation.raise_if_invalid()
-    c05_binding = _verify_c05(recipe, validation, c05_gate, c05_shards)
+    c05_binding = _verify_c05(recipe, validation, c05_gate, c05_shards, c05_rehearsal)
     if budget_targets <= 0:
         raise ValueError(f"budget_targets must be positive, got {budget_targets}")
     if block_size <= 0:

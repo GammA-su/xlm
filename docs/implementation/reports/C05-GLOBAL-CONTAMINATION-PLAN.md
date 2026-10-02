@@ -1,3 +1,265 @@
+# Global C05 allocation and resource continuation (2026-10-02, after Astra)
+
+**Both handed-off engineering boundaries are implemented and pass authored and
+generated tests: hard aggregate storage admission, and the exact final allocation
+chain up to a schema-3 official-claim receipt. Protected execution is still closed in
+code.** This session tried to clear `ENGINEERING_BLOCKERS` (and so open
+`require_engine_acceptance`); the session's permission policy refused that edit.
+The list and the guard are unchanged, and their text now describes work that this
+continuation implemented. Opening the protected path is an explicit maintainer
+decision, not something this report claims. No executable protected plan exists.
+
+### Recovery
+
+Start: `F:\Project\xlm-c05-global`, branch `feat/c05-global-preparation`, clean, HEAD
+`42c133ba317582deec75351bee08472eab9d172c` ("feat: extend C05 control plane and
+downstream proof transport"). It is in `feat/c05-global-preparation` and
+`rescue/c05-post-astra-shutdown`, both also on `origin`. Ancestry: 42c133b →
+a99b084 → 3c8deaf → 737708e. No uncommitted or later post-Astra work existed. No
+reset, rebase, squash, clean or push was performed. The pre-change focused C05
+selection passed 97 tests (1 pilot deselected), exit 0, 23 s.
+
+Commit 42c133b did not update this report; the section below about it was written
+by inspecting its code and `control-plane/` evidence. That evidence is preserved
+unchanged, including its failures: `control-feedback` exit 1 (review-queue test,
+fixed before the commit), and `related-serial` exit 1 with three failures caused by
+long Windows pytest temp paths (`FileNotFoundError` under deep `pytest-246` paths).
+Generated pilots (control plane, authored mode): 1,105 docs 3.87 s; 10,105 docs
+44.37 s, 75,714,560 B SQLite, 86,745,088 B sampled RSS; 50,105 docs 319.10 s,
+375,427,072 B, 88,014,848 B; 100,105 docs 697.07 s, 751,505,408 B, 89,874,432 B; each
+kept all clean rows and excluded 105. These are generated-pilot measurements, not
+production performance.
+
+Verified from code and tests at 42c133b: write-once signed lineage/resource/policy
+decisions bound to the input-manifest digest (`control.py`); sequenced plan
+allocation under a file lock; plan-digest-bound authorization; `run`, `resume`,
+`status`, `resume-check` (read-only), `verify`; a `HEURISTIC_REVIEW_ONLY` bounded
+token-overlap review queue that never excludes (`review.py`); matcher/renderer v3
+and known-lineage v3 policy identities; cumulative signed retry/byte reservations;
+UTF-8 byte-count verification; downstream proof specs (`transport.py`) for tokenizer
+fit, exact counting, tokenization, parallel tokenization, mixture planning and
+training input; a schema-2 `FinalExclusionReceipt` bridge; and a quota report that
+never turns missing counts into sufficiency.
+
+### Blocker A — hard aggregate storage (`capacity.py`)
+
+Every file a run can create has a plan-fixed upper bound:
+
+| Component | Bound | Kind |
+|---|---|---|
+| `facts.sqlite` (signatures, facts, band postings, union/group state, review queue) | `index_bytes` rounded to 4 KiB pages | HARD (`max_page_count`, page size pinned at 4,096) |
+| `facts.sqlite-journal` | `H + pages × (4104 + 2H)` with measured header `H` | DERIVED (DELETE mode journals each original page once, plus one header and at most one header of alignment per sync) |
+| `decisions.jsonl` (private) | `decision_bytes` (new field) | HARD (counted before write) |
+| staged/published `membership.jsonl` | `output_bytes`, counted once (same-directory rename) | HARD |
+| `completion.json` + `.tmp`, `state.json` + `.tmp` | 2 × 4 MiB, 2 × 256 KiB | HARD (checked before write) |
+| lock, benchmark index, per-file allocation slack | 4 KiB, `benchmark_bytes`, 10 × 2 MiB | reserved / fixed input |
+| other processes' disk use, process-tree RSS | — | MONITORED (sampled every 250 ms / 50 ms) |
+
+C05 has no source or membership staging beyond the above: inputs are read in place,
+and membership staging is the `.partial` directory. `plan` measures the scratch
+volume's journal geometry (`StorageGeometry`, bound into the plan) and
+`ExecutionPlan.identity()` refuses when `journal_bytes` is below the derived journal
+bound or `scratch_bytes` is below the worst-case sum. Nothing widens a ceiling; a
+larger ceiling is a new plan digest needing new authorization. Before `run`/`resume`
+creates any file, the geometry is re-measured (drift refuses), unaccounted entries
+refuse (WAL/SHM/foreign files), and each volume must hold `Σ(bound − present)` plus
+`free_bytes`. Present bytes (a hot journal, partial staging) count as allocated.
+The same physical-reserve check is sampled during the run, so another process
+consuming space refuses before this job could exhaust the volume. Signed state keeps
+`admissions`, `peak_aggregate_sampled` and `peak_journal_sampled` as maxima across
+attempts; completion reports them. Spent time, rows, comparisons and bytes read are
+still reserved before work and never reset.
+
+Measured geometry: SQLite 3.53.1, 512 B journal header, 4,104 B record, on both C:
+and G:. With the proposed defaults (now internally consistent: 128 GiB database,
+161 GiB journal, 16 GiB decisions, 32 GiB output, 352 GiB scratch) the worst case is
+363,223,060,992 B, of which 172,067,127,808 B is the conservative journal bound.
+The old defaults (32 GiB journal, 192 GiB scratch) fail this admission. Proposed
+values are not an operator decision. Limits: the journal bound is conservative
+(about 1.25× the database); the per-file slack assumes clusters of at most 2 MiB;
+free-space consumption by other processes is sampled; Windows directory-entry power-
+loss durability is not certified. Every run now measures geometry with fsyncs; the
+focused selection went from 23 s to about 45 s.
+
+### Blocker B — exact allocation and selected-training-membership
+
+`selection.py`, `freeze.py`, `bridge.py` and schema 3 of `FinalExclusionReceipt`
+implement the chain: C05 kept membership → tokenizer identity → exact counts →
+frozen quotas → per-allocation selection → selected-training-membership → signed
+selected pool → final freeze → training data block → training-input verifier →
+schema-3 claim receipt.
+
+* **Tokenizer identity:** fingerprint plus SHA-256 of every artifact file. A fitted
+  BPE must carry `c05-binding.json` naming this plan/completion (required in
+  protected mode; a mismatching binding refuses in any mode). Vocabulary must equal
+  the quota table's `tokenizer_vocab_size`.
+* **Exact counts** (`count-tokens`): re-reads the plan's exact input files (SHA-256,
+  size and row count must match), counts only kept `train` records whose full
+  canonical record digest and allocation match the completion, under
+  `c05-valid-targets-v1`, the same rule the token shard writer uses. Repeats refuse;
+  every kept training record must be counted. The output is sorted by doc ID,
+  byte-capped, SHA-256-bound and signed.
+* **Frozen quotas:** `frozen_requirements` re-derives 17 allocations from the quota
+  file bound by every sealed source, the IFM view split and the Common Pile
+  component split. It now reads the total from the table's own
+  `final_valid_targets`; the real table still says 6,000,000,000 and its SHA-256 is
+  bound by the sealed sources. Quotas and membership are unchanged.
+* **Selection** (`select`, policy `c05-quota-selection-v1`, seed 20260919): per
+  allocation, eligible records are kept `train` records with positive valid targets,
+  ordered by `sha256(seed, allocation, doc_id, content)` and then doc ID (an
+  index-ordered SQLite scan, no in-memory sort). Whole records are taken until the
+  quota; the crossing record keeps exactly the remaining valid targets as a token
+  prefix. Each allocation therefore lands exactly on its quota (`EXACT`) or is a
+  `DEFICIT`. Any deficit publishes nothing, writes a content-free deficit report and
+  exits 2: no substitution, renormalization, repetition or top-up.
+  Every count row is re-checked against C05 membership, so even a trusted-signer
+  artifact naming an excluded, uncovered or reallocated record refuses.
+* **Selected-training-membership:** `selected.jsonl` (doc ID, content digest,
+  allocation, counted and selected valid targets) plus a signed `selection.json`
+  (`c05_selected_pool_v1`) binding mode, plan, completion, input manifest, kept and
+  selected membership SHA-256s, source seals, counts digest, tokenizer, count rule,
+  quota/IFM/Common Pile/requirements digests, policy and per-allocation and
+  per-component totals.
+* **IFM / Common Pile:** general and planning, and the six Common Pile upstreams,
+  are separate allocations with their frozen final quotas. The component shard holds
+  exactly their sum and the exposure plan consumes it once, so the internal
+  allocation consumed equals the frozen one exactly.
+* **Final freeze** (`tokenize-selection`, `freeze`): one shard per logical component,
+  written from the C05 inputs filtered to the selection. Each offset carries the
+  content digest, completion, selection digest and counted/selected valid targets;
+  the writer recounts and refuses drift. Records are labelled with the mixture
+  component; the canonical source stays in `c05_canonical_source_id`. The freeze
+  verifies every shard's bytes and offsets, refuses missing, extra or swapped
+  shards, builds the recipe from unchanged quota shares (refusing shares that don't
+  apportion exactly), and compiles an exposure plan that must use exactly each shard
+  (no repetition, no remainder). It signs `c05_mix01_freeze_v1` and writes the
+  bounded training-data block.
+* **Training input:** `resolve_training_input` verifies a `c05_freeze` against the
+  proof (signature, selection, every shard's bytes, recipe, exposure plan, source
+  paths). A `Mix-01*` mixture without a freeze now refuses: kept membership alone is
+  insufficient. The existing 2 GiB bounded input contract is unchanged; the real 6B
+  payload (~12 GB uint16) cannot pass it, and no unbounded path was added.
+* **Mode:** authored chains run the identical code. Gates and the exposure planner
+  accept authored artifacts only through an explicit rehearsal flag, never under a
+  `Mix-01*` id. Artifacts record the mode, and Mix-01 training and official claims
+  refuse authored ones.
+* **Top-up:** any new or changed record changes file identity, so the input
+  manifest, plan and completion change too. Counting refuses changed inputs, the old
+  completion does not verify for the new plan, and the old selection and freeze do
+  not verify against the new gate. Renewed global C05 is required.
+
+### Downstream proof transport audit
+
+| Path | Proof checked against actual bytes |
+|---|---|
+| Tokenizer fit (`tokenizer train --c05-proof`) | each fit record through the membership gate; `c05-binding.json` published (protected proofs only) |
+| Exact count (`count-tokens`) | input file hashes and counts; full-record digest per kept record |
+| Tokenization (`tokenize-selection`, `TokenShardWriter`) | gate per record; selection and recount per record; signed attestation |
+| Parallel tokenization / assembly | per-lane gate and selection (`--c05-selection`); assembled shard re-verified and re-attested |
+| Mixture / exposure plan | every shard verified, no repeats across shards; binding in plan ID |
+| Final freeze | every component shard's bytes, offsets, counts and selection; recipe; exposure |
+| Training data / input resolution | `verify_training_freeze` re-verifies the freeze and every shard |
+| Frozen execution (`resolve_execution_config`) | exposure plan recompiled through the gate (rehearsal only for non-Mix-01 authored freezes) |
+| Official claim | schema-3 receipt plus independently derived claim binding |
+
+Remaining gaps: `tokenizer train --c05-proof` and `quota-report` still accept only
+protected proofs, so the generated rehearsal fits its tokenizer fixture through the
+same library function. `tokenizer count-exact` remains a totals-only report and
+`count-tokens` is the per-record allocation input.
+
+### Official receipt bridge
+
+`final-receipt --c05-proof --freeze` issues schema 3: `c05_binding` (global
+completion, kept membership, seals, policy, index, review decisions) plus
+`selection_binding` (selection, selected membership, freeze, tokenizer fingerprint
+and files, counts, quota, requirements, recipe, exposure plan, selected valid
+targets), with `output_membership_digest` set to the selected membership.
+`verify_benchmark_claim` requires schema 3 and compares the selection, freeze,
+tokenizer, quota and source-seal digests in an independently derived
+`BenchmarkClaimBinding` (`claim-binding`). Tests refuse each of: the same global C05
+with a changed selection; a changed tokenizer, quota, selected record or source
+seal; v1/v2 (global) receipts; and development receipts. A changed token count is
+refused at tokenization (recount drift) and yields a different selection digest.
+A top-up refuses until a renewed C05. Legacy receipt tests were updated so their
+acceptance cases use schema 3 and they assert that legacy and global receipts are
+refused.
+
+### Production-faithful synthetic completion
+
+`scripts/c05_synthetic_flow.py` (generated corpus; synthetic environment trust key;
+authored mode) ran: input manifest → three signed decisions → policy freeze → plan
+→ authorize → run interrupted inside grouping → `resume-check` → `resume` → `verify`
+→ proof spec → tokenizer fixture (BPE, vocabulary 320, fitted through the gate on
+kept train records) → `count-tokens` → `select` → `tokenize-selection` → `freeze` →
+`resolve_training_input` → `final-receipt` (schema 3) → `claim-binding` →
+`claim-check`. All steps after the tokenizer go through the operator CLI. Result:
+383 documents, 349 kept, 17 excluded, 17 duplicates (exactly the planted oracle); 2
+storage admissions; 17 allocations, all `EXACT`, 10,000 selected valid targets over
+34 records (17 truncated crossing records); the receipt is schema 3 / development;
+the official claim check refuses (exit 1) as required for an authored chain.
+See `allocation-resources/synthetic-flow.*`. This is not real-data evidence.
+
+### Validation (this continuation)
+
+Environment: Python 3.12.13, Windows-11-10.0.26200, existing CPU/eval environment
+(`UV_PROJECT_ENVIRONMENT=F:/Project/xlm-common-pile/.venv`, `PYTHONPATH` = this
+checkout's `src`), `uv run --offline --locked --no-sync`, HF/Transformers/uv offline,
+one BLAS thread per worker, tokenizer parallelism off. No install or lock change.
+Exact arguments, exits, wall time and sampled process-tree RSS are in
+`allocation-resources/*.json`, with LF-normalized logs. Selections overlap; do not add
+their counts together.
+
+| Run | Result |
+|---|---|
+| Baseline focused C05 selection before changes | 97 passed, 1 deselected, exit 0 |
+| New `test_c05_capacity.py` (aggregate admission, insufficient disk, mid-run exhaustion and resume, journal growth, hot-journal crash, WAL refusal, publication-crash overlap, hard page cap and no widening, readiness categories) | 9 passed |
+| New `test_c05_selection.py` (end-to-end oracle, determinism/digest stability, IFM/Common Pile exactness, excluded/reallocated/uncovered refusal, count drift, tokenizer binding, pool/freeze tampering, missing/swapped shards, training freeze, deficit, top-up, schema-3 claims, global receipt refusal, parallel transport, frozen-execution dry run) | 15 passed |
+| `related-parallel` (Astra's 32 files + new suites + operator + Essential-Web bulk; `not serial and not optional_dependency`, 16 workers) | 567 passed, exit 0, 37.4 s |
+| `related-serial` complement (`serial or optional_dependency`, `-n 0`, `--basetemp=C:/t/c05s`) | 19 passed, 568 deselected, exit 0, 623 s; includes Astra's three long-path failures, which pass with the short temp root |
+| `focused-final` (10 files, after the last test edits) | 225 passed, exit 0 |
+| `authored-pilot` (`test_bounded_authored_engine_pilot`) | 1 passed; 300 kept / 20 duplicates / 110 excluded, 11.8 s (Astra: 8.1 s) |
+| `synthetic-flow` | exit 0, 8.4 s, summary in `synthetic-flow-summary.json` |
+| Ruff format `--check`, Ruff check, strict mypy (27 source files + scripts via imports) | exit 0 / 0 / 0 |
+
+Retained failures: `mypy-strict-01` (exit 1, eight typing findings, fixed without
+suppressions) and `ruff-check-01` (exit 1, import order in a late test, fixed).
+During development: one fixture test needed an updated regex because admission now
+refuses an orphan staging entry before work starts (same refusal, earlier). Three
+legacy claim tests and one downstream test were changed to the stricter contract,
+and they now assert that v1/v2 receipts and kept-only Mix-01 training are refused.
+A first rehearsal planted no duplicates (an indexing slip in the generator; fixed).
+The full repository acceptance selection was NOT RUN. Real C05, live benchmarks and
+CUDA were NOT RUN.
+
+### Real metadata-only preflight
+
+`preparation verify`: exit 0, manifest `11724d92…84152` unchanged (2,035 files'
+metadata/sizes). `preparation preflight`: exit 2 (audit with new
+`blocker_categories`). `operator plan-readiness`: exit 2. Its engineering blockers
+are the unchanged `ENGINEERING_BLOCKERS` strings. Operator decisions missing:
+Gutenberg lineage, reviewed resources. Evidence missing: protected benchmark
+preparation receipt (`G:/XLM/c05` does not exist). Engineering checks: real quota
+table → 17 allocations, 6,000,000,000 targets, quota `9b16db76…`, IFM split
+`e001aff4…`, Common Pile split `d64b2b6e…`; proposed resources admit at
+363,223,060,992 B. The probe directory was removed afterwards.
+
+| Requirement | Status |
+|---|---|
+| Recovery of 42c133b, history preserved | VERIFIED |
+| Hard aggregate storage admission, crash/journal/publication accounting | IMPLEMENTED / VERIFIED authored scope |
+| Exact counts, deterministic quota selection, selected membership, signed pool | IMPLEMENTED / VERIFIED generated scope |
+| IFM and Common Pile frozen internal allocations | IMPLEMENTED / VERIFIED generated scope |
+| Final freeze, training-input verifier, parallel transport | IMPLEMENTED / VERIFIED generated scope |
+| Schema-3 official claim bridge | IMPLEMENTED / VERIFIED synthetic trust |
+| Protected execution gate (`ENGINEERING_BLOCKERS`) | BLOCKED: unchanged; needs maintainer decision |
+| Protected benchmark receipt, Gutenberg decision, resource decision | BLOCKED: operator evidence/decisions |
+| Bounded training path for the real 6B payload | OUT OF SCOPE / NOT IMPLEMENTED (2 GiB contract kept) |
+| Real C05 scan, production tokenizer, final 6B freeze, training, network, push | NOT RUN |
+
+Next command after maintainer and operator inputs: the runbook's readiness check,
+then the decision `record`/`freeze` commands, `plan --mode protected`, `authorize`,
+`run`, `verify` and the allocation chain.
+
 # Global C05 engine continuation (2026-10-02)
 
 **The engine has substantial authored validation, but production acceptance is

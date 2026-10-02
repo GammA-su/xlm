@@ -11,6 +11,7 @@ import pytest
 from xlm.core.contracts import CanonicalDocument
 from xlm.data.evidence_v2 import canonical
 from xlm.data.exclusion.artifacts import ExecutionPlan, InputFile, authorize, signed, verify_signed
+from xlm.data.exclusion.capacity import probe_geometry
 from xlm.data.exclusion.policy import C05Error, MatcherPolicy, ProductionPolicy, Resources
 from xlm.data.exclusion.runner import file_sha, run, verify_completion
 from xlm.data.exclusion.streaming import Pattern, StreamingMatcher, patterns, render
@@ -44,6 +45,21 @@ def document(
         {},
         "train",
     )
+
+
+def small_resources(**overrides: Any) -> Resources:
+    """Internally consistent authored ceilings (64 MiB database, ~197 MiB worst case)."""
+    values: dict[str, Any] = {
+        "free_bytes": 0,
+        "index_bytes": 64 * 1024**2,
+        "journal_bytes": 96 * 1024**2,
+        "decision_bytes": 8 * 1024**2,
+        "output_bytes": 8 * 1024**2,
+        "benchmark_bytes": 8 * 1024**2,
+        "scratch_bytes": 256 * 1024**2,
+    }
+    values.update(overrides)
+    return Resources(**values)
 
 
 def matcher() -> StreamingMatcher:
@@ -178,7 +194,8 @@ def setup_run(
         benchmark_receipt_digest=receipt["digest"],
         index_sha256=file_sha(index),
         policy=policy or ProductionPolicy(diagnostic_bytes=0, quick_bytes=0, audit_bytes=0),
-        resources=resources or Resources(free_bytes=0),
+        resources=resources or small_resources(),
+        storage=probe_geometry(root / "scratch"),
         data_root=str(data),
         scratch_root=str(root / "scratch"),
         output_root=str(root / "output"),
@@ -322,15 +339,15 @@ def test_stale_bindings_refused(tmp_path: Path, change: str) -> None:
     "field,value",
     [
         ("ram_bytes", 1),
-        ("scratch_bytes", 1),
         ("output_bytes", 1),
+        ("decision_bytes", 1),
         ("document_bytes", 20),
         ("document_tokens", 2),
         ("free_bytes", 10**18),
     ],
 )
 def test_budget_refusal_never_publishes(tmp_path: Path, field: str, value: int) -> None:
-    resources = Resources.model_validate({**Resources(free_bytes=0).model_dump(), field: value})
+    resources = Resources.model_validate({**small_resources().model_dump(), field: value})
     plan, index, receipt = setup_run(tmp_path, [document("a", PROMPT)], resources=resources)
     with pytest.raises(C05Error):
         execute(plan, index, receipt)
@@ -476,7 +493,7 @@ run(plan,authorize(plan,'fixture',key),index=root/'authored-index.jsonl',benchma
 
 def test_spent_record_reservation_survives_abort(tmp_path: Path) -> None:
     plan, index, receipt = setup_run(
-        tmp_path, [document("a", PROMPT)], resources=Resources(free_bytes=0, attempted_records=1)
+        tmp_path, [document("a", PROMPT)], resources=small_resources(attempted_records=1)
     )
 
     def crash(event: str) -> None:
@@ -523,12 +540,8 @@ def test_bounded_authored_engine_pilot(tmp_path: Path) -> None:
         replace(document(f"child-{n:04d}", f"Seed derivative {n}"), parent_ids=[f"hit-{n:04d}"])
         for n in range(10)
     )
-    limits = Resources(
-        free_bytes=0,
+    limits = small_resources(
         ram_bytes=1024**3,
-        scratch_bytes=128 * 1024**2,
-        index_bytes=64 * 1024**2,
-        output_bytes=8 * 1024**2,
         records=430,
         attempted_records=2048,
         files=430,

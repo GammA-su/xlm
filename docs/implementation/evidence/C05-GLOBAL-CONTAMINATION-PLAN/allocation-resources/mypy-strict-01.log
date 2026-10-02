@@ -1,0 +1,10 @@
+src\xlm\data\exclusion\capacity.py:52: error: Incompatible types in assignment (expression has type "int", variable has type "Literal[4096]")  [assignment]
+src\xlm\data\exclusion\gates.py:134: error: Unused "type: ignore" comment  [unused-ignore]
+src\xlm\training\inputs.py:313: error: Incompatible types in assignment (expression has type "dict[str, str] | None", variable has type "dict[str, Any]")  [assignment]
+src\xlm\training\inputs.py:354: error: Incompatible types in assignment (expression has type "dict[str, str] | None", variable has type "dict[str, Any]")  [assignment]
+scripts\c05_synthetic_flow.py:176: error: Value of type variable "SupportsRichComparisonT" of "sorted" cannot be "int | str | None"  [type-var]
+scripts\c05_synthetic_flow.py:257: error: Argument 8 to "build" has incompatible type "**dict[str, str]"; expected "ReviewPolicy | None"  [arg-type]
+scripts\c05_synthetic_flow.py:349: error: Returning Any from function declared to return "Path"  [no-any-return]
+tests\test_c05_selection.py:45: error: The return type of a generator function should be "Generator" or one of its supertypes  [misc]
+pyproject.toml: note: unused section(s): module = ['lm_eval', 'lm_eval.*']
+Found 8 errors in 5 files (checked 26 source files)

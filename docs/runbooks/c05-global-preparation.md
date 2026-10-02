@@ -1,5 +1,80 @@
 # Global C05 preparation
 
+**Current state (2026-10-02, allocation/resource continuation):** the operator
+control plane, hard aggregate storage admission and the final allocation chain
+(exact counts, quota selection, selected-training-membership, final freeze, training
+input and schema-3 claim receipt) exist and pass authored/generated tests.
+**Protected plan creation/execution remain disabled in code**: the recorded
+`ENGINEERING_BLOCKERS` list and `require_engine_acceptance` were left unchanged and
+need an explicit maintainer decision (see the report). Missing operator inputs:
+protected benchmark preparation receipt, Gutenberg lineage decision and reviewed
+resource decision. Sections further below are historical unless they say otherwise.
+
+## Readiness check (metadata only)
+
+```powershell
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator plan-readiness --manifest docs/implementation/evidence/C05-GLOBAL-CONTAMINATION-PLAN/input-manifest.json --ifm-split G:/XLM/calib/requirement_splits/ifm_behaviors_general_planning.json --geometry-probe-dir G:/XLM/temp/c05-geometry-probe
+```
+
+Expected exit 2. The JSON separates `engineering_blockers`, `operator_decisions`,
+`protected_evidence` and `engineering_checks`. The checks re-derive the 17 frozen
+allocations (6,000,000,000 valid targets) from the real quota table, IFM split and
+Common Pile split, and admit the *proposed* `Resources()` defaults against the SQLite
+journal geometry measured in the probe directory (a few kB, removed afterwards).
+A present decision/receipt file is only "present"; `plan` verifies it.
+
+## Storage admission (applies to every run)
+
+`plan` measures the scratch volume's SQLite rollback-journal geometry and binds it.
+The plan refuses unless `journal_bytes` covers the derived journal bound and
+`scratch_bytes` covers the worst case of: facts database (`index_bytes`, hard SQLite
+page cap), derived rollback journal, private decisions (`decision_bytes`, hard),
+membership staging/publication (`output_bytes`, hard), completion/state envelopes
+(hard), locks, benchmark index and per-file allocation slack. Before creating any
+file, `run`/`resume` re-measure the geometry, refuse unaccounted entries (WAL/SHM,
+foreign files) and require each volume to hold the remaining growth
+(`bound - present`) plus `free_bytes`. The same reserve check is sampled during the
+run. Nothing widens a ceiling; a larger ceiling is a new plan and authorization.
+With the proposed defaults the worst case is 363,223,060,992 B (512 B journal
+header measured on C: and G:), inside the proposed 352 GiB scratch ceiling.
+
+## Allocation chain after a verified completion
+
+All commands take an explicit proof specification (`--c05-proof`), a JSON object
+with `plan`, `manifest`, `completion`, `trust`, `scratch`, `plan_digest`,
+`completion_digest` and, for signing shard attestations, `signer` and
+`signer_key_env`. Artifacts are write-once and record the plan mode; an authored
+chain is a rehearsal that Mix-01 training and official claims refuse.
+
+```powershell
+$cli = 'uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator'
+# 1. Exact per-record valid-target counts over every kept training record.
+#    The tokenizer directory must carry c05-binding.json for this completion.
+Invoke-Expression "$cli count-tokens --c05-proof <proof.json> --tokenizer <tokenizer-dir> --scratch <scratch> --output <counts-dir> --issuer <issuer> --key-env <KEY_ENV>"
+# 2. Deterministic exact selection per frozen allocation (exit 2 + report on deficit).
+Invoke-Expression "$cli select --c05-proof <proof.json> --tokenizer <tokenizer-dir> --scratch <scratch> --counts <counts-dir> --quotas recipes/mixtures/mix01_quotas_6b.yaml --ifm-split G:/XLM/calib/requirement_splits/ifm_behaviors_general_planning.json --deficit-report <deficit.json> --output <selection-dir> --issuer <issuer> --key-env <KEY_ENV>"
+# 3. One shard per logical component, exactly the selected records.
+Invoke-Expression "$cli tokenize-selection --c05-proof <proof.json> --tokenizer <tokenizer-dir> --selection <selection-dir> --output-root <shards-dir>"
+# 4. Signed final freeze plus the bounded training-data block.
+Invoke-Expression "$cli freeze --c05-proof <proof.json> --tokenizer <tokenizer-dir> --selection <selection-dir> --shards <shards-dir> --output <freeze-dir> --issuer <issuer> --key-env <KEY_ENV>"
+# 5. Schema-3 receipt, independently derived claim binding and the claim check.
+Invoke-Expression "$cli final-receipt --plan <plan.json> --benchmark-receipt <receipt.json> --c05-proof <proof.json> --freeze <freeze-dir>/freeze.json --output <final-receipt.json> --trust <trust.json> --issuer <issuer> --key-env <KEY_ENV>"
+Invoke-Expression "$cli claim-binding --c05-proof <proof.json> --plan <plan.json> --freeze <freeze-dir>/freeze.json --checkpoint-hash <checkpoint> --suite-fingerprint <suite> --output <claim-binding.json>"
+Invoke-Expression "$cli claim-check --receipt <final-receipt.json> --binding <claim-binding.json> --trust <trust.json>"
+```
+
+A deficit never substitutes across allocations, renormalizes, repeats or tops up:
+acquire more for that same allocation under a new reviewed acquisition, then build
+a new input manifest and rerun global C05; every older count/selection/freeze is
+then stale. `python -m xlm.data.parallel_tokens ... --c05-proof <proof>
+--c05-selection <selection-dir>` is the parallel alternative to step 3 for one
+component. The generated end-to-end rehearsal is `python -m scripts.c05_synthetic_flow
+--root <new-dir> --output <summary.json>` (`PYTHONPATH` must include the checkout
+root). The real 6B token payload exceeds the existing 2 GiB bounded
+training-input contract; no unbounded training path was added.
+
+## Historical engine notes
+
 The engine continuation now has authored streaming/recovery and low-level gate
 tests. **Protected plan creation/execution remain disabled in code.** The missing
 benchmark receipt is not the only blocker: production resource certification,

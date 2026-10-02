@@ -45,6 +45,37 @@ _FORBIDDEN_FIELDS = frozenset(
 )
 
 
+C05_BINDING_FIELDS = frozenset(
+    {
+        "plan_digest",
+        "completion_digest",
+        "benchmark_receipt_digest",
+        "source_seals",
+        "input_manifest_digest",
+        "membership_sha256",
+        "policy_digest",
+        "index_sha256",
+        "review_decisions",
+    }
+)
+# Schema 3: the exact quota-selected training membership, not only global kept rows.
+SELECTION_BINDING_FIELDS = frozenset(
+    {
+        "selection_digest",
+        "selected_membership_sha256",
+        "freeze_digest",
+        "tokenizer_fingerprint",
+        "tokenizer_files_digest",
+        "counts_digest",
+        "quota_sha256",
+        "requirements_digest",
+        "recipe_identity",
+        "exposure_plan_digest",
+        "selected_valid_targets",
+    }
+)
+
+
 class ReceiptValidationError(ValueError):
     """Raised when a final exclusion receipt is malformed, unsigned or untrusted."""
 
@@ -78,13 +109,14 @@ class FinalExclusionReceipt:
     notes: list[str] = field(default_factory=list)
     signature: str | None = None
     c05_binding: dict[str, Any] | None = None
+    selection_binding: dict[str, Any] | None = None
 
     def signing_payload(self) -> str:
         """Canonical, signature-excluding serialization used for signing."""
         body = {
             k: v
             for k, v in asdict(self).items()
-            if k != "signature" and not (k == "c05_binding" and v is None)
+            if k != "signature" and not (k in {"c05_binding", "selection_binding"} and v is None)
         }
         return json.dumps(body, sort_keys=True, separators=(",", ":"))
 
@@ -152,7 +184,7 @@ def verify_receipt(
     an unsigned receipt is tolerated, but the receipt is then explicitly not a
     final-exclusion claim.
     """
-    if receipt.schema_version not in {RECEIPT_SCHEMA_VERSION, "2"}:
+    if receipt.schema_version not in {RECEIPT_SCHEMA_VERSION, "2", "3"}:
         raise ReceiptValidationError(
             f"unsupported receipt schema version '{receipt.schema_version}'; "
             f"expected '{RECEIPT_SCHEMA_VERSION}'"
@@ -162,27 +194,28 @@ def verify_receipt(
         if not getattr(receipt, required):
             raise ReceiptValidationError(f"receipt is malformed: '{required}' is empty")
 
-    if receipt.schema_version == "2":
+    if receipt.schema_version != "3" and receipt.selection_binding is not None:
+        raise ReceiptValidationError("selection binding requires schema 3")
+    if receipt.schema_version in {"2", "3"}:
         binding = receipt.c05_binding
-        required_bindings = {
-            "plan_digest",
-            "completion_digest",
-            "benchmark_receipt_digest",
-            "source_seals",
-            "input_manifest_digest",
-            "membership_sha256",
-            "policy_digest",
-            "index_sha256",
-            "review_decisions",
-        }
-        if binding is None or set(binding) != required_bindings or receipt.dropped_doc_ids:
+        if binding is None or set(binding) != C05_BINDING_FIELDS or receipt.dropped_doc_ids:
             raise ReceiptValidationError("v2 requires content-free completion binding")
-        for name, expected in {
+        expected_bindings: dict[str, Any] = {
             "input_manifest_digest": receipt.corpus_input_digest,
-            "membership_sha256": receipt.output_membership_digest,
             "policy_digest": receipt.exclusion_policy_identity,
             "index_sha256": receipt.exclusion_index_identity,
-        }.items():
+        }
+        if receipt.schema_version == "2":
+            expected_bindings["membership_sha256"] = receipt.output_membership_digest
+        else:
+            # Global kept membership stays in c05_binding; the receipt's output is
+            # the exact selected training membership that the model consumes.
+            selection = receipt.selection_binding
+            if selection is None or set(selection) != SELECTION_BINDING_FIELDS:
+                raise ReceiptValidationError("v3 requires exact selected-membership binding")
+            if selection["selected_membership_sha256"] != receipt.output_membership_digest:
+                raise ReceiptValidationError("v3 selected membership binding mismatch")
+        for name, expected in expected_bindings.items():
             if binding[name] != expected:
                 raise ReceiptValidationError("v2 completion binding mismatch")
         if receipt.documents_dropped < 0 or receipt.documents_considered < 0:
@@ -248,6 +281,12 @@ class BenchmarkClaimBinding:
     output_membership_digest: str
     exclusion_policy_identity: str
     exclusion_index_identity: str
+    # Exact final training selection (schema-3 receipts); empty values refuse.
+    selection_digest: str = ""
+    freeze_digest: str = ""
+    tokenizer_fingerprint: str = ""
+    quota_sha256: str = ""
+    source_seals_digest: str = ""
 
 
 def verify_benchmark_claim(
@@ -259,6 +298,7 @@ def verify_benchmark_claim(
 
     Success establishes a screening receipt, never universal zero contamination.
     Acquisition approval, a development receipt and receipt IDs alone cannot pass.
+    Only schema 3 binds the quota-selected subset; a global kept set is refused.
     """
     if receipt is None or binding is None:
         raise ReceiptValidationError("official benchmark claims require a bound C05 receipt")
@@ -271,12 +311,31 @@ def verify_benchmark_claim(
         policy="protected",
         expected_corpus_digest=binding.corpus_input_digest,
     )
+    if receipt.schema_version != "3" or receipt.selection_binding is None:
+        raise ReceiptValidationError(
+            "official claims require a schema-3 receipt binding the exact selected training "
+            "membership; global C05 kept membership alone is insufficient"
+        )
     for key in (
         "output_membership_digest",
         "exclusion_policy_identity",
         "exclusion_index_identity",
     ):
         if getattr(receipt, key) != getattr(binding, key):
+            raise ReceiptValidationError(f"C05 receipt {key} differs from frozen training pool")
+    from xlm.data.evidence_v2.canonical import digest
+
+    selection = receipt.selection_binding
+    if receipt.c05_binding is None:
+        raise ReceiptValidationError("v3 requires content-free completion binding")
+    for key, actual in (
+        ("selection_digest", selection["selection_digest"]),
+        ("freeze_digest", selection["freeze_digest"]),
+        ("tokenizer_fingerprint", selection["tokenizer_fingerprint"]),
+        ("quota_sha256", selection["quota_sha256"]),
+        ("source_seals_digest", digest(receipt.c05_binding["source_seals"])),
+    ):
+        if actual != getattr(binding, key):
             raise ReceiptValidationError(f"C05 receipt {key} differs from frozen training pool")
 
 

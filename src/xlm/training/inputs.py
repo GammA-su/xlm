@@ -212,6 +212,7 @@ def resolve_training_input(data: dict[str, Any], paths: ArtifactPaths) -> tuple[
         "document_order",
         "c05_proof",
         "c05_binding",
+        "c05_freeze",
     }
     if unsupported:
         raise ValueError(f"unsupported training data fields: {sorted(unsupported)}; no fallback")
@@ -298,11 +299,19 @@ def resolve_training_input(data: dict[str, Any], paths: ArtifactPaths) -> tuple[
         }
         from xlm.data.exclusion.transport import verify_training_shards
 
-        proof = verify_training_shards(
-            data,
-            {name: r.directory for name, r in readers.items()},
-            production=recipe.mixture_id.casefold().replace("_", "-").startswith("mix-01"),
-        )
+        final = recipe.mixture_id.casefold().replace("_", "-").startswith("mix-01")
+        shards = {name: r.directory for name, r in readers.items()}
+        proof: dict[str, Any] | None
+        if data.get("c05_freeze") is not None:
+            from xlm.data.exclusion.freeze import verify_training_freeze
+
+            proof = verify_training_freeze(data, shards, production=final)
+        elif final:
+            # Global kept membership alone is insufficient: Mix-01 trains on the
+            # exact quota-selected subset bound by a signed selected-pool freeze.
+            raise ValueError("Mix-01 training requires a signed C05 selected-pool freeze")
+        else:
+            proof = verify_training_shards(data, shards)
         if proof is not None:
             identity["c05"] = proof
         order_manifest = None
@@ -323,6 +332,8 @@ def resolve_training_input(data: dict[str, Any], paths: ArtifactPaths) -> tuple[
         raise ValueError("sources/exposure_plan/document_order require an explicit mixture")
     tokens = data.get("synthetic_tokens")
     shard = data.get("pool_artifact")
+    if data.get("c05_freeze") is not None:
+        raise ValueError("a C05 selected-pool freeze binds an explicit mixture")
     if tokens is not None:
         if data.get("c05_proof") or data.get("c05_binding"):
             raise ValueError("synthetic token lists cannot carry corpus C05 proof")
@@ -341,12 +352,12 @@ def resolve_training_input(data: dict[str, Any], paths: ArtifactPaths) -> tuple[
     reader = _shard(path)
     from xlm.data.exclusion.transport import verify_training_shards
 
-    proof = verify_training_shards(data, {reader.manifest.source_id: path})
+    shard_proof = verify_training_shards(data, {reader.manifest.source_id: path})
     data["pool_artifact"] = str(path.resolve())
-    if proof is not None:
+    if shard_proof is not None:
         from xlm.data.evidence_v2.canonical import digest
 
-        return reader, digest({"shard": asdict(reader.manifest), "c05": proof})
+        return reader, digest({"shard": asdict(reader.manifest), "c05": shard_proof})
     return reader, hashlib.sha256(
         json.dumps(asdict(reader.manifest), sort_keys=True).encode()
     ).hexdigest()

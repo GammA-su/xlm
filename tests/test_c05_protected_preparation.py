@@ -10,6 +10,7 @@ import pytest
 
 from xlm.data.evidence_v2 import canonical
 from xlm.data.exclusion.artifacts import verify_benchmark
+from xlm.data.exclusion.capacity import probe_geometry
 from xlm.data.exclusion.policy import C05Error, MatcherPolicy, ProductionPolicy, Resources
 from xlm.data.exclusion.protected import MaterialSpec, build, inspect
 from xlm.data.exclusion.runner import file_sha, index_patterns
@@ -175,6 +176,7 @@ def test_authored_plan_binds_material_input_policy_limits_and_roots(tmp_path: Pa
         pins,
         ProductionPolicy(),
         Resources(free_bytes=0),
+        storage=probe_geometry(tmp_path / "scratch"),
         mode="authored",
         **arguments,
     )
@@ -191,6 +193,7 @@ def test_authored_plan_binds_material_input_policy_limits_and_roots(tmp_path: Pa
             pins,
             ProductionPolicy(),
             Resources(free_bytes=0),
+            storage=probe_geometry(tmp_path / "scratch"),
             **arguments,
         )
 

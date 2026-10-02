@@ -7,13 +7,13 @@ from typing import Any
 
 import pytest
 
-from test_c05_engine import KEY, document, setup_run
+from test_c05_engine import KEY, document, setup_run, small_resources
 from test_c05_engine import execute as engine_execute
 from xlm.core.contracts import CanonicalDocument
 from xlm.data.evidence_v2 import canonical
 from xlm.data.exclusion.artifacts import ExecutionPlan, signed
 from xlm.data.exclusion.control import main
-from xlm.data.exclusion.policy import C05Error, ProductionPolicy, Resources, ReviewPolicy
+from xlm.data.exclusion.policy import C05Error, ProductionPolicy, ReviewPolicy
 
 
 def test_operator_decision_write_once_and_explicit_choice(
@@ -71,7 +71,7 @@ def test_review_queue_caps_do_not_exclude_and_replay_is_unique(tmp_path: Path) -
     )
     docs = [document(str(n), "Why do silver bridges expand during summer?") for n in range(5)]
     plan, index, receipt = setup_run(
-        tmp_path, docs, policy=policy, resources=Resources(free_bytes=0, review_candidates=3)
+        tmp_path, docs, policy=policy, resources=small_resources(review_candidates=3)
     )
     result = engine_execute(plan, index, receipt)
     assert result["payload"]["excluded"] == 0
@@ -87,12 +87,12 @@ def test_byte_and_oversized_bucket_limits(tmp_path: Path) -> None:
         tmp_path,
         [document(str(i), "Some lengthy repeated authored document.") for i in range(4)],
         policy=ProductionPolicy(max_bucket_size=2),
-        resources=Resources(free_bytes=0, oversized_buckets=0),
+        resources=small_resources(oversized_buckets=0),
     )
     with pytest.raises(C05Error, match="oversized"):
         engine_execute(plan, index, receipt)
     with pytest.raises(C05Error, match="byte ceiling"):
-        plan.model_copy(update={"resources": Resources(bytes_read=1)}).identity()
+        plan.model_copy(update={"resources": small_resources(bytes_read=1)}).identity()
 
 
 def protected_gate_fixture(
@@ -211,6 +211,11 @@ def test_downstream_cli_tokenizer_exact_count_mixture_and_training(
         "sources": {"authored": str(tmp_path / "shards/authored")},
         "c05_proof": str(proof),
     }
+    # Mix-01 trains only on a signed selected-pool freeze; kept membership is not enough.
+    for final in (dict(data), {k: v for k, v in data.items() if k != "c05_proof"}):
+        with pytest.raises(ValueError, match="selected-pool freeze"):
+            resolve_training_input(final, ArtifactPaths(root=tmp_path / "artifacts"))
+    data["mixture"] = {**data["mixture"], "mixture_id": "authored-screened"}
     _, identity = resolve_training_input(data, ArtifactPaths(root=tmp_path / "artifacts"))
     assert data["c05_binding"]["plan_digest"] == plan.identity()
     assert len(identity) == 64
@@ -224,9 +229,6 @@ def test_downstream_cli_tokenizer_exact_count_mixture_and_training(
     canonical.write_canonical_json(training_path, training)
     validated = cli.invoke(root_app, ["train", str(training_path), "--dry-run"])
     assert validated.exit_code == 0, validated.output
-    without_proof = {k: v for k, v in data.items() if k not in {"c05_proof", "c05_binding"}}
-    with pytest.raises(C05Error, match="proof"):
-        resolve_training_input(without_proof, ArtifactPaths(root=tmp_path / "artifacts"))
     changed = clean.to_dict()
     changed["doc_id"] = "top-up"
     documents.write_bytes(canonical.canonical_bytes(changed) + b"\n")
@@ -413,7 +415,8 @@ def test_orphan_publication_is_refused(tmp_path: Path) -> None:
     stage = Path(plan.output_root) / (plan.identity() + ".partial")
     stage.mkdir(parents=True)
     (stage / "private-detail.json").write_text("authored orphan", encoding="utf-8")
-    with pytest.raises(C05Error, match="orphan staging"):
+    # Storage admission refuses the unaccounted entry before any work starts.
+    with pytest.raises(C05Error, match="unaccounted C05 scratch/staging"):
         engine_execute(plan, index, receipt)
     assert not (Path(plan.output_root) / plan.identity()).exists()
 

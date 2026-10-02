@@ -12,13 +12,16 @@ from collections.abc import Iterable, Iterator
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from filelock import FileLock
 
 from xlm.core.contracts import CanonicalDocument, TokenShardManifest
 from xlm.data.exclusion.gates import MembershipGate, screened_documents
 from xlm.tokenizers.base import BaseTokenizer
+
+if TYPE_CHECKING:
+    from xlm.data.exclusion.selection import SelectionGate
 
 
 @dataclass(frozen=True)
@@ -49,7 +52,11 @@ class TokenShardWriter:
         max_output_bytes: int | None = None,
         batch_size: int = 1,
         c05_gate: MembershipGate | None = None,
+        selection: SelectionGate | None = None,
     ) -> None:
+        if selection is not None and (c05_gate is None or selection.gate is not c05_gate):
+            raise ValueError("selected-membership shards require the same C05 gate")
+        self.selection = selection
         self.output_dir = output_dir
         self.shard_id = shard_id
         self.source_id = source_id
@@ -124,6 +131,25 @@ class TokenShardWriter:
             idx_path.open("wb") as idx_f,
         ):
             for doc, (token_ids, offsets) in self._encoded_documents(documents, add_special_tokens):
+                selection_record: dict[str, Any] = {}
+                if self.selection is not None:
+                    from xlm.data.exclusion.policy import C05Error
+
+                    # Exact counts are re-derived here; the allocation-crossing record
+                    # keeps exactly its selected valid targets (a token prefix).
+                    counted, chosen = self.selection.expect(doc, self.source_id)
+                    if max(0, len(token_ids) - 1) != counted:
+                        raise C05Error("exact token count drifted from the bound count artifact")
+                    token_ids, offsets = token_ids[: chosen + 1], offsets[: chosen + 1]
+                    selection_record = {
+                        # A logical-component shard: the mixture source labels the record;
+                        # the canonical source stays bound through c05_content.
+                        "source_id": self.source_id,
+                        "c05_canonical_source_id": doc.source_id,
+                        "c05_selection": self.selection.digest,
+                        "c05_counted_valid_targets": counted,
+                        "c05_selected_valid_targets": chosen,
+                    }
                 doc_token_count = len(token_ids)
 
                 # Preserve little-endian bytes and validation, but cross the
@@ -177,6 +203,7 @@ class TokenShardWriter:
 
                     idx_record["c05_content"] = digest(doc.to_dict())
                     idx_record["c05_receipt"] = self.c05_gate.receipt_digest
+                    idx_record.update(selection_record)
                 idx_line = (json.dumps(idx_record, ensure_ascii=False) + "\n").encode("utf-8")
                 charge(len(idx_line))
                 idx_f.write(idx_line)

@@ -61,6 +61,8 @@ class MembershipGate:
         ):
             raise C05Error("current corpus manifest differs from C05")
         completion = verify_completion(directory, plan, trusted)
+        self.plan = plan
+        self.directory = directory
         self.receipt_digest = str(completion["digest"])
         self.plan_digest = plan.identity()
         self.mode = plan.mode
@@ -123,15 +125,28 @@ class MembershipGate:
         ):
             raise C05Error("document is not exact screened training membership")
 
-    def verify_token_shard(self, directory: Path, *, reset_seen: bool = True) -> dict[str, Any]:
+    def lookup(self, doc_id: str) -> tuple[str, str, str, str, str, str | None] | None:
+        """Content digest, decision, split and allocation of one kept record."""
+        row = self.db.execute(
+            "SELECT content,decision,split,component,view,upstream FROM membership WHERE id=?",
+            (doc_id,),
+        ).fetchone()
+        return None if row is None else tuple(row)
+
+    def verify_token_shard(
+        self, directory: Path, *, reset_seen: bool = True, rehearsal: bool = False
+    ) -> dict[str, Any]:
         """Verify shard bytes plus every document against current kept membership.
 
         Token offsets bind original record content, not a receipt-ID assertion.
         The tokenizer itself is separately frozen by the existing shard manifest.
+        ``rehearsal`` lets an authored gate verify authored shards for an explicitly
+        authored chain; the attestation binds the mode, so neither can stand in for
+        the other, and production consumers never pass it.
         """
         from xlm.data.tokens import TokenShardReader
 
-        if self.mode != "protected":
+        if self.mode != "protected" and not (rehearsal and self.mode == "authored"):
             raise C05Error("authored membership cannot certify final token shards")
         reader = TokenShardReader(directory)
         reader.verify_integrity()

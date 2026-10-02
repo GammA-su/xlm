@@ -22,6 +22,15 @@ from xlm.core.contracts import CanonicalDocument
 from xlm.data.dedup.matchview import match_tokens
 from xlm.data.evidence_v2 import canonical
 from xlm.data.exclusion.artifacts import ExecutionPlan, signed, verify_signed
+from xlm.data.exclusion.capacity import (
+    COMPLETION_BYTES,
+    STATE_BYTES,
+    admit_runtime,
+    bounded_bytes,
+    physical_reserve,
+    storage_bounds,
+    summary,
+)
 from xlm.data.exclusion.disk import DiskGroups
 from xlm.data.exclusion.inputs import contained, read_metadata
 from xlm.data.exclusion.policy import C05Error, require_engine_acceptance
@@ -61,8 +70,15 @@ class Budget:
         self, plan: ExecutionPlan, work: Path, output: Path, state: dict[str, Any]
     ) -> None:
         self.plan, self.work, self.output, self.state = plan, work, output, state
+        self.identity = plan.identity()
+        self.index: Path | None = None
         self.peak_rss = 0
         self.peak_scratch = 0
+        self.peak_journal = 0
+        self.journal_bound = min(
+            plan.resources.journal_bytes,
+            storage_bounds(plan.resources, plan.storage)["facts_rollback_journal"],
+        )
         self._last_disk = 0.0
         self._last_ram = 0.0
         self.benchmark_bytes = 0
@@ -98,9 +114,18 @@ class Budget:
         for root in (self.work, self.output):
             if shutil.disk_usage(root).free < r.free_bytes:
                 raise C05Error("free-space reserve")
+        if self.index is not None:
+            # Sampled: refuses once other consumers leave too little for our growth.
+            physical_reserve(
+                r, self.plan.storage, self.work, self.output, self.identity, self.index
+            )
+        # Monitored sample of the derived-hard bound; a WAL/SHM file is never accounted.
         journals = sum(p.stat().st_size for p in self.work.glob("*-journal"))
-        if journals > r.journal_bytes:
+        self.peak_journal = max(self.peak_journal, journals)
+        if journals > self.journal_bound:
             raise C05Error("journal ceiling")
+        if any(self.work.glob("*-wal")) or any(self.work.glob("*-shm")):
+            raise C05Error("unaccounted SQLite WAL/shared-memory file")
 
 
 def run(
@@ -163,6 +188,9 @@ def run(
 
     for path in (work, output, work / "facts.sqlite", work / "state.json"):
         ensure_plain_path(path)
+    # Fail closed before creating any job file when a volume cannot hold the
+    # remaining worst-case growth; repeated under the lock before work starts.
+    admit_runtime(plan.resources, plan.storage, work, output, identity, index)
     work.mkdir(parents=True, exist_ok=True)
     output.mkdir(parents=True, exist_ok=True)
     with FileLock(str(work / "run.lock"), timeout=0):
@@ -184,6 +212,7 @@ def _locked(
     checkpoint: Callable[[str], None],
 ) -> dict[str, Any]:
     state_path = work / "state.json"
+    admission = admit_runtime(plan.resources, plan.storage, work, output, identity, index)
     if state_path.exists():
         state = verify_signed(read_metadata(state_path, digested=False), trusted)
         if state.get("plan") != identity:
@@ -195,9 +224,27 @@ def _locked(
             "stage_started": time.time(),
             "stage": "scan",
         }
-        canonical.write_canonical_json(state_path, signed(state, issuer, key))
     budget = Budget(plan, work, output, state)
     budget.benchmark_bytes = index.stat().st_size
+    budget.index = index
+
+    def save_state() -> None:
+        # Storage peaks are maxima over every attempt; a retry never resets them.
+        storage = dict(state.get("storage", {}))
+        for name, value in (
+            ("peak_aggregate_sampled", budget.peak_scratch),
+            ("peak_journal_sampled", budget.peak_journal),
+        ):
+            storage[name] = max(int(storage.get(name, 0)), value)
+        state["storage"] = storage
+        raw = canonical.canonical_bytes(signed(state, issuer, key))
+        canonical.write_atomic(state_path, bounded_bytes(raw, STATE_BYTES, "signed state"))
+
+    state["storage"] = {
+        **state.get("storage", {}),
+        "admissions": int(state.get("storage", {}).get("admissions", 0)) + 1,
+    }
+    save_state()
     credits = {"attempted_records": 0, "comparisons": 0, "bytes_read": 0}
 
     def spend(name: str, amount_needed: int = 1) -> None:
@@ -211,7 +258,7 @@ def _locked(
             if amount < amount_needed - credits[name]:
                 raise C05Error("spent " + name + " ceiling")
             state["spent_" + name] = spent + amount
-            canonical.write_canonical_json(state_path, signed(state, issuer, key))
+            save_state()
             credits[name] += amount
         credits[name] -= amount_needed
 
@@ -337,7 +384,7 @@ def _locked(
             checkpoint("file_committed")
         if state["stage"] == "scan":
             state.update(stage="group", stage_started=time.time())
-            canonical.write_canonical_json(state_path, signed(state, issuer, key))
+            save_state()
         if state["stage"] == "group":
             with groups.db:
                 groups.group(budget.check, lambda: spend("comparisons"))
@@ -357,7 +404,7 @@ def _locked(
                 checkpoint("grouped")
                 budget.check(disk=True)
             state.update(stage="publish", stage_started=time.time())
-            canonical.write_canonical_json(state_path, signed(state, issuer, key))
+            save_state()
         stored_group = groups.db.execute("SELECT value FROM seals WHERE key='groups'").fetchone()
         if stored_group is None or verify_signed(
             canonical.loads_strict(stored_group[0]), trusted
@@ -386,7 +433,7 @@ def _locked(
             ensure_plain_path(staged_file)
         # Only our two exact staging files are rewritten. No recursive deletion.
         membership = staging / "membership.jsonl"
-        total = kept = excluded = duplicate = written = 0
+        total = kept = excluded = duplicate = written = private_written = 0
         by_component: dict[str, dict[str, int]] = {}
         by_allocation: dict[str, dict[str, int]] = {}
         with (
@@ -432,6 +479,9 @@ def _locked(
                     "upstream_component": upstream,
                 }
                 raw = canonical.canonical_bytes(entry) + b"\n"
+                private_written += len(raw)
+                if private_written > plan.resources.decision_bytes:
+                    raise C05Error("private decision ledger ceiling")
                 private_stream.write(raw)
                 if decision == "kept":
                     written += len(raw)
@@ -461,6 +511,8 @@ def _locked(
             os.fsync(private_stream.fileno())
         if total != sum(f.documents for f in plan.files):
             raise C05Error("publication aggregate count mismatch")
+        budget.check(disk=True)
+        save_state()
         result = signed(
             {
                 "kind": "c05_completion_v2",
@@ -483,7 +535,13 @@ def _locked(
                 "review_decisions": plan.review_decisions,
                 "dedup_stats": dict(groups.db.execute("SELECT key,value FROM stats")),
                 "peak_rss_sampled": budget.peak_rss,
-                "peak_scratch_sampled": budget.peak_scratch,
+                "peak_scratch_sampled": state["storage"]["peak_aggregate_sampled"],
+                "storage": {
+                    **summary(storage_bounds(plan.resources, plan.storage)),
+                    "worst_case_bytes": admission["worst_case_bytes"],
+                    "admissions": state["storage"]["admissions"],
+                    "peak_journal_sampled": state["storage"]["peak_journal_sampled"],
+                },
                 "spent_work_reservations": {
                     name: int(state.get("spent_" + name, 0)) for name in credits
                 },
@@ -491,7 +549,10 @@ def _locked(
             issuer,
             key,
         )
-        canonical.write_canonical_json(staging / "completion.json", result)
+        canonical.write_atomic(
+            staging / "completion.json",
+            bounded_bytes(canonical.canonical_bytes(result), COMPLETION_BYTES, "completion"),
+        )
         budget.check(disk=True)
         checkpoint("before_publication")
         os.rename(staging, final)

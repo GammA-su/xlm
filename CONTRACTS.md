@@ -225,6 +225,25 @@ disabled pending full production acceptance; these tests do not satisfy the
 scientific requirements below or authorize tokenizer/training operations. See
 `docs/implementation/reports/C05-GLOBAL-CONTAMINATION-PLAN.md` for the current ledger.
 
+Allocation contract (2026-10-02, implemented; protected path still closed): the
+final Mix-01 training membership is a deterministic exact selection *from* C05 kept
+`train` membership, never the kept set itself. Exact valid targets use the frozen
+tokenizer bound to the same completion (`c05-valid-targets-v1`: every token of
+`encode(text, add_special_tokens=True)` but the first). Each frozen allocation
+(single-view components, IFM general/planning, the six Common Pile upstreams) is
+filled in `sha256(seed, allocation, doc_id, content)` order with whole records; the
+record crossing the quota keeps exactly the remaining valid targets as a token
+prefix. A deficit refuses: no cross-allocation substitution, renormalization,
+repetition or silent top-up. The signed selected pool binds completion, kept and
+selected membership SHA-256s, source seals, tokenizer, exact-count artifact,
+quota/IFM/Common Pile digests and policy. One shard per logical component must
+contain exactly its selected records with matching exact counts; the signed freeze
+binds those shard bytes, the unchanged quota shares and an exposure plan consuming
+each shard exactly once. A record not covered by the completion, an excluded or
+changed record, or any top-up invalidates the chain until a renewed global C05.
+C05 storage is admitted against deterministic worst-case bounds (hard SQLite page
+cap, derived rollback-journal bound, byte-counted writers) before a run starts.
+
 Deduplicate across all selected source families before assigning final train/validation splits. Implement exact hashes and a scalable near-duplicate method such as shingled MinHash/LSH with bounded candidate verification; do not use an all-pairs comparison. Algorithm, seeds, thresholds and deterministic survivor selection are frozen. Retain all source aliases and provenance of the surviving document.
 
 Keep known derivatives, books/chapters, conversations, URL/article versions and paraphrases sharing a seed in one lineage group where available. Near-duplicate detection has false positives/negatives: report estimates and sampled audits, not a perfect-clean guarantee. If new sources later merge formerly separate groups, refreeze the affected pool and invalidate comparisons; never quietly reuse now-leaking splits.

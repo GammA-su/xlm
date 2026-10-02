@@ -100,11 +100,19 @@ class ProductionPolicy(FrozenModel):
 
 
 class Resources(FrozenModel):
+    """Proposed ceilings; an operator decision must restate every field.
+
+    Defaults are internally consistent for a measured 512 B journal header: the
+    derived rollback-journal bound for a 128 GiB database is about 160.25 GiB and
+    the worst-case aggregate about 338.3 GiB (``capacity.storage_bounds``).
+    """
+
     ram_bytes: int = Field(default=24 * 1024**3, ge=1)
-    scratch_bytes: int = Field(default=192 * 1024**3, ge=1)
-    index_bytes: int = Field(default=128 * 1024**3, ge=1)
-    journal_bytes: int = Field(default=32 * 1024**3, ge=1)
+    scratch_bytes: int = Field(default=352 * 1024**3, ge=1)
+    index_bytes: int = Field(default=128 * 1024**3, ge=4096)
+    journal_bytes: int = Field(default=161 * 1024**3, ge=1)
     output_bytes: int = Field(default=32 * 1024**3, ge=1)
+    decision_bytes: int = Field(default=16 * 1024**3, ge=1)
     free_bytes: int = Field(default=32 * 1024**3, ge=0)
     document_bytes: int = Field(default=64 * 1024**2, ge=1)
     document_tokens: int = Field(default=2_000_000, ge=1)

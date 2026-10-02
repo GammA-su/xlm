@@ -28,7 +28,10 @@ def frozen_requirements(
     quota_sha = hashlib.sha256(raw).hexdigest()
     table = yaml.safe_load(raw)
     finals = table["final_quotas"]
-    if set(finals) != COMPONENTS or sum(finals.values()) != 6_000_000_000:
+    total = table["final_valid_targets"]
+    # The real table declares 6,000,000,000; sealed sources bind its SHA-256 below,
+    # so a substituted table cannot satisfy the production manifest.
+    if set(finals) != COMPONENTS or type(total) is not int or sum(finals.values()) != total:
         raise C05Error("frozen Mix-01 quota coverage/total changed")
     sources = {s["source_key"]: s for s in manifest["sources"]}
     for source in sources.values():
@@ -73,7 +76,8 @@ def frozen_requirements(
         "ifm_split_digest": split["digest"],
         "common_pile_split_digest": cp["digest"],
         "allocations": result,
-        "valid_target_quota": 6_000_000_000,
+        "valid_target_quota": total,
+        "final_quotas": dict(sorted(finals.items())),
         "tokenizer_vocab_size": table["tokenizer_vocab_size"],
     }
 

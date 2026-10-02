@@ -90,6 +90,14 @@ def preparation_audit(manifest: dict[str, Any], pins_path: Path) -> dict[str, An
             "Reviewed production resource bounds missing; authored scaling is not a decision",
             "Gutenberg whole-book lineage unknown; known-group policy needs explicit plan review",
         ],
+        "blocker_categories": {
+            "engineering": list(ENGINEERING_BLOCKERS),
+            "operator_decisions": [
+                "reviewed production resource decision",
+                "Gutenberg lineage decision (KNOWN_GROUP_ONLY or REQUIRE_VERIFIED_BOOK_LINEAGE)",
+            ],
+            "protected_evidence": ["protected benchmark preparation receipt"],
+        },
         "resource_observations": manifest["totals"],
         "execution_authorized": False,
         "limitations": [

@@ -13,6 +13,7 @@ import os
 import sqlite3
 import sys
 from pathlib import Path
+from typing import Any
 
 from xlm.data.acquisition.source_run import write_once
 from xlm.data.exclusion.artifacts import BenchmarkReceipt, ExecutionPlan
@@ -25,6 +26,64 @@ from xlm.data.exclusion.policy import (
     ReviewPolicy,
 )
 from xlm.data.exclusion.protected import MaterialSpec, build, inspect
+
+
+def readiness_report(args: argparse.Namespace) -> dict[str, Any]:
+    """Separate engineering blockers from operator decisions and protected evidence.
+
+    Presence of a decision/receipt file is not acceptance: the plan command verifies
+    signatures, bindings and the exact current manifest before allocating a plan.
+    """
+
+    def state(path: Path) -> str:
+        return "present; trusted verification at plan time" if path.is_file() else "missing"
+
+    decisions = {
+        "gutenberg_lineage_decision": state(args.lineage_policy),
+        "reviewed_resource_decision": state(args.resources),
+    }
+    evidence = {"protected_benchmark_preparation_receipt": state(args.benchmark_receipt)}
+    checks: dict[str, Any] = {}
+    if args.manifest is not None and args.ifm_split is not None:
+        from xlm.data.exclusion.quotas import frozen_requirements
+
+        requirements = frozen_requirements(
+            read_metadata(args.manifest), args.quotas, args.ifm_split
+        )
+        checks["frozen_quota_allocations"] = {
+            "allocations": len(requirements["allocations"]),
+            "valid_target_quota": requirements["valid_target_quota"],
+            "quota_sha256": requirements["quota_sha256"],
+            "ifm_split_digest": requirements["ifm_split_digest"],
+            "common_pile_split_digest": requirements["common_pile_split_digest"],
+        }
+    if args.geometry_probe_dir is not None:
+        from xlm.data.exclusion.capacity import admit_plan, probe_geometry
+
+        geometry = probe_geometry(args.geometry_probe_dir)
+        try:
+            admitted: dict[str, Any] = admit_plan(Resources(), geometry)
+        except C05Error as exc:
+            admitted = {"refused": str(exc)}
+        checks["proposed_resources_storage_admission"] = {
+            "proposal_only": True,
+            "geometry": geometry.model_dump(),
+            **admitted,
+        }
+    remaining = [
+        *(f"engineering: {b}" for b in ENGINEERING_BLOCKERS),
+        *(f"operator decision {k} {v}" for k, v in decisions.items() if v == "missing"),
+        *(f"evidence {k} {v}" for k, v in evidence.items() if v == "missing"),
+    ]
+    return {
+        "ready": False,
+        "plan_digest": None,
+        "engineering_blockers": list(ENGINEERING_BLOCKERS),
+        "operator_decisions": decisions,
+        "protected_evidence": evidence,
+        "engineering_checks": checks,
+        "blockers": remaining,
+    }
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -44,6 +103,12 @@ def main(argv: list[str] | None = None) -> int:
         "publish",
         "quota-report",
         "final-receipt",
+        "count-tokens",
+        "select",
+        "tokenize-selection",
+        "freeze",
+        "claim-binding",
+        "claim-check",
     }:
         from xlm.data.exclusion.control import main as control_main
 
@@ -76,6 +141,13 @@ def main(argv: list[str] | None = None) -> int:
         "--lineage-policy", type=Path, default=Path("G:/XLM/c05/lineage-policy.json")
     )
     readiness.add_argument("--resources", type=Path, default=Path("G:/XLM/c05/resources.json"))
+    # Optional metadata-only engineering checks; nothing here reads corpus text.
+    readiness.add_argument("--manifest", type=Path)
+    readiness.add_argument(
+        "--quotas", type=Path, default=Path("recipes/mixtures/mix01_quotas_6b.yaml")
+    )
+    readiness.add_argument("--ifm-split", type=Path)
+    readiness.add_argument("--geometry-probe-dir", type=Path)
     args = parser.parse_args(argv)
     try:
         if args.command == "schema":
@@ -94,30 +166,7 @@ def main(argv: list[str] | None = None) -> int:
             )
             return 0
         if args.command == "plan-readiness":
-            print(
-                json.dumps(
-                    {
-                        "ready": False,
-                        "plan_digest": None,
-                        "blockers": [
-                            *ENGINEERING_BLOCKERS,
-                            *(
-                                f"{name} missing: {path}"
-                                if not path.is_file()
-                                else f"{name} present; trusted verification required: {path}"
-                                for name, path in (
-                                    (
-                                        "protected benchmark preparation receipt",
-                                        args.benchmark_receipt,
-                                    ),
-                                    ("operator lineage policy", args.lineage_policy),
-                                    ("reviewed resource bounds", args.resources),
-                                )
-                            ),
-                        ],
-                    }
-                )
-            )
+            print(json.dumps(readiness_report(args), sort_keys=True))
             return 2
         spec = MaterialSpec.model_validate(read_metadata(args.spec, digested=False))
         if args.command == "inspect-local":

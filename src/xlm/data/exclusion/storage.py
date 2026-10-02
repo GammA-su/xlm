@@ -9,6 +9,8 @@ from typing import Any
 
 from xlm.data.exclusion.policy import C05Error
 
+PAGE_SIZE = 4096
+
 
 class OrderedConnection(sqlite3.Connection):
     """Require index-backed reads; refuse a planner change that adds a sorter.
@@ -40,12 +42,19 @@ def connect(
         raise C05Error("SQLite index ceiling is below one page")
     db = sqlite3.connect(path, factory=OrderedConnection)
     db.check = check
-    db.execute("PRAGMA journal_mode=DELETE")
+    # Fixed before any table exists; journal bounds are derived from this size.
+    db.execute(f"PRAGMA page_size={PAGE_SIZE}")
+    if str(db.execute("PRAGMA journal_mode=DELETE").fetchone()[0]).lower() != "delete":
+        db.close()
+        raise C05Error("SQLite rollback journal mode unavailable")
     db.execute("PRAGMA synchronous=FULL")
     db.execute("PRAGMA temp_store=MEMORY")
     db.execute("PRAGMA automatic_index=OFF")
     db.execute("PRAGMA mmap_size=0")
     db.execute("PRAGMA cache_size=-8192")
     page_size = int(db.execute("PRAGMA page_size").fetchone()[0])
+    if page_size != PAGE_SIZE:
+        db.close()
+        raise C05Error("existing SQLite page size differs from the accounted geometry")
     db.execute(f"PRAGMA max_page_count={max(1, ceiling // page_size)}")
     return db

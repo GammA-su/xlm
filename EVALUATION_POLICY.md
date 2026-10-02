@@ -11,6 +11,17 @@ replace the official evaluation `FinalExclusionReceipt` gate: that integration i
 still incomplete and protected execution is disabled. See the current
 [C05 ledger](docs/implementation/reports/C05-GLOBAL-CONTAMINATION-PLAN.md).
 
+**Official-claim binding (2026-10-02):** `verify_benchmark_claim` now accepts only a
+protected schema-3 `FinalExclusionReceipt`. Its `c05_binding` names the global C05
+completion (kept membership, seals, policy, index); its `selection_binding` names the
+signed final freeze of the exact quota-selected training membership, tokenizer,
+exact counts, quota table, recipe and exposure plan; `output_membership_digest` is
+the selected membership. The independently supplied `BenchmarkClaimBinding` must
+match selection, freeze, tokenizer, quota and source-seal digests as well as the
+earlier fields. Schema-1/2 receipts (global or legacy membership) and authored
+(development) chains cannot enable official claims. No protected schema-3 receipt
+exists yet.
+
 **P35 research selection:** [xlm-science-v1](docs/implementation/reports/P35-SCIENTIFIC-CONTRACT.md)
 specifies fixed-distribution held-out text CE as the same-tokenizer 50M primary
 endpoint, text BPB for tokenizer comparisons, and independent training-pair
@@ -64,13 +75,16 @@ never authorizes an uncontaminated or official benchmark claim. The
 (`valid`) from `official_benchmark_claims_allowed`. The latter stays false unless
 `xlm.data.exclusion.receipt.verify_benchmark_claim` verifies a protected, trusted
 receipt against independently supplied frozen training/evaluation lineage:
-checkpoint, suite, input corpus, kept membership, policy and exclusion index.
+checkpoint, suite, input corpus, exact selected training membership (schema 3,
+with selection/freeze/tokenizer/quota/seal identities), policy and exclusion index.
 That index/policy must cover all benchmark splits of the suite. Development
 receipts, receipt IDs alone, `none_declared`, mismatched pools and acquisition
 decisions cannot satisfy the gate. Success is `screened_with_limitations`, never
 proof of zero contamination. The CLI currently supplies no frozen-pool receipt,
-so its integrity check does not enable official claims. Mix-01 freeze integration
-remains outstanding; admission does not claim that exclusion has run.
+so its integrity check does not enable official claims. The Mix-01 freeze bridge
+(`final-receipt --c05-proof --freeze`, `claim-binding`, `claim-check`) is implemented
+and exercised only on generated authored chains; admission does not claim that
+exclusion has run.
 
 For final evaluation of custom code, export a reviewed scoring bundle, run it in a sandbox with read-only model artifacts, denied network, controlled outputs and a trusted scorer/adapter boundary. Merely placing code in another process is not a security guarantee. Where robust isolation is unavailable, run as development-exposed and say so rather than claiming a sealed result.
 

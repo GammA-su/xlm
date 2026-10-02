@@ -28,6 +28,7 @@ from xlm.data.exclusion.artifacts import (
     verify_benchmark,
     verify_signed,
 )
+from xlm.data.exclusion.capacity import probe_geometry
 from xlm.data.exclusion.identity import implementation_identity
 from xlm.data.exclusion.inputs import read_metadata, verify_input_manifest
 from xlm.data.exclusion.policy import C05Error, FrozenModel, ProductionPolicy, Resources
@@ -125,6 +126,8 @@ def create_plan(args: argparse.Namespace, trust: dict[str, bytes]) -> ExecutionP
             policy,
             Resources.model_validate(decisions["resources"].value),
             sequence=sequence,
+            # Measured on the actual scratch volume; the run re-measures and refuses drift.
+            storage=probe_geometry(args.scratch),
             scratch=args.scratch,
             output=args.output,
             **actual,
@@ -201,7 +204,47 @@ def parser() -> argparse.ArgumentParser:
     bridge.add_argument("--benchmark-receipt", type=Path, required=True)
     bridge.add_argument("--pins", type=Path, default=Path("manifests/eval_dataset_pins.yaml"))
     bridge.add_argument("--output", type=Path, required=True)
+    # Schema 3 (official claims): the signed freeze of exact selected membership.
+    bridge.add_argument("--c05-proof", type=Path)
+    bridge.add_argument("--freeze", type=Path)
     _trust(bridge, signing=True)
+    # Final allocation chain; each consumes the explicit proof specification.
+    counting = commands.add_parser("count-tokens")
+    selecting = commands.add_parser("select")
+    tokenizing = commands.add_parser("tokenize-selection")
+    freezing = commands.add_parser("freeze")
+    binding = commands.add_parser("claim-binding")
+    for command in (counting, selecting, tokenizing, freezing, binding):
+        command.add_argument("--c05-proof", type=Path, required=True)
+    for command in (counting, selecting, tokenizing, freezing):
+        command.add_argument("--tokenizer", type=Path, required=True)
+    for command in (counting, selecting):
+        command.add_argument("--scratch", type=Path, required=True)
+    for command in (counting, selecting, freezing):
+        command.add_argument("--output", type=Path, required=True)
+        command.add_argument("--issuer", required=True)
+        command.add_argument("--key-env", required=True)
+    selecting.add_argument("--counts", type=Path, required=True)
+    selecting.add_argument(
+        "--quotas", type=Path, default=Path("recipes/mixtures/mix01_quotas_6b.yaml")
+    )
+    selecting.add_argument("--ifm-split", type=Path, required=True)
+    selecting.add_argument("--deficit-report", type=Path, required=True)
+    for command in (tokenizing, freezing):
+        command.add_argument("--selection", type=Path, required=True)
+    tokenizing.add_argument("--output-root", type=Path, required=True)
+    tokenizing.add_argument("--batch-size", type=int, default=1)
+    freezing.add_argument("--shards", type=Path, required=True)
+    freezing.add_argument("--block-size", type=int, default=8192)
+    binding.add_argument("--plan", type=Path, required=True)
+    binding.add_argument("--freeze", type=Path, required=True)
+    binding.add_argument("--checkpoint-hash", required=True)
+    binding.add_argument("--suite-fingerprint", required=True)
+    binding.add_argument("--output", type=Path, required=True)
+    claim = commands.add_parser("claim-check")
+    claim.add_argument("--receipt", type=Path, required=True)
+    claim.add_argument("--binding", type=Path, required=True)
+    _trust(claim)
     for name in ("authorize", "run", "resume", "status", "resume-check", "verify", "publish"):
         command = commands.add_parser(name)
         command.add_argument("--plan", type=Path, required=True)
@@ -216,9 +259,110 @@ def parser() -> argparse.ArgumentParser:
     return result
 
 
+def allocation_command(args: argparse.Namespace) -> int:
+    """Counts, selection, tokenization and freeze over one verified C05 proof."""
+    from xlm.data.exclusion.transport import open_gate
+
+    # Authored chains run the identical code; every artifact records the mode and
+    # protected consumers (Mix-01 training, official claims) refuse authored ones.
+    with open_gate(args.c05_proof, allow_authored=True) as gate:
+        if gate is None:
+            raise C05Error("C05 proof absent")
+        if args.command == "claim-binding":
+            from dataclasses import asdict
+
+            from xlm.data.exclusion.bridge import claim_binding
+            from xlm.data.exclusion.freeze import verify_freeze
+
+            plan = ExecutionPlan.model_validate(read_metadata(args.plan, digested=False))
+            expected = claim_binding(
+                verify_freeze(args.freeze, gate),
+                plan,
+                checkpoint_hash=args.checkpoint_hash,
+                suite_fingerprint=args.suite_fingerprint,
+            )
+            write_once(args.output, asdict(expected))
+            print(json.dumps({"claim_binding": str(args.output), "mode": gate.mode}))
+            return 0
+        if args.command == "tokenize-selection":
+            from xlm.data.exclusion.freeze import tokenize_selection
+
+            shards = tokenize_selection(
+                gate, args.selection, args.tokenizer, args.output_root, batch_size=args.batch_size
+            )
+            print(json.dumps({"shards": sorted(shards), "mode": gate.mode}))
+            return 0
+        key = key_from_env(args.key_env)
+        if gate.trusted.get(args.issuer) != key:
+            raise C05Error("allocation signer is not trusted")
+        if args.command == "count-tokens":
+            from xlm.data.exclusion.selection import count_tokens
+
+            result = count_tokens(
+                gate, args.tokenizer, args.output, args.issuer, key, scratch=args.scratch
+            )
+        elif args.command == "select":
+            from xlm.data.exclusion.selection import SelectionDeficit, select
+
+            try:
+                result = select(
+                    gate,
+                    args.counts,
+                    args.tokenizer,
+                    args.quotas,
+                    args.ifm_split,
+                    args.output,
+                    args.issuer,
+                    key,
+                    scratch=args.scratch,
+                )
+            except SelectionDeficit as deficit:
+                write_once(args.deficit_report, deficit.report)
+                print(json.dumps({"deficit": True, "report": str(args.deficit_report)}))
+                return 2
+        else:
+            from xlm.data.exclusion.freeze import freeze
+
+            result = freeze(
+                gate,
+                args.c05_proof,
+                args.selection,
+                args.shards,
+                args.tokenizer,
+                args.output,
+                args.issuer,
+                key,
+                block_size=args.block_size,
+            )
+        print(json.dumps({"digest": result["digest"], "mode": result["payload"]["mode"]}))
+        return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     args = parser().parse_args(argv)
     try:
+        if args.command in {
+            "count-tokens",
+            "select",
+            "tokenize-selection",
+            "freeze",
+            "claim-binding",
+        }:
+            return allocation_command(args)
+        if args.command == "claim-check":
+            from xlm.data.exclusion.receipt import (
+                BenchmarkClaimBinding,
+                FinalExclusionReceipt,
+                verify_benchmark_claim,
+            )
+
+            verify_benchmark_claim(
+                FinalExclusionReceipt.load(args.receipt),
+                BenchmarkClaimBinding(**read_metadata(args.binding, digested=False)),
+                trust_from_file(args.trust),
+            )
+            print(json.dumps({"official_claim_binding": "verified"}))
+            return 0
         if args.command == "quota-report":
             from xlm.data.exclusion.quotas import frozen_requirements, quota_report
             from xlm.data.exclusion.transport import open_gate
@@ -307,16 +451,22 @@ def main(argv: list[str] | None = None) -> int:
         identity = plan.identity()
         if args.command == "final-receipt":
             from xlm.data.exclusion.bridge import final_receipt
+            from xlm.data.exclusion.transport import open_gate
 
-            final_claim = final_receipt(
-                Path(plan.output_root) / identity,
-                plan,
-                load_envelope(args.benchmark_receipt),
-                benchmark_requirements(args.pins)["tasks"],
-                trust,
-                args.issuer,
-                key_from_env(args.key_env),
-            )
+            if (args.freeze is None) != (args.c05_proof is None):
+                raise C05Error("schema-3 receipts need both the C05 proof and the freeze")
+            with open_gate(args.c05_proof, allow_authored=True) as gate:
+                final_claim = final_receipt(
+                    Path(plan.output_root) / identity,
+                    plan,
+                    load_envelope(args.benchmark_receipt),
+                    benchmark_requirements(args.pins)["tasks"],
+                    trust,
+                    args.issuer,
+                    key_from_env(args.key_env),
+                    freeze=args.freeze,
+                    gate=gate,
+                )
             write_once(args.output, final_claim.to_dict())
             print(json.dumps({"receipt_id": final_claim.receipt_id, "mode": final_claim.mode}))
             return 0

@@ -11,6 +11,7 @@ from typing import Annotated, Any, Literal
 from pydantic import Field
 
 from xlm.data.evidence_v2 import canonical
+from xlm.data.exclusion.capacity import StorageGeometry, admit_plan
 from xlm.data.exclusion.inputs import read_metadata
 from xlm.data.exclusion.policy import (
     C05Error,
@@ -97,6 +98,7 @@ class ExecutionPlan(FrozenModel):
     index_sha256: Sha
     policy: ProductionPolicy
     resources: Resources
+    storage: StorageGeometry
     data_root: str
     scratch_root: str
     output_root: str
@@ -109,6 +111,8 @@ class ExecutionPlan(FrozenModel):
 
     def identity(self) -> str:
         self.policy.identity()
+        # Deterministic worst-case storage must fit the reviewed ceilings.
+        admit_plan(self.resources, self.storage)
         roots = [Path(x).resolve() for x in (self.data_root, self.scratch_root, self.output_root)]
         for i, root in enumerate(roots):
             for other in roots[i + 1 :]:
@@ -211,6 +215,7 @@ def make_plan(
     resources: Resources,
     *,
     sequence: int,
+    storage: StorageGeometry,
     scratch: Path,
     output: Path,
     code_commit: str,
@@ -245,6 +250,7 @@ def make_plan(
         index_sha256=receipt.index_sha256,
         policy=policy,
         resources=resources,
+        storage=storage,
         data_root=manifest["data_root"],
         scratch_root=str(scratch.resolve()),
         output_root=str(output.resolve()),

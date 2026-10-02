@@ -26,7 +26,11 @@ from xlm.data.exclusion import (
     sign_receipt,
     verify_receipt,
 )
-from xlm.data.exclusion.receipt import BenchmarkClaimBinding, verify_benchmark_claim
+from xlm.data.exclusion.receipt import (
+    SELECTION_BINDING_FIELDS,
+    BenchmarkClaimBinding,
+    verify_benchmark_claim,
+)
 
 TRUSTED_ISSUER = "operator_holdout_service"
 TRUSTED_KEY = b"synthetic-operator-key-for-tests-only"
@@ -63,7 +67,48 @@ def test_signed_receipt_from_a_trusted_issuer_verifies() -> None:
     verify_receipt(signed, {TRUSTED_ISSUER: TRUSTED_KEY}, policy="protected")
 
 
+def selected_receipt(**overrides: object) -> FinalExclusionReceipt:
+    """Unsigned protected schema-3 receipt: global C05 plus exact selected membership."""
+    from xlm.data.evidence_v2.canonical import digest
+
+    c05 = {
+        "plan_digest": "1" * 64,
+        "completion_digest": "2" * 64,
+        "benchmark_receipt_digest": "3" * 64,
+        "source_seals": {"authored": "4" * 64},
+        "input_manifest_digest": "5" * 64,
+        "membership_sha256": "a" * 64,
+        "policy_digest": "policy_abc123",
+        "index_sha256": "index_def456",
+        "review_decisions": {},
+    }
+    selection: dict[str, object] = {name: digest(name) for name in SELECTION_BINDING_FIELDS}
+    selection.update(selected_membership_sha256="b" * 64, selected_valid_targets=1000)
+    base = {
+        "receipt_id": "c05-synthetic",
+        "schema_version": "3",
+        "issued_at": "2026-10-02T00:00:00+00:00",
+        "issuer_id": TRUSTED_ISSUER,
+        "mode": "protected",
+        "corpus_input_digest": "5" * 64,
+        "exclusion_policy_identity": "policy_abc123",
+        "exclusion_index_identity": "index_def456",
+        "output_membership_digest": "b" * 64,
+        "documents_considered": len(CORPUS),
+        "documents_dropped": len(DROPPED),
+        "aggregate_counts": {"kept": 8, "excluded": 2, "duplicates": 0},
+        "c05_binding": c05,
+        "selection_binding": selection,
+    }
+    base.update(overrides)
+    return FinalExclusionReceipt(**base)  # type: ignore[arg-type]
+
+
 def claim_binding(receipt: FinalExclusionReceipt) -> BenchmarkClaimBinding:
+    from xlm.data.evidence_v2.canonical import digest
+
+    selection = receipt.selection_binding or {}
+    seals = (receipt.c05_binding or {}).get("source_seals")
     return BenchmarkClaimBinding(
         checkpoint_hash="authored-checkpoint",
         suite_fingerprint="authored-suite",
@@ -71,11 +116,16 @@ def claim_binding(receipt: FinalExclusionReceipt) -> BenchmarkClaimBinding:
         output_membership_digest=receipt.output_membership_digest,
         exclusion_policy_identity=receipt.exclusion_policy_identity,
         exclusion_index_identity=receipt.exclusion_index_identity,
+        selection_digest=str(selection.get("selection_digest", "")),
+        freeze_digest=str(selection.get("freeze_digest", "")),
+        tokenizer_fingerprint=str(selection.get("tokenizer_fingerprint", "")),
+        quota_sha256=str(selection.get("quota_sha256", "")),
+        source_seals_digest=digest(seals) if seals is not None else "",
     )
 
 
 def test_acquisition_admission_never_substitutes_for_c05() -> None:
-    signed = sign_receipt(protected_receipt(), TRUSTED_KEY)
+    signed = sign_receipt(selected_receipt(), TRUSTED_KEY)
     binding = claim_binding(signed)
     trusted = {TRUSTED_ISSUER: TRUSTED_KEY}
     with pytest.raises(ReceiptValidationError, match="bound C05 receipt"):
@@ -85,8 +135,23 @@ def test_acquisition_admission_never_substitutes_for_c05() -> None:
     verify_benchmark_claim(signed, binding, trusted)
     with pytest.raises(ReceiptValidationError, match="development"):
         verify_benchmark_claim(
-            sign_receipt(protected_receipt(mode="development"), TRUSTED_KEY), binding, trusted
+            sign_receipt(selected_receipt(mode="development"), TRUSTED_KEY), binding, trusted
         )
+    # A legacy receipt over global doc IDs never binds the selected training subset.
+    legacy = sign_receipt(protected_receipt(), TRUSTED_KEY)
+    with pytest.raises(ReceiptValidationError, match="selection_digest"):
+        verify_benchmark_claim(legacy, claim_binding(legacy), trusted)
+    with pytest.raises(ReceiptValidationError, match="schema-3"):
+        verify_benchmark_claim(legacy, replace(binding, **_legacy_pool(legacy)), trusted)
+
+
+def _legacy_pool(receipt: FinalExclusionReceipt) -> dict[str, str]:
+    return {
+        "corpus_input_digest": receipt.corpus_input_digest,
+        "output_membership_digest": receipt.output_membership_digest,
+        "exclusion_policy_identity": receipt.exclusion_policy_identity,
+        "exclusion_index_identity": receipt.exclusion_index_identity,
+    }
 
 
 @pytest.mark.parametrize(
@@ -96,11 +161,17 @@ def test_acquisition_admission_never_substitutes_for_c05() -> None:
         "output_membership_digest",
         "exclusion_policy_identity",
         "exclusion_index_identity",
+        "selection_digest",
+        "freeze_digest",
+        "tokenizer_fingerprint",
+        "quota_sha256",
+        "source_seals_digest",
     ],
 )
 def test_c05_claim_requires_exact_frozen_pool(field: str) -> None:
-    signed = sign_receipt(protected_receipt(), TRUSTED_KEY)
+    signed = sign_receipt(selected_receipt(), TRUSTED_KEY)
     binding = claim_binding(signed)
+    verify_benchmark_claim(signed, binding, {TRUSTED_ISSUER: TRUSTED_KEY})
     for value in ("foreign", "none_declared", ""):
         with pytest.raises(ReceiptValidationError):
             verify_benchmark_claim(

@@ -1,0 +1,26 @@
+I001 [*] Import block is un-sorted or un-formatted
+   --> tests\test_c05_selection.py:533:5
+    |
+531 |       flow: dict[str, Any], tmp_path: Path
+532 |   ) -> None:
+533 | /     from test_final_acceptance import tiny_plan
+534 | |     from typer.testing import CliRunner
+535 | |
+536 | |     from xlm.cli.main import app as root_app
+537 | |     from xlm.tokenizers.bpe import ByteLevelBPETokenizer
+    | |________________________________________________________^
+538 |
+539 |       root = flow["root"]
+    |
+help: Organize imports
+    |
+532 | ) -> None:
+    -     from test_final_acceptance import tiny_plan
+533 |     from typer.testing import CliRunner
+534 |
+535 +     from test_final_acceptance import tiny_plan
+536 |     from xlm.cli.main import app as root_app
+    |
+
+Found 1 error.
+[*] 1 fixable with the `--fix` option.

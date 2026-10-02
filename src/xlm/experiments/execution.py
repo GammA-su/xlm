@@ -201,7 +201,13 @@ def resolve_execution_config(config: dict[str, Any]) -> tuple[dict[str, Any], di
         batcher = MixtureBatcher(data_source.recipe, data_source.readers)
         from xlm.data.exclusion.transport import open_gate
 
-        with open_gate(Path(data["c05_proof"]) if data.get("c05_proof") else None) as gate:
+        # A frozen authored rehearsal stays authored; Mix-01 ids still need protected.
+        rehearsal = bool(
+            data.get("c05_freeze")
+        ) and not data_source.recipe.mixture_id.casefold().replace("_", "-").startswith("mix-01")
+        with open_gate(
+            Path(data["c05_proof"]) if data.get("c05_proof") else None, allow_authored=rehearsal
+        ) as gate:
             expected = compile_exposure_plan(
                 data_source.recipe,
                 validate_mixture(data_source.recipe, batcher.availability),
@@ -211,6 +217,7 @@ def resolve_execution_config(config: dict[str, Any]) -> tuple[dict[str, Any], di
                 c05_shards={s: r.directory for s, r in data_source.readers.items()}
                 if gate
                 else None,
+                c05_rehearsal=gate is not None and gate.mode == "authored",
             ).to_dict()
         if exposure != expected:
             raise ValueError(

@@ -1,3 +1,23 @@
+> **GLOBAL C05 ALLOCATION/RESOURCE CONTINUATION (2026-10-02): ENGINE NEEDS A GATE DECISION.**
+>
+> Recovered Astra checkpoint `42c133b` intact (clean; also on `rescue/c05-post-astra-shutdown`).
+> Implemented hard aggregate storage admission (`capacity.py`: SQLite page cap,
+> measured-geometry rollback-journal bound, byte-counted writers, per-volume reserve
+> before start and sampled during runs, no widening) and the exact final allocation
+> chain (`selection.py`, `freeze.py`, schema-3 `FinalExclusionReceipt`): exact counts →
+> deterministic per-allocation quota selection with exact crossing-record truncation
+> → signed selected pool → one-shard-per-component freeze → training-input verifier →
+> official claim binding. A generated end-to-end rehearsal through the operator CLI
+> matched its oracle (383 docs, 17 excluded, 17 duplicates; 17/17 allocations exact;
+> 10,000 targets). Official claims now need schema 3; Mix-01 training needs the freeze.
+> **Protected execution stays closed:** the attempt to clear `ENGINEERING_BLOCKERS`
+> was refused by the session permission policy and is left for a maintainer decision.
+> Operator inputs still missing: protected benchmark receipt, Gutenberg lineage
+> decision, reviewed resource decision. No real scan, tokenizer, freeze, training,
+> network or push. [Report](reports/C05-GLOBAL-CONTAMINATION-PLAN.md),
+> [evidence](evidence/C05-GLOBAL-CONTAMINATION-PLAN/allocation-resources/),
+> [runbook](../runbooks/c05-global-preparation.md).
+
 > **GLOBAL C05 ENGINE CONTINUATION (2026-10-02): PRODUCTION ACCEPTANCE INCOMPLETE.**
 >
 > Streaming matcher v2 fixes corpus-frequency suppression; typed plans/receipts,

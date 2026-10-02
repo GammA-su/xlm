@@ -78,6 +78,7 @@ def _documents(
     limit: int,
     deadline: float,
     max_rss_bytes: int,
+    selected: bool = False,
 ) -> Iterator[CanonicalDocument]:
     digest = hashlib.sha256()
     count = size = 0
@@ -97,7 +98,9 @@ def _documents(
                 raise ValueError("canonical shard exceeded declared bounds")
             digest.update(line)
             doc = CanonicalDocument(**json.loads(line))
-            if doc.source_id != source_id:
+            # A selected logical component spans canonical sources; the selection
+            # gate then requires each record to be selected for exactly this component.
+            if doc.source_id != source_id and not selected:
                 raise ValueError("tokenization requires shards from one declared source")
             yield doc
     if size != entry.byte_count or count != entry.doc_count or digest.hexdigest() != entry.sha256:
@@ -115,6 +118,7 @@ def _lane(
     tokenizer_hashes: tuple[str, str],
     batch_size: int,
     c05_proof: Path | None = None,
+    c05_selection: Path | None = None,
 ) -> dict[str, Any]:
     start, cpu = time.perf_counter(), time.process_time()
     deadline = time.monotonic() + limits.max_seconds
@@ -128,7 +132,14 @@ def _lane(
     manifests = []
     for entry, allowance in entries:
         shard_id = f"shard-{entry.ordinal:05d}"
-        with open_gate(c05_proof) as gate:
+        with open_gate(c05_proof, allow_authored=c05_selection is not None) as gate:
+            selection = None
+            if c05_selection is not None:
+                from xlm.data.exclusion.selection import SelectionGate
+
+                if gate is None:
+                    raise ValueError("selected-membership tokenization requires a C05 proof")
+                selection = SelectionGate(gate, c05_selection)
             manifest = TokenShardWriter(
                 output_dir / shard_id,
                 shard_id,
@@ -138,6 +149,7 @@ def _lane(
                 max_output_bytes=allowance,
                 batch_size=batch_size,
                 c05_gate=gate,
+                selection=selection,
             ).write_documents(
                 _documents(
                     input_dir / entry.path,
@@ -146,6 +158,7 @@ def _lane(
                     limits.max_record_bytes,
                     deadline,
                     limits.max_rss_bytes,
+                    selection is not None,
                 ),
                 True,
             )
@@ -241,6 +254,7 @@ def tokenize_shards(
     limits: TokenizationLimits | None = None,
     batch_size: int = 1,
     c05_proof: Path | None = None,
+    c05_selection: Path | None = None,
 ) -> dict[str, Any]:
     """Tokenize a verified P27A canonical dataset; publish an ordered index last.
 
@@ -291,6 +305,7 @@ def tokenize_shards(
                 hashes,
                 batch_size,
                 c05_proof,
+                c05_selection,
             )
         ]
     else:
@@ -306,6 +321,7 @@ def tokenize_shards(
                 hashes,
                 batch_size,
                 c05_proof,
+                c05_selection,
             )
             for lane in lanes
         ]
@@ -313,11 +329,15 @@ def tokenize_shards(
     ordered = sorted(item for result in results for item in result["manifests"])
     if [i for i, _ in ordered] != [e.ordinal for e in manifest.shards]:
         raise ValueError("tokenization worker results are incomplete")
-    with open_gate(c05_proof) as gate:
+    with open_gate(c05_proof, allow_authored=c05_selection is not None) as gate:
         if gate is not None:
             gate.db.execute("DELETE FROM seen")
             for i, _ in ordered:
-                gate.verify_token_shard(output_dir / f"shard-{i:05d}", reset_seen=False)
+                gate.verify_token_shard(
+                    output_dir / f"shard-{i:05d}",
+                    reset_seen=False,
+                    rehearsal=c05_selection is not None,
+                )
     index = {
         "schema_version": 1,
         "input_sha256": manifest.aggregate_sha256,
@@ -346,13 +366,14 @@ def _assemble(
     shard_id: str,
     allowance: int,
     c05_gate: MembershipGate | None = None,
+    rehearsal: bool = False,
 ) -> TokenShardManifest:
     """Concatenate bounded shards in order, shifting only stream-relative offsets."""
     readers = [TokenShardReader(parts / item["path"]) for item in manifests]
     if c05_gate is not None:
         c05_gate.db.execute("DELETE FROM seen")
         for reader in readers:
-            c05_gate.verify_token_shard(reader.directory, reset_seen=False)
+            c05_gate.verify_token_shard(reader.directory, reset_seen=False, rehearsal=rehearsal)
     first = readers[0].manifest
     totals = dict.fromkeys(
         (
@@ -458,6 +479,7 @@ def tokenize_to_single_shard(
     limits: TokenizationLimits | None = None,
     batch_size: int = 1,
     c05_proof: Path | None = None,
+    c05_selection: Path | None = None,
 ) -> tuple[TokenShardManifest, dict[str, Any]]:
     """Parallel preparation with the exact existing single-source loader artifact.
 
@@ -480,9 +502,10 @@ def tokenize_to_single_shard(
             limits=replace(limits, max_output_bytes=limits.max_output_bytes // 2),
             batch_size=batch_size,
             c05_proof=c05_proof,
+            c05_selection=c05_selection,
         )
         start = time.perf_counter()
-        with open_gate(c05_proof) as gate:
+        with open_gate(c05_proof, allow_authored=c05_selection is not None) as gate:
             manifest = _assemble(
                 parts,
                 result["index"]["shards"],
@@ -490,6 +513,7 @@ def tokenize_to_single_shard(
                 shard_id,
                 limits.max_output_bytes // 2,
                 c05_gate=gate,
+                rehearsal=c05_selection is not None,
             )
         return manifest, {
             "workers": result["workers"],
@@ -510,6 +534,7 @@ def main() -> None:
     parser.add_argument("--pool-hash", required=True)
     parser.add_argument("--workers", type=int, default=1)
     parser.add_argument("--c05-proof", type=Path)
+    parser.add_argument("--c05-selection", type=Path)
     parser.add_argument("--batch-size", type=int, default=1)
     parser.add_argument("--max-documents", type=int, default=100000)
     parser.add_argument("--max-input-bytes", type=int, default=256 * 1024**2)
@@ -527,6 +552,7 @@ def main() -> None:
         pool_hash=args.pool_hash,
         workers=args.workers,
         c05_proof=args.c05_proof,
+        c05_selection=args.c05_selection,
         batch_size=args.batch_size,
         limits=TokenizationLimits(
             args.max_documents,
