@@ -33,20 +33,35 @@ public_domain_review. Do not re-record or replace the existing allowlist.
 Its digest is `b2bb7c0dc532a6263ca17b78816186fa194c12c09c74614baaeb29c76cdaab04`;
 inventory digest is `c0984aa33fb3598a9e724b9518df8cd8a0f2af52b5708ec211fb7fd693df7637`.
 
-The exact twelve targets, budgets and copy/paste PowerShell network commands
-are in [the readiness handoff](../implementation/reports/COMMON-PILE-BALANCED-PRODUCTION-READINESS.md)
-and its `operator-calibration.ps1` artifact. They are prepared, **not executed**.
-Paste the reviewed commands into PowerShell if script execution is disabled;
-do not change machine execution policy. They use Python module invocation for
-the metadata probe and restore both HF offline variables in `finally`.
+The operator has completed the twelve samples and pinned metadata probe.
+**Do not refetch them.** The [real-calibration handoff](../implementation/reports/COMMON-PILE-BALANCED-PRODUCTION-READINESS.md)
+contains measured tables and the A/B/C comparison. Calibration digest:
+`c8a32cced2bae62c21b4e4396d46f0803f11745117e52d468adf3912dde0541d`.
+One PressBooks row was rejected as empty; small OER/PDR samples reached verified EOF.
 
-After the operator runs those commands, the next offline sequence is:
+The existing shared `calibration.json` could not be atomically replaced by the
+agent (Windows access denied). Successful versioned artifacts preserve the
+other sources: `G:\XLM\calib\calibration.common-pile-post.json` and
+`G:\XLM\calib\headroom_estimate.common-pile-post.json`. The driver still uses
+the default filenames; the operator must materialize them using the exact
+[next commands](../implementation/evidence/COMMON-PILE-POST-CALIBRATION/operator-next-commands.md).
+No ACL changes or hidden fallback are appropriate.
+
+For estimates of the shared calibration, explicitly pass
+`--auxiliary-source ifm_general --auxiliary-source ifm_planning`: those existing
+view measurements are disclosed separately while the combined IFM quota entry
+drives the mixture estimate. Unknown entries still refuse by default. Component
+measurements disclose rounded inventory-weighted counts, not raw sample counts.
+
+The build/show/evidence steps below have succeeded offline; the record/estimate
+default paths remain the operator materialization step. `--adopt` allows an
+identical measurement to be reused but never replaces a changed one:
 
 ```powershell
 uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/component_calibration.py build --source-key common_pile --data-root G:\XLM --receipt G:\XLM\calib\common_pile_cal01\sample-receipt.json --receipt G:\XLM\calib\common_pile_cal02\sample-receipt.json
 uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/component_calibration.py show --source-key common_pile --data-root G:\XLM
-uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/mix01_inventory.py record --source common_pile_prose --calibration G:\XLM\calib\calibration.json --measurement G:\XLM\calib\common_pile_prose\measurement.json
-uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/mix01_inventory.py estimate --quotas recipes/mixtures/mix01_quotas_6b.yaml --calibration G:\XLM\calib\calibration.json --output G:\XLM\calib\headroom_estimate.json
+uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/mix01_inventory.py record --source common_pile_prose --calibration G:\XLM\calib\calibration.json --measurement G:\XLM\calib\common_pile_prose\measurement.json --adopt
+uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/mix01_inventory.py estimate --quotas recipes/mixtures/mix01_quotas_6b.yaml --calibration G:\XLM\calib\calibration.json --output G:\XLM\calib\headroom_estimate.json --auxiliary-source ifm_general --auxiliary-source ifm_planning
 uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/mix01_source.py evidence show --source-key common_pile --data-root G:\XLM --sample-dir G:\XLM\calib\common_pile_cal01 --sample-dir G:\XLM\calib\common_pile_cal02
 ```
 

@@ -1,0 +1,1136 @@
+{
+  "adapter_certification": {
+    "sample:libretexts/libretexts.chunk.39.jsonl.gz": {
+      "accepted": 256,
+      "rejected": 0,
+      "rows": 256
+    },
+    "sample:libretexts/libretexts.chunk.40.jsonl.gz": {
+      "accepted": 256,
+      "rejected": 0,
+      "rows": 256
+    },
+    "sample:news/news.chunk.29.jsonl.gz": {
+      "accepted": 256,
+      "rejected": 0,
+      "rows": 256
+    },
+    "sample:news/news.chunk.44.jsonl.gz": {
+      "accepted": 256,
+      "rejected": 0,
+      "rows": 256
+    },
+    "sample:oercommons/oercommons.chunk.24.jsonl.gz": {
+      "accepted": 83,
+      "rejected": 0,
+      "rows": 83
+    },
+    "sample:oercommons/oercommons.chunk.49.jsonl.gz": {
+      "accepted": 83,
+      "rejected": 0,
+      "rows": 83
+    },
+    "sample:pressbooks/pressbooks.chunk.18.jsonl.gz": {
+      "accepted": 256,
+      "rejected": 0,
+      "rows": 256
+    },
+    "sample:pressbooks/pressbooks.chunk.26.jsonl.gz": {
+      "accepted": 255,
+      "rejected": 1,
+      "rows": 256
+    },
+    "sample:project_gutenberg/project_gutenberg.chunk.27.jsonl.gz": {
+      "accepted": 32,
+      "rejected": 0,
+      "rows": 32
+    },
+    "sample:project_gutenberg/project_gutenberg.chunk.43.jsonl.gz": {
+      "accepted": 32,
+      "rejected": 0,
+      "rows": 32
+    },
+    "sample:public_domain_review/public_domain_review.chunk.04.jsonl.gz": {
+      "accepted": 22,
+      "rejected": 0,
+      "rows": 22
+    },
+    "sample:public_domain_review/public_domain_review.chunk.26.jsonl.gz": {
+      "accepted": 22,
+      "rejected": 0,
+      "rows": 22
+    }
+  },
+  "bridge_receipt_digest": "12ff9163353bf6e56979dc66b66307c12e9d57dd92e38c348b4b7927c70838f3",
+  "component_license_basis": {
+    "allowlist": {
+      "accepted_flags": [],
+      "component_id": "common_pile_prose",
+      "digest": "b2bb7c0dc532a6263ca17b78816186fa194c12c09c74614baaeb29c76cdaab04",
+      "evidence": {
+        "arxiv_abstracts": {
+          "content_fit": "EXCLUDE_CONTENT_FIT",
+          "evidence": [
+            "hf:arxiv_abstracts",
+            "comma-card"
+          ],
+          "license_class": "VERIFIED_OPEN_LICENSE",
+          "provenance_confidence": "HIGH"
+        },
+        "arxiv_papers": {
+          "content_fit": "EXCLUDE_CONTENT_FIT",
+          "evidence": [
+            "hf:arxiv_papers",
+            "comma-card"
+          ],
+          "license_class": "PER_DOCUMENT_OPEN_LICENSE",
+          "provenance_confidence": "MEDIUM"
+        },
+        "biodiversity_heritage_library": {
+          "content_fit": "EXCLUDE_CONTENT_FIT",
+          "evidence": [
+            "hf:biodiversity_heritage_library",
+            "gh:sources/bhl/README.md",
+            "gh:sources/bhl/license_whitelist.json"
+          ],
+          "license_class": "MIXED_BUT_FILTERED_TO_OPEN",
+          "provenance_confidence": "MEDIUM"
+        },
+        "caselaw_access_project": {
+          "content_fit": "EXCLUDE_CONTENT_FIT",
+          "evidence": [
+            "hf:caselaw_access_project"
+          ],
+          "license_class": "VERIFIED_PUBLIC_DOMAIN",
+          "provenance_confidence": "MEDIUM"
+        },
+        "cccc": {
+          "content_fit": "EXCLUDE_CONTENT_FIT",
+          "evidence": [
+            "hf:cccc",
+            "hf:cccc_filtered",
+            "comma-card"
+          ],
+          "license_class": "EXCLUDE_PROVENANCE",
+          "provenance_confidence": "LOW"
+        },
+        "data_provenance_initiative": {
+          "content_fit": "EXCLUDE_CONTENT_FIT",
+          "evidence": [
+            "hf:data_provenance_initiative"
+          ],
+          "license_class": "PER_DOCUMENT_OPEN_LICENSE",
+          "provenance_confidence": "MEDIUM"
+        },
+        "doab": {
+          "content_fit": "PARTIAL_FIT",
+          "evidence": [
+            "hf:doab",
+            "hf:doab_filtered",
+            "gh:sources/doab/README.md",
+            "gh:sources/doab/cc_filter.py",
+            "gh:filtering/mixer_configs/doab.json"
+          ],
+          "license_class": "PER_DOCUMENT_OPEN_LICENSE",
+          "provenance_confidence": "MEDIUM"
+        },
+        "foodista": {
+          "content_fit": "NEEDS_OPERATOR_REVIEW",
+          "evidence": [
+            "hf:foodista",
+            "gh:sources/food/README.md",
+            "foodista-terms"
+          ],
+          "license_class": "NEEDS_OPERATOR_REVIEW",
+          "provenance_confidence": "LOW"
+        },
+        "github_archive": {
+          "content_fit": "EXCLUDE_CONTENT_FIT",
+          "evidence": [
+            "hf:github_archive"
+          ],
+          "license_class": "PER_DOCUMENT_OPEN_LICENSE",
+          "provenance_confidence": "MEDIUM"
+        },
+        "library_of_congress": {
+          "content_fit": "NEEDS_OPERATOR_REVIEW",
+          "evidence": [
+            "hf:library_of_congress",
+            "gh:sources/loc_books/README.md",
+            "loc-rights"
+          ],
+          "license_class": "VERIFIED_PUBLIC_DOMAIN",
+          "provenance_confidence": "MEDIUM"
+        },
+        "libretexts": {
+          "content_fit": "FIT",
+          "evidence": [
+            "hf:libretexts",
+            "hf:libretexts_filtered",
+            "gh:sources/libretexts/to_dolma.py",
+            "gh:sources/libretexts/README.md",
+            "gh:filtering/mixer_configs/libretexts.json",
+            "xlm-cert"
+          ],
+          "license_class": "PER_DOCUMENT_OPEN_LICENSE",
+          "provenance_confidence": "HIGH"
+        },
+        "news": {
+          "content_fit": "FIT",
+          "evidence": [
+            "hf:news",
+            "gh:sources/news/README.md",
+            "gh:sources/news/build_index.py",
+            "gh:filtering/mixer_configs/news.json",
+            "xlm-cert"
+          ],
+          "license_class": "MIXED_BUT_FILTERED_TO_OPEN",
+          "provenance_confidence": "MEDIUM"
+        },
+        "oercommons": {
+          "content_fit": "FIT",
+          "evidence": [
+            "hf:oercommons",
+            "gh:sources/oercommons/README.md",
+            "gh:sources/oercommons/collect_search_results.py",
+            "gh:sources/oercommons/to_dolma.py",
+            "gh:filtering/mixer_configs/oercommons.json"
+          ],
+          "license_class": "PER_DOCUMENT_OPEN_LICENSE",
+          "provenance_confidence": "HIGH"
+        },
+        "peS2o": {
+          "content_fit": "EXCLUDE_CONTENT_FIT",
+          "evidence": [
+            "hf:peS2o",
+            "comma-card"
+          ],
+          "license_class": "PER_DOCUMENT_OPEN_LICENSE",
+          "provenance_confidence": "MEDIUM"
+        },
+        "pre_1929_books": {
+          "content_fit": "NEEDS_OPERATOR_REVIEW",
+          "evidence": [
+            "hf:pre_1929_books"
+          ],
+          "license_class": "VERIFIED_PUBLIC_DOMAIN",
+          "provenance_confidence": "MEDIUM"
+        },
+        "pressbooks": {
+          "content_fit": "FIT",
+          "evidence": [
+            "hf:pressbooks",
+            "gh:sources/pressbooks/README.md",
+            "gh:sources/pressbooks/process_search_results.py",
+            "gh:sources/pressbooks/to_dolma.py",
+            "gh:filtering/mixer_configs/pressbooks.json"
+          ],
+          "license_class": "PER_DOCUMENT_OPEN_LICENSE",
+          "provenance_confidence": "HIGH"
+        },
+        "project_gutenberg": {
+          "content_fit": "FIT",
+          "evidence": [
+            "hf:project_gutenberg",
+            "gh:sources/gutenberg/README.md",
+            "gh:sources/gutenberg/possible-rights.py",
+            "gh:sources/gutenberg/build-index.py",
+            "gh:filtering/mixer_configs/project_gutenberg.json"
+          ],
+          "license_class": "VERIFIED_PUBLIC_DOMAIN",
+          "provenance_confidence": "HIGH"
+        },
+        "public_domain_review": {
+          "content_fit": "FIT",
+          "evidence": [
+            "hf:public_domain_review",
+            "gh:sources/public_domain_review/README.md",
+            "gh:sources/public_domain_review/scrape.py",
+            "pdr-reuse",
+            "xlm-cert"
+          ],
+          "license_class": "VERIFIED_OPEN_LICENSE",
+          "provenance_confidence": "HIGH"
+        },
+        "pubmed": {
+          "content_fit": "EXCLUDE_CONTENT_FIT",
+          "evidence": [
+            "hf:pubmed"
+          ],
+          "license_class": "PER_DOCUMENT_OPEN_LICENSE",
+          "provenance_confidence": "MEDIUM"
+        },
+        "python_enhancement_proposals": {
+          "content_fit": "EXCLUDE_CONTENT_FIT",
+          "evidence": [
+            "hf:python_enhancement_proposals"
+          ],
+          "license_class": "VERIFIED_PUBLIC_DOMAIN",
+          "provenance_confidence": "HIGH"
+        },
+        "regulations": {
+          "content_fit": "EXCLUDE_CONTENT_FIT",
+          "evidence": [
+            "hf:regulations"
+          ],
+          "license_class": "VERIFIED_PUBLIC_DOMAIN",
+          "provenance_confidence": "MEDIUM"
+        },
+        "stackexchange": {
+          "content_fit": "EXCLUDE_CONTENT_FIT",
+          "evidence": [
+            "hf:stackexchange"
+          ],
+          "license_class": "PER_DOCUMENT_OPEN_LICENSE",
+          "provenance_confidence": "HIGH"
+        },
+        "stackv2_edu": {
+          "content_fit": "EXCLUDE_CONTENT_FIT",
+          "evidence": [
+            "hf:stackv2_edu_filtered",
+            "hf:stackv2"
+          ],
+          "license_class": "PER_DOCUMENT_OPEN_LICENSE",
+          "provenance_confidence": "MEDIUM"
+        },
+        "stackv2_html": {
+          "content_fit": "EXCLUDE_CONTENT_FIT",
+          "evidence": [
+            "hf:stackv2"
+          ],
+          "license_class": "PER_DOCUMENT_OPEN_LICENSE",
+          "provenance_confidence": "MEDIUM"
+        },
+        "ubuntu_irc": {
+          "content_fit": "EXCLUDE_CONTENT_FIT",
+          "evidence": [
+            "hf:ubuntu_irc"
+          ],
+          "license_class": "VERIFIED_PUBLIC_DOMAIN",
+          "provenance_confidence": "MEDIUM"
+        },
+        "uk_hansard": {
+          "content_fit": "NEEDS_OPERATOR_REVIEW",
+          "evidence": [
+            "hf:uk_hansard",
+            "opl"
+          ],
+          "license_class": "NEEDS_OPERATOR_REVIEW",
+          "provenance_confidence": "MEDIUM"
+        },
+        "usgpo": {
+          "content_fit": "EXCLUDE_CONTENT_FIT",
+          "evidence": [
+            "hf:usgpo"
+          ],
+          "license_class": "VERIFIED_PUBLIC_DOMAIN",
+          "provenance_confidence": "MEDIUM"
+        },
+        "uspto": {
+          "content_fit": "EXCLUDE_CONTENT_FIT",
+          "evidence": [
+            "hf:uspto"
+          ],
+          "license_class": "VERIFIED_PUBLIC_DOMAIN",
+          "provenance_confidence": "MEDIUM"
+        },
+        "wikimedia": {
+          "content_fit": "EXCLUDE_CONTENT_FIT",
+          "evidence": [
+            "hf:wikimedia"
+          ],
+          "license_class": "VERIFIED_OPEN_LICENSE",
+          "provenance_confidence": "HIGH"
+        },
+        "wikiteam": {
+          "content_fit": "EXCLUDE_CONTENT_FIT",
+          "evidence": [
+            "hf:wikiteam"
+          ],
+          "license_class": "MIXED_BUT_FILTERED_TO_OPEN",
+          "provenance_confidence": "LOW"
+        },
+        "youtube": {
+          "content_fit": "PARTIAL_FIT",
+          "evidence": [
+            "hf:youtube",
+            "gh-yt:README.md",
+            "gh:filtering/mixer_configs/youtube.json",
+            "paper"
+          ],
+          "license_class": "NEEDS_OPERATOR_REVIEW",
+          "provenance_confidence": "MEDIUM"
+        }
+      },
+      "evidence_matrix": {
+        "audit": "docs/implementation/reports/COMMON-PILE-PROSE-ALLOWLIST-AUDIT.md",
+        "sha256": "3066a5098d585dbadbc8042427101e28c52684c6fb471533df1818dd1e9dbbbd"
+      },
+      "evidence_sources": {
+        "comma-card": {
+          "bytes": 5454,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "d6460380f9d8cb851105a59e09570d8ddc1d31ca1802537df16f458ee81f2866",
+          "url": "https://huggingface.co/datasets/common-pile/comma_v0.1_training_dataset/blob/5afc546db324e7f39f297ba757c9a60547151e7c/README.md"
+        },
+        "foodista-terms": {
+          "method": "web search summary incl. en.wikipedia.org/wiki/Foodista.com (foodista.com HTTP 429)",
+          "retrieved": "2026-10-02",
+          "url": "https://creativecommons.org/2009/01/23/foodista-cc-powered-cooking-encyclopedia/"
+        },
+        "gh-yt:README.md": {
+          "bytes": 5510,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "ee4781a6c157b2a524b7494c5d7db15c2e2b8d9d698563c1e03d32d3e0d155fc",
+          "url": "https://github.com/nkandpa2/youtube-commons/blob/b370bf95d90bdcb2a0fdee61bb08bc1340b29298/README.md"
+        },
+        "gh:filtering/mixer_configs/doab.json": {
+          "bytes": 2074,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "e3e50befca706bc5cdd30bb014003cc68ab6a3f28636972345ee50003fd1f57b",
+          "url": "https://github.com/r-three/common-pile/blob/9457f04a14cb2355ab00023420369d46ffd4a395/filtering/mixer_configs/doab.json"
+        },
+        "gh:filtering/mixer_configs/libretexts.json": {
+          "bytes": 2092,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "ac58ad46efc5d3d12e27e8a416fb5f7ce9b0193d1085cf3b138bcd363899ae68",
+          "url": "https://github.com/r-three/common-pile/blob/9457f04a14cb2355ab00023420369d46ffd4a395/filtering/mixer_configs/libretexts.json"
+        },
+        "gh:filtering/mixer_configs/news.json": {
+          "bytes": 2115,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "91e358a6fe9caecea57bc9931feda1604f2931ff8947ecd95b6f15cbaf4f3430",
+          "url": "https://github.com/r-three/common-pile/blob/9457f04a14cb2355ab00023420369d46ffd4a395/filtering/mixer_configs/news.json"
+        },
+        "gh:filtering/mixer_configs/oercommons.json": {
+          "bytes": 2103,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "5d38f690e77ab03012c958cefd3ecac988e5f03c60c01862e949604d691d6a20",
+          "url": "https://github.com/r-three/common-pile/blob/9457f04a14cb2355ab00023420369d46ffd4a395/filtering/mixer_configs/oercommons.json"
+        },
+        "gh:filtering/mixer_configs/pressbooks.json": {
+          "bytes": 2092,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "77a717b221a4492a2306116dea8559e878c3b738916212c373e3b4d620740683",
+          "url": "https://github.com/r-three/common-pile/blob/9457f04a14cb2355ab00023420369d46ffd4a395/filtering/mixer_configs/pressbooks.json"
+        },
+        "gh:filtering/mixer_configs/project_gutenberg.json": {
+          "bytes": 1468,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "4818f92ab69151e847a54dacdb686a84d499afcca58b5afb4b3cc2467c60ff71",
+          "url": "https://github.com/r-three/common-pile/blob/9457f04a14cb2355ab00023420369d46ffd4a395/filtering/mixer_configs/project_gutenberg.json"
+        },
+        "gh:filtering/mixer_configs/youtube.json": {
+          "bytes": 2303,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "da6abb5d27c6e3130ab44ad7c70fe900dc53afadc9041b2bd7471af803352d26",
+          "url": "https://github.com/r-three/common-pile/blob/9457f04a14cb2355ab00023420369d46ffd4a395/filtering/mixer_configs/youtube.json"
+        },
+        "gh:sources/bhl/README.md": {
+          "bytes": 1042,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "566b0a99ae513f8067c89e660cda319e04b49f6d5f7ba5f9f886fc1a4173d8f5",
+          "url": "https://github.com/r-three/common-pile/blob/9457f04a14cb2355ab00023420369d46ffd4a395/sources/bhl/README.md"
+        },
+        "gh:sources/bhl/license_whitelist.json": {
+          "bytes": 7953,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "506fe148aa0cbfb16dae59454eca2c0ad53454e47b9b75ffd442fbfd2831761e",
+          "url": "https://github.com/r-three/common-pile/blob/9457f04a14cb2355ab00023420369d46ffd4a395/sources/bhl/license_whitelist.json"
+        },
+        "gh:sources/doab/README.md": {
+          "bytes": 1582,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "bad982d85a4387c09d2b78af7d884bace4d58ee279e758c8ee7b9e1bc618cee2",
+          "url": "https://github.com/r-three/common-pile/blob/9457f04a14cb2355ab00023420369d46ffd4a395/sources/doab/README.md"
+        },
+        "gh:sources/doab/cc_filter.py": {
+          "bytes": 3195,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "8037fc260320ea002bfc0e920491f92b3a1d2a3f4838405264b8f367f6908fe7",
+          "url": "https://github.com/r-three/common-pile/blob/9457f04a14cb2355ab00023420369d46ffd4a395/sources/doab/cc_filter.py"
+        },
+        "gh:sources/food/README.md": {
+          "bytes": 1522,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "39ecb274f4447896f51bfa5c407112378e4a1707c679b32ff3baf2f4084d7171",
+          "url": "https://github.com/r-three/common-pile/blob/9457f04a14cb2355ab00023420369d46ffd4a395/sources/food/README.md"
+        },
+        "gh:sources/gutenberg/README.md": {
+          "bytes": 2792,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "4b8f58bc288ce6b1a7b740cc2f2de66ac447cf1102dcbe875dce31df494cd850",
+          "url": "https://github.com/r-three/common-pile/blob/9457f04a14cb2355ab00023420369d46ffd4a395/sources/gutenberg/README.md"
+        },
+        "gh:sources/gutenberg/build-index.py": {
+          "bytes": 2821,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "ab8f4232eaf464fe6ef29bddee42bd9c9cb367f3bb853e4750f53132a5fe1419",
+          "url": "https://github.com/r-three/common-pile/blob/9457f04a14cb2355ab00023420369d46ffd4a395/sources/gutenberg/build-index.py"
+        },
+        "gh:sources/gutenberg/possible-rights.py": {
+          "bytes": 1036,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "8443b58d1cf272f68a8be985803fb6f814a9deb56abb2a458656128af857a804",
+          "url": "https://github.com/r-three/common-pile/blob/9457f04a14cb2355ab00023420369d46ffd4a395/sources/gutenberg/possible-rights.py"
+        },
+        "gh:sources/libretexts/README.md": {
+          "bytes": 599,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "ebbb0d41e58f652fa7ac41f92fa9cf4d8ece8db88625f3a8290edb427f5e8bce",
+          "url": "https://github.com/r-three/common-pile/blob/9457f04a14cb2355ab00023420369d46ffd4a395/sources/libretexts/README.md"
+        },
+        "gh:sources/libretexts/to_dolma.py": {
+          "bytes": 3907,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "28b05f08c6905da9e16688dfad4aed8156eb8b3a9df905e07cb2e44f10689283",
+          "url": "https://github.com/r-three/common-pile/blob/9457f04a14cb2355ab00023420369d46ffd4a395/sources/libretexts/to_dolma.py"
+        },
+        "gh:sources/loc_books/README.md": {
+          "bytes": 7527,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "f12710a3501547b833f42fa335ecf02d5b43bb4073334256ba95ab61053d05cb",
+          "url": "https://github.com/r-three/common-pile/blob/9457f04a14cb2355ab00023420369d46ffd4a395/sources/loc_books/README.md"
+        },
+        "gh:sources/news/README.md": {
+          "bytes": 953,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "01d12d62d15d4067465f1f7598e27e2c50a5e2291e54b82e9918e5cb23fe0718",
+          "url": "https://github.com/r-three/common-pile/blob/9457f04a14cb2355ab00023420369d46ffd4a395/sources/news/README.md"
+        },
+        "gh:sources/news/build_index.py": {
+          "bytes": 1415,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "1ee68da080dd24febb99500018efc7550d56735236ac24752ba144b76c85e7c8",
+          "url": "https://github.com/r-three/common-pile/blob/9457f04a14cb2355ab00023420369d46ffd4a395/sources/news/build_index.py"
+        },
+        "gh:sources/oercommons/README.md": {
+          "bytes": 798,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "3993b4f51a24aee04d36ddc057f6a388f18ca409480f035b9baabb55e484c679",
+          "url": "https://github.com/r-three/common-pile/blob/9457f04a14cb2355ab00023420369d46ffd4a395/sources/oercommons/README.md"
+        },
+        "gh:sources/oercommons/collect_search_results.py": {
+          "bytes": 1755,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "b398ae62cc296ea8a408685c5d4954f0a3dacc93ae935334de1dbdbcd0feadca",
+          "url": "https://github.com/r-three/common-pile/blob/9457f04a14cb2355ab00023420369d46ffd4a395/sources/oercommons/collect_search_results.py"
+        },
+        "gh:sources/oercommons/to_dolma.py": {
+          "bytes": 2692,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "693fbe3b036293fd067e1bac461b821b4bb8e4645357bed7414364dfe53050cc",
+          "url": "https://github.com/r-three/common-pile/blob/9457f04a14cb2355ab00023420369d46ffd4a395/sources/oercommons/to_dolma.py"
+        },
+        "gh:sources/pressbooks/README.md": {
+          "bytes": 591,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "ba404b9d2bc93279faa22126ede8c10a1d145edc1e48403204787bacdfedb80b",
+          "url": "https://github.com/r-three/common-pile/blob/9457f04a14cb2355ab00023420369d46ffd4a395/sources/pressbooks/README.md"
+        },
+        "gh:sources/pressbooks/process_search_results.py": {
+          "bytes": 3220,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "e57ee73b749983a0f1fac234bd4bc63625fa6c05e4204cdd0ad0ffa7faeb2a94",
+          "url": "https://github.com/r-three/common-pile/blob/9457f04a14cb2355ab00023420369d46ffd4a395/sources/pressbooks/process_search_results.py"
+        },
+        "gh:sources/pressbooks/to_dolma.py": {
+          "bytes": 2390,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "d126042eb35469e77f013246486d678e055496eed771b3ca005a1360cacbf514",
+          "url": "https://github.com/r-three/common-pile/blob/9457f04a14cb2355ab00023420369d46ffd4a395/sources/pressbooks/to_dolma.py"
+        },
+        "gh:sources/public_domain_review/README.md": {
+          "bytes": 739,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "1b246ace47d0bf6fe0b7aa9e4f9d09562fa026cbbc19ae53fb8514f70812e937",
+          "url": "https://github.com/r-three/common-pile/blob/9457f04a14cb2355ab00023420369d46ffd4a395/sources/public_domain_review/README.md"
+        },
+        "gh:sources/public_domain_review/scrape.py": {
+          "bytes": 7521,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "2755775b281abafa102370e68a377eeacd66b31db774b01e812737d9c6eb591e",
+          "url": "https://github.com/r-three/common-pile/blob/9457f04a14cb2355ab00023420369d46ffd4a395/sources/public_domain_review/scrape.py"
+        },
+        "hf:arxiv_abstracts": {
+          "bytes": 2523,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "4c2bd136ebe1adf0a99fc9a2f74c4ff40520cad279aa642080fdee904a16e8d1",
+          "url": "https://huggingface.co/datasets/common-pile/arxiv_abstracts/blob/828e35d1000f94579da8850f5f640c138279bdb5/README.md"
+        },
+        "hf:arxiv_papers": {
+          "bytes": 2739,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "ae12938d2321884f6cbf7e1e9d814e2dde7ba229dec388897883e3e45e828477",
+          "url": "https://huggingface.co/datasets/common-pile/arxiv_papers/blob/963fe980c55b353980653f1a27c1dc0c8a2d7058/README.md"
+        },
+        "hf:biodiversity_heritage_library": {
+          "bytes": 2543,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "296b258561ff73e4273340310419241e4048f084e4b186eec958b31af5f095da",
+          "url": "https://huggingface.co/datasets/common-pile/biodiversity_heritage_library/blob/ad1bbb00d5df579c0ef0a9dfe46e50e2bb1715b8/README.md"
+        },
+        "hf:caselaw_access_project": {
+          "bytes": 2662,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "ba7eb79bd67984fe3cae3fb1e59f4d826cc45e1481982b55d2162c79c53b960e",
+          "url": "https://huggingface.co/datasets/common-pile/caselaw_access_project/blob/3c2cb5080b3a16a04d8d8d07b28eaec7c1ba7a90/README.md"
+        },
+        "hf:cccc": {
+          "bytes": 4136,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "2f6e2c51f65c09c6bed101f3d70cd82966768879fa17e8f0bc52bf27313346c5",
+          "url": "https://huggingface.co/datasets/common-pile/cccc/blob/72bd015ff2a77f8701c617096fbb5dc89dd705fe/README.md"
+        },
+        "hf:cccc_filtered": {
+          "bytes": 4060,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "13b727dd5bc1045a502705fa70ada1254586fa19b7ddc2fd987dec89763422ad",
+          "url": "https://huggingface.co/datasets/common-pile/cccc_filtered/blob/03a3de5713a0bb23267d26724346508af0f25327/README.md"
+        },
+        "hf:data_provenance_initiative": {
+          "bytes": 2595,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "977445a3462cd813999ef1e527aee8fedb823b1aeaa437cc18acea5af996e792",
+          "url": "https://huggingface.co/datasets/common-pile/data_provenance_initiative/blob/1fa084d36c10da862afabcfe6e330fd18fe8cb1d/README.md"
+        },
+        "hf:doab": {
+          "bytes": 2841,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "e53783fa20accbef1901afa9d7e1e01901d90dc5ac8fe3e1699ed4b8fd37e0d2",
+          "url": "https://huggingface.co/datasets/common-pile/doab/blob/89e7a35935045f2b268a2229347e38f16fbeb729/README.md"
+        },
+        "hf:doab_filtered": {
+          "bytes": 2768,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "9256cf0007baffbdd93c4002c007b3a424d97c55cd09724bdcd6289ee017a9c7",
+          "url": "https://huggingface.co/datasets/common-pile/doab_filtered/blob/defb24ca72ef6aba6ce0228b669eec06dcfbffbc/README.md"
+        },
+        "hf:foodista": {
+          "bytes": 2265,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "ea365bf28d1cf089d82d6677b3b63b946d7ae47fca2d6dc873ed8308c03dc3b0",
+          "url": "https://huggingface.co/datasets/common-pile/foodista/blob/f84290688956bdb64c90e44636fda1c02f286849/README.md"
+        },
+        "hf:github_archive": {
+          "bytes": 3267,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "cea4f2bcae6d7e3af94dc04873ab5b146741f25f7e1baccee6b30bcdca5d8e70",
+          "url": "https://huggingface.co/datasets/common-pile/github_archive/blob/60317859e1212d37268e2b55e31acd2aecd4ae52/README.md"
+        },
+        "hf:library_of_congress": {
+          "bytes": 2504,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "31ed1f8ef93ec857b6df90616716324fe28bc395a06b5e81aea0ef9ce5b57db4",
+          "url": "https://huggingface.co/datasets/common-pile/library_of_congress/blob/efa378ea3f6feab6f64f407e7555457f0034a985/README.md"
+        },
+        "hf:libretexts": {
+          "bytes": 2494,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "d5d9c79c1beb3e9b5ea5906a2879e985cee64031e81a54f73e6a9769fc49e9e4",
+          "url": "https://huggingface.co/datasets/common-pile/libretexts/blob/d4ce4b1edf95888b24992db3bbb2ae8e2bf6c22f/README.md"
+        },
+        "hf:libretexts_filtered": {
+          "bytes": 2413,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "306cfd058fc6ea87dc8420c99b6c050f14ddf7d8668d3fe6568fc81528258ce4",
+          "url": "https://huggingface.co/datasets/common-pile/libretexts_filtered/blob/70388bca52b4a93515e14b1d56618fd7944988fd/README.md"
+        },
+        "hf:news": {
+          "bytes": 3284,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "d9d4ad1d932c3f8db495d49a31bb339f82575a46635860af2f3601bc4186e2d9",
+          "url": "https://huggingface.co/datasets/common-pile/news/blob/13e76bdc8d49ed14d710fac7e3b61186cf74c8d3/README.md"
+        },
+        "hf:oercommons": {
+          "bytes": 2554,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "87e66143717daec8005276b48cc2a26279b75554fa7ea62fb32857ff9e57d66a",
+          "url": "https://huggingface.co/datasets/common-pile/oercommons/blob/9b3305165b01bec541b6a6baaba2b5b8566dfe29/README.md"
+        },
+        "hf:peS2o": {
+          "bytes": 5712,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "fe9ecbdb0583d28ed4589832ac406cf3b35ed7e2b729b939a6c92aa22ac81fe4",
+          "url": "https://huggingface.co/datasets/common-pile/peS2o/blob/2caeba1585aaafa3c965410d80af85b09ed11cd9/README.md"
+        },
+        "hf:pre_1929_books": {
+          "bytes": 2293,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "bdddeb53c66827257adae804a37ca31ce856d23971dfa290a3ac2027b28eb1af",
+          "url": "https://huggingface.co/datasets/common-pile/pre_1929_books/blob/a158135b4765f01d321b5cbe1ff90ebbd354b00f/README.md"
+        },
+        "hf:pressbooks": {
+          "bytes": 2400,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "a8e1e33b5d871cec24574ff28a67519780b045de03800287e8976698715eb6c3",
+          "url": "https://huggingface.co/datasets/common-pile/pressbooks/blob/29fa162fc78277b160a7010f18086b5189ffb761/README.md"
+        },
+        "hf:project_gutenberg": {
+          "bytes": 2672,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "71479f60d89c65a73cda7951fb84e8ccd6cd52fb31d4226e4ac4a7326098e651",
+          "url": "https://huggingface.co/datasets/common-pile/project_gutenberg/blob/01dc90a5002f8977c7fb03a372c14bca29c65cf1/README.md"
+        },
+        "hf:public_domain_review": {
+          "bytes": 2033,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "8e3fb35d2ea42229eaeefec1979da1874b046e7e92f7868821a33ff2a36f7377",
+          "url": "https://huggingface.co/datasets/common-pile/public_domain_review/blob/e9c7669206b95871601fe4672a484d8215e6fe6f/README.md"
+        },
+        "hf:pubmed": {
+          "bytes": 2458,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "caf2655f895371743c1fa1fa8cd9b52ddad1bea9efba5deea09c85e868a32b8a",
+          "url": "https://huggingface.co/datasets/common-pile/pubmed/blob/648b8cfc93953ca0663a9c96a8d842a91b98fb64/README.md"
+        },
+        "hf:python_enhancement_proposals": {
+          "bytes": 2489,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "fc30c569c1a60b121ae9d4f229c5380175156e420f0123360d2d1007e6ab24b2",
+          "url": "https://huggingface.co/datasets/common-pile/python_enhancement_proposals/blob/f932757e3eba16475c893e1418918c77f14a790d/README.md"
+        },
+        "hf:regulations": {
+          "bytes": 2831,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "7d391983c5a0429ff949f302e98a3256a00ec8bcfcf865a98511fc30df64a0b9",
+          "url": "https://huggingface.co/datasets/common-pile/regulations/blob/d1a63eef07bb893f834742f4738aeb1d545b7e01/README.md"
+        },
+        "hf:stackexchange": {
+          "bytes": 3396,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "a4c81d3aa3b62c0f5683ecb9993655f96fa2203ec864bf4361bcb7d15731df29",
+          "url": "https://huggingface.co/datasets/common-pile/stackexchange/blob/5ec3aa2e65b7c61b7c18f1ff18ccbc4d3279a23c/README.md"
+        },
+        "hf:stackv2": {
+          "bytes": 3937,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "b4cbb60f5d6fc331366814e7cc139e9a32fad915a629975ce9cb0a7a2be9ce9b",
+          "url": "https://huggingface.co/datasets/common-pile/stackv2/blob/d0e3266fce12d25de28f2576ffb7272c18b0148f/README.md"
+        },
+        "hf:stackv2_edu_filtered": {
+          "bytes": 3818,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "49a352a903a57d7b4b33b120515df8c2dbd4b55828752e33b58cd628a913e7cd",
+          "url": "https://huggingface.co/datasets/common-pile/stackv2_edu_filtered/blob/c354dbe88469a1153e97c6a63ac50591849654de/README.md"
+        },
+        "hf:ubuntu_irc": {
+          "bytes": 2207,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "a4d57b783b4d38b67cadd1d0181c101f5065eeb075dacd7f128f08e33b8f34d5",
+          "url": "https://huggingface.co/datasets/common-pile/ubuntu_irc/blob/35a9ef530c682965b53d4167e37b32f6a85aa87c/README.md"
+        },
+        "hf:uk_hansard": {
+          "bytes": 4659,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "06905839a9fdd00a96858a693fb24a047098e7d696689cfbfe4eae2309beca35",
+          "url": "https://huggingface.co/datasets/common-pile/uk_hansard/blob/05eeb43c6518f0eedbe1594d9683a100aedbce89/README.md"
+        },
+        "hf:usgpo": {
+          "bytes": 2185,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "c815630991b9a6e07998d458e9851b1403785a7a52a9cc124227094d231f3526",
+          "url": "https://huggingface.co/datasets/common-pile/usgpo/blob/0b314ed37117654d04c563b7d21b6ae3445a45df/README.md"
+        },
+        "hf:uspto": {
+          "bytes": 4289,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "9b1e88274a616200257fb427f8f5f97f5a0f411356fa8a49a725ac78f92f31fc",
+          "url": "https://huggingface.co/datasets/common-pile/uspto/blob/e8b975381547f026e2ccfe721f785dcb6a2fa9a0/README.md"
+        },
+        "hf:wikimedia": {
+          "bytes": 2873,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "89567cdc66ff89c4f746939d29684dc639ca485024ebab657b173ddb54a79819",
+          "url": "https://huggingface.co/datasets/common-pile/wikimedia/blob/781b263a6546515543bec3968ad4743fbc152b72/README.md"
+        },
+        "hf:wikiteam": {
+          "bytes": 3150,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "05fe31cccc351defb2ee939a0431720ad47d9f5174fa9e144306d6d89541e404",
+          "url": "https://huggingface.co/datasets/common-pile/wikiteam/blob/e6d08fd1565c9b61f52164e572e9b13220ea9e99/README.md"
+        },
+        "hf:youtube": {
+          "bytes": 2637,
+          "method": "direct bytes",
+          "retrieved": "2026-10-02",
+          "sha256": "d86e69a2a31b309f4c5c127c7d0ecfc8fdead49a9d8d3afab65037d6083d2dad",
+          "url": "https://huggingface.co/datasets/common-pile/youtube/blob/1c521ef383cf87402cb9a7b999d3032d8107c972/README.md"
+        },
+        "loc-rights": {
+          "method": "web search summary (direct fetch HTTP 403)",
+          "retrieved": "2026-10-02",
+          "url": "https://www.loc.gov/collections/selected-digitized-books/about-this-collection/rights-and-access/"
+        },
+        "opl": {
+          "method": "web search summary (direct fetch HTTP 403)",
+          "retrieved": "2026-10-02",
+          "url": "https://www.parliament.uk/site-information/copyright-parliament/open-parliament-licence/"
+        },
+        "paper": {
+          "method": "webfetch summary of abs + html v1",
+          "retrieved": "2026-10-02",
+          "url": "https://arxiv.org/abs/2506.05209v1"
+        },
+        "pdr-reuse": {
+          "method": "web search summary (homepage fetched; no license text on it)",
+          "retrieved": "2026-10-02",
+          "url": "https://publicdomainreview.org/reusing-material/"
+        },
+        "xlm-cert": {
+          "method": "XLM registry note: 9 real rows (news, libretexts, public_domain_review)",
+          "retrieved": "2026-10-02",
+          "url": "repo:recipes/mixtures/mix01_views.yaml"
+        }
+      },
+      "excluded": [
+        "arxiv_abstracts",
+        "arxiv_papers",
+        "biodiversity_heritage_library",
+        "caselaw_access_project",
+        "cccc",
+        "data_provenance_initiative",
+        "doab",
+        "foodista",
+        "github_archive",
+        "library_of_congress",
+        "peS2o",
+        "pre_1929_books",
+        "pubmed",
+        "python_enhancement_proposals",
+        "regulations",
+        "stackexchange",
+        "stackv2_edu",
+        "stackv2_html",
+        "ubuntu_irc",
+        "uk_hansard",
+        "usgpo",
+        "uspto",
+        "wikimedia",
+        "wikiteam",
+        "youtube"
+      ],
+      "included": [
+        "libretexts",
+        "news",
+        "oercommons",
+        "pressbooks",
+        "project_gutenberg",
+        "public_domain_review"
+      ],
+      "kind": "mix01_component_allowlist",
+      "listing": {
+        "digest": "a32b9b12649da4b72a07fbbe41bd3bbd9d7df9da9df32136fa8080802d8b5038",
+        "file_list_digest": "4c343e0caecad29c777da2e53ae30833973193852f853f26adc6cf74d2f23b09",
+        "item_count": 1984,
+        "total_declared_bytes": 516327289637
+      },
+      "operator": "GammA",
+      "rationale": "Balanced Common Pile prose allowlist for XLM Mix-01: retain complementary textbook, openly licensed prose, news, educational resource, book, and public-domain narrative sources while excluding code, QA-heavy, scientific-paper, legal/government bulk, duplicate Wikipedia/web sources, and sources with unresolved provenance or licensing caveats.",
+      "repository": "common-pile/comma_v0.1_training_dataset",
+      "revision": "5afc546db324e7f39f297ba757c9a60547151e7c",
+      "source_id": "common_pile",
+      "source_key": "common_pile",
+      "universe": {
+        "arxiv_abstracts": {
+          "bytes": 889633257,
+          "files": 64
+        },
+        "arxiv_papers": {
+          "bytes": 5996196704,
+          "files": 64
+        },
+        "biodiversity_heritage_library": {
+          "bytes": 14500293977,
+          "files": 64
+        },
+        "caselaw_access_project": {
+          "bytes": 24956737971,
+          "files": 64
+        },
+        "cccc": {
+          "bytes": 20819212852,
+          "files": 64
+        },
+        "data_provenance_initiative": {
+          "bytes": 1266390817,
+          "files": 64
+        },
+        "doab": {
+          "bytes": 3512954742,
+          "files": 64
+        },
+        "foodista": {
+          "bytes": 31880650,
+          "files": 64
+        },
+        "github_archive": {
+          "bytes": 13709650508,
+          "files": 64
+        },
+        "library_of_congress": {
+          "bytes": 12879350670,
+          "files": 64
+        },
+        "libretexts": {
+          "bytes": 122167467,
+          "files": 64
+        },
+        "news": {
+          "bytes": 98602096,
+          "files": 64
+        },
+        "oercommons": {
+          "bytes": 17149251,
+          "files": 64
+        },
+        "peS2o": {
+          "bytes": 55339172580,
+          "files": 64
+        },
+        "pre_1929_books": {
+          "bytes": 16718436810,
+          "files": 64
+        },
+        "pressbooks": {
+          "bytes": 201539814,
+          "files": 64
+        },
+        "project_gutenberg": {
+          "bytes": 7689423474,
+          "files": 64
+        },
+        "public_domain_review": {
+          "bytes": 2915747,
+          "files": 64
+        },
+        "pubmed": {
+          "bytes": 42841411375,
+          "files": 64
+        },
+        "python_enhancement_proposals": {
+          "bytes": 3743588,
+          "files": 64
+        },
+        "regulations": {
+          "bytes": 1310483072,
+          "files": 64
+        },
+        "stackexchange": {
+          "bytes": 32354037772,
+          "files": 64
+        },
+        "stackv2_edu": {
+          "bytes": 63655535965,
+          "files": 64
+        },
+        "stackv2_html": {
+          "bytes": 1513090235,
+          "files": 64
+        },
+        "ubuntu_irc": {
+          "bytes": 1812469483,
+          "files": 64
+        },
+        "uk_hansard": {
+          "bytes": 3101805340,
+          "files": 64
+        },
+        "usgpo": {
+          "bytes": 10383314469,
+          "files": 64
+        },
+        "uspto": {
+          "bytes": 147270341710,
+          "files": 64
+        },
+        "wikimedia": {
+          "bytes": 21265747440,
+          "files": 64
+        },
+        "wikiteam": {
+          "bytes": 5802685412,
+          "files": 64
+        },
+        "youtube": {
+          "bytes": 6260914389,
+          "files": 64
+        }
+      },
+      "version": 1
+    },
+    "allowlist_digest": "b2bb7c0dc532a6263ca17b78816186fa194c12c09c74614baaeb29c76cdaab04",
+    "component_evidence_sha256": "3066a5098d585dbadbc8042427101e28c52684c6fb471533df1818dd1e9dbbbd",
+    "contract": "c04-common-pile-component-license-v1",
+    "declared_repository_license": null,
+    "included_components": [
+      "libretexts",
+      "news",
+      "oercommons",
+      "pressbooks",
+      "project_gutenberg",
+      "public_domain_review"
+    ],
+    "license_basis": "component_allowlist_review"
+  },
+  "configs_observed": null,
+  "decision_fields_required": {
+    "benchmark_risk": [
+      "suspect_with_mitigation"
+    ],
+    "license_decision": [
+      "approve_research_pretraining",
+      "reject"
+    ],
+    "operator": "named person recording the decision",
+    "provenance_decision": [
+      "approved",
+      "rejected"
+    ],
+    "rationale": "the operator's own written reasoning"
+  },
+  "declared_license_scope": "the dataset repository's metadata declaration only; it does not establish the license of every underlying document",
+  "declared_repository_license": null,
+  "legal_advice": false,
+  "license_caveat_from_evidence": "the repository declares no license; per-component license basis is the operator component allowlist b2bb7c0dc532a6263ca17b78816186fa194c12c09c74614baaeb29c76cdaab04 (not a repository declaration)",
+  "observed_files": [
+    {
+      "length": 1806742,
+      "path": "libretexts/libretexts.chunk.39.jsonl.gz"
+    },
+    {
+      "length": 1939463,
+      "path": "libretexts/libretexts.chunk.40.jsonl.gz"
+    },
+    {
+      "length": 1543613,
+      "path": "news/news.chunk.29.jsonl.gz"
+    },
+    {
+      "length": 1527147,
+      "path": "news/news.chunk.44.jsonl.gz"
+    },
+    {
+      "length": 336135,
+      "path": "oercommons/oercommons.chunk.49.jsonl.gz"
+    },
+    {
+      "length": 294589,
+      "path": "oercommons/oercommons.chunk.24.jsonl.gz"
+    },
+    {
+      "length": 2995813,
+      "path": "pressbooks/pressbooks.chunk.18.jsonl.gz"
+    },
+    {
+      "length": 3206053,
+      "path": "pressbooks/pressbooks.chunk.26.jsonl.gz"
+    },
+    {
+      "length": 69642,
+      "path": "public_domain_review/public_domain_review.chunk.26.jsonl.gz"
+    },
+    {
+      "length": 61343,
+      "path": "public_domain_review/public_domain_review.chunk.04.jsonl.gz"
+    },
+    {
+      "length": 119634630,
+      "path": "project_gutenberg/project_gutenberg.chunk.43.jsonl.gz"
+    },
+    {
+      "length": 119693765,
+      "path": "project_gutenberg/project_gutenberg.chunk.27.jsonl.gz"
+    }
+  ],
+  "registry_notes": [
+    "Declared license unresolved in snapshot metadata; license review pending.",
+    "No config list in card metadata; subset naming unresolved.",
+    "Certified against 9 real pinned rows from news, libretexts, and public_domain_review (offline sample adapter-cert-common-pile01); this does NOT certify the other 28 components and does NOT constitute production admission.",
+    "Raw rows expose no language field; English-only is a downstream treatment intention, not a row-schema fact.",
+    "Final Mix-01 component allowlist, weights, and per-component licensing/admission remain unresolved policy decisions."
+  ],
+  "row_source_labels": null,
+  "schema_basis": "observed_projected_rows_of_real_fetch",
+  "schema_fields": [
+    "text"
+  ],
+  "source": {
+    "adapter_id": "common_pile",
+    "component_id": "common_pile_prose",
+    "provider": "huggingface",
+    "repository": "common-pile/comma_v0.1_training_dataset",
+    "revision": "5afc546db324e7f39f297ba757c9a60547151e7c",
+    "source_id": "common_pile",
+    "view_id": "common_pile_prose"
+  },
+  "unknown": [
+    "per-document license or terms of the underlying web pages",
+    "whether any underlying content rights are cleared (never assumed)",
+    "the exact upstream corpus lineage beyond what the dataset card and row labels state",
+    "benchmark contamination: unknown until C05 screening runs on the frozen pool"
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "build": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/component_calibration.py build --source-key common_pile --data-root G:/XLM --receipt G:/XLM/calib/common_pile_cal01/sample-receipt.json --receipt G:/XLM/calib/common_pile_cal02/sample-receipt.json",
+    "exit": 0,
+    "seconds": 0.812,
+    "sampled_tree_peak_rss_bytes": 92741632
+  },
+  "calibration-show": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/component_calibration.py show --source-key common_pile --data-root G:/XLM",
+    "exit": 0,
+    "seconds": 0.813,
+    "sampled_tree_peak_rss_bytes": 90710016
+  },
+  "measurement-record": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/mix01_inventory.py record --source common_pile_prose --calibration G:/XLM/calib/calibration.json --measurement G:/XLM/calib/common_pile_prose/measurement.json",
+    "exit": 1,
+    "seconds": 0.703,
+    "sampled_tree_peak_rss_bytes": 96231424
+  },
+  "measurement-record-versioned": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/mix01_inventory.py record --source common_pile_prose --calibration G:\\XLM\\calib\\calibration.common-pile-post.json --measurement G:/XLM/calib/common_pile_prose/measurement.json",
+    "exit": 0,
+    "seconds": 0.703,
+    "sampled_tree_peak_rss_bytes": 95461376
+  },
+  "estimate-versioned": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/mix01_inventory.py estimate --quotas recipes/mixtures/mix01_quotas_6b.yaml --calibration G:\\XLM\\calib\\calibration.common-pile-post.json --output G:/XLM/calib/headroom_estimate.common-pile-post.json",
+    "exit": 1,
+    "seconds": 0.25,
+    "sampled_tree_peak_rss_bytes": 45707264
+  },
+  "evidence-show": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/mix01_source.py evidence show --sample-dir G:/XLM/calib/common_pile_cal01 --sample-dir G:/XLM/calib/common_pile_cal02 --source-key common_pile --data-root G:/XLM",
+    "exit": 0,
+    "seconds": 1.485,
+    "sampled_tree_peak_rss_bytes": 162828288
+  },
+  "review-show": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/mix01_source.py review show --source-key common_pile --data-root G:/XLM",
+    "exit": 1,
+    "seconds": 0.812,
+    "sampled_tree_peak_rss_bytes": 94158848
+  },
+  "estimate-with-auxiliary": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/mix01_inventory.py estimate --quotas recipes/mixtures/mix01_quotas_6b.yaml --calibration G:/XLM/calib/calibration.common-pile-post.json --output G:/XLM/calib/headroom_estimate.common-pile-post.json --auxiliary-source ifm_general --auxiliary-source ifm_planning",
+    "exit": 0,
+    "seconds": 0.234,
+    "sampled_tree_peak_rss_bytes": 49205248
+  },
+  "strategy-a-preview": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/mix01_source.py component-split preview --source-key common_pile --data-root G:/XLM --input docs\\implementation\\evidence\\COMMON-PILE-POST-CALIBRATION\\strategy-a.input.json --operator PREVIEW_ONLY --rationale \"Calibrated strategy A; no operator choice recorded\"",
+    "exit": 0,
+    "seconds": 0.938,
+    "sampled_tree_peak_rss_bytes": 100573184
+  },
+  "strategy-b-preview": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/mix01_source.py component-split preview --source-key common_pile --data-root G:/XLM --input docs\\implementation\\evidence\\COMMON-PILE-POST-CALIBRATION\\strategy-b.input.json --operator PREVIEW_ONLY --rationale \"Calibrated strategy B; no operator choice recorded\"",
+    "exit": 0,
+    "seconds": 0.953,
+    "sampled_tree_peak_rss_bytes": 99860480
+  },
+  "strategy-c-preview": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/mix01_source.py component-split preview --source-key common_pile --data-root G:/XLM --input docs\\implementation\\evidence\\COMMON-PILE-POST-CALIBRATION\\strategy-c.input.json --operator PREVIEW_ONLY --rationale \"Calibrated strategy C; no operator choice recorded\"",
+    "exit": 0,
+    "seconds": 0.922,
+    "sampled_tree_peak_rss_bytes": 100696064
+  },
+  "bounds-preview": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/mix01_source.py component-bounds preview --source-key common_pile --data-root G:/XLM --input docs\\implementation\\evidence\\COMMON-PILE-POST-CALIBRATION\\bounds.input.json --operator PREVIEW_ONLY --rationale \"Calibrated operating ceilings with explicit 2x rate/row/line margins; not whole-shard measured maxima\"",
+    "exit": 0,
+    "seconds": 0.969,
+    "sampled_tree_peak_rss_bytes": 100192256
+  },
+  "estimate-final": {
+    "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python scripts/mix01_inventory.py estimate --quotas recipes/mixtures/mix01_quotas_6b.yaml --calibration G:/XLM/calib/calibration.common-pile-post.json --output G:/XLM/calib/headroom_estimate.common-pile-post.json --auxiliary-source ifm_general --auxiliary-source ifm_planning",
+    "exit": 0,
+    "seconds": 0.25,
+    "sampled_tree_peak_rss_bytes": 48361472
+  }
+}

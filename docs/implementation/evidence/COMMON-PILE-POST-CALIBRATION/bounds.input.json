@@ -1,0 +1,23 @@
+{
+  "file_deadline_seconds": 5700.0,
+  "max_canonical_bytes_per_file": 644874996,
+  "max_decoded_bytes_per_file": 854724290,
+  "max_decompression_ratio": 7,
+  "max_durable_bytes_per_file": 1911202866,
+  "max_file_bytes": 122103470,
+  "max_ledger_bytes": 67108864,
+  "max_record_bytes": 524288,
+  "max_rows_per_file": 5612,
+  "plan_deadline_seconds": 34200.0,
+  "processing_growth": {
+    "event_bytes": 1048576,
+    "metadata_bytes": 1048576,
+    "output_bytes": 1789099396,
+    "progress_bytes": 4096,
+    "run_metadata_bytes": 8388608,
+    "source_max_bytes": 122103470,
+    "state_bytes": 1048576,
+    "version": 1
+  },
+  "scratch_cap_bytes": 3828713572
+}

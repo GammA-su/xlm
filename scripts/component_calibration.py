@@ -9,13 +9,13 @@ the recorded component allowlist and production inventory, then writes:
 - ``<data-root>/calib/<component>/measurement.json``, the input of
   ``mix01_inventory.py record --measurement`` (component-weighted estimate).
 
-It prints the proposed per-file bounds that become the reviewed
-``source_plan.SOURCE_FILE_BOUNDS`` entry before any plan can be made.
+It prints proposed per-file estimates. The operator separately reviews the
+complete envelope through ``mix01_source.py component-bounds preview/record``.
 
     uv run --offline --locked --extra cpu --extra eval python scripts/component_calibration.py \
         build --source-key common_pile --data-root G:\\XLM \
-        --receipt G:\\XLM\\calib\\common_pile_cert02\\sample-receipt.json \
-        --receipt G:\\XLM\\calib\\common_pile_cal01\\sample-receipt.json
+        --receipt G:\\XLM\\calib\\common_pile_cal01\\sample-receipt.json \
+        --receipt G:\\XLM\\calib\\common_pile_cal02\\sample-receipt.json
 """
 
 from __future__ import annotations
@@ -103,10 +103,10 @@ def main(argv: list[str] | None = None) -> int:
         f"over {combined['inventory_files']} files"
     )
     print(
-        "PROPOSED SOURCE_FILE_BOUNDS "
+        "PROPOSED PER-FILE ESTIMATES "
         f"rows {bounds['max_rows_per_file']:,}, "
         f"canonical {bounds['max_canonical_bytes_per_file']:,} "
-        f"({bounds['rule']}); review, then add them with this calibration's digest as evidence"
+        f"({bounds['rule']}); review a complete envelope with component-bounds preview/record"
     )
     return 0
 

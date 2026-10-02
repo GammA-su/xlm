@@ -1,0 +1,26 @@
+{
+  "libretexts": {
+    "final_tokens": 50000000,
+    "first_pass_tokens": 55000000
+  },
+  "news": {
+    "final_tokens": 48896394,
+    "first_pass_tokens": 53786034
+  },
+  "oercommons": {
+    "final_tokens": 10130113,
+    "first_pass_tokens": 11143125
+  },
+  "pressbooks": {
+    "final_tokens": 50000000,
+    "first_pass_tokens": 55000000
+  },
+  "project_gutenberg": {
+    "final_tokens": 139585956,
+    "first_pass_tokens": 153544550
+  },
+  "public_domain_review": {
+    "final_tokens": 1387537,
+    "first_pass_tokens": 1526291
+  }
+}

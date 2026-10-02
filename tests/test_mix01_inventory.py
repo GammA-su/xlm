@@ -185,9 +185,31 @@ def test_estimate_refusals(tmp_path: Path) -> None:
     code, payload = _estimate(tmp_path, zero)
     assert code == 0
     assert payload["sources"]["ultrax_ultrafineweb"]["status"] == "BLOCKED"
-    unknown = {"sources": {"mystery_source": {}}}
+    unknown: dict[str, Any] = {"sources": {"mystery_source": {}}}
     code, _ = _estimate(tmp_path, unknown)
     assert code == 1
+
+
+def test_estimate_explicit_auxiliary_entries_are_disclosed_not_mixed(tmp_path: Path) -> None:
+    calibration = {
+        "sources": {
+            "ultrax_ultrafineweb": {
+                "records_sampled": 10,
+                "accepted_records": 10,
+                "transferred_bytes": 100,
+                "canonical_bytes": 200,
+            },
+            "view_a": {"canonical_bytes": 1000000},
+        }
+    }
+    assert _estimate(tmp_path, calibration)[0] == 1
+    code, result = _estimate(tmp_path, calibration, ["--auxiliary-source", "view_a"])
+    assert code == 0
+    assert result["auxiliary_calibration_sources"] == {"view_a": calibration["sources"]["view_a"]}
+    assert result["sources"]["ultrax_ultrafineweb"]["measured"]["canonical_bytes"] == 200
+    assert "view_a" not in result["sources"]
+    assert _estimate(tmp_path, calibration, ["--auxiliary-source", "ultrax_ultrafineweb"])[0] == 1
+    assert _estimate(tmp_path, calibration, ["--auxiliary-source", "missing"])[0] == 1
 
 
 def _record(
@@ -327,7 +349,7 @@ def test_record_refusals_and_replace(tmp_path: Path) -> None:
 def _record_entry(
     tmp_path: Path, calib: Path, source: str, sampled: int, accepted: int, rejected: int
 ) -> int:
-    return _tool.main(
+    result: int = _tool.main(
         [
             "record",
             "--calibration",
@@ -346,6 +368,7 @@ def _record_entry(
             "1000000",
         ]
     )
+    return result
 
 
 def test_canonical_bytes_sums_and_refuses(

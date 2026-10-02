@@ -293,6 +293,27 @@ def test_calibration_cli_build_show_and_current_inventory_measurement(tmp_path: 
         str(tmp_path / "calib/common_pile_prose/measurement.json"),
     ]
     assert inv.main(args2) == 0
+    estimate = tmp_path / "estimate.json"
+    quotas = Path(__file__).resolve().parents[1] / "recipes/mixtures/mix01_quotas_6b.yaml"
+    assert (
+        inv.main(
+            [
+                "estimate",
+                "--quotas",
+                str(quotas),
+                "--calibration",
+                str(tmp_path / "calib/calibration.json"),
+                "--output",
+                str(estimate),
+            ]
+        )
+        == 0
+    )
+    projected = json.loads(estimate.read_bytes())["sources"]["common_pile_prose"]
+    measured = json.loads((tmp_path / "calib/common_pile_prose/measurement.json").read_bytes())
+    assert projected["calibration_basis"] == cc.TRANSFER_BASIS
+    assert projected["component_calibration_digest"] == measured["component_calibration_digest"]
+    assert "not raw observed counts" in projected["measured"]["count_basis"]
     allowlist["revision"] = "b" * 40
     (tmp_path / "calib/component_allowlists/common_pile.json").write_text(
         json.dumps(allowlist), encoding="utf-8"

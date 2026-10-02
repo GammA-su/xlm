@@ -1,0 +1,76 @@
+{
+  "environment": {
+    "python": "3.12.13",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "MYPYPATH": "src",
+    "network": false,
+    "cuda": false,
+    "thread_caps": 1
+  },
+  "changed_python_files": [
+    "docs/implementation/evidence/COMMON-PILE-POST-CALIBRATION/analyze_calibration.py",
+    "docs/implementation/evidence/COMMON-PILE-POST-CALIBRATION/audit_gates.py",
+    "docs/implementation/evidence/COMMON-PILE-POST-CALIBRATION/verify_calibration.py",
+    "scripts/component_calibration.py",
+    "scripts/mix01_inventory.py",
+    "tests/test_common_pile_analysis.py",
+    "tests/test_component_calibration.py",
+    "tests/test_mix01_inventory.py"
+  ],
+  "results": {
+    "verification-final": {
+      "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python docs/implementation/evidence/COMMON-PILE-POST-CALIBRATION/verify_calibration.py",
+      "exit": 0,
+      "seconds": 1.86,
+      "sampled_tree_peak_rss_bytes": 191266816
+    },
+    "analysis-final": {
+      "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python docs/implementation/evidence/COMMON-PILE-POST-CALIBRATION/analyze_calibration.py",
+      "exit": 0,
+      "seconds": 1.718,
+      "sampled_tree_peak_rss_bytes": 162836480
+    },
+    "gate-audit": {
+      "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python docs/implementation/evidence/COMMON-PILE-POST-CALIBRATION/audit_gates.py",
+      "exit": 0,
+      "seconds": 1.406,
+      "sampled_tree_peak_rss_bytes": 100478976
+    },
+    "related-tests": {
+      "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python -m pytest tests/test_component_allowlist.py tests/test_component_calibration.py tests/test_component_policy.py tests/test_jsonl_gz.py tests/test_source_jsonl_gz_run.py tests/test_source_plan.py tests/test_source_run.py tests/test_source_repair.py tests/test_source_file_bounds.py tests/test_source_record_bound.py tests/test_source_growth.py tests/test_source_growth_integration.py tests/test_source_rowgroups.py tests/test_mix01_source_cli.py tests/test_mix01_inventory.py tests/test_source_admission.py tests/test_mix01_admission.py tests/test_source_discovery.py tests/test_mix01_views.py tests/test_production_ingest.py tests/test_ifm_requirement_split.py tests/test_ifm_production_bounds.py tests/test_ifm_empty_text_recovery.py tests/test_synth_adapter_semantics.py tests/test_certified_evidence.py tests/test_essential_web_bulk.py tests/test_common_pile_analysis.py -n 16 --dist=worksteal --max-worker-restart=0 -m \"not serial\" -q",
+      "exit": 0,
+      "seconds": 27.469,
+      "sampled_tree_peak_rss_bytes": 3979165696
+    },
+    "ruff": {
+      "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python -m ruff check docs/implementation/evidence/COMMON-PILE-POST-CALIBRATION/analyze_calibration.py docs/implementation/evidence/COMMON-PILE-POST-CALIBRATION/audit_gates.py docs/implementation/evidence/COMMON-PILE-POST-CALIBRATION/verify_calibration.py scripts/component_calibration.py scripts/mix01_inventory.py tests/test_common_pile_analysis.py tests/test_component_calibration.py tests/test_mix01_inventory.py",
+      "exit": 0,
+      "seconds": 0.125,
+      "sampled_tree_peak_rss_bytes": 18939904
+    },
+    "format": {
+      "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python -m ruff format --check docs/implementation/evidence/COMMON-PILE-POST-CALIBRATION/analyze_calibration.py docs/implementation/evidence/COMMON-PILE-POST-CALIBRATION/audit_gates.py docs/implementation/evidence/COMMON-PILE-POST-CALIBRATION/verify_calibration.py scripts/component_calibration.py scripts/mix01_inventory.py tests/test_common_pile_analysis.py tests/test_component_calibration.py tests/test_mix01_inventory.py",
+      "exit": 0,
+      "seconds": 0.125,
+      "sampled_tree_peak_rss_bytes": 18935808
+    },
+    "mypy": {
+      "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python -m mypy --strict docs/implementation/evidence/COMMON-PILE-POST-CALIBRATION/analyze_calibration.py docs/implementation/evidence/COMMON-PILE-POST-CALIBRATION/audit_gates.py docs/implementation/evidence/COMMON-PILE-POST-CALIBRATION/verify_calibration.py scripts/component_calibration.py scripts/mix01_inventory.py tests/test_common_pile_analysis.py tests/test_component_calibration.py tests/test_mix01_inventory.py",
+      "exit": 0,
+      "seconds": 1.157,
+      "sampled_tree_peak_rss_bytes": 123486208
+    },
+    "focused-final": {
+      "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python -m pytest tests/test_component_calibration.py tests/test_mix01_inventory.py -n 0 -q",
+      "exit": 0,
+      "seconds": 3.813,
+      "sampled_tree_peak_rss_bytes": 113975296
+    },
+    "diff": {
+      "command": "git diff --cached --check",
+      "exit": 0,
+      "seconds": 0.125,
+      "sampled_tree_peak_rss_bytes": 16510976
+    }
+  }
+}

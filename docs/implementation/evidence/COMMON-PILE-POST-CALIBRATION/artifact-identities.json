@@ -1,0 +1,18 @@
+{
+  "G:\\XLM\\calib\\calibration.common-pile-post.json": {
+    "canonical_digest": "3850169594248264e11844329d6e906f61bfe386fc9a42762f676a5c07a01352",
+    "sha256": "73a3c5ab3f3f297437d1baaae90996cd1464950c576bc07d93aa2d9be89b764a"
+  },
+  "G:\\XLM\\calib\\common_pile_prose\\component-calibration.json": {
+    "canonical_digest": "5b2971162546767699b798d7269c429ed5776d9abf8bf34a6db745ea9c9cdc18",
+    "sha256": "756f7066a7b39986ddb98ad260595cfc4d5fd6981ad21771e7b75836697d7060"
+  },
+  "G:\\XLM\\calib\\common_pile_prose\\measurement.json": {
+    "canonical_digest": "ca146fa15f79ac80625df5f222f78e369325699ec2b8e86decf42ff8f571363a",
+    "sha256": "a99e994e3f1d43b5f50bc659ac7b1371a55cd05282e95f48c3a933d3a9bc7a42"
+  },
+  "G:\\XLM\\calib\\headroom_estimate.common-pile-post.json": {
+    "canonical_digest": "196bb52d54106ac688ded4c4f989bea11f987fa4c1edc5211f25f6f455524eb5",
+    "sha256": "f887246171bea265d02b1cb69e9a8f5342a046c38c76ae4f76682c088aadaa6d"
+  }
+}

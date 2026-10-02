@@ -1,0 +1,14 @@
+{
+  "calibration_sha256": "e6f7d3c1f7c5651edb89861bf2e65f1ed6de520582f9bf9ae30a8cac2550c552",
+  "sources": {
+    "finepdfs_en": "b317403d1f4cb278eda5215a0732d0d92b2996a19d688b2368a7104d609ed7f7",
+    "finewiki_en": "3b7315787f8d35dc24d8f9ee1406cf7987bfe91cc44da6f892a4c466db56b694",
+    "ifm_behaviors_general_planning": "ac71f9e7ae236f0a25e65437948b3ca31d72a171bd4ebacc81e5413fef9d4087",
+    "ifm_general": "db16e4b61bbf21c178ceb23ea13b5fc30821bdfd305994f0b63c151a20ba7aff",
+    "ifm_planning": "3c4df6d3de6abe5ae5390e8e66b6033a569356b53eb8b93cb0eebddf994dcb76",
+    "nemotron_wiki_rewrite": "a28b7297195be1fea67104dfc468ad3a08f694836b7d870ed0bc1a87682cd7b9",
+    "simple_stories": "1998e7fe081ac66630aa54f6515f08683e8e60f18830e656ff1d0234e068b951",
+    "synth_en_explanations": "15db14ed75560feb2c4774f79806057145995176d04c03dc41c10b33971fadab",
+    "ultrax_ultrafineweb": "a34cb9aa2c67a6bb3ff5c08b46567d7056b3c4ea19eca5d3b96c335cedd93cdc"
+  }
+}

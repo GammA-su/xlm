@@ -1,0 +1,101 @@
+{
+  "common_pile": {
+    "component_split": {
+      "path": "G:\\XLM\\calib\\common_pile_prose\\component-split.json",
+      "status": "NOT RECORDED"
+    },
+    "policy_and_plan_prerequisite": {
+      "reason": "reviewed source bounds missing: G:\\XLM\\calib\\common_pile_prose\\reviewed-bounds.json; review calibration then use component-bounds record",
+      "status": "BLOCKED"
+    },
+    "published_bridge": {
+      "reason": "the latest probe evidence of this view is not a bridge publication",
+      "status": "NOT PUBLISHED"
+    },
+    "reviewed_bounds": {
+      "path": "G:\\XLM\\calib\\common_pile_prose\\reviewed-bounds.json",
+      "status": "NOT RECORDED"
+    },
+    "transport_policy": {
+      "path": "G:\\XLM\\plans\\common_pile\\transport-policy.json",
+      "status": "NOT RECORDED"
+    }
+  },
+  "historical": {
+    "finepdfs": {
+      "identity": {
+        "benchmark_risk": "suspect_with_mitigation",
+        "bridge_receipt_digest": "283df718f73b548885f4eb576c72a8c4b5af76abc9bb997d101d168087429dc4",
+        "decision_contract": "c04-benchmark-risk-v3",
+        "probe_fingerprint": "5f390e6c3b3c7caf24fe30e9672a3f2256c7800b2e6a830f59ce0a990a0caa77"
+      },
+      "status": "PASS"
+    },
+    "finewiki": {
+      "identity": {
+        "benchmark_risk": "suspect_with_mitigation",
+        "bridge_receipt_digest": "f36584a5eea3dd69a863ff37d56eadc80916fdce28641fa5b2aa816fc560fab7",
+        "decision_contract": "c04-benchmark-risk-v3",
+        "probe_fingerprint": "11a0b610ed08b53a5c4c195dcb631f9529bf215202b82e88f7a28dbea0976a60"
+      },
+      "status": "PASS"
+    },
+    "ifm_general": {
+      "identity": {
+        "benchmark_risk": "suspect_with_mitigation",
+        "bridge_receipt_digest": "93441dfbd0ab143eec24a8dbee03caa427dca4ed4156a6b6bcf51349c3c9a7ea",
+        "decision_contract": "c04-benchmark-risk-v3",
+        "probe_fingerprint": "cca8d4cbf241d00dc3f6a964f4a42f7380198dac2d7d49a02e9021a5433f913b"
+      },
+      "status": "PASS"
+    },
+    "ifm_planning": {
+      "identity": {
+        "benchmark_risk": "suspect_with_mitigation",
+        "bridge_receipt_digest": "7925617b10c6482441a5616150538b932000ca7c2935260423362e1746f10116",
+        "decision_contract": "c04-benchmark-risk-v3",
+        "probe_fingerprint": "1284634eab55314bac7d013ade482a18c8bde7aecf3bfb254f98509e3087bf35"
+      },
+      "status": "PASS"
+    },
+    "simple_stories": {
+      "identity": {
+        "benchmark_risk": "suspect_with_mitigation",
+        "bridge_receipt_digest": "66f0c419c70e8b764fc7b8e6c5432b877c59bd1998ce1f6cefb4d2e44404a60a",
+        "decision_contract": "c04-benchmark-risk-v3",
+        "probe_fingerprint": "44ffe8574a1a97e99efc8a19f5a09e7a03b0e86ff9bdfdb23641294c3a4f0cae"
+      },
+      "status": "PASS"
+    },
+    "synth": {
+      "identity": {
+        "benchmark_risk": "suspect_with_mitigation",
+        "bridge_receipt_digest": "c749c999a8323ff0740832916ee60d26e8755fda6cddd03573558b0d1d1526dc",
+        "decision_contract": "c04-benchmark-risk-v3",
+        "probe_fingerprint": "322c9873d86a4d08cc193bc9c0368428a8422b2bbc3ff79ea830516f2adfb238"
+      },
+      "status": "PASS"
+    },
+    "ultrax": {
+      "identity": {
+        "benchmark_risk": "suspect_with_mitigation",
+        "bridge_receipt_digest": "b874f47e8d9a2a58c809a80f34a905353e591d71bd66c7a4645acc1c56c3ecf9",
+        "decision_contract": "c04-benchmark-risk-v3",
+        "probe_fingerprint": "ca72a0e89cc8e37fd66a5650978d13920665ee12042e9ed5ed62b6e92dc841f8"
+      },
+      "status": "PASS"
+    },
+    "wiki_rewrite": {
+      "identity": {
+        "benchmark_risk": "suspect_with_mitigation",
+        "bridge_receipt_digest": "c6eb1f46e440ff6c3cd376421eeb2b36de1f4ffdcc653f34083df119d6661602",
+        "decision_contract": "c04-benchmark-risk-v3",
+        "probe_fingerprint": "07d8ae8dc2ed41d351d1351143345e9c5e7cf34a5d47e914f93104cb0498378f"
+      },
+      "status": "PASS"
+    }
+  },
+  "network": false,
+  "policy_freeze_called": false,
+  "production_plan_called": false
+}

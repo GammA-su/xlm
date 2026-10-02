@@ -1,0 +1,50 @@
+{
+  "binding": {
+    "calibration_digest": "c8a32cced2bae62c21b4e4396d46f0803f11745117e52d468adf3912dde0541d",
+    "component_allowlist_digest": "b2bb7c0dc532a6263ca17b78816186fa194c12c09c74614baaeb29c76cdaab04",
+    "component_id": "common_pile_prose",
+    "production_inventory_digest": "c0984aa33fb3598a9e724b9518df8cd8a0f2af52b5708ec211fb7fd693df7637",
+    "repository": "common-pile/comma_v0.1_training_dataset",
+    "revision": "5afc546db324e7f39f297ba757c9a60547151e7c",
+    "source_id": "common_pile",
+    "view_id": "common_pile_prose"
+  },
+  "components": {
+    "libretexts": {
+      "final_tokens": 50000000,
+      "first_pass_tokens": 55000000,
+      "required_canonical_bytes": 220000000
+    },
+    "news": {
+      "final_tokens": 50000000,
+      "first_pass_tokens": 55000000,
+      "required_canonical_bytes": 220000000
+    },
+    "oercommons": {
+      "final_tokens": 50000000,
+      "first_pass_tokens": 55000000,
+      "required_canonical_bytes": 220000000
+    },
+    "pressbooks": {
+      "final_tokens": 50000000,
+      "first_pass_tokens": 55000000,
+      "required_canonical_bytes": 220000000
+    },
+    "project_gutenberg": {
+      "final_tokens": 50000000,
+      "first_pass_tokens": 55000000,
+      "required_canonical_bytes": 220000000
+    },
+    "public_domain_review": {
+      "final_tokens": 50000000,
+      "first_pass_tokens": 55000000,
+      "required_canonical_bytes": 220000000
+    }
+  },
+  "digest": "76fdb7b4d6109c4ff4a31e65a07da0e83dec915a843245a49857371b270ddbb3",
+  "kind": "mix01-upstream-component-requirements-v1",
+  "operator": "PREVIEW_ONLY",
+  "rationale": "Calibrated strategy B; no operator choice recorded",
+  "total_final_tokens": 300000000,
+  "total_first_pass_tokens": 330000000
+}

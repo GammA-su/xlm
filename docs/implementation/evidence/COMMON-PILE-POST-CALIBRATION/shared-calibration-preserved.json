@@ -1,0 +1,16 @@
+{
+  "original_sha256": "e6f7d3c1f7c5651edb89861bf2e65f1ed6de520582f9bf9ae30a8cac2550c552",
+  "historical_sources_preserved": [
+    "finepdfs_en",
+    "finewiki_en",
+    "ifm_behaviors_general_planning",
+    "ifm_general",
+    "ifm_planning",
+    "nemotron_wiki_rewrite",
+    "simple_stories",
+    "synth_en_explanations",
+    "ultrax_ultrafineweb"
+  ],
+  "default_updated": false,
+  "versioned_record_verified": true
+}

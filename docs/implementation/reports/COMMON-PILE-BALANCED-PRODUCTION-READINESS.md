@@ -1,4 +1,201 @@
-# Common Pile Balanced calibration-authorization handoff (2026-10-02)
+# Common Pile real post-calibration handoff (2026-10-02)
+
+The six-component real calibration is verified and built. **C is the technical recommendation; no operator allocation or bounds decision has been recorded.** This continuation was entirely offline. The operator performed the preceding live samples and metadata probe. No admission, production policy freeze, production plan, production authorization/run, C05, tokenizer, training, or push occurred.
+
+Starting HEAD: `42fe42b25e3b51879a23d7b48c605740b5fcc671`, clean `F:\Project\xlm-common-pile`, branch `feat/common-pile-allowlist`. The final commit contains this report; the final chat supplies its exact SHA. Existing prior work and the unrelated UltraX worktree were preserved.
+
+Evidence: [COMMON-PILE-POST-CALIBRATION](../evidence/COMMON-PILE-POST-CALIBRATION/). `verification.json` contains text-free offline replay results; `analysis.json` contains all calibrated arithmetic; `commands.json` and `validation.json` retain exact commands, exits, environment, durations and sampled process-tree RSS. `changed-files.txt` is the exact commit file manifest. All corpus text remains outside the repository.
+
+## Verified real inputs and immutable identities
+
+CAL01 digest `f7d74b4a2e2614e10a8231653ef36831aecb7546955feef73d6df89f9b4be289`: 10 files, 1,746 rows, 76 requests, 4,693,869 body B. CAL02 digest `5d57e4ea82e509e28faf69aa1e7c9ee95da38bbb26e4a7367a0dea0894071b67`: 2 files, 64 rows, 44 requests, 2,883,584 body B. Both digests match the operator values; saved row identities, lengths, per-row adapter outcomes/document hashes and per-file aggregate document hashes replay exactly. The twelve exact authorized targets, source/revision, allowlist/inventory bindings and recorded complete/prefix status verify.
+
+OER Commons has two complete 83-row files; PDR has two complete 22-row files. These were successful EOFs, not short-sample failures. Eight other files are biased prefixes. PressBooks has one `CommonPileEmptyTextError`: 1,809 accepted / 1 rejected overall. No rejected text is included in artifacts.
+
+The stored metadata probe manifest verifies: `common_pile/common_pile_prose`, Hugging Face, pinned revision, `partial`, `real_observed`, not gated, null declared license, two observed/declared files. Probe file SHA-256: `bf2a0b51dfbcaf06531ac279f5a605d41371573a18cf5eb3e11e459d2bd74438`. Probe cost: 127,456 B / 2 requests / 0.422 s. Combined operator live cost: **7,704,909 body B / 122 requests**. No request was repeated by this agent.
+
+Offline limitation: compressed streams were not retained. We verified receipt integrity and saved adapter rows; we did not replay gzip CRCs or reproduce original upstream line hashes from reserialized saved JSON. Complete-gzip validation is the verified sampler receipt evidence.
+
+Unchanged: repository `common-pile/comma_v0.1_training_dataset`; revision `5afc546db324e7f39f297ba757c9a60547151e7c`; allowlist `b2bb7c0dc532a6263ca17b78816186fa194c12c09c74614baaeb29c76cdaab04`; inventory `c0984aa33fb3598a9e724b9518df8cd8a0f2af52b5708ec211fb7fd693df7637` (384 files, 64/component, 8,131,797,849 compressed B). Exactly libretexts, news, oercommons, pressbooks, project_gutenberg, public_domain_review.
+
+## Authoritative calibration and measurement
+
+Calibration: `G:\XLM\calib\common_pile_prose\component-calibration.json`, self-digest **`c8a32cced2bae62c21b4e4396d46f0803f11745117e52d468adf3912dde0541d`**. Build and show exited 0. Every component and both receipts are embedded and verified by deterministic reconstruction.
+
+Measurement: `G:\XLM\calib\common_pile_prose\measurement.json`; SHA-256 **`a99e994e3f1d43b5f50bc659ac7b1371a55cd05282e95f48c3a933d3a9bc7a42`**; canonical JSON digest **`ca146fa15f79ac80625df5f222f78e369325699ec2b8e86decf42ff8f571363a`**. It binds calibration, allowlist, inventory, revision and receipt identities.
+
+The real `mix01_inventory record` initially failed to replace the existing shared `G:\XLM\calib\calibration.json` (WinError 5, exit 1). Its content was verified unchanged; no permissions were changed. Recording into **`G:\XLM\calib\calibration.common-pile-post.json` succeeded (exit 0)** and preserves every historical source entry. SHA-256: `73a3c5ab3f3f297437d1baaae90996cd1464950c576bc07d93aa2d9be89b764a`. The failed temporary `calibration.json.tmp` remains unpromoted; it is not an authoritative calibration.
+
+Estimation first exposed existing IFM view entries outside the mixture quota keys. The CLI now supports explicit repeatable `--auxiliary-source`; unknown entries still refuse by default, quota components cannot be excluded, and auxiliary measurements remain disclosed. With `--auxiliary-source ifm_general --auxiliary-source ifm_planning`, the real estimate succeeds at `G:\XLM\calib\headroom_estimate.common-pile-post.json`. It projects 572,847,737 compressed B and 28 mean-sized initial files for Common Pile, using 1.15 safety.
+
+The weighted measurement contains **357 rounded sample-equivalent rows**, with rounded acceptance 1.0. These are not the actual 1,810 rows / one rejection. The estimate now retains the component-weighted basis, calibration digest and this explicit rounding disclosure. Historical estimate shapes remain unchanged unless the new basis/auxiliary option is present.
+
+**Shared default filenames still need operator materialization.** The existing driver reads `calibration.json` and `headroom_estimate.json`; no hidden versioned fallback was added. Exact idempotent record/estimate commands are in [operator-next-commands.md](../evidence/COMMON-PILE-POST-CALIBRATION/operator-next-commands.md).
+
+### Measured six-component table
+
+All byte quantities below are observed sample quantities. Decoded bytes include decoder look-ahead; compressed-to-last-row differs from total transfer. Files sampled = two for every component.
+
+| Component | Rows | Accepted / rejected | Transferred B | Compressed through last row B | Decoded B | Canonical B | Max observed line B | Completeness |
+|---|---:|---:|---:|---:|---:|---:|---:|---|
+| libretexts | 512 | 512 / 0 | 1,703,936 | 1,552,384 | 4,697,591 | 4,577,645 | 127,786 | 2 prefixes |
+| news | 512 | 512 / 0 | 524,288 | 417,792 | 1,117,232 | 1,048,338 | 19,932 | 2 prefixes |
+| oercommons | 166 | 166 / 0 | 630,724 | 630,724 | 1,912,452 | 1,885,207 | 131,030 | 2 complete shards |
+| pressbooks | 512 | 511 / 1 | 1,703,936 | 1,646,592 | 4,827,169 | 4,715,578 | 131,132 | 2 prefixes |
+| project_gutenberg | 64 | 64 / 0 | 2,883,584 | 2,785,280 | 7,562,134 | 7,355,063 | 140,115 | 2 prefixes |
+| public_domain_review | 44 | 44 / 0 | 130,985 | 130,975 | 328,380 | 319,684 | 27,025 | 2 complete shards |
+
+| Component | Canonical / transferred | Decoded / transferred | Canonical B / accepted row | Canonical / compressed through last row | Rejections |
+|---|---:|---:|---:|---:|---|
+| libretexts | 2.686512 | 2.756906 | 8940.713 | 2.948784 | none observed |
+| news | 1.999546 | 2.130951 | 2047.535 | 2.509234 | none observed |
+| oercommons | 2.988957 | 3.032154 | 11356.669 | 2.988957 | none observed |
+| pressbooks | 2.767462 | 2.832952 | 9228.137 | 2.863841 | CommonPileEmptyTextError: 1 |
+| project_gutenberg | 2.550667 | 2.622477 | 114922.859 | 2.640691 | none observed |
+| public_domain_review | 2.440615 | 2.507005 | 7265.545 | 2.440802 | none observed |
+
+## Projected component capacities and uncertainty
+
+Rates are measured on the samples. Whole-inventory yields below are **projections**, rounded here to the nearest byte/token, not exact corpus capacities or XLM token counts. `/4` is the existing planning convention. Two reserved tail ranks remove one PressBooks file and one PDR file from eligible planning capacity.
+
+| Component | Inventory compressed B | Projected canonical B | Projected /4 tokens | Eligible /4 tokens |
+|---|---:|---:|---:|---:|
+| libretexts | 122,167,467 | 360,245,464 | 90,061,366 | 90,061,366 |
+| news | 98,602,096 | 247,415,757 | 61,853,939 | 61,853,939 |
+| oercommons | 17,149,251 | 51,258,376 | 12,814,594 | 12,814,594 |
+| pressbooks | 201,539,814 | 577,178,022 | 144,294,505 | 141,930,871 |
+| project_gutenberg | 7,689,423,474 | 20,305,389,076 | 5,076,347,269 | 5,076,347,269 |
+| public_domain_review | 2,915,747 | 7,116,760 | 1,779,190 | 1,755,235 |
+
+Total projection: **21,548,603,455 canonical B / 5,387,150,864 token equivalents**. Prefixes can differ from later shard regions, and two complete small shards do not establish a full-component distribution. No unbiased sampling or statistical confidence interval is claimed. C05, lineage handling, filtering and the final tokenizer can reduce useful capacity. The calibrated margins are operational safeguards, not proof of post-C05 sufficiency.
+
+## Calibrated A/B/C decision
+
+**A, existing global hash-prefix mechanism:** the mean-yield planner asks for 28 files; applying each selected file's own component rate gives the following actual-prefix projection. The first cumulative prefix that crosses the 1.15-adjusted target is already 18 files. This is reported separately; the implemented legacy A selection was not silently changed.
+
+| Component | Selected files | Compressed B | Projected canonical B | Projected /4 tokens |
+|---|---:|---:|---:|---:|
+| libretexts | 2 | 3,746,205 | 11,046,749 | 2,761,687 |
+| news | 7 | 10,759,505 | 26,998,119 | 6,749,530 |
+| oercommons | 5 | 1,450,402 | 4,335,189 | 1,083,797 |
+| pressbooks | 3 | 9,480,901 | 27,151,795 | 6,787,949 |
+| project_gutenberg | 6 | 718,849,342 | 1,898,258,774 | 474,564,693 |
+| public_domain_review | 5 | 261,767 | 638,921 | 159,730 |
+
+A totals **1,968,429,547 projected canonical B / 492,107,387 token equivalents**. Gutenberg is **96.435%**, so the former approximately 97% dominance remains approximately true. The separate 18-file crossing projects 1,628,862,438 canonical B and 96.951% Gutenberg. Whole-file overshoot and eventual uniform down-selection do not create an exact component-token guarantee.
+
+**B, equal shares:** 50M final / 55M first-pass tokens each, 220M canonical B each. The safety requirement is 63.25M projected token equivalents per component. B is **infeasible** under the current safety policy, not renormalized.
+
+| Component | First-pass target | Eligible projected tokens | Margin vs 55M | Margin vs 63.25M | Safety status |
+|---|---:|---:|---:|---:|---|
+| libretexts | 55,000,000 | 90,061,366 | 35,061,366 | 26,811,366 | sufficient |
+| news | 55,000,000 | 61,853,939 | 6,853,939 | -1,396,061 | insufficient |
+| oercommons | 55,000,000 | 12,814,594 | -42,185,406 | -50,435,406 | insufficient |
+| pressbooks | 55,000,000 | 141,930,871 | 86,930,871 | 78,680,871 | sufficient |
+| project_gutenberg | 55,000,000 | 5,076,347,269 | 5,021,347,269 | 5,013,097,269 | sufficient |
+| public_domain_review | 55,000,000 | 1,755,235 | -53,244,765 | -61,494,765 | insufficient |
+
+**C, recomputed capacity-capped core:** each non-Gutenberg component receives `min(55M, floor(eligible projected tokens / 1.15))` first-pass tokens. The explicit 15% acquisition margin matches the planner; it is not statistical confidence. Final core quotas use integer `first_pass * 10 // 11`; all integer residue and the remaining quota go to Gutenberg. No repetition is assumed.
+
+| Component | Final tokens | First-pass tokens | Canonical requirement B | Projected capacity minus 1.15 target (tokens) |
+|---|---:|---:|---:|---:|
+| libretexts | 50,000,000 | 55,000,000 | 220,000,000 | 26,811,366.014 |
+| news | 48,896,394 | 53,786,034 | 215,144,136 | 0.250 |
+| oercommons | 10,130,113 | 11,143,125 | 44,572,500 | 0.284 |
+| pressbooks | 50,000,000 | 55,000,000 | 220,000,000 | 78,680,870.596 |
+| project_gutenberg | 139,585,956 | 153,544,550 | 614,178,200 | 4,899,771,036.441 |
+| public_domain_review | 1,387,537 | 1,526,291 | 6,105,164 | 0.146 |
+
+C totals exactly **300,000,000 final / 330,000,000 first-pass / 1,320,000,000 canonical B**. Gutenberg's first-pass allocation is **46.528652%**. The small residual margins for news/OER/PDR are integer rounding beyond the already-applied 15%, not additional safety. Selecting calibrated per-component prefixes succeeds as a read-only arithmetic exercise; it does not create an acquisition plan.
+
+**Technical recommendation: C.** It is feasible under the stated calibrated projection, preserves each complementary core's equal opportunity, limits Gutenberg domination, keeps deterministic quotas/cursors and requires no repetition. A is dominated by Gutenberg; B lacks projected safety capacity. This recommendation is not an operator decision. Exact A/B/C preview commands and all integer input files are in the operator command document; every preview exited 0, and none was recorded.
+
+C's full-file selection is 268 files, projecting 1,766,270,453 canonical B and **53.752% Gutenberg in the acquired raw pool**. That differs from the allocation because of safety headroom and indivisible files. Later per-component exact-token down-selection must enforce the chosen final quotas; raw acquisition is not the final mixture.
+
+## Bounds preview and derivation
+
+Preview digest **`15e186e4628973f6d4a42e2cce1008ac66bdca479b25d37df941d383a9b7ed41`**, with `operator=PREVIEW_ONLY`. The actual record digest will change with the operator identity/rationale. The complete input is `bounds.input.json`; `bounds-derivation.json` explains its calculations. These are proposed fail-closed operating ceilings, not proven full-shard maxima.
+
+| Field | Proposed value |
+|---|---:|
+| `file_deadline_seconds` | 5,700 |
+| `max_canonical_bytes_per_file` | 644,874,996 |
+| `max_decoded_bytes_per_file` | 854,724,290 |
+| `max_decompression_ratio` | 7 |
+| `max_durable_bytes_per_file` | 1,911,202,866 |
+| `max_file_bytes` | 122,103,470 |
+| `max_ledger_bytes` | 67,108,864 |
+| `max_record_bytes` | 524,288 |
+| `max_rows_per_file` | 5,612 |
+| `plan_deadline_seconds` | 34,200 |
+| `scratch_cap_bytes` | 3,828,713,572 |
+
+`max_line_bytes` is the same 524,288 B enforced through `max_record_bytes`; there is no separate unbound line override. Processing growth: output pool **1,789,099,396 B**, source allowance **122,103,470 B**, metadata/state each 1 MiB, progress 4 KiB, run metadata 8 MiB, event 1 MiB.
+
+* File size is the exact maximum over the frozen inventory.
+* Largest observed decoded/compressed rate is 3.064679535. Double it and round up to 7x; apply this to the exact largest compressed file for decoded capacity.
+* Rows and canonical bytes use 2x the largest component-specific full-file projection. This absorbs observed variation without presenting prefixes as worst-case evidence.
+* Largest observed line is 140,115 B. Double it, then round up to a power of two: 524,288 B.
+* Output pool is twice the decoded ceiling, plus 2,048 B per bounded row for metadata, 64 MiB for the rejection ledger, and 1 MiB summary. These are explicit operational reserves within a shared enforced pool, not measured serialization maxima.
+* Durable covers compressed source plus the output pool. Scratch covers two complete source/output/atomic metadata/state envelopes; the existing 32 GiB physical free-space reserve remains.
+* Slowest observed prefix throughput is 87,258.890 B/s. File deadline is 4x largest-file transfer time, rounded to 300 s (600 s floor). Plan deadline uses the larger projected A/C compressed selection, 4x the same observed time, rounded to 900 s (3,600 s floor). These are generous time budgets, not measured production runtime predictions.
+
+Prefix evidence cannot prove the maximum record, compression ratio, rows or runtime of an unobserved shard. Acceptance of these operating ceilings is an operator risk decision. Any exceedance must stop and require reviewed new bounds; no automatic increase or additional network is authorized. No extra live request is necessary to prepare this decision; successful full-shard processing remains unverified.
+
+## Evidence, review basis and production gates
+
+`evidence show` exited 0. Candidate bridge digest **`12ff9163353bf6e56979dc66b66307c12e9d57dd92e38c348b4b7927c70838f3`**; probe fingerprint **`72ddc7186f38e59d54c599a3ed309e15dd1aae2b9141bb69ef2957c7f6eb0d39`**. `bridge-preview.json` and `review-facts-preview.json` contain the current technical evidence and the same facts used by `review show`, without publishing or recording reviews.
+
+Adapter identities remain: v2 `89ae45abf7a2fd8e533a5d50ef6e37ae99e4ef5c701c365ad854cdb36157a05a`; frozen v1 `3651ff2af4fcb46c207404e052caa59e1ec42f2ac5a429e5dec752f7e83a7ef6`; columns `3e594f755eea797ac0d29d819c28b4ccf8e387cfc7889470dfc58e8657e58db1`.
+
+Review basis: null repository license; `component_allowlist_review`; exact six components, immutable allowlist/inventory/revision, CAL01/CAL02 receipts, saved-row hashes, current adapter, stored metadata, and evidence matrix `3066a5098d585dbadbc8042427101e28c52684c6fb471533df1818dd1e9dbbbd`. No row-level licenses were invented. Benchmark contamination remains unknown; `suspect_with_mitigation` requires later C05.
+
+`review show` currently exits 1: `the latest probe evidence of this view is not a bridge publication`. Publication was left to the operator. The prepared operator sequence is `evidence publish` then `review show`, followed only by the operator's own review decisions and admission.
+
+The **read-only shared prerequisite checker**, without invoking either forbidden policy-freeze or plan command, refuses exactly:
+
+> reviewed source bounds missing: G:\XLM\calib\common_pile_prose\reviewed-bounds.json; review calibration then use component-bounds record
+
+After that, allocation, current published bridge and bound admission are still required. The driver's default estimate also needs operator materialization as described above. No absent artifact triggers a fallback.
+
+| Requirement | State |
+|---|---|
+| CAL01/CAL02, metadata, frozen identities | VERIFIED |
+| Six-component calibration and versioned measurement/estimate | IMPLEMENTED / VERIFIED |
+| Shared default measurement/estimate update | BLOCKED: atomic replacement denied; operator command prepared |
+| A/B/C and bounds previews | VERIFIED; NOT RECORDED |
+| Evidence bridge preparation | VERIFIED; NOT PUBLISHED |
+| License/provenance review and admission | NOT RECORDED / NOT DONE |
+| Policy freeze / production plan / authorization / run | NOT RUN; prerequisites BLOCKED |
+| C05 / tokenizer / training / CUDA / network / push | OUT OF SCOPE / NOT RUN |
+
+## Validation and changes
+
+Python 3.12.13, Windows 11, existing locked CPU/eval environment. All execution used `uv run --offline --locked --no-sync`; HF offline flags remained enabled for this continuation. Tests use authored synthetic fixtures. Real verification was separate read-only replay of operator-created artifacts. One xdist controller with 16 workers/worksteal/no restarts; OMP/MKL/OPENBLAS/NUMEXPR each one, tokenizer parallelism disabled.
+
+* Related selection: **592 passed**, exit 0; 27.469 s wrapper, sampled process-tree peak RSS 3,979,165,696 B. Includes calibration/measurement, evidence/allowlist/split/bounds, gzip decoder/runner, source plan/run/repair, admission, source CLI, inventory, production ingest, IFM and SYNTH regressions.
+* After the final weighted-count disclosure change: **53 focused tests passed**, exit 0; 3.813 s wrapper, peak RSS 113,975,296 B. These overlap the related selection; do not add them as unique tests.
+* Eight actual historical source admission identities reverified: UltraX, FinePDFs, SYNTH, Wiki Rewrite, FineWiki, IFM General, IFM Planning, SimpleStories all PASS (`gate-status.json`).
+* Ruff/format/strict mypy passed for all eight touched Python files, with `MYPYPATH=src` for the source-layout package. Final staged diff check passed. No blanket suppressions.
+* Full repository acceptance, serial selection, CUDA, new live-source tests and production performance tests were NOT RUN. No skip is counted as a pass.
+* Investigated failures: shared Windows atomic replacement (preserved, versioned output used); estimate rejection of auxiliary IFM entries (explicitly supported/tested); initial audit import/type/lint errors (fixed). No unresolved test failure or unsupported pre-existing failure claim.
+
+Product changes are limited to explicit auxiliary calibration disclosure, preserving the weighted-count basis in estimates, and correcting stale calibration CLI guidance. Added offline verification/analysis/gate scripts and synthetic arithmetic/refusal tests. No adapter, immutable source decision, frozen inventory, prior review, quota, dependency lock or snapshot was altered.
+
+## Exact operator stop and continuation
+
+Review [operator-next-commands.md](../evidence/COMMON-PILE-POST-CALIBRATION/operator-next-commands.md). It contains exact commands to materialize the shared measurement/estimate, preview all alternatives and bounds, record only the operator's chosen allocation/bounds, publish/show evidence, and perform the operator's own review/admission. No network command is included.
+
+**Agent STOP: ready for the operator's mixture/bounds/license decisions.** Operator STOP: after those decisions/admission, return receipts for offline verification. No policy freeze, production plan or production authorization/run is included.
+
+Continuation prompt:
+
+> Continue in F:\Project\xlm-common-pile on feat/common-pile-allowlist from the newest post-calibration commit. Read the current readiness report and COMMON-PILE-POST-CALIBRATION evidence. The operator has materialized default calibration/estimate files, selected and recorded allocation/bounds, and published/reviewed/admitted the bridge. Verify these artifacts and their exact bindings offline, including current adapter and CAL01/CAL02 identities. Confirm no historical source changed. Prepare the next policy/plan handoff only within the operator's new instructions; do not freeze policy, create/authorize/run production, use network, run C05/tokenizer/training, or push without explicit authorization.
+
+COMMON PILE CALIBRATION READY FOR OPERATOR MIXTURE DECISION
+
+---
+## Previous calibration-authorization handoff (superseded by the real calibration above)
 
 The offline implementation is ready for the operator's bounded calibration
 authorization. No calibration fetch, metadata probe, admission, production

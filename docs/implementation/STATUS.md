@@ -1,3 +1,24 @@
+> **COMMON PILE REAL CALIBRATION (2026-10-02, offline continuation):
+> COMMON PILE CALIBRATION READY FOR OPERATOR MIXTURE DECISION.**
+>
+> Operator CAL01/CAL02 and metadata verified offline: 1,810 rows, 1,809
+> accepted, one PressBooks empty-text rejection. Six-component calibration
+> `c8a32cce…0541d` built; versioned measurement and estimate recorded.
+> Shared default calibration replacement was denied by Windows; original
+> preserved, operator materialization commands prepared. Calibrated C is the
+> technical recommendation (46.529% Gutenberg); A projects 96.435%, B lacks
+> safety capacity in news/OER/PDR. All split/bounds previews pass, unrecorded.
+> Evidence show passes; bridge remains unpublished, review/admission pending.
+> 592 related tests and 53 overlapping final focused tests passed; static checks
+> pass; eight historical admission identities still pass. No network, admission,
+> production policy/plan/authorization/run, C05, tokenizer, training or push.
+>
+> [Real-calibration handoff](reports/COMMON-PILE-BALANCED-PRODUCTION-READINESS.md)
+> and [operator commands](evidence/COMMON-PILE-POST-CALIBRATION/operator-next-commands.md).
+> Next: operator reviews allocation/bounds, materializes defaults, then personally
+> performs evidence publication and review/admission. Return for offline checking.
+> The earlier entries below are historical.
+
 > **COMMON PILE BALANCED CALIBRATION READINESS (2026-10-02, offline):
 > COMMON PILE BALANCED SOURCE READY FOR CALIBRATION AUTHORIZATION.**
 >

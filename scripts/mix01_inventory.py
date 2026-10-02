@@ -272,8 +272,13 @@ def cmd_estimate(args: argparse.Namespace) -> int:
     cal_sources = calibration.get("sources", {})
     if not isinstance(cal_sources, dict):
         return _fail("calibration JSON must be an object with a 'sources' mapping")
+    auxiliary = set(getattr(args, "auxiliary_source", []))
+    if auxiliary - set(cal_sources):
+        return _fail("an auxiliary calibration source is absent")
+    if auxiliary & set(headroom):
+        return _fail("a quota component cannot be treated as an auxiliary calibration source")
     for source_id in cal_sources:
-        if source_id not in headroom:
+        if source_id not in headroom and source_id not in auxiliary:
             return _fail(f"calibration source '{source_id}' is not a Mix-01 quota component")
     if not args.cpt_low < args.cpt < args.cpt_high:
         return _fail("need cpt_low < chars_per_token < cpt_high")
@@ -361,6 +366,13 @@ def cmd_estimate(args: argparse.Namespace) -> int:
                 "mint a new plan (same seed/revision); never edit a spent plan."
             ),
         }
+        if cal.get("transfer_basis") == COMPONENT_TRANSFER_BASIS:
+            table[source_id]["calibration_basis"] = COMPONENT_TRANSFER_BASIS
+            table[source_id]["component_calibration_digest"] = cal["component_calibration_digest"]
+            table[source_id]["measured"]["count_basis"] = (
+                "rounded inventory-weighted sample equivalents, not raw observed counts; "
+                "actual component acceptance/rejections remain in the bound calibration"
+            )
     payload = {
         "estimate_version": ESTIMATE_VERSION,
         "quotas_file": str(args.quotas),
@@ -368,6 +380,10 @@ def cmd_estimate(args: argparse.Namespace) -> int:
         "assumptions": assumptions,
         "sources": table,
     }
+    if auxiliary:
+        payload["auxiliary_calibration_sources"] = {
+            name: cal_sources[name] for name in sorted(auxiliary)
+        }
     _atomic_write_json(args.output, payload)
     estimated = sum(1 for v in table.values() if v.get("status") == "ESTIMATED")
     print(f"sources: {len(table)} estimated: {estimated} output: {args.output}")
@@ -1039,6 +1055,12 @@ def build_parser() -> argparse.ArgumentParser:
     estimate.add_argument("--cpt-low", type=float, default=3.0)
     estimate.add_argument("--cpt-high", type=float, default=5.0)
     estimate.add_argument("--safety", type=float, default=1.15)
+    estimate.add_argument(
+        "--auxiliary-source",
+        action="append",
+        default=[],
+        help="Explicit non-quota calibration entry to disclose separately (repeatable).",
+    )
     estimate.set_defaults(func=cmd_estimate)
     sufficiency = sub.add_parser("sufficiency", help="Compare acquired bytes to an estimate.")
     sufficiency.add_argument("--estimate", type=Path, required=True)

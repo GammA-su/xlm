@@ -1,0 +1,9 @@
+component calibration c8a32cced2bae62c21b4e4396d46f0803f11745117e52d468adf3912dde0541d (written) -> G:\XLM\calib\common_pile_prose\component-calibration.json
+  libretexts: 512 rows, accepted 1.0000, 2.949 canonical/compressed, amplification 3.02
+  news: 512 rows, accepted 1.0000, 2.509 canonical/compressed, amplification 2.65
+  oercommons: 166 rows, accepted 1.0000, 2.989 canonical/compressed, amplification 3.03
+  pressbooks: 512 rows, accepted 0.9980, 2.864 canonical/compressed, amplification 2.92
+  project_gutenberg: 64 rows, accepted 1.0000, 2.641 canonical/compressed, amplification 2.71
+  public_domain_review: 44 rows, accepted 1.0000, 2.441 canonical/compressed, amplification 2.51
+ESTIMATE 21,548,603,455 canonical B (5,387,150,864 est. tokens) over 384 files
+PROPOSED SOURCE_FILE_BOUNDS rows 3,788, canonical 435,290,623 (ceil(1.35 x the largest per-component estimate of the largest file)); review, then add them with this calibration's digest as evidence

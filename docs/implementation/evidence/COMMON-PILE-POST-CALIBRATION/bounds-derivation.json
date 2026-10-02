@@ -1,0 +1,16 @@
+{
+  "file_deadline_rule": "4x largest compressed file / slowest observed prefix throughput, rounded up to 300 s; floor 600 s",
+  "largest_inventory_file_bytes": 122103470,
+  "largest_observed_line_bytes": 140115,
+  "limitation": "Chosen fail-closed ceilings, not confidence bounds or runtime predictions. Prefixes cannot prove full-shard extremes; exceeding any ceiling requires a new operator review, not an automatic increase.",
+  "line_bound_mapping": "max_record_bytes enforces both upstream JSONL line and serialized record",
+  "max_line_bytes": 524288,
+  "max_observed_decoded_ratio": 3.0646795347416202,
+  "operator_recorded": false,
+  "output_rule": "2 * decoded ceiling + 2048 B/row metadata reserve + 64 MiB ledger + 1 MiB summary; shared enforced output pool",
+  "plan_deadline_rule": "4x larger A/C selected compressed volume / slowest prefix throughput, rounded up to 900 s; floor 3600 s",
+  "preview_digest": "15e186e4628973f6d4a42e2cce1008ac66bdca479b25d37df941d383a9b7ed41",
+  "rate_margin": 2,
+  "scratch_rule": "two source + output + atomic metadata/state envelopes; fixed 32 GiB physical free reserve remains",
+  "slowest_observed_transfer_bytes_per_second": 87258.89046941679
+}
