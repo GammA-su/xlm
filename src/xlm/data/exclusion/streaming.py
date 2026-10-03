@@ -14,7 +14,7 @@ from types import MappingProxyType
 from typing import Any
 
 from xlm.data.dedup.matchview import match_tokens
-from xlm.data.evidence_v2.canonical import digest
+from xlm.data.evidence_v2.canonical import digest, loads_bytes_strict
 from xlm.data.exclusion.policy import C05Error, Informativeness, MatcherPolicy, MatcherPolicyV4
 
 
@@ -22,6 +22,23 @@ from xlm.data.exclusion.policy import C05Error, Informativeness, MatcherPolicy, 
 class Pattern:
     tokens: tuple[str, ...]
     provenance: tuple[str, ...]
+
+
+def index_record(raw: bytes, max_record: int) -> Pattern:
+    """One strict ``protected-pattern-jsonl-v2`` line; shared by every matcher backend."""
+    if len(raw) > max_record:
+        raise C05Error("index record ceiling")
+    item = loads_bytes_strict(raw)
+    if not isinstance(item, dict) or set(item) != {"tokens", "provenance"}:
+        raise C05Error("index record schema")
+    if any(
+        not isinstance(item[k], list)
+        or not item[k]
+        or any(not isinstance(s, str) or not s for s in item[k])
+        for k in ("tokens", "provenance")
+    ):
+        raise C05Error("index record values")
+    return Pattern(tuple(item["tokens"]), tuple(item["provenance"]))
 
 
 def _string(row: Mapping[str, Any], name: str) -> str:
@@ -241,6 +258,11 @@ class StreamingMatcher:
                 self._failure[child] = fail
                 self._output_link[child] = fail if self._terminal[fail] else self._output_link[fail]
         self.identity = digest(dict(self.provenance))
+
+    @property
+    def nodes(self) -> int:
+        """Allocated automaton states, root included (the ``automaton_nodes`` measure)."""
+        return len(self._next)
 
     def match(self, tokens: Iterable[str]) -> str | None:
         """Return first exact normalized token-boundary hit; no corpus statistics."""

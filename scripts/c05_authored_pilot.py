@@ -111,6 +111,8 @@ def prepare(root: Path, count: int, *, word_floor: int = 32) -> dict[str, Path]:
         index_bytes=4 * 1024**3,
         # Admission requires the derived rollback-journal bound (~5.01 GiB here).
         scratch_bytes=16 * 1024**3,
+        # Authored index is a few KiB; this also sizes the derived compiled-matcher bound.
+        benchmark_bytes=64 * 1024**2,
         output_bytes=512 * 1024**2,
         decision_bytes=1024**3,
         journal_bytes=6 * 1024**3,

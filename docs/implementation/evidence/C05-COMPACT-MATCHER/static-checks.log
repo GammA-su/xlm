@@ -1,0 +1,8 @@
+648 files already formatted
+ruff-format exit 0
+All checks passed!
+ruff-check exit 0
+pyproject.toml: note: unused section(s): module = ['lm_eval', 'lm_eval.*']
+Success: no issues found in 31 source files
+mypy exit 0
+diff-check exit 0

@@ -192,6 +192,14 @@ def main(argv: list[str] | None = None) -> int:
     audit_parser.add_argument("--workers", type=int, choices=range(1, 17))
     audit_parser.add_argument("--progress-interval", type=float, default=1.0)
     audit_parser.add_argument("--no-progress", action="store_true")
+    # Content-free compiled-matcher capacity audit: compiles into protected scratch.
+    matcher_parser = sub.add_parser("benchmark-matcher-audit-local")
+    matcher_parser.add_argument("--index", type=Path, required=True)
+    matcher_parser.add_argument("--resources", type=Path, required=True)
+    matcher_parser.add_argument("--scratch", type=Path, required=True)
+    matcher_parser.add_argument("--backend", choices=["compact", "streaming"], default="compact")
+    matcher_parser.add_argument("--mode", choices=["protected", "authored"], default="protected")
+    matcher_parser.add_argument("--self-check", type=int, default=1000)
     root_parser = sub.add_parser("protected-root")
     root_parser.add_argument("action", choices=["init", "describe"])
     root_parser.add_argument("--root", type=Path, required=True)
@@ -241,6 +249,23 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "protected-root":
             print(json.dumps(protected_root_command(args), sort_keys=True))
             return 0
+        if args.command == "benchmark-matcher-audit-local":
+            from xlm.data.exclusion.matcher_audit import audit as matcher_audit
+
+            if not 0 <= args.self_check <= 1_000_000:
+                raise C05Error("self-check sample outside 0..1000000")
+            report = matcher_audit(
+                args.index,
+                Resources.model_validate(read_metadata(args.resources, digested=False)),
+                args.scratch,
+                mode=args.mode,
+                backend=args.backend,
+                self_check=args.self_check,
+            )
+            print(json.dumps(report, sort_keys=True))
+            if report.get("refused"):
+                return 1
+            return 0 if report.get("all_fit", True) else 2
         spec = MaterialSpec.model_validate(read_metadata(args.spec, digested=False))
         if args.command == "inspect-local":
             inspection = inspect(spec, args.material_root)

@@ -1,0 +1,50 @@
+{
+  "compact": {
+    "anchor_statistics": {
+      "anchor_keys": 200000,
+      "buckets_at_max": 200000,
+      "max_bucket": 1,
+      "mean_bucket": 1.0,
+      "p50_bucket": 1,
+      "p95_bucket": 1,
+      "p999_bucket": 1,
+      "p99_bucket": 1
+    },
+    "backend": "compact",
+    "build_peak_rss_bytes": 412901376,
+    "build_seconds": 3.052,
+    "bytes_per_flattened_token": 7.88,
+    "bytes_per_unique_pattern": 90.64,
+    "compiled_bytes": 18127281,
+    "corpus_tokens": 1408743,
+    "final_peak_rss_bytes": 412901376,
+    "flattened_tokens": 2300003,
+    "hit_digest": "9c24ae6350d5a80ead0ee1043cccaa8c82628d7f5211b953839dc0748fb67a51",
+    "hits": 98,
+    "logical_trie_nodes": 2022021,
+    "match_seconds": 0.421,
+    "match_tokens_per_second": 3348520,
+    "process_baseline_peak_rss_bytes": 157376512,
+    "unique_patterns": 200000
+  },
+  "documents": 2000,
+  "fixture": "authored-synthetic-only",
+  "identical_hits": true,
+  "index_bytes": 30701399,
+  "patterns": 200000,
+  "python": "3.12.13",
+  "seed": 20261003,
+  "streaming": {
+    "backend": "streaming",
+    "build_peak_rss_bytes": 928047104,
+    "build_seconds": 8.793,
+    "corpus_tokens": 1408743,
+    "final_peak_rss_bytes": 928047104,
+    "hit_digest": "9c24ae6350d5a80ead0ee1043cccaa8c82628d7f5211b953839dc0748fb67a51",
+    "hits": 98,
+    "logical_trie_nodes": 2022021,
+    "match_seconds": 0.682,
+    "match_tokens_per_second": 2066181,
+    "process_baseline_peak_rss_bytes": 157319168
+  }
+}

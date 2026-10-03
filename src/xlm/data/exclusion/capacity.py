@@ -5,7 +5,10 @@ Every file a C05 run may create has an upper bound fixed by the plan:
 * HARD: enforced by the writing mechanism itself before bytes land -- SQLite
   ``max_page_count`` for the facts database, and byte-counted writers for private
   decisions, kept membership, completion envelopes and signed state.
-* DERIVED: the rollback journal. In ``journal_mode=DELETE`` SQLite journals each
+* DERIVED: the compiled exact matcher (``compact.compiled_bound`` of the reviewed
+  ``benchmark_bytes``/``benchmark_patterns``; published by staging-then-rename, so
+  staging and published copies never coexist) and the rollback journal. In
+  ``journal_mode=DELETE`` SQLite journals each
   page that existed when the transaction began at most once, plus one sector-sized
   header (and at most one sector of alignment padding) per journal sync. With the
   page cap fixed, ``header + pages * (record + 2 * header)`` bounds it; the header
@@ -30,6 +33,7 @@ from typing import Any, Final, Literal, NamedTuple
 
 from pydantic import Field
 
+from xlm.data.exclusion.compact import COMPILED_ENTRIES, MATCHER_DIR, STAGING_DIR, compiled_bound
 from xlm.data.exclusion.policy import C05Error, FrozenModel, Resources
 
 PAGE_SIZE: Final = 4096
@@ -43,6 +47,7 @@ SCRATCH_FILES = frozenset(
 )
 LOCK_FILES = frozenset({"run.lock"})
 STAGED_FILES = frozenset({"membership.jsonl", "completion.json", "completion.json.tmp"})
+COMPILED_DIRS = frozenset({MATCHER_DIR, STAGING_DIR})
 
 
 class StorageGeometry(FrozenModel):
@@ -121,6 +126,9 @@ def storage_bounds(resources: Resources, geometry: StorageGeometry) -> dict[str,
         "signed_state": 2 * STATE_BYTES,
         "locks": len(LOCK_FILES) * LOCK_BYTES,
         "benchmark_index": resources.benchmark_bytes,
+        "compiled_matcher": compiled_bound(
+            resources.benchmark_bytes, resources.benchmark_patterns, FILE_SLACK_BYTES
+        ),
         "allocation_slack": files * FILE_SLACK_BYTES,
     }
 
@@ -151,6 +159,12 @@ class Component(NamedTuple):
 
 def _size(path: Path) -> int:
     return path.stat().st_size if path.is_file() else 0
+
+
+def _tree_size(directory: Path) -> int:
+    if not directory.is_dir():
+        return 0
+    return sum(p.stat().st_size for p in directory.iterdir() if p.is_file())
 
 
 def _volume(path: Path) -> Path:
@@ -206,6 +220,12 @@ def runtime_components(
             _size(published / "completion.json") + _size(published / "completion.json.tmp"),
         ),
         Component("benchmark_index", index, bounds["benchmark_index"], bounds["benchmark_index"]),
+        Component(
+            "compiled_matcher",
+            work,
+            bounds["compiled_matcher"],
+            _tree_size(work / MATCHER_DIR) + _tree_size(work / STAGING_DIR),
+        ),
         Component("allocation_slack", work, bounds["allocation_slack"], 0),
     ]
 
@@ -215,7 +235,13 @@ def unexpected_entries(work: Path, output: Path, identity: str) -> list[str]:
     found: list[str] = []
     if work.is_dir():
         for entry in work.iterdir():
-            if entry.name not in SCRATCH_FILES | LOCK_FILES or not entry.is_file():
+            if entry.name in COMPILED_DIRS and entry.is_dir() and not entry.is_symlink():
+                found.extend(
+                    entry.name + "/" + child.name
+                    for child in entry.iterdir()
+                    if child.name not in COMPILED_ENTRIES or not child.is_file()
+                )
+            elif entry.name not in SCRATCH_FILES | LOCK_FILES or not entry.is_file():
                 found.append(entry.name)
     for directory in (output / (identity + ".partial"), output / identity):
         if directory.is_dir():
@@ -322,7 +348,7 @@ def summary(bounds: Mapping[str, int]) -> dict[str, Any]:
             "completion_envelopes",
             "signed_state",
         ],
-        "derived": ["facts_rollback_journal"],
+        "derived": ["facts_rollback_journal", "compiled_matcher"],
         "fixed_input": ["benchmark_index"],
         "reserved": ["locks", "allocation_slack"],
         "monitored": ["other-process free-space consumption", "process-tree RSS"],

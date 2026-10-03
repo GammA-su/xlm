@@ -217,7 +217,8 @@ def test_hard_database_page_cap_refuses_and_rerun_cannot_widen(tmp_path: Path) -
     tiny = small_resources(
         index_bytes=256 * 1024,
         journal_bytes=1024**2,
-        scratch_bytes=64 * 1024**2,
+        # Holds the derived compiled-matcher bound; the database page cap is the subject.
+        scratch_bytes=128 * 1024**2,
     )
     plan, index, receipt = setup_run(tmp_path, corpus(40), resources=tiny)
     with pytest.raises(sqlite3.OperationalError, match="full"):

@@ -30,12 +30,18 @@ from xlm.data.exclusion.capacity import (
     storage_bounds,
     summary,
 )
+from xlm.data.exclusion.compact import (
+    MATCHER_DIR,
+    STAGING_DIR,
+    CompactExactMatcher,
+    prepare,
+)
 from xlm.data.exclusion.disk import DiskGroups
 from xlm.data.exclusion.inputs import contained, read_metadata
 from xlm.data.exclusion.isolation import VolumeInspector
 from xlm.data.exclusion.policy import C05Error, require_engine_acceptance
 from xlm.data.exclusion.review import ReviewQueue, queue_digest
-from xlm.data.exclusion.streaming import Pattern, StreamingMatcher
+from xlm.data.exclusion.streaming import Pattern, index_record
 
 
 def file_sha(path: Path, check: Callable[[], None] = lambda: None) -> str:
@@ -50,19 +56,7 @@ def file_sha(path: Path, check: Callable[[], None] = lambda: None) -> str:
 def index_patterns(path: Path, max_record: int) -> Iterator[Pattern]:
     with path.open("rb") as stream:
         while raw := stream.readline(max_record + 1):
-            if len(raw) > max_record:
-                raise C05Error("index record ceiling")
-            item = canonical.loads_bytes_strict(raw)
-            if not isinstance(item, dict) or set(item) != {"tokens", "provenance"}:
-                raise C05Error("index record schema")
-            if any(
-                not isinstance(item[k], list)
-                or not item[k]
-                or any(not isinstance(s, str) or not s for s in item[k])
-                for k in ("tokens", "provenance")
-            ):
-                raise C05Error("index record values")
-            yield Pattern(tuple(item["tokens"]), tuple(item["provenance"]))
+            yield index_record(raw, max_record)
 
 
 class Budget:
@@ -126,6 +120,37 @@ class Budget:
             raise C05Error("journal ceiling")
         if any(self.work.glob("*-wal")) or any(self.work.glob("*-shm")):
             raise C05Error("unaccounted SQLite WAL/shared-memory file")
+
+
+def matcher_directory(
+    plan: ExecutionPlan, work: Path, inspector: VolumeInspector | None = None
+) -> Path:
+    """Private compiled-matcher location (it holds protected signatures).
+
+    Always inside this plan's C05 scratch job directory; protected plans also refuse
+    any overlap with the repository checkout, data root or published output, and a
+    detached-volume plan requires the protected volume (never F:/G:/C: scratch).
+    """
+    from xlm.data.exclusion.isolation import checkout_root, os_volume, overlaps
+
+    directory = work / MATCHER_DIR
+    if not directory.resolve().is_relative_to(Path(plan.scratch_root).resolve()):
+        raise C05Error("compiled matcher must stay inside the plan's C05 scratch")
+    if plan.mode == "protected":
+        for role, root in (
+            ("repository checkout", checkout_root()),
+            ("data root", Path(plan.data_root)),
+            ("C05 output", Path(plan.output_root)),
+        ):
+            if overlaps(directory, root):
+                raise C05Error(f"compiled matcher overlaps the {role}")
+    if plan.isolation is not None:
+        protected = plan.isolation.protected_root
+        if overlaps(directory, protected.path):
+            raise C05Error("compiled matcher overlaps the protected benchmark root")
+        if (inspector or os_volume)(directory) != protected.volume:
+            raise C05Error("compiled matcher must stay on the protected volume")
+    return directory
 
 
 def isolation_check(
@@ -239,7 +264,17 @@ def run(
     output.mkdir(parents=True, exist_ok=True)
     with FileLock(str(work / "run.lock"), timeout=0):
         return _locked(
-            plan, identity, work, output, index, receipt, trusted, issuer, key, checkpoint
+            plan,
+            identity,
+            work,
+            output,
+            index,
+            receipt,
+            trusted,
+            issuer,
+            key,
+            checkpoint,
+            matcher_directory(plan, work, inspector),
         )
 
 
@@ -254,6 +289,7 @@ def _locked(
     issuer: str,
     key: bytes,
     checkpoint: Callable[[str], None],
+    compiled: Path,
 ) -> dict[str, Any]:
     state_path = work / "state.json"
     admission = admit_runtime(plan.resources, plan.storage, work, output, identity, index)
@@ -341,14 +377,26 @@ def _locked(
         raise C05Error("benchmark index byte ceiling/identity")
     if file_sha(index, budget.check) != plan.index_sha256:
         raise C05Error("benchmark index hash changed")
-    matcher = StreamingMatcher(
-        index_patterns(index, plan.resources.document_bytes),
-        max_patterns=plan.resources.benchmark_patterns,
-        max_nodes=plan.resources.automaton_nodes,
+    # Compact exact backend (same hits as the historical automaton). A published
+    # compile is reused only after every binding and file hash verifies; a crash
+    # leaves only staging, which is never trusted. No row is read before this.
+    matcher = prepare(
+        compiled,
+        index,
+        index_sha256=plan.index_sha256,
+        index_bytes=benchmark["index_bytes"],
+        max_record=plan.resources.document_bytes,
+        max_records=plan.resources.benchmark_patterns,
+        max_logical_nodes=plan.resources.automaton_nodes,
         check=budget.check,
+        before_publish=lambda: checkpoint("matcher_staged"),
     )
-    budget.check(disk=True)
-    groups = DiskGroups(work / "facts.sqlite", plan.policy, plan.resources, budget.check)
+    try:
+        budget.check(disk=True)
+        groups = DiskGroups(work / "facts.sqlite", plan.policy, plan.resources, budget.check)
+    except BaseException:
+        matcher.close()
+        raise
     try:
         review = ReviewQueue(groups.db, plan.policy.review, plan.resources)
         if plan.policy.review.enabled:
@@ -615,6 +663,7 @@ def _locked(
         return result
     finally:
         groups.close()
+        matcher.close()
 
 
 def verify_completion(
@@ -695,6 +744,36 @@ def resume_check(
         budget = Budget(plan, work, Path(plan.output_root), state)
         budget.benchmark_bytes = index.stat().st_size
         budget.check(disk=True)
+        compiled = matcher_directory(plan, work, inspector)
+        compiled_matcher = "absent; compiled before scanning"
+        if compiled.exists():
+            CompactExactMatcher(
+                compiled,
+                index_sha256=plan.index_sha256,
+                index_bytes=receipt["index_bytes"],
+                max_records=plan.resources.benchmark_patterns,
+                max_logical_nodes=plan.resources.automaton_nodes,
+                check=budget.check,
+            ).close()
+            compiled_matcher = "verified"
+
+        def report(verified: int) -> dict[str, Any]:
+            return {
+                "plan_digest": identity,
+                "stage": state["stage"],
+                "reusable_files_verified": verified,
+                "compiled_matcher": compiled_matcher,
+                # An interrupted compile is never reused; run discards and rebuilds it.
+                "incomplete_matcher_staging": (work / STAGING_DIR).exists(),
+                "resume_checked": True,
+                "execution_performed": False,
+            }
+
+        if not (work / "facts.sqlite").exists():
+            # Interrupted before the first row (e.g. during matcher compilation).
+            if state["stage"] != "scan" or (Path(plan.output_root) / identity).exists():
+                raise C05Error("resume facts journal missing after the scan stage")
+            return report(0)
         groups = DiskGroups(
             work / "facts.sqlite", plan.policy, plan.resources, budget.check, read_only=True
         )
@@ -744,10 +823,4 @@ def resume_check(
                 verify_completion(final, plan, trusted)
         finally:
             groups.close()
-    return {
-        "plan_digest": identity,
-        "stage": state["stage"],
-        "reusable_files_verified": verified,
-        "resume_checked": True,
-        "execution_performed": False,
-    }
+        return report(verified)

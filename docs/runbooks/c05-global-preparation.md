@@ -37,8 +37,9 @@ Contract, enforced at preparation, plan creation and run time (fixture-tested):
   proof consumer refuses while `X:\C05-Protected` is accessible and refuses paths
   inside the root or the C05 scratch. Only that bound path is probed; mounting the
   volume elsewhere is not detected. Detach `X:` before any tokenizer/training work.
-* Capacity: the C05 scratch worst case (about 338 GiB with the proposed resource
-  values, plus the reserve) must fit on the protected volume.
+* Capacity: the C05 scratch worst case (about 345 GiB with the proposed resource
+  values, including the derived compiled-matcher bound, plus the reserve) must fit
+  on the protected volume.
 
 ```powershell
 $op = 'uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator'
@@ -142,6 +143,45 @@ a `--receipt-export` file from that attempt, then rerun into the empty
 destination. There is no resume. A receipt is valid only when the destination
 has no `PREPARATION-INCOMPLETE` marker.
 
+## Compact exact matcher and its capacity audit
+
+`run` matches with the compact exact backend (`c05-compact-exact-v1`), not the
+Python Aho-Corasick automaton. Its hits are identical to the automaton's and every
+hit is verified token by token. It compiles a private matcher from the protected
+index into `X:\C05-Scratch\<plan-digest>\matcher\`. The matcher holds benchmark
+signatures, so it never leaves the protected scratch and is never exported.
+
+* **Publication.** A crash leaves only `matcher.staging`. The next run discards it
+  (known file names only) and rebuilds it.
+* **Reuse.** A published matcher is reused only after every file hash, binding and
+  re-derived count matches; any mismatch refuses.
+* **Ceilings.** `automaton_nodes` bounds the *logical* exact trie size (root plus
+  distinct prefixes), derived without building a trie. `benchmark_patterns` still
+  bounds index records. Admission includes the derived compiled-matcher storage.
+
+Before signing new resources, measure the real index, content-free:
+
+```powershell
+Invoke-Expression "$op benchmark-matcher-audit-local --index X:/C05-Protected/prepared/index.jsonl --resources <resources-value.json> --scratch X:/C05-Scratch/matcher-audit --self-check 1000 > G:/XLM/c05/benchmark-matcher-audit.json"
+```
+
+The audit command:
+
+* requires the index to be inside the marked root, and the scratch to be on the
+  same device, outside the root and outside any checkout;
+* enforces `ram_bytes`, `scratch_bytes` and `stage_seconds`;
+* only *reports* `automaton_nodes`, `benchmark_patterns`, `benchmark_bytes` and
+  the anchor-bucket fit;
+* prints aggregates only: counts, bucket quantiles, compiled bytes, peak compile
+  RSS, seconds and a self-check.
+
+Exit 0 means everything fits, exit 2 means a ceiling does not fit, exit 1 means a
+refusal (see `ceiling`). With the current `automaton_nodes = 8000000`, expect exit
+2. Size `automaton_nodes` from `logical_trie_nodes` and `benchmark_patterns` from
+`index_records`, then sign a new resource decision. Delete
+`X:\C05-Scratch\matcher-audit` afterwards: it is a private signature copy.
+Details: [report](../implementation/reports/C05-COMPACT-MATCHER.md).
+
 ## Readiness check (metadata only)
 
 ```powershell
@@ -163,12 +203,14 @@ The plan refuses unless `journal_bytes` covers the derived journal bound and
 `scratch_bytes` covers the worst case of: facts database (`index_bytes`, hard SQLite
 page cap), derived rollback journal, private decisions (`decision_bytes`, hard),
 membership staging/publication (`output_bytes`, hard), completion/state envelopes
-(hard), locks, benchmark index and per-file allocation slack. Before creating any
+(hard), locks, benchmark index, the derived compiled exact matcher
+(`13/4 * benchmark_bytes + 40 * min(benchmark_patterns, benchmark_bytes // 36)` plus
+manifest and slack) and per-file allocation slack. Before creating any
 file, `run`/`resume` re-measure the geometry, refuse unaccounted entries (WAL/SHM,
 foreign files) and require each volume to hold the remaining growth
 (`bound - present`) plus `free_bytes`. The same reserve check is sampled during the
 run. Nothing widens a ceiling; a larger ceiling is a new plan and authorization.
-With the proposed defaults the worst case is 363,223,060,992 B (512 B journal
+With the proposed defaults the worst case is 370,303,419,928 B (512 B journal
 header measured on C: and G:), inside the proposed 352 GiB scratch ceiling.
 
 ## Allocation chain after a verified completion

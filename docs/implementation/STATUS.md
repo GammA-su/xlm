@@ -1,3 +1,31 @@
+> **C05 COMPACT EXACT MATCHER (2026-10-03): READY; OPERATOR CAPACITY AUDIT REQUIRED.**
+>
+> The production runner now matches with `CompactExactMatcher`
+> (`c05-compact-exact-v1`). It uses sorted-vocabulary `uint32` ids, unique patterns
+> in packed memory-mapped arrays, and one rarest-5-gram anchor per pattern. A
+> fingerprint only accelerates lookup; every hit is verified by exact id-by-id
+> comparison. It returns the same digest as the historical automaton. That
+> automaton (about 380 B RSS per node in the synthetic benchmark) cannot hold the
+> operator-measured 71,974,329 logical nodes. Matcher-v4 signatures, rendering and
+> normalization are unchanged.
+>
+> `automaton_nodes` keeps its meaning as the exact logical trie size, now derived
+> by sorted LCP without building a trie. `Resources` fields are unchanged. Scratch
+> admission gains a derived `compiled_matcher` bound: the default worst case is
+> 370,303,419,928 B, within the 352 GiB ceiling.
+>
+> The compiled artifact stays in the plan's protected scratch. It is published by
+> staging, then manifest, then rename, and reused only after full hash and count
+> verification. The new content-free `benchmark-matcher-audit-local` command
+> reports capacity. 47 new tests. The C05 suite passed: 257 non-serial
+> (`-n 16`) and 1 serial (`-n 0`). Ruff and mypy strict are clean.
+>
+> Real compile and capacity: NOT RUN (operator). Next: the operator runs the audit
+> on `X:/C05-Protected/prepared/index.jsonl` with scratch
+> `X:/C05-Scratch/matcher-audit`, then signs `automaton_nodes` and
+> `benchmark_patterns`. [Report](reports/C05-COMPACT-MATCHER.md),
+> [runbook](../runbooks/c05-global-preparation.md).
+
 > **C05 MATCHER V4 (2026-10-02): READY; OPERATOR AUDIT AND NEW POLICY/RESOURCES REQUIRED.**
 >
 > New `c05-matcher-v4` keeps the v3 normal signatures. Only for an item with zero
