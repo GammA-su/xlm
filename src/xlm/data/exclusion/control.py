@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sqlite3
 from pathlib import Path
 from typing import Any, Literal
@@ -87,6 +88,23 @@ def verify_decision(
     return decision
 
 
+_PLAN_NAME = re.compile(r"p(\d{4,})\.json")
+
+
+def next_plan_sequence(plan_root: Path) -> int:
+    """Next allocation number from exact ``pNNNN.json`` execution-plan names only.
+
+    Sibling artifacts such as ``p0001.authorization.json`` share the prefix and
+    must not participate.
+    """
+    sequences = (
+        int(match.group(1))
+        for path in plan_root.iterdir()
+        if (match := _PLAN_NAME.fullmatch(path.name)) is not None
+    )
+    return max(sequences, default=0) + 1
+
+
 def create_plan(args: argparse.Namespace, trust: dict[str, bytes]) -> ExecutionPlan:
     manifest = read_metadata(args.manifest)
     # Real source verification is metadata-only here; run hashes every input byte.
@@ -116,8 +134,7 @@ def create_plan(args: argparse.Namespace, trust: dict[str, bytes]) -> ExecutionP
         raise C05Error("preparation code/dependencies stale")
     args.plan_root.mkdir(parents=True, exist_ok=True)
     with FileLock(str(args.plan_root / "allocation.lock"), timeout=0):
-        paths = sorted(args.plan_root.glob("p[0-9]*.json"))
-        sequence = max((int(p.stem[1:]) for p in paths), default=0) + 1
+        sequence = next_plan_sequence(args.plan_root)
         plan = make_plan(
             manifest,
             envelope,

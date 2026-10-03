@@ -12,7 +12,7 @@ from test_c05_engine import execute as engine_execute
 from xlm.core.contracts import CanonicalDocument
 from xlm.data.evidence_v2 import canonical
 from xlm.data.exclusion.artifacts import ExecutionPlan, signed
-from xlm.data.exclusion.control import main
+from xlm.data.exclusion.control import main, next_plan_sequence
 from xlm.data.exclusion.policy import C05Error, ProductionPolicy, ReviewPolicy
 
 
@@ -483,3 +483,22 @@ def test_parallel_workers_and_assembly_transport_current_proof(
         assert (tmp_path / "tokens-1" / name).read_bytes() == (
             tmp_path / "tokens-2" / name
         ).read_bytes()
+
+
+def test_plan_sequence_counts_only_exact_execution_plan_names(tmp_path: Path) -> None:
+    assert next_plan_sequence(tmp_path) == 1
+    for name in (
+        "p0001.json",
+        "p0001.authorization.json",
+        "p0002.json",
+        "p0002.authorization.json",
+        "p0009.proof.json",
+        "p12.json",
+        "p0003.json.partial",
+        "allocation.lock",
+    ):
+        (tmp_path / name).write_bytes(b"{}")
+    # Previously int("0001.authorization") raised; "p12" and suffixed names never count.
+    assert next_plan_sequence(tmp_path) == 3
+    (tmp_path / "p10000.json").write_bytes(b"{}")
+    assert next_plan_sequence(tmp_path) == 10001
