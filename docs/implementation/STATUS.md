@@ -1,3 +1,25 @@
+> **C06 FAST TOKENIZER FIT (2026-10-03): READY; <=20 MIN SUPPORTED BY PROJECTION; REAL FIT NOT RUN.**
+>
+> `fit-tokenizer` is now the fast path (`c06-fast-v1`); bb886bd stays as
+> `fit-tokenizer-reference`. It makes one authenticated pass over `membership.jsonl`
+> (the hashed bytes are the parsed bytes, nothing is used before the SHA, size and
+> count match, and every completion aggregate is reconciled; no SQLite). Exact
+> vectorized selection follows. Then one source pass hashes every plan file once,
+> strict-parses only kept rows (preserving bb886bd's original-split refusal) and fully
+> decodes only selected rows. BPE runs in a child that forces
+> `TOKENIZERS_PARALLELISM=true` with explicit Rayon threads, under a deadline and an
+> RSS ceiling. The same pass builds a signed post-C05 kept-membership index. Outputs
+> are byte-identical to bb886bd for sample, `tokenizer.json`, manifest, binding and
+> every scientific manifest field, across workers 1/2/4/8 and BPE threads 1/8/16; the
+> deficit reports are identical too. Tests: 47 new; regression 332 passed (parallel);
+> serial 2 failed only under the long default temp path and pass with
+> `--basetemp=C:/t6`. Ruff, mypy strict and diff-check are clean. Authored
+> measurements: source 0.68 GB/s CPU at 8 workers (above the ~0.5 GB/s SATA floor of
+> `G:`), membership 165k rows/s, 512 MiB BPE 47 s at 3.65 GiB. The projected real
+> total is about 5.5-11 min. Next (operator): detach `X:`, run `fit-tokenizer
+> --plan-only`, then the fit. [Report](reports/C06-FAST.md),
+> [runbook](../runbooks/c05-global-preparation.md#tokenizer-fit-c06).
+
 > **C06 C05-BOUND TOKENIZER FIT (2026-10-03): READY; REAL FIT NOT RUN (OPERATOR AUTHORIZATION).**
 >
 > The operator froze `recipes/tokenizer/mix01_fit_shares_v1.yaml` (policy digest

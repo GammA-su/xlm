@@ -157,7 +157,9 @@ def main(argv: list[str] | None = None) -> int:
         "claim-binding",
         "claim-check",
         "fit-tokenizer",
+        "fit-tokenizer-reference",
         "verify-tokenizer-fit",
+        "verify-kept-index",
     }:
         from xlm.data.exclusion.control import main as control_main
 

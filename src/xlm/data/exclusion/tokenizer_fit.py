@@ -47,7 +47,7 @@ from xlm.core.contracts import CanonicalDocument
 from xlm.data.acquisition.source_run import write_once
 from xlm.data.evidence_v2 import canonical
 from xlm.data.exclusion.artifacts import ExecutionPlan, Sha, signed, verify_signed
-from xlm.data.exclusion.gates import MembershipGate
+from xlm.data.exclusion.gates import C05View, MembershipGate
 from xlm.data.exclusion.identity import implementation_identity
 from xlm.data.exclusion.inputs import COMPONENTS, read_metadata
 from xlm.data.exclusion.policy import C05Error
@@ -579,7 +579,7 @@ def _allocation_report(budget: Budget, state: _Allocation) -> dict[str, Any]:
 
 
 def deficit_report(
-    gate: MembershipGate,
+    gate: C05View,
     policy: FitPolicy,
     requirements: Mapping[str, Any],
     budgets: Mapping[str, Budget],
@@ -727,7 +727,7 @@ def materialize(
 
 def _verify_tokenizer(
     directory: Path,
-    gate: MembershipGate,
+    gate: C05View,
     policy: FitPolicy,
     production: bool,
     training_input_hash: str,
@@ -759,6 +759,102 @@ def _verify_tokenizer(
         "actual_vocab_size": tokenizer.actual_vocab_size,
         "is_production_baseline": tokenizer.is_production_baseline,
         "training_input_hash": training_input_hash,
+    }
+
+
+def fit_record(
+    gate: C05View,
+    policy: FitPolicy,
+    policy_sha256: str,
+    requirements: Mapping[str, Any],
+    allocations: dict[str, dict[str, Any]],
+    *,
+    production: bool,
+    selected_documents: int,
+    selected_bytes: int,
+    sample_sha: str,
+    sample_bytes: int,
+    training_input_hash: str,
+    fed_documents: int,
+    fed_bytes: int,
+    tokenizer: dict[str, Any],
+) -> dict[str, Any]:
+    """Scientific content of a fit manifest, shared by every fit implementation.
+
+    Implementation provenance and the operational resource plan are added by the
+    caller; everything here is a function of the C05 binding, policy and sample.
+    """
+    components: dict[str, dict[str, Any]] = {}
+    for row in allocations.values():
+        total = components.setdefault(
+            row["component"],
+            {
+                "weight": policy.component_weights[row["component"]],
+                "declared_share": _ratio(
+                    Fraction(
+                        policy.component_weights[row["component"]],
+                        sum(policy.component_weights.values()),
+                    )
+                ),
+            },
+        )
+        for name in (
+            "requested_bytes",
+            "selected_bytes",
+            "overshoot_bytes",
+            "selected_documents",
+            "eligible_documents",
+            "available_eligible_bytes",
+            "oversized_candidates_skipped",
+            "oversized_candidate_bytes",
+        ):
+            total[name] = total.get(name, 0) + row[name]
+    for rows in (allocations, components):
+        for row in rows.values():
+            row["achieved_share"] = _ratio(Fraction(row["selected_bytes"], selected_bytes))
+    return {
+        "kind": FIT_KIND,
+        **binding_of(gate),
+        "production": production,
+        "policy": policy.model_dump(mode="json"),
+        "policy_digest": policy.identity(),
+        "policy_file_sha256": policy_sha256,
+        "requirements": {
+            "quota_sha256": requirements["quota_sha256"],
+            "ifm_split_digest": requirements["ifm_split_digest"],
+            "common_pile_split_digest": requirements["common_pile_split_digest"],
+            "requirements_digest": canonical.digest(dict(requirements)),
+        },
+        "components": dict(sorted(components.items())),
+        "allocations": allocations,
+        "totals": {
+            "requested_bytes": policy.target_sample_bytes,
+            "selected_bytes": selected_bytes,
+            "overshoot_bytes": selected_bytes - policy.target_sample_bytes,
+            "selected_documents": selected_documents,
+            "oversized_candidates_skipped": sum(
+                r["oversized_candidates_skipped"] for r in allocations.values()
+            ),
+            "oversized_candidate_bytes": sum(
+                r["oversized_candidate_bytes"] for r in allocations.values()
+            ),
+        },
+        "sample": {
+            "file": FIT_SAMPLE,
+            "selected_membership_sha256": sample_sha,
+            "selected_membership_bytes": sample_bytes,
+            "documents": selected_documents,
+            "canonical_bytes": selected_bytes,
+            "training_input_hash": training_input_hash,
+        },
+        "bpe_bounds": {
+            "max_train_docs": selected_documents,
+            "max_train_bytes": selected_bytes,
+            "require_complete": True,
+            "fed_documents": fed_documents,
+            "fed_canonical_bytes": fed_bytes,
+        },
+        "tokenizer": tokenizer,
     }
 
 
@@ -878,77 +974,23 @@ def fit_tokenizer(
         identity = _verify_tokenizer(directory, gate, policy, production, training_input_hash)
         if file_sha(stage / FIT_SAMPLE) != sample_sha:
             raise C05Error("tokenizer-fit sample artifact changed")
-        components: dict[str, dict[str, Any]] = {}
-        for row in allocations.values():
-            total = components.setdefault(
-                row["component"],
-                {
-                    "weight": policy.component_weights[row["component"]],
-                    "declared_share": _ratio(
-                        Fraction(
-                            policy.component_weights[row["component"]],
-                            sum(policy.component_weights.values()),
-                        )
-                    ),
-                },
-            )
-            for name in (
-                "requested_bytes",
-                "selected_bytes",
-                "overshoot_bytes",
-                "selected_documents",
-                "eligible_documents",
-                "available_eligible_bytes",
-                "oversized_candidates_skipped",
-                "oversized_candidate_bytes",
-            ):
-                total[name] = total.get(name, 0) + row[name]
-        for rows in (allocations, components):
-            for row in rows.values():
-                row["achieved_share"] = _ratio(Fraction(row["selected_bytes"], selected_bytes))
         body = {
-            "kind": FIT_KIND,
-            **binding_of(gate),
-            "production": production,
-            "policy": policy.model_dump(mode="json"),
-            "policy_digest": policy.identity(),
-            "policy_file_sha256": policy_sha256,
-            "requirements": {
-                "quota_sha256": requirements["quota_sha256"],
-                "ifm_split_digest": requirements["ifm_split_digest"],
-                "common_pile_split_digest": requirements["common_pile_split_digest"],
-                "requirements_digest": canonical.digest(requirements),
-            },
-            "components": dict(sorted(components.items())),
-            "allocations": allocations,
-            "totals": {
-                "requested_bytes": policy.target_sample_bytes,
-                "selected_bytes": selected_bytes,
-                "overshoot_bytes": selected_bytes - policy.target_sample_bytes,
-                "selected_documents": len(chosen),
-                "oversized_candidates_skipped": sum(
-                    r["oversized_candidates_skipped"] for r in allocations.values()
-                ),
-                "oversized_candidate_bytes": sum(
-                    r["oversized_candidate_bytes"] for r in allocations.values()
-                ),
-            },
-            "sample": {
-                "file": FIT_SAMPLE,
-                "selected_membership_sha256": sample_sha,
-                "selected_membership_bytes": sample_bytes,
-                "documents": len(chosen),
-                "canonical_bytes": selected_bytes,
-                "training_input_hash": training_input_hash,
-            },
-            "bpe_bounds": {
-                "max_train_docs": len(chosen),
-                "max_train_bytes": selected_bytes,
-                "require_complete": True,
-                "fed_documents": feed.documents,
-                "fed_canonical_bytes": feed.bytes,
-            },
-            "tokenizer": identity,
+            **fit_record(
+                gate,
+                policy,
+                policy_sha256,
+                requirements,
+                allocations,
+                production=production,
+                selected_documents=len(chosen),
+                selected_bytes=selected_bytes,
+                sample_sha=sample_sha,
+                sample_bytes=sample_bytes,
+                training_input_hash=training_input_hash,
+                fed_documents=feed.documents,
+                fed_bytes=feed.bytes,
+                tokenizer=identity,
+            ),
             "resource_plan_digest": planned["digest"],
             "implementation": implementation,
         }

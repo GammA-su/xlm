@@ -9,6 +9,7 @@ import tempfile
 from collections.abc import Callable, Iterable, Iterator, Sequence
 from contextlib import contextmanager
 from pathlib import Path
+from typing import IO
 
 from tokenizers import Encoding, Tokenizer
 from tokenizers.decoders import ByteLevel as ByteLevelDecoder
@@ -86,30 +87,17 @@ def _fit_text_stream(
                         "tokenizer-fit sample exceeds its frozen bounds; refusing to truncate"
                     )
                 break
-            raw = canonical_normalize(doc.text).encode("utf-8")
-            spool.write(struct.pack("<Q", len(raw)))
-            spool.write(raw)
+            write_fit_frame(spool, doc)
             if count:
                 digest.update(b"\n")
-            digest.update(f"{doc.source_id}:{doc.doc_id}:{doc.clean_hash}".encode())
+            digest.update(fit_input_line(doc))
             total_bytes += doc.utf8_byte_count
             count += 1
         if not count:
             raise ValueError("No valid training documents provided for tokenizer training.")
         spool.seek(0)
 
-        def texts() -> Iterator[str]:
-            fed = fed_bytes = 0
-            while header := spool.read(8):
-                size = struct.unpack("<Q", header)[0]
-                text = spool.read(size).decode("utf-8")
-                fed += 1
-                fed_bytes += size
-                if on_feed is not None:
-                    on_feed(fed, fed_bytes)
-                yield text
-
-        yield texts(), digest.hexdigest()
+        yield _read_frames(spool, on_feed), digest.hexdigest()
 
 
 class ByteLevelBPETokenizer(BaseTokenizer):
@@ -380,25 +368,7 @@ class ByteLevelBPETokenizer(BaseTokenizer):
         A frozen-sample caller passes the sample's exact document/byte totals as the
         caps with ``require_complete=True`` (see :func:`_fit_text_stream`).
         """
-        if target_vocab_size < MINIMUM_VOCAB_SIZE:
-            raise ValueError(
-                f"Requested vocab size {target_vocab_size} is below required minimum "
-                f"{MINIMUM_VOCAB_SIZE} (4 special tokens + 256 byte symbols)"
-            )
-
-        # Initialize base tokenizer with BPE model
-        base_tok = Tokenizer(BPE(unk_token="<unk>"))
-        base_tok.pre_tokenizer = ByteLevel(add_prefix_space=False, use_regex=True)
-        base_tok.decoder = ByteLevelDecoder()
-
-        # Train with full ByteLevel alphabet and special tokens
-        trainer = BpeTrainer(  # type: ignore[no-untyped-call]
-            vocab_size=target_vocab_size,
-            initial_alphabet=ByteLevel.alphabet(),
-            special_tokens=SPECIAL_TOKENS,
-            show_progress=False,
-        )
-
+        _check_vocab_size(target_vocab_size)
         documents = screened_documents(documents, c05_gate, required=is_production_baseline)
         with _fit_text_stream(
             documents,
@@ -411,23 +381,146 @@ class ByteLevelBPETokenizer(BaseTokenizer):
             texts,
             training_input_hash,
         ):
-            base_tok.train_from_iterator(texts, trainer=trainer)
+            protected_tok = _train_protected(texts, target_vocab_size)
+        return cls._fitted(
+            protected_tok, target_vocab_size, training_input_hash, is_production_baseline
+        )
 
-        # Literal special-token protection:
-        # Clear added_tokens from tokenizer structure so literal strings in user text
-        # (such as '<eos>') are not intercepted before pre-tokenization.
-        tok_dict = json.loads(base_tok.to_str())
-        tok_dict["added_tokens"] = []
-        protected_tok = Tokenizer.from_str(json.dumps(tok_dict))
-        protected_tok.decoder = ByteLevelDecoder()
+    @classmethod
+    def train_from_spool(
+        cls,
+        spool: Path,
+        target_vocab_size: int,
+        training_input_hash: str,
+        *,
+        documents: int,
+        spool_bytes: int,
+        is_production_baseline: bool = False,
+        on_feed: Callable[[int, int], None] | None = None,
+    ) -> ByteLevelBPETokenizer:
+        """Train exactly like :meth:`train_from_documents` from an already screened spool.
 
+        ``spool`` holds :func:`write_fit_frame` frames in feed order; the caller owns
+        the C05 screening and the ``training_input_hash`` of those exact documents.
+        Every frame must be consumed: a frame-count or byte mismatch refuses.
+        """
+        _check_vocab_size(target_vocab_size)
+        fed = {"documents": 0, "bytes": 0}
+
+        def counted(done: int, size: int) -> None:
+            fed["documents"], fed["bytes"] = done, size
+            if on_feed is not None:
+                on_feed(done, size)
+
+        with spool.open("rb") as stream:
+            protected_tok = _train_protected(_read_frames(stream, counted), target_vocab_size)
+            if stream.read(1):
+                raise FitSampleBoundError("tokenizer-fit spool has unread frames")
+        if (fed["documents"], fed["bytes"]) != (documents, spool_bytes):
+            raise FitSampleBoundError("tokenizer-fit spool differs from the frozen sample")
+        return cls._fitted(
+            protected_tok, target_vocab_size, training_input_hash, is_production_baseline
+        )
+
+    @classmethod
+    def _fitted(
+        cls,
+        protected_tok: Tokenizer,
+        target_vocab_size: int,
+        training_input_hash: str,
+        is_production_baseline: bool,
+    ) -> ByteLevelBPETokenizer:
         # Production baseline certification check
         # Tiny fixtures reaching vocabulary count alone cannot be certified as baseline.
         actual_prod = is_production_baseline and target_vocab_size == 32768
-
         return cls(
             tokenizer=protected_tok,
             target_vocab_size=target_vocab_size,
             training_input_hash=training_input_hash,
             is_production_baseline=actual_prod,
         )
+
+    def count_valid_targets(self, texts: Sequence[str]) -> list[int]:
+        """Exact C05 count rule via the native batch path, without offset construction.
+
+        Same normalization, backend encode call and BOS/EOS framing as
+        :meth:`encode_with_offsets`; only the byte spans are never built.
+        """
+        encodings = self._tok.encode_batch_fast(
+            [canonical_normalize(text) for text in texts], add_special_tokens=False
+        )
+        counts: list[int] = []
+        for encoding in encodings:
+            ids = encoding.ids
+            framed = len(ids) + 2
+            if ids and ids[0] == self._bos_id:
+                framed -= 1
+            if ids and ids[-1] == self._eos_id:
+                framed -= 1
+            counts.append(max(0, framed - 1))
+        return counts
+
+
+def _check_vocab_size(target_vocab_size: int) -> None:
+    if target_vocab_size < MINIMUM_VOCAB_SIZE:
+        raise ValueError(
+            f"Requested vocab size {target_vocab_size} is below required minimum "
+            f"{MINIMUM_VOCAB_SIZE} (4 special tokens + 256 byte symbols)"
+        )
+
+
+def _train_protected(texts: Iterator[str], target_vocab_size: int) -> Tokenizer:
+    """The single C06 BPE configuration: train, then strip added tokens."""
+    # Initialize base tokenizer with BPE model
+    base_tok = Tokenizer(BPE(unk_token="<unk>"))
+    base_tok.pre_tokenizer = ByteLevel(add_prefix_space=False, use_regex=True)
+    base_tok.decoder = ByteLevelDecoder()
+
+    # Train with full ByteLevel alphabet and special tokens
+    trainer = BpeTrainer(  # type: ignore[no-untyped-call]
+        vocab_size=target_vocab_size,
+        initial_alphabet=ByteLevel.alphabet(),
+        special_tokens=SPECIAL_TOKENS,
+        show_progress=False,
+    )
+    base_tok.train_from_iterator(texts, trainer=trainer)
+
+    # Literal special-token protection:
+    # Clear added_tokens from tokenizer structure so literal strings in user text
+    # (such as '<eos>') are not intercepted before pre-tokenization.
+    tok_dict = json.loads(base_tok.to_str())
+    tok_dict["added_tokens"] = []
+    protected_tok = Tokenizer.from_str(json.dumps(tok_dict))
+    protected_tok.decoder = ByteLevelDecoder()
+    return protected_tok
+
+
+def write_fit_frame(stream: IO[bytes], doc: CanonicalDocument) -> int:
+    """Append one length-framed canonical text exactly as the fit spool frames it."""
+    raw = canonical_normalize(doc.text).encode("utf-8")
+    stream.write(struct.pack("<Q", len(raw)))
+    stream.write(raw)
+    return len(raw)
+
+
+def fit_input_line(doc: CanonicalDocument) -> bytes:
+    """One document's contribution to ``training_input_hash`` (joined by newlines)."""
+    return f"{doc.source_id}:{doc.doc_id}:{doc.clean_hash}".encode()
+
+
+def _read_frames(
+    stream: IO[bytes], on_feed: Callable[[int, int], None] | None = None
+) -> Iterator[str]:
+    fed = fed_bytes = 0
+    while header := stream.read(8):
+        if len(header) != 8:
+            raise FitSampleBoundError("truncated tokenizer-fit spool frame")
+        size = struct.unpack("<Q", header)[0]
+        raw = stream.read(size)
+        if len(raw) != size:
+            raise FitSampleBoundError("truncated tokenizer-fit spool frame")
+        fed += 1
+        fed_bytes += size
+        if on_feed is not None:
+            on_feed(fed, fed_bytes)
+        yield raw.decode("utf-8")

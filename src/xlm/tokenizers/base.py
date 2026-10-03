@@ -95,6 +95,14 @@ class BaseTokenizer(ABC):
         """Ordered scalar fallback; callers own their batch byte/document limits."""
         return [self.encode_with_offsets(text, add_special_tokens) for text in texts]
 
+    def count_valid_targets(self, texts: Sequence[str]) -> list[int]:
+        """``max(0, len(encode_with_offsets(text, add_special_tokens=True)[0]) - 1)``.
+
+        The C05 exact-count rule. Subclasses may override with a backend path that
+        skips offset construction, but must return identical values.
+        """
+        return [max(0, len(self.encode_with_offsets(text, True)[0]) - 1) for text in texts]
+
     @abstractmethod
     def decode(self, token_ids: Sequence[int], skip_special_tokens: bool = False) -> str:
         """Decode token IDs back to a canonical UTF-8 string."""

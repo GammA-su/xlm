@@ -1006,7 +1006,7 @@ def test_changed_tokenizer_files_refuse(
 
 def cli_args(c05: dict[str, Any], policy: Path, out: Path) -> list[str]:
     return [
-        "fit-tokenizer",
+        "fit-tokenizer-reference",
         "--c05-proof",
         str(c05["proof"]),
         "--fit-shares",

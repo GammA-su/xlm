@@ -5,7 +5,7 @@ from __future__ import annotations
 import sqlite3
 from collections.abc import Iterable, Iterator, Mapping
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Protocol
 
 if TYPE_CHECKING:
     from xlm.tokenizers.base import BaseTokenizer
@@ -32,6 +32,25 @@ BASELINE_SOURCES = frozenset(
     }
 )
 PRODUCTION_COMPONENTS = BASELINE_SOURCES | COMPONENTS
+
+
+class C05View(Protocol):
+    """Verified C05 completion identity shared by the SQLite gate and streamed views."""
+
+    @property
+    def plan(self) -> ExecutionPlan: ...
+    @property
+    def mode(self) -> str: ...
+    @property
+    def plan_digest(self) -> str: ...
+    @property
+    def receipt_digest(self) -> str: ...
+    @property
+    def completion(self) -> dict[str, Any]: ...
+    @property
+    def input_manifest(self) -> dict[str, Any]: ...
+    @property
+    def trusted(self) -> dict[str, bytes]: ...
 
 
 class MembershipGate:

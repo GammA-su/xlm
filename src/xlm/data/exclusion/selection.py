@@ -23,7 +23,7 @@ from xlm.core.contracts import CanonicalDocument
 from xlm.data.acquisition.source_run import write_once
 from xlm.data.evidence_v2 import canonical
 from xlm.data.exclusion.artifacts import InputFile, signed, verify_signed
-from xlm.data.exclusion.gates import MembershipGate
+from xlm.data.exclusion.gates import C05View, MembershipGate
 from xlm.data.exclusion.inputs import contained, read_metadata
 from xlm.data.exclusion.policy import C05Error, FrozenModel
 from xlm.data.exclusion.quotas import frozen_requirements
@@ -88,9 +88,7 @@ def load_tokenizer(directory: Path) -> BaseTokenizer:
     raise C05Error("unknown tokenizer artifact type")
 
 
-def tokenizer_identity(
-    directory: Path, gate: MembershipGate
-) -> tuple[BaseTokenizer, dict[str, Any]]:
+def tokenizer_identity(directory: Path, gate: C05View) -> tuple[BaseTokenizer, dict[str, Any]]:
     """Fingerprint plus every artifact file; a fitted tokenizer must name this C05."""
     entries = sorted(directory.iterdir())
     if len(entries) > MAX_TOKENIZER_FILES:
@@ -197,7 +195,7 @@ def _bounded_export(rows: Iterator[dict[str, Any]], path: Path, ceiling: int) ->
     return value.hexdigest(), written
 
 
-def binding_of(gate: MembershipGate) -> dict[str, Any]:
+def binding_of(gate: C05View) -> dict[str, Any]:
     return {
         "mode": gate.mode,
         "plan_digest": gate.plan_digest,
@@ -208,7 +206,7 @@ def binding_of(gate: MembershipGate) -> dict[str, Any]:
     }
 
 
-def check_binding(body: Mapping[str, Any], gate: MembershipGate, kind: str) -> None:
+def check_binding(body: Mapping[str, Any], gate: C05View, kind: str) -> None:
     if body.get("kind") != kind:
         raise C05Error("selection artifact kind mismatch")
     for name, expected in binding_of(gate).items():

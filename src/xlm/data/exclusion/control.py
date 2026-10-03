@@ -13,7 +13,7 @@ import re
 import shutil
 import sqlite3
 from pathlib import Path
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 from filelock import FileLock, Timeout
 from pydantic import Field
@@ -36,6 +36,9 @@ from xlm.data.exclusion.inputs import read_metadata, verify_input_manifest
 from xlm.data.exclusion.policy import C05Error, FrozenModel, ProductionPolicy, Resources
 from xlm.data.exclusion.preparation import benchmark_requirements
 from xlm.data.exclusion.runner import resume_check, run, verify_completion
+
+if TYPE_CHECKING:
+    from xlm.data.exclusion.progress import NullProgress, RunProgress
 
 
 class OperatorDecision(FrozenModel):
@@ -265,28 +268,43 @@ def parser() -> argparse.ArgumentParser:
     binding.add_argument("--checkpoint-hash", required=True)
     binding.add_argument("--suite-fingerprint", required=True)
     binding.add_argument("--output", type=Path, required=True)
-    # C06: the frozen-policy tokenizer fit over this C05 membership, and its check.
+    # C06: the frozen-policy tokenizer fit over this C05 membership, and its checks.
+    # fit-tokenizer is the fast path; fit-tokenizer-reference is the bb886bd path.
     fitting = commands.add_parser("fit-tokenizer")
+    reference = commands.add_parser("fit-tokenizer-reference")
     checking = commands.add_parser("verify-tokenizer-fit")
-    for command in (fitting, checking):
+    indexing = commands.add_parser("verify-kept-index")
+    for command in (fitting, reference, checking, indexing):
         command.add_argument("--c05-proof", type=Path, required=True)
         command.add_argument("--fit-shares", type=Path, required=True)
         command.add_argument(
             "--quotas", type=Path, default=Path("recipes/mixtures/mix01_quotas_6b.yaml")
         )
         command.add_argument("--ifm-split", type=Path, required=True)
-    for name in ("scratch", "output", "deficit-report"):
-        fitting.add_argument("--" + name, type=Path, required=True)
-    # Prints the deterministic resource plan; reads metadata only, writes nothing.
-    fitting.add_argument("--plan-only", action="store_true")
-    fitting.add_argument("--resource-plan-digest")
-    fitting.add_argument("--issuer")
-    fitting.add_argument("--key-env")
-    # Operational display only (stderr); never part of an artifact.
-    fitting.add_argument("--progress-interval", type=float, default=1.0)
-    fitting.add_argument("--progress-format", choices=["text", "jsonl"], default="text")
-    fitting.add_argument("--no-progress", action="store_true")
+    for command in (fitting, reference):
+        for name in ("scratch", "output", "deficit-report"):
+            command.add_argument("--" + name, type=Path, required=True)
+        # Prints the deterministic resource plan; reads metadata only, writes nothing.
+        command.add_argument("--plan-only", action="store_true")
+        command.add_argument("--resource-plan-digest")
+        command.add_argument("--issuer")
+        command.add_argument("--key-env")
+    for command in (fitting, reference, checking, indexing):
+        # Operational display only (stderr); never part of an artifact.
+        command.add_argument("--progress-interval", type=float, default=1.0)
+        command.add_argument("--progress-format", choices=["text", "jsonl"], default="text")
+        command.add_argument("--no-progress", action="store_true")
+    # Operational only: worker/thread counts never change any output.
+    for command in (fitting, checking, indexing):
+        command.add_argument("--workers", type=int, choices=[1, 2, 4, 8, 16], default=8)
+    fitting.add_argument("--bpe-threads", type=int, choices=[1, 2, 4, 8, 16], default=16)
+    fitting.add_argument("--deadline-seconds", type=float)
+    fitting.add_argument("--rss-ceiling-gib", type=float, default=32.0)
     checking.add_argument("--fit", type=Path, required=True)
+    checking.add_argument("--sources", action="store_true")
+    indexing.add_argument("--index", type=Path, required=True)
+    indexing.add_argument("--membership", action="store_true")
+    indexing.add_argument("--sources", action="store_true")
     claim = commands.add_parser("claim-check")
     claim.add_argument("--receipt", type=Path, required=True)
     claim.add_argument("--binding", type=Path, required=True)
@@ -403,10 +421,19 @@ def allocation_command(args: argparse.Namespace) -> int:
         return 0
 
 
+def _fit_progress(args: argparse.Namespace) -> RunProgress | NullProgress:
+    from xlm.data.exclusion.progress import NullProgress, RunProgress
+
+    if args.no_progress:
+        return NullProgress()
+    return RunProgress(interval=args.progress_interval, fmt=args.progress_format, label="C06")
+
+
 def tokenizer_fit_command(args: argparse.Namespace) -> int:
     """C06 fit/verify; refuses before any corpus read while the protected volume is mounted."""
-    from xlm.data.exclusion.progress import NullProgress, RunProgress
+    from xlm.data.exclusion import fitfast
     from xlm.data.exclusion.tokenizer_fit import (
+        FIT_MANIFEST,
         FitDeficit,
         fit_tokenizer,
         load_fit_policy,
@@ -415,26 +442,57 @@ def tokenizer_fit_command(args: argparse.Namespace) -> int:
     )
     from xlm.data.exclusion.transport import guard_proof, open_gate
 
-    consumes = [args.fit_shares, args.quotas, args.ifm_split]
-    if args.command == "verify-tokenizer-fit":
-        consumes.append(args.fit)
-        with open_gate(args.c05_proof, allow_authored=True, consumes=consumes) as gate:
-            if gate is None:
-                raise C05Error("C05 proof absent")
-            policy, _ = load_fit_policy(args.fit_shares)
-            result = verify_fit(gate, args.fit, policy, args.quotas, args.ifm_split)
+    consumes: list[Path | str] = [args.fit_shares, args.quotas, args.ifm_split]
+    reporter = _fit_progress(args)
+    if args.command == "verify-kept-index":
+        consumes.append(args.index)
+        view = fitfast.open_streamed(args.c05_proof, allow_authored=True, consumes=consumes)
+        policy, _ = load_fit_policy(args.fit_shares)
+        result = fitfast.verify_kept_index(
+            view,
+            args.index,
+            policy,
+            args.quotas,
+            args.ifm_split,
+            membership=args.membership or args.sources,
+            sources=args.sources,
+            workers=args.workers,
+            progress=reporter,
+        )
         print(json.dumps(result, sort_keys=True))
         return 0
+    if args.command == "verify-tokenizer-fit":
+        consumes.append(args.fit)
+        guard_proof(args.c05_proof, consumes)
+        policy, _ = load_fit_policy(args.fit_shares)
+        payload = read_metadata(args.fit / FIT_MANIFEST, digested=False).get("payload", {})
+        if payload.get("fit_path") == fitfast.FIT_PATH:
+            view = fitfast.open_streamed(args.c05_proof, allow_authored=True, consumes=consumes)
+            result = fitfast.verify_fit_fast(
+                view,
+                args.fit,
+                policy,
+                args.quotas,
+                args.ifm_split,
+                workers=args.workers,
+                sources=args.sources,
+                progress=reporter,
+            )
+        else:
+            with open_gate(args.c05_proof, allow_authored=True, consumes=consumes) as gate:
+                if gate is None:
+                    raise C05Error("C05 proof absent")
+                result = verify_fit(gate, args.fit, policy, args.quotas, args.ifm_split)
+        print(json.dumps(result, sort_keys=True))
+        return 0
+    fast = args.command == "fit-tokenizer"
     consumes += [args.scratch, args.output, args.deficit_report]
-    reporter: RunProgress | NullProgress = (
-        NullProgress()
-        if args.no_progress
-        else RunProgress(interval=args.progress_interval, fmt=args.progress_format, label="C06")
-    )
     reporter.stage("PROOF VERIFY", None, "steps")
     guard_proof(args.c05_proof, consumes)  # Mounted protected volume: refuse first.
     policy, policy_sha = load_fit_policy(args.fit_shares)
-    planned = plan_from_proof(args.c05_proof, policy, args.quotas, args.ifm_split)
+    planned = (fitfast.plan_from_proof_fast if fast else plan_from_proof)(
+        args.c05_proof, policy, args.quotas, args.ifm_split
+    )
     if args.plan_only:
         reporter.complete()
         args.scratch.mkdir(parents=True, exist_ok=True)
@@ -456,14 +514,13 @@ def tokenizer_fit_command(args: argparse.Namespace) -> int:
     if args.output.exists():
         raise C05Error("tokenizer-fit output is write-once")
     key = key_from_env(args.key_env)
-    with open_gate(args.c05_proof, allow_authored=True, consumes=consumes) as gate:
-        if gate is None:
-            raise C05Error("C05 proof absent")
-        if gate.trusted.get(args.issuer) != key:
-            raise C05Error("tokenizer-fit signer is not trusted")
-        try:
-            envelope = fit_tokenizer(
-                gate,
+    try:
+        if fast:
+            view = fitfast.open_streamed(args.c05_proof, allow_authored=True, consumes=consumes)
+            if view.trusted.get(args.issuer) != key:
+                raise C05Error("tokenizer-fit signer is not trusted")
+            envelope = fitfast.fit_tokenizer_fast(
+                view,
                 policy,
                 policy_sha,
                 quotas=args.quotas,
@@ -473,12 +530,35 @@ def tokenizer_fit_command(args: argparse.Namespace) -> int:
                 issuer=args.issuer,
                 key=key,
                 accepted_plan_digest=args.resource_plan_digest,
+                workers=args.workers,
+                bpe_threads=args.bpe_threads,
+                deadline_seconds=args.deadline_seconds,
+                rss_ceiling=int(args.rss_ceiling_gib * 1024**3),
                 progress=reporter,
             )
-        except FitDeficit as deficit:
-            write_once(args.deficit_report, deficit.report)
-            print(json.dumps({"deficit": True, "report": str(args.deficit_report)}))
-            return 2
+        else:
+            with open_gate(args.c05_proof, allow_authored=True, consumes=consumes) as gate:
+                if gate is None:
+                    raise C05Error("C05 proof absent")
+                if gate.trusted.get(args.issuer) != key:
+                    raise C05Error("tokenizer-fit signer is not trusted")
+                envelope = fit_tokenizer(
+                    gate,
+                    policy,
+                    policy_sha,
+                    quotas=args.quotas,
+                    ifm_split=args.ifm_split,
+                    scratch=args.scratch,
+                    output=args.output,
+                    issuer=args.issuer,
+                    key=key,
+                    accepted_plan_digest=args.resource_plan_digest,
+                    progress=reporter,
+                )
+    except FitDeficit as deficit:
+        write_once(args.deficit_report, deficit.report)
+        print(json.dumps({"deficit": True, "report": str(args.deficit_report)}))
+        return 2
     body = envelope["payload"]
     print(
         json.dumps(
@@ -498,7 +578,12 @@ def tokenizer_fit_command(args: argparse.Namespace) -> int:
 def main(argv: list[str] | None = None) -> int:
     args = parser().parse_args(argv)
     try:
-        if args.command in {"fit-tokenizer", "verify-tokenizer-fit"}:
+        if args.command in {
+            "fit-tokenizer",
+            "fit-tokenizer-reference",
+            "verify-tokenizer-fit",
+            "verify-kept-index",
+        }:
             try:
                 return tokenizer_fit_command(args)
             except C05Error as exc:

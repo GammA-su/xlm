@@ -1205,6 +1205,21 @@ class _Engine:
 def verify_completion(
     directory: Path, plan: ExecutionPlan, trusted: Mapping[str, bytes]
 ) -> dict[str, Any]:
+    envelope = verify_completion_envelope(directory, plan, trusted)
+    body = envelope["payload"]
+    if file_sha(directory / "membership.jsonl") != body["membership_sha256"]:
+        raise C05Error("completion membership changed")
+    return envelope
+
+
+def verify_completion_envelope(
+    directory: Path, plan: ExecutionPlan, trusted: Mapping[str, bytes]
+) -> dict[str, Any]:
+    """Signature, plan bindings, aggregates and membership size; NOT the membership hash.
+
+    Only for a consumer that hashes exactly the membership bytes it consumes in the
+    same stream and refuses before publishing on a mismatch (C06 fast path).
+    """
     envelope = read_metadata(directory / "completion.json", digested=False)
     body = verify_signed(envelope, trusted)
     if (body.get("kind"), body.get("plan_digest"), body.get("mode")) != (
@@ -1227,10 +1242,7 @@ def verify_completion(
             raise C05Error("completion binding mismatch: " + name)
     if body["kept"] + body["excluded"] + body["duplicates"] != body["documents"]:
         raise C05Error("completion aggregate mismatch")
-    if (
-        membership.stat().st_size != body["membership_bytes"]
-        or file_sha(membership) != body["membership_sha256"]
-    ):
+    if membership.stat().st_size != body["membership_bytes"]:
         raise C05Error("completion membership changed")
     return envelope
 

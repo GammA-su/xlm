@@ -304,50 +304,90 @@ plan and authorization. Recommended p0002 values and the derived worst case are 
 
 ## Tokenizer fit (C06)
 
-`fit-tokenizer` fits the production 32,768 ByteLevel BPE through the C05 gate,
-using exactly the frozen policy `recipes/tokenizer/mix01_fit_shares_v1.yaml`:
+`fit-tokenizer` fits the production 32,768 ByteLevel BPE on exact C05 kept-train
+membership, using only the frozen policy `recipes/tokenizer/mix01_fit_shares_v1.yaml`.
+The policy fixes:
 - 512 MiB of canonical bytes;
 - equal integer weights over the eleven components, with IFM and Common Pile divided
   by their frozen splits;
-- documents larger than 1 MiB skipped for fitting only;
+- a 1 MiB cap that applies to fitting only;
 - whole crossing documents;
 - refusal on shortfall, with no redistribution.
 
-The policy file supplies every policy value, so the CLI has no policy options.
+The CLI has no policy options.
 
-How it runs:
-- **Before any read.** It refuses while `X:` (the plan-bound protected root) is
+`fit-tokenizer` is the **fast path** (`c06-fast-v1`). It is scientifically identical
+to the bb886bd reference, which is still available as `fit-tokenizer-reference`. Its
+stages:
+
+- **Before any read.** It refuses while the plan-bound protected root (`X:`) is
   mounted, and refuses any path inside the protected root or the C05 scratch.
-- **Pass 1.** One sequential re-read of the hash-verified inputs. It counts every
-  record against the signed completion and ranks only kept `train` records.
-- **Pass 2.** It re-reads and re-verifies the selected records and feeds each to
-  BPE exactly once.
+- **Membership stream.** `membership.jsonl` is read once, and the parsed bytes are
+  the hashed bytes. Nothing is used until the SHA-256, byte size and row count equal
+  the signed completion. Rows must be in strictly ascending doc-id order (so no
+  repeats), name a frozen plan file, row and allocation, and reproduce every
+  completion aggregate. No SQLite.
+- **Exact selection.** The same rank, budgets, cap and crossing rule as the
+  reference. A deficit refuses here (exit 2 with a content-free report) before any
+  source byte is read.
+- **One source pass.** Every plan file is hashed exactly once and must match the
+  plan's SHA-256, size and row count. Every kept row is strict-JSON parsed to check
+  its doc id, byte count and **original** split: a C05-train row whose canonical
+  `split` is not `train` refuses, exactly as the reference does. Only selected rows
+  are fully decoded and content-digested, and they are spooled in plan-file and row
+  order, which is the reference BPE feed order.
+- **Workers.** `--workers` (1/2/4/8/16, default 8) is operational only; outputs are
+  identical for every value.
+- **BPE.** Runs in a child process with `TOKENIZERS_PARALLELISM=true` and
+  `RAYON_NUM_THREADS=--bpe-threads` (default 16). An inherited
+  `TOKENIZERS_PARALLELISM=false` is overridden.
+- **Ceilings.** `--deadline-seconds` and the process-tree `--rss-ceiling-gib`
+  (default 32) terminate the run, and nothing is published.
 - **Output.** One write-once directory, renamed into place last:
-  `tokenizer/{tokenizer.json, tokenizer_manifest.json, c05-binding.json}`,
-  `tokenizer_fit_manifest.json` (signed), `tokenizer_fit_sample.jsonl` (IDs and
-  digests only) and `tokenizer_fit_resource_plan.json`.
-- **Failure or interrupt.** The staging directory and the job scratch are removed.
+  - `tokenizer/{tokenizer.json, tokenizer_manifest.json, c05-binding.json}`
+  - `tokenizer_fit_manifest.json` (signed)
+  - `tokenizer_fit_sample.jsonl`
+  - `tokenizer_fit_resource_plan.json` (plan plus measured stage times and throughput)
+  - `kept-index/` (the reusable post-C05 kept-membership index, signed)
+
+Use the NVMe `C:` for `--scratch` (it holds the ~0.6 GB BPE spool). The corpus on `G:`
+is a SATA SSD, so the source pass is read-bound at about 0.5 GB/s.
 
 ```powershell
 $cli = 'uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator'
-$fit = '--c05-proof G:/XLM/c05/p0002.proof.json --fit-shares recipes/tokenizer/mix01_fit_shares_v1.yaml --quotas recipes/mixtures/mix01_quotas_6b.yaml --ifm-split G:/XLM/calib/requirement_splits/ifm_behaviors_general_planning.json --scratch G:/XLM/tokfit/scratch --output G:/XLM/tokfit/mix01-fit-shares-v1 --deficit-report G:/XLM/tokfit/mix01-fit-shares-v1.deficit.json'
+$c06 = '--c05-proof G:/XLM/c05/p0002.proof.json --fit-shares recipes/tokenizer/mix01_fit_shares_v1.yaml --quotas recipes/mixtures/mix01_quotas_6b.yaml --ifm-split G:/XLM/calib/requirement_splits/ifm_behaviors_general_planning.json'
+$fit = "$c06 --scratch C:/XLM-scratch/c06-fit --output G:/XLM/tokfit/mix01-fit-shares-v1-fast --deficit-report G:/XLM/tokfit/mix01-fit-shares-v1-fast.deficit.json"
 # 0. Detach X: first. Every key environment variable named by the proof's trust file must be set.
-# 1. Metadata-only resource plan (no corpus read); review it and copy resource_plan_digest.
+# 1. Metadata-only resource plan (reads no membership or corpus bytes); review it.
 Invoke-Expression "$cli fit-tokenizer $fit --plan-only"
-# 2. The fit (exit 0 = published; exit 2 = content-free deficit report, nothing published).
-Invoke-Expression "$cli fit-tokenizer $fit --resource-plan-digest <digest> --issuer GammA --key-env XLM_C05_OPERATOR_KEY"
-# 3. Independent verification of the published fit.
-Invoke-Expression "$cli verify-tokenizer-fit --c05-proof G:/XLM/c05/p0002.proof.json --fit-shares recipes/tokenizer/mix01_fit_shares_v1.yaml --quotas recipes/mixtures/mix01_quotas_6b.yaml --ifm-split G:/XLM/calib/requirement_splits/ifm_behaviors_general_planning.json --fit G:/XLM/tokfit/mix01-fit-shares-v1"
+# 2. The fit. Exit 0 = published; 2 = deficit report, nothing published; 1 = refused.
+Invoke-Expression "$cli fit-tokenizer $fit --resource-plan-digest <digest> --issuer GammA --key-env XLM_C05_OPERATOR_KEY --workers 8 --bpe-threads 16 --deadline-seconds 1200"
+# 3. Verification: re-derives the sample from authenticated membership, checks the index
+#    and tokenizer. Add --sources to also re-hash every source file (one more source pass).
+Invoke-Expression "$cli verify-tokenizer-fit $c06 --fit G:/XLM/tokfit/mix01-fit-shares-v1-fast --workers 8"
+# 4. Post-C05 kept index: signature, bindings, section hashes; --membership re-derives
+#    from membership.jsonl; --sources also re-hashes and re-locates every source row.
+Invoke-Expression "$cli verify-kept-index $c06 --index G:/XLM/tokfit/mix01-fit-shares-v1-fast/kept-index --membership --workers 8"
 ```
 
-`--plan-only` refuses early in two cases:
-- the quota table's bytes differ from the SHA pinned in the policy;
-- the sealed sources bind a different table, or the IFM split differs from the one
-  they bind.
+`--plan-only` refuses early if:
+- the quota table bytes differ from the policy pin;
+- the sealed sources bind a different table or IFM split;
+- the proof's completion digest changed.
 
-Progress lines start with `[C06]`. During `TOKENIZER FIT: MERGES` the tokenizer
-library reports no merge progress; only elapsed time and RSS heartbeats are shown.
-The tokenizer for the allocation chain below is `G:/XLM/tokfit/mix01-fit-shares-v1/tokenizer`.
+Progress lines start with `[C06]`:
+- `MEMBERSHIP STREAM` reports rows, MB/s and ETA;
+- `SOURCE PASS` reports files, GiB, GB/s, split checks, selected rows parsed and ETA;
+- `TOKENIZER FIT` shows elapsed time and process-tree RSS heartbeats, because BPE
+  merge progress is not observable.
+
+`SLO |` lines report membership and source throughput, the projected pre-BPE time
+(an `SLO WARNING` appears if it already exceeds 1200 s) and the final total against
+the 1200 s target. The SLO is an operational target, not part of any identity. A
+deadline kill discards the run and publishes nothing.
+
+The tokenizer for the allocation chain below is
+`G:/XLM/tokfit/mix01-fit-shares-v1-fast/tokenizer`.
 
 ## Allocation chain after a verified completion
 
