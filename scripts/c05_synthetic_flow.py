@@ -268,7 +268,7 @@ def resources() -> Resources:
         decision_bytes=8 * 1024**2,
         output_bytes=8 * 1024**2,
         benchmark_bytes=8 * 1024**2,
-        scratch_bytes=256 * 1024**2,
+        scratch_bytes=1024**3,
         ram_bytes=2 * 1024**3,
         records=10_000,
         attempted_records=40_000,

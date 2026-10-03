@@ -1,0 +1,62 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- F:\Project\xlm-c05-parallel\.venv\Scripts\python.exe
+rootdir: F:\Project\xlm-c05-parallel
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0, xdist-3.8.0
+created: 8/8 workers
+8 workers [25 items]
+
+scheduling tests via LoadScheduling
+
+tests/test_c05_acceptance_audit.py::test_internal_allocation_surplus_cannot_satisfy_a_sibling[donor1-taker1]
+tests/test_c05_acceptance_audit.py::test_oversized_leftover_staging_refuses_before_any_work
+tests/test_c05_control.py::test_generated_control_plane_authorize_resume_verify_bridge
+tests/test_c05_compact_matcher.py::test_run_resume_and_resume_check_verify_the_compiled_matcher
+tests/test_c05_acceptance_audit.py::test_volumes_are_grouped_by_device_not_path_anchor
+tests/test_c05_engine.py::test_stale_bindings_refused[membership]
+tests/test_c05_engine.py::test_stale_bindings_refused[code]
+tests/test_c05_progress.py::test_cli_progress_defaults_to_stderr_and_keeps_stdout_json[resume]
+[gw2] [  4%] PASSED tests/test_c05_engine.py::test_stale_bindings_refused[code]
+tests/test_c05_engine.py::test_stale_bindings_refused[authorization]
+[gw6] [  8%] PASSED tests/test_c05_acceptance_audit.py::test_volumes_are_grouped_by_device_not_path_anchor
+tests/test_c05_acceptance_audit.py::test_internal_allocation_surplus_cannot_satisfy_a_sibling[donor0-taker0]
+[gw2] [ 12%] PASSED tests/test_c05_engine.py::test_stale_bindings_refused[authorization]
+tests/test_c05_acceptance_audit.py::test_substituted_ifm_split_refuses
+[gw5] [ 16%] PASSED tests/test_c05_acceptance_audit.py::test_oversized_leftover_staging_refuses_before_any_work
+tests/test_c05_acceptance_audit.py::test_geometry_drift_and_foreign_publication_entries_refuse
+[gw5] [ 20%] PASSED tests/test_c05_acceptance_audit.py::test_geometry_drift_and_foreign_publication_entries_refuse
+tests/test_c05_acceptance_audit.py::test_schema_one_receipt_cannot_make_an_official_claim
+[gw3] [ 24%] PASSED tests/test_c05_engine.py::test_stale_bindings_refused[membership]
+tests/test_c05_progress.py::test_cli_progress_defaults_to_stderr_and_keeps_stdout_json[run]
+[gw4] [ 28%] PASSED tests/test_c05_progress.py::test_cli_progress_defaults_to_stderr_and_keeps_stdout_json[resume]
+tests/test_c05_acceptance_audit.py::test_deleted_signed_state_beside_job_files_refuses_instead_of_resetting
+[gw4] [ 32%] PASSED tests/test_c05_acceptance_audit.py::test_deleted_signed_state_beside_job_files_refuses_instead_of_resetting
+tests/test_c05_parallel_scan.py::test_resume_after_interruption_skips_committed_files[grouped]
+[gw3] [ 36%] PASSED tests/test_c05_progress.py::test_cli_progress_defaults_to_stderr_and_keeps_stdout_json[run]
+tests/test_c05_parallel_scan.py::test_resume_after_interruption_skips_committed_files[file_committed]
+[gw1] [ 40%] PASSED tests/test_c05_compact_matcher.py::test_run_resume_and_resume_check_verify_the_compiled_matcher
+tests/test_c05_engine.py::test_stale_bindings_refused[index]
+[gw1] [ 44%] PASSED tests/test_c05_engine.py::test_stale_bindings_refused[index]
+[gw0] [ 48%] PASSED tests/test_c05_control.py::test_generated_control_plane_authorize_resume_verify_bridge
+tests/test_c05_detached_volume.py::test_same_principal_detached_volume_protected_flow
+[gw3] [ 52%] PASSED tests/test_c05_parallel_scan.py::test_resume_after_interruption_skips_committed_files[file_committed]
+tests/test_c05_compact_equivalence.py::test_worker_counts_are_byte_identical
+[gw4] [ 56%] PASSED tests/test_c05_parallel_scan.py::test_resume_after_interruption_skips_committed_files[grouped]
+tests/test_c05_parallel_scan.py::test_resume_after_interruption_skips_committed_files[before_publication]
+[gw0] [ 60%] PASSED tests/test_c05_detached_volume.py::test_same_principal_detached_volume_protected_flow
+[gw4] [ 64%] PASSED tests/test_c05_parallel_scan.py::test_resume_after_interruption_skips_committed_files[before_publication]
+[gw5] [ 68%] PASSED tests/test_c05_acceptance_audit.py::test_schema_one_receipt_cannot_make_an_official_claim
+tests/test_c05_parallel_scan.py::test_resume_after_interruption_skips_committed_files[row]
+[gw2] [ 72%] PASSED tests/test_c05_acceptance_audit.py::test_substituted_ifm_split_refuses
+tests/test_c05_acceptance_audit.py::test_open_engineering_gate_still_requires_protected_evidence
+[gw2] [ 76%] PASSED tests/test_c05_acceptance_audit.py::test_open_engineering_gate_still_requires_protected_evidence
+[gw6] [ 80%] PASSED tests/test_c05_acceptance_audit.py::test_internal_allocation_surplus_cannot_satisfy_a_sibling[donor0-taker0]
+tests/test_c05_acceptance_audit.py::test_selection_replay_is_byte_identical
+[gw7] [ 84%] PASSED tests/test_c05_acceptance_audit.py::test_internal_allocation_surplus_cannot_satisfy_a_sibling[donor1-taker1]
+tests/test_c05_acceptance_audit.py::test_counts_omitting_kept_training_records_cannot_be_selected
+[gw7] [ 88%] PASSED tests/test_c05_acceptance_audit.py::test_counts_omitting_kept_training_records_cannot_be_selected
+[gw6] [ 92%] PASSED tests/test_c05_acceptance_audit.py::test_selection_replay_is_byte_identical
+[gw3] [ 96%] PASSED tests/test_c05_compact_equivalence.py::test_worker_counts_are_byte_identical
+[gw5] [100%] PASSED tests/test_c05_parallel_scan.py::test_resume_after_interruption_skips_committed_files[row]
+
+============================= 25 passed in 11.42s =============================

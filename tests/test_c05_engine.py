@@ -48,7 +48,8 @@ def document(
 
 
 def small_resources(**overrides: Any) -> Resources:
-    """Internally consistent authored ceilings (64 MiB database, ~197 MiB worst case)."""
+    """Internally consistent authored ceilings (64 MiB working index; 2 GiB aggregate covers
+    the derived per-file allocation slack of up to ~430 single-document input files)."""
     values: dict[str, Any] = {
         "free_bytes": 0,
         "index_bytes": 64 * 1024**2,
@@ -56,7 +57,8 @@ def small_resources(**overrides: Any) -> Resources:
         "decision_bytes": 8 * 1024**2,
         "output_bytes": 8 * 1024**2,
         "benchmark_bytes": 8 * 1024**2,
-        "scratch_bytes": 256 * 1024**2,
+        "scratch_bytes": 2 * 1024**3,
+        "files": 448,
     }
     values.update(overrides)
     return Resources(**values)
@@ -379,10 +381,16 @@ def test_all_parents_propagate(tmp_path: Path) -> None:
     assert all(row["decision"] == "excluded" for row in membership(plan))
 
 
-@pytest.mark.parametrize("table", ["docs", "bands", "lineage", "families", "state"])
-def test_journal_tampering_refused(tmp_path: Path, table: str) -> None:
-    import sqlite3
+def _flip(path: Path, offset: int) -> None:
+    raw = bytearray(path.read_bytes())
+    raw[offset] ^= 0x01
+    path.write_bytes(bytes(raw))
 
+
+@pytest.mark.parametrize(
+    "target", ["unit_section", "unit_padding", "unit_header", "seal", "group", "state"]
+)
+def test_journal_tampering_refused(tmp_path: Path, target: str) -> None:
     plan, index, receipt = setup_run(tmp_path, [document("a", PROMPT)])
 
     def crash(event: str) -> None:
@@ -392,20 +400,72 @@ def test_journal_tampering_refused(tmp_path: Path, table: str) -> None:
     with pytest.raises(RuntimeError):
         execute(plan, index, receipt, checkpoint=crash)
     root = Path(plan.scratch_root) / plan.identity()
-    if table == "state":
+    unit = root / "facts" / "00000.unit"
+    if target == "state":
         state = canonical.loads_bytes_strict((root / "state.json").read_bytes())
         state["payload"]["stage_started"] += 100
         canonical.write_canonical_json(root / "state.json", state)
+    elif target in ("unit_section", "unit_padding"):
+        from xlm.data.exclusion.factstore import read_header
+
+        envelope, start = read_header(unit)
+        records = envelope["payload"]["sections"]["records"]
+        signatures = envelope["payload"]["sections"]["signatures"]
+        if target == "unit_section":
+            _flip(unit, start + signatures["offset"] + 3)
+        else:  # One 104-byte record leaves 24 bytes of zero padding to the next section.
+            _flip(unit, start + records["offset"] + records["bytes"] + 1)
+    elif target == "unit_header":
+        raw = unit.read_bytes()
+        _flip(unit, raw.index(b'"facts":"') + 12)
+    elif target == "seal":
+        seal = canonical.loads_bytes_strict((root / "seal.json").read_bytes())
+        seal["payload"]["stats"]["comparisons"] += 1
+        canonical.write_canonical_json(root / "seal.json", seal)
     else:
-        with sqlite3.connect(root / "facts.sqlite") as db:
-            if table == "docs":
-                db.execute("UPDATE docs SET hit=NULL")
-            elif table == "families":
-                db.execute("UPDATE families SET hit=0")
-            else:
-                db.execute(f"DELETE FROM {table}")
+        _flip(root / "group" / "fam_hit.u8", 0)
     with pytest.raises(C05Error):
         execute(plan, index, receipt)
+
+
+@pytest.mark.parametrize("table", ["docs", "bands", "lineage", "families"])
+def test_reference_journal_tampering_refused(tmp_path: Path, table: str) -> None:
+    import sqlite3
+
+    from xlm.data.exclusion import reference
+
+    plan, index, receipt = setup_run(tmp_path, [document("a", PROMPT)])
+
+    def crash(event: str) -> None:
+        if event == "before_publication":
+            raise RuntimeError("interrupt")
+
+    def go(**kwargs: Any) -> Any:
+        return reference.run(
+            plan,
+            authorize(plan, "fixture", KEY),
+            index=index,
+            benchmark=receipt,
+            trusted=TRUST,
+            issuer="fixture",
+            key=KEY,
+            current_code="4" * 64,
+            current_dependencies="5" * 64,
+            **kwargs,
+        )
+
+    with pytest.raises(RuntimeError):
+        go(checkpoint=crash)
+    root = Path(plan.scratch_root) / plan.identity()
+    with sqlite3.connect(root / "facts.sqlite") as db:
+        if table == "docs":
+            db.execute("UPDATE docs SET hit=NULL")
+        elif table == "families":
+            db.execute("UPDATE families SET hit=0")
+        else:
+            db.execute(f"DELETE FROM {table}")
+    with pytest.raises(C05Error):
+        go()
 
 
 def test_membership_gate_rejects_excluded_changed_and_new_records(tmp_path: Path) -> None:

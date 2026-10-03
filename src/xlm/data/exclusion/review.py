@@ -63,10 +63,19 @@ class ReviewQueue:
                 )
 
     def consider(self, doc: str, tokens: list[str], spend: Callable[[], None]) -> None:
+        self.consider_unique(doc, len(tokens), set(tokens), spend)
+
+    def consider_unique(
+        self, doc: str, count: int, unique: set[str], spend: Callable[[], None]
+    ) -> list[tuple[str, str, int, int]]:
+        """Historical ``consider`` from the token count and distinct token set.
+
+        Returns the ``(ref, pattern, matched, total)`` postings it inserted.
+        """
         policy = self.policy
-        unique = set(tokens)
-        if len(tokens) < policy.min_tokens or len(unique) < policy.min_distinct:
-            return
+        emitted_rows: list[tuple[str, str, int, int]] = []
+        if count < policy.min_tokens or len(unique) < policy.min_distinct:
+            return emitted_rows
         candidates: set[str] = set()
         for token in sorted(unique)[: policy.query_tokens]:
             rows = self.db.execute(
@@ -91,22 +100,24 @@ class ReviewQueue:
                 continue
             for (ref,) in self.db.execute(
                 "SELECT ref FROM review_refs WHERE id=? ORDER BY ref", (identity,)
-            ):
+            ).fetchall():
                 if emitted >= policy.candidates_per_document:
-                    return
+                    return emitted_rows
                 total = self.db.execute("SELECT COUNT(*) FROM review_queue").fetchone()[0]
                 if total >= self.resources.review_candidates:
-                    return  # Saturation never changes automatic matching or membership.
-                count = self.db.execute(
+                    return emitted_rows  # Saturation never changes matching or membership.
+                per_ref = self.db.execute(
                     "SELECT COUNT(*) FROM review_queue WHERE ref=?", (ref,)
                 ).fetchone()[0]
-                if count >= policy.candidates_per_benchmark:
+                if per_ref >= policy.candidates_per_benchmark:
                     continue
                 self.db.execute(
                     "INSERT INTO review_queue VALUES(?,?,?,?,?)",
                     (doc, ref, identity, matched, len(pattern)),
                 )
+                emitted_rows.append((ref, identity, matched, len(pattern)))
                 emitted += 1
+        return emitted_rows
 
     def summary(self) -> dict[str, int | str | bool]:
         # Detailed references and queue digest stay private: public strings can be guessed.

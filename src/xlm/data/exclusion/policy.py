@@ -132,9 +132,15 @@ class ProductionPolicy(FrozenModel):
 class Resources(FrozenModel):
     """Proposed ceilings; an operator decision must restate every field.
 
-    Defaults are internally consistent for a measured 512 B journal header: the
-    derived rollback-journal bound for a 128 GiB database is about 160.25 GiB and
-    the worst-case aggregate about 338.3 GiB (``capacity.storage_bounds``).
+    The field set and defaults are unchanged by the compact parallel engine; two
+    meanings are restated there (``capacity.storage_bounds``):
+
+    * ``index_bytes`` is the hard ceiling of the whole compact working index
+      (fact units, their staging, grouping arrays, band index and sort spills),
+      enforced by a byte ledger before every write.
+    * ``journal_bytes`` must still cover the derived rollback-journal bound of a
+      store of ``index_bytes``; that SQLite store exists only when heuristic
+      review is enabled.
     """
 
     ram_bytes: int = Field(default=24 * 1024**3, ge=1)
@@ -159,8 +165,9 @@ class Resources(FrozenModel):
     benchmark_patterns: int = Field(default=2_000_000, ge=1)
     automaton_nodes: int = Field(default=8_000_000, ge=1)
     review_candidates: int = Field(default=100_000, ge=0)
-    # Protected benchmark preparation (build-local) worker processes; the C05
-    # scan runner remains single-process. A reviewed value, never overridden.
+    # Reviewed maximum of worker processes: protected benchmark preparation
+    # (build-local), the C05 scan and grouping/publication jobs (1 = in-process).
+    # Never a CLI override; results never depend on it.
     workers: int = Field(default=1, ge=1, le=16)
     stage_seconds: float = Field(default=86400, gt=0)
     overall_seconds: float = Field(default=259200, gt=0)

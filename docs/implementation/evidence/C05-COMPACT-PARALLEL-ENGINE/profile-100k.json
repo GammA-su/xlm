@@ -1,0 +1,1 @@
+{"band_keys": 0.0765, "digests": 0.1007, "docs": 3000, "lineage": 0.0303, "matcher": 0.3198, "mean_line_bytes": 5911, "minhash_fast": 1.1092, "minhash_v1": 4.5835, "normalize": 0.3734, "parse": 0.0583, "shingle_hash": 0.592, "total_ms_per_doc_fast": 2.6602}

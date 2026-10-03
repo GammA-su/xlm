@@ -262,6 +262,12 @@ def parser() -> argparse.ArgumentParser:
             command.add_argument("--authorization", type=Path, required=True)
             command.add_argument("--benchmark-receipt", type=Path, required=True)
             command.add_argument("--index", type=Path, required=True)
+        if name in {"run", "resume"}:
+            # Operational display only (stderr); never part of a plan, state or artifact.
+            # The worker count is never a CLI choice: it is the plan's reviewed maximum.
+            command.add_argument("--progress-interval", type=float, default=1.0)
+            command.add_argument("--progress-format", choices=["text", "jsonl"], default="text")
+            command.add_argument("--no-progress", action="store_true")
     return result
 
 
@@ -497,6 +503,13 @@ def main(argv: list[str] | None = None) -> int:
                 raise C05Error("authorization signer is not trusted")
             write_once(args.output, authorize(plan, args.issuer, key))
         elif args.command in {"run", "resume"}:
+            from xlm.data.exclusion.progress import NullProgress, RunProgress
+
+            reporter: RunProgress | NullProgress = (
+                NullProgress()
+                if args.no_progress
+                else RunProgress(interval=args.progress_interval, fmt=args.progress_format)
+            )
             actual = implementation_identity()
             key = key_from_env(args.key_env)
             if trust.get(args.issuer) != key:
@@ -511,6 +524,7 @@ def main(argv: list[str] | None = None) -> int:
                 key=key,
                 current_code=actual["code_identity"],
                 current_dependencies=actual["dependency_sha256"],
+                progress=reporter,
             )
         elif args.command in {"verify", "publish"}:
             # Publication is atomic inside run; this verb verifies that committed export.

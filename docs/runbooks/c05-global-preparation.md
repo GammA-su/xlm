@@ -10,6 +10,92 @@ reviewed resource decision (plus trusted keys and plan authorization). A run ref
 if job files exist without signed `state.json`; never delete it to "restart" — use a
 new plan. Sections further below are historical unless they say otherwise.
 
+## Compact parallel engine (`c05-facts-v2`, 2026-10-03)
+
+`run`/`resume` now execute the compact parallel engine. The historical
+single-process SQLite engine stays in `xlm.data.exclusion.reference` only as the
+equivalence oracle; the CLI never calls it. Scientific semantics (matcher-v4,
+normalization, MinHash 128x32 / seed / threshold, candidate caps and oversized
+buckets, lineage-v3, survivors, families, splits, membership and completion
+schemas) are unchanged and byte-identical to the reference on authored fixtures.
+Details and measurements: [report](../implementation/reports/C05-COMPACT-PARALLEL-ENGINE.md).
+
+**A historical plan cannot be resumed with this code** (its code identity differs and
+its work directory holds `facts.sqlite`, which the new admission refuses). Keep the
+p0001 work directory untouched; mint a new plan (see "Migration" below).
+
+### What runs where
+
+* **Scan.** The parent reads each plan file, reserves `bytes_read` for the whole
+  frozen file before its first read and one `attempted_records` per raw line as it
+  is read, hashes the exact raw bytes and dispatches batches of at most 256 rows /
+  4 MiB to `Resources.workers` spawned processes (capped at the CPU count;
+  `workers: 1` runs in-process). Workers parse/validate, normalize, match
+  (`CompactExactMatcher`, re-verified and memory-mapped read-only in every
+  worker), hash shingles, compute the exact MinHash, band keys, lineage keys,
+  parents and the per-document facts-digest fragment. They never write files.
+* **Commit.** The parent integrates results strictly in file/row order, verifies
+  SHA-256, row count and canonical bytes at the end of each file, then publishes
+  `facts/<ordinal>.unit` (sections assembled behind a signed header, fsync,
+  rename). Anything earlier is untrusted staging and is discarded on the next run.
+* **Group.** Dense ids in exact UTF-8 id order; exact runs; per-band sorted
+  (12-byte key, id) buckets; exact replay of the historical near-candidate order,
+  cap and oversized rules; lineage postings (external sort, digest equality then
+  exact key bytes); parent edges; min-root union-find; survivors; families;
+  splits; group digest. Seal: `seal.json` (signed digest + group file hashes).
+* **Publish.** Membership/decision lines rendered in parallel, written in id order.
+
+### Progress (stderr only; stdout is still the single final JSON)
+
+`run`/`resume` show progress by default: `--progress-interval 1.0` (seconds),
+`--progress-format text|jsonl`, `--no-progress`. Every stage line is content-free
+(fixed stage names and numbers only). Stages: `PREFLIGHT`, `INDEX VERIFY`,
+`MATCHER COMPILE: <phase>`, `MATCHER VERIFY: <phase>`, `SCAN: VERIFY COMMITTED`,
+`SCAN: START WORKERS`, `SCAN`, `GROUP: PREPARE`, `GROUP: EXACT`,
+`GROUP: BAND INDEX BUILD`, `GROUP: NEAR`, `GROUP: LINEAGE INDEX BUILD`,
+`GROUP: LINEAGE`, `GROUP: PARENTS`, `GROUP: FAMILY PROPAGATION`,
+`GROUP: PATH COMPRESSION`, `GROUP: SURVIVORS`, `GROUP: FAMILY BUILD`,
+`GROUP: SPLITS`, `GROUP: DIGEST`, `PUBLISH: MEMBERSHIP`, `PUBLISH: FSYNC`,
+`PUBLISH: COMPLETION`, `COMPLETE`. `SCAN` shows processed documents (prepared and
+integrated, not yet durable) separately from `committed` documents/files (inside a
+published unit). ETA uses a 30-second rolling rate, needs 10 seconds of samples,
+resets at each stage and shows `--:--:--` without a denominator or a rate. RSS,
+working-index, scratch and free-space telemetry is sampled every 5 seconds.
+
+```text
+[C05] SCAN | 50,570/100,000 docs (50.57%) | files 6/13 | 0.33/0.56 GiB input | committed 45,194 docs | 2,869 docs/s rolling | 2,743 docs/s avg | 16.2 MiB/s | workers 15/16 busy | tasks 15/32 results 0 | RSS 1.8/48.0 GiB (peak 1.8) | index 0.06/64.0 GiB | scratch 0.10 GiB | free 753.4 GiB | elapsed 00:00:18 (run 00:00:23) | ETA 00:00:17
+```
+
+### Storage and resources (restated meanings; same field set)
+
+* `index_bytes`: hard ceiling of the whole compact working index (units, unit
+  staging, group arrays, band index, sort spills), charged before every write.
+* `journal_bytes`: still checked against the derived journal bound of a store of
+  `index_bytes`; that SQLite store exists only with heuristic review enabled.
+* Worst case = `index_bytes` + review store/journal (review only) + decisions +
+  membership + completion/state/seal envelopes + locks + benchmark index + derived
+  compiled matcher + `(files + 49 + 16) x 2 MiB` allocation slack.
+* `workers`: reviewed maximum for scan, grouping and publication workers.
+* `ram_bytes`: process-tree working set (parent + every worker, shared mapped pages
+  counted once per process, i.e. conservatively). See the report's RAM section
+  for the recommended p0002 value.
+
+`resume-check` stays read-only and now also reports `files_total`,
+`documents_committed` and `documents_total`.
+
+### Migration from p0001 to a new plan (operator only)
+
+1. Stop p0001 if it is still running; preserve its work directory unchanged.
+2. Review this implementation and its evidence; push the accepted commit.
+3. Record the new `code_commit` / `code_identity` / `dependency_sha256`.
+4. Rebuild the protected benchmark preparation receipt under the new code identity
+   (same frozen matcher-v4 policy and index semantics); verify it.
+5. Review and sign a new resource decision (see the report for `ram_bytes`,
+   `index_bytes`, `scratch_bytes`, `workers: 16`).
+6. Create a NEW plan (sequence 2, "p0002") with a fresh scratch job directory;
+   review its digest; sign its authorization.
+7. `run` with progress on; `resume-check`/`resume` after any interruption.
+
 ## Detached-volume isolation (`detached_volume_v1`, same Windows account)
 
 Chosen deployment: no second Windows account. The protected benchmark material,
@@ -85,7 +171,8 @@ Production worker count is a reviewed resource decision:
   `workers` (e.g. 16). Do not reuse the earlier `workers: 1` decision for a
   16-worker protected run, and do not edit the reviewed file in place.
 - If the same values are used later for `plan`, sign a new resource decision.
-  The plan digest changes. The C05 scan runner itself remains single-process.
+  The plan digest changes. Since the compact engine, the C05 scan and grouping
+  also use this reviewed maximum (see "Compact parallel engine" above).
 - Measured on authored fixtures: 16 workers peaked at about 1.3 GiB process-tree
   RSS. Keep `ram_bytes` well above that plus the parent's SQLite cache.
 
@@ -198,20 +285,22 @@ A present decision/receipt file is only "present"; `plan` verifies it.
 
 ## Storage admission (applies to every run)
 
-`plan` measures the scratch volume's SQLite rollback-journal geometry and binds it.
-The plan refuses unless `journal_bytes` covers the derived journal bound and
-`scratch_bytes` covers the worst case of: facts database (`index_bytes`, hard SQLite
-page cap), derived rollback journal, private decisions (`decision_bytes`, hard),
-membership staging/publication (`output_bytes`, hard), completion/state envelopes
-(hard), locks, benchmark index, the derived compiled exact matcher
+`plan` measures the scratch volume's SQLite rollback-journal geometry and binds it
+(the geometry now bounds only the optional heuristic-review store). The plan refuses
+unless `journal_bytes` covers the derived journal bound and `scratch_bytes` covers the
+worst case of: the compact working index (`index_bytes`, hard byte ledger over fact
+units, unit staging, grouping arrays, band index and sort spills), the review store
+and its derived journal (review enabled only), private decisions (`decision_bytes`,
+hard), membership staging/publication (`output_bytes`, hard), completion/state/seal
+envelopes (hard), locks, benchmark index, the derived compiled exact matcher
 (`13/4 * benchmark_bytes + 40 * min(benchmark_patterns, benchmark_bytes // 36)` plus
-manifest and slack) and per-file allocation slack. Before creating any
-file, `run`/`resume` re-measure the geometry, refuse unaccounted entries (WAL/SHM,
-foreign files) and require each volume to hold the remaining growth
-(`bound - present`) plus `free_bytes`. The same reserve check is sampled during the
-run. Nothing widens a ceiling; a larger ceiling is a new plan and authorization.
-With the proposed defaults the worst case is 370,303,419,928 B (512 B journal
-header measured on C: and G:), inside the proposed 352 GiB scratch ceiling.
+manifest and slack) and allocation slack of `(plan files + 49 + 16) x 2 MiB`. Before
+creating any file, `run`/`resume` re-measure the geometry, refuse unaccounted entries
+(WAL/SHM, foreign files, a historical `facts.sqlite`) and require each volume to hold
+the remaining growth (`bound - present`) plus `free_bytes`. The same reserve check is
+sampled during the run (every 5 s). Nothing widens a ceiling; a larger ceiling is a new
+plan and authorization. Recommended p0002 values and the derived worst case are in the
+[compact engine report](../implementation/reports/C05-COMPACT-PARALLEL-ENGINE.md).
 
 ## Allocation chain after a verified completion
 

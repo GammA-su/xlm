@@ -24,7 +24,7 @@ from test_c05_engine import execute as run_plan
 from test_c05_engine import setup_run
 from xlm.data.evidence_v2 import canonical
 from xlm.data.exclusion.artifacts import signed
-from xlm.data.exclusion.capacity import admit_runtime, journal_bound
+from xlm.data.exclusion.capacity import admit_runtime
 from xlm.data.exclusion.policy import C05Error
 from xlm.data.exclusion.receipt import (
     BenchmarkClaimBinding,
@@ -75,7 +75,7 @@ def test_deleted_signed_state_beside_job_files_refuses_instead_of_resetting(
         run_plan(plan, index, receipt, checkpoint=stop)
     work = Path(plan.scratch_root) / plan.identity()
     spent = state(plan)
-    assert spent["spent_bytes_read"] > 0 and (work / "facts.sqlite").is_file()
+    assert spent["spent_bytes_read"] > 0 and (work / "facts").is_dir()
     (work / "state.json").unlink()
     # Spent time/work/storage accounting must never restart from zero.
     with pytest.raises(C05Error, match="signed state"):
@@ -83,13 +83,14 @@ def test_deleted_signed_state_beside_job_files_refuses_instead_of_resetting(
     assert not (Path(plan.output_root) / plan.identity()).exists()
 
 
-def test_oversized_leftover_journal_refuses_before_sqlite_opens(tmp_path: Path) -> None:
+def test_oversized_leftover_staging_refuses_before_any_work(tmp_path: Path) -> None:
+    """A crash leftover above the hard working-index bound refuses before any file."""
     plan, index, receipt = setup_run(tmp_path, corpus(2))
     work = Path(plan.scratch_root) / plan.identity()
-    work.mkdir(parents=True)
-    bound = journal_bound(plan.storage, plan.resources.index_bytes)
-    with (work / "facts.sqlite-journal").open("wb") as stream:
-        stream.truncate(bound + 1)
+    staging = work / "facts" / "00000.staging"
+    staging.mkdir(parents=True)
+    with (staging / "records").open("wb") as stream:
+        stream.truncate(plan.resources.index_bytes + 1)
     with pytest.raises(C05Error, match="exceeds its hard bound"):
         run_plan(plan, index, receipt)
     assert not (work / "state.json").exists()
@@ -110,6 +111,8 @@ def test_geometry_drift_and_foreign_publication_entries_refuse(tmp_path: Path) -
             output,
             plan.identity(),
             index,
+            review=plan.policy.review.enabled,
+            files=len(plan.files),
             probe=lambda _: drifted,
         )
     staged = output / (plan.identity() + ".partial")

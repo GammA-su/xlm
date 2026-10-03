@@ -175,15 +175,120 @@ def _mersenne_fold(values: Any) -> Any:
     For x < 2**64: x = hi * 2**61 + lo with hi < 8, and x mod P = lo + hi,
     which is below 2P, so a single subtract normalizes exactly.
     """
-    import numpy as np  # type: ignore[import-not-found]
+    import numpy as np
 
     prime = np.uint64(_MERSENNE_PRIME)
     folded = (values & prime) + (values >> np.uint64(61))
     return np.where(folded >= prime, folded - prime, folded)
 
 
+#: Shingles per pass of the chunked kernel: three (permutations x chunk) uint64
+#: work buffers stay cache-resident (3 x 128 x 256 x 8 B = 768 KiB) instead of the
+#: dozens of full-size temporaries (and page faults) of the historical kernel.
+FAST_KERNEL_CHUNK_SHINGLES = 256
+
+_FAST_CONSTANTS: dict[tuple[tuple[int, int], ...], Any] = {}
+
+
+def _fast_constants(params: list[tuple[int, int]]) -> Any:
+    """Per-permutation limbs as (k, 1) uint64 columns, cached per parameter set."""
+    key = tuple(params)
+    constants = _FAST_CONSTANTS.get(key)
+    if constants is None:
+        import numpy as np
+
+        a = np.array([x for x, _ in params], dtype=np.uint64).reshape(-1, 1)
+        b = np.array([y for _, y in params], dtype=np.uint64).reshape(-1, 1)
+        a1 = a >> np.uint64(31)
+        constants = (a & np.uint64(_MASK31), a1, a1 << np.uint64(1), b)
+        _FAST_CONSTANTS.clear()
+        _FAST_CONSTANTS[key] = constants
+    return constants
+
+
+def signature_from_array(values: Any, params: list[tuple[int, int]]) -> list[int]:
+    """Exact MinHash of a non-empty uint64 hash array (duplicates allowed).
+
+    Same values as :func:`_signature_python`: ``min_h((a*h + b) % P)`` with
+    P = 2**61 - 1, in uint64 arithmetic that never wraps:
+
+    * ``g = h mod P`` once per shingle (``(h & P) + (h >> 61) < P + 8``, then one
+      conditional subtract), so ``(a*h + b) % P == (a*g + b) % P``.
+    * With ``a = a1*2**31 + a0`` and ``g = g1*2**31 + g0`` (a1, g1 < 2**30;
+      a0, g0 < 2**31), ``2**61 = 1`` and ``2**62 = 2 (mod P)``:
+      ``a*g = 2*a1*g1 + mid*2**31 + a0*g0`` with ``mid = a1*g0 + a0*g1 < 2**62``
+      and ``mid*2**31 = 2*s1 + s0*2**31 (mod P)`` for ``s1 = mid >> 31``,
+      ``s0 = mid & (2**31 - 1)``.
+    * ``x = 2*a1*g1 + 2*s1 + s0*2**31 + a0*g0 + b`` is below
+      ``2**61 + 2**32 + 2**62 + 2**62 + 2**61 < 2**64`` (no wrap), and
+      ``x mod P`` follows from one fold ``(x & P) + (x >> 61) < P + 8``.
+    * The final conditional subtract is folded into the minimum: for a folded
+      ``y`` in ``[0, P + 8)``, ``y - P`` (uint64, wrapping) is the reduced value
+      when ``y >= P`` and exceeds ``2**63`` otherwise, so the per-permutation
+      minimum of reduced values is ``min(min(y), min(y - P))``.
+    """
+    import numpy as np
+
+    prime = np.uint64(_MERSENNE_PRIME)
+    mask31 = np.uint64(_MASK31)
+    shift31, shift61, one = np.uint64(31), np.uint64(61), np.uint64(1)
+    h = np.ascontiguousarray(values, dtype=np.uint64).reshape(-1)
+    if h.size == 0:
+        raise ValueError("MinHash of an empty hash set is not defined by this kernel")
+    g = (h & prime) + (h >> shift61)
+    g -= prime * (g >= prime)
+    g0 = (g & mask31).reshape(1, -1)
+    g1 = (g >> shift31).reshape(1, -1)
+    a0, a1, a1x2, b = _fast_constants(params)
+    chunk = min(FAST_KERNEL_CHUNK_SHINGLES, int(h.size))
+    x = np.empty((a0.shape[0], chunk), dtype=np.uint64)
+    y = np.empty_like(x)
+    z = np.empty_like(x)
+    best: Any = None
+    for start in range(0, int(h.size), chunk):
+        n = min(chunk, int(h.size) - start)
+        c0, c1 = g0[:, start : start + n], g1[:, start : start + n]
+        xs, ys, zs = x[:, :n], y[:, :n], z[:, :n]
+        np.multiply(a1x2, c1, out=xs)  # 2*a1*g1 < 2**61
+        np.multiply(a1, c0, out=zs)
+        np.multiply(a0, c1, out=ys)
+        np.add(zs, ys, out=zs)  # mid < 2**62
+        np.right_shift(zs, shift31, out=ys)
+        np.left_shift(ys, one, out=ys)  # 2*s1 < 2**32
+        np.bitwise_and(zs, mask31, out=zs)
+        np.left_shift(zs, shift31, out=zs)  # s0*2**31 < 2**62
+        np.add(xs, ys, out=xs)
+        np.add(xs, zs, out=xs)
+        np.multiply(a0, c0, out=zs)  # a0*g0 < 2**62
+        np.add(xs, zs, out=xs)
+        np.add(xs, b, out=xs)  # < 2**64 (bound above)
+        np.right_shift(xs, shift61, out=ys)
+        np.bitwise_and(xs, prime, out=xs)
+        np.add(xs, ys, out=xs)  # folded: < P + 8
+        low = xs.min(axis=1)
+        np.subtract(xs, prime, out=xs)  # wraps above 2**63 unless xs >= P
+        column = np.minimum(low, xs.min(axis=1))
+        best = column if best is None else np.minimum(best, column)
+    rows: list[int] = best.tolist()
+    return rows
+
+
 def _signature_vectorized(hashed: set[int], params: list[tuple[int, int]]) -> list[int] | None:
-    """Exact vectorized MinHash reduction in uint64 arithmetic.
+    """Exact chunked in-place MinHash reduction (see :func:`signature_from_array`).
+
+    Returns None when NumPy is unavailable so the caller falls back to the Arrow
+    or pure-Python kernel. :func:`_signature_vectorized_v1` is the historical
+    implementation, kept as an independent test oracle.
+    """
+    try:
+        import numpy as np
+    except ImportError:
+        return None
+    return signature_from_array(np.fromiter(hashed, dtype=np.uint64, count=len(hashed)), params)
+
+
+def _signature_vectorized_v1(hashed: set[int], params: list[tuple[int, int]]) -> list[int] | None:
+    """Historical exact vectorized MinHash reduction in uint64 arithmetic (oracle).
 
     Computes ``min_h((a*h + b) % P)`` per permutation with P = 2**61 - 1 using
     only uint64 operations. The 122-bit product is never formed: h is split

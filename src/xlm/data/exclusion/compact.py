@@ -114,6 +114,14 @@ def _noop() -> None:
     return None
 
 
+#: Content-free compile/verify progress: (phase name, done, total or None).
+Report = Callable[[str, int, int | None], None]
+
+
+def _no_report(phase: str, done: int, total: int | None) -> None:
+    return None
+
+
 def mix(values: U64) -> U64:
     """splitmix64 finalizer of token ids (vectorized, wraps modulo 2**64)."""
     z = values + np.uint64(0x9E3779B97F4A7C15)
@@ -162,6 +170,7 @@ def _encode(
     max_record: int,
     max_records: int | None,
     check: Callable[[], None],
+    report: Report = _no_report,
 ) -> tuple[list[str], U32, I64]:
     """One streaming pass: provisional ids, then a remap to sorted vocabulary ids."""
     if array("I").itemsize != 4:
@@ -180,6 +189,7 @@ def _encode(
                 raise CeilingExceeded("benchmark_patterns", {"index_records_over": max_records})
             if len(lengths) % 256 == 0:
                 check()
+                report("encode", size, index_bytes)
             for token in tokens:
                 if token not in provisional:
                     if len(provisional) >= UINT32_MAX - 1:
@@ -191,6 +201,8 @@ def _encode(
         raise C05Error("benchmark index changed during matcher compilation")
     if not lengths:
         raise C05Error("benchmark index has no patterns")
+    report("encode", size, index_bytes)
+    report("vocabulary remap", 0, None)
     vocabulary = sorted(provisional)  # code point order is UTF-8 byte order
     remap = np.zeros(len(vocabulary) + 1, np.uint32)
     previous = np.fromiter(
@@ -284,6 +296,7 @@ def _anchors(
     q: int,
     mask: int,
     check: Callable[[], None],
+    report: Report = _no_report,
 ) -> tuple[U64, I64, U64, I64]:
     """Full-pattern fingerprints and one (length, key, offset) anchor per pattern."""
     total_patterns = offsets.size - 1
@@ -298,6 +311,7 @@ def _anchors(
     windows: list[U64] = []
     for c0 in range(0, total_patterns, CHUNK_PATTERNS):
         check()
+        report("anchor generation", c0, total_patterns)
         c1 = min(total_patterns, c0 + CHUNK_PATTERNS)
         segment = tokens[offsets[c0] : offsets[c1]]
         mixed = mixed_table[segment]
@@ -431,6 +445,7 @@ def compile_index(
     q: int = ANCHOR_Q,
     max_bucket: int = MAX_ANCHOR_BUCKET,
     hash_mask: int = FULL_MASK,
+    report: Report = _no_report,
 ) -> dict[str, Any]:
     """Write the packed arrays, then the manifest last, into empty ``destination``.
 
@@ -450,9 +465,12 @@ def compile_index(
         max_record=max_record,
         max_records=max_records,
         check=check,
+        report=report,
     )
     records = int(lengths.size)
+    report("unique sort", 0, records)
     unique, starts, nodes = _unique_sorted(flat, lengths, check)
+    report("unique sort", records, records)
     counts: dict[str, int] = {
         "index_records": records,
         "unique_patterns": int(unique.size),
@@ -469,15 +487,17 @@ def compile_index(
     tokens = np.empty(int(offsets[-1]), np.uint32)
     for c0 in range(0, unique.size, CHUNK_PATTERNS):
         check()
+        report("materialize", c0, int(unique.size))
         c1 = min(unique.size, c0 + CHUNK_PATTERNS)
         local = offsets[c0:c1] - offsets[c0]
         source = np.repeat(starts[unique[c0:c1]] - local, size[c0:c1])
         tokens[offsets[c0] : offsets[c1]] = flat[source + np.arange(source.size)]
     del flat, lengths, starts, unique
     hashes, anchor_length, anchor_key, anchor_offset = _anchors(
-        tokens, offsets, len(vocabulary), q=q, mask=hash_mask, check=check
+        tokens, offsets, len(vocabulary), q=q, mask=hash_mask, check=check, report=report
     )
     check()
+    report("anchor sort", 0, None)
     order = np.lexsort((anchor_key, anchor_length))
     sorted_length = anchor_length[order]
     sorted_key = anchor_key[order]
@@ -515,7 +535,14 @@ def compile_index(
         "anchor_patterns.bin": order,
         "anchor_offsets.bin": anchor_offset[order],
     }
-    files = {name: _write(destination / name, arrays[name], FILES[name], check) for name in FILES}
+    total_bytes = sum(int(np.asarray(arrays[name]).nbytes) for name in FILES)
+    written = 0
+    files = {}
+    for name in FILES:
+        report("packed write", written, total_bytes)
+        files[name] = _write(destination / name, arrays[name], FILES[name], check)
+        written += int(files[name]["bytes"])
+    report("packed write", written, total_bytes)
     manifest = {
         "kind": MANIFEST_KIND,
         "backend": BACKEND,
@@ -575,6 +602,7 @@ class CompactExactMatcher:
         max_bucket: int = MAX_ANCHOR_BUCKET,
         hash_mask: int = FULL_MASK,
         check: Callable[[], None] = _noop,
+        report: Report = _no_report,
     ) -> None:
         """Verify every binding and file hash before the first lookup is possible."""
         self._maps: list[tuple[Any, mmap.mmap]] = []
@@ -589,6 +617,7 @@ class CompactExactMatcher:
                 max_bucket=max_bucket,
                 hash_mask=hash_mask,
                 check=check,
+                report=report,
             )
         except BaseException:
             self.close()
@@ -606,6 +635,7 @@ class CompactExactMatcher:
         max_bucket: int,
         hash_mask: int,
         check: Callable[[], None],
+        report: Report = _no_report,
     ) -> None:
         self.directory = directory
         manifest = read_manifest(directory)
@@ -648,6 +678,11 @@ class CompactExactMatcher:
         _expect(statistics.get("max_bucket", max_bucket + 1) <= max_bucket, "anchor bucket ceiling")
         arrays: dict[str, npt.NDArray[Any]] = {}
         total = 0
+        expected_bytes = sum(
+            e["bytes"]
+            for e in files.values()
+            if isinstance(e, dict) and type(e.get("bytes")) is int
+        )
         for name, dtype in FILES.items():
             entry = files[name]
             path = directory / name
@@ -672,6 +707,7 @@ class CompactExactMatcher:
             try:
                 for begin in range(0, len(view), WRITE_BLOCK):
                     check()
+                    report("verify open", total + begin, expected_bytes)
                     value.update(view[begin : begin + WRITE_BLOCK])
             finally:
                 view.release()
@@ -679,7 +715,9 @@ class CompactExactMatcher:
             arrays[name] = np.frombuffer(mapped, dtype=np.dtype(dtype), count=entry["count"])
             total += entry["bytes"]
         _expect(manifest.get("compiled_bytes") == total, "compiled byte total")
+        report("verify open", total, expected_bytes)
         check()
+        report("verify structure", 0, None)
         blob = arrays["vocab_bytes.bin"]
         vocabulary_offsets = arrays["vocab_offsets.bin"]
         tokens = arrays["pattern_tokens.bin"]
@@ -936,6 +974,7 @@ def prepare(
     q: int = ANCHOR_Q,
     max_bucket: int = MAX_ANCHOR_BUCKET,
     hash_mask: int = FULL_MASK,
+    report: Report = _no_report,
 ) -> CompactExactMatcher:
     """Reuse a fully verified published matcher, or compile it staging-then-rename.
 
@@ -955,7 +994,16 @@ def prepare(
         discard_staging(staging)
         staging.parent.mkdir(parents=True, exist_ok=True)
         staging.mkdir()
-        compile_index(index, staging, max_record=max_record, check=check, **binding, **parameters)
+        compile_index(
+            index,
+            staging,
+            max_record=max_record,
+            check=check,
+            report=report,
+            **binding,
+            **parameters,
+        )
         before_publish()
         os.rename(staging, directory)
-    return CompactExactMatcher(directory, check=check, **binding, **parameters)
+    report("verify open", 0, None)
+    return CompactExactMatcher(directory, check=check, report=report, **binding, **parameters)

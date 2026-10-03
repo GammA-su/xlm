@@ -1,0 +1,25 @@
+{
+ "documents": 100000,
+ "units": 13,
+ "unit_bytes": 131187072,
+ "bytes_per_doc": 1311.9,
+ "per_doc_by_section": {
+  "hits": 0.1,
+  "id_order": 4.0,
+  "ids": 17.0,
+  "ids_off": 8.0,
+  "lineage_blob": 85.5,
+  "lineage_cnt": 4.0,
+  "lineage_dig": 48.3,
+  "lineage_off": 12.1,
+  "parents_blob": 0.2,
+  "parents_cnt": 4.0,
+  "parents_dig": 0.3,
+  "parents_off": 0.1,
+  "records": 104.0,
+  "signatures": 1024.0
+ },
+ "header_and_padding_per_unit": 2623,
+ "group_sealed_bytes": 8118039,
+ "group_bytes_per_doc": 81.2
+}

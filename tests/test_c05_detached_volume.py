@@ -322,7 +322,7 @@ def test_same_principal_detached_volume_protected_flow(
         (layout.gvol / "benchmark-preparation.receipt.json").read_bytes()
     )
     assert exported == envelope
-    assert (layout.scratch / plan.identity() / "facts.sqlite").is_file()
+    assert any((layout.scratch / plan.identity() / "facts").glob("*.unit"))
     assert (layout.scratch / plan.identity() / "decisions.jsonl").is_file()
 
     # A protected detached-volume completion alone is not an official claim.

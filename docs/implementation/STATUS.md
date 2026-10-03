@@ -1,3 +1,27 @@
+> **C05 COMPACT PARALLEL ENGINE (2026-10-03): READY FOR OPERATOR p0002; p0001 NOT RESUMABLE.**
+>
+> `run`/`resume` now use the compact parallel engine (`c05-facts-v2`): `Resources.workers`
+> spawned scan workers (16 here) prepare immutable facts; one parent integrates in
+> file/row order and publishes one signed fact unit per verified plan file; grouping is
+> external and vectorized (dense ids in exact id byte order, exact runs, per-band bucket
+> index with an exact replay of the historical near-candidate cap/oversize order,
+> verified lineage, parents, min-root union-find); publication is parallel. The exact
+> fast MinHash kernel is 4.1x faster on production-sized documents and bit-identical
+> (oracles kept). Scientific semantics and the bytes of membership, decisions,
+> `facts_digest` and `group_digest` are identical to the retained SQLite reference engine
+> on authored fixtures and across 1/2/4/8/16 workers. Live content-free progress
+> (stderr; `--progress-interval`, `--progress-format`, `--no-progress`) with rolling-rate
+> ETA covers every stage. Authored 100k documents: scan 358 -> 2,823 docs/s (1 -> 16
+> workers, steady), 49.5 s end to end at 16 workers, 1,312 B of facts per document,
+> peak process-tree RSS 1.82 GiB. Projected real run about 1.75-2 h (projection only;
+> 500k/1M scale, RAM sweep and production-sized matcher RSS were cancelled, NOT RUN).
+> C05 suite: 347 non-serial (`-n 16`) + 1 serial (`-n 0`) passed; ruff, mypy strict,
+> diff-check clean. Next (operator): push, rebuild the protected benchmark receipt under
+> the new code identity, sign resources (recommended `ram_bytes` 48 GiB, `index_bytes`
+> 64 GiB, `workers` 16), create/review/authorize p0002, `resume-check`, `run`.
+> [Report](reports/C05-COMPACT-PARALLEL-ENGINE.md),
+> [runbook](../runbooks/c05-global-preparation.md).
+
 > **C05 COMPACT EXACT MATCHER (2026-10-03): READY; OPERATOR CAPACITY AUDIT REQUIRED.**
 >
 > The production runner now matches with `CompactExactMatcher`

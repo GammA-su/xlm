@@ -134,7 +134,12 @@ class ExecutionPlan(FrozenModel):
     def identity(self) -> str:
         self.policy.identity()
         # Deterministic worst-case storage must fit the reviewed ceilings.
-        admit_plan(self.resources, self.storage)
+        admit_plan(
+            self.resources,
+            self.storage,
+            review=self.policy.review.enabled,
+            files=len(self.files),
+        )
         roots = [Path(x).resolve() for x in (self.data_root, self.scratch_root, self.output_root)]
         for i, root in enumerate(roots):
             for other in roots[i + 1 :]:

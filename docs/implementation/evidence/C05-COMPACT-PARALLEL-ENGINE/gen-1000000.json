@@ -1,0 +1,1 @@
+{"canonical_bytes": 5409761493, "documents": 1000000, "file_count": 135, "fixture": "authored-synthetic-only", "generate_seconds": 615.6, "index_bytes": 33486817, "index_sha256": "4cfade9debfbf711895e6938e99996615fb84d377a3b2f0053417e99621f06d0", "input_bytes": 5986752801, "patterns": 200000, "seed": 20261003}
