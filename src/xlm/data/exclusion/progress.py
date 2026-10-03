@@ -99,6 +99,7 @@ class RunProgress:
         telemetry_interval: float = 5.0,
         window: float = 30.0,
         min_span: float = 10.0,
+        label: str = "C05",
     ) -> None:
         if not 0 < interval <= 3600:
             raise C05Error("progress interval must be in (0, 3600] seconds")
@@ -108,6 +109,7 @@ class RunProgress:
         self.telemetry_source = telemetry
         self.telemetry_interval = telemetry_interval
         self.window, self.min_span = window, min_span
+        self.label = label
         self.started = clock_fn()
         self.name: str | None = None
         self.total: int | None = None
@@ -211,7 +213,7 @@ class RunProgress:
         if self.fmt == "jsonl":
             line = json.dumps({"event": event, **snap}, sort_keys=True)
         else:
-            line = render(snap, event)
+            line = render(snap, event, self.label)
         print(line, file=self.stream or sys.stderr, flush=True)
         self.lines += 1
 
@@ -233,11 +235,11 @@ _FIELD_LABELS: Final = {
 }
 
 
-def render(snap: Mapping[str, Any], event: str) -> str:
+def render(snap: Mapping[str, Any], event: str, label: str = "C05") -> str:
     """One compact text line (numbers and fixed labels only)."""
     total = snap["total"]
     unit = snap["unit"]
-    head = f"[C05] {snap['stage']}"
+    head = f"[{label}] {snap['stage']}"
     if event == "stage":
         head += " | started"
     elif event == "finish":

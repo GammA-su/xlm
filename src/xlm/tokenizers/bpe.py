@@ -6,7 +6,7 @@ import hashlib
 import json
 import struct
 import tempfile
-from collections.abc import Iterable, Iterator, Sequence
+from collections.abc import Callable, Iterable, Iterator, Sequence
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -46,21 +46,34 @@ _B2U = _get_gpt2_bytes_to_unicode()
 _U2B = {v: k for k, v in _B2U.items()}
 
 
+class FitSampleBoundError(ValueError):
+    """A complete-sample fit received more documents or bytes than its frozen bounds."""
+
+
 @contextmanager
 def _fit_text_stream(
     documents: Iterable[CanonicalDocument],
     max_docs: int,
     max_bytes: int,
+    *,
+    require_complete: bool = False,
+    spool_dir: Path | None = None,
+    on_feed: Callable[[int, int], None] | None = None,
 ) -> Iterator[tuple[Iterator[str], str]]:
     """Validate selection before fitting; spool text without retaining the corpus.
 
     Length framing preserves embedded newlines/NULs and exact document boundaries.
     Scratch is canonical sample bytes plus eight bytes per selected document.
     The backend still owns its merge frontier; this only bounds Python preparation.
+
+    By default the caps silently stop at the first document past them (historical
+    behavior). ``require_complete`` makes the caps exact bounds of a frozen sample:
+    exceeding one refuses instead of truncating, so every document is fed once.
+    ``on_feed`` receives cumulative (documents, canonical bytes) as text is fed.
     """
     digest = hashlib.sha256()
     total_bytes = count = 0
-    with tempfile.TemporaryFile(mode="w+b") as spool:
+    with tempfile.TemporaryFile(mode="w+b", dir=spool_dir) as spool:
         for doc in documents:
             if doc.split != "train":
                 raise ValueError(
@@ -68,6 +81,10 @@ def _fit_text_stream(
                     "not 'train'. Only 'train' split documents may be used for tokenizer fitting."
                 )
             if count >= max_docs or total_bytes + doc.utf8_byte_count > max_bytes:
+                if require_complete:
+                    raise FitSampleBoundError(
+                        "tokenizer-fit sample exceeds its frozen bounds; refusing to truncate"
+                    )
                 break
             raw = canonical_normalize(doc.text).encode("utf-8")
             spool.write(struct.pack("<Q", len(raw)))
@@ -82,9 +99,15 @@ def _fit_text_stream(
         spool.seek(0)
 
         def texts() -> Iterator[str]:
+            fed = fed_bytes = 0
             while header := spool.read(8):
                 size = struct.unpack("<Q", header)[0]
-                yield spool.read(size).decode("utf-8")
+                text = spool.read(size).decode("utf-8")
+                fed += 1
+                fed_bytes += size
+                if on_feed is not None:
+                    on_feed(fed, fed_bytes)
+                yield text
 
         yield texts(), digest.hexdigest()
 
@@ -346,10 +369,16 @@ class ByteLevelBPETokenizer(BaseTokenizer):
         max_train_bytes: int = 500 * 1024 * 1024,
         is_production_baseline: bool = False,
         c05_gate: MembershipGate | None = None,
+        *,
+        require_complete: bool = False,
+        spool_dir: Path | None = None,
+        on_feed: Callable[[int, int], None] | None = None,
     ) -> ByteLevelBPETokenizer:
         """Train a ByteLevel BPE tokenizer from canonical training documents.
 
         Strictly enforces that all supplied documents belong to the 'train' split.
+        A frozen-sample caller passes the sample's exact document/byte totals as the
+        caps with ``require_complete=True`` (see :func:`_fit_text_stream`).
         """
         if target_vocab_size < MINIMUM_VOCAB_SIZE:
             raise ValueError(
@@ -371,7 +400,14 @@ class ByteLevelBPETokenizer(BaseTokenizer):
         )
 
         documents = screened_documents(documents, c05_gate, required=is_production_baseline)
-        with _fit_text_stream(documents, max_train_docs, max_train_bytes) as (
+        with _fit_text_stream(
+            documents,
+            max_train_docs,
+            max_train_bytes,
+            require_complete=require_complete,
+            spool_dir=spool_dir,
+            on_feed=on_feed,
+        ) as (
             texts,
             training_input_hash,
         ):

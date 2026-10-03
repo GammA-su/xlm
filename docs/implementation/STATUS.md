@@ -1,17 +1,28 @@
-> **C06 C05-BOUND TOKENIZER FIT (2026-10-03): BLOCKED — TOKENIZER FIT SHARES REQUIRE OPERATOR DECISION.**
+> **C06 C05-BOUND TOKENIZER FIT (2026-10-03): READY; REAL FIT NOT RUN (OPERATOR AUTHORIZATION).**
 >
-> The bridge from the completed protected C05 p0002 proof to a 32,768 ByteLevel BPE
-> was not implemented. The repository has the share *mechanism* but no frozen
-> production share *values*. The P11 mechanism is `SourceView.declared_raw_byte_share`,
-> and `mix01_views_v2` declares none. Mix-01 weights are draft mixture weights, not
-> fit shares. Three data-only options (natural kept-train bytes, frozen Mix-01
-> allocation quotas, equal components), plus a ready bounded two-pass design, are in
-> the report. Separate fix: C05 plan allocation now counts only exact `pNNNN.json`
-> names (`p0001.authorization.json` previously crashed `int()`). Commit `9ee7409`, 16
-> control tests passed, and ruff, mypy strict and diff-check are clean. No real file,
-> network, fit or `X:` access. Next (operator): record the share decision as a
-> data-only file, then request the bridge implementation.
-> [Report](reports/C06-C05-TOKENIZER-FIT.md).
+> The operator froze `recipes/tokenizer/mix01_fit_shares_v1.yaml` (policy digest
+> `9db3872b...637667c`). It sets 512 MiB, vocabulary 32,768, seed 20260919 and
+> equal integer weights over the eleven components. IFM and Common Pile are divided
+> by their frozen `frozen_requirements` splits. Documents above 1 MiB are skipped
+> for fitting only, crossing documents are included whole, and a shortfall refuses
+> without redistribution. `fit-tokenizer` (`xlm.data.exclusion.operator`) reads
+> the proof metadata and refuses while `X:` is mounted, before any corpus read.
+> `--plan-only` emits a deterministic resource plan, and the fit requires that
+> plan's digest. Pass 1 re-reads the hash-verified inputs once: it matches every
+> record against the signed completion accounting and keeps only bounded
+> per-allocation rank prefixes (no corpus-sized collection). Pass 2 re-verifies the
+> selected records through the gate. BPE consumes the complete sample:
+> `require_complete` refuses truncation, and the training-input hash is rechecked.
+> The tokenizer, `c05-binding.json` and the signed manifest are published
+> atomically. `verify-tokenizer-fit` re-checks the result, and `tokenizer_identity`
+> accepts it unchanged. 63 new C06 tests pass. The focused regression selection
+> (C05 selection/detached/control/progress, tokenizer, P11 regime) gives 235 passed.
+> Ruff, mypy strict and diff-check are clean. All fixtures are authored: no real
+> file, network, fit or `X:` access. The earlier stop (`e0608ac`) and the
+> plan-numbering fix (`9ee7409`) are retained. Next (operator): detach `X:`, run
+> `fit-tokenizer --plan-only`, review the plan, then fit with
+> `--resource-plan-digest`. [Report](reports/C06-C05-TOKENIZER-FIT.md),
+> [runbook](../runbooks/c05-global-preparation.md#tokenizer-fit-c06).
 
 > **C05 COMPACT PARALLEL ENGINE (2026-10-03): READY FOR OPERATOR p0002; p0001 NOT RESUMABLE.**
 >

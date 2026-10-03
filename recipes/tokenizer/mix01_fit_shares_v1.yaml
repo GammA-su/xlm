@@ -1,0 +1,78 @@
+# Frozen C06 production tokenizer-fit policy for Mix-01 (data-only).
+#
+# Parsed and validated by xlm.data.exclusion.tokenizer_fit.load_fit_policy; the
+# parser refuses unknown fields, duplicate keys, a component set other than the
+# eleven Mix-01 components, non-positive weights, and any production constant or
+# rule that differs from this file. The fit manifest binds the canonical digest of
+# the parsed policy (line-ending independent) and the SHA-256 of these bytes.
+#
+# Byte budgets (exact integers, no decimal shares):
+#   component budget  = largest-remainder apportionment of target_sample_bytes by
+#                       the integer component_weights (ties: component id ascending)
+#   allocation budget = largest-remainder apportionment of its component budget by
+#                       the frozen final_tokens quotas returned by
+#                       xlm.data.exclusion.quotas.frozen_requirements (ties: allocation
+#                       key ascending). Only the IFM views and Common Pile upstream
+#                       components have more than one allocation.
+schema_version: 1
+kind: c06_tokenizer_fit_policy
+policy_id: mix01_fit_shares_v1
+mode: production
+operator: GammA
+decided: "2026-10-03"
+tokenizer:
+  type: byte_level_bpe
+  target_vocab_size: 32768
+  special_tokens: ["<pad>", "<bos>", "<eos>", "<unk>"]
+seed: 20260919
+target_sample_bytes: 536870912  # 512 MiB of canonical UTF-8 text
+max_document_bytes: 1048576  # 1 MiB; larger records are skipped for fitting only
+rules:
+  # Only C05 decision=kept AND split=train records whose full canonical record
+  # digest equals the C05 membership content digest.
+  eligibility: c05_kept_train_exact_content
+  # Per allocation, ascending sha256(canonical(["c06-tokenizer-fit-v1", seed,
+  # allocation, doc_id, content])), then doc_id. The tag separates this order from
+  # the C05 quota-selection order that uses the same seed.
+  order: sha256_tag_seed_allocation_docid_content_then_docid
+  # Whole documents in rank order until the allocation budget is reached; the
+  # crossing document is included whole. Text is never truncated.
+  crossing: include_whole_document
+  # utf8_byte_count > max_document_bytes: skipped for fitting only; never modified,
+  # truncated or removed from C05 membership or later training selection.
+  oversized: skip_for_fit_only
+  # Any positive-budget allocation with fewer eligible bytes than its budget refuses
+  # the fit: no redistribution, renormalization, target reduction, repetition or
+  # cap removal. A content-free deficit report is written for the operator.
+  shortfall: refuse_without_redistribution
+  rounding: largest_remainder_then_key
+component_weights:
+  essential_science: 1
+  essential_practical: 1
+  essential_prose: 1
+  ultrax_ultrafineweb: 1
+  finepdfs_en: 1
+  synth_en_explanations: 1
+  nemotron_wiki_rewrite: 1
+  finewiki_en: 1
+  ifm_behaviors_general_planning: 1
+  common_pile_prose: 1
+  simple_stories: 1
+internal_splits:
+  source: frozen_requirements
+  quotas_path: recipes/mixtures/mix01_quotas_6b.yaml
+  quotas_sha256: 9b16db765c4dbb3fc3a366b1c2a8acc88e3ca8bc81f344d0a082ee00d8c78fdf
+  # The IFM split file is passed as --ifm-split; frozen_requirements refuses unless
+  # its digest equals the split bound by the sealed ifm_general/ifm_planning sources.
+  # The Common Pile split is the component_split bound by the sealed common_pile
+  # source. The fit manifest records both actual digests.
+  composite:
+    ifm_behaviors_general_planning: ifm_requirement_split
+    common_pile_prose: common_pile_component_split
+rationale:
+  - "The tokenizer-fit distribution is intentionally not the final model-training distribution."
+  - "The goal is a common, broadly representative tokenizer that stays fixed across all Mix-01 mixture experiments."
+  - "Natural corpus bytes are rejected because acquisition and headroom differences must not determine vocabulary allocation."
+  - "M0 final training weights are rejected because they would give the M0 mixture a tokenization advantage over later mixture variants."
+  - "Equal top-level component weights are therefore an explicit operator decision, not an automatic fallback."
+  - "Composite components divide their equal budget by their already-frozen internal allocation quotas, never by an invented equal split or natural availability."

@@ -10,6 +10,7 @@ import argparse
 import json
 import os
 import re
+import shutil
 import sqlite3
 from pathlib import Path
 from typing import Any, Literal
@@ -264,6 +265,28 @@ def parser() -> argparse.ArgumentParser:
     binding.add_argument("--checkpoint-hash", required=True)
     binding.add_argument("--suite-fingerprint", required=True)
     binding.add_argument("--output", type=Path, required=True)
+    # C06: the frozen-policy tokenizer fit over this C05 membership, and its check.
+    fitting = commands.add_parser("fit-tokenizer")
+    checking = commands.add_parser("verify-tokenizer-fit")
+    for command in (fitting, checking):
+        command.add_argument("--c05-proof", type=Path, required=True)
+        command.add_argument("--fit-shares", type=Path, required=True)
+        command.add_argument(
+            "--quotas", type=Path, default=Path("recipes/mixtures/mix01_quotas_6b.yaml")
+        )
+        command.add_argument("--ifm-split", type=Path, required=True)
+    for name in ("scratch", "output", "deficit-report"):
+        fitting.add_argument("--" + name, type=Path, required=True)
+    # Prints the deterministic resource plan; reads metadata only, writes nothing.
+    fitting.add_argument("--plan-only", action="store_true")
+    fitting.add_argument("--resource-plan-digest")
+    fitting.add_argument("--issuer")
+    fitting.add_argument("--key-env")
+    # Operational display only (stderr); never part of an artifact.
+    fitting.add_argument("--progress-interval", type=float, default=1.0)
+    fitting.add_argument("--progress-format", choices=["text", "jsonl"], default="text")
+    fitting.add_argument("--no-progress", action="store_true")
+    checking.add_argument("--fit", type=Path, required=True)
     claim = commands.add_parser("claim-check")
     claim.add_argument("--receipt", type=Path, required=True)
     claim.add_argument("--binding", type=Path, required=True)
@@ -380,9 +403,113 @@ def allocation_command(args: argparse.Namespace) -> int:
         return 0
 
 
+def tokenizer_fit_command(args: argparse.Namespace) -> int:
+    """C06 fit/verify; refuses before any corpus read while the protected volume is mounted."""
+    from xlm.data.exclusion.progress import NullProgress, RunProgress
+    from xlm.data.exclusion.tokenizer_fit import (
+        FitDeficit,
+        fit_tokenizer,
+        load_fit_policy,
+        plan_from_proof,
+        verify_fit,
+    )
+    from xlm.data.exclusion.transport import guard_proof, open_gate
+
+    consumes = [args.fit_shares, args.quotas, args.ifm_split]
+    if args.command == "verify-tokenizer-fit":
+        consumes.append(args.fit)
+        with open_gate(args.c05_proof, allow_authored=True, consumes=consumes) as gate:
+            if gate is None:
+                raise C05Error("C05 proof absent")
+            policy, _ = load_fit_policy(args.fit_shares)
+            result = verify_fit(gate, args.fit, policy, args.quotas, args.ifm_split)
+        print(json.dumps(result, sort_keys=True))
+        return 0
+    consumes += [args.scratch, args.output, args.deficit_report]
+    reporter: RunProgress | NullProgress = (
+        NullProgress()
+        if args.no_progress
+        else RunProgress(interval=args.progress_interval, fmt=args.progress_format, label="C06")
+    )
+    reporter.stage("PROOF VERIFY", None, "steps")
+    guard_proof(args.c05_proof, consumes)  # Mounted protected volume: refuse first.
+    policy, policy_sha = load_fit_policy(args.fit_shares)
+    planned = plan_from_proof(args.c05_proof, policy, args.quotas, args.ifm_split)
+    if args.plan_only:
+        reporter.complete()
+        args.scratch.mkdir(parents=True, exist_ok=True)
+        print(
+            json.dumps(
+                {
+                    "resource_plan": planned,
+                    "resource_plan_digest": planned["digest"],
+                    "scratch_free_bytes": shutil.disk_usage(args.scratch).free,
+                },
+                sort_keys=True,
+            )
+        )
+        return 0
+    if args.resource_plan_digest != planned["digest"]:
+        raise C05Error("fit requires --resource-plan-digest of the reviewed --plan-only plan")
+    if args.issuer is None or args.key_env is None:
+        raise C05Error("fit requires --issuer and --key-env")
+    if args.output.exists():
+        raise C05Error("tokenizer-fit output is write-once")
+    key = key_from_env(args.key_env)
+    with open_gate(args.c05_proof, allow_authored=True, consumes=consumes) as gate:
+        if gate is None:
+            raise C05Error("C05 proof absent")
+        if gate.trusted.get(args.issuer) != key:
+            raise C05Error("tokenizer-fit signer is not trusted")
+        try:
+            envelope = fit_tokenizer(
+                gate,
+                policy,
+                policy_sha,
+                quotas=args.quotas,
+                ifm_split=args.ifm_split,
+                scratch=args.scratch,
+                output=args.output,
+                issuer=args.issuer,
+                key=key,
+                accepted_plan_digest=args.resource_plan_digest,
+                progress=reporter,
+            )
+        except FitDeficit as deficit:
+            write_once(args.deficit_report, deficit.report)
+            print(json.dumps({"deficit": True, "report": str(args.deficit_report)}))
+            return 2
+    body = envelope["payload"]
+    print(
+        json.dumps(
+            {
+                "fit_digest": envelope["digest"],
+                "mode": body["mode"],
+                "production": body["production"],
+                "tokenizer": str(args.output / "tokenizer"),
+                "tokenizer_fingerprint": body["tokenizer"]["fingerprint"],
+            },
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     args = parser().parse_args(argv)
     try:
+        if args.command in {"fit-tokenizer", "verify-tokenizer-fit"}:
+            try:
+                return tokenizer_fit_command(args)
+            except C05Error as exc:
+                # C05Error messages are fixed literals (no record values); the fit
+                # operator needs to know which frozen check refused.
+                print(json.dumps({"refused": True, "error_type": "C05Error", "reason": str(exc)}))
+                return 1
+            except KeyboardInterrupt:
+                # Staging and job scratch were removed; nothing was published.
+                print(json.dumps({"refused": True, "error_type": "KeyboardInterrupt"}))
+                return 130
         if args.command in {
             "count-tokens",
             "select",

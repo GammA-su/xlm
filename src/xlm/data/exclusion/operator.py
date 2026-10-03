@@ -156,6 +156,8 @@ def main(argv: list[str] | None = None) -> int:
         "freeze",
         "claim-binding",
         "claim-check",
+        "fit-tokenizer",
+        "verify-tokenizer-fit",
     }:
         from xlm.data.exclusion.control import main as control_main
 

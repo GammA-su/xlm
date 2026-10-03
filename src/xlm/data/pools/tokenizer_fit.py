@@ -249,6 +249,14 @@ def build_tokenizer_fit_manifest(
     )
 
 
+def estimated_fit_peak_memory_bytes(sample_bytes: int, target_vocab_size: int) -> int:
+    """Planning figure for a byte-level BPE fit; not a measurement.
+
+    Byte-level BPE training holds the corpus and the merge frontier in memory.
+    """
+    return int(sample_bytes * 3.5) + target_vocab_size * 4096
+
+
 def tokenizer_fit_resource_plan(
     manifest: TokenizerFitManifest,
     target_vocab_size: int,
@@ -258,9 +266,7 @@ def tokenizer_fit_resource_plan(
     C13 requires a resource plan before a large fit. This returns the plan; it does
     not authorize or start anything.
     """
-    # Byte-level BPE training holds the corpus and the merge frontier in memory.
-    # The multiplier is a rough planning figure, not a measurement.
-    estimated_peak_bytes = int(manifest.total_bytes * 3.5) + target_vocab_size * 4096
+    estimated_peak_bytes = estimated_fit_peak_memory_bytes(manifest.total_bytes, target_vocab_size)
 
     return {
         "fit_id": manifest.fit_id,

@@ -302,6 +302,53 @@ sampled during the run (every 5 s). Nothing widens a ceiling; a larger ceiling i
 plan and authorization. Recommended p0002 values and the derived worst case are in the
 [compact engine report](../implementation/reports/C05-COMPACT-PARALLEL-ENGINE.md).
 
+## Tokenizer fit (C06)
+
+`fit-tokenizer` fits the production 32,768 ByteLevel BPE through the C05 gate,
+using exactly the frozen policy `recipes/tokenizer/mix01_fit_shares_v1.yaml`:
+- 512 MiB of canonical bytes;
+- equal integer weights over the eleven components, with IFM and Common Pile divided
+  by their frozen splits;
+- documents larger than 1 MiB skipped for fitting only;
+- whole crossing documents;
+- refusal on shortfall, with no redistribution.
+
+The policy file supplies every policy value, so the CLI has no policy options.
+
+How it runs:
+- **Before any read.** It refuses while `X:` (the plan-bound protected root) is
+  mounted, and refuses any path inside the protected root or the C05 scratch.
+- **Pass 1.** One sequential re-read of the hash-verified inputs. It counts every
+  record against the signed completion and ranks only kept `train` records.
+- **Pass 2.** It re-reads and re-verifies the selected records and feeds each to
+  BPE exactly once.
+- **Output.** One write-once directory, renamed into place last:
+  `tokenizer/{tokenizer.json, tokenizer_manifest.json, c05-binding.json}`,
+  `tokenizer_fit_manifest.json` (signed), `tokenizer_fit_sample.jsonl` (IDs and
+  digests only) and `tokenizer_fit_resource_plan.json`.
+- **Failure or interrupt.** The staging directory and the job scratch are removed.
+
+```powershell
+$cli = 'uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator'
+$fit = '--c05-proof G:/XLM/c05/p0002.proof.json --fit-shares recipes/tokenizer/mix01_fit_shares_v1.yaml --quotas recipes/mixtures/mix01_quotas_6b.yaml --ifm-split G:/XLM/calib/requirement_splits/ifm_behaviors_general_planning.json --scratch G:/XLM/tokfit/scratch --output G:/XLM/tokfit/mix01-fit-shares-v1 --deficit-report G:/XLM/tokfit/mix01-fit-shares-v1.deficit.json'
+# 0. Detach X: first. Every key environment variable named by the proof's trust file must be set.
+# 1. Metadata-only resource plan (no corpus read); review it and copy resource_plan_digest.
+Invoke-Expression "$cli fit-tokenizer $fit --plan-only"
+# 2. The fit (exit 0 = published; exit 2 = content-free deficit report, nothing published).
+Invoke-Expression "$cli fit-tokenizer $fit --resource-plan-digest <digest> --issuer GammA --key-env XLM_C05_OPERATOR_KEY"
+# 3. Independent verification of the published fit.
+Invoke-Expression "$cli verify-tokenizer-fit --c05-proof G:/XLM/c05/p0002.proof.json --fit-shares recipes/tokenizer/mix01_fit_shares_v1.yaml --quotas recipes/mixtures/mix01_quotas_6b.yaml --ifm-split G:/XLM/calib/requirement_splits/ifm_behaviors_general_planning.json --fit G:/XLM/tokfit/mix01-fit-shares-v1"
+```
+
+`--plan-only` refuses early in two cases:
+- the quota table's bytes differ from the SHA pinned in the policy;
+- the sealed sources bind a different table, or the IFM split differs from the one
+  they bind.
+
+Progress lines start with `[C06]`. During `TOKENIZER FIT: MERGES` the tokenizer
+library reports no merge progress; only elapsed time and RSS heartbeats are shown.
+The tokenizer for the allocation chain below is `G:/XLM/tokfit/mix01-fit-shares-v1/tokenizer`.
+
 ## Allocation chain after a verified completion
 
 All commands take an explicit proof specification (`--c05-proof`), a JSON object
