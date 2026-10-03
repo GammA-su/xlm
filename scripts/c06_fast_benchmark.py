@@ -385,6 +385,7 @@ def bench_bpe(
     root: Path, spool: Path, digest: str, documents: int, size: int, threads: int, vocab: int
 ) -> dict[str, Any]:
     out = root / f"bpe-out-{threads}"
+    tag = str(threads)
     shutil.rmtree(out, ignore_errors=True)
     job = root / f"bpe-job-{threads}.json"
     job.write_text(
@@ -395,7 +396,12 @@ def bench_bpe(
                 "target_vocab_size": vocab,
                 "training_input_hash": digest,
                 "documents": documents,
-                "spool_bytes": size,
+                "result": str(root / f"bpe-result-{tag}.json"),
+                "payload_bytes": size,
+                "spool_sha256": hashlib.sha256(Path(spool).read_bytes()).hexdigest(),
+                "spool_file_bytes": Path(spool).stat().st_size,
+                "max_frame_bytes": 64 * 1024**2,
+                "tokenizer_bytes_ceiling": 64 * 1024**2,
                 "production": False,
             }
         ),

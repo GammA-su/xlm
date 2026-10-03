@@ -102,6 +102,7 @@ def tree_rss(process: psutil.Process) -> int:
 
 
 def fit(root: Path, corpus: Path, facts: dict[str, Any], threads: int) -> dict[str, Any]:
+    tag = f"{facts['megabytes']}-{threads}"
     out = root / f"out-{facts['megabytes']}-{threads}"
     shutil.rmtree(out, ignore_errors=True)
     job = root / f"job-{facts['megabytes']}-{threads}.json"
@@ -113,7 +114,12 @@ def fit(root: Path, corpus: Path, facts: dict[str, Any], threads: int) -> dict[s
                 "target_vocab_size": 32768,
                 "training_input_hash": facts["training_input_hash"],
                 "documents": facts["documents"],
-                "spool_bytes": facts["spool_bytes"],
+                "result": str(root / f"bpe-result-{tag}.json"),
+                "payload_bytes": facts["spool_bytes"],
+                "spool_sha256": hashlib.sha256(Path(corpus).read_bytes()).hexdigest(),
+                "spool_file_bytes": Path(corpus).stat().st_size,
+                "max_frame_bytes": 64 * 1024**2,
+                "tokenizer_bytes_ceiling": 64 * 1024**2,
                 "production": False,
             }
         ),

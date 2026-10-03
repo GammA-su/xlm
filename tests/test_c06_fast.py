@@ -69,7 +69,13 @@ from xlm.tokenizers.bpe import ByteLevelBPETokenizer
 
 load = canonical.loads_bytes_strict
 # Provenance/operational fields: the only manifest differences allowed vs bb886bd.
-PROVENANCE = {"fit_path", "kept_index", "resource_plan_digest", "implementation"}
+PROVENANCE = {"fit_path", "kept_index", "bpe_spool", "resource_plan_digest", "implementation"}
+
+
+def envelope_for(**changes: Any) -> fitfast.OperationalEnvelope:
+    values: dict[str, Any] = {"source_workers": 1, "bpe_threads": 16, "free_reserve_bytes": 0}
+    values.update(changes)
+    return fitfast.OperationalEnvelope(**values)
 
 
 def fast_fit(
@@ -80,11 +86,24 @@ def fast_fit(
     workers: int = 1,
     bpe_threads: int = 16,
     progress: RunProgress | None = None,
-    deadline: float | None = None,
+    deadline: float = 1200.0,
     rss_ceiling: int = fitfast.DEFAULT_RSS_CEILING,
+    inline: bool | None = None,
+    **changes: Any,
 ) -> dict[str, Any]:
+    """Library-level fast fit; ``workers=1`` runs inline unless ``inline=False``."""
+    envelope = envelope_for(
+        source_workers=workers,
+        bpe_threads=bpe_threads,
+        deadline_seconds=deadline,
+        ram_ceiling_bytes=rss_ceiling,
+        **changes,
+    )
     policy, sha = load_fit_policy(policy_path)
-    planned = plan_from_proof_fast(c05["proof"], policy, c05["quotas"], c05["ifm"])
+    locations = fitfast.Locations(out / "scratch", out / "fit", out / "deficit.json")
+    planned = plan_from_proof_fast(
+        c05["proof"], policy, c05["quotas"], c05["ifm"], envelope, locations
+    )
     view = open_streamed(c05["proof"], allow_authored=True, consumes=[])
     return fit_tokenizer_fast(
         view,
@@ -97,11 +116,10 @@ def fast_fit(
         issuer=ISSUER,
         key=KEY.encode(),
         accepted_plan_digest=planned["digest"],
-        workers=workers,
-        bpe_threads=bpe_threads,
-        deadline_seconds=deadline,
-        rss_ceiling=rss_ceiling,
+        envelope=envelope,
+        deficit_report_path=out / "deficit.json",
         progress=progress,
+        inline=(workers == 1) if inline is None else inline,
         heartbeat_seconds=0.05,
     )
 
@@ -137,7 +155,7 @@ def assert_equivalent(reference_dir: Path, fast_dir: Path) -> None:
     assert model["vocab"] == expected["vocab"] and model["merges"] == expected["merges"]
     ours = load((fast_dir / FIT_MANIFEST).read_bytes())["payload"]
     theirs = load((reference_dir / FIT_MANIFEST).read_bytes())["payload"]
-    assert set(ours) - set(theirs) == {"fit_path", "kept_index"}
+    assert set(ours) - set(theirs) == {"fit_path", "kept_index", "bpe_spool"}
     for name in set(theirs) - PROVENANCE:
         assert ours[name] == theirs[name], name
     assert ours["fit_path"] == FIT_PATH
@@ -352,10 +370,12 @@ def _membership_file(c05: dict[str, Any]) -> Path:
     )
 
 
-def _refuses(c05: dict[str, Any], tmp_path: Path, match: str, workers: int = 1) -> None:
+def _refuses(
+    c05: dict[str, Any], tmp_path: Path, match: str, workers: int = 1, **changes: Any
+) -> None:
     policy = write_policy(tmp_path / "p.yaml", c05)
     with pytest.raises(C05Error, match=match):
-        fast_fit(c05, policy, tmp_path, workers=workers)
+        fast_fit(c05, policy, tmp_path, workers=workers, **changes)
     assert not (tmp_path / "fit").exists() and not list(tmp_path.glob("fit.partial-*"))
     assert not list((tmp_path / "scratch").glob("c06-fit-*"))
 
@@ -374,7 +394,6 @@ def test_membership_changed_during_stream_refuses(
 ) -> None:
     path = _membership_file(c05)
     original = path.read_bytes()
-    monkeypatch.setattr(fitfast, "MEMBERSHIP_CHUNK_BYTES", 4096)
     blocks = fitfast._membership_blocks
 
     def racing(*args: Any) -> Iterator[bytes]:
@@ -388,7 +407,9 @@ def test_membership_changed_during_stream_refuses(
 
     monkeypatch.setattr(fitfast, "_membership_blocks", racing)
     try:
-        _refuses(c05, tmp_path, "completion membership changed|membership")
+        _refuses(
+            c05, tmp_path, "completion membership changed|membership", membership_chunk_bytes=4096
+        )
     finally:
         path.write_bytes(original)
 
@@ -444,7 +465,6 @@ def test_source_changed_during_scan_refuses(
 ) -> None:
     target = _plan_file(c05, 0)
     original = target.read_bytes()
-    monkeypatch.setattr(fitscan, "SOURCE_BLOCK_BYTES", 1024)
     base = type(Path())
 
     class Racing(base):  # type: ignore[valid-type,misc]
@@ -476,7 +496,12 @@ def test_source_changed_during_scan_refuses(
 
     monkeypatch.setattr(fitscan, "Path", Racing)
     try:
-        _refuses(c05, tmp_path, "input content changed since C05|differs from its C05")
+        _refuses(
+            c05,
+            tmp_path,
+            "input content changed since C05|differs from its C05",
+            source_block_bytes=1024,
+        )
     finally:
         target.write_bytes(original)
 
@@ -675,7 +700,7 @@ def test_fast_progress_is_staged_content_free_and_reports_slo(
     assert str(c05["root"]) not in text and ":\\" not in text
     plan = load((fast["fit"] / "tokenizer_fit_resource_plan.json").read_bytes())
     measured = plan["measured"]
-    assert measured["slo_seconds"] == 1200 and measured["bpe_seconds"] > 0
+    assert measured["deadline_seconds"] == 1200 and measured["bpe_seconds"] > 0
     assert plan["plan"]["inputs"]["source_passes"] == 1
     assert plan["plan"]["inputs"]["sqlite_queries"] == 0
 
@@ -709,6 +734,12 @@ def test_operator_cli_fast_plan_fit_verify_index_count_select(
         str(tmp_path / "deficit.json"),
         "--workers",
         "2",
+        "--bpe-threads",
+        "8",
+        "--deadline-seconds",
+        "1200",
+        "--free-reserve-gib",
+        "0",
         "--no-progress",
     ]
     assert operator([*fit_args, "--plan-only"]) == 0
@@ -724,10 +755,6 @@ def test_operator_cli_fast_plan_fit_verify_index_count_select(
                 *signing,
                 "--resource-plan-digest",
                 planned["resource_plan_digest"],
-                "--bpe-threads",
-                "8",
-                "--deadline-seconds",
-                "1200",
             ]
         )
         == 0

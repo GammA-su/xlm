@@ -1,3 +1,35 @@
+> **C06 FAST HARDENING (2026-10-03): A1–A8 REPAIRED; READY FOR INDEPENDENT RE-AUDIT; REAL FIT NOT RUN.**
+>
+> These repairs address the independent audit of `03242cf`. The scientific
+> architecture and outputs are unchanged and byte-identical to bb886bd, including
+> against Astra's git-exported bb886bd run. Changes:
+> - A1: a single supervisor whose deadline starts at dispatch, covers the whole
+>   command, polls every wait and kills (never drains) workers and the BPE tree.
+>   Publication needs a passing check and margin.
+> - A2: process-tree RSS sampled every 0.25 s whatever the progress settings
+>   (24 GiB default).
+> - A3: the BPE child hashes exactly the spool bytes it consumes and refuses before
+>   saving; `bpe_spool` is signed.
+> - A4: a private hashed index snapshot plus on-disk re-verification.
+> - A5: full structural validation of the index.
+> - A6: per-volume storage plan with a reserve, byte-capped writers, immediate read
+>   ceilings, and owned cleanup with visible residue.
+> - A7: a total projection with BPE and finalization reserves, early warning and early
+>   abort.
+> - A8: the full operational envelope is in the plan digest.
+>
+> Tests:
+> - 75 new A1–A8 tests and 47 fast-path tests;
+> - regression 407 passed plus 3 serial passed;
+> - 43 of 45 unmodified Astra probes; the 2 API-coupled ones pass when adapted.
+>
+> Ruff, mypy strict and diff-check are clean. Authored authenticated 512 MiB BPE took
+> 50.2 s. The projected total is about 5.8, 8.2 or 16.4 min; this is not proven.
+> Next: independent re-audit, then `fit-tokenizer --plan-only` with the reviewed flags.
+> [Report](reports/C06-FAST-HARDENING.md),
+> [evidence](evidence/C06-FAST-HARDENING/COMMANDS.md),
+> [runbook](../runbooks/c05-global-preparation.md#tokenizer-fit-c06).
+
 > **C06 FAST TOKENIZER FIT (2026-10-03): READY; <=20 MIN SUPPORTED BY PROJECTION; REAL FIT NOT RUN.**
 >
 > `fit-tokenizer` is now the fast path (`c06-fast-v1`); bb886bd stays as

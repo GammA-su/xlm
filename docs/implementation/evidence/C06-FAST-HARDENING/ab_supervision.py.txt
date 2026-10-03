@@ -1,0 +1,42 @@
+import json
+import shutil
+import sys
+import time
+from pathlib import Path
+
+sys.path[:0] = ["."]
+from scripts.c06_fast_benchmark import make_sources, source_tasks  # noqa: E402
+
+from xlm.data.exclusion.fitscan import MembershipTables, OrderedPool, scan_source_file  # noqa: E402
+from xlm.data.exclusion.supervisor import Deadline, Supervisor  # noqa: E402
+
+def main() -> None:
+    root = Path(sys.argv[1])
+    root.mkdir(parents=True)
+    try:
+        entries = make_sources(root, 24, 9_000)
+        tables = MembershipTables({}, (), 0, 0, 64 * 1024**2, "t")
+        tasks = [t for _ in range(4) for t in source_tasks(entries, True)]
+        size = sum(e["bytes"] for e in entries) * 4
+        results = []
+        for supervised in (True, False, True, False):
+            guard = Supervisor(Deadline(3600, time.monotonic()), 24 * 1024**3) if supervised else None
+            if guard is not None:
+                guard.__enter__()
+            with OrderedPool(8, tables, guard) as pool:
+                for _ in pool.map(scan_source_file, tasks[:8]):
+                    pass
+                started = time.perf_counter()
+                for _ in pool.map(scan_source_file, tasks):
+                    pass
+                wall = time.perf_counter() - started
+            if guard is not None:
+                guard.__exit__(None, None, None)
+            results.append({"supervised": supervised, "gb_per_s": round(size / 1e9 / wall, 3)})
+            print(json.dumps(results[-1]), flush=True)
+    finally:
+        shutil.rmtree(root, ignore_errors=True)
+
+
+if __name__ == "__main__":
+    main()

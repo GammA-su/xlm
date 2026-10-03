@@ -20,6 +20,7 @@ from scripts.c06_fast_benchmark import Peak, make_sources, source_tasks
 
 from xlm.data.evidence_v2 import canonical
 from xlm.data.exclusion.fitscan import MembershipTables, OrderedPool, scan_source_file
+from xlm.data.exclusion.supervisor import Deadline, Supervisor
 from xlm.data.exclusion.tokenizer_fit import RANK_TAG
 
 
@@ -27,7 +28,8 @@ def run(entries: list[dict[str, Any]], workers: int, repeat: int, parse: bool) -
     tables = MembershipTables({}, (), 0, 0, 64 * 1024**2, RANK_TAG)
     size = sum(e["bytes"] for e in entries) * repeat
     tasks = [t for _ in range(repeat) for t in source_tasks(entries, parse)]
-    with OrderedPool(workers, tables) as pool:
+    guard = Supervisor(Deadline(3600, time.monotonic()), 24 * 1024**3, interval=0.25)
+    with guard, OrderedPool(workers, tables, guard) as pool:
         for _ in pool.map(scan_source_file, tasks[:workers]):  # Spawn every worker first.
             pass
         started = time.perf_counter()
@@ -42,6 +44,8 @@ def run(entries: list[dict[str, Any]], workers: int, repeat: int, parse: bool) -
         "seconds": round(wall, 2),
         "gb_per_s": round(size / 1e9 / wall, 3),
         "peak_tree_rss_mib": round(peak.peak / 2**20),
+        "supervised": True,
+        "supervisor_samples": guard.samples,
     }
 
 

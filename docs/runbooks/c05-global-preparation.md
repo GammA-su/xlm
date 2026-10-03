@@ -325,24 +325,42 @@ stages:
 - **Membership stream.** `membership.jsonl` is read once, and the parsed bytes are
   the hashed bytes. Nothing is used until the SHA-256, byte size and row count equal
   the signed completion. Rows must be in strictly ascending doc-id order (so no
-  repeats), name a frozen plan file, row and allocation, and reproduce every
-  completion aggregate. No SQLite.
+  repeats), name a frozen plan file, row and allocation, and reconcile the
+  completion's kept/train-byte/non-kept totals. No SQLite.
 - **Exact selection.** The same rank, budgets, cap and crossing rule as the
   reference. A deficit refuses here (exit 2 with a content-free report) before any
   source byte is read.
 - **One source pass.** Every plan file is hashed exactly once and must match the
-  plan's SHA-256, size and row count. Every kept row is strict-JSON parsed to check
+  plan's SHA-256, size and row count; reading stops and refuses as soon as a file
+  exceeds its frozen bytes or rows. Every kept row is strict-JSON parsed to check
   its doc id, byte count and **original** split: a C05-train row whose canonical
   `split` is not `train` refuses, exactly as the reference does. Only selected rows
   are fully decoded and content-digested, and they are spooled in plan-file and row
   order, which is the reference BPE feed order.
+- **Authenticated BPE spool.** The parent hashes the exact framed spool bytes as it
+  writes them (with byte and frame ceilings), fsyncs and marks the file read-only.
+  The BPE child hashes exactly the bytes it consumes and refuses before saving
+  unless SHA-256, bytes, frames and payload equal the parent's; it re-hashes the
+  file afterwards; the parent re-checks again. The signed manifest binds the spool
+  digest (`bpe_spool`).
+- **BPE.** Runs in a supervised child process with `TOKENIZERS_PARALLELISM=true` and
+  `RAYON_NUM_THREADS=--bpe-threads` (default 16). Inherited values are overridden.
+- **One supervisor.** The `--deadline-seconds` budget (default 1200) is the TOTAL
+  command time, starting at dispatch (before proof verification). A monitor thread,
+  independent of progress display, samples every 0.25 s: deadline, the whole
+  process tree's RSS against `--rss-ceiling-gib` (default 24, reviewed maximum 32),
+  free space against `--free-reserve-gib` on every owned volume, and the projected
+  total. On any breach it terminates every descendant (terminate, 2 s grace, kill,
+  reap); waits on workers are polled, never blocking. Publication is the parent's
+  single atomic rename and happens only after every verification, a passing
+  supervisor check and at least 1 s of deadline margin.
 - **Workers.** `--workers` (1/2/4/8/16, default 8) is operational only; outputs are
   identical for every value.
-- **BPE.** Runs in a child process with `TOKENIZERS_PARALLELISM=true` and
-  `RAYON_NUM_THREADS=--bpe-threads` (default 16). An inherited
-  `TOKENIZERS_PARALLELISM=false` is overridden.
-- **Ceilings.** `--deadline-seconds` and the process-tree `--rss-ceiling-gib`
-  (default 32) terminate the run, and nothing is published.
+- **Storage.** The plan lists every owned growth item (spool, index, sample,
+  tokenizer, manifests, job/result) per volume; the run refuses unless each volume
+  holds growth plus the reserve. Writers enforce byte ceilings. Cleanup removes only
+  registered paths; any residue (for example an unknown file) is reported in the
+  refusal and never deleted recursively.
 - **Output.** One write-once directory, renamed into place last:
   - `tokenizer/{tokenizer.json, tokenizer_manifest.json, c05-binding.json}`
   - `tokenizer_fit_manifest.json` (signed)
@@ -351,40 +369,58 @@ stages:
   - `kept-index/` (the reusable post-C05 kept-membership index, signed)
 
 Use the NVMe `C:` for `--scratch` (it holds the ~0.6 GB BPE spool). The corpus on `G:`
-is a SATA SSD, so the source pass is read-bound at about 0.5 GB/s.
+is a SATA SSD; about 0.5 GB/s is an assumption from the drive class, not a
+measurement of production throughput.
+
+The reviewed operational envelope (workers, BPE threads, deadline, RSS ceiling,
+free-space reserve, monitor interval, queue bound, chunk/block sizes, BPE and
+finalization reserves, early-abort ratio) and the storage plan are inside the
+`--plan-only` digest. The run recomputes the plan from its own flags and refuses
+unless the digest is identical, so a plan reviewed for 8 workers cannot run with 16.
 
 ```powershell
 $cli = 'uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator'
 $c06 = '--c05-proof G:/XLM/c05/p0002.proof.json --fit-shares recipes/tokenizer/mix01_fit_shares_v1.yaml --quotas recipes/mixtures/mix01_quotas_6b.yaml --ifm-split G:/XLM/calib/requirement_splits/ifm_behaviors_general_planning.json'
-$fit = "$c06 --scratch C:/XLM-scratch/c06-fit --output G:/XLM/tokfit/mix01-fit-shares-v1-fast --deficit-report G:/XLM/tokfit/mix01-fit-shares-v1-fast.deficit.json"
+$ops = '--workers 8 --bpe-threads 16 --deadline-seconds 1200 --rss-ceiling-gib 24 --free-reserve-gib 16'
+$fit = "$c06 --scratch C:/XLM-scratch/c06-fit --output G:/XLM/tokfit/mix01-fit-shares-v1-fast --deficit-report G:/XLM/tokfit/mix01-fit-shares-v1-fast.deficit.json $ops"
 # 0. Detach X: first. Every key environment variable named by the proof's trust file must be set.
-# 1. Metadata-only resource plan (reads no membership or corpus bytes); review it.
+# 1. Metadata-only operational plan (reads no membership or corpus bytes); review it.
 Invoke-Expression "$cli fit-tokenizer $fit --plan-only"
-# 2. The fit. Exit 0 = published; 2 = deficit report, nothing published; 1 = refused.
-Invoke-Expression "$cli fit-tokenizer $fit --resource-plan-digest <digest> --issuer GammA --key-env XLM_C05_OPERATOR_KEY --workers 8 --bpe-threads 16 --deadline-seconds 1200"
+# 2. The fit with IDENTICAL flags. Exit 0 = published; 2 = deficit report; 1 = refused.
+Invoke-Expression "$cli fit-tokenizer $fit --resource-plan-digest <digest> --issuer GammA --key-env XLM_C05_OPERATOR_KEY"
 # 3. Verification: re-derives the sample from authenticated membership, checks the index
-#    and tokenizer. Add --sources to also re-hash every source file (one more source pass).
+#    snapshot and tokenizer. Add --sources to also re-hash every source file and re-derive
+#    the BPE spool digest (one more source pass).
 Invoke-Expression "$cli verify-tokenizer-fit $c06 --fit G:/XLM/tokfit/mix01-fit-shares-v1-fast --workers 8"
-# 4. Post-C05 kept index: signature, bindings, section hashes; --membership re-derives
-#    from membership.jsonl; --sources also re-hashes and re-locates every source row.
+# 4. Post-C05 kept index: signature, bindings, a private hashed snapshot, structural
+#    validation and on-disk re-verification; --membership re-derives from
+#    membership.jsonl; --sources also re-hashes and re-locates every source row.
 Invoke-Expression "$cli verify-kept-index $c06 --index G:/XLM/tokfit/mix01-fit-shares-v1-fast/kept-index --membership --workers 8"
 ```
 
 `--plan-only` refuses early if:
 - the quota table bytes differ from the policy pin;
 - the sealed sources bind a different table or IFM split;
-- the proof's completion digest changed.
+- the proof's completion digest changed;
+- an operational value is outside its reviewed bounds (for example a non-finite
+  deadline or an RSS ceiling above 32 GiB).
 
 Progress lines start with `[C06]`:
 - `MEMBERSHIP STREAM` reports rows, MB/s and ETA;
-- `SOURCE PASS` reports files, GiB, GB/s, split checks, selected rows parsed and ETA;
+- `SOURCE PASS` reports files, GiB, GB/s, split checks, selected rows parsed, the
+  projected TOTAL and the deadline;
 - `TOKENIZER FIT` shows elapsed time and process-tree RSS heartbeats, because BPE
   merge progress is not observable.
 
-`SLO |` lines report membership and source throughput, the projected pre-BPE time
-(an `SLO WARNING` appears if it already exceeds 1200 s) and the final total against
-the 1200 s target. The SLO is an operational target, not part of any identity. A
-deadline kill discards the run and publishes nothing.
+The supervisor projects the TOTAL completion time: elapsed + remaining membership +
+selection reserve + remaining source + a 240 s BPE reserve + a 60 s finalization
+reserve. Stages without measured progress use conservative planning rates
+(membership 40 MB/s, source 0.2 GB/s). An `SLO WARNING | projected total ...` line is
+printed to stderr (even with `--no-progress`) whenever the projection exceeds the
+deadline, and is refreshed every 30 s; once the source rate is measured (>= 10 s and
+>= 2 %), a projection above 1.25x the deadline aborts early. A deadline, RAM or disk
+breach discards the run and publishes nothing; the refusal reports how long after the
+deadline cleanup finished, and any cleanup residue.
 
 The tokenizer for the allocation chain below is
 `G:/XLM/tokfit/mix01-fit-shares-v1-fast/tokenizer`.

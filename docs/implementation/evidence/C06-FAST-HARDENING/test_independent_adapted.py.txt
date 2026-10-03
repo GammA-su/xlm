@@ -1,0 +1,70 @@
+"""Adapted copies of two Astra probes whose hooks targeted the pre-hardening API.
+
+The unmodified originals remain in test_independent.py. Assertions are kept; only
+the API attachment point changes:
+
+* pool wait: the deadline is handed to ``OrderedPool`` (the hardened supervision
+  point) instead of being checked only after each result is yielded;
+* index snapshot: the same post-read same-size mutation is injected right after the
+  reader's single hashed read (``_snapshot``, which replaced hash-then-mmap). The
+  hardened requirement is that consumed bytes are the authenticated ones AND that a
+  later on-disk change refuses success; both are asserted.
+"""
+
+import shutil
+import time
+
+import pytest
+
+from audit_workers import delayed
+from test_c06_tokenizer_fit import c05, key, write_policy  # noqa: F401
+from test_c06_fast import fast_fit
+from xlm.data.exclusion import fitfast, fitscan, keptindex, tokenizer_fit
+from xlm.data.exclusion.policy import C05Error
+
+
+def tables():
+    return fitscan.MembershipTables({}, (), 7, 1024**2, 4 * 1024**2, tokenizer_fit.RANK_TAG)
+
+
+@pytest.fixture(scope="module")
+def fitted(c05, tmp_path_factory):
+    out = tmp_path_factory.mktemp("independent_fit")
+    policy = write_policy(out / "policy.yaml", c05)
+    fast_fit(c05, policy, out, workers=2)
+    return out
+
+
+def test_requirement_deadline_bounds_pool_wait_adapted():
+    began = time.monotonic()
+    deadline = fitfast.Deadline(0.1, began)
+    with pytest.raises(C05Error, match="deadline"):
+        with fitscan.OrderedPool(2, tables(), deadline) as pool:
+            for _ in pool.map(delayed, [(0, 1.5), (1, 1.5)]):
+                deadline.check()
+    elapsed = time.monotonic() - began
+    print("deadline_seconds=0.1 elapsed_seconds=", elapsed)
+    assert elapsed < 0.75, "hard deadline is not enforced while waiting for source/membership work"
+
+
+def test_requirement_index_hash_and_mapping_same_snapshot_adapted(c05, fitted, tmp_path, monkeypatch):
+    view = fitfast.open_streamed(c05["proof"], allow_authored=True, consumes=[])
+    directory = tmp_path / "index"
+    shutil.copytree(fitted / "fit/kept-index", directory)
+    original = keptindex._snapshot
+
+    def racing(path, size, sha):
+        result = original(path, size, sha)
+        if path.name == "rows.bin":
+            with path.open("r+b") as stream:
+                stream.seek(8)
+                stream.write((123456789).to_bytes(8, "little"))
+        return result
+
+    monkeypatch.setattr(keptindex, "_snapshot", racing)
+    index = keptindex.open_index(directory, view)
+    consumed = int(index.rows[0]["offset"])
+    print("consumed_offset=", consumed)
+    assert consumed != 123456789, "consumed bytes differ from the authenticated snapshot"
+    with pytest.raises(C05Error):
+        index.reverify()

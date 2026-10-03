@@ -1,0 +1,161 @@
+...........................F...F.............                            [100%]
+================================== FAILURES ===================================
+_________________ test_requirement_deadline_bounds_pool_wait __________________
+
+    def test_requirement_deadline_bounds_pool_wait():
+        began=time.monotonic(); deadline=fitfast.Deadline(0.1,began)
+        with pytest.raises(C05Error,match="deadline"):
+            with fitscan.OrderedPool(2,tables()) as pool:
+                for _ in pool.map(delayed,[(0,1.5),(1,1.5)]): deadline.check()
+        elapsed=time.monotonic()-began
+        print("deadline_seconds=0.1 elapsed_seconds=",elapsed)
+>       assert elapsed<0.75, "hard deadline is not enforced while waiting for source/membership work"
+E       AssertionError: hard deadline is not enforced while waiting for source/membership work
+E       assert 2.0780000000377186 < 0.75
+
+C:\t9aud\test_independent.py:186: AssertionError
+---------------------------- Captured stdout call -----------------------------
+deadline_seconds=0.1 elapsed_seconds= 2.0780000000377186
+____________ test_requirement_index_hash_and_mapping_same_snapshot ____________
+
+c05 = {'root': WindowsPath('C:/t9fin1/c060/root'), 'proof': WindowsPath('C:/t9fin1/c060/root/proof.json'), 'quotas': WindowsPath('C:/t9fin1/c060/root/quotas.yaml'), 'ifm': WindowsPath('C:/t9fin1/c060/root/ifm-split.json'), ...}
+fitted = WindowsPath('C:/t9fin1/independent_fit0')
+tmp_path = WindowsPath('C:/t9fin1/test_requirement_index_hash_an0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001A7A3F07380>
+
+    def test_requirement_index_hash_and_mapping_same_snapshot(c05,fitted,tmp_path,monkeypatch):
+        view=fitfast.open_streamed(c05["proof"],allow_authored=True,consumes=[])
+        directory=tmp_path/"index"
+        shutil.copytree(fitted/"fit/kept-index",directory)
+        original=keptindex._section_sha
+        def racing(path):
+            result=original(path)
+            if path.name=="rows.bin":
+                with path.open("r+b") as stream:
+                    stream.seek(8); stream.write((123456789).to_bytes(8,"little"))
+            return result
+        monkeypatch.setattr(keptindex,"_section_sha",racing)
+>       with pytest.raises(C05Error):
+             ^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE C05Error
+
+C:\t9aud\test_independent.py:228: Failed
+---------------------------- Captured stdout call -----------------------------
+accepted_tampered_offset= 1238
+=================================== PASSES ====================================
+____________________ test_duplicate_source_locator_refused ____________________
+---------------------------- Captured stdout setup ----------------------------
+{"decision_digest": "5b3b80985efe1e34cd54cae55066a6a09c39f5973f801d0a71d873ad10f3d505"}
+{"decision_digest": "6ca30234c5fffad6414c25a8361d60ede15864ab82305f1efc41a3f9b8ca5a97"}
+{"decision_digest": "d132d9cdf70bfeab351822c1cb33fda9d4b961d764a86881c2320c984a9cb708"}
+{"sequence": 1, "plan_digest": "8dc8a6c3ce8d88de084dbe4523e853eaf434d52c1967435ba1304b2583709c4f", "mode": "authored"}
+{"verified": true, "command": "authorize", "plan_digest": "8dc8a6c3ce8d88de084dbe4523e853eaf434d52c1967435ba1304b2583709c4f", "mode": "authored"}
+{"plan_digest": "8dc8a6c3ce8d88de084dbe4523e853eaf434d52c1967435ba1304b2583709c4f", "stage": "group", "reusable_files_verified": 17, "files_total": 17, "documents_committed": 383, "documents_total": 383, "compiled_matcher": "verified", "incomplete_matcher_staging": false, "resume_checked": true, "execution_performed": false}
+{"verified": true, "command": "resume", "plan_digest": "8dc8a6c3ce8d88de084dbe4523e853eaf434d52c1967435ba1304b2583709c4f", "mode": "authored"}
+{"verified": true, "command": "verify", "plan_digest": "8dc8a6c3ce8d88de084dbe4523e853eaf434d52c1967435ba1304b2583709c4f", "mode": "authored"}
+---------------------------- Captured stderr setup ----------------------------
+[C05] PREFLIGHT | started | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] PREFLIGHT | done | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] INDEX VERIFY | started | 0/1,213 bytes (0.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] INDEX VERIFY | done | 1,213/1,213 bytes (100.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] MATCHER VERIFY: VERIFY OPEN | started | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] MATCHER VERIFY: VERIFY OPEN | done | 836 steps | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] MATCHER VERIFY: VERIFY STRUCTURE | started | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] MATCHER VERIFY: VERIFY STRUCTURE | done | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] SCAN: VERIFY COMMITTED | started | 0/445,821 bytes (0.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] SCAN: VERIFY COMMITTED | done | 445,821/445,821 bytes (100.00%) | files 17 | 14,381,323 bytes/s avg | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: PREPARE | started | 0/383 docs (0.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] GROUP: PREPARE | done | 383/383 docs (100.00%) | 23,937 docs/s avg | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: EXACT | started | 0/383 docs (0.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] GROUP: EXACT | done | 383/383 docs (100.00%) | edges 17 | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: BAND INDEX BUILD | started | 0/12,256 postings (0.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] GROUP: BAND INDEX BUILD | done | 12,256/12,256 postings (100.00%) | passes 1 | 395,355 postings/s avg | workers 0/1 busy | tasks 0/1 results 0 | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: NEAR | started | 0/383 docs (0.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] GROUP: NEAR | done | 383/383 docs (100.00%) | candidates 50 | comparisons 66 | 23,937 docs/s avg | candidate_cap_documents 0 | oversized_bands 0 | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: LINEAGE INDEX BUILD | started | 0/383 keys (0.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] GROUP: LINEAGE INDEX BUILD | done | 383/383 keys (100.00%) | runs 0 | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: LINEAGE | started | 0/383 keys (0.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] GROUP: LINEAGE | done | 383/383 keys (100.00%) | edges 0 | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: PARENTS | started | 0/0 edges (0.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: PARENTS | done | 0/0 edges (0.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: FAMILY PROPAGATION | started | 0/383 docs (0.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] GROUP: FAMILY PROPAGATION | done | 383/383 docs (100.00%) | edges 0 | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: PATH COMPRESSION | started | 0/383 docs (0.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] GROUP: PATH COMPRESSION | done | 383/383 docs (100.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: SURVIVORS | started | 0/383 docs (0.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] GROUP: SURVIVORS | done | 383/383 docs (100.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: FAMILY BUILD | started | 0/383 docs (0.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] GROUP: FAMILY BUILD | done | 383/383 docs (100.00%) | families 366 | 12,355 docs/s avg | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: SPLITS | started | 0/366 families (0.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] GROUP: SPLITS | done | 366/366 families (100.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: DIGEST | started | 0/749 rows (0.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] GROUP: DIGEST | done | 749/749 rows (100.00%) | 6,872 rows/s avg | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] PUBLISH: MEMBERSHIP | started | 0/383 docs (0.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] PUBLISH: MEMBERSHIP | done | 383/383 docs (100.00%) | kept 349 | excluded 17 | duplicates 17 | 23,937 docs/s avg | written 0.4 MiB | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] PUBLISH: FSYNC | started | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] PUBLISH: FSYNC | done | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] PUBLISH: COMPLETION | started | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] PUBLISH: COMPLETION | done | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] COMPLETE | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+__________ test_requirement_interrupt_does_not_drain_running_workers __________
+---------------------------- Captured stdout call -----------------------------
+interrupt elapsed_seconds= 0.6400000000139698
+______________ test_requirement_child_rss_is_enforced[disabled] _______________
+---------------------------- Captured stdout call -----------------------------
+progress= disabled parent_rss= 99774464 child= {"rss": 153927680} sampled_peak= 0
+_______________ test_requirement_child_rss_is_enforced[enabled] _______________
+---------------------------- Captured stdout call -----------------------------
+progress= enabled parent_rss= 99774464 child= {"rss": 153792512} sampled_peak= 0
+_______________ test_requirement_deadline_includes_proof_phase ________________
+---------------------------- Captured stdout call -----------------------------
+{"refused": true, "error_type": "C05Error", "reason": "operator deadline exceeded; nothing published"}
+cli_exit= 1 deadline=1.5 elapsed= 2.0310000000172295 published= False
+---------------------------- Captured stderr call -----------------------------
+[C06] SLO WARNING | projected total 320 s exceeds the 2 s deadline (elapsed 0 s; remaining: membership 0 s, source 0 s, BPE reserve 240 s, finalization 60 s)
+=========================== short test summary info ===========================
+PASSED ::test_reverse_completion_is_consumed_in_submission_order[1]
+PASSED ::test_reverse_completion_is_consumed_in_submission_order[2]
+PASSED ::test_reverse_completion_is_consumed_in_submission_order[4]
+PASSED ::test_reverse_completion_is_consumed_in_submission_order[8]
+PASSED ::test_original_split_matrix[selected-diagnostic_val]
+PASSED ::test_original_split_matrix[selected-audit]
+PASSED ::test_original_split_matrix[unselected-diagnostic_val]
+PASSED ::test_original_split_matrix[unselected-audit]
+PASSED ::test_original_split_matrix[oversized-diagnostic_val]
+PASSED ::test_original_split_matrix[oversized-audit]
+PASSED ::test_strict_membership_adversaries[duplicate]
+PASSED ::test_strict_membership_adversaries[duplicate_id]
+PASSED ::test_strict_membership_adversaries[out_of_order]
+PASSED ::test_strict_membership_adversaries[unknown]
+PASSED ::test_strict_membership_adversaries[boolean_size]
+PASSED ::test_membership_stream_integrity[truncate]
+PASSED ::test_membership_stream_integrity[extend]
+PASSED ::test_membership_stream_integrity[same_size]
+PASSED ::test_duplicate_source_locator_refused
+PASSED ::test_selection_boundaries_and_equal_ranks[0]
+PASSED ::test_selection_boundaries_and_equal_ranks[1]
+PASSED ::test_selection_boundaries_and_equal_ranks[1048575]
+PASSED ::test_selection_boundaries_and_equal_ranks[1048576]
+PASSED ::test_selection_boundaries_and_equal_ranks[1048577]
+PASSED ::test_selection_boundaries_and_equal_ranks[2097153]
+PASSED ::test_source_one_open_and_hash_same_bytes
+PASSED ::test_bpe_partial_child_failure_cleanup
+PASSED ::test_requirement_interrupt_does_not_drain_running_workers
+PASSED ::test_requirement_child_rss_is_enforced[disabled]
+PASSED ::test_requirement_child_rss_is_enforced[enabled]
+PASSED ::test_requirement_index_row_count_matches_kept
+PASSED ::test_requirement_deadline_includes_proof_phase
+PASSED ::test_requirement_deadline_is_finite[nan]
+PASSED ::test_requirement_deadline_is_finite[inf]
+PASSED ::test_requirement_spool_bytes_bound_to_verified_source[one_byte]
+PASSED ::test_requirement_spool_bytes_bound_to_verified_source[all_text]
+PASSED ::test_bpe_deadline_and_interrupt_reap_child[False]
+PASSED ::test_bpe_deadline_and_interrupt_reap_child[True]
+PASSED ::test_source_race_including_nonkept[after_open-True]
+PASSED ::test_source_race_including_nonkept[after_open-False]
+PASSED ::test_source_race_including_nonkept[during_read-True]
+PASSED ::test_source_race_including_nonkept[during_read-False]
+PASSED ::test_unselected_digest_difference_requires_inconsistent_c05
+FAILED ::test_requirement_deadline_bounds_pool_wait - AssertionError: hard de...
+FAILED ::test_requirement_index_hash_and_mapping_same_snapshot - Failed: DID ...
+2 failed, 43 passed in 19.52s

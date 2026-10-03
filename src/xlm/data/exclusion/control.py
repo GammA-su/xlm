@@ -12,6 +12,7 @@ import os
 import re
 import shutil
 import sqlite3
+import time
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 
@@ -298,8 +299,11 @@ def parser() -> argparse.ArgumentParser:
     for command in (fitting, checking, indexing):
         command.add_argument("--workers", type=int, choices=[1, 2, 4, 8, 16], default=8)
     fitting.add_argument("--bpe-threads", type=int, choices=[1, 2, 4, 8, 16], default=16)
-    fitting.add_argument("--deadline-seconds", type=float)
-    fitting.add_argument("--rss-ceiling-gib", type=float, default=32.0)
+    # Total command deadline (starts at dispatch) and reviewed ceilings; all bound
+    # into the --plan-only digest, so a reviewed plan cannot run with other values.
+    fitting.add_argument("--deadline-seconds", type=float, default=1200.0)
+    fitting.add_argument("--rss-ceiling-gib", type=float, default=24.0)
+    fitting.add_argument("--free-reserve-gib", type=float, default=16.0)
     checking.add_argument("--fit", type=Path, required=True)
     checking.add_argument("--sources", action="store_true")
     indexing.add_argument("--index", type=Path, required=True)
@@ -485,14 +489,13 @@ def tokenizer_fit_command(args: argparse.Namespace) -> int:
                 result = verify_fit(gate, args.fit, policy, args.quotas, args.ifm_split)
         print(json.dumps(result, sort_keys=True))
         return 0
-    fast = args.command == "fit-tokenizer"
     consumes += [args.scratch, args.output, args.deficit_report]
+    if args.command == "fit-tokenizer":
+        return _fast_fit_command(args, consumes, reporter)
     reporter.stage("PROOF VERIFY", None, "steps")
     guard_proof(args.c05_proof, consumes)  # Mounted protected volume: refuse first.
     policy, policy_sha = load_fit_policy(args.fit_shares)
-    planned = (fitfast.plan_from_proof_fast if fast else plan_from_proof)(
-        args.c05_proof, policy, args.quotas, args.ifm_split
-    )
+    planned = plan_from_proof(args.c05_proof, policy, args.quotas, args.ifm_split)
     if args.plan_only:
         reporter.complete()
         args.scratch.mkdir(parents=True, exist_ok=True)
@@ -515,12 +518,13 @@ def tokenizer_fit_command(args: argparse.Namespace) -> int:
         raise C05Error("tokenizer-fit output is write-once")
     key = key_from_env(args.key_env)
     try:
-        if fast:
-            view = fitfast.open_streamed(args.c05_proof, allow_authored=True, consumes=consumes)
-            if view.trusted.get(args.issuer) != key:
+        with open_gate(args.c05_proof, allow_authored=True, consumes=consumes) as gate:
+            if gate is None:
+                raise C05Error("C05 proof absent")
+            if gate.trusted.get(args.issuer) != key:
                 raise C05Error("tokenizer-fit signer is not trusted")
-            envelope = fitfast.fit_tokenizer_fast(
-                view,
+            envelope = fit_tokenizer(
+                gate,
                 policy,
                 policy_sha,
                 quotas=args.quotas,
@@ -530,35 +534,16 @@ def tokenizer_fit_command(args: argparse.Namespace) -> int:
                 issuer=args.issuer,
                 key=key,
                 accepted_plan_digest=args.resource_plan_digest,
-                workers=args.workers,
-                bpe_threads=args.bpe_threads,
-                deadline_seconds=args.deadline_seconds,
-                rss_ceiling=int(args.rss_ceiling_gib * 1024**3),
                 progress=reporter,
             )
-        else:
-            with open_gate(args.c05_proof, allow_authored=True, consumes=consumes) as gate:
-                if gate is None:
-                    raise C05Error("C05 proof absent")
-                if gate.trusted.get(args.issuer) != key:
-                    raise C05Error("tokenizer-fit signer is not trusted")
-                envelope = fit_tokenizer(
-                    gate,
-                    policy,
-                    policy_sha,
-                    quotas=args.quotas,
-                    ifm_split=args.ifm_split,
-                    scratch=args.scratch,
-                    output=args.output,
-                    issuer=args.issuer,
-                    key=key,
-                    accepted_plan_digest=args.resource_plan_digest,
-                    progress=reporter,
-                )
     except FitDeficit as deficit:
         write_once(args.deficit_report, deficit.report)
         print(json.dumps({"deficit": True, "report": str(args.deficit_report)}))
         return 2
+    return _fit_result(args, envelope)
+
+
+def _fit_result(args: argparse.Namespace, envelope: dict[str, Any]) -> int:
     body = envelope["payload"]
     print(
         json.dumps(
@@ -575,8 +560,121 @@ def tokenizer_fit_command(args: argparse.Namespace) -> int:
     return 0
 
 
+def operational_envelope(args: argparse.Namespace) -> Any:
+    """The reviewed operational settings from the CLI; validation failures refuse."""
+    from pydantic import ValidationError
+
+    from xlm.data.exclusion.fitfast import OperationalEnvelope
+
+    try:
+        return OperationalEnvelope(
+            source_workers=args.workers,
+            bpe_threads=args.bpe_threads,
+            deadline_seconds=args.deadline_seconds,
+            ram_ceiling_bytes=int(round(args.rss_ceiling_gib * 1024**3)),
+            free_reserve_bytes=int(round(args.free_reserve_gib * 1024**3)),
+        )
+    except (ValidationError, ValueError, OverflowError) as exc:
+        raise C05Error("operational envelope outside its reviewed bounds") from exc
+
+
+def _fast_fit_command(
+    args: argparse.Namespace, consumes: list[Path | str], reporter: RunProgress | NullProgress
+) -> int:
+    """Fast fit: ONE supervisor, deadline started at dispatch, owns the whole command."""
+    from xlm.data.exclusion import fitfast
+    from xlm.data.exclusion.supervisor import Deadline, Supervisor
+    from xlm.data.exclusion.supervisor import existing_ancestor as _existing_ancestor
+    from xlm.data.exclusion.tokenizer_fit import FitDeficit, load_fit_policy
+    from xlm.data.exclusion.transport import guard_proof
+
+    dispatched = getattr(args, "dispatched", None)
+    started = dispatched if isinstance(dispatched, float) else time.monotonic()
+    envelope = operational_envelope(args)
+    locations = fitfast.Locations(args.scratch, args.output, args.deficit_report)
+    if args.plan_only:
+        reporter.stage("PROOF VERIFY", None, "steps")
+        guard_proof(args.c05_proof, consumes)
+        policy, _ = load_fit_policy(args.fit_shares)
+        planned = fitfast.plan_from_proof_fast(
+            args.c05_proof, policy, args.quotas, args.ifm_split, envelope, locations
+        )
+        reporter.complete()
+        args.scratch.mkdir(parents=True, exist_ok=True)
+        print(
+            json.dumps(
+                {
+                    "resource_plan": planned,
+                    "resource_plan_digest": planned["digest"],
+                    "free_bytes": {
+                        role: shutil.disk_usage(
+                            _existing_ancestor(Path(path))
+                            if role == "scratch"
+                            else _existing_ancestor(Path(path).parent)
+                        ).free
+                        for role, path in planned["locations"].items()
+                    },
+                },
+                sort_keys=True,
+            )
+        )
+        return 0
+    with Supervisor(
+        Deadline(envelope.deadline_seconds, started),
+        envelope.ram_ceiling_bytes,
+        interval=envelope.monitor_interval_seconds,
+        grace=envelope.shutdown_grace_seconds,
+        projection=envelope.projection(),
+    ) as supervisor:
+        reporter.stage("PROOF VERIFY", None, "steps")
+        guard_proof(args.c05_proof, consumes)  # Mounted protected volume: refuse first.
+        supervisor.check()
+        policy, policy_sha = load_fit_policy(args.fit_shares)
+        planned = fitfast.plan_from_proof_fast(
+            args.c05_proof, policy, args.quotas, args.ifm_split, envelope, locations
+        )
+        if args.resource_plan_digest != planned["digest"]:
+            raise C05Error(
+                "fit requires --resource-plan-digest of the reviewed --plan-only plan "
+                "with identical operational settings"
+            )
+        if args.issuer is None or args.key_env is None:
+            raise C05Error("fit requires --issuer and --key-env")
+        if args.output.exists():
+            raise C05Error("tokenizer-fit output is write-once")
+        key = key_from_env(args.key_env)
+        supervisor.check()
+        view = fitfast.open_streamed(args.c05_proof, allow_authored=True, consumes=consumes)
+        if view.trusted.get(args.issuer) != key:
+            raise C05Error("tokenizer-fit signer is not trusted")
+        try:
+            result = fitfast.fit_tokenizer_fast(
+                view,
+                policy,
+                policy_sha,
+                quotas=args.quotas,
+                ifm_split=args.ifm_split,
+                scratch=args.scratch,
+                output=args.output,
+                issuer=args.issuer,
+                key=key,
+                accepted_plan_digest=args.resource_plan_digest,
+                envelope=envelope,
+                deficit_report_path=args.deficit_report,
+                supervisor=supervisor,
+                progress=reporter,
+            )
+        except FitDeficit as deficit:
+            write_once(args.deficit_report, deficit.report)
+            print(json.dumps({"deficit": True, "report": str(args.deficit_report)}))
+            return 2
+    return _fit_result(args, result)
+
+
 def main(argv: list[str] | None = None) -> int:
     args = parser().parse_args(argv)
+    # The C06 fast-fit deadline covers the whole command from here (dispatch).
+    args.dispatched = time.monotonic()
     try:
         if args.command in {
             "fit-tokenizer",

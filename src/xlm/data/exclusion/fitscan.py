@@ -17,6 +17,8 @@ import os
 from collections import deque
 from collections.abc import Callable, Iterable, Iterator
 from concurrent.futures import Future, ProcessPoolExecutor
+from concurrent.futures import TimeoutError as FutureTimeout
+from concurrent.futures.process import BrokenProcessPool
 from dataclasses import dataclass, field
 from multiprocessing import get_context
 from pathlib import Path
@@ -24,10 +26,12 @@ from typing import TypeVar
 
 import numpy as np
 import numpy.typing as npt
+import psutil
 
 from xlm.core.contracts import CanonicalDocument
 from xlm.data.evidence_v2 import canonical
 from xlm.data.exclusion.policy import C05Error
+from xlm.data.exclusion.supervisor import Checkable, terminate_processes
 
 SPLIT_CODES = {"train": 0, "diagnostic_val": 1, "audit": 2}
 SPLIT_NAMES = ("train", "diagnostic_val", "audit")
@@ -51,6 +55,7 @@ MEMBERSHIP_KEYS = frozenset(
     }
 )
 SOURCE_BLOCK_BYTES = 8 * 1024**2
+POLL_SECONDS = 0.05
 HEX = frozenset("0123456789abcdef")
 
 T = TypeVar("T")
@@ -102,6 +107,13 @@ class MembershipChunk:
 
 
 _TABLES: MembershipTables | None = None
+# Set only while an inline (in-process) pool runs; spawned workers are killed instead.
+_CANCEL: Callable[[], None] | None = None
+
+
+def _cancel_check() -> None:
+    if _CANCEL is not None:
+        _CANCEL()
 
 
 def init_worker(tables: MembershipTables) -> None:
@@ -144,6 +156,8 @@ def parse_membership_chunk(chunk: bytes) -> MembershipChunk:
             raise C05Error("membership record ceiling")
         row = canonical.loads_bytes_strict(chunk[start:stop])
         start = stop
+        if len(ids) % 4096 == 4095:
+            _cancel_check()
         if type(row) is not dict or row.keys() != MEMBERSHIP_KEYS:
             raise C05Error("membership record schema")
         doc_id, content, size = row["doc_id"], row["content"], row["bytes"]
@@ -232,6 +246,7 @@ class SourceTask:
     selected: npt.NDArray[np.bool_]
     selected_content: list[str]
     parse: bool = True
+    block_bytes: int = 0
 
 
 @dataclass
@@ -286,13 +301,20 @@ def scan_source_file(task: SourceTask) -> SourceResult:
         target = wanted[position] if position < count else 0
 
     with path.open("rb", buffering=0) as stream:
-        while block := stream.read(SOURCE_BLOCK_BYTES):
+        # Never request more than one byte past the frozen size: growth refuses at once.
+        size = task.block_bytes or SOURCE_BLOCK_BYTES
+        while block := stream.read(min(size, task.file_bytes - total + 1)):
+            _cancel_check()
             digest.update(block)
             total += len(block)
+            if total > task.file_bytes:
+                raise C05Error("input content changed since C05 (read exceeds frozen bytes)")
             data = pending + block if pending else block
             start = 0
             while (end := data.find(b"\n", start)) >= 0:
                 row += 1
+                if row > task.documents:
+                    raise C05Error("input content changed since C05 (rows exceed frozen count)")
                 if end + 1 - start > ceiling:
                     raise C05Error("canonical record ceiling")
                 if row == target:
@@ -304,6 +326,8 @@ def scan_source_file(task: SourceTask) -> SourceResult:
                 raise C05Error("canonical record ceiling")
     if pending:
         row += 1
+        if row > task.documents:
+            raise C05Error("input content changed since C05 (rows exceed frozen count)")
         if row == target:
             handle(pending, base)
     if (digest.hexdigest(), row, total) != (task.sha256, task.documents, task.file_bytes):
@@ -366,20 +390,36 @@ def _check_kept_line(
 
 
 class OrderedPool:
-    """Ordered results with at most ``capacity`` tasks outstanding; ``workers=1`` is inline.
+    """Ordered results with at most ``capacity`` tasks outstanding.
 
     Worker count is operational only: results are always yielded in task order.
+    Every wait polls ``supervisor.check()``; any abnormal exit (deadline, RAM, error,
+    interrupt, early consumer exit) terminates and reaps the worker processes rather
+    than waiting for running tasks. ``inline=True`` runs tasks in-process with
+    cooperative cancellation checks (tests and diagnostics; never the CLI).
     """
 
-    def __init__(self, workers: int, tables: MembershipTables) -> None:
+    def __init__(
+        self,
+        workers: int,
+        tables: MembershipTables,
+        supervisor: Checkable | None = None,
+        *,
+        inline: bool = False,
+        grace: float = 2.0,
+    ) -> None:
         if workers not in (1, 2, 4, 8, 16):
             raise C05Error("fit workers must be 1, 2, 4, 8 or 16")
         self.workers = workers
         self.tables = tables
+        self.supervisor = supervisor
+        self.inline = inline
+        self.grace = grace
         self.executor: ProcessPoolExecutor | None = None
+        self.aborted = False
 
     def __enter__(self) -> OrderedPool:
-        if self.workers == 1:
+        if self.inline:
             init_worker(self.tables)
         else:
             self.executor = ProcessPoolExecutor(
@@ -390,32 +430,85 @@ class OrderedPool:
             )
         return self
 
-    def __exit__(self, *_: object) -> None:
-        if self.executor is not None:
-            self.executor.shutdown(wait=True, cancel_futures=True)
-            self.executor = None
+    def __exit__(self, kind: object, *_: object) -> None:
+        if self.executor is None:
+            return
+        if kind is not None or self.aborted:
+            self.abort()
+        else:
+            self.executor.shutdown(wait=True)
+        self.executor = None
+
+    def abort(self) -> None:
+        """Terminate, wait, kill and reap every worker process; never drain tasks."""
+        executor = self.executor
+        if executor is None or self.aborted:
+            self.aborted = True
+            return
+        self.aborted = True
+        processes: list[psutil.Process] = []
+        for process in list((getattr(executor, "_processes", None) or {}).values()):
+            try:
+                processes.append(psutil.Process(process.pid))
+            except (psutil.NoSuchProcess, ValueError, TypeError):
+                continue
+        trees = list(processes)
+        for process in processes:
+            try:
+                trees += process.children(recursive=True)
+            except psutil.Error:
+                continue
+        terminate_processes(trees, self.grace)
+        executor.shutdown(wait=False, cancel_futures=True)
+
+    def _check(self) -> None:
+        if self.supervisor is not None:
+            self.supervisor.check()
 
     def map(
         self, function: Callable[[T], R], tasks: Iterable[T], capacity: int | None = None
     ) -> Iterator[R]:
+        global _CANCEL
         if self.executor is None:
-            for task in tasks:
-                yield function(task)
+            _CANCEL = self._check
+            try:
+                for task in tasks:
+                    self._check()
+                    yield function(task)
+            finally:
+                _CANCEL = None
             return
         limit = capacity or 2 * self.workers
         pending: deque[Future[R]] = deque()
         iterator = iter(tasks)
+        finished = False
         try:
             for task in iterator:
+                self._check()
                 pending.append(self.executor.submit(function, task))
                 if len(pending) >= limit:
                     break
             while pending:
-                result = pending.popleft().result()
+                result = self._wait(pending[0])
+                pending.popleft()
                 for task in iterator:
                     pending.append(self.executor.submit(function, task))
                     break
                 yield result
+            finished = True
         finally:
-            for future in pending:
-                future.cancel()
+            if not finished:
+                for future in pending:
+                    future.cancel()
+                self.abort()
+
+    def _wait(self, future: Future[R]) -> R:
+        while True:
+            self._check()
+            try:
+                return future.result(timeout=POLL_SECONDS)
+            except FutureTimeout:
+                continue
+            except BrokenProcessPool as exc:
+                self._check()  # A supervisor kill reports its own reason first.
+                raise C05Error("C06 worker process terminated unexpectedly") from exc

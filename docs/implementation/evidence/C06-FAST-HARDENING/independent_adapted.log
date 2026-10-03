@@ -1,0 +1,59 @@
+deadline_seconds=0.1 elapsed_seconds= 0.15700000000651926
+.[C05] PREFLIGHT | started | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] PREFLIGHT | done | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] INDEX VERIFY | started | 0/1,213 bytes (0.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] INDEX VERIFY | done | 1,213/1,213 bytes (100.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] MATCHER VERIFY: VERIFY OPEN | started | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] MATCHER VERIFY: VERIFY OPEN | done | 836 steps | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] MATCHER VERIFY: VERIFY STRUCTURE | started | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] MATCHER VERIFY: VERIFY STRUCTURE | done | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] SCAN: VERIFY COMMITTED | started | 0/445,821 bytes (0.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] SCAN: VERIFY COMMITTED | done | 445,821/445,821 bytes (100.00%) | files 17 | 14,381,323 bytes/s avg | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: PREPARE | started | 0/383 docs (0.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] GROUP: PREPARE | done | 383/383 docs (100.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: EXACT | started | 0/383 docs (0.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] GROUP: EXACT | done | 383/383 docs (100.00%) | edges 17 | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: BAND INDEX BUILD | started | 0/12,256 postings (0.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] GROUP: BAND INDEX BUILD | done | 12,256/12,256 postings (100.00%) | passes 1 | 260,766 postings/s avg | workers 0/1 busy | tasks 0/1 results 0 | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: NEAR | started | 0/383 docs (0.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] GROUP: NEAR | done | 383/383 docs (100.00%) | candidates 50 | comparisons 66 | 23,937 docs/s avg | candidate_cap_documents 0 | oversized_bands 0 | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: LINEAGE INDEX BUILD | started | 0/383 keys (0.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] GROUP: LINEAGE INDEX BUILD | done | 383/383 keys (100.00%) | runs 0 | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: LINEAGE | started | 0/383 keys (0.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] GROUP: LINEAGE | done | 383/383 keys (100.00%) | edges 0 | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: PARENTS | started | 0/0 edges (0.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: PARENTS | done | 0/0 edges (0.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: FAMILY PROPAGATION | started | 0/383 docs (0.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] GROUP: FAMILY PROPAGATION | done | 383/383 docs (100.00%) | edges 0 | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: PATH COMPRESSION | started | 0/383 docs (0.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] GROUP: PATH COMPRESSION | done | 383/383 docs (100.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: SURVIVORS | started | 0/383 docs (0.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] GROUP: SURVIVORS | done | 383/383 docs (100.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: FAMILY BUILD | started | 0/383 docs (0.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] GROUP: FAMILY BUILD | done | 383/383 docs (100.00%) | families 366 | 23,937 docs/s avg | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: SPLITS | started | 0/366 families (0.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] GROUP: SPLITS | done | 366/366 families (100.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: DIGEST | started | 0/749 rows (0.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] GROUP: DIGEST | done | 749/749 rows (100.00%) | 6,872 rows/s avg | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] PUBLISH: MEMBERSHIP | started | 0/383 docs (0.00%) | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] PUBLISH: MEMBERSHIP | done | 383/383 docs (100.00%) | kept 349 | excluded 17 | duplicates 17 | 23,937 docs/s avg | written 0.4 MiB | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] PUBLISH: FSYNC | started | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] PUBLISH: FSYNC | done | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] PUBLISH: COMPLETION | started | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] PUBLISH: COMPLETION | done | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] COMPLETE | RSS 0.1/2.0 GiB (peak 0.1) | scratch 0.00 GiB | free 714.9 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+{"decision_digest": "55990f7c1d26792b11a6a80d8f2ae7e8b338b828a6c85e7ad1125be654fc2f22"}
+{"decision_digest": "d130b41faa84fb34d43fd21e9b4306e58892ffc70cbaf79e331f20c1be3ff82e"}
+{"decision_digest": "27312111480faa3b3012590145984ae7c773ba1283b5487f9257927809b4a3ec"}
+{"sequence": 1, "plan_digest": "1f3fb18c203645b434e0bde20df434ef500ec90c7c3a18a9d4f9afb93685ac2b", "mode": "authored"}
+{"verified": true, "command": "authorize", "plan_digest": "1f3fb18c203645b434e0bde20df434ef500ec90c7c3a18a9d4f9afb93685ac2b", "mode": "authored"}
+{"plan_digest": "1f3fb18c203645b434e0bde20df434ef500ec90c7c3a18a9d4f9afb93685ac2b", "stage": "group", "reusable_files_verified": 17, "files_total": 17, "documents_committed": 383, "documents_total": 383, "compiled_matcher": "verified", "incomplete_matcher_staging": false, "resume_checked": true, "execution_performed": false}
+{"verified": true, "command": "resume", "plan_digest": "1f3fb18c203645b434e0bde20df434ef500ec90c7c3a18a9d4f9afb93685ac2b", "mode": "authored"}
+{"verified": true, "command": "verify", "plan_digest": "1f3fb18c203645b434e0bde20df434ef500ec90c7c3a18a9d4f9afb93685ac2b", "mode": "authored"}
+consumed_offset= 1238
+.
+=================================== PASSES ====================================
+=========================== short test summary info ===========================
+PASSED ::test_requirement_deadline_bounds_pool_wait_adapted
+PASSED ::test_requirement_index_hash_and_mapping_same_snapshot_adapted
+2 passed in 5.11s

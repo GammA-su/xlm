@@ -8,8 +8,9 @@ import struct
 import tempfile
 from collections.abc import Callable, Iterable, Iterator, Sequence
 from contextlib import contextmanager
+from dataclasses import dataclass
 from pathlib import Path
-from typing import IO
+from typing import IO, Any
 
 from tokenizers import Encoding, Tokenizer
 from tokenizers.decoders import ByteLevel as ByteLevelDecoder
@@ -404,23 +405,16 @@ class ByteLevelBPETokenizer(BaseTokenizer):
         the C05 screening and the ``training_input_hash`` of those exact documents.
         Every frame must be consumed: a frame-count or byte mismatch refuses.
         """
-        _check_vocab_size(target_vocab_size)
-        fed = {"documents": 0, "bytes": 0}
-
-        def counted(done: int, size: int) -> None:
-            fed["documents"], fed["bytes"] = done, size
-            if on_feed is not None:
-                on_feed(done, size)
-
-        with spool.open("rb") as stream:
-            protected_tok = _train_protected(_read_frames(stream, counted), target_vocab_size)
-            if stream.read(1):
-                raise FitSampleBoundError("tokenizer-fit spool has unread frames")
-        if (fed["documents"], fed["bytes"]) != (documents, spool_bytes):
-            raise FitSampleBoundError("tokenizer-fit spool differs from the frozen sample")
-        return cls._fitted(
-            protected_tok, target_vocab_size, training_input_hash, is_production_baseline
+        tokenizer, _ = train_spool(
+            spool,
+            target_vocab_size,
+            training_input_hash,
+            documents=documents,
+            payload_bytes=spool_bytes,
+            is_production_baseline=is_production_baseline,
+            on_feed=on_feed,
         )
+        return tokenizer
 
     @classmethod
     def _fitted(
@@ -495,12 +489,80 @@ def _train_protected(texts: Iterator[str], target_vocab_size: int) -> Tokenizer:
     return protected_tok
 
 
+def fit_frame(doc: CanonicalDocument) -> bytes:
+    """One exact spool frame: little-endian u64 payload length, then canonical UTF-8."""
+    raw = canonical_normalize(doc.text).encode("utf-8")
+    return struct.pack("<Q", len(raw)) + raw
+
+
 def write_fit_frame(stream: IO[bytes], doc: CanonicalDocument) -> int:
     """Append one length-framed canonical text exactly as the fit spool frames it."""
-    raw = canonical_normalize(doc.text).encode("utf-8")
-    stream.write(struct.pack("<Q", len(raw)))
-    stream.write(raw)
-    return len(raw)
+    frame = fit_frame(doc)
+    stream.write(frame)
+    return len(frame) - 8
+
+
+@dataclass(frozen=True)
+class SpoolConsumption:
+    """What the trainer actually consumed: SHA-256 over every framed byte read."""
+
+    sha256: str
+    file_bytes: int
+    frames: int
+    payload_bytes: int
+
+
+def train_spool(
+    spool: Path,
+    target_vocab_size: int,
+    training_input_hash: str,
+    *,
+    documents: int,
+    payload_bytes: int,
+    is_production_baseline: bool = False,
+    on_feed: Callable[[int, int], None] | None = None,
+    max_frame_bytes: int | None = None,
+    expected_sha256: str | None = None,
+    expected_file_bytes: int | None = None,
+) -> tuple[ByteLevelBPETokenizer, SpoolConsumption]:
+    """Train exactly like ``train_from_documents`` while hashing the consumed bytes.
+
+    The digest covers every header and payload byte handed to the trainer, in order.
+    Any count, byte, trailing-data or (when given) SHA-256/size mismatch refuses
+    before a tokenizer is returned, so a changed spool can never yield a result.
+    """
+    _check_vocab_size(target_vocab_size)
+    fed = {"documents": 0, "bytes": 0}
+
+    def counted(done: int, size: int) -> None:
+        fed["documents"], fed["bytes"] = done, size
+        if on_feed is not None:
+            on_feed(done, size)
+
+    digest = hashlib.sha256()
+    with spool.open("rb") as stream:
+        frames = _read_frames(stream, counted, digest=digest, max_frame_bytes=max_frame_bytes)
+        protected_tok = _train_protected(frames, target_vocab_size)
+        if stream.read(1):
+            raise FitSampleBoundError("tokenizer-fit spool has unread frames")
+        consumed_bytes = stream.tell()
+    consumption = SpoolConsumption(
+        digest.hexdigest(), consumed_bytes, fed["documents"], fed["bytes"]
+    )
+    if (consumption.frames, consumption.payload_bytes) != (documents, payload_bytes):
+        raise FitSampleBoundError("tokenizer-fit spool differs from the frozen sample")
+    if expected_sha256 is not None and consumption.sha256 != expected_sha256:
+        raise FitSampleBoundError(
+            "consumed tokenizer-fit spool differs from the authenticated spool"
+        )
+    if expected_file_bytes is not None and consumption.file_bytes != expected_file_bytes:
+        raise FitSampleBoundError(
+            "consumed tokenizer-fit spool differs from the authenticated spool"
+        )
+    tokenizer = ByteLevelBPETokenizer._fitted(
+        protected_tok, target_vocab_size, training_input_hash, is_production_baseline
+    )
+    return tokenizer, consumption
 
 
 def fit_input_line(doc: CanonicalDocument) -> bytes:
@@ -509,16 +571,25 @@ def fit_input_line(doc: CanonicalDocument) -> bytes:
 
 
 def _read_frames(
-    stream: IO[bytes], on_feed: Callable[[int, int], None] | None = None
+    stream: IO[bytes],
+    on_feed: Callable[[int, int], None] | None = None,
+    *,
+    digest: Any = None,
+    max_frame_bytes: int | None = None,
 ) -> Iterator[str]:
     fed = fed_bytes = 0
     while header := stream.read(8):
         if len(header) != 8:
             raise FitSampleBoundError("truncated tokenizer-fit spool frame")
         size = struct.unpack("<Q", header)[0]
+        if max_frame_bytes is not None and size > max_frame_bytes:
+            raise FitSampleBoundError("tokenizer-fit spool frame exceeds its bound")
         raw = stream.read(size)
         if len(raw) != size:
             raise FitSampleBoundError("truncated tokenizer-fit spool frame")
+        if digest is not None:
+            digest.update(header)
+            digest.update(raw)
         fed += 1
         fed_bytes += size
         if on_feed is not None:
