@@ -209,6 +209,9 @@ def test_pattern_and_record_ceilings_are_global(
         run(spec, root, tmp_path / "records", 4, records=479)
 
 
+# Measured timing: worker spawn must fit the authored 2 s deadline, so it runs
+# in the exclusive -n 0 selection, never beside other multiprocessing tests.
+@pytest.mark.serial
 def test_deadline_is_enforced_while_workers_run(
     material: tuple[MaterialSpec, Path], tmp_path: Path
 ) -> None:
