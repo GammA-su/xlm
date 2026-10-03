@@ -1,3 +1,18 @@
+> **C06 C05-BOUND TOKENIZER FIT (2026-10-03): BLOCKED — TOKENIZER FIT SHARES REQUIRE OPERATOR DECISION.**
+>
+> The bridge from the completed protected C05 p0002 proof to a 32,768 ByteLevel BPE
+> was not implemented. The repository has the share *mechanism* but no frozen
+> production share *values*. The P11 mechanism is `SourceView.declared_raw_byte_share`,
+> and `mix01_views_v2` declares none. Mix-01 weights are draft mixture weights, not
+> fit shares. Three data-only options (natural kept-train bytes, frozen Mix-01
+> allocation quotas, equal components), plus a ready bounded two-pass design, are in
+> the report. Separate fix: C05 plan allocation now counts only exact `pNNNN.json`
+> names (`p0001.authorization.json` previously crashed `int()`). Commit `9ee7409`, 16
+> control tests passed, and ruff, mypy strict and diff-check are clean. No real file,
+> network, fit or `X:` access. Next (operator): record the share decision as a
+> data-only file, then request the bridge implementation.
+> [Report](reports/C06-C05-TOKENIZER-FIT.md).
+
 > **C05 COMPACT PARALLEL ENGINE (2026-10-03): READY FOR OPERATOR p0002; p0001 NOT RESUMABLE.**
 >
 > `run`/`resume` now use the compact parallel engine (`c05-facts-v2`): `Resources.workers`
