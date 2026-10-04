@@ -1,0 +1,3 @@
+uv run --offline --locked --no-sync ruff check src/xlm/data/quality tests/test_quality_audit.py tests/test_quality_detectors.py tests/quality_fixtures.py scripts/quality_audit_benchmark.py
+Exit: 0
+All checks passed!

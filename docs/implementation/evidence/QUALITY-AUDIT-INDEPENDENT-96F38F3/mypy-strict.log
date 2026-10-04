@@ -1,0 +1,4 @@
+uv run --offline --locked --no-sync mypy --strict src/xlm/data/quality tests/test_quality_audit.py tests/test_quality_detectors.py tests/quality_fixtures.py scripts/quality_audit_benchmark.py
+Exit: 0
+pyproject.toml: note: unused section(s): module = ['lm_eval', 'lm_eval.*']
+Success: no issues found in 15 source files

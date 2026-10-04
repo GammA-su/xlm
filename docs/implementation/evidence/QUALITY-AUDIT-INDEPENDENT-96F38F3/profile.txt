@@ -1,0 +1,38 @@
+         770221 function calls in 0.517 seconds
+
+   Ordered by: cumulative time
+   List reduced from 94 to 30 due to restriction <30>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+     1920    0.161    0.000    0.516    0.000 detectors.py:384(analyze)
+     4350    0.006    0.000    0.073    0.000 __init__.py:595(__init__)
+     4350    0.003    0.000    0.068    0.000 __init__.py:669(update)
+    14790    0.010    0.000    0.065    0.000 {built-in method builtins.sum}
+     1920    0.024    0.000    0.063    0.000 detectors.py:358(char_counts)
+     4350    0.060    0.000    0.060    0.000 {built-in method _collections._count_elements}
+    44130    0.023    0.000    0.023    0.000 {method 'split' of 'str' objects}
+    22320    0.009    0.000    0.023    0.000 detectors.py:507(<genexpr>)
+    43260    0.015    0.000    0.021    0.000 {method 'join' of 'str' objects}
+     2310    0.018    0.000    0.018    0.000 detectors.py:645(<genexpr>)
+     1740    0.003    0.000    0.014    0.000 numeric.py:675(flatnonzero)
+     8520    0.006    0.000    0.013    0.000 detectors.py:490(<genexpr>)
+    10620    0.006    0.000    0.013    0.000 {built-in method builtins.any}
+    86940    0.013    0.000    0.013    0.000 {method 'get' of 'dict' objects}
+     1920    0.010    0.000    0.012    0.000 detectors.py:705(_runs)
+   121770    0.012    0.000    0.012    0.000 {built-in method builtins.len}
+     7110    0.009    0.000    0.009    0.000 detectors.py:650(<genexpr>)
+     7650    0.003    0.000    0.009    0.000 detectors.py:539(<genexpr>)
+    28350    0.006    0.000    0.009    0.000 detectors.py:473(<genexpr>)
+     7350    0.005    0.000    0.008    0.000 detectors.py:482(<genexpr>)
+     1920    0.001    0.000    0.008    0.000 fromnumeric.py:2031(nonzero)
+     1920    0.001    0.000    0.007    0.000 fromnumeric.py:48(_wrapfunc)
+    35070    0.007    0.000    0.007    0.000 detectors.py:616(<genexpr>)
+     1920    0.001    0.000    0.007    0.000 {method 'max' of 'numpy.ndarray' objects}
+    39480    0.006    0.000    0.006    0.000 {method 'strip' of 'str' objects}
+      180    0.000    0.000    0.006    0.000 _arraysetops_impl.py:145(unique)
+    22200    0.004    0.000    0.006    0.000 detectors.py:613(<genexpr>)
+     1920    0.001    0.000    0.006    0.000 _methods.py:39(_amax)
+      180    0.003    0.000    0.005    0.000 _arraysetops_impl.py:350(_unique1d)
+     6090    0.002    0.000    0.005    0.000 {built-in method builtins.isinstance}
+
+

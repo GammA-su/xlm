@@ -1,0 +1,41 @@
+{
+ "environment": {
+  "python": "3.12.13 (main, Aug  7 2026, 02:26:41) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26200-SP0"
+ },
+ "runs": [
+  {
+   "complete": true,
+   "result_digest": "6a1548a9014bdded8c72b5b4410fea6878dd53356923600fd1d9eea0fb92fbb7",
+   "output": "F:\\qa96-benchmark\\w1",
+   "files_scanned": 8,
+   "files_resumed": 0,
+   "wall_seconds": 5.797,
+   "scan": {
+    "scan_seconds": 5.187,
+    "scanned_documents": 5778,
+    "scanned_file_bytes": 33604664,
+    "file_mb_per_s": 6.479,
+    "documents_per_s": 1113.9,
+    "peak_process_tree_rss_bytes": 94801920
+   }
+  },
+  {
+   "complete": true,
+   "result_digest": "6a1548a9014bdded8c72b5b4410fea6878dd53356923600fd1d9eea0fb92fbb7",
+   "output": "F:\\qa96-benchmark\\w8",
+   "files_scanned": 8,
+   "files_resumed": 0,
+   "wall_seconds": 2.609,
+   "scan": {
+    "scan_seconds": 2.047,
+    "scanned_documents": 5778,
+    "scanned_file_bytes": 33604664,
+    "file_mb_per_s": 16.417,
+    "documents_per_s": 2822.7,
+    "peak_process_tree_rss_bytes": 732688384
+   }
+  }
+ ],
+ "note": "Authored adversarial mixture; 32 MiB is startup-sensitive, not production qualification."
+}

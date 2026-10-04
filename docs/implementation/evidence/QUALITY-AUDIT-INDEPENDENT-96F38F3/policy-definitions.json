@@ -1,0 +1,1984 @@
+{
+ "version": "xlm-quality-audit-detectors-v1",
+ "status": "DIAGNOSTIC_DEFINITIONS_NOT_THRESHOLDS",
+ "constants": {
+  "min_line_chars": 16,
+  "min_paragraph_chars": 64,
+  "run_min": 8,
+  "ngram_sizes": [
+   5,
+   10
+  ],
+  "ngram_max_words": 100000,
+  "compression_min_bytes": 256,
+  "compression_max_bytes": 1048576,
+  "anchor_line_max_chars": 30,
+  "anchor_line_max_words": 3,
+  "fragment_line_chars": 40,
+  "header_line_chars": [
+   16,
+   100
+  ],
+  "header_min_repeats": 3,
+  "boilerplate_line_max_chars": 160,
+  "code_min_lines": 3,
+  "review_per_stratum": 4,
+  "review_seed": "xlm-quality-audit-review-v1"
+ },
+ "class_order": [
+  "empty",
+  "markup_like",
+  "code_like",
+  "math_table_like",
+  "prose_like",
+  "other"
+ ],
+ "class_rules": {
+  "empty": "zero characters or whitespace only",
+  "markup_like": {
+   "full_html_structure": true,
+   "or_html_tag_char_ratio_at_least": 0.1
+  },
+  "code_like": {
+   "code_line_ratio_at_least": 0.3,
+   "nonempty_lines_at_least": 3
+  },
+  "math_table_like": {
+   "table_line_ratio_at_least": 0.3,
+   "or_math_symbol_ratio_at_least": 0.03,
+   "or_latex_commands_per_kchar_at_least": 5.0,
+   "or_digit_ratio_at_least": 0.3
+  },
+  "prose_like": {
+   "alpha_ratio_at_least": 0.6,
+   "words_or_chars_at_least": [
+    5,
+    32
+   ]
+  },
+  "other": "none of the above"
+ },
+ "metrics": [
+  {
+   "name": "utf8_bytes",
+   "dimension": "A",
+   "kind": "count",
+   "direction": "none",
+   "review": false,
+   "candidate": false,
+   "edges": [
+    16,
+    64,
+    256,
+    1024,
+    4096,
+    16384,
+    65536,
+    262144,
+    1048576,
+    4194304
+   ],
+   "description": "canonical text UTF-8 bytes"
+  },
+  {
+   "name": "chars",
+   "dimension": "A",
+   "kind": "count",
+   "direction": "low",
+   "review": false,
+   "candidate": false,
+   "edges": [
+    16,
+    64,
+    256,
+    1024,
+    4096,
+    16384,
+    65536,
+    262144,
+    1048576,
+    4194304
+   ],
+   "description": "Unicode code points"
+  },
+  {
+   "name": "lines",
+   "dimension": "A",
+   "kind": "count",
+   "direction": "none",
+   "review": false,
+   "candidate": false,
+   "edges": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    1024,
+    4096
+   ],
+   "description": "lines (a trailing newline adds no line)"
+  },
+  {
+   "name": "nonempty_lines",
+   "dimension": "A",
+   "kind": "count",
+   "direction": "none",
+   "review": false,
+   "candidate": false,
+   "edges": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    1024,
+    4096
+   ],
+   "description": "lines that are not whitespace-only"
+  },
+  {
+   "name": "max_line_chars",
+   "dimension": "A",
+   "kind": "count",
+   "direction": "high",
+   "review": false,
+   "candidate": false,
+   "edges": [
+    16,
+    64,
+    256,
+    1024,
+    4096,
+    16384,
+    65536,
+    262144,
+    1048576,
+    4194304
+   ],
+   "description": "longest line in code points"
+  },
+  {
+   "name": "mean_line_chars",
+   "dimension": "A",
+   "kind": "real",
+   "direction": "none",
+   "review": false,
+   "candidate": false,
+   "edges": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    1024,
+    4096
+   ],
+   "description": "mean stripped length of non-empty lines"
+  },
+  {
+   "name": "whitespace_ratio",
+   "dimension": "A",
+   "kind": "ratio",
+   "direction": "high",
+   "review": false,
+   "candidate": false,
+   "edges": [
+    0.001,
+    0.01,
+    0.05,
+    0.1,
+    0.2,
+    0.3,
+    0.5,
+    0.7,
+    0.9,
+    1.0
+   ],
+   "description": "str.isspace characters / characters"
+  },
+  {
+   "name": "alpha_ratio",
+   "dimension": "A",
+   "kind": "ratio",
+   "direction": "low",
+   "review": true,
+   "candidate": false,
+   "edges": [
+    0.001,
+    0.01,
+    0.05,
+    0.1,
+    0.2,
+    0.3,
+    0.5,
+    0.7,
+    0.9,
+    1.0
+   ],
+   "description": "str.isalpha characters / characters"
+  },
+  {
+   "name": "digit_ratio",
+   "dimension": "A",
+   "kind": "ratio",
+   "direction": "high",
+   "review": true,
+   "candidate": false,
+   "edges": [
+    0.001,
+    0.01,
+    0.05,
+    0.1,
+    0.2,
+    0.3,
+    0.5,
+    0.7,
+    0.9,
+    1.0
+   ],
+   "description": "str.isdigit characters / characters"
+  },
+  {
+   "name": "punct_ratio",
+   "dimension": "A",
+   "kind": "ratio",
+   "direction": "high",
+   "review": true,
+   "candidate": false,
+   "edges": [
+    0.001,
+    0.01,
+    0.05,
+    0.1,
+    0.2,
+    0.3,
+    0.5,
+    0.7,
+    0.9,
+    1.0
+   ],
+   "description": "Unicode P* characters / characters"
+  },
+  {
+   "name": "symbol_ratio",
+   "dimension": "A",
+   "kind": "ratio",
+   "direction": "high",
+   "review": true,
+   "candidate": false,
+   "edges": [
+    0.001,
+    0.01,
+    0.05,
+    0.1,
+    0.2,
+    0.3,
+    0.5,
+    0.7,
+    0.9,
+    1.0
+   ],
+   "description": "Unicode S* characters / characters"
+  },
+  {
+   "name": "non_ascii_ratio",
+   "dimension": "A",
+   "kind": "ratio",
+   "direction": "none",
+   "review": false,
+   "candidate": false,
+   "edges": [
+    0.001,
+    0.01,
+    0.05,
+    0.1,
+    0.2,
+    0.3,
+    0.5,
+    0.7,
+    0.9,
+    1.0
+   ],
+   "description": "code points >= U+0080 / characters"
+  },
+  {
+   "name": "unique_chars",
+   "dimension": "A",
+   "kind": "count",
+   "direction": "low",
+   "review": false,
+   "candidate": false,
+   "edges": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    1024,
+    4096
+   ],
+   "description": "distinct code points"
+  },
+  {
+   "name": "html_tags",
+   "dimension": "C",
+   "kind": "count",
+   "direction": "high",
+   "review": true,
+   "candidate": false,
+   "edges": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    1024,
+    4096
+   ],
+   "description": "known HTML element tags"
+  },
+  {
+   "name": "html_tag_char_ratio",
+   "dimension": "C",
+   "kind": "ratio",
+   "direction": "high",
+   "review": true,
+   "candidate": true,
+   "edges": [
+    0.001,
+    0.01,
+    0.05,
+    0.1,
+    0.2,
+    0.3,
+    0.5,
+    0.7,
+    0.9,
+    1.0
+   ],
+   "description": "characters inside known HTML element tags / characters"
+  },
+  {
+   "name": "generic_tags",
+   "dimension": "C",
+   "kind": "count",
+   "direction": "high",
+   "review": false,
+   "candidate": false,
+   "edges": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    1024,
+    4096
+   ],
+   "description": "tag-shaped <name ...> tokens of any name"
+  },
+  {
+   "name": "html_entities",
+   "dimension": "C",
+   "kind": "count",
+   "direction": "high",
+   "review": true,
+   "candidate": false,
+   "edges": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    1024,
+    4096
+   ],
+   "description": "HTML/XML character entities"
+  },
+  {
+   "name": "script_style_blocks",
+   "dimension": "C",
+   "kind": "count",
+   "direction": "high",
+   "review": false,
+   "candidate": false,
+   "edges": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    1024,
+    4096
+   ],
+   "description": "<script / <style openings"
+  },
+  {
+   "name": "boilerplate_lines",
+   "dimension": "D",
+   "kind": "count",
+   "direction": "high",
+   "review": true,
+   "candidate": true,
+   "edges": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    1024,
+    4096
+   ],
+   "description": "short lines matching a boilerplate category"
+  },
+  {
+   "name": "urls",
+   "dimension": "D",
+   "kind": "count",
+   "direction": "high",
+   "review": false,
+   "candidate": false,
+   "edges": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    1024,
+    4096
+   ],
+   "description": "http(s):// or www. links"
+  },
+  {
+   "name": "url_char_ratio",
+   "dimension": "D",
+   "kind": "ratio",
+   "direction": "high",
+   "review": true,
+   "candidate": false,
+   "edges": [
+    0.001,
+    0.01,
+    0.05,
+    0.1,
+    0.2,
+    0.3,
+    0.5,
+    0.7,
+    0.9,
+    1.0
+   ],
+   "description": "characters inside links / characters"
+  },
+  {
+   "name": "domain_mentions",
+   "dimension": "D",
+   "kind": "count",
+   "direction": "high",
+   "review": false,
+   "candidate": false,
+   "edges": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    1024,
+    4096
+   ],
+   "description": "common-TLD domain suffixes"
+  },
+  {
+   "name": "anchor_line_ratio",
+   "dimension": "D",
+   "kind": "ratio",
+   "direction": "high",
+   "review": true,
+   "candidate": true,
+   "edges": [
+    0.001,
+    0.01,
+    0.05,
+    0.1,
+    0.2,
+    0.3,
+    0.5,
+    0.7,
+    0.9,
+    1.0
+   ],
+   "description": "menu/anchor-like lines / non-empty lines"
+  },
+  {
+   "name": "max_char_run",
+   "dimension": "E",
+   "kind": "count",
+   "direction": "high",
+   "review": true,
+   "candidate": true,
+   "edges": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    1024,
+    4096
+   ],
+   "description": "longest same-character run"
+  },
+  {
+   "name": "max_punct_run",
+   "dimension": "E",
+   "kind": "count",
+   "direction": "high",
+   "review": false,
+   "candidate": false,
+   "edges": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    1024,
+    4096
+   ],
+   "description": "longest punctuation/symbol run"
+  },
+  {
+   "name": "max_space_run",
+   "dimension": "E",
+   "kind": "count",
+   "direction": "high",
+   "review": false,
+   "candidate": false,
+   "edges": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    1024,
+    4096
+   ],
+   "description": "longest whitespace run"
+  },
+  {
+   "name": "max_alnum_run",
+   "dimension": "E",
+   "kind": "count",
+   "direction": "high",
+   "review": true,
+   "candidate": false,
+   "edges": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    1024,
+    4096
+   ],
+   "description": "longest letter/digit run"
+  },
+  {
+   "name": "max_other_run",
+   "dimension": "E",
+   "kind": "count",
+   "direction": "high",
+   "review": false,
+   "candidate": false,
+   "edges": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    1024,
+    4096
+   ],
+   "description": "longest run of any other code point"
+  },
+  {
+   "name": "repeated_char_ratio",
+   "dimension": "E",
+   "kind": "ratio",
+   "direction": "high",
+   "review": true,
+   "candidate": true,
+   "edges": [
+    0.001,
+    0.01,
+    0.05,
+    0.1,
+    0.2,
+    0.3,
+    0.5,
+    0.7,
+    0.9,
+    1.0
+   ],
+   "description": "characters inside runs >= RUN_MIN / characters"
+  },
+  {
+   "name": "dup_lines",
+   "dimension": "F",
+   "kind": "count",
+   "direction": "high",
+   "review": false,
+   "candidate": false,
+   "edges": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    1024,
+    4096
+   ],
+   "description": "repeat occurrences of eligible lines"
+  },
+  {
+   "name": "dup_line_byte_ratio",
+   "dimension": "F",
+   "kind": "ratio",
+   "direction": "high",
+   "review": true,
+   "candidate": true,
+   "edges": [
+    0.001,
+    0.01,
+    0.05,
+    0.1,
+    0.2,
+    0.3,
+    0.5,
+    0.7,
+    0.9,
+    1.0
+   ],
+   "description": "UTF-8 bytes of repeat line occurrences / document bytes"
+  },
+  {
+   "name": "top_line_count",
+   "dimension": "F",
+   "kind": "count",
+   "direction": "high",
+   "review": false,
+   "candidate": false,
+   "edges": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    1024,
+    4096
+   ],
+   "description": "occurrences of the most frequent eligible line"
+  },
+  {
+   "name": "top_line_byte_ratio",
+   "dimension": "F",
+   "kind": "ratio",
+   "direction": "high",
+   "review": true,
+   "candidate": false,
+   "edges": [
+    0.001,
+    0.01,
+    0.05,
+    0.1,
+    0.2,
+    0.3,
+    0.5,
+    0.7,
+    0.9,
+    1.0
+   ],
+   "description": "bytes of the most frequent eligible line x occurrences / document bytes"
+  },
+  {
+   "name": "unique_line_ratio",
+   "dimension": "F",
+   "kind": "ratio",
+   "direction": "low",
+   "review": false,
+   "candidate": false,
+   "edges": [
+    0.001,
+    0.01,
+    0.05,
+    0.1,
+    0.2,
+    0.3,
+    0.5,
+    0.7,
+    0.9,
+    1.0
+   ],
+   "description": "distinct / eligible lines"
+  },
+  {
+   "name": "dup_paragraphs",
+   "dimension": "F",
+   "kind": "count",
+   "direction": "high",
+   "review": false,
+   "candidate": false,
+   "edges": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    1024,
+    4096
+   ],
+   "description": "repeat occurrences of eligible paragraphs"
+  },
+  {
+   "name": "dup_paragraph_byte_ratio",
+   "dimension": "F",
+   "kind": "ratio",
+   "direction": "high",
+   "review": true,
+   "candidate": true,
+   "edges": [
+    0.001,
+    0.01,
+    0.05,
+    0.1,
+    0.2,
+    0.3,
+    0.5,
+    0.7,
+    0.9,
+    1.0
+   ],
+   "description": "UTF-8 bytes of repeat paragraph occurrences / document bytes"
+  },
+  {
+   "name": "ngram5_excess_ratio",
+   "dimension": "G",
+   "kind": "ratio",
+   "direction": "high",
+   "review": true,
+   "candidate": false,
+   "edges": [
+    0.001,
+    0.01,
+    0.05,
+    0.1,
+    0.2,
+    0.3,
+    0.5,
+    0.7,
+    0.9,
+    1.0
+   ],
+   "description": "(word 5-gram positions - distinct 5-grams) / positions"
+  },
+  {
+   "name": "ngram10_excess_ratio",
+   "dimension": "G",
+   "kind": "ratio",
+   "direction": "high",
+   "review": true,
+   "candidate": true,
+   "edges": [
+    0.001,
+    0.01,
+    0.05,
+    0.1,
+    0.2,
+    0.3,
+    0.5,
+    0.7,
+    0.9,
+    1.0
+   ],
+   "description": "(word 10-gram positions - distinct 10-grams) / positions"
+  },
+  {
+   "name": "ngram10_top_share",
+   "dimension": "G",
+   "kind": "ratio",
+   "direction": "high",
+   "review": true,
+   "candidate": false,
+   "edges": [
+    0.001,
+    0.01,
+    0.05,
+    0.1,
+    0.2,
+    0.3,
+    0.5,
+    0.7,
+    0.9,
+    1.0
+   ],
+   "description": "occurrences of the most frequent 10-gram / positions"
+  },
+  {
+   "name": "compression_ratio",
+   "dimension": "G",
+   "kind": "ratio",
+   "direction": "low",
+   "review": true,
+   "candidate": true,
+   "edges": [
+    0.1,
+    0.2,
+    0.25,
+    0.3,
+    0.35,
+    0.4,
+    0.5,
+    0.6,
+    0.8,
+    1.0
+   ],
+   "description": "zlib level-1 bytes / bytes of the first 1 MiB (>= 256 bytes only; clamped to 1)"
+  },
+  {
+   "name": "nul",
+   "dimension": "H",
+   "kind": "count",
+   "direction": "high",
+   "review": false,
+   "candidate": false,
+   "edges": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    1024,
+    4096
+   ],
+   "description": "U+0000"
+  },
+  {
+   "name": "c0_controls",
+   "dimension": "H",
+   "kind": "count",
+   "direction": "high",
+   "review": true,
+   "candidate": false,
+   "edges": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    1024,
+    4096
+   ],
+   "description": "C0 controls and DEL except LF and TAB"
+  },
+  {
+   "name": "c1_controls",
+   "dimension": "H",
+   "kind": "count",
+   "direction": "high",
+   "review": true,
+   "candidate": false,
+   "edges": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    1024,
+    4096
+   ],
+   "description": "U+0080..U+009F"
+  },
+  {
+   "name": "replacement_chars",
+   "dimension": "H",
+   "kind": "count",
+   "direction": "high",
+   "review": true,
+   "candidate": true,
+   "edges": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    1024,
+    4096
+   ],
+   "description": "U+FFFD"
+  },
+  {
+   "name": "zero_width",
+   "dimension": "H",
+   "kind": "count",
+   "direction": "high",
+   "review": false,
+   "candidate": false,
+   "edges": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    1024,
+    4096
+   ],
+   "description": "U+200B, U+2060, U+180E"
+  },
+  {
+   "name": "zwj_zwnj",
+   "dimension": "H",
+   "kind": "count",
+   "direction": "none",
+   "review": false,
+   "candidate": false,
+   "edges": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    1024,
+    4096
+   ],
+   "description": "U+200C/U+200D (legitimate in emoji and scripts)"
+  },
+  {
+   "name": "bom",
+   "dimension": "H",
+   "kind": "count",
+   "direction": "high",
+   "review": false,
+   "candidate": false,
+   "edges": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    1024,
+    4096
+   ],
+   "description": "U+FEFF anywhere in the text"
+  },
+  {
+   "name": "bidi_controls",
+   "dimension": "H",
+   "kind": "count",
+   "direction": "high",
+   "review": false,
+   "candidate": false,
+   "edges": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    1024,
+    4096
+   ],
+   "description": "bidirectional format controls"
+  },
+  {
+   "name": "private_use",
+   "dimension": "H",
+   "kind": "count",
+   "direction": "high",
+   "review": false,
+   "candidate": false,
+   "edges": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    1024,
+    4096
+   ],
+   "description": "private-use code points"
+  },
+  {
+   "name": "noncharacters",
+   "dimension": "H",
+   "kind": "count",
+   "direction": "high",
+   "review": false,
+   "candidate": false,
+   "edges": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    1024,
+    4096
+   ],
+   "description": "Unicode noncharacters"
+  },
+  {
+   "name": "surrogates",
+   "dimension": "H",
+   "kind": "count",
+   "direction": "high",
+   "review": false,
+   "candidate": false,
+   "edges": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    1024,
+    4096
+   ],
+   "description": "lone surrogate code points"
+  },
+  {
+   "name": "mojibake_hits",
+   "dimension": "H",
+   "kind": "count",
+   "direction": "high",
+   "review": true,
+   "candidate": true,
+   "edges": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    1024,
+    4096
+   ],
+   "description": "conservative UTF-8-as-Latin-1/cp1252 sequences"
+  },
+  {
+   "name": "single_char_line_ratio",
+   "dimension": "I",
+   "kind": "ratio",
+   "direction": "high",
+   "review": true,
+   "candidate": true,
+   "edges": [
+    0.001,
+    0.01,
+    0.05,
+    0.1,
+    0.2,
+    0.3,
+    0.5,
+    0.7,
+    0.9,
+    1.0
+   ],
+   "description": "one-character lines / non-empty lines"
+  },
+  {
+   "name": "fragment_line_ratio",
+   "dimension": "I",
+   "kind": "ratio",
+   "direction": "high",
+   "review": true,
+   "candidate": false,
+   "edges": [
+    0.001,
+    0.01,
+    0.05,
+    0.1,
+    0.2,
+    0.3,
+    0.5,
+    0.7,
+    0.9,
+    1.0
+   ],
+   "description": "non-empty lines shorter than 40 characters / non-empty lines"
+  },
+  {
+   "name": "page_number_line_ratio",
+   "dimension": "I",
+   "kind": "ratio",
+   "direction": "high",
+   "review": true,
+   "candidate": true,
+   "edges": [
+    0.001,
+    0.01,
+    0.05,
+    0.1,
+    0.2,
+    0.3,
+    0.5,
+    0.7,
+    0.9,
+    1.0
+   ],
+   "description": "page-number-like lines / non-empty lines"
+  },
+  {
+   "name": "repeated_header_ratio",
+   "dimension": "I",
+   "kind": "ratio",
+   "direction": "high",
+   "review": true,
+   "candidate": true,
+   "edges": [
+    0.001,
+    0.01,
+    0.05,
+    0.1,
+    0.2,
+    0.3,
+    0.5,
+    0.7,
+    0.9,
+    1.0
+   ],
+   "description": "occurrences of 16-100 char lines repeated >= 3 times / non-empty lines"
+  },
+  {
+   "name": "hyphen_break_ratio",
+   "dimension": "I",
+   "kind": "ratio",
+   "direction": "high",
+   "review": true,
+   "candidate": false,
+   "edges": [
+    0.001,
+    0.01,
+    0.05,
+    0.1,
+    0.2,
+    0.3,
+    0.5,
+    0.7,
+    0.9,
+    1.0
+   ],
+   "description": "letter-hyphen-newline-letter breaks / non-empty lines"
+  },
+  {
+   "name": "soft_break_ratio",
+   "dimension": "I",
+   "kind": "ratio",
+   "direction": "high",
+   "review": true,
+   "candidate": false,
+   "edges": [
+    0.001,
+    0.01,
+    0.05,
+    0.1,
+    0.2,
+    0.3,
+    0.5,
+    0.7,
+    0.9,
+    1.0
+   ],
+   "description": "lowercase/comma line ends continued in lowercase / newlines"
+  },
+  {
+   "name": "words",
+   "dimension": "J",
+   "kind": "count",
+   "direction": "low",
+   "review": false,
+   "candidate": false,
+   "edges": [
+    16,
+    64,
+    256,
+    1024,
+    4096,
+    16384,
+    65536,
+    262144,
+    1048576,
+    4194304
+   ],
+   "description": "whitespace lexical units"
+  },
+  {
+   "name": "type_token_ratio",
+   "dimension": "J",
+   "kind": "ratio",
+   "direction": "low",
+   "review": true,
+   "candidate": false,
+   "edges": [
+    0.001,
+    0.01,
+    0.05,
+    0.1,
+    0.2,
+    0.3,
+    0.5,
+    0.7,
+    0.9,
+    1.0
+   ],
+   "description": "distinct / analysed words"
+  },
+  {
+   "name": "distinct_words",
+   "dimension": "J",
+   "kind": "count",
+   "direction": "low",
+   "review": false,
+   "candidate": false,
+   "edges": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    1024,
+    4096
+   ],
+   "description": "distinct analysed words"
+  },
+  {
+   "name": "code_line_ratio",
+   "dimension": "J",
+   "kind": "ratio",
+   "direction": "none",
+   "review": false,
+   "candidate": false,
+   "edges": [
+    0.001,
+    0.01,
+    0.05,
+    0.1,
+    0.2,
+    0.3,
+    0.5,
+    0.7,
+    0.9,
+    1.0
+   ],
+   "description": "code-shaped lines / non-empty lines"
+  },
+  {
+   "name": "table_line_ratio",
+   "dimension": "J",
+   "kind": "ratio",
+   "direction": "none",
+   "review": false,
+   "candidate": false,
+   "edges": [
+    0.001,
+    0.01,
+    0.05,
+    0.1,
+    0.2,
+    0.3,
+    0.5,
+    0.7,
+    0.9,
+    1.0
+   ],
+   "description": "lines with >= 2 '|' that start or end with '|', or >= 2 tabs / non-empty"
+  },
+  {
+   "name": "math_symbol_ratio",
+   "dimension": "J",
+   "kind": "ratio",
+   "direction": "none",
+   "review": false,
+   "candidate": false,
+   "edges": [
+    0.001,
+    0.01,
+    0.05,
+    0.1,
+    0.2,
+    0.3,
+    0.5,
+    0.7,
+    0.9,
+    1.0
+   ],
+   "description": "fixed math-symbol set / characters"
+  },
+  {
+   "name": "latex_commands",
+   "dimension": "J",
+   "kind": "count",
+   "direction": "none",
+   "review": false,
+   "candidate": false,
+   "edges": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    1024,
+    4096
+   ],
+   "description": "\\command tokens"
+  }
+ ],
+ "flags": [
+  "empty",
+  "whitespace_only",
+  "chars_lt16",
+  "chars_lt32",
+  "chars_lt64",
+  "chars_lt128",
+  "chars_lt256",
+  "bytes_gt64KiB",
+  "bytes_gt256KiB",
+  "bytes_gt1MiB",
+  "bytes_gt4MiB",
+  "has_doctype",
+  "has_html_open",
+  "has_head",
+  "has_body",
+  "has_script",
+  "has_style",
+  "has_nav",
+  "has_footer",
+  "has_form",
+  "has_closing_tag",
+  "has_entity",
+  "has_xml_decl",
+  "has_html_comment",
+  "markup_full_html",
+  "markup_light",
+  "markup_ambiguous_code",
+  "markup_any",
+  "bp_cookie",
+  "bp_privacy",
+  "bp_terms",
+  "bp_subscribe",
+  "bp_account",
+  "bp_copyright",
+  "bp_navigation",
+  "bp_social",
+  "boilerplate_any",
+  "has_url",
+  "control_any",
+  "truncated_analysis"
+ ],
+ "bool_intersections": [
+  [
+   "markup+boilerplate",
+   "markup_any",
+   "boilerplate_any"
+  ],
+  [
+   "full_html+boilerplate",
+   "markup_full_html",
+   "boilerplate_any"
+  ],
+  [
+   "markup+code_like",
+   "markup_any",
+   "class:code_like"
+  ],
+  [
+   "ambiguous_markup+code_like",
+   "markup_ambiguous_code",
+   "class:code_like"
+  ],
+  [
+   "url+tiny",
+   "has_url",
+   "chars_lt128"
+  ],
+  [
+   "control+prose_like",
+   "control_any",
+   "class:prose_like"
+  ],
+  [
+   "mojibake+prose_like",
+   "any:mojibake_hits",
+   "class:prose_like"
+  ],
+  [
+   "replacement+page_numbers",
+   "any:replacement_chars",
+   "any:page_number_line_ratio"
+  ]
+ ],
+ "joint_pairs": [
+  [
+   "markup x boilerplate",
+   "html_tag_char_ratio",
+   "boilerplate_lines"
+  ],
+  [
+   "markup x code",
+   "html_tag_char_ratio",
+   "code_line_ratio"
+  ],
+  [
+   "10-gram repetition x lexical diversity",
+   "ngram10_excess_ratio",
+   "type_token_ratio"
+  ],
+  [
+   "duplicate lines x lexical diversity",
+   "dup_line_byte_ratio",
+   "type_token_ratio"
+  ],
+  [
+   "OCR single-char lines x control chars",
+   "single_char_line_ratio",
+   "c0_controls"
+  ],
+  [
+   "OCR fragmentation x replacement chars",
+   "fragment_line_ratio",
+   "replacement_chars"
+  ],
+  [
+   "URL density x size",
+   "url_char_ratio",
+   "chars"
+  ],
+  [
+   "symbols x code",
+   "symbol_ratio",
+   "code_line_ratio"
+  ],
+  [
+   "symbols x alphabetic",
+   "symbol_ratio",
+   "alpha_ratio"
+  ],
+  [
+   "character runs x character diversity",
+   "repeated_char_ratio",
+   "unique_chars"
+  ],
+  [
+   "mojibake x non-ASCII",
+   "mojibake_hits",
+   "non_ascii_ratio"
+  ],
+  [
+   "page numbers x repeated headers",
+   "page_number_line_ratio",
+   "repeated_header_ratio"
+  ],
+  [
+   "compression x size",
+   "compression_ratio",
+   "chars"
+  ]
+ ],
+ "language": {
+  "score_keys": [
+   "fasttext_english",
+   "upstream_full_doc_lid_score",
+   "upstream_page_average_lid_score"
+  ],
+  "label_keys": [
+   "upstream_full_doc_lid",
+   "upstream_page_average_lid"
+  ],
+  "provenance_key": "language_provenance",
+  "max_label_values": 256,
+  "max_label_chars": 200
+ },
+ "quantiles": [
+  [
+   "p50",
+   1,
+   2
+  ],
+  [
+   "p75",
+   3,
+   4
+  ],
+  [
+   "p90",
+   9,
+   10
+  ],
+  [
+   "p95",
+   19,
+   20
+  ],
+  [
+   "p99",
+   99,
+   100
+  ],
+  [
+   "p99.9",
+   999,
+   1000
+  ]
+ ],
+ "candidate_bands": [
+  [
+   "conservative",
+   999,
+   1000
+  ],
+  [
+   "moderate",
+   99,
+   100
+  ],
+  [
+   "aggressive",
+   19,
+   20
+  ]
+ ],
+ "patterns": {
+  "known_tag": "</(?:html|head|body|title|meta|link|script|style|nav|footer|header|form|input|button|div|span|p|a|ul|ol|li|dl|dt|dd|table|tr|td|th|thead|tbody|tfoot|br|hr|img|iframe|section|article|aside|main|h[1-6]|strong|em|b|i|u|small|sup|sub|label|select|option|textarea|noscript|svg|figure|figcaption|blockquote|pre|code|center|font|tt|abbr|cite)\\s*>|(?<![\\w<])<(?:html|head|body|title|meta|link|script|style|nav|footer|header|form|input|button|div|span|p|a|ul|ol|li|dl|dt|dd|table|tr|td|th|thead|tbody|tfoot|br|hr|img|iframe|section|article|aside|main|h[1-6]|strong|em|b|i|u|small|sup|sub|label|select|option|textarea|noscript|svg|figure|figcaption|blockquote|pre|code|center|font|tt|abbr|cite)(?=[\\s/>])[^<>\\n]{0,256}>",
+  "generic_tag": "</?[A-Za-z][A-Za-z0-9:_-]{0,31}(?:\\s[^<>\\n]{0,256})?/?>",
+  "structure": "<(!doctype|\\?xml|html|head|body|script|style|nav|footer|form)(?=[\\s>/])",
+  "closing": "</(?:html|head|body|title|meta|link|script|style|nav|footer|header|form|input|button|div|span|p|a|ul|ol|li|dl|dt|dd|table|tr|td|th|thead|tbody|tfoot|br|hr|img|iframe|section|article|aside|main|h[1-6]|strong|em|b|i|u|small|sup|sub|label|select|option|textarea|noscript|svg|figure|figcaption|blockquote|pre|code|center|font|tt|abbr|cite)\\s*>",
+  "entity": "&(?:[A-Za-z][A-Za-z0-9]{1,31}|#[0-9]{1,7}|#[xX][0-9A-Fa-f]{1,6});",
+  "url": "(?:https?://|www\\.)[^\\s<>\\\"'\\]\\)]{1,2048}",
+  "domain": "\\.(?:com|org|net|edu|gov|io|info|biz)\\b",
+  "boilerplate_phrases": [
+   [
+    "cookie",
+    [
+     "cookie"
+    ],
+    "\\bcookies?\\b.{0,60}?\\b(?:accept|consent|policy|settings|preferences)\\b|\\b(?:accept|allow|reject|manage)\\b.{0,60}?\\bcookies?\\b|\\b(?:this|our)\\s+(?:site|website)\\s+uses\\s+cookies\\b"
+   ],
+   [
+    "privacy",
+    [
+     "privacy"
+    ],
+    "\\bprivacy\\s+(?:policy|notice|statement|settings|preferences)\\b"
+   ],
+   [
+    "terms",
+    [
+     "terms"
+    ],
+    "\\bterms\\s+(?:of\\s+(?:use|service)|and\\s+conditions|&\\s+conditions)\\b"
+   ],
+   [
+    "subscribe",
+    [
+     "subscri",
+     "newsletter",
+     "sign up for"
+    ],
+    "\\b(?:subscribe|unsubscribe|newsletter)\\b|\\bsign\\s+up\\s+for\\s+(?:our|the)\\b"
+   ],
+   [
+    "copyright",
+    [
+     "©",
+     "(c)",
+     "copyright",
+     "rights reserved"
+    ],
+    "(?:©|\\(c\\)|\\bcopyright\\b)\\s*(?:\\d{4}|by\\b)|\\ball\\s+rights\\s+reserved\\b"
+   ],
+   [
+    "social",
+    [
+     "share on",
+     "share this",
+     "follow us",
+     "tweet this"
+    ],
+    "\\b(?:share\\s+(?:on|this)|follow\\s+us|tweet\\s+this)\\b"
+   ]
+  ],
+  "boilerplate_lines": [
+   [
+    "about",
+    "navigation"
+   ],
+   [
+    "about us",
+    "navigation"
+   ],
+   [
+    "back to top",
+    "navigation"
+   ],
+   [
+    "click here",
+    "navigation"
+   ],
+   [
+    "contact",
+    "navigation"
+   ],
+   [
+    "contact us",
+    "navigation"
+   ],
+   [
+    "create account",
+    "account"
+   ],
+   [
+    "create an account",
+    "account"
+   ],
+   [
+    "facebook",
+    "social"
+   ],
+   [
+    "faq",
+    "navigation"
+   ],
+   [
+    "forgot password",
+    "account"
+   ],
+   [
+    "forgot your password",
+    "account"
+   ],
+   [
+    "help",
+    "navigation"
+   ],
+   [
+    "home",
+    "navigation"
+   ],
+   [
+    "instagram",
+    "social"
+   ],
+   [
+    "linkedin",
+    "social"
+   ],
+   [
+    "log in",
+    "account"
+   ],
+   [
+    "log out",
+    "account"
+   ],
+   [
+    "login",
+    "account"
+   ],
+   [
+    "logout",
+    "account"
+   ],
+   [
+    "menu",
+    "navigation"
+   ],
+   [
+    "my account",
+    "account"
+   ],
+   [
+    "next",
+    "navigation"
+   ],
+   [
+    "pinterest",
+    "social"
+   ],
+   [
+    "prev",
+    "navigation"
+   ],
+   [
+    "previous",
+    "navigation"
+   ],
+   [
+    "read more",
+    "navigation"
+   ],
+   [
+    "reddit",
+    "social"
+   ],
+   [
+    "register",
+    "account"
+   ],
+   [
+    "search",
+    "navigation"
+   ],
+   [
+    "sign in",
+    "account"
+   ],
+   [
+    "sign out",
+    "account"
+   ],
+   [
+    "sign up",
+    "account"
+   ],
+   [
+    "signin",
+    "account"
+   ],
+   [
+    "signup",
+    "account"
+   ],
+   [
+    "sitemap",
+    "navigation"
+   ],
+   [
+    "skip to content",
+    "navigation"
+   ],
+   [
+    "skip to main content",
+    "navigation"
+   ],
+   [
+    "twitter",
+    "social"
+   ],
+   [
+    "whatsapp",
+    "social"
+   ],
+   [
+    "youtube",
+    "social"
+   ]
+  ],
+  "menu_line": [
+   40,
+   " \t|•·*#>»«<-–—:;.,!?()[]{}/\\\"'"
+  ],
+  "run": "probe ch*RUN_MIN, then escaped ch{RUN_MIN,}",
+  "dense_code_limit": 12288,
+  "paragraph": "\\n[ \\t]*\\n",
+  "page_number": "^[ \\t]*(?:(?:page|p\\.)[ \\t]*)?(?:\\d{1,4}|[ivxlcdm]{1,7})(?:[ \\t]*(?:of|/)[ \\t]*\\d{1,4})?[ \\t]*$|^[ \\t]*[-–—][ \\t]*\\d{1,4}[ \\t]*[-–—][ \\t]*$",
+  "hyphen_break": "[^\\W\\d_]-\\n[ \\t]*[^\\W\\d_]",
+  "soft_break": "[a-z,;]\\n[a-z]",
+  "latex": "\\\\[A-Za-z]{2,}",
+  "mojibake": "[ÃÂÐÑ][-¿]|â[-]|â€[-¿ŒœŠšŸŽžƒˆ˜–—‘-„†-•…‰‹›€™]|ï»¿",
+  "math_chars": "¬±×÷′″←→↔⇐⇒⇔∀∂∃∄∇∈∉∋∏∑−∘√∝∞∧∨∩∪∫≈≠≡≤≥⊂⊃⊆⊇⊕⊗⋅",
+  "zero_width": [
+   "᠎",
+   "​",
+   "⁠"
+  ],
+  "zwj_zwnj": [
+   "‌",
+   "‍"
+  ],
+  "bidi": [
+   "؜",
+   "‎",
+   "‏",
+   "‪",
+   "‫",
+   "‬",
+   "‭",
+   "‮",
+   "⁦",
+   "⁧",
+   "⁨",
+   "⁩"
+  ],
+  "code_prefixes": [
+   "#include",
+   "#define",
+   "#!",
+   "import ",
+   "from ",
+   "def ",
+   "class ",
+   "function",
+   "return",
+   "public ",
+   "private ",
+   "protected ",
+   "static ",
+   "const ",
+   "let ",
+   "var ",
+   "fn ",
+   "func ",
+   "if (",
+   "if(",
+   "for (",
+   "for(",
+   "while (",
+   "while(",
+   "else",
+   "}",
+   "{",
+   "//",
+   "/*",
+   "*/",
+   "<?php",
+   "print(",
+   "console."
+  ],
+  "code_suffixes": [
+   ";",
+   "{",
+   "}"
+  ],
+  "terminal_punct": ".!?:;"
+ },
+ "histogram": {
+  "count": "exact below 16; 8 sub-bins per octave on integer boundaries",
+  "ratio": "1000 uniform bins on [0,1); 1.0 exact",
+  "real": "floor, then count bins"
+ }
+}

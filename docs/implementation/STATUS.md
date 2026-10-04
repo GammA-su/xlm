@@ -1,4 +1,17 @@
-> **GLOBAL QUALITY AUDIT PHASE A (2026-10-04): READY FOR OPERATOR RUN; REAL AUDIT NOT RUN; NO CLEANING.**
+> **INDEPENDENT QUALITY ACCEPTANCE (2026-10-04): REAL RUN BLOCKED at 96f38f3.**
+>
+> Read-only alias/manifest safety, SHA-bound resume, review verification, whole-command
+> resource enforcement, language-bin aggregation, repetition complexity and privacy
+> failed authored adversarial probes. Completed checks: 105 passed, 21 failed;
+> four original overlay tests excluded. An initial interrupted test command did
+> invoke an authored C05 fixture; this scope deviation is disclosed in the report.
+> No production data, G:, X:, network, tokenizer or training access. Implementation
+> unchanged; evidence/docs only. Next: repair I01–I14 in a separate authorized task,
+> then repeat bounded acceptance before any real audit.
+> [Independent report](reports/QUALITY-AUDIT-INDEPENDENT-96F38F3.md),
+> [commands/evidence](evidence/QUALITY-AUDIT-INDEPENDENT-96F38F3/COMMANDS.md).
+
+> **GLOBAL QUALITY AUDIT PHASE A — HISTORICAL IMPLEMENTATION REPORT (2026-10-04): readiness claim superseded by the independent audit above.**
 >
 > The production order lacked a global quality-cleaning stage between the canonical
 > corpus and C05. Phase A adds a read-only, streaming, content-free audit:

@@ -1,6 +1,10 @@
 # Global quality audit (Phase A, read-only)
 
-**Status (2026-10-04): implemented and fixture-verified; the real audit has NOT been run.**
+**Status (2026-10-04): first real run BLOCKED by independent acceptance at 96f38f3.**
+See [the independent audit and required fixes](../implementation/reports/QUALITY-AUDIT-INDEPENDENT-96F38F3.md).
+The commands below document the interface; do not launch them on real data until
+the listed repairs pass bounded re-acceptance. Implementation is unchanged and the
+real audit has NOT been run.
 Phase A only measures. It never modifies, drops or transforms a document, never
 chooses a cleaning threshold, never builds a C05 manifest and never runs C05,
 a tokenizer fit or training. Agents must not run it on the real corpus or open review

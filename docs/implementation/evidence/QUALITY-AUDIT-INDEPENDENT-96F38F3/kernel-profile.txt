@@ -1,0 +1,43 @@
+         1899524 function calls (1899427 primitive calls) in 0.957 seconds
+
+   Ordered by: cumulative time
+   List reduced from 467 to 35 due to restriction <35>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.019    0.019    0.957    0.957 scan.py:227(process_chunk)
+      723    0.247    0.000    0.878    0.001 detectors.py:384(analyze)
+     5503    0.023    0.000    0.191    0.000 {built-in method builtins.sum}
+     2114    0.003    0.000    0.119    0.000 __init__.py:595(__init__)
+     2114    0.001    0.000    0.116    0.000 __init__.py:669(update)
+     2114    0.112    0.000    0.112    0.000 {built-in method _collections._count_elements}
+    80842    0.029    0.000    0.065    0.000 detectors.py:507(<genexpr>)
+   158292    0.040    0.000    0.059    0.000 {method 'join' of 'str' objects}
+   158529    0.056    0.000    0.056    0.000 {method 'split' of 'str' objects}
+    17346    0.019    0.000    0.046    0.000 detectors.py:490(<genexpr>)
+    54388    0.024    0.000    0.040    0.000 detectors.py:482(<genexpr>)
+     7895    0.037    0.000    0.037    0.000 detectors.py:645(<genexpr>)
+      723    0.013    0.000    0.032    0.000 detectors.py:358(char_counts)
+345214/345203    0.029    0.000    0.029    0.000 {built-in method builtins.len}
+    83854    0.014    0.000    0.023    0.000 detectors.py:473(<genexpr>)
+   156813    0.022    0.000    0.022    0.000 {method 'strip' of 'str' objects}
+        1    0.005    0.005    0.022    0.022 review.py:79(sample_chunk)
+    80439    0.013    0.000    0.019    0.000 detectors.py:613(<genexpr>)
+      723    0.001    0.000    0.017    0.000 __init__.py:299(loads)
+   111031    0.017    0.000    0.017    0.000 {method 'get' of 'dict' objects}
+       97    0.000    0.000    0.015    0.000 _arraysetops_impl.py:145(unique)
+       97    0.001    0.000    0.015    0.000 _arraysetops_impl.py:350(_unique1d)
+    19679    0.014    0.000    0.014    0.000 detectors.py:650(<genexpr>)
+    69264    0.014    0.000    0.014    0.000 {method 'startswith' of 'str' objects}
+      723    0.012    0.000    0.013    0.000 detectors.py:705(_runs)
+    80218    0.013    0.000    0.013    0.000 {method 'endswith' of 'str' objects}
+    67776    0.013    0.000    0.013    0.000 {method 'count' of 'str' objects}
+      723    0.001    0.000    0.012    0.000 decoder.py:333(decode)
+      4/2    0.000    0.000    0.012    0.006 <frozen importlib._bootstrap>:1349(_find_and_load)
+    78821    0.012    0.000    0.012    0.000 {method 'lower' of 'str' objects}
+      4/2    0.000    0.000    0.012    0.006 <frozen importlib._bootstrap>:1304(_find_and_load_unlocked)
+      4/2    0.000    0.000    0.011    0.006 <frozen importlib._bootstrap>:911(_load_unlocked)
+      4/2    0.000    0.000    0.011    0.006 <frozen importlib._bootstrap_external>:993(exec_module)
+        1    0.000    0.000    0.011    0.011 __init__.py:713(__getattr__)
+      712    0.011    0.000    0.011    0.000 {built-in method zlib.compress}
+
+
