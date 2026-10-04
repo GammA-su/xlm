@@ -137,6 +137,48 @@ STRUCTURE_RE = re.compile(
 DOCTYPE_RE = re.compile(r"<!doctype\s+([A-Za-z_][\w.:-]{0,63})", re.IGNORECASE)
 # Fenced code examples (``` or ~~~, same fence to close, or until the end).
 FENCE_RE = re.compile(r"^[ \t]*(`{3,}|~{3,})[^\n]*\n.*?(?:^[ \t]*\1[ \t]*$|\Z)", re.M | re.S)
+STRUCTURE_CLOSE_RE = re.compile(r"</(html|head|body)\s*>", re.IGNORECASE)
+INLINE_CODE_RE = re.compile(r"`[^`\n]+`")
+
+
+def split_code_examples(text: str) -> tuple[str, list[str]]:
+    """Text outside code/example regions, and the regions themselves.
+
+    Regions: fenced blocks (``` / ~~~), Markdown indented code blocks (4+ spaces or a
+    tab, starting after a blank line or the document start) and inline code spans.
+    """
+    examples: list[str] = []
+    if "```" in text or "~~~" in text:
+        examples += [m.group(0) for m in FENCE_RE.finditer(text)]
+        text = FENCE_RE.sub("\n", text)
+    if "    " in text or "\t" in text:
+        kept: list[str] = []
+        block: list[str] = []
+        previous_blank = True
+        for line in text.split("\n"):
+            blank = line.strip() == ""
+            if not blank and line.startswith(("    ", "\t")) and (previous_blank or block):
+                block.append(line)
+                continue
+            if block and blank:
+                block.append(line)
+                continue
+            if block:
+                examples.append("\n".join(block))
+                kept.extend([""] * len(block))
+                block = []
+            kept.append(line)
+            previous_blank = blank
+        if block:
+            examples.append("\n".join(block))
+            kept.extend([""] * len(block))
+        text = "\n".join(kept)
+    if "`" in text:
+        examples += [m.group(0) for m in INLINE_CODE_RE.finditer(text)]
+        text = INLINE_CODE_RE.sub(" ", text)
+    return text, examples
+
+
 CLOSING_RE = re.compile(r"</(?:" + HTML_ELEMENTS + r")\s*>", re.IGNORECASE)
 ENTITY_RE = re.compile(r"&(?:[A-Za-z][A-Za-z0-9]{1,31}|#[0-9]{1,7}|#[xX][0-9A-Fa-f]{1,6});")
 URL_RE = re.compile(r"(?:https?://|www\.)[^\s<>\"'\]\)]{1,2048}", re.IGNORECASE)
@@ -300,6 +342,10 @@ def pattern_sources() -> dict[str, Any]:
         "structure": STRUCTURE_RE.pattern,
         "doctype": DOCTYPE_RE.pattern,
         "fence": FENCE_RE.pattern,
+        "inline_code": INLINE_CODE_RE.pattern,
+        "indented_code": "4+ spaces or tab, after a blank line or document start",
+        "structure_close": STRUCTURE_CLOSE_RE.pattern,
+        "full_html": "html doctype, or closed <html>, or closed <head> and <body>",
         "closing": CLOSING_RE.pattern,
         "entity": ENTITY_RE.pattern,
         "url": URL_RE.pattern,
@@ -342,7 +388,7 @@ ZERO_WHEN_EMPTY = (
     "script_style_blocks",
     "boilerplate_lines",
     "boilerplate_phrase_hits",
-    "fenced_tags",
+    "code_example_tags",
     "urls",
     "domain_mentions",
     "dup_lines",
@@ -575,19 +621,18 @@ def analyze(text: str, utf8_bytes: int) -> Analysis:
     # Character runs.
     _runs(text, codes, v)
 
-    # Markup. Structure is judged on the text OUTSIDE fenced code examples (``` / ~~~);
-    # tag-shaped tokens inside fences are only counted as ``fenced_tags``.
-    html_tags = generic_tags = entities = script_style = fenced_tags = 0
+    # Markup. Structure is judged on the text OUTSIDE code/example regions (fenced
+    # blocks, indented code blocks, inline code spans); tag-shaped tokens inside them
+    # are only counted as ``code_example_tags`` (interpretation, never an action).
+    html_tags = generic_tags = entities = script_style = example_tags = 0
     tag_chars = 0
     full = xml = False
     surface = text
-    if "<" in text and ("```" in text or "~~~" in text):
-        examples = [m.group(0) for m in FENCE_RE.finditer(text)]
-        if examples:
-            surface = FENCE_RE.sub("\n", text)
-            fenced_tags = sum(1 for e in examples for _ in GENERIC_TAG_RE.finditer(e))
-    if fenced_tags:
-        flags.append(F["markup_fenced_example"])
+    if "<" in text:
+        surface, examples = split_code_examples(text)
+        example_tags = sum(1 for e in examples for _ in GENERIC_TAG_RE.finditer(e))
+    if example_tags:
+        flags.append(F["markup_code_example"])
     if "<" in surface:
         for match in KNOWN_TAG_RE.finditer(surface):
             html_tags += 1
@@ -618,13 +663,20 @@ def analyze(text: str, utf8_bytes: int) -> Analysis:
         for key, flag in structure.items():
             if key in seen:
                 flags.append(F[flag])
+        closers = {m.group(1).lower() for m in STRUCTURE_CLOSE_RE.finditer(surface)}
         if CLOSING_RE.search(surface):
             flags.append(F["has_closing_tag"])
         if "<!--" in surface:
             flags.append(F["has_html_comment"])
         # Only an HTML doctype or HTML document elements make full HTML; an XML
         # declaration or a non-HTML doctype (``<!DOCTYPE note>``) is XML instead.
-        full = "html" in doctypes or "html" in seen or ("head" in seen and "body" in seen)
+        # An actual document needs document STRUCTURE, not a mention: an HTML doctype,
+        # or an <html> element that is also closed, or closed <head> and <body>.
+        full = (
+            "html" in doctypes
+            or ("html" in seen and "html" in closers)
+            or ({"head", "body"} <= seen and {"head", "body"} <= closers)
+        )
         xml = "?xml" in seen or bool(doctypes - {"html"})
     if "&" in surface:
         entities = sum(1 for _ in ENTITY_RE.finditer(surface))
@@ -632,7 +684,7 @@ def analyze(text: str, utf8_bytes: int) -> Analysis:
             flags.append(F["has_entity"])
     v[M["html_tags"]] = html_tags
     v[M["generic_tags"]] = generic_tags
-    v[M["fenced_tags"]] = fenced_tags
+    v[M["code_example_tags"]] = example_tags
     v[M["html_entities"]] = entities
     v[M["script_style_blocks"]] = script_style
     tag_ratio = tag_chars * inv

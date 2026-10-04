@@ -1,0 +1,73 @@
+{
+ "corpus": {
+  "canonical_bytes": 237326851,
+  "documents": 47015,
+  "file_bytes": 268480026,
+  "files": 8,
+  "generation_seconds": 8.8
+ },
+ "kind": "xlm_quality_audit_benchmark_v1",
+ "label": "AUTHORED SYNTHETIC CORPUS MEASUREMENT + PROJECTION (not a real-corpus run)",
+ "machine": {
+  "logical_cpus": 16,
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.12.13"
+ },
+ "mean_jsonl_row_bytes": 5710.5,
+ "projection_caveats": [
+  "authored text mix, not the real detector-cost mix",
+  "corpus generated on this machine; the real corpus is read from the operator's G: SSD",
+  "projection excludes overlay membership streaming and final aggregation"
+ ],
+ "real_target": {
+  "canonical_bytes": 81859652239,
+  "documents": 15097174,
+  "file_bytes": 104506534003,
+  "mean_jsonl_row_bytes": 6922.3
+ },
+ "runs": [
+  {
+   "PROJECTION_real_scan_hours_by_bytes": 4.59,
+   "PROJECTION_real_scan_hours_by_documents": 3.78,
+   "documents_per_s": 1108.7,
+   "file_mb_per_s": 6.331,
+   "peak_process_tree_rss_gib": 0.164,
+   "scan_seconds": 42.406,
+   "wall_seconds": 43.188,
+   "workers": 1
+  },
+  {
+   "PROJECTION_real_scan_hours_by_bytes": 2.32,
+   "PROJECTION_real_scan_hours_by_documents": 1.92,
+   "documents_per_s": 2186.7,
+   "file_mb_per_s": 12.487,
+   "peak_process_tree_rss_gib": 0.407,
+   "scan_seconds": 21.5,
+   "wall_seconds": 22.172,
+   "workers": 2
+  },
+  {
+   "PROJECTION_real_scan_hours_by_bytes": 1.31,
+   "PROJECTION_real_scan_hours_by_documents": 1.08,
+   "documents_per_s": 3892.6,
+   "file_mb_per_s": 22.229,
+   "peak_process_tree_rss_gib": 0.731,
+   "scan_seconds": 12.078,
+   "wall_seconds": 12.781,
+   "workers": 4
+  },
+  {
+   "PROJECTION_real_scan_hours_by_bytes": 0.87,
+   "PROJECTION_real_scan_hours_by_documents": 0.72,
+   "documents_per_s": 5820.1,
+   "file_mb_per_s": 33.236,
+   "peak_process_tree_rss_gib": 1.312,
+   "scan_seconds": 8.078,
+   "wall_seconds": 8.765,
+   "workers": 8
+  }
+ ],
+ "worker_independent_result_digest": [
+  "267c9d9b833307418db03638d0a81c33fab823c5762cb95b6301ca1883afbc21"
+ ]
+}

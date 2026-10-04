@@ -20,7 +20,7 @@ from typing import Any, Literal
 
 from xlm.data.evidence_v2 import canonical
 
-POLICY_VERSION = "xlm-quality-audit-detectors-v2"
+POLICY_VERSION = "xlm-quality-audit-detectors-v3"
 STATUS_PROPOSAL = "PROPOSAL_ONLY"
 REVIEW_SEED = "xlm-quality-audit-review-v2"
 
@@ -131,11 +131,11 @@ METRICS: tuple[MetricSpec, ...] = (
         "tag-shaped <name ...> tokens of any name, outside fenced code examples",
     ),
     _m(
-        "fenced_tags",
+        "code_example_tags",
         "C",
         "count",
         "none",
-        "tag-shaped tokens inside fenced code examples (``` or ~~~); never full HTML",
+        "tag-shaped tokens inside code/example regions (fenced, indented, inline code)",
     ),
     _m("html_entities", "C", "count", "high", "HTML/XML character entities", review=True),
     _m("script_style_blocks", "C", "count", "high", "<script / <style openings"),
@@ -380,7 +380,7 @@ MARKUP_FLAGS = (
     "markup_light",
     "markup_xml",
     "markup_ambiguous_code",
-    "markup_fenced_example",
+    "markup_code_example",
     "markup_any",
 )
 BOILERPLATE_CATEGORIES = (

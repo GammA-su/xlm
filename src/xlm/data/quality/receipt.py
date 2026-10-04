@@ -75,9 +75,14 @@ def _sha(value: Any) -> bool:
 
 
 def check_envelope(envelope: Any) -> None:
+    """Reconstruct the strict typed envelope (ranges and cross-field rules)."""
+    from xlm.data.quality.envelope import EnvelopeError, validate_envelope
+
     _require(isinstance(envelope, dict) and set(envelope) == ENVELOPE_KEYS, "envelope schema")
-    for key, value in envelope.items():
-        _require(type(value) in (int, float) and value >= 0, f"envelope {key}")
+    try:
+        validate_envelope(envelope)
+    except EnvelopeError:
+        raise QualityError("receipt invalid: operational envelope") from None
 
 
 def validate_receipt(receipt: Any, artifact_names: Sequence[str]) -> dict[str, Any]:

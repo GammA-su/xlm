@@ -450,7 +450,9 @@ def _verify_kept(
     content = expected["content"].tobytes()
     # Fast path: the stored row is already canonical bytes, so its SHA-256 is the C05
     # content digest; otherwise recompute canonical.digest of the parsed row.
-    if row_digest[:16] != content and bytes.fromhex(canonical.digest(document))[:16] != content:
+    if len(content) != 32:
+        raise QualityError("C05 kept-row content digest is not a full SHA-256")
+    if row_digest != content and bytes.fromhex(canonical.digest(document)) != content:
         raise QualityError("C05 kept-row content differs from the canonical source row")
 
 

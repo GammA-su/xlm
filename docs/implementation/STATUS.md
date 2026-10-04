@@ -1,4 +1,20 @@
-> **GLOBAL QUALITY AUDIT HARDENING (2026-10-04): I01–I14 REPAIRED; READY FOR INDEPENDENT RE-AUDIT; REAL AUDIT NOT RUN.**
+> **GLOBAL QUALITY AUDIT FINAL REPAIRS (2026-10-04): RECHECK BLOCKERS I04/I08/I10/I11 REPAIRED; READY FOR RE-AUDIT; REAL AUDIT NOT RUN.**
+>
+> Repairs:
+> - I04: one final-success gate after supervisor shutdown, using fresh deadline, RSS,
+>   free-space and output checks; the receipt is written last.
+> - I08: code/example regions (fenced, indented, inline) never make full HTML, and full
+>   HTML needs document structure.
+> - I10: a strict typed envelope, rebuilt during verification.
+> - I11: full 32-byte digests only.
+>
+> Results: Astra's 49 probes pass unchanged; 225 focused tests plus 1 serial pass;
+> static checks are clean; 33.2 MB/s at 8 workers (authored). The recheck evidence
+> directory is empty here, so its probes were rebuilt in
+> `tests/test_quality_final_repairs.py`.
+> [Report](reports/QUALITY-AUDIT-FINAL-REPAIRS.md).
+
+> **GLOBAL QUALITY AUDIT HARDENING (2026-10-04): I01–I14 REPAIRED** (superseded by the final repairs above; history).
 >
 > All 21 independent counterexamples now pass with the historical probe file unchanged
 > (49/49). Repairs:

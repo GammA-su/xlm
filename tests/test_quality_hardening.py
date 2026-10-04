@@ -254,12 +254,15 @@ def test_i04_deadline_starts_at_dispatch(corpus: Path, tmp_path: Path) -> None:
 def test_i04_publication_gate_withholds_complete(
     corpus: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    from xlm.data.exclusion.supervisor import Supervisor
+
     output = tmp_path / "out"
-    monkeypatch.setattr(runner, "PUBLICATION_MARGIN", 10_000.0)
+    # Only the final gate reads ``remaining``: the deadline expires exactly there.
+    monkeypatch.setattr(Supervisor, "remaining", lambda self: -1.0)
     with pytest.raises(QualityError, match="deadline"):
         audit(corpus, output)
     assert not (output / RECEIPT_FILE).exists()
-    monkeypatch.setattr(runner, "PUBLICATION_MARGIN", 0.5)
+    monkeypatch.undo()
     result = audit(corpus, output)
     assert result["files_resumed"] == 4 and (output / RECEIPT_FILE).exists()
 
@@ -470,7 +473,7 @@ def flags_of(text: str) -> set[str]:
 def test_i08_markup_semantics() -> None:
     fenced = "Example:\n```html\n<!DOCTYPE html><html><body>x</body></html>\n```\nDone."
     assert "markup_full_html" not in flags_of(fenced)
-    assert "markup_fenced_example" in flags_of(fenced)
+    assert "markup_code_example" in flags_of(fenced)
     xml = "<!DOCTYPE note>\n<note><to>Ada</to></note>\n"
     assert {"markup_xml", "has_other_doctype"} <= flags_of(xml)
     assert "markup_full_html" not in flags_of(xml)
@@ -661,7 +664,7 @@ def test_i11_kept_identity_checked_in_the_worker() -> None:
     line = canonical.canonical_bytes(row) + b"\n"
     identity = np.zeros(1, dtype=IDENTITY)
     identity["doc"][0] = np.frombuffer(doc_digest("doc-1"), dtype=np.uint8)
-    identity["content"][0] = np.frombuffer(hashlib.sha256(line[:-1]).digest()[:16], np.uint8)
+    identity["content"][0] = np.frombuffer(hashlib.sha256(line[:-1]).digest(), np.uint8)
     identity["bytes"][0] = row["utf8_byte_count"]
     task = ChunkTask(0, "p", 1, 0, line, np.ones(1, bool).tobytes(), 4096, True, identity.tobytes())
     assert process_chunk(task).rows == 1

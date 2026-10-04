@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import hashlib
 import math
+import shutil
 import threading
 import time
 from collections import deque
@@ -106,7 +107,18 @@ class Limits:
             raise QualityError("--deadline-hours outside (0, 168]")
 
     def envelope(self) -> dict[str, Any]:
-        """The effective operational envelope, recorded in units and the receipt."""
+        """The effective operational envelope (strictly validated), recorded in units and
+        the receipt."""
+        from xlm.data.quality.envelope import EnvelopeError, validate_envelope
+
+        body = self._envelope_body()
+        try:
+            validate_envelope(body)
+        except EnvelopeError:
+            raise QualityError("operational envelope is invalid") from None
+        return body
+
+    def _envelope_body(self) -> dict[str, Any]:
         return {
             "workers": self.workers,
             "queue_tasks": 2 * self.workers if self.workers > 1 else 1,
@@ -136,6 +148,16 @@ def _existing(path: Path) -> Path:
     return current
 
 
+def _tree_rss() -> int:
+    from xlm.data.exclusion.supervisor import tree_rss
+
+    return int(tree_rss())
+
+
+def _free_bytes(path: str) -> int:
+    return int(shutil.disk_usage(path).free)
+
+
 class Guard:
     """One supervisor from dispatch to publication (deadline, tree RSS, free space)."""
 
@@ -150,11 +172,14 @@ class Guard:
     ) -> None:
         from xlm.data.exclusion.supervisor import Deadline, Supervisor
 
+        self.max_rss_bytes = max_rss_bytes
+        self.volumes = {str(_existing(p)): reserve_bytes for p in watch}
+        self.stopped = False
         self.supervisor = Supervisor(
             Deadline(deadline_seconds, started),
             max_rss_bytes,
             interval=SUPERVISOR_INTERVAL,
-            volumes={str(_existing(p)): reserve_bytes for p in watch},
+            volumes=dict(self.volumes),
             warn=lambda _message: None,
         )
 
@@ -168,7 +193,41 @@ class Guard:
         return self
 
     def __exit__(self, kind: Any, value: Any, traceback: Any) -> None:
-        self.supervisor.__exit__(kind, value, traceback)
+        try:
+            self.supervisor.__exit__(kind, value, traceback)
+        finally:
+            self.stopped = True
+
+    def final(self, margin: float, output_check: Callable[[], None] | None = None) -> None:
+        """THE single authoritative final-success gate, only after shutdown.
+
+        Reconciles every failure the monitor recorded (before or during shutdown), then
+        takes FRESH measurements: deadline margin, whole process-tree RSS, free space on
+        every watched volume and (optionally) the output byte accounting. Any failure is
+        recorded and refuses; nothing may be published unless this returns.
+        """
+        from xlm.data.exclusion.supervisor import DEADLINE_REASON, DISK_REASON, RSS_REASON
+
+        if not self.stopped:
+            raise QualityError("final gate requires a stopped supervisor")
+        self.check()  # recorded failures and the deadline
+        remaining = self.supervisor.remaining()
+        if remaining is not None and remaining < margin:
+            self.supervisor.fail(DEADLINE_REASON)
+        rss = _tree_rss()
+        self.supervisor.peak_rss = max(self.supervisor.peak_rss, rss)
+        if rss > self.max_rss_bytes:
+            self.supervisor.fail(RSS_REASON)
+        for path, reserve in self.volumes.items():
+            if _free_bytes(path) < reserve:
+                self.supervisor.fail(DISK_REASON)
+        self.check()
+        if output_check is not None:
+            output_check()
+        self.check()
+
+    def failed(self) -> bool:
+        return self.supervisor.failure is not None
 
     def check(self) -> None:
         from xlm.data.exclusion.policy import C05Error
@@ -185,16 +244,6 @@ class Guard:
             raise QualityError(
                 reasons.get(str(exc), "supervisor refused; nothing published")
             ) from None
-
-    def gate(self, margin: float) -> None:
-        """Final success gate: no recorded failure and at least ``margin`` seconds left."""
-        from xlm.data.exclusion.supervisor import DEADLINE_REASON
-
-        self.check()
-        remaining = self.supervisor.remaining()
-        if remaining is not None and remaining < margin:
-            self.supervisor.fail(DEADLINE_REASON)
-            self.check()
 
     @property
     def peak_rss(self) -> int:
@@ -487,14 +536,21 @@ def run_audit(
                 "note": "execution facts are operational and excluded from result_digest",
             },
         )
-        reporter.stage("PUBLISH")
-        guard.gate(PUBLICATION_MARGIN)
-        tree.write(RECEIPT_FILE, raw)
-        try:
-            guard.check()
-        except QualityError:
-            (output / RECEIPT_FILE).unlink(missing_ok=True)  # job-owned; never left COMPLETE
-            raise
+        guard.check()
+    # The monitor and every worker are stopped here. Publication-last: the receipt is
+    # written only after the single final gate passes on fresh measurements.
+    reporter.stage("PUBLISH")
+
+    def output_check() -> None:
+        if tree.used_bytes() + len(raw) > limits.max_output_bytes:
+            raise QualityError("output byte ceiling (--max-output-gib) would be exceeded")
+
+    guard.final(PUBLICATION_MARGIN, output_check)
+    tree.write(RECEIPT_FILE, raw)
+    if guard.failed():  # never trust a success after any recorded failure
+        (output / RECEIPT_FILE).unlink(missing_ok=True)  # job-owned; never left COMPLETE
+        guard.check()
+        raise QualityError("supervisor refused; nothing published")
     return {
         "complete": True,
         "result_digest": result_digest,
@@ -690,7 +746,7 @@ def verify_report(
             workers=workers,
             guard=guard,
         )
-        guard.gate(0.0)
+    guard.final(0.0)
     return result
 
 
@@ -826,5 +882,5 @@ def materialize_from_audit(
         except BaseException:
             writer.abort()
             raise
-        guard.gate(0.0)
+    guard.final(0.0)
     return {"materialized": writer.count, "destination": str(destination)}

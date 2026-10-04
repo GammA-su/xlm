@@ -7,8 +7,8 @@ membership stream is then hashed exactly as parsed; no parsed row is used until 
 SHA-256, byte size and row count equal the signed completion, and the per-allocation
 kept / train-byte / non-kept totals reconcile with the signed completion.
 
-Every kept row keeps its identity: a BLAKE2b-128 digest of its ``doc_id``, the first
-16 bytes of its C05 ``content`` digest (``canonical.digest`` of the canonical row)
+Every kept row keeps its FULL identity: the complete SHA-256 of its ``doc_id``, the
+complete 32-byte C05 ``content`` digest (``canonical.digest`` of the canonical row)
 and its canonical byte count. The source scan verifies all three against the
 canonical row at that file/row and refuses on any mismatch. Rows are stored in dense
 per-file arrays as they stream, so grouping is linear in the kept rows. Nothing is
@@ -26,7 +26,8 @@ import numpy as np
 import numpy.typing as npt
 
 MEMBERSHIP_CHUNK = 16 * 1024**2
-IDENTITY = np.dtype([("doc", "u1", (16,)), ("content", "u1", (16,)), ("bytes", "<u8")])
+# Full digests only: no prefix or truncated digest can authorize an identity.
+IDENTITY = np.dtype([("doc", "u1", (32,)), ("content", "u1", (32,)), ("bytes", "<u8")])
 HEX = frozenset("0123456789abcdef")
 
 
@@ -35,7 +36,7 @@ class OverlayError(ValueError):
 
 
 def doc_digest(doc_id: str) -> bytes:
-    return hashlib.blake2b(doc_id.encode("utf-8", "surrogatepass"), digest_size=16).digest()
+    return hashlib.sha256(doc_id.encode("utf-8", "surrogatepass")).digest()
 
 
 @dataclass
@@ -134,7 +135,7 @@ def load_overlay(
         bitmap[number - 1] = True
         table = identity[path]
         table["doc"][number - 1] = np.frombuffer(doc_digest(doc_id), dtype=np.uint8)
-        table["content"][number - 1] = np.frombuffer(bytes.fromhex(content)[:16], dtype=np.uint8)
+        table["content"][number - 1] = np.frombuffer(bytes.fromhex(content), dtype=np.uint8)
         table["bytes"][number - 1] = nbytes
         key = allocations[path]
         kept_by_allocation[key] = kept_by_allocation.get(key, 0) + 1
@@ -182,7 +183,7 @@ def load_overlay(
             "kept_by_split": kept_by_split,
             "mode": view.mode,
             "identity_verification": (
-                "per kept row: doc_id BLAKE2b-128, C05 content digest (first 16 bytes), bytes"
+                "per kept row: full doc_id SHA-256, full 32-byte C05 content digest, bytes"
             ),
         },
         kept=kept,
