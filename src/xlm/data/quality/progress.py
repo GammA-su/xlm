@@ -302,11 +302,12 @@ def format_line(
     rates: tuple[float | None, float | None],
     usage: dict[str, Any],
     rss: int | None,
+    prefix: str = PREFIX,
 ) -> str:
     """One content-free progress line."""
     phase = snap["phase"]
     total_bytes = totals["file_bytes"]
-    parts = [f"{PREFIX} {phase}"]
+    parts = [f"{prefix} {phase}"]
     if phase in ("scan", "verify-drain") or snap["bytes_done"]:
         percent = 100.0 * snap["bytes_done"] / total_bytes if total_bytes else 100.0
         parts[0] += f" {percent:.1f}%"
@@ -363,7 +364,9 @@ class Reporter:
         *,
         stderr: bool,
         log: Path | None,
+        prefix: str = PREFIX,
     ) -> None:
+        self.prefix = prefix
         self.telemetry = telemetry
         self.interval = check_interval(interval)
         self.stderr = stderr
@@ -379,7 +382,7 @@ class Reporter:
         if self.log_path is not None:
             self.log = self.log_path.open("a", encoding="utf-8", newline="\n")
             self._write(
-                f"{PREFIX} start pid {os.getpid()} | workers {self.telemetry.workers} | "
+                f"{self.prefix} start pid {os.getpid()} | workers {self.telemetry.workers} | "
                 f"interval {self.interval:g}s"
             )
         if self.stderr or self.log is not None:
@@ -421,6 +424,7 @@ class Reporter:
                 rates,
                 usage,
                 None if current is None else current.rss,
+                self.prefix,
             )
             if final is not None:
                 line += f" | {final}"

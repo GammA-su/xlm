@@ -1,4 +1,6 @@
-"""Operator CLI: ``python -m xlm.data.quality {audit,report,status,benchmark,materialize-review}``.
+"""Operator CLI: ``python -m xlm.data.quality {audit,report,status,benchmark,materialize-review}``
+and the Phase-B dry run ``{clean-freeze-policy,clean-dry-run,clean-report,
+clean-materialize-review}``.
 
 stdout carries one final JSON object; progress goes to stderr. Refusals print a
 content-free message (every message in this package is authored, never corpus text).
@@ -108,7 +110,168 @@ def _parser() -> argparse.ArgumentParser:
     review.add_argument("--max-rss-gib", type=float, default=8.0)
     review.add_argument("--free-reserve-gib", type=float, default=1.0)
     review.add_argument("--deadline-hours", type=float, default=3.0)
+    _clean_parsers(commands)
     return parser
+
+
+def _clean_parsers(commands: Any) -> None:
+    freeze = commands.add_parser(
+        "clean-freeze-policy",
+        help="copy the verified Phase-A conservative cuts into a NEW frozen cleaning policy",
+    )
+    freeze.add_argument("--template", type=Path, required=True, help="cleaning_policy_v1.yaml")
+    freeze.add_argument("--audit-output", type=Path, required=True, help="Phase-A audit output")
+    freeze.add_argument("--destination", type=Path, required=True, help="new frozen policy file")
+
+    dry = commands.add_parser(
+        "clean-dry-run",
+        help="READ-ONLY policy dry run: KEEP/DROP/REVIEW reports, never a cleaned corpus",
+    )
+    dry.add_argument("--manifest", type=Path, required=True, help="C05 input manifest JSON")
+    dry.add_argument("--policy", type=Path, required=True, help="FROZEN cleaning policy YAML")
+    dry.add_argument("--output", type=Path, required=True, help="dry-run directory (resumable)")
+    dry.add_argument("--data-root", type=Path, default=None, help="default: manifest data_root")
+    dry.add_argument("--c05-proof", type=Path, default=None, help="diagnostic kept overlay")
+    dry.add_argument("--allow-authored-proof", action="store_true")
+    dry.add_argument("--workers", type=int, choices=(1, 2, 4, 8, 12, 16), required=True)
+    dry.add_argument("--max-rss-gib", type=float, default=12.0)
+    dry.add_argument("--free-reserve-gib", type=float, default=8.0)
+    dry.add_argument("--max-output-gib", type=float, default=4.0)
+    dry.add_argument("--max-document-mib", type=int, default=64)
+    dry.add_argument("--deadline-hours", type=float, default=12.0)
+    dry.add_argument(
+        "--progress-interval-seconds",
+        "--progress-interval",
+        dest="progress_interval",
+        type=float,
+        default=5.0,
+        help="stderr progress line period (default 5; operational only)",
+    )
+    dry.add_argument("--no-progress", action="store_true", help="no stderr progress lines")
+    dry.add_argument(
+        "--progress-log",
+        type=Path,
+        default=None,
+        help="also append progress lines here (outside --output, the data root and inputs)",
+    )
+
+    report = commands.add_parser(
+        "clean-report", help="validate the dry-run receipt, re-hash sources, re-derive artifacts"
+    )
+    report.add_argument("--manifest", type=Path, required=True)
+    report.add_argument("--policy", type=Path, required=True)
+    report.add_argument("--output", type=Path, required=True)
+    report.add_argument("--data-root", type=Path, default=None)
+    report.add_argument("--c05-proof", type=Path, default=None)
+    report.add_argument("--allow-authored-proof", action="store_true")
+    report.add_argument("--workers", type=int, choices=(1, 2, 4, 8, 12, 16), default=4)
+    report.add_argument("--max-rss-gib", type=float, default=8.0)
+    report.add_argument("--deadline-hours", type=float, default=6.0)
+
+    review = commands.add_parser(
+        "clean-materialize-review",
+        help="OPERATOR ONLY: copy the selected dry-run review rows' text into a new directory",
+    )
+    review.add_argument("--output", type=Path, required=True, help="completed dry-run directory")
+    review.add_argument("--destination", type=Path, required=True, help="new directory")
+    review.add_argument("--manifest", type=Path, default=None, help="default: from the receipt")
+    review.add_argument("--policy", type=Path, default=None, help="default: from the receipt")
+    review.add_argument("--data-root", type=Path, default=None)
+    review.add_argument("--c05-proof", type=Path, default=None)
+    review.add_argument("--allow-authored-proof", action="store_true")
+    review.add_argument("--operator-confirm", action="store_true", required=False)
+    review.add_argument("--strata", nargs="*", default=None)
+    review.add_argument("--components", nargs="*", default=None)
+    review.add_argument("--outcomes", nargs="*", choices=("KEEP", "DROP", "REVIEW"), default=None)
+    review.add_argument("--max-documents", type=int, default=150)
+    review.add_argument("--max-chars", type=int, default=20_000)
+    review.add_argument("--max-output-mib", type=int, default=256)
+    review.add_argument("--max-rss-gib", type=float, default=8.0)
+    review.add_argument("--free-reserve-gib", type=float, default=1.0)
+    review.add_argument("--deadline-hours", type=float, default=3.0)
+
+
+def _clean_freeze(args: argparse.Namespace, started: float) -> dict[str, Any]:
+    from xlm.data.quality.cleaning_policy import freeze_policy
+
+    return freeze_policy(args.template, args.audit_output, args.destination)
+
+
+def _clean_dry_run(args: argparse.Namespace, started: float) -> dict[str, Any]:
+    from xlm.data.quality.cleaning_runner import run_dry_run
+    from xlm.data.quality.progress import check_interval
+    from xlm.data.quality.runner import Limits
+
+    limits = Limits(
+        workers=args.workers,
+        max_rss_bytes=int(args.max_rss_gib * GIB),
+        free_reserve_bytes=int(args.free_reserve_gib * GIB),
+        max_output_bytes=int(args.max_output_gib * GIB),
+        line_ceiling=args.max_document_mib * MIB,
+        deadline_seconds=args.deadline_hours * 3600,
+    )
+    return run_dry_run(
+        args.manifest,
+        args.output,
+        args.policy,
+        limits=limits,
+        data_root=args.data_root,
+        proof=args.c05_proof,
+        allow_authored_proof=args.allow_authored_proof,
+        progress_interval=None if args.no_progress else check_interval(args.progress_interval),
+        progress_log=args.progress_log,
+        started=started,
+    )
+
+
+def _clean_report(args: argparse.Namespace, started: float) -> dict[str, Any]:
+    from xlm.data.quality.cleaning_runner import verify_dry_run
+
+    return verify_dry_run(
+        args.manifest,
+        args.output,
+        args.policy,
+        data_root=args.data_root,
+        proof=args.c05_proof,
+        allow_authored_proof=args.allow_authored_proof,
+        workers=args.workers,
+        max_rss_bytes=int(args.max_rss_gib * GIB),
+        deadline_seconds=args.deadline_hours * 3600,
+        started=started,
+    )
+
+
+def _clean_materialize(args: argparse.Namespace, started: float) -> dict[str, Any]:
+    from xlm.data.quality.cleaning_runner import materialize_review
+    from xlm.data.quality.review import ReviewError
+    from xlm.data.quality.runner import ReviewLimits
+
+    if not args.operator_confirm:
+        raise ReviewError(
+            "clean-materialize-review copies corpus text; rerun with --operator-confirm "
+            "(operator only, never an automated agent)"
+        )
+    return materialize_review(
+        args.output,
+        args.destination,
+        limits=ReviewLimits(
+            max_documents=args.max_documents,
+            max_chars=args.max_chars,
+            max_output_bytes=args.max_output_mib * MIB,
+            max_rss_bytes=int(args.max_rss_gib * GIB),
+            free_reserve_bytes=int(args.free_reserve_gib * GIB),
+            deadline_seconds=args.deadline_hours * 3600,
+        ),
+        manifest_path=args.manifest,
+        policy_path=args.policy,
+        data_root=args.data_root,
+        proof=args.c05_proof,
+        allow_authored_proof=args.allow_authored_proof,
+        strata=args.strata,
+        components=args.components,
+        outcomes=args.outcomes,
+        started=started,
+    )
 
 
 def _audit(args: argparse.Namespace, started: float) -> dict[str, Any]:
@@ -230,6 +393,10 @@ def main(argv: list[str] | None = None) -> int:
         "status": _status,
         "benchmark": _benchmark,
         "materialize-review": _materialize,
+        "clean-freeze-policy": _clean_freeze,
+        "clean-dry-run": _clean_dry_run,
+        "clean-report": _clean_report,
+        "clean-materialize-review": _clean_materialize,
     }
     try:
         result = handlers[args.command](args, started)

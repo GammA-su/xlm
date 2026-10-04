@@ -1,3 +1,38 @@
+> **GLOBAL QUALITY CLEANING PHASE B (2026-10-04): POLICY DRY RUN IMPLEMENTED (READ-ONLY, KEEP/DROP/REVIEW); FIXTURE-VERIFIED; REAL FREEZE AND DRY RUN NOT RUN.**
+>
+> Added:
+> - `recipes/quality/cleaning_policy_v1.yaml`: rule template, pinned by digest in code.
+> - `clean-freeze-policy`: copies each component's conservative Phase-A cuts verbatim
+>   into a self-digested FROZEN policy with full provenance (receipt, candidate-file
+>   SHA-256 and more).
+> - `clean-dry-run`: one detector pass plus policy evaluation per document in the same
+>   worker task; resumable, supervised, live progress. It writes content-free
+>   artifacts:
+>   - `cleaning-dry-run-summary.md`
+>   - `cleaning-dry-run.json`
+>   - `cleaning-by-component.json`
+>   - `cleaning-by-rule.json`
+>   - `cleaning-rule-intersections.json`
+>   - `cleaning-review-manifest.jsonl` (<= 150 rows)
+>   - `cleaning-policy-binding.json`
+>   - `cleaning-dry-run-receipt.json`
+> - `clean-report`: full re-derivation.
+> - `clean-materialize-review`: operator only, the Phase-A security chain.
+>
+> Guardrail crossings flag `POLICY_REQUIRES_REVIEW`. No cleaned corpus, no TRANSFORM,
+> no C05/tokenizer/training output.
+> Tests: 55 new passed. The quality selection gave 429 passed and the 2 known
+> PowerShell-junction failures; those 2 pass under the Linux shim. Serial 1 passed;
+> ruff, mypy --strict and diff-check are clean. Dry-run throughput equals the Phase-A
+> audit's (6.80-6.92 vs 6.83-7.00 MB/s, 1 worker, authored).
+> The real Phase-A conservative cuts are not in the repository; the operator freezes
+> them. Phase-A `report` must run from the audit's own commit, because the code
+> identity changed.
+> [Report](reports/QUALITY-CLEANING-PHASE-B-DRYRUN.md),
+> [evidence](evidence/QUALITY-CLEANING-PHASE-B-DRYRUN/COMMANDS.md),
+> [runbook](../runbooks/quality-cleaning-dry-run.md).
+> Next: the runbook's freeze -> `clean-dry-run` -> `clean-report` on the Windows machine.
+>
 > **GLOBAL QUALITY AUDIT PERFORMANCE + OPERATOR VISIBILITY (2026-10-04): LIVE PROGRESS, PROGRESS LOG, READ-ONLY STATUS, BENCHMARK COMMAND; DETECTOR 1.4x, OVERLAY 1.6x, EXACTLY EQUIVALENT; REAL AUDIT NOT RUN.**
 >
 > Findings: `--workers 8` did run 8 worker processes (50 % of 16 logical CPUs in

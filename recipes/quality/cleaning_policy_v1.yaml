@@ -1,0 +1,152 @@
+# XLM global quality cleaning policy v1 (Phase B). DRY-RUN ONLY: KEEP / DROP / REVIEW.
+#
+# This file is the versioned rule TEMPLATE. Its `policy` section is frozen: the code
+# (xlm.data.quality.cleaning_policy.EXPECTED_POLICY) refuses any file whose `policy`
+# differs from it, so a rule can only change in a reviewed code change (a new version).
+#
+# The numeric repetition / OCR thresholds are NOT authored here. They are copied once,
+# per component, from the verified Phase-A conservative candidate policy by the
+# operator command
+#
+#   python -m xlm.data.quality clean-freeze-policy --template recipes/quality/cleaning_policy_v1.yaml
+#       --audit-output <Phase-A audit directory> --destination recipes/quality/cleaning_policy_v1.frozen.yaml
+#
+# which validates the Phase-A receipt, checks the candidate YAML's SHA-256 against it,
+# and writes a self-digested FROZEN policy with full provenance. After freezing, the
+# dry run reads only the frozen file; it never reads the (mutable) candidate YAML.
+#
+# No production TRANSFORM exists in v1. Nothing here writes, drops or edits a corpus
+# document: `clean-dry-run` evaluates the policy and writes content-free reports only.
+kind: xlm_quality_cleaning_policy
+version: cleaning_policy_v1
+status: RULES_FROZEN_THRESHOLDS_PENDING
+policy:
+  mode: DRY_RUN_ONLY
+  outcomes: [KEEP, DROP, REVIEW]
+  transform: DISABLED
+  precedence: DROP if any DROP rule fires; otherwise REVIEW if any REVIEW rule fires; otherwise KEEP
+  detector_policy_version: xlm-quality-audit-detectors-v3
+  class_groups:
+    default: [empty, markup_like, other, prose_like]
+    structured: [code_like, math_table_like]
+  hard_corruption:
+    hard.full_html:
+      action: DROP
+      flag: markup_full_html
+      meaning: hardened detector's true HTML-page classification; code/example markup never sets it
+    hard.nul:
+      action: DROP
+      metric: nul
+      at_least: 1
+    hard.noncharacters:
+      action: DROP
+      metric: noncharacters
+      at_least: 1
+  severe_repetition:
+    threshold_band: conservative
+    threshold_source: Phase-A candidate-policy-conservative.yaml, per component, frozen at clean-freeze-policy
+    signals: [compression_ratio, ngram10_excess_ratio, dup_line_byte_ratio, dup_paragraph_byte_ratio, repeated_char_ratio, max_char_run]
+    signal_fires: value <comparator> cut with the frozen Phase-A comparator; a not-applicable value never fires
+    rules:
+      rep.severe_default:
+        action: DROP
+        class_group: default
+        signal_count_at_least: 2
+      rep.severe_structured:
+        action: DROP
+        class_group: structured
+        signal_count_at_least: 3
+      rep.structured_two_signals:
+        action: REVIEW
+        class_group: structured
+        signal_count_equals: 2
+    single_signal: default class group with exactly 1 signal stays KEEP and is eligible for review sampling
+  finepdfs_ocr:
+    components: [finepdfs_en]
+    threshold_band: conservative
+    signals: [page_number_line_ratio, repeated_header_ratio, single_char_line_ratio]
+    rules:
+      ocr.finepdfs_with_repetition:
+        action: DROP
+        ocr_signal_count_at_least: 2
+        severe_repetition_signal_count_at_least: 1
+      ocr.finepdfs_review:
+        action: REVIEW
+        ocr_signal_count_at_least: 2
+        severe_repetition_signal_count_equals: 0
+  encoding:
+    forbidden_controls: [c0_controls, c1_controls]
+    rules:
+      enc.replacement_review:
+        action: REVIEW
+        metric: replacement_chars
+        at_least: 8
+      enc.mojibake_review:
+        action: REVIEW
+        metric: mojibake_hits
+        at_least: 16
+      enc.replacement_and_mojibake:
+        action: DROP
+        all_of: [enc.replacement_review, enc.mojibake_review]
+      enc.with_forbidden_controls:
+        action: DROP
+        any_of: [enc.replacement_review, enc.mojibake_review]
+        and_any_forbidden_control_at_least: 1
+  never_drop_alone: [non_ascii, accents, cjk, arabic_hebrew, emoji, combining_marks, zwj_zwnj, math_unicode, bom, bidi_controls, zero_width, urls, generic_markup, boilerplate, page_numbers, headers, code, math, tables]
+  guardrails:
+    flag: POLICY_REQUIRES_REVIEW
+    comparison: strictly greater than, exact integer arithmetic on documents / canonical UTF-8 bytes
+    component_drop_docs_pct_gt: 2
+    global_drop_docs_pct_gt: 2
+    component_drop_bytes_pct_gt: 10
+    global_drop_bytes_pct_gt: 5
+    crossing_is_execution_failure: false
+  review_sampling:
+    max_rows: 150
+    seed: xlm-quality-cleaning-review-v1
+    rank: keyed BLAKE2b of (path, row) under SHA-256(seed, input manifest digest), XOR a per-stratum salt; ties on (path, row)
+    selection: strata in this order; a stratum takes new documents only until `quota` selected rows belong to it; stop at max_rows
+    strata:
+      - {name: priority.finewiki_en.severe_repetition, quota: 6}
+      - {name: priority.finewiki_en.compression, quota: 4}
+      - {name: priority.finepdfs_en.ocr_repetition, quota: 6}
+      - {name: priority.common_pile_prose.char_runs, quota: 6}
+      - {name: priority.ultrax_ultrafineweb.severe_tail, quota: 6}
+      - {name: priority.encoding.essential_science, quota: 3}
+      - {name: priority.encoding.essential_prose, quota: 3}
+      - {name: priority.encoding.ultrax_ultrafineweb, quota: 3}
+      - {name: drop.hard.full_html, quota: 8}
+      - {name: drop.hard.nul, quota: 8}
+      - {name: drop.hard.noncharacters, quota: 8}
+      - {name: drop.rep.severe_default, quota: 8}
+      - {name: drop.rep.severe_structured, quota: 8}
+      - {name: drop.ocr.finepdfs_with_repetition, quota: 8}
+      - {name: drop.enc.replacement_and_mojibake, quota: 8}
+      - {name: drop.enc.with_forbidden_controls, quota: 8}
+      - {name: review.rep.structured_two_signals, quota: 6}
+      - {name: review.ocr.finepdfs_review, quota: 6}
+      - {name: review.enc.replacement_review, quota: 6}
+      - {name: review.enc.mojibake_review, quota: 6}
+      - {name: coverage.<component>.<outcome>, quota: 1}
+      - {name: protected.structured_one_signal, quota: 4}
+      - {name: protected.code_example_markup, quota: 4}
+      - {name: control.default_one_signal, quota: 6}
+      - {name: control.encoding_near, quota: 4}
+      - {name: control.finepdfs_ocr_one, quota: 4}
+    definitions:
+      priority.finewiki_en.severe_repetition: component finewiki_en and any rep.* rule fired
+      priority.finewiki_en.compression: component finewiki_en and the compression_ratio signal fired
+      priority.finepdfs_en.ocr_repetition: ocr.finepdfs_with_repetition fired
+      priority.common_pile_prose.char_runs: component common_pile_prose, max_char_run or repeated_char_ratio signal fired, and any rep.* rule fired
+      priority.ultrax_ultrafineweb.severe_tail: component ultrax_ultrafineweb and any rep.* rule fired
+      priority.encoding.<component>: that component and any enc.* rule fired
+      drop.<rule>: the DROP rule fired
+      review.<rule>: the REVIEW rule fired and the outcome is REVIEW
+      coverage.<component>.<outcome>: that component and that outcome (one per manifest component and outcome)
+      protected.structured_one_signal: structured class group, exactly 1 severe signal, outcome KEEP
+      protected.code_example_markup: markup_code_example flag without markup_full_html
+      control.default_one_signal: default class group, exactly 1 severe signal, outcome KEEP (the review-eligible single-signal case)
+      control.encoding_near: outcome KEEP and (4 <= replacement_chars < 8 or 8 <= mojibake_hits < 16)
+      control.finepdfs_ocr_one: component finepdfs_en, exactly 1 OCR signal, outcome KEEP
+thresholds: null
+provenance: null

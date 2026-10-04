@@ -728,7 +728,13 @@ def check_progress_log(
             raise QualityError("progress log overlaps an audit input (manifest/proof/C05)")
 
 
-def _publish_receipt(guard: Guard, tree: OutputTree, raw: bytes, max_output_bytes: int) -> None:
+def _publish_receipt(
+    guard: Guard,
+    tree: OutputTree,
+    raw: bytes,
+    max_output_bytes: int,
+    name: str = RECEIPT_FILE,
+) -> None:
     """Reconcile, re-measure, atomically publish the staged receipt, then re-check.
 
     Nothing but the atomic rename happens between the pre-publication gate and the
@@ -743,18 +749,18 @@ def _publish_receipt(guard: Guard, tree: OutputTree, raw: bytes, max_output_byte
 
     published = False
     try:
-        tree.verify_staged(RECEIPT_FILE, raw)
+        tree.verify_staged(name, raw)
         guard.final(PUBLICATION_MARGIN, output_check)  # reconcile + fresh measurements
-        tree.publish(RECEIPT_FILE)  # the ONLY step between the two gates
+        tree.publish(name)  # the ONLY step between the two gates
         published = True
         guard.final(0.0, output_check)  # immediate post-publication synchronous gate
         if guard.failed():
             raise QualityError("supervisor refused; nothing published")
     except BaseException:
         if published:
-            tree.withdraw(RECEIPT_FILE)  # an error here propagates: the command refuses
+            tree.withdraw(name)  # an error here propagates: the command refuses
         with contextlib.suppress(OSError, QualityError):
-            tree.discard(RECEIPT_FILE)
+            tree.discard(name)
         raise
 
 
