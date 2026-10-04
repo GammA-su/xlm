@@ -1,0 +1,19 @@
+{
+ "label": "AUTHORED aggregation-scale measurement (replayed benchmark units)",
+ "units": 2035,
+ "seconds": 23.2,
+ "baseline_rss_gib": 0.045,
+ "peak_rss_gib": 0.127,
+ "artifact_bytes": {
+  "candidate-policy-aggressive.yaml": 75625,
+  "candidate-policy-conservative.yaml": 75082,
+  "candidate-policy-moderate.yaml": 75203,
+  "quality-audit.json": 55286,
+  "quality-by-component.json": 2484668,
+  "quality-histograms.json": 1735980,
+  "quality-intersections.json": 457575,
+  "quality-language.json": 110366,
+  "quality-summary.md": 4430,
+  "review-manifest.jsonl": 2673560
+ }
+}

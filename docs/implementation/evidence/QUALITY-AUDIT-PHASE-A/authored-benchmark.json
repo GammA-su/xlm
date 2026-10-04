@@ -1,0 +1,73 @@
+{
+ "corpus": {
+  "canonical_bytes": 237326851,
+  "documents": 47015,
+  "file_bytes": 268480026,
+  "files": 8,
+  "generation_seconds": 10.0
+ },
+ "kind": "xlm_quality_audit_benchmark_v1",
+ "label": "AUTHORED SYNTHETIC CORPUS MEASUREMENT + PROJECTION (not a real-corpus run)",
+ "machine": {
+  "logical_cpus": 16,
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.12.13"
+ },
+ "mean_jsonl_row_bytes": 5710.5,
+ "projection_caveats": [
+  "authored text mix, not the real detector-cost mix",
+  "corpus generated on this machine; the real corpus is read from the operator's G: SSD",
+  "projection excludes overlay membership streaming and final aggregation"
+ ],
+ "real_target": {
+  "canonical_bytes": 81859652239,
+  "documents": 15097174,
+  "file_bytes": 104506534003,
+  "mean_jsonl_row_bytes": 6922.3
+ },
+ "runs": [
+  {
+   "PROJECTION_real_scan_hours_by_bytes": 4.39,
+   "PROJECTION_real_scan_hours_by_documents": 3.62,
+   "documents_per_s": 1156.9,
+   "file_mb_per_s": 6.606,
+   "peak_process_tree_rss_gib": 0.13,
+   "scan_seconds": 40.64,
+   "wall_seconds": 41.266,
+   "workers": 1
+  },
+  {
+   "PROJECTION_real_scan_hours_by_bytes": 1.43,
+   "PROJECTION_real_scan_hours_by_documents": 1.18,
+   "documents_per_s": 3544.0,
+   "file_mb_per_s": 20.238,
+   "peak_process_tree_rss_gib": 0.708,
+   "scan_seconds": 13.266,
+   "wall_seconds": 13.844,
+   "workers": 4
+  },
+  {
+   "PROJECTION_real_scan_hours_by_bytes": 0.88,
+   "PROJECTION_real_scan_hours_by_documents": 0.73,
+   "documents_per_s": 5753.2,
+   "file_mb_per_s": 32.854,
+   "peak_process_tree_rss_gib": 1.305,
+   "scan_seconds": 8.172,
+   "wall_seconds": 8.75,
+   "workers": 8
+  },
+  {
+   "PROJECTION_real_scan_hours_by_bytes": 0.95,
+   "PROJECTION_real_scan_hours_by_documents": 0.79,
+   "documents_per_s": 5334.7,
+   "file_mb_per_s": 30.464,
+   "peak_process_tree_rss_gib": 1.795,
+   "scan_seconds": 8.813,
+   "wall_seconds": 9.391,
+   "workers": 16
+  }
+ ],
+ "worker_independent_result_digest": [
+  "c3c26d82efbab20ffd5c6f8b641c5ffbffd58353292f2cbb1c6b26b0e447cd90"
+ ]
+}

@@ -1,3 +1,33 @@
+> **GLOBAL QUALITY AUDIT PHASE A (2026-10-04): READY FOR OPERATOR RUN; REAL AUDIT NOT RUN; NO CLEANING.**
+>
+> The production order lacked a global quality-cleaning stage between the canonical
+> corpus and C05. Phase A adds a read-only, streaming, content-free audit:
+> `python -m xlm.data.quality {audit,report,materialize-review}`.
+> - **Input:** the C05 input manifest. An optional authenticated `--c05-proof`
+>   overlay adds the `c05_kept`/`c05_removed` populations.
+> - **Measurements:** dimensions A–K with document and byte impact; flag and joint
+>   intersections; per-component, allocation and source scopes; existing language
+>   evidence.
+> - **Review and candidates:** deterministic bottom-k review locators;
+>   PROPOSAL_ONLY tail-census candidate bands with every `action` null.
+> - **Resumability:** per-file atomic units with changed-file and changed-binding
+>   refusal; the receipt is written last.
+> - **Unchanged:** nothing modifies the corpus. C05 p0002 stays untouched and
+>   becomes historical once Phase-B cleaning changes the corpus.
+>
+> Tests: 81 focused tests passed on authored fixtures. Artifacts are byte-identical
+> for workers 1/2/4/8. Ruff, mypy strict and diff-check are clean; the full suite
+> was not run.
+>
+> Authored measurements: 32.9 MB/s at 8 workers with 1.3 GiB peak RSS; aggregation
+> of 2,035 units took 22 s at 0.13 GiB. The PROJECTED real scan is about 0.9 h.
+>
+> Next (operator): commit, detach `X:`, run `audit` and then `report` per the
+> runbook, and return the content-free files.
+> [Report](reports/QUALITY-AUDIT-PHASE-A.md),
+> [runbook](../runbooks/quality-audit.md),
+> [evidence](evidence/QUALITY-AUDIT-PHASE-A/COMMANDS.md).
+
 > **C06 FAST HARDENING (2026-10-03): A1–A8 REPAIRED; READY FOR INDEPENDENT RE-AUDIT; REAL FIT NOT RUN.**
 >
 > These repairs address the independent audit of `03242cf`. The scientific

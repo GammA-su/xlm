@@ -10,6 +10,20 @@ reviewed resource decision (plus trusted keys and plan authorization). A run ref
 if job files exist without signed `state.json`; never delete it to "restart" — use a
 new plan. Sections further below are historical unless they say otherwise.
 
+**Pipeline order amendment (2026-10-04).** A global quality-cleaning stage belongs
+BEFORE C05:
+
+```text
+adaptation -> canonicalization -> global quality cleaning -> global dedup ->
+contamination/lineage -> splits/membership -> tokenizer fit
+```
+
+Phase A is only a read-only audit; see [quality-audit.md](quality-audit.md). Once any
+Phase-B DROP or TRANSFORM changes the corpus, the p0002 completion, membership and
+proof (and anything fitted from them) become historical. Cleaning can create new
+duplicates, so it needs a NEW input manifest and a NEW global C05 run. Do not modify
+or delete p0002.
+
 ## Compact parallel engine (`c05-facts-v2`, 2026-10-03)
 
 `run`/`resume` now execute the compact parallel engine. The historical
