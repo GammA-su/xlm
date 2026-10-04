@@ -1,5 +1,11 @@
 # Global quality cleaning, Phase A: read-only quality audit
 
+> **Independent acceptance update (2026-10-04): real run BLOCKED at 96f38f3.**
+> The readiness statement below is historical and superseded by
+> [the independent acceptance report](QUALITY-AUDIT-INDEPENDENT-96F38F3.md).
+> No implementation repair was made in that audit. I01–I14 require a separate
+> repair task and recertification; do not use the historical launch recommendation.
+
 Date: 2026-10-04. Branch `feat/global-quality-audit`, based on `40ce62a`
 (`feat/c06-fit-fast`, the line that carries the C05 and C06 code). Worktree:
 `F:/Project/xlm-quality-audit`.
