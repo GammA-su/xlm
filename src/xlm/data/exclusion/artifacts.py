@@ -108,6 +108,24 @@ class InputFile(FrozenModel):
     upstream_component: str | None = None
 
 
+class InputAdmission(FrozenModel):
+    """Evidence chain of an admitted cleaned-corpus manifest, bound into the plan digest.
+
+    Absent (``None``) for plans over an original input manifest, whose plan digests are
+    therefore unchanged. The admission is planning permission, never a C05 result.
+    """
+
+    kind: Literal["c05_cleaned_input_admission_v1"] = "c05_cleaned_input_admission_v1"
+    admission_digest: Sha
+    cleaned_manifest_file_sha256: Sha
+    original_manifest_digest: Sha
+    production_receipt_digest: Sha
+    production_result_digest: Sha
+    verification_digest: Sha
+    audit_receipt_digest: Sha
+    audit_result_digest: Sha
+
+
 class ExecutionPlan(FrozenModel):
     kind: Literal["c05_execution_plan_v2"] = "c05_execution_plan_v2"
     sequence: int = Field(ge=1)
@@ -130,6 +148,8 @@ class ExecutionPlan(FrozenModel):
     review_decisions: dict[str, Sha] = Field(default_factory=dict)
     authorization_contract: Literal["signed-plan-digest-v2"] = "signed-plan-digest-v2"
     isolation: PlanIsolation | None = None
+    # Cleaned-corpus plans only (``xlm.data.exclusion.cleaned``); absent otherwise.
+    input_admission: InputAdmission | None = None
 
     def identity(self) -> str:
         self.policy.identity()
@@ -158,6 +178,10 @@ class ExecutionPlan(FrozenModel):
             if path.is_absolute() or not (roots[0] / path).resolve().is_relative_to(roots[0]):
                 raise C05Error("input path escapes root")
         body = self.model_dump(mode="json")
+        if self.input_admission is None:
+            del body["input_admission"]  # Original-manifest plan digests stay unchanged.
+        elif self.input_admission.original_manifest_digest == self.input_manifest_digest:
+            raise C05Error("an admitted cleaned plan cannot bind its original manifest")
         if self.isolation is None:
             del body["isolation"]  # Historical plan digests stay unchanged.
         else:
@@ -266,29 +290,37 @@ def make_plan(
     mode: Literal["protected", "authored"] = "protected",
     index: Path | None = None,
     inspector: VolumeInspector | None = None,
+    admitted: tuple[InputAdmission, tuple[InputFile, ...], dict[str, str]] | None = None,
 ) -> ExecutionPlan:
+    """``admitted`` (cleaned manifests only): binding, plan files and source seals from
+    ``xlm.data.exclusion.cleaned``; original manifests derive them from their sources."""
     require_engine_acceptance(mode)
     if manifest.get("digest") != canonical.self_digest(manifest):
         raise C05Error("input manifest digest mismatch")
     receipt = verify_benchmark(envelope, trusted, pins, policy, mode=mode)
-    sources = {s["source_key"]: s for s in manifest["sources"]}
-    files = tuple(
-        InputFile(
-            **{
-                k: f[k]
-                for k in InputFile.model_fields
-                if k in f and k not in {"source_id", "source_revision"}
-            },
-            source_id=sources[f["source_key"]]["source"]["source_id"],
-            source_revision=sources[f["source_key"]]["source"]["revision"],
+    admission: InputAdmission | None = None
+    if admitted is not None:
+        admission, files, seals = admitted
+    else:
+        sources = {s["source_key"]: s for s in manifest["sources"]}
+        files = tuple(
+            InputFile(
+                **{
+                    k: f[k]
+                    for k in InputFile.model_fields
+                    if k in f and k not in {"source_id", "source_revision"}
+                },
+                source_id=sources[f["source_key"]]["source"]["source_id"],
+                source_revision=sources[f["source_key"]]["source"]["revision"],
+            )
+            for f in manifest["files"]
         )
-        for f in manifest["files"]
-    )
+        seals = {k: s["seal_digest"] for k, s in sources.items()}
     plan = ExecutionPlan(
         sequence=sequence,
         mode=mode,
         input_manifest_digest=manifest["digest"],
-        source_seals={k: s["seal_digest"] for k, s in sources.items()},
+        source_seals=seals,
         files=files,
         benchmark_receipt_digest=str(envelope["digest"]),
         index_sha256=receipt.index_sha256,
@@ -304,6 +336,7 @@ def make_plan(
         isolation=detached_binding(
             receipt, index, manifest["data_root"], scratch, output, inspector
         ),
+        input_admission=admission,
     )
     plan.identity()
     return plan

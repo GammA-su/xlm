@@ -267,9 +267,13 @@ def test_historical_isolation_and_plan_digests_keep_their_contract(tmp_path: Pat
     assert "mechanism" not in spec.isolation.model_dump(mode="json")
     plan, _, _ = setup_run(tmp_path / "c", [document("a", "An authored row.")])
     assert plan.isolation is None
+    assert plan.input_admission is None
     historical = plan.model_dump(mode="json")
     historical.pop("isolation")
+    historical.pop("input_admission")  # additive cleaned-corpus binding, absent here
     assert plan.identity() == canonical.digest(historical)
+    # A plan file written before either optional field existed reloads to its digest.
+    assert ExecutionPlan.model_validate(historical).identity() == canonical.digest(historical)
     # A historical receipt cannot be reinterpreted as detached by adding fields.
     with pytest.raises(ValidationError):
         TypeAdapter(AnyIsolation).validate_python(

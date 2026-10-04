@@ -571,8 +571,12 @@ def load_verification(state: Path, receipt: Mapping[str, Any]) -> dict[str, Any]
 # -- cleaned manifest ---------------------------------------------------------------------------
 
 
-def build_cleaned_manifest(state_output: Path, output_root: Path) -> dict[str, Any]:
-    """Cleaned-corpus input manifest candidate from a VERIFIED inventory (new digest)."""
+def derive_cleaned_manifest(state_output: Path, output_root: Path) -> dict[str, Any]:
+    """The cleaned-manifest body re-derived from a VERIFIED production state (read-only).
+
+    ``build_cleaned_manifest`` writes exactly the canonical bytes of this body; C05
+    admission re-derives it and requires byte equality with the manifest it plans.
+    """
     state = Path(state_output)
     receipt = load_production_receipt(state)
     binding = _read_binding(state)
@@ -647,6 +651,14 @@ def build_cleaned_manifest(state_output: Path, output_root: Path) -> dict[str, A
     body["digest"] = canonical.self_digest(body)
     if kind not in MANIFEST_KINDS or body["digest"] == binding["input_manifest"]["digest"]:
         raise QualityError("cleaned manifest would reuse the original manifest identity")
+    return body
+
+
+def build_cleaned_manifest(state_output: Path, output_root: Path) -> dict[str, Any]:
+    """Cleaned-corpus input manifest candidate from a VERIFIED inventory (new digest)."""
+    state = Path(state_output)
+    body = derive_cleaned_manifest(state, output_root)
+    root, kind, files = Path(output_root), body["kind"], body["files"]
     payload = canonical.canonical_bytes(body)
     target = state / CLEANED_MANIFEST_FILE
     if target.exists():
@@ -673,6 +685,6 @@ def build_cleaned_manifest(state_output: Path, output_root: Path) -> dict[str, A
         "data_root": body["data_root"],
         "totals": body["totals"],
         "files": len(files),
-        "original_input_manifest_digest": binding["input_manifest"]["digest"],
+        "original_input_manifest_digest": body["lineage"]["original_input_manifest_digest"],
         "next": "independent audit of this manifest, then C05 from scratch (operator)",
     }

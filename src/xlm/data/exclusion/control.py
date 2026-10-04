@@ -111,9 +111,27 @@ def next_plan_sequence(plan_root: Path) -> int:
 
 
 def create_plan(args: argparse.Namespace, trust: dict[str, bytes]) -> ExecutionPlan:
+    from xlm.data.exclusion import cleaned
+
     manifest = read_metadata(args.manifest)
-    # Real source verification is metadata-only here; run hashes every input byte.
-    if args.mode == "protected":
+    admitted = None
+    if cleaned.is_cleaned(manifest):
+        # A cleaned corpus cannot be rebuilt from source seals: it is admitted only by a
+        # re-derived admission record, and only into roots of its own generation.
+        if args.admission is None:
+            raise C05Error("a cleaned manifest needs --admission from admit-cleaned")
+        record = cleaned.verify_admission(args.admission, args.manifest)
+        if record["mode"] != args.mode:
+            raise C05Error("admission mode differs from the plan mode")
+        cleaned.check_fresh_generation(
+            args.plan_root, args.scratch, args.output, manifest["digest"]
+        )
+        files, seals = cleaned.plan_inputs(manifest, record)
+        admitted = (cleaned.binding(record), files, seals)
+    elif args.admission is not None:
+        raise C05Error("--admission applies to cleaned manifests only")
+    elif args.mode == "protected":
+        # Real source verification is metadata-only here; run hashes every input byte.
         verify_input_manifest(manifest, Path(manifest["data_root"]), args.source_scratch)
     decisions = {
         purpose: verify_decision(path, trust, purpose, manifest["digest"])
@@ -139,6 +157,10 @@ def create_plan(args: argparse.Namespace, trust: dict[str, bytes]) -> ExecutionP
         raise C05Error("preparation code/dependencies stale")
     args.plan_root.mkdir(parents=True, exist_ok=True)
     with FileLock(str(args.plan_root / "allocation.lock"), timeout=0):
+        if admitted is not None:
+            cleaned.check_fresh_generation(
+                args.plan_root, args.scratch, args.output, manifest["digest"]
+            )
         sequence = next_plan_sequence(args.plan_root)
         plan = make_plan(
             manifest,
@@ -158,6 +180,7 @@ def create_plan(args: argparse.Namespace, trust: dict[str, bytes]) -> ExecutionP
             code_identity=actual["code_identity"],
             dependency_sha256=actual["dependency_sha256"],
             mode=args.mode,
+            admitted=admitted,
         )
         plan = plan.model_copy(
             update={
@@ -169,6 +192,97 @@ def create_plan(args: argparse.Namespace, trust: dict[str, bytes]) -> ExecutionP
         plan.identity()
         write_once(args.plan_root / f"p{sequence:04d}.json", plan.model_dump(mode="json"))
     return plan
+
+
+def cleaned_pins() -> tuple[str, ...]:
+    from xlm.data.exclusion.cleaned import PINS
+
+    return PINS
+
+
+def admit_cleaned_command(args: argparse.Namespace) -> int:
+    """Read-only admission of a cleaned manifest; writes only the write-once record."""
+    from xlm.data.exclusion.cleaned import Evidence, write_admission
+    from xlm.data.quality.scan import QualityError
+
+    try:
+        record = write_admission(
+            Evidence(
+                manifest=args.manifest,
+                original_manifest=args.original_manifest,
+                cleaning_state=args.cleaning_state,
+                audit_output=args.audit_output,
+                audit_report=args.audit_report,
+                **{name: getattr(args, name) for name in cleaned_pins()},
+            ),
+            args.output,
+        )
+    except (C05Error, QualityError) as exc:
+        # Both raise fixed literal messages (no record values); name the failed check.
+        print(json.dumps({"refused": True, "error_type": type(exc).__name__, "reason": str(exc)}))
+        return 1
+    print(
+        json.dumps(
+            {
+                "admission_digest": record["digest"],
+                "input_manifest_digest": record["input_manifest"]["digest"],
+                "mode": record["mode"],
+                "c05": record["c05"],
+            },
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
+def write_proof(
+    args: argparse.Namespace, plan: ExecutionPlan, identity: str, trust: dict[str, bytes]
+) -> int:
+    """Downstream proof specification of a verified completion and its own manifest.
+
+    Refuses unless the completion verifies (signature, plan bindings, membership hash)
+    and ``--manifest`` is the plan's exact input manifest; the written specification
+    is then opened through the downstream gate before this command reports success.
+    """
+    from xlm.data.exclusion.transport import ProofSpec, open_gate, protected_guard
+
+    if read_metadata(args.manifest).get("digest") != plan.input_manifest_digest:
+        raise C05Error("proof manifest differs from the plan's input manifest")
+    directory = Path(plan.output_root) / identity
+    # Downstream consumers refuse while the protected volume is mounted: check first,
+    # so a refusal never leaves a proof specification behind.
+    protected_guard(
+        plan, (args.output, args.plan, args.manifest, directory, args.trust, args.scratch)
+    )
+    envelope = verify_completion(directory, plan, trust)
+    spec = ProofSpec(
+        plan=args.plan.resolve().as_posix(),
+        manifest=args.manifest.resolve().as_posix(),
+        completion=directory.resolve().as_posix(),
+        trust=args.trust.resolve().as_posix(),
+        scratch=args.scratch.resolve().as_posix(),
+        plan_digest=identity,
+        completion_digest=str(envelope["digest"]),
+        signer=args.signer,
+        signer_key_env=args.signer_key_env,
+    )
+    write_once(args.output, spec.model_dump(mode="json", exclude_none=True))
+    args.scratch.mkdir(parents=True, exist_ok=True)
+    with open_gate(args.output, allow_authored=plan.mode == "authored"):
+        pass
+    print(
+        json.dumps(
+            {
+                "proof": str(args.output),
+                "plan_digest": identity,
+                "completion_digest": envelope["digest"],
+                "input_manifest_digest": plan.input_manifest_digest,
+                "mode": plan.mode,
+            },
+            sort_keys=True,
+        )
+    )
+    return 0
 
 
 def _trust(parser: argparse.ArgumentParser, *, signing: bool = False) -> None:
@@ -196,6 +310,24 @@ def parser() -> argparse.ArgumentParser:
         show = group.add_parser("show")
         show.add_argument("--artifact", type=Path, required=True)
         _trust(show)
+        # Reviewed VALUE of an earlier signed decision (e.g. bound to a historical
+        # manifest), written as plain data for a FRESH record; never a decision itself.
+        carry = group.add_parser("carry-forward")
+        carry.add_argument("--artifact", type=Path, required=True)
+        carry.add_argument("--output", type=Path, required=True)
+        _trust(carry)
+    admission = commands.add_parser("admit-cleaned")
+    for name in (
+        "manifest",
+        "original-manifest",
+        "cleaning-state",
+        "audit-output",
+        "audit-report",
+        "output",
+    ):
+        admission.add_argument("--" + name, type=Path, required=True)
+    for name in cleaned_pins():
+        admission.add_argument("--" + name.replace("_", "-"), required=True)
     bench = commands.add_parser("benchmark-receipt")
     bench.add_argument("action", choices=["verify"])
     bench.add_argument("--receipt", type=Path, required=True)
@@ -216,6 +348,8 @@ def parser() -> argparse.ArgumentParser:
     ):
         plan.add_argument("--" + name, type=Path, required=True)
     plan.add_argument("--source-scratch", type=Path, default=Path("C:/XLM-scratch"))
+    # Required for (and only for) a cleaned manifest: the admit-cleaned record.
+    plan.add_argument("--admission", type=Path)
     # Required for detached_volume_v1 receipts: the index inside the protected root.
     plan.add_argument("--index", type=Path)
     plan.add_argument("--pins", type=Path, default=Path("manifests/eval_dataset_pins.yaml"))
@@ -313,10 +447,26 @@ def parser() -> argparse.ArgumentParser:
     claim.add_argument("--receipt", type=Path, required=True)
     claim.add_argument("--binding", type=Path, required=True)
     _trust(claim)
-    for name in ("authorize", "run", "resume", "status", "resume-check", "verify", "publish"):
+    for name in (
+        "authorize",
+        "run",
+        "resume",
+        "status",
+        "resume-check",
+        "verify",
+        "publish",
+        "proof",
+    ):
         command = commands.add_parser(name)
         command.add_argument("--plan", type=Path, required=True)
         _trust(command, signing=name in {"authorize", "run", "resume"})
+        if name == "proof":
+            # Write-once downstream proof specification of a VERIFIED completion.
+            command.add_argument("--manifest", type=Path, required=True)
+            command.add_argument("--scratch", type=Path, required=True)
+            command.add_argument("--output", type=Path, required=True)
+            command.add_argument("--signer")
+            command.add_argument("--signer-key-env")
         if name == "authorize":
             command.add_argument("--plan-digest", required=True)
             command.add_argument("--output", type=Path, required=True)
@@ -676,6 +826,8 @@ def main(argv: list[str] | None = None) -> int:
     # The C06 fast-fit deadline covers the whole command from here (dispatch).
     args.dispatched = time.monotonic()
     try:
+        if args.command == "admit-cleaned":
+            return admit_cleaned_command(args)
         if args.command in {
             "fit-tokenizer",
             "fit-tokenizer-reference",
@@ -760,6 +912,28 @@ def main(argv: list[str] | None = None) -> int:
                     raise C05Error("decision kind mismatch")
                 print(decision.model_dump_json())
                 return 0
+            if args.action == "carry-forward":
+                # The signature is verified only to prove WHICH reviewed value is carried.
+                # The output is plain data: the operator must record a fresh decision.
+                decision = OperatorDecision.model_validate(
+                    verify_signed(load_envelope(args.artifact), trust)
+                )
+                if decision.purpose != args.command:
+                    raise C05Error("decision kind mismatch")
+                value = decision_value(args.command, decision.value)
+                write_once(args.output, value)
+                print(
+                    json.dumps(
+                        {
+                            "value": str(args.output),
+                            "carried_from_decision_digest": load_envelope(args.artifact)["digest"],
+                            "carried_from_input_manifest_digest": decision.input_manifest_digest,
+                            "signed_decision": False,
+                        },
+                        sort_keys=True,
+                    )
+                )
+                return 0
             key = key_from_env(args.key_env)
             if trust.get(args.issuer) != key:
                 raise C05Error("decision signer is not trusted")
@@ -822,6 +996,8 @@ def main(argv: list[str] | None = None) -> int:
             write_once(args.output, final_claim.to_dict())
             print(json.dumps({"receipt_id": final_claim.receipt_id, "mode": final_claim.mode}))
             return 0
+        if args.command == "proof":
+            return write_proof(args, plan, identity, trust)
         if args.command == "authorize":
             if identity != args.plan_digest:
                 raise C05Error("authorization digest differs from reviewed plan")
