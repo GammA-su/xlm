@@ -1,0 +1,1059 @@
+# XLM cleaning policy v2 (human-reviewed successor of v1) - FROZEN. Written by
+# `clean-freeze-policy`; do not edit. Thresholds are copied verbatim from the verified
+# Phase-A conservative candidate policy and equal the v1 frozen cuts (`provenance`).
+# Self-digested: any edit refuses. DRY-RUN ONLY.
+digest: 071238eeba6cc9e525925f74d44de8fc79fd5bf54d28f07959b7acd99c7647b1
+kind: xlm_quality_cleaning_policy
+policy:
+  class_groups:
+    default:
+    - empty
+    - markup_like
+    - other
+    - prose_like
+    structured:
+    - code_like
+    - math_table_like
+  detector_policy_version: xlm-quality-audit-detectors-v3
+  encoding:
+    forbidden_controls:
+    - c0_controls
+    - c1_controls
+    rules:
+      enc.mojibake_hits:
+        action: DROP
+        at_least: 16
+        metric: mojibake_hits
+      enc.replacement_and_mojibake:
+        action: DROP
+        all_of:
+        - enc.replacement_chars
+        - enc.mojibake_hits
+      enc.replacement_chars:
+        action: DROP
+        at_least: 8
+        metric: replacement_chars
+      enc.with_forbidden_controls:
+        action: DROP
+        and_any_forbidden_control_at_least: 1
+        any_of:
+        - enc.replacement_chars
+        - enc.mojibake_hits
+  finepdfs_ocr:
+    components:
+    - finepdfs_en
+    otherwise: KEEP
+    rules:
+      ocr.finepdfs_with_repetition:
+        action: DROP
+        ocr_signal_count_at_least: 2
+        severe_repetition_signal_count_at_least: 1
+    signals:
+    - page_number_line_ratio
+    - repeated_header_ratio
+    - single_char_line_ratio
+    threshold_band: conservative
+  full_html: KEEP unless another DROP rule fires (markup_full_html is not a DROP condition in v2)
+  guardrails:
+    comparison: strictly greater than, exact integer arithmetic on documents / canonical UTF-8 bytes
+    component_drop_bytes_pct_gt: 10
+    component_drop_docs_pct_gt: 2
+    crossing_is_execution_failure: false
+    flag: POLICY_REQUIRES_REVIEW
+    global_drop_bytes_pct_gt: 5
+    global_drop_docs_pct_gt: 2
+  hard_corruption:
+    hard.noncharacters:
+      action: DROP
+      at_least: 1
+      metric: noncharacters
+    hard.nul:
+      action: DROP
+      at_least: 1
+      metric: nul
+  human_review:
+    changes:
+    - hard.full_html removed: complete HTML syntax alone is KEEP (systematic false positives on programming
+        / Q&A / tutorial documents)
+    - default class group severe-repetition DROP threshold 2 -> 3 (exactly 2 signals is KEEP)
+    - structured class group exactly-two-signals REVIEW -> KEEP (DROP stays at >= 3)
+    - finepdfs_en OCR-only REVIEW -> KEEP (DROP stays at >= 2 OCR and >= 1 severe signal)
+    - encoding REVIEW thresholds -> DROP (replacement_chars >= 8, mojibake_hits >= 16)
+    predecessor_policy_section_digest: d1eb1990448ea76fbffbba9d44ff016d9dada68caabebe92ed7f61627cfe77e2
+    review_material: v1 dry-run review manifest, materialized locally by the operator; no text recorded
+    reviewed_examples: 119
+    successor_of: cleaning_policy_v1
+    thresholds: identical to the predecessor's frozen per-component conservative cuts
+  mode: DRY_RUN_ONLY
+  never_drop_alone:
+  - non_ascii
+  - accents
+  - cjk
+  - arabic_hebrew
+  - emoji
+  - combining_marks
+  - zwj_zwnj
+  - math_unicode
+  - bom
+  - bidi_controls
+  - zero_width
+  - urls
+  - generic_markup
+  - light_markup
+  - full_html_syntax
+  - code_examples
+  - boilerplate
+  - page_numbers
+  - headers
+  - code
+  - math
+  - tables
+  outcomes:
+  - KEEP
+  - DROP
+  precedence: DROP if any DROP rule fires; otherwise KEEP
+  review_sampling:
+    definitions:
+      control.default_two_signals: default class group, exactly 2 severe signals, outcome KEEP (v1 DROP,
+        v2 KEEP)
+      control.encoding_near: outcome KEEP and (4 <= replacement_chars < 8 or 8 <= mojibake_hits < 16)
+      control.finepdfs_ocr_only: component finepdfs_en, >= 2 OCR signals, 0 severe signals, outcome KEEP
+        (v1 REVIEW, v2 KEEP)
+      control.structured_two_signals: structured class group, exactly 2 severe signals, outcome KEEP (v1
+        REVIEW, v2 KEEP)
+      coverage.<component>.<outcome>: that component and that outcome (one per manifest component and
+        outcome KEEP / DROP)
+      drop.<rule>: the DROP rule fired
+      priority.common_pile_prose.char_runs: component common_pile_prose, max_char_run or repeated_char_ratio
+        signal fired, and any rep.* rule fired
+      priority.encoding.<component>: that component and any enc.* rule fired
+      priority.finepdfs_en.ocr_repetition: ocr.finepdfs_with_repetition fired
+      priority.finewiki_en.compression: component finewiki_en and the compression_ratio signal fired
+      priority.finewiki_en.severe_repetition: component finewiki_en and any rep.* rule fired
+      priority.ultrax_ultrafineweb.severe_tail: component ultrax_ultrafineweb and any rep.* rule fired
+      protected.code_example_markup: markup_code_example flag without markup_full_html
+      protected.full_html_keep: markup_full_html flag and outcome KEEP (the v1 hard.full_html cases v2
+        keeps)
+    max_rows: 150
+    rank: keyed BLAKE2b of (path, row) under SHA-256(seed, input manifest digest), XOR a per-stratum salt;
+      ties on (path, row)
+    seed: xlm-quality-cleaning-review-v2
+    selection: strata in this order; a stratum takes new documents only until `quota` selected rows belong
+      to it; stop at max_rows
+    strata:
+    - name: priority.finewiki_en.severe_repetition
+      quota: 6
+    - name: priority.finewiki_en.compression
+      quota: 4
+    - name: priority.finepdfs_en.ocr_repetition
+      quota: 6
+    - name: priority.common_pile_prose.char_runs
+      quota: 6
+    - name: priority.ultrax_ultrafineweb.severe_tail
+      quota: 6
+    - name: priority.encoding.essential_science
+      quota: 3
+    - name: priority.encoding.essential_prose
+      quota: 3
+    - name: priority.encoding.ultrax_ultrafineweb
+      quota: 3
+    - name: drop.hard.nul
+      quota: 8
+    - name: drop.hard.noncharacters
+      quota: 8
+    - name: drop.rep.severe_default
+      quota: 8
+    - name: drop.rep.severe_structured
+      quota: 8
+    - name: drop.ocr.finepdfs_with_repetition
+      quota: 8
+    - name: drop.enc.replacement_chars
+      quota: 8
+    - name: drop.enc.mojibake_hits
+      quota: 8
+    - name: drop.enc.replacement_and_mojibake
+      quota: 4
+    - name: drop.enc.with_forbidden_controls
+      quota: 4
+    - name: coverage.<component>.<outcome>
+      quota: 1
+    - name: protected.full_html_keep
+      quota: 6
+    - name: protected.code_example_markup
+      quota: 4
+    - name: control.default_two_signals
+      quota: 6
+    - name: control.structured_two_signals
+      quota: 4
+    - name: control.finepdfs_ocr_only
+      quota: 4
+    - name: control.encoding_near
+      quota: 4
+  severe_repetition:
+    below_threshold: every class group with <= 2 signals is KEEP
+    rules:
+      rep.severe_default:
+        action: DROP
+        class_group: default
+        signal_count_at_least: 3
+      rep.severe_structured:
+        action: DROP
+        class_group: structured
+        signal_count_at_least: 3
+    signal_fires: value <comparator> cut with the frozen Phase-A comparator; a not-applicable value never
+      fires
+    signals:
+    - compression_ratio
+    - ngram10_excess_ratio
+    - dup_line_byte_ratio
+    - dup_paragraph_byte_ratio
+    - repeated_char_ratio
+    - max_char_run
+    threshold_band: conservative
+    threshold_source: Phase-A candidate-policy-conservative.yaml, per component, frozen at clean-freeze-policy
+  transform: DISABLED
+provenance:
+  candidate_policy:
+    artifact: candidate-policy-conservative.yaml
+    band: conservative
+    bytes: 83362
+    kind: xlm_quality_candidate_policy_v2
+    quantile:
+    - 999
+    - 1000
+    sha256: 8ff48dae9b197e10d54dbc371e9be6267a880d8fd09c991f8793bf118bf6edbb
+    status: PROPOSAL_ONLY
+  copy_rule: 'per component and signal: comparator, cut, cut_bin and quantile_bin copied verbatim from
+    the Phase-A conservative candidate rule `<component>.<signal>`; a signal with no Phase-A rule (no
+    applicable documents) is null and never fires'
+  frozen_by: python -m xlm.data.quality clean-freeze-policy
+  phase_a:
+    binding_digest: 1ffc171f01cc76848cf47cf8703e75c2808f36004f42d324598be68faf4ea619
+    c05_overlay: true
+    code_commit: 382ab90d021ef5a800acbd818d0c57261106baa8
+    code_identity: 3ba9158e3e50acb071bfb7494449b8663654911c5871f7c1bda7679eb7c23f12
+    dependency_sha256: a57fc5d14b25cf6f9ae93877f9806770a57c390e55e9e64e007d41f987087dcd
+    detector_policy:
+      digest: 8a8c5cc68a68a382faeb39da7be6b317a1986644a832ff0f8c04f9ac31ee9cc4
+      version: xlm-quality-audit-detectors-v3
+    input_manifest_digest: 11724d92c011dd01e8e8c3ab944ac2adeef76aa8ff4abc921bf882eb0ac84152
+    input_manifest_file_sha256: 8482ef6640b46d76c73b90b940d8c5e929c02750ac748ad6bbb658d9c2c00145
+    input_manifest_mode: production
+    operational_envelope:
+      chunk_bytes: 33554432
+      deadline_seconds: 43200.0
+      free_reserve_bytes: 8589934592
+      max_document_bytes: 67108864
+      max_output_bytes: 4294967296
+      max_pending_commits: 4
+      max_rss_bytes: 12884901888
+      publication_margin_seconds: 0.5
+      queue_tasks: 16
+      review_per_stratum: 4
+      supervisor_interval_seconds: 0.25
+      verify_threads: 2
+      workers: 8
+    receipt_digest: 21a9a0c145b7b8e8eba37bd115c85ce6e85d27b88ce712862e75137fd86b0034
+    result_digest: 9f9dfe52de81c4e83ecc9edbcfa4bf87242180b3089a8a2a245ffa6ef0d541d3
+  predecessor:
+    file_sha256: bd16020cea136c8fc01610463129d426878043877233b6afd9cbf913f5919588
+    phase_a_receipt_digest: 21a9a0c145b7b8e8eba37bd115c85ce6e85d27b88ce712862e75137fd86b0034
+    policy_digest: 1a49d4360433742fcdf01c2daf75623fa5b451893642a351b412b49a2e9c11ba
+    thresholds_digest: 02030a3000274d6675bfd097467732fb5422f973a5bfa2d3abbee8b64cff6b02
+    version: cleaning_policy_v1
+status: FROZEN
+template_sha256: a3ced92843fb276f9f5649b1162d259a368e33a22dd3db506c8482729840e7d2
+thresholds:
+  common_pile_prose:
+    ocr: null
+    repetition:
+      compression_ratio:
+        comparator: <
+        cut: 0.218
+        cut_bin: 217
+        phase_a_impact:
+          bytes: 2668501
+          bytes_pct: 0.151841
+          docs: 164
+          docs_pct: 0.084171
+        phase_a_rule_id: common_pile_prose.compression_ratio
+        quantile_bin: 217
+      dup_line_byte_ratio:
+        comparator: '>='
+        cut: 0.471
+        cut_bin: 471
+        phase_a_impact:
+          bytes: 1441226
+          bytes_pct: 0.082007
+          docs: 195
+          docs_pct: 0.100081
+        phase_a_rule_id: common_pile_prose.dup_line_byte_ratio
+        quantile_bin: 471
+      dup_paragraph_byte_ratio:
+        comparator: '>='
+        cut: 0.001
+        cut_bin: 1
+        phase_a_impact:
+          bytes: 27806396
+          bytes_pct: 1.582214
+          docs: 274
+          docs_pct: 0.140627
+        phase_a_rule_id: common_pile_prose.dup_paragraph_byte_ratio
+        quantile_bin: 1
+      max_char_run:
+        comparator: '>='
+        cut: 64
+        cut_bin: 32
+        phase_a_impact:
+          bytes: 72915016
+          bytes_pct: 4.148943
+          docs: 803
+          docs_pct: 0.412129
+        phase_a_rule_id: common_pile_prose.max_char_run
+        quantile_bin: 32
+      ngram10_excess_ratio:
+        comparator: '>='
+        cut: 0.435
+        cut_bin: 435
+        phase_a_impact:
+          bytes: 1652443
+          bytes_pct: 0.094026
+          docs: 197
+          docs_pct: 0.101108
+        phase_a_rule_id: common_pile_prose.ngram10_excess_ratio
+        quantile_bin: 435
+      repeated_char_ratio:
+        comparator: '>='
+        cut: 0.125
+        cut_bin: 125
+        phase_a_impact:
+          bytes: 10190628
+          bytes_pct: 0.579858
+          docs: 196
+          docs_pct: 0.100594
+        phase_a_rule_id: common_pile_prose.repeated_char_ratio
+        quantile_bin: 125
+  essential_practical:
+    ocr: null
+    repetition:
+      compression_ratio:
+        comparator: <
+        cut: 0.267
+        cut_bin: 266
+        phase_a_impact:
+          bytes: 51029142
+          bytes_pct: 0.732882
+          docs: 1342
+          docs_pct: 0.104955
+        phase_a_rule_id: essential_practical.compression_ratio
+        quantile_bin: 266
+      dup_line_byte_ratio:
+        comparator: '>='
+        cut: 0.247
+        cut_bin: 247
+        phase_a_impact:
+          bytes: 12298789
+          bytes_pct: 0.176636
+          docs: 1302
+          docs_pct: 0.101826
+        phase_a_rule_id: essential_practical.dup_line_byte_ratio
+        quantile_bin: 247
+      dup_paragraph_byte_ratio:
+        comparator: '>='
+        cut: 0.193
+        cut_bin: 193
+        phase_a_impact:
+          bytes: 9474777
+          bytes_pct: 0.136077
+          docs: 1293
+          docs_pct: 0.101122
+        phase_a_rule_id: essential_practical.dup_paragraph_byte_ratio
+        quantile_bin: 193
+      max_char_run:
+        comparator: '>='
+        cut: 96
+        cut_bin: 36
+        phase_a_impact:
+          bytes: 64531903
+          bytes_pct: 0.926809
+          docs: 1509
+          docs_pct: 0.118015
+        phase_a_rule_id: essential_practical.max_char_run
+        quantile_bin: 36
+      ngram10_excess_ratio:
+        comparator: '>='
+        cut: 0.234
+        cut_bin: 234
+        phase_a_impact:
+          bytes: 19829403
+          bytes_pct: 0.28479
+          docs: 1288
+          docs_pct: 0.100731
+        phase_a_rule_id: essential_practical.ngram10_excess_ratio
+        quantile_bin: 234
+      repeated_char_ratio:
+        comparator: '>='
+        cut: 0.2
+        cut_bin: 200
+        phase_a_impact:
+          bytes: 31442153
+          bytes_pct: 0.451573
+          docs: 1292
+          docs_pct: 0.101044
+        phase_a_rule_id: essential_practical.repeated_char_ratio
+        quantile_bin: 200
+  essential_prose:
+    ocr: null
+    repetition:
+      compression_ratio:
+        comparator: <
+        cut: 0.323
+        cut_bin: 322
+        phase_a_impact:
+          bytes: 70854566
+          bytes_pct: 0.353015
+          docs: 4379
+          docs_pct: 0.103287
+        phase_a_rule_id: essential_prose.compression_ratio
+        quantile_bin: 322
+      dup_line_byte_ratio:
+        comparator: '>='
+        cut: 0.248
+        cut_bin: 248
+        phase_a_impact:
+          bytes: 20638392
+          bytes_pct: 0.102825
+          docs: 4259
+          docs_pct: 0.100457
+        phase_a_rule_id: essential_prose.dup_line_byte_ratio
+        quantile_bin: 248
+      dup_paragraph_byte_ratio:
+        comparator: '>='
+        cut: 0.189
+        cut_bin: 189
+        phase_a_impact:
+          bytes: 22343729
+          bytes_pct: 0.111322
+          docs: 4343
+          docs_pct: 0.102438
+        phase_a_rule_id: essential_prose.dup_paragraph_byte_ratio
+        quantile_bin: 189
+      max_char_run:
+        comparator: '>='
+        cut: 80
+        cut_bin: 34
+        phase_a_impact:
+          bytes: 70531741
+          bytes_pct: 0.351406
+          docs: 4907
+          docs_pct: 0.115741
+        phase_a_rule_id: essential_prose.max_char_run
+        quantile_bin: 34
+      ngram10_excess_ratio:
+        comparator: '>='
+        cut: 0.22
+        cut_bin: 220
+        phase_a_impact:
+          bytes: 41352524
+          bytes_pct: 0.206028
+          docs: 4298
+          docs_pct: 0.101376
+        phase_a_rule_id: essential_prose.ngram10_excess_ratio
+        quantile_bin: 220
+      repeated_char_ratio:
+        comparator: '>='
+        cut: 0.07
+        cut_bin: 70
+        phase_a_impact:
+          bytes: 26311477
+          bytes_pct: 0.13109
+          docs: 4309
+          docs_pct: 0.101636
+        phase_a_rule_id: essential_prose.repeated_char_ratio
+        quantile_bin: 70
+  essential_science:
+    ocr: null
+    repetition:
+      compression_ratio:
+        comparator: <
+        cut: 0.293
+        cut_bin: 292
+        phase_a_impact:
+          bytes: 13480600
+          bytes_pct: 0.500725
+          docs: 327
+          docs_pct: 0.103753
+        phase_a_rule_id: essential_science.compression_ratio
+        quantile_bin: 292
+      dup_line_byte_ratio:
+        comparator: '>='
+        cut: 0.238
+        cut_bin: 238
+        phase_a_impact:
+          bytes: 4894020
+          bytes_pct: 0.181784
+          docs: 320
+          docs_pct: 0.101532
+        phase_a_rule_id: essential_science.dup_line_byte_ratio
+        quantile_bin: 238
+      dup_paragraph_byte_ratio:
+        comparator: '>='
+        cut: 0.19
+        cut_bin: 190
+        phase_a_impact:
+          bytes: 6509827
+          bytes_pct: 0.241802
+          docs: 318
+          docs_pct: 0.100897
+        phase_a_rule_id: essential_science.dup_paragraph_byte_ratio
+        quantile_bin: 190
+      max_char_run:
+        comparator: '>='
+        cut: 72
+        cut_bin: 33
+        phase_a_impact:
+          bytes: 18475471
+          bytes_pct: 0.686255
+          docs: 518
+          docs_pct: 0.164354
+        phase_a_rule_id: essential_science.max_char_run
+        quantile_bin: 33
+      ngram10_excess_ratio:
+        comparator: '>='
+        cut: 0.247
+        cut_bin: 247
+        phase_a_impact:
+          bytes: 3762641
+          bytes_pct: 0.13976
+          docs: 323
+          docs_pct: 0.102483
+        phase_a_rule_id: essential_science.ngram10_excess_ratio
+        quantile_bin: 247
+      repeated_char_ratio:
+        comparator: '>='
+        cut: 0.11
+        cut_bin: 110
+        phase_a_impact:
+          bytes: 3544136
+          bytes_pct: 0.131644
+          docs: 321
+          docs_pct: 0.101849
+        phase_a_rule_id: essential_science.repeated_char_ratio
+        quantile_bin: 110
+  finepdfs_en:
+    ocr:
+      page_number_line_ratio:
+        comparator: '>='
+        cut: 0.5
+        cut_bin: 500
+        phase_a_impact:
+          bytes: 5324290
+          bytes_pct: 0.094506
+          docs: 471
+          docs_pct: 0.105903
+        phase_a_rule_id: finepdfs_en.page_number_line_ratio
+        quantile_bin: 500
+      repeated_header_ratio:
+        comparator: '>='
+        cut: 0.562
+        cut_bin: 562
+        phase_a_impact:
+          bytes: 3567492
+          bytes_pct: 0.063323
+          docs: 449
+          docs_pct: 0.100956
+        phase_a_rule_id: finepdfs_en.repeated_header_ratio
+        quantile_bin: 562
+      single_char_line_ratio:
+        comparator: '>='
+        cut: 0.553
+        cut_bin: 553
+        phase_a_impact:
+          bytes: 2968474
+          bytes_pct: 0.05269
+          docs: 447
+          docs_pct: 0.100506
+        phase_a_rule_id: finepdfs_en.single_char_line_ratio
+        quantile_bin: 553
+    repetition:
+      compression_ratio:
+        comparator: <
+        cut: 0.135
+        cut_bin: 134
+        phase_a_impact:
+          bytes: 18690983
+          bytes_pct: 0.331765
+          docs: 443
+          docs_pct: 0.099607
+        phase_a_rule_id: finepdfs_en.compression_ratio
+        quantile_bin: 134
+      dup_line_byte_ratio:
+        comparator: '>='
+        cut: 0.648
+        cut_bin: 648
+        phase_a_impact:
+          bytes: 15323138
+          bytes_pct: 0.271986
+          docs: 445
+          docs_pct: 0.100057
+        phase_a_rule_id: finepdfs_en.dup_line_byte_ratio
+        quantile_bin: 648
+      dup_paragraph_byte_ratio:
+        comparator: '>='
+        cut: 0.555
+        cut_bin: 555
+        phase_a_impact:
+          bytes: 15035147
+          bytes_pct: 0.266874
+          docs: 449
+          docs_pct: 0.100956
+        phase_a_rule_id: finepdfs_en.dup_paragraph_byte_ratio
+        quantile_bin: 555
+      max_char_run:
+        comparator: '>='
+        cut: 176
+        cut_bin: 43
+        phase_a_impact:
+          bytes: 17378519
+          bytes_pct: 0.308469
+          docs: 511
+          docs_pct: 0.114897
+        phase_a_rule_id: finepdfs_en.max_char_run
+        quantile_bin: 43
+      ngram10_excess_ratio:
+        comparator: '>='
+        cut: 0.616
+        cut_bin: 616
+        phase_a_impact:
+          bytes: 10128824
+          bytes_pct: 0.179787
+          docs: 445
+          docs_pct: 0.100057
+        phase_a_rule_id: finepdfs_en.ngram10_excess_ratio
+        quantile_bin: 616
+      repeated_char_ratio:
+        comparator: '>='
+        cut: 0.646
+        cut_bin: 646
+        phase_a_impact:
+          bytes: 13006866
+          bytes_pct: 0.230872
+          docs: 446
+          docs_pct: 0.100282
+        phase_a_rule_id: finepdfs_en.repeated_char_ratio
+        quantile_bin: 646
+  finewiki_en:
+    ocr: null
+    repetition:
+      compression_ratio:
+        comparator: <
+        cut: 0.069
+        cut_bin: 68
+        phase_a_impact:
+          bytes: 388100028
+          bytes_pct: 7.165512
+          docs: 801
+          docs_pct: 0.092671
+        phase_a_rule_id: finewiki_en.compression_ratio
+        quantile_bin: 68
+      dup_line_byte_ratio:
+        comparator: '>='
+        cut: 0.189
+        cut_bin: 189
+        phase_a_impact:
+          bytes: 27836945
+          bytes_pct: 0.513955
+          docs: 874
+          docs_pct: 0.101117
+        phase_a_rule_id: finewiki_en.dup_line_byte_ratio
+        quantile_bin: 189
+      dup_paragraph_byte_ratio:
+        comparator: '>='
+        cut: 0.035
+        cut_bin: 35
+        phase_a_impact:
+          bytes: 37478423
+          bytes_pct: 0.691966
+          docs: 868
+          docs_pct: 0.100423
+        phase_a_rule_id: finewiki_en.dup_paragraph_byte_ratio
+        quantile_bin: 35
+      max_char_run:
+        comparator: '>='
+        cut: 2048
+        cut_bin: 72
+        phase_a_impact:
+          bytes: 386175356
+          bytes_pct: 7.129977
+          docs: 1023
+          docs_pct: 0.118356
+        phase_a_rule_id: finewiki_en.max_char_run
+        quantile_bin: 72
+      ngram10_excess_ratio:
+        comparator: '>='
+        cut: 0.487
+        cut_bin: 487
+        phase_a_impact:
+          bytes: 216259479
+          bytes_pct: 3.992811
+          docs: 865
+          docs_pct: 0.100076
+        phase_a_rule_id: finewiki_en.ngram10_excess_ratio
+        quantile_bin: 487
+      repeated_char_ratio:
+        comparator: '>='
+        cut: 0.835
+        cut_bin: 835
+        phase_a_impact:
+          bytes: 383889580
+          bytes_pct: 7.087774
+          docs: 876
+          docs_pct: 0.101349
+        phase_a_rule_id: finewiki_en.repeated_char_ratio
+        quantile_bin: 835
+  ifm_behaviors_general_planning:
+    ocr: null
+    repetition:
+      compression_ratio:
+        comparator: <
+        cut: 0.362
+        cut_bin: 361
+        phase_a_impact:
+          bytes: 22431607
+          bytes_pct: 0.118245
+          docs: 1356
+          docs_pct: 0.100072
+        phase_a_rule_id: ifm_behaviors_general_planning.compression_ratio
+        quantile_bin: 361
+      dup_line_byte_ratio:
+        comparator: '>='
+        cut: 0.097
+        cut_bin: 97
+        phase_a_impact:
+          bytes: 19103103
+          bytes_pct: 0.100699
+          docs: 1385
+          docs_pct: 0.102212
+        phase_a_rule_id: ifm_behaviors_general_planning.dup_line_byte_ratio
+        quantile_bin: 97
+      dup_paragraph_byte_ratio:
+        comparator: '>='
+        cut: 0.028
+        cut_bin: 28
+        phase_a_impact:
+          bytes: 19719354
+          bytes_pct: 0.103948
+          docs: 1394
+          docs_pct: 0.102876
+        phase_a_rule_id: ifm_behaviors_general_planning.dup_paragraph_byte_ratio
+        quantile_bin: 28
+      max_char_run:
+        comparator: '>='
+        cut: 256
+        cut_bin: 48
+        phase_a_impact:
+          bytes: 31553243
+          bytes_pct: 0.166328
+          docs: 1590
+          docs_pct: 0.117341
+        phase_a_rule_id: ifm_behaviors_general_planning.max_char_run
+        quantile_bin: 48
+      ngram10_excess_ratio:
+        comparator: '>='
+        cut: 0.063
+        cut_bin: 63
+        phase_a_impact:
+          bytes: 22297598
+          bytes_pct: 0.117539
+          docs: 1398
+          docs_pct: 0.103171
+        phase_a_rule_id: ifm_behaviors_general_planning.ngram10_excess_ratio
+        quantile_bin: 63
+      repeated_char_ratio:
+        comparator: '>='
+        cut: 0.254
+        cut_bin: 254
+        phase_a_impact:
+          bytes: 19429111
+          bytes_pct: 0.102418
+          docs: 1357
+          docs_pct: 0.100146
+        phase_a_rule_id: ifm_behaviors_general_planning.repeated_char_ratio
+        quantile_bin: 254
+  nemotron_wiki_rewrite:
+    ocr: null
+    repetition:
+      compression_ratio:
+        comparator: <
+        cut: 0.211
+        cut_bin: 210
+        phase_a_impact:
+          bytes: 39361424
+          bytes_pct: 1.082576
+          docs: 994
+          docs_pct: 0.0994
+        phase_a_rule_id: nemotron_wiki_rewrite.compression_ratio
+        quantile_bin: 210
+      dup_line_byte_ratio:
+        comparator: '>='
+        cut: 0.273
+        cut_bin: 273
+        phase_a_impact:
+          bytes: 25959313
+          bytes_pct: 0.713971
+          docs: 1007
+          docs_pct: 0.1007
+        phase_a_rule_id: nemotron_wiki_rewrite.dup_line_byte_ratio
+        quantile_bin: 273
+      dup_paragraph_byte_ratio:
+        comparator: '>='
+        cut: 0.071
+        cut_bin: 71
+        phase_a_impact:
+          bytes: 25593325
+          bytes_pct: 0.703905
+          docs: 1013
+          docs_pct: 0.1013
+        phase_a_rule_id: nemotron_wiki_rewrite.dup_paragraph_byte_ratio
+        quantile_bin: 71
+      max_char_run:
+        comparator: '>='
+        cut: 72
+        cut_bin: 33
+        phase_a_impact:
+          bytes: 5400329
+          bytes_pct: 0.148528
+          docs: 1185
+          docs_pct: 0.1185
+        phase_a_rule_id: nemotron_wiki_rewrite.max_char_run
+        quantile_bin: 33
+      ngram10_excess_ratio:
+        comparator: '>='
+        cut: 0.439
+        cut_bin: 439
+        phase_a_impact:
+          bytes: 25570312
+          bytes_pct: 0.703272
+          docs: 1005
+          docs_pct: 0.1005
+        phase_a_rule_id: nemotron_wiki_rewrite.ngram10_excess_ratio
+        quantile_bin: 439
+      repeated_char_ratio:
+        comparator: '>='
+        cut: 0.454
+        cut_bin: 454
+        phase_a_impact:
+          bytes: 1829537
+          bytes_pct: 0.050319
+          docs: 1011
+          docs_pct: 0.1011
+        phase_a_rule_id: nemotron_wiki_rewrite.repeated_char_ratio
+        quantile_bin: 454
+  simple_stories:
+    ocr: null
+    repetition:
+      compression_ratio:
+        comparator: <
+        cut: 0.467
+        cut_bin: 466
+        phase_a_impact:
+          bytes: 2238057
+          bytes_pct: 0.199508
+          docs: 947
+          docs_pct: 0.104441
+        phase_a_rule_id: simple_stories.compression_ratio
+        quantile_bin: 466
+      dup_line_byte_ratio:
+        comparator: '>='
+        cut: 0.001
+        cut_bin: 1
+        phase_a_impact:
+          bytes: 5687
+          bytes_pct: 0.000507
+          docs: 5
+          docs_pct: 0.000551
+        phase_a_rule_id: simple_stories.dup_line_byte_ratio
+        quantile_bin: 0
+      dup_paragraph_byte_ratio:
+        comparator: '>='
+        cut: 0.001
+        cut_bin: 1
+        phase_a_impact:
+          bytes: 0
+          bytes_pct: 0.0
+          docs: 0
+          docs_pct: 0.0
+        phase_a_rule_id: simple_stories.dup_paragraph_byte_ratio
+        quantile_bin: 0
+      max_char_run:
+        comparator: '>='
+        cut: 1
+        cut_bin: 1
+        phase_a_impact:
+          bytes: 517
+          bytes_pct: 4.6e-05
+          docs: 1
+          docs_pct: 0.00011
+        phase_a_rule_id: simple_stories.max_char_run
+        quantile_bin: 0
+      ngram10_excess_ratio:
+        comparator: '>='
+        cut: 0.001
+        cut_bin: 1
+        phase_a_impact:
+          bytes: 260978
+          bytes_pct: 0.023264
+          docs: 146
+          docs_pct: 0.016102
+        phase_a_rule_id: simple_stories.ngram10_excess_ratio
+        quantile_bin: 0
+      repeated_char_ratio:
+        comparator: '>='
+        cut: 0.001
+        cut_bin: 1
+        phase_a_impact:
+          bytes: 517
+          bytes_pct: 4.6e-05
+          docs: 1
+          docs_pct: 0.00011
+        phase_a_rule_id: simple_stories.repeated_char_ratio
+        quantile_bin: 0
+  synth_en_explanations:
+    ocr: null
+    repetition:
+      compression_ratio:
+        comparator: <
+        cut: 0.285
+        cut_bin: 284
+        phase_a_impact:
+          bytes: 15925078
+          bytes_pct: 0.333768
+          docs: 1768
+          docs_pct: 0.100951
+        phase_a_rule_id: synth_en_explanations.compression_ratio
+        quantile_bin: 284
+      dup_line_byte_ratio:
+        comparator: '>='
+        cut: 0.255
+        cut_bin: 255
+        phase_a_impact:
+          bytes: 15753648
+          bytes_pct: 0.330175
+          docs: 1764
+          docs_pct: 0.100723
+        phase_a_rule_id: synth_en_explanations.dup_line_byte_ratio
+        quantile_bin: 255
+      dup_paragraph_byte_ratio:
+        comparator: '>='
+        cut: 0.206
+        cut_bin: 206
+        phase_a_impact:
+          bytes: 17252915
+          bytes_pct: 0.361598
+          docs: 1756
+          docs_pct: 0.100266
+        phase_a_rule_id: synth_en_explanations.dup_paragraph_byte_ratio
+        quantile_bin: 206
+      max_char_run:
+        comparator: '>='
+        cut: 10
+        cut_bin: 10
+        phase_a_impact:
+          bytes: 9195890
+          bytes_pct: 0.192733
+          docs: 1979
+          docs_pct: 0.112999
+        phase_a_rule_id: synth_en_explanations.max_char_run
+        quantile_bin: 10
+      ngram10_excess_ratio:
+        comparator: '>='
+        cut: 0.38
+        cut_bin: 380
+        phase_a_impact:
+          bytes: 14560089
+          bytes_pct: 0.30516
+          docs: 1757
+          docs_pct: 0.100323
+        phase_a_rule_id: synth_en_explanations.ngram10_excess_ratio
+        quantile_bin: 380
+      repeated_char_ratio:
+        comparator: '>='
+        cut: 0.014
+        cut_bin: 14
+        phase_a_impact:
+          bytes: 8983160
+          bytes_pct: 0.188275
+          docs: 1771
+          docs_pct: 0.101123
+        phase_a_rule_id: synth_en_explanations.repeated_char_ratio
+        quantile_bin: 14
+  ultrax_ultrafineweb:
+    ocr: null
+    repetition:
+      compression_ratio:
+        comparator: <
+        cut: 0.338
+        cut_bin: 337
+        phase_a_impact:
+          bytes: 97930037
+          bytes_pct: 0.904544
+          docs: 2845
+          docs_pct: 0.10358
+        phase_a_rule_id: ultrax_ultrafineweb.compression_ratio
+        quantile_bin: 337
+      dup_line_byte_ratio:
+        comparator: '>='
+        cut: 0.009
+        cut_bin: 9
+        phase_a_impact:
+          bytes: 46105869
+          bytes_pct: 0.425863
+          docs: 5121
+          docs_pct: 0.186443
+        phase_a_rule_id: ultrax_ultrafineweb.dup_line_byte_ratio
+        quantile_bin: 9
+      dup_paragraph_byte_ratio:
+        comparator: '>='
+        cut: 0.001
+        cut_bin: 1
+        phase_a_impact:
+          bytes: 0
+          bytes_pct: 0.0
+          docs: 0
+          docs_pct: 0.0
+        phase_a_rule_id: ultrax_ultrafineweb.dup_paragraph_byte_ratio
+        quantile_bin: 0
+      max_char_run:
+        comparator: '>='
+        cut: 24
+        cut_bin: 20
+        phase_a_impact:
+          bytes: 67268091
+          bytes_pct: 0.621331
+          docs: 3610
+          docs_pct: 0.131431
+        phase_a_rule_id: ultrax_ultrafineweb.max_char_run
+        quantile_bin: 20
+      ngram10_excess_ratio:
+        comparator: '>='
+        cut: 0.079
+        cut_bin: 79
+        phase_a_impact:
+          bytes: 12141230
+          bytes_pct: 0.112144
+          docs: 2749
+          docs_pct: 0.100084
+        phase_a_rule_id: ultrax_ultrafineweb.ngram10_excess_ratio
+        quantile_bin: 79
+      repeated_char_ratio:
+        comparator: '>='
+        cut: 0.021
+        cut_bin: 21
+        phase_a_impact:
+          bytes: 14848244
+          bytes_pct: 0.137148
+          docs: 2777
+          docs_pct: 0.101104
+        phase_a_rule_id: ultrax_ultrafineweb.repeated_char_ratio
+        quantile_bin: 21
+version: cleaning_policy_v2
