@@ -246,3 +246,10 @@ The v2 review strata replace v1's REVIEW strata with:
 - `control.finepdfs_ocr_only`.
 
 These sample exactly the documents v2 keeps where v1 did not.
+
+## After the approved v2 dry run: production cleaning
+
+The approved `POLICY_WITHIN_GUARDRAILS` v2 dry run is the input of Phase C.
+`clean-production` writes a NEW DROP-only cleaned corpus, bound to this dry run and
+its approved `result_digest`. See the
+[production cleaning runbook](quality-cleaning-production.md).

@@ -1,0 +1,9 @@
+c9de734d7fc323ea80d8cb2ca90a1eb7a4d860cc
+>       assert found["pid"] == process.pid
+E       AssertionError: assert 53032 == 6152
+E        +  where 6152 = <Popen: returncode: 0 args: ['C:\\t\\qc\\base\\.venv\\Scripts\\python.exe', ...>.pid
+
+tests\test_quality_performance.py:640: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_quality_performance.py::test_status_discovers_a_running_audit_process_tree
+1 failed in 7.67s

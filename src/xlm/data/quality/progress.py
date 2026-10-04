@@ -21,6 +21,7 @@ import sys
 import threading
 import time
 from collections import deque
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import IO, Any
@@ -41,7 +42,13 @@ PHASES = (
     "write",
     "publish",
     "complete",
+    # Phase C production cleaning and its verification.
+    "dry-run-verify",
+    "clean",
+    "verify-output",
 )
+# Phases whose progress is the byte stream of the corpus (percent, rate, ETA, workers).
+STREAM_PHASES = ("scan", "verify-drain", "clean", "verify-output")
 
 
 class ProgressError(ValueError):
@@ -308,7 +315,7 @@ def format_line(
     phase = snap["phase"]
     total_bytes = totals["file_bytes"]
     parts = [f"{prefix} {phase}"]
-    if phase in ("scan", "verify-drain") or snap["bytes_done"]:
+    if phase in STREAM_PHASES or snap["bytes_done"]:
         percent = 100.0 * snap["bytes_done"] / total_bytes if total_bytes else 100.0
         parts[0] += f" {percent:.1f}%"
         parts += [
@@ -316,7 +323,7 @@ def format_line(
             f"{_count(snap['docs_done'])}/{_count(totals['documents'])} docs",
             f"{snap['bytes_done'] / 1e9:.1f}/{total_bytes / 1e9:.1f} GB",
         ]
-    if phase not in ("scan", "verify-drain") and snap["phase_total"]:
+    if phase not in STREAM_PHASES and snap["phase_total"]:
         done, total = snap["phase_done"], snap["phase_total"]
         unit = snap["phase_unit"]
         if unit == "bytes":
@@ -327,7 +334,7 @@ def format_line(
         if done and total > done and phase_elapsed > 0:
             parts.append(f"phase ETA {duration((total - done) * phase_elapsed / done)}")
     window, ewma = rates
-    if phase in ("scan", "verify-drain"):
+    if phase in STREAM_PHASES:
         remaining = total_bytes - snap["bytes_done"]
         eta = remaining / ewma if ewma and ewma > 0 else None
         parts += [
@@ -336,7 +343,7 @@ def format_line(
             f"ETA {duration(eta) if remaining > 0 else '0s'}",
         ]
     parts.append(f"elapsed {duration(elapsed)}")
-    if phase in ("scan", "verify-drain"):
+    if phase in STREAM_PHASES:
         active = usage.get("active")
         parts += [
             f"workers {'--' if active is None else active}/{workers} active",
@@ -365,8 +372,10 @@ class Reporter:
         stderr: bool,
         log: Path | None,
         prefix: str = PREFIX,
+        suffix: Callable[[], str] | None = None,
     ) -> None:
         self.prefix = prefix
+        self.suffix = suffix  # extra content-free fields
         self.telemetry = telemetry
         self.interval = check_interval(interval)
         self.stderr = stderr
@@ -426,6 +435,8 @@ class Reporter:
                 None if current is None else current.rss,
                 self.prefix,
             )
+            if self.suffix is not None:
+                line += f" | {self.suffix()}"
             if final is not None:
                 line += f" | {final}"
             self._write(line)

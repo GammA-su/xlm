@@ -1,0 +1,48 @@
+bringing up nodes...
+bringing up nodes...
+
+........................................................................ [ 13%]
+...............................................F........................ [ 26%]
+........................................................................ [ 40%]
+........................................................................ [ 53%]
+.....................ss.sssss........................................... [ 66%]
+........................................................................ [ 80%]
+........................................................................ [ 93%]
+...................................                                      [100%]
+================================== FAILURES ===================================
+_____________ test_status_discovers_a_running_audit_process_tree ______________
+[gw3] win32 -- Python 3.12.13 F:\Project\xlm-quality-cleaner-v1\.venv\Scripts\python.exe
+
+bench_corpus = WindowsPath('C:/t/qc/e2/popen-gw3/bench-corpus0/manifest.json')
+tmp_path = WindowsPath('C:/t/qc/e2/popen-gw3/test_status_discovers_a_runnin0')
+
+    def test_status_discovers_a_running_audit_process_tree(bench_corpus: Path, tmp_path: Path) -> None:
+        output = tmp_path / "running"
+        command = [
+            sys.executable,
+            "-m",
+            "xlm.data.quality",
+            *audit_args(bench_corpus, output, "--no-progress")[0:],
+        ]
+        command[command.index("--max-document-mib") + 1] = "64"
+        process = subprocess.Popen(
+            command, cwd=REPO, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=os.environ.copy()
+        )
+        found = None
+        try:
+            deadline = time.monotonic() + 60
+            while time.monotonic() < deadline and process.poll() is None and found is None:
+                state = status.audit_status(bench_corpus, output)
+                found = state["process"]
+        finally:
+            out, _ = process.communicate(timeout=120)
+        assert process.returncode == 0 and json.loads(out)["complete"] is True
+        assert found is not None, "the running audit was never discovered"
+>       assert found["pid"] == process.pid
+E       AssertionError: assert 22036 == 54424
+E        +  where 54424 = <Popen: returncode: 0 args: ['F:\\Project\\xlm-quality-cleaner-v1\\.venv\\Sc...>.pid
+
+tests\test_quality_performance.py:640: AssertionError
+=========================== short test summary info ===========================
+SKIPPED [7] tests\test_quality_acceptance_fixes.py:213: fd path inspection needs /proc (POSIX); other fsync points still run
+1 failed, 531 passed, 7 skipped in 60.87s (0:01:00)

@@ -1,3 +1,31 @@
+> **QUALITY CLEANER V1 / PHASE C (2026-10-04): PRODUCTION DROP-ONLY CLEANER IMPLEMENTED; FIXTURE-VERIFIED; REAL PRODUCTION RUN NOT RUN.**
+>
+> Commands: `clean-production`, `clean-production-verify`, `clean-production-manifest`.
+> - KEEP rows are copied as their original input line bytes, in order; DROP rows are
+>   omitted; nothing is transformed or reserialized. One pass both decides (the
+>   Phase-B worker kernel) and writes.
+> - Before any write, it re-verifies the approved v2 dry run (strict receipt, COMPLETE,
+>   within guardrails, `--approved-result-digest`, policy/manifest/source binding,
+>   artifacts re-derived from units).
+> - Each file's complete decision statistics must equal its dry-run unit before the
+>   output is published. The global/component/rule accounting must equal the dry
+>   run's before the receipt. A mismatch is fatal.
+> - Per-file atomic publication (temporary -> fsync -> re-hash -> rename -> unit),
+>   with verified resume.
+> - Deterministic, collision-free mapping to `<output-root>/<same relative path>`.
+>   State (units, artifacts, receipt) lives only under `--state-output`.
+> - The independent verifier never writes the corpus. The cleaned manifest (new
+>   digest) is built only after verification.
+> Tests: production 41 passed. Quality suites 531 passed, 7 skipped (POSIX /proc), 1 failed; the 1 failure is the
+> pre-existing native-Windows status-PID test, which fails identically on base
+> `c9de734`. Synthetic 16-worker throughput: production 64.6 MB/s vs dry run 65.8 MB/s.
+> [Report](reports/QUALITY-CLEANER-V1.md),
+> [evidence](evidence/QUALITY-CLEANER-V1/COMMANDS.md),
+> [runbook](../runbooks/quality-cleaning-production.md).
+> Next (operator, Windows): the runbook's `clean-production` -> `clean-production-verify
+> --compare-sources` -> `clean-production-manifest`; then an independent audit of the
+> cleaned manifest and C05 from scratch.
+>
 > **QUALITY CLEANING POLICY V2 (2026-10-04): HUMAN-REVIEWED SUCCESSOR IMPLEMENTED; FIXTURE-VERIFIED; REAL V2 FREEZE AND DRY RUN NOT RUN.**
 >
 > The operator reviewed the 119 materialized v1 examples. `cleaning_policy_v2.yaml`

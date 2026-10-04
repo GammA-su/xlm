@@ -1,6 +1,7 @@
-"""Operator CLI: ``python -m xlm.data.quality {audit,report,status,benchmark,materialize-review}``
-and the Phase-B dry run ``{clean-freeze-policy,clean-dry-run,clean-report,
-clean-materialize-review}``.
+"""Operator CLI: ``python -m xlm.data.quality {audit,report,status,benchmark,materialize-review}``,
+the Phase-B dry run ``{clean-freeze-policy,clean-dry-run,clean-report,
+clean-materialize-review}`` and Phase-C production cleaning ``{clean-production,
+clean-production-verify,clean-production-manifest}``.
 
 stdout carries one final JSON object; progress goes to stderr. Refusals print a
 content-free message (every message in this package is authored, never corpus text).
@@ -195,6 +196,141 @@ def _clean_parsers(commands: Any) -> None:
     review.add_argument("--max-rss-gib", type=float, default=8.0)
     review.add_argument("--free-reserve-gib", type=float, default=1.0)
     review.add_argument("--deadline-hours", type=float, default=3.0)
+    _production_parsers(commands)
+
+
+def _production_inputs(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--manifest", type=Path, required=True, help="ORIGINAL input manifest")
+    parser.add_argument("--policy", type=Path, required=True, help="cleaning_policy_v2.frozen.yaml")
+    parser.add_argument(
+        "--approved-dry-run", type=Path, required=True, help="COMPLETE clean-dry-run v2 output"
+    )
+    parser.add_argument(
+        "--approved-result-digest",
+        required=True,
+        help="the operator-approved dry-run result_digest (the dry run must equal it)",
+    )
+    parser.add_argument("--output-root", type=Path, required=True, help="cleaned corpus root")
+    parser.add_argument(
+        "--state-output", type=Path, required=True, help="cleaning receipts/state (not corpus)"
+    )
+    parser.add_argument("--data-root", type=Path, default=None, help="default: manifest data_root")
+
+
+def _progress_options(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--progress-interval-seconds",
+        "--progress-interval",
+        dest="progress_interval",
+        type=float,
+        default=5.0,
+        help="stderr progress line period (default 5; operational only)",
+    )
+    parser.add_argument("--no-progress", action="store_true", help="no stderr progress lines")
+    parser.add_argument(
+        "--progress-log",
+        type=Path,
+        default=None,
+        help="also append progress lines here (outside the corpus, state, data root, inputs)",
+    )
+
+
+def _production_parsers(commands: Any) -> None:
+    production = commands.add_parser(
+        "clean-production",
+        help="PRODUCTION DROP-only cleaning bound to the approved dry run (writes a NEW corpus)",
+    )
+    _production_inputs(production)
+    production.add_argument("--workers", type=int, choices=(1, 2, 4, 8, 12, 16), required=True)
+    production.add_argument("--max-rss-gib", type=float, default=12.0)
+    production.add_argument("--free-reserve-gib", type=float, default=16.0)
+    production.add_argument(
+        "--max-output-gib", type=float, default=160.0, help="cleaned corpus byte ceiling"
+    )
+    production.add_argument("--deadline-hours", type=float, default=12.0)
+    _progress_options(production)
+
+    verify = commands.add_parser(
+        "clean-production-verify",
+        help="re-read and re-hash the finished cleaned corpus (never modifies it)",
+    )
+    _production_inputs(verify)
+    verify.add_argument("--workers", type=int, choices=(1, 2, 4, 8, 12, 16), default=8)
+    verify.add_argument(
+        "--compare-sources",
+        action="store_true",
+        help="also re-hash every source and prove KEEP rows byte-identical and in order",
+    )
+    verify.add_argument(
+        "--reevaluate", action="store_true", help="also re-decide every output row (must be KEEP)"
+    )
+    verify.add_argument("--max-rss-gib", type=float, default=8.0)
+    verify.add_argument("--deadline-hours", type=float, default=12.0)
+    _progress_options(verify)
+
+    manifest = commands.add_parser(
+        "clean-production-manifest",
+        help="cleaned-corpus input manifest candidate from a VERIFIED cleaning (no C05)",
+    )
+    manifest.add_argument("--state-output", type=Path, required=True)
+    manifest.add_argument("--output-root", type=Path, required=True)
+
+
+def _clean_production(args: argparse.Namespace, started: float) -> dict[str, Any]:
+    from xlm.data.quality.production import run_production
+    from xlm.data.quality.progress import check_interval
+    from xlm.data.quality.runner import Limits
+
+    limits = Limits(
+        workers=args.workers,
+        max_rss_bytes=int(args.max_rss_gib * GIB),
+        free_reserve_bytes=int(args.free_reserve_gib * GIB),
+        max_output_bytes=int(args.max_output_gib * GIB),
+        line_ceiling=64 * MIB,  # replaced by the approved dry run's document ceiling
+        deadline_seconds=args.deadline_hours * 3600,
+    )
+    return run_production(
+        args.manifest,
+        args.policy,
+        args.approved_dry_run,
+        args.output_root,
+        args.state_output,
+        approved_result_digest=args.approved_result_digest,
+        limits=limits,
+        data_root=args.data_root,
+        progress_interval=None if args.no_progress else check_interval(args.progress_interval),
+        progress_log=args.progress_log,
+        started=started,
+    )
+
+
+def _clean_production_verify(args: argparse.Namespace, started: float) -> dict[str, Any]:
+    from xlm.data.quality.production_verify import verify_production
+    from xlm.data.quality.progress import check_interval
+
+    return verify_production(
+        args.manifest,
+        args.policy,
+        args.approved_dry_run,
+        args.output_root,
+        args.state_output,
+        approved_result_digest=args.approved_result_digest,
+        data_root=args.data_root,
+        workers=args.workers,
+        compare_sources=args.compare_sources,
+        reevaluate=args.reevaluate,
+        max_rss_bytes=int(args.max_rss_gib * GIB),
+        deadline_seconds=args.deadline_hours * 3600,
+        progress_interval=None if args.no_progress else check_interval(args.progress_interval),
+        progress_log=args.progress_log,
+        started=started,
+    )
+
+
+def _clean_production_manifest(args: argparse.Namespace, started: float) -> dict[str, Any]:
+    from xlm.data.quality.production_verify import build_cleaned_manifest
+
+    return build_cleaned_manifest(args.state_output, args.output_root)
 
 
 def _clean_freeze(args: argparse.Namespace, started: float) -> dict[str, Any]:
@@ -405,6 +541,9 @@ def main(argv: list[str] | None = None) -> int:
         "clean-dry-run": _clean_dry_run,
         "clean-report": _clean_report,
         "clean-materialize-review": _clean_materialize,
+        "clean-production": _clean_production,
+        "clean-production-verify": _clean_production_verify,
+        "clean-production-manifest": _clean_production_manifest,
     }
     try:
         result = handlers[args.command](args, started)

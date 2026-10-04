@@ -61,7 +61,14 @@ BINDING_KIND = "xlm_quality_audit_binding_v2"
 BINDING_FILE = "audit-binding.json"
 UNITS_DIR = "units"
 RECEIPT_FILE = "quality-audit-receipt.json"
-MANIFEST_KINDS = {"c05_global_input_manifest": "production", "authored_c05_input": "authored"}
+MANIFEST_KINDS = {
+    "c05_global_input_manifest": "production",
+    "authored_c05_input": "authored",
+    # Phase-C cleaned-corpus manifest candidates (``clean-production-manifest``); the
+    # mode is the original manifest's. They still need an independent audit and C05.
+    "xlm_cleaned_input_manifest": "production",
+    "authored_cleaned_input": "authored",
+}
 FILE_KEYS = (
     "path",
     "source_key",

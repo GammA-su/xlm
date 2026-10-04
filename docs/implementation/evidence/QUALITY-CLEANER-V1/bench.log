@@ -1,0 +1,56 @@
+{
+ "accounting": {
+  "drop": {
+   "canonical_bytes": 0,
+   "documents": 0,
+   "line_bytes": 0
+  },
+  "input": {
+   "canonical_bytes": 712208539,
+   "documents": 140356,
+   "file_bytes": 805425277
+  },
+  "keep": {
+   "canonical_bytes": 712208539,
+   "documents": 140356
+  },
+  "output": {
+   "canonical_bytes": 712208539,
+   "documents": 140356,
+   "file_bytes": 805425277
+  }
+ },
+ "file_mb_per_s": {
+  "audit": 62.79,
+  "dry_run": 65.75,
+  "production": 64.59,
+  "verify_compare_sources": 236.47
+ },
+ "policy_status": "POLICY_WITHIN_GUARDRAILS",
+ "production_clean_phase": {
+  "clean_seconds": 11.469,
+  "cleaned_documents": 140356,
+  "cleaned_file_bytes": 805425277,
+  "documents_per_s": 12237.9,
+  "file_mb_per_s": 70.226,
+  "peak_tasks_in_flight": 32,
+  "workers": 16
+ },
+ "production_phase_seconds": {
+  "aggregate": 0.25,
+  "clean": 11.344,
+  "dry-run-verify": 0.64,
+  "prepare": 0.063,
+  "publish": 0.031,
+  "resume-verify": 0.0,
+  "verify-drain": 0.125,
+  "write": 0.016
+ },
+ "synthetic_corpus_file_bytes": 805425277,
+ "wall_seconds": {
+  "audit": 12.828,
+  "dry_run": 12.25,
+  "production": 12.469,
+  "verify_compare_sources": 3.406
+ }
+}

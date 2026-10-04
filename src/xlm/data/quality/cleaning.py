@@ -556,6 +556,13 @@ class CleanTask:
     rules: ComponentRules
     params: RuleParams
     sampling_key: bytes
+    # Production cleaning: no review sampling; every DROP row's chunk-local byte span
+    # and content-free identity are returned instead (``CleanChunkResult.drops``).
+    record_drops: bool = False
+
+
+# (start, stop, row, file offset, doc_id SHA-256, row SHA-256, rule mask, canonical bytes)
+DropSpan = tuple[int, int, int, int, str, str, int, int]
 
 
 @dataclass
@@ -567,6 +574,7 @@ class CleanChunkResult:
     populations: dict[str, CleanStats]
     review: dict[str, list[Any]]
     max_line_bytes: int = 0
+    drops: list[DropSpan] | None = None
     # Operational only (never in a unit, artifact or receipt).
     nbytes: int = 0
     pid: int = 0
@@ -619,6 +627,7 @@ def measure_clean_chunk(task: CleanTask) -> CleanChunkResult:
         )
     }
     sampler = _Sampler(task)
+    drops: list[DropSpan] | None = [] if task.record_drops else None
     count = 0
     pos, row, end_of_data = 0, chunk.first_row, len(data)
     while pos < end_of_data:
@@ -666,6 +675,24 @@ def measure_clean_chunk(task: CleanTask) -> CleanChunkResult:
         columns["ocr_scope"].append(decision.ocr_scope)
         columns["names"].append(name)
         columns["strata"].append(strata)
+        if drops is not None:
+            if decision.outcome == DROP:
+                drops.append(
+                    (
+                        pos,
+                        stop,
+                        row,
+                        chunk.base_offset + pos,
+                        hashlib.sha256(doc_id.encode("utf-8")).hexdigest(),
+                        row_digest.hex(),
+                        decision.rules,
+                        nbytes,
+                    )
+                )
+            count += 1
+            row += 1
+            pos = stop
+            continue
         sampler.offer(
             count,
             row,
@@ -723,6 +750,7 @@ def measure_clean_chunk(task: CleanTask) -> CleanChunkResult:
         populations=populations,
         review=review,
         max_line_bytes=int(arrays["lines"].max()) if count else 0,
+        drops=drops,
     )
 
 
