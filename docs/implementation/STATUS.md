@@ -1,3 +1,37 @@
+> **C05 CLEANED-CORPUS RERUN READINESS (2026-10-04): CLEANED-MANIFEST ADMISSION + FRESH GENERATION IMPLEMENTED; AUTHORED-VERIFIED; REAL C05 NOT RUN.**
+>
+> - The compact parallel engine (`2ae48a7`) is already on this branch (an ancestor);
+>   nothing was ported.
+> - New `admit-cleaned`: a read-only, write-once admission record for the cleaned
+>   manifest (`eda4f994…`, never rewritten). It requires:
+>   - the operator's pins;
+>   - byte-exact re-derivation from the VERIFIED cleaning state;
+>   - the original manifest by lineage;
+>   - the independent post-clean audit of this manifest;
+>   - its saved `report` with `sources_rehashed: true`.
+>
+>   The record says `c05: NOT RUN`.
+> - `plan --admission` re-derives the record. The plan digest binds it; historical plan
+>   digests are unchanged. A fresh-generation guard refuses historical plan, scratch and
+>   output roots.
+> - `<purpose> carry-forward` carries reviewed values only: decisions bound to
+>   `11724d92…` stay refused.
+> - New `proof` verb (write-once).
+> - Policy and resources are unchanged.
+> - The protected benchmark preparation must be REBUILT: the code identity changed, and
+>   a stale receipt is refused.
+>
+> Tests: new 31 passed; C05+C06+MinHash+equivalence 586 passed (an earlier run had 1
+> load-sensitive C06 supervisor failure that passes in isolation); quality 532 passed,
+> 7 skipped; serial selections pass; ruff, mypy --strict and diff-check are clean.
+> Downstream quota/C06/selection still need `sources` through the admission lineage, so
+> they are BLOCKED on a cleaned proof.
+> [Report](reports/C05-CLEANED-RERUN-READINESS.md),
+> [evidence](evidence/C05-CLEANED-RERUN-READINESS/COMMANDS.md),
+> [runbook](../runbooks/c05-global-preparation.md#cleaned-corpus-c05-rerun-clean-v1-2026-10-04-operator-sequence).
+> Next (operator): runbook steps 0-3 (`admit-cleaned`), then fresh decisions, the
+> protected rebuild, then plan `clean-v1-p0001`.
+>
 > **QUALITY CLEANER V1 / PHASE C (2026-10-04): PRODUCTION DROP-ONLY CLEANER IMPLEMENTED; FIXTURE-VERIFIED; REAL PRODUCTION RUN NOT RUN.**
 >
 > Commands: `clean-production`, `clean-production-verify`, `clean-production-manifest`.

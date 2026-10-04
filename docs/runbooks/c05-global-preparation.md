@@ -24,6 +24,148 @@ proof (and anything fitted from them) become historical. Cleaning can create new
 duplicates, so it needs a NEW input manifest and a NEW global C05 run. Do not modify
 or delete p0002.
 
+## Cleaned-corpus C05 rerun (`clean-v1`, 2026-10-04): operator sequence
+
+The Phase-C cleaned corpus (`G:/XLM-clean-v1`, 2,035 files, 15,087,207 documents,
+81,365,827,139 canonical bytes, 103,993,099,986 file bytes) needs a FRESH C05. The
+cleaned manifest's semantic digest is
+`eda4f99499c87b2a404ee544547d26dca2be05a9012d417914a95d36167e1389`. The pre-cleaning
+C05 (manifest `11724d92…84152`, plans p0001/p0002, membership, proof) is historical.
+Do not resume, modify or reuse it. Details:
+[report](../implementation/reports/C05-CLEANED-RERUN-READINESS.md).
+
+What is new (everything else is the unchanged compact engine and policy):
+
+* `admit-cleaned`: read-only admission of the cleaned manifest. It writes one
+  write-once record that permits PLANNING only (`c05: NOT RUN`). It requires:
+  * your pins;
+  * byte-exact re-derivation of the manifest from the verified cleaning state;
+  * the original manifest by lineage;
+  * the independent post-clean audit;
+  * that audit's saved `report` output (`verified` and `sources_rehashed` true).
+* `plan --admission`: required for a cleaned manifest and re-derived at plan time.
+  The plan digest binds the admission. The plan refuses a plan root, scratch root or
+  output root that holds another corpus generation's plans or state.
+* `<purpose> carry-forward`: copies the reviewed VALUE of a historical signed
+  decision into a plain value file. Signed decisions bound to `11724d92…` are refused;
+  record FRESH ones bound to `eda4f994…`.
+* `proof`: writes the downstream proof specification of a verified completion.
+  Detach `X:` first.
+
+Fresh roots. Attempt `clean-v1-p0001` is plan `p0001.json` in the fresh plan root.
+The CLI numbers plans per plan root, so a new generation starts at p0001 and never
+shares numbering with the historical p0002.
+
+| role | path |
+|---|---|
+| plan root (plans, decisions, admission, receipt export, proof) | `G:/XLM/c05-clean-v1/` |
+| C05 output (membership, completion) | `G:/C05-output-clean-v1/` |
+| C05 scratch (protected volume) | `X:/C05-Scratch-clean-v1/` |
+| protected preparation (fresh, write-once) | `X:/C05-Protected/prepared-clean-v1/` |
+
+Historical, read-only: `G:/XLM/c05/`, `G:/C05-output/` (or wherever p0002 wrote),
+`X:/C05-Scratch/`, `X:/C05-Protected/prepared/`.
+
+```powershell
+# 0. Final reviewed commit, clean tree (code identity hashes src/). G: and X: attached.
+cd F:\Project\xlm-c05-clean-v1
+git status --short                      # must print nothing
+$op  = 'uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator'
+$q   = 'uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.quality'
+$new = 'eda4f99499c87b2a404ee544547d26dca2be05a9012d417914a95d36167e1389'
+$cm  = 'G:/XLM/quality/clean-production-v1/cleaned-input-manifest.json'
+$cs  = 'G:/XLM/quality/clean-production-v1'
+$ao  = 'G:/XLM/quality/audit-clean-v1'
+$ar  = 'G:/XLM/quality/audit-clean-v1.report.json'    # outside the audit directory
+$om  = (Get-Content -Raw 'G:/XLM/quality/clean-dry-run-v2/cleaning-dry-run-receipt.json' | ConvertFrom-Json).input_manifest.path
+$pr  = 'G:/XLM/c05-clean-v1'
+$sc  = 'X:/C05-Scratch-clean-v1'
+$out = 'G:/C05-output-clean-v1'
+$pp  = 'X:/C05-Protected/prepared-clean-v1'
+$tr  = "$pr/trust.json"
+$sig = "--trust $tr --issuer GammA --key-env XLM_C05_OPERATOR_KEY"   # your trusted issuer/key env
+
+# 1. Pins (expect 4986bad2...02761 and the cleaned manifest digest).
+(Get-FileHash $cm -Algorithm SHA256).Hash.ToLower()
+(Get-Content -Raw $cm | ConvertFrom-Json).digest
+
+# 2. Saved audit report. Skip if $ar already holds the report's JSON line. Otherwise,
+#    run `report` from the checkout of the audit's own commit (`report` refuses
+#    another code identity):
+#    (Get-Content -Raw "$ao/quality-audit-receipt.json" | ConvertFrom-Json).implementation.code_commit
+#    From that checkout (it re-hashes all 2,035 sources):
+#    Invoke-Expression "$q report --manifest $cm --output $ao --workers 16 --max-rss-gib 8 --deadline-hours 6" | Set-Content -Encoding ascii $ar
+#    Expect result_digest 290b402a..., "sources_rehashed": true, "verified": true.
+
+# 3. Admission (read-only; writes only $pr/admission.json).
+New-Item -ItemType Directory -Force $pr | Out-Null
+Copy-Item '<the trust config used for p0002>' $tr      # issuer -> key env NAME only
+Invoke-Expression "$op admit-cleaned --manifest $cm --original-manifest $om --cleaning-state $cs --audit-output $ao --audit-report $ar --expect-manifest-digest $new --expect-production-result-digest 4847bdb654dd5f1264d32861b4a8a33428a71b2da9cd9749d05b47e55f02df11 --expect-production-receipt-digest 29982d5e192eae9e8ef6baa5359af11a88068de8f315c11e427bdeb63782ee2e --expect-verification-digest 14be3fbd1dd109ff65441357507ebddb86b1b2320f1f724f12c4e79e2469504d --expect-audit-result-digest 290b402a52519a8878365218371ce61a5dd65dcffd5330ff941fa21789ca21c7 --output $pr/admission.json"
+$adm = (Get-Content -Raw "$pr/admission.json" | ConvertFrom-Json).digest
+
+# 4. Fresh decisions: carry the reviewed VALUES forward, review them, sign NEW records.
+Invoke-Expression "$op lineage-policy carry-forward --artifact '<p0002 lineage-policy decision>' --output $pr/lineage-policy-value.json --trust $tr"
+Invoke-Expression "$op resources carry-forward --artifact '<p0002 resources decision>' --output $pr/resources-value.json --trust $tr"
+Invoke-Expression "$op policy carry-forward --artifact '<p0002 policy decision>' --output $pr/policy-value.json --trust $tr"
+#    Review: choice KNOWN_GROUP_ONLY; workers 16, ram_bytes 51539607552,
+#    index_bytes 68719476736, scratch_bytes 377957122048, stage_seconds 86400,
+#    overall_seconds 259200, records >= 15087207; policy c05-production-v2,
+#    c05-matcher-v4, disk-minhash-v2, near_threshold 0.8, permutations 128, bands 32,
+#    seed 20260919, survivor longest-source-doc-v1, lineage known-lineage-v3,
+#    gutenberg known_groups_only, fuzzy_auto_exclusion false, review.enabled false,
+#    split_version group-hash-v2.
+Invoke-Expression "$op lineage-policy record --value $pr/lineage-policy-value.json --input-manifest-digest $new --evidence-digest $adm --operator $env:USERNAME --output $pr/lineage-policy.json $sig"
+Invoke-Expression "$op resources record --value $pr/resources-value.json --input-manifest-digest $new --evidence-digest $adm --operator $env:USERNAME --output $pr/resources.json $sig"
+Invoke-Expression "$op policy freeze --value $pr/policy-value.json --input-manifest-digest $new --evidence-digest $adm --operator $env:USERNAME --output $pr/policy.json $sig"
+
+# 5. Protected benchmark preparation REBUILD (X: mounted; marker already exists, no init).
+Invoke-Expression "$op protected-root describe --root X:/C05-Protected --operator $env:USERNAME --attestation-sha256 <sha256-of-signed-operator-attestation> --repository F:/Project/xlm-c05-clean-v1 --data-root G:/XLM-clean-v1 --c05-scratch $sc --c05-output $out"
+#    Write X:/C05-Protected/material-spec-clean-v1.json: the existing material-spec.json
+#    with files/publisher inventory/coverage UNCHANGED and the new "isolation" object.
+#    Never edit material-spec.json in place.
+$id = (Invoke-Expression "uv run --offline --locked --no-sync --extra cpu --extra eval python -c 'import json; from xlm.data.exclusion.identity import implementation_identity; print(json.dumps(implementation_identity()))'") | ConvertFrom-Json
+Invoke-Expression "$op build-local --spec X:/C05-Protected/material-spec-clean-v1.json --material-root X:/C05-Protected/material --output $pp --policy '<the v4 matcher-policy.json used for the p0002 preparation>' --resources $pr/resources-value.json --issuer GammA --key-env XLM_C05_OPERATOR_KEY --code-commit $($id.code_commit) --code-identity $($id.code_identity) --dependency-sha256 $($id.dependency_sha256) --receipt-export $pr/benchmark-preparation.receipt.json"
+Invoke-Expression "$op benchmark-receipt verify --receipt $pr/benchmark-preparation.receipt.json --policy $pr/policy-value.json --trust $tr"
+#    index_sha256 equal to the historical receipt's => the carried-forward
+#    benchmark_patterns/automaton_nodes/benchmark_bytes still apply; otherwise run
+#    benchmark-matcher-audit-local (scratch $sc/matcher-audit) and sign new resources.
+
+# 6. Plan (write-once $pr/p0001.json); review it and its digest.
+Invoke-Expression "$op plan --mode protected --manifest $cm --admission $pr/admission.json --benchmark-receipt $pr/benchmark-preparation.receipt.json --index $pp/index.jsonl --lineage-policy $pr/lineage-policy.json --resources $pr/resources.json --policy $pr/policy.json --plan-root $pr --scratch $sc --output $out --trust $tr"
+
+# 7. Authorize the reviewed digest.
+Invoke-Expression "$op authorize --plan $pr/p0001.json --plan-digest <reviewed plan_digest> --output $pr/p0001.authorization.json $sig"
+
+# 8. Read-only checks before the first run: status says not_started; resume-check
+#    refuses with "no signed state" (exit 1) until a run has started.
+Invoke-Expression "$op status --plan $pr/p0001.json --trust $tr"
+
+# 9. Run (live progress on stderr).
+Invoke-Expression "$op run --plan $pr/p0001.json --authorization $pr/p0001.authorization.json --benchmark-receipt $pr/benchmark-preparation.receipt.json --index $pp/index.jsonl $sig --progress-interval 5"
+
+# 10. After an interruption: read-only check, then resume (same arguments).
+Invoke-Expression "$op resume-check --plan $pr/p0001.json --authorization $pr/p0001.authorization.json --benchmark-receipt $pr/benchmark-preparation.receipt.json --index $pp/index.jsonl --trust $tr"
+Invoke-Expression "$op resume --plan $pr/p0001.json --authorization $pr/p0001.authorization.json --benchmark-receipt $pr/benchmark-preparation.receipt.json --index $pp/index.jsonl $sig --progress-interval 5"
+
+# 11. Verify the signed completion and membership hash.
+Invoke-Expression "$op verify --plan $pr/p0001.json --trust $tr"
+
+# 12. Detach X:, then write the downstream proof (write-once; refuses while X: is mounted).
+Invoke-Expression "$op proof --plan $pr/p0001.json --manifest $cm --scratch C:/XLM-scratch/c05-clean-v1-lookup --output $pr/clean-v1-p0001.proof.json --trust $tr --signer GammA --signer-key-env XLM_C05_OPERATOR_KEY"
+```
+
+Expected refusals (fail-closed, nothing written):
+* a plan with any decision bound to `11724d92…` refuses (`stale operator decision`);
+* `--plan-root G:/XLM/c05`, `--scratch X:/C05-Scratch` or `--output G:/C05-output`
+  refuses (another generation);
+* a benchmark receipt built under another code identity refuses
+  (`preparation code/dependencies stale`).
+
+Make every later code change BEFORE step 5. Any change to `src/` changes the code
+identity, and then the receipt, the plan and the run must all be redone from the
+same final commit. Post-C05 commands (quota report, C06 fit, selection) do not yet
+accept a cleaned-manifest proof; see the report's blockers.
+
 ## Compact parallel engine (`c05-facts-v2`, 2026-10-03)
 
 `run`/`resume` now execute the compact parallel engine. The historical
