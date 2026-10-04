@@ -182,9 +182,10 @@ rows in a chunk.
 ## Limitations
 
 - **No real thresholds yet.** The operator must run `clean-freeze-policy` against the
-  completed Phase-A audit output before the dry run. Freezing validates the Phase-A
-  receipt strictly and the candidate file's SHA-256, but does not re-hash the corpus.
-  Run Phase-A `report` first if that has not been done.
+  completed Phase-A audit output before the dry run. Freezing verifies the Phase-A
+  output against its own recorded identities and artifacts (see "Historical freeze
+  compatibility" below), but does not re-hash the corpus. Run Phase-A `report` from
+  the audit's own commit first if that has not been done.
 - **Phase-A `report` / `materialize-review` at this commit.** They will refuse a
   Phase-A audit produced at `51e0098`: the code identity covers all of `src/`. Run
   them from the audit's own commit. The freeze does not need them.
@@ -201,3 +202,67 @@ On the operator machine, run the runbook's freeze → `clean-dry-run` → `clean
 sequence ([runbook](../../runbooks/quality-cleaning-dry-run.md)). Return the
 content-free artifacts and the frozen policy for review. Use `clean-materialize-review`
 locally if text inspection is wanted.
+
+## Historical freeze compatibility (fix after 8c3cd32)
+
+**Defect.** On the native Windows machine, `clean-freeze-policy` refused the operator's
+completed `G:/XLM/quality/audit-v3` with
+`receipt invalid: envelope chunk_bytes differs from the implementation`.
+
+**Root cause.** `freeze_policy` verified the Phase-A output with the CURRENT-run
+verifier `receipt.load_receipt`. Through `check_execution_envelope` ->
+`_check_bound_envelope`, that verifier requires the receipt's operational envelope to
+equal the current implementation constants (`implementation_constants()`).
+`audit-v3` was produced by the accepted pre-performance implementation (`c517fe0` /
+`382ab90`, 32 MiB scan chunks). Phase B is based on `51e0098`, which uses 8 MiB chunks.
+A valid historical audit therefore failed a check that is only meaningful for a
+current run. The detector policy identity is identical across these versions
+(`8a8c5cc6...`), so the thresholds remain valid.
+
+**Fix.** New `xlm.data.quality.phase_a_history` verifies a completed Phase-A output
+against its OWN recorded identities and artifacts:
+
+- the receipt: exact field set, kind, schema, COMPLETE, read-only flags, self-digest;
+- the binding: field set, kind, self-digest, digest reference, and byte identity with
+  `audit-binding.json`;
+- the input manifest, implementation/code identity and overlay against the binding;
+- the detector policy against the current detectors;
+- the source identities;
+- the exact artifact set and the result digest;
+- every artifact's size, SHA-256 and record count on disk;
+- the recorded envelope: typed and ranged, consistent with its own binding
+  (`chunk_bytes`, `line_ceiling`) and with the measured execution facts;
+- the output bytes, re-derived from binding, units and artifacts;
+- the bindings and kinds of `quality-audit.json` and `quality-by-component.json`;
+- the candidate YAML: kind, band, `PROPOSAL_ONLY`, `executable: false`, bindings,
+  component set equal to the audit's own component scopes, expected detector set,
+  unique ids, every action null, comparator and cut types.
+
+The freeze parses the candidate from the hash-verified bytes and records the
+historical envelope as `provenance.phase_a.operational_envelope`. It does not compare
+historical `chunk_bytes`, workers or queue with current constants. `receipt.py` and
+every other command are unchanged; the current-run verifier still refuses the
+historical audit, and a test asserts this.
+
+**Tests.** 25 new, in `tests/test_quality_cleaning.py` (80 passed):
+
+- a regression fixture: a COMPLETE audit recorded with 32 MiB chunks freezes, its
+  envelope is preserved, and it drives a current 8 MiB dry run plus `clean-report`;
+- 13 tampering refusals:
+  - changed candidate YAML, changed `quality-audit.json`, changed binding file;
+  - wrong manifest digest, alone or with a consistently forged binding;
+  - wrong detector digest;
+  - INCOMPLETE status; missing receipt; edit without a valid self-digest;
+  - missing `quality-audit.json` or candidate; an internally inconsistent envelope; a
+    missing unit;
+- 10 malformed-candidate refusals with a fully resealed receipt: non-null action,
+  duplicate rule, unexpected detector, missing or extra component, `executable: true`,
+  wrong status, string cut, wrong comparator, wrong bindings;
+- a reseal control.
+
+A genuine cross-version run is recorded: a `382ab90` worktree audit was refused at
+`8c3cd32`, freezes with this fix, and its policy drives `clean-dry-run` and
+`clean-report`. The Phase-A receipt suites gave 374 passed, plus the 2 known
+PowerShell-junction tests, which pass under the Linux shim. ruff, mypy --strict and
+diff-check are clean.
+[Evidence](../evidence/QUALITY-CLEANING-HISTORICAL-FREEZE/COMMANDS.md).

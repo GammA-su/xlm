@@ -1,3 +1,22 @@
+> **QUALITY CLEANING PHASE B HISTORICAL FREEZE COMPATIBILITY (2026-10-04): FIXED.**
+>
+> `clean-freeze-policy` refused the valid historical `audit-v3` with
+> `envelope chunk_bytes differs from the implementation`. The cause: it used the
+> current-run receipt verifier, which binds the envelope to the current 8 MiB chunk
+> constant, while `audit-v3` was produced with 32 MiB chunks.
+> A new historical verifier (`phase_a_history`) checks the audit against its own
+> recorded identities and artifacts: receipt, binding, manifest, code and detector
+> identity, every artifact hash, the internal envelope consistency, output bytes and
+> candidate semantics. It preserves the historical envelope as provenance. All other
+> verification is unchanged and strict.
+> Tests: 80 passed, including the 32 MiB regression, 23 tampering/malformed refusals
+> and a reseal control. A genuine `382ab90` audit freezes and drives `clean-dry-run` /
+> `clean-report`. Phase-A receipt suites: 374 passed, plus the 2 known junction tests,
+> which pass under the shim.
+> [Report](reports/QUALITY-CLEANING-PHASE-B-DRYRUN.md#historical-freeze-compatibility-fix-after-8c3cd32),
+> [evidence](evidence/QUALITY-CLEANING-HISTORICAL-FREEZE/COMMANDS.md).
+> Next: rerun the runbook's `clean-freeze-policy` against `G:/XLM/quality/audit-v3`.
+>
 > **GLOBAL QUALITY CLEANING PHASE B (2026-10-04): POLICY DRY RUN IMPLEMENTED (READ-ONLY, KEEP/DROP/REVIEW); FIXTURE-VERIFIED; REAL FREEZE AND DRY RUN NOT RUN.**
 >
 > Added:

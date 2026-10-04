@@ -1,0 +1,22 @@
+# 1. authored corpus (tests/cleaning_fixtures.cleaning_layout)
+exit 0
+# 2. Phase-A audit with the PRE-PERFORMANCE implementation (git worktree at 382ab90, 32 MiB chunks)
+382ab90d021ef5a800acbd818d0c57261106baa8
+(the summary pipe used a relative interpreter path inside the worktree and printed this fallback; the 382ab90 audit itself completed: its receipt is read in steps 3-5)
+exit 0
+# recorded envelope/binding chunk_bytes:
+      3 "chunk_bytes":33554432
+# 3. clean-freeze-policy at 8c3cd32 (before this fix) - the operator's refusal:
+{"refused": true, "error": "receipt invalid: envelope chunk_bytes differs from the implementation"}
+exit 1
+# 4. clean-freeze-policy with this fix:
+{"candidate_policy_sha256": "ef560ccaf100d4e7cb1df05928989ad29c50d38a014b4bce1fa22fd082bf0d4e", "components": ["common_pile_prose", "essential_science", "finepdfs_en", "finewiki_en", "ultrax_ultrafineweb"], "destination": "$S/frozen.yaml", "file_sha256": "67aeabcd975186aded92954780688532c879bd7fab1a00ab2f88959f80aebe2d", "frozen": true, "phase_a_receipt_digest": "0c18695c0352a38e8afac38a1b0a394eebbadb0aa843ae8d2def6c9a6997513b", "policy_digest": "f076c8afaff3ce7f96d03f4ee8b8089c055567451c3c8aff5ad240345ae924d7"}
+exit 0
+# 5. current-run Phase-A receipt verifier is unchanged and still refuses the historical audit:
+QualityError receipt invalid: envelope chunk_bytes differs from the implementation
+exit 0
+# 6. current 8 MiB clean-dry-run + clean-report with the frozen policy:
+{'complete': True, 'policy_status': 'POLICY_REQUIRES_REVIEW', 'result_digest': '6021a1752187b769356f439ac3a9c43e87eab4e6b2636a036e4a81a8efdcf5ed', 'cleaned_corpus_written': False}
+exit 0
+{"artifacts": 6, "policy_status": "POLICY_REQUIRES_REVIEW", "result_digest": "6021a1752187b769356f439ac3a9c43e87eab4e6b2636a036e4a81a8efdcf5ed", "sources_rehashed": true, "verified": true}
+exit 0

@@ -36,8 +36,8 @@ from xlm.data.quality.policy import (
     METRIC_INDEX,
     METRICS,
     POLICY_VERSION,
-    policy_identity,
 )
+from xlm.data.quality.receipt import check_envelope
 from xlm.data.quality.scan import QualityError, read_bounded
 
 POLICY_KIND = "xlm_quality_cleaning_policy"
@@ -107,6 +107,7 @@ PHASE_A_KEYS = frozenset(
         "code_identity",
         "dependency_sha256",
         "c05_overlay",
+        "operational_envelope",
     }
 )
 CANDIDATE_KEYS = frozenset({"artifact", "kind", "band", "quantile", "status", "sha256", "bytes"})
@@ -344,6 +345,10 @@ def _check_provenance(provenance: Any) -> None:
     _require(type(phase_a["code_commit"]) is str, "Phase-A provenance code commit")
     _require(phase_a["input_manifest_mode"] in ("production", "authored"), "Phase-A mode")
     _require(type(phase_a["c05_overlay"]) is bool, "Phase-A overlay flag")
+    try:  # the HISTORICAL envelope: typed and ranged, never equal to current constants
+        check_envelope(phase_a["operational_envelope"])
+    except QualityError:
+        raise PolicyError("cleaning policy refused: Phase-A operational envelope") from None
     detector = phase_a["detector_policy"]
     _require(
         isinstance(detector, dict)
@@ -446,23 +451,6 @@ def load_frozen(path: Path) -> CompiledPolicy:
 # -- freezing --------------------------------------------------------------------------------
 
 
-def _candidate_rules(candidate: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
-    components = candidate.get("components")
-    if not isinstance(components, dict):
-        raise PolicyError("cleaning policy refused: candidate components")
-    out: dict[str, dict[str, Any]] = {}
-    for component, entry in components.items():
-        _require(type(component) is str and isinstance(entry, dict), "candidate component")
-        rules = entry.get("rules")
-        _require(isinstance(rules, list), "candidate rules")
-        found: dict[str, Any] = {}
-        for rule in rules:
-            _require(isinstance(rule, dict) and type(rule.get("id")) is str, "candidate rule")
-            found[rule["id"]] = rule
-        out[component] = found
-    return out
-
-
 def _copy(rules: Mapping[str, Any], component: str, metric: str) -> dict[str, Any] | None:
     rule = rules.get(f"{component}.{metric}")
     if rule is None:
@@ -483,11 +471,14 @@ def _copy(rules: Mapping[str, Any], component: str, metric: str) -> dict[str, An
 
 
 def freeze_policy(template: Path, audit_output: Path, destination: Path) -> dict[str, Any]:
-    """Copy the Phase-A conservative cuts into a new FROZEN policy file (read-only input)."""
-    from xlm.data.quality.receipt import load_receipt
-    from xlm.data.quality.report import ARTIFACTS
-    from xlm.data.quality.runner import _read_binding
-    from xlm.data.quality.scan import RECEIPT_FILE
+    """Copy the Phase-A conservative cuts into a new FROZEN policy file (read-only input).
+
+    The Phase-A output may come from an earlier accepted implementation (e.g. 32 MiB
+    scan chunks). It is verified by :func:`phase_a_history.verify_historical_audit`
+    against its OWN recorded identities and artifacts. Its operational envelope is
+    preserved as provenance, never compared with current implementation constants.
+    """
+    from xlm.data.quality.phase_a_history import verify_candidate, verify_historical_audit
 
     template_body, template_raw = read_policy(template)
     params = validate_template(template_body)
@@ -499,38 +490,12 @@ def freeze_policy(template: Path, audit_output: Path, destination: Path) -> dict
         not Path(os.path.abspath(destination)).is_relative_to(audit_output.resolve()),
         "destination inside the Phase-A audit output",
     )
-    receipt = load_receipt(audit_output, ARTIFACTS, RECEIPT_FILE)
-    if _read_binding(audit_output) != receipt["binding"]:
-        raise PolicyError("cleaning policy refused: Phase-A receipt and binding differ")
+    audit = verify_historical_audit(audit_output)
+    receipt = audit.receipt
     detector = receipt["detector_policy"]
-    _require(
-        detector == {"version": POLICY_VERSION, "digest": policy_identity()},
-        "Phase-A detector policy differs from the current detectors",
-    )
     entry = receipt["artifacts"][CANDIDATE_ARTIFACT]
-    raw = read_bounded(audit_output / CANDIDATE_ARTIFACT, MAX_POLICY_BYTES, "candidate policy")
-    _require(
-        (len(raw), hashlib.sha256(raw).hexdigest()) == (entry["bytes"], entry["sha256"]),
-        "candidate policy differs from the Phase-A receipt",
-    )
-    candidate = parse_yaml(raw)
-    _require(isinstance(candidate, dict), "candidate policy")
-    _require(
-        candidate.get("kind") == CANDIDATE_KIND
-        and candidate.get("band") == CANDIDATE_BAND
-        and candidate.get("status") == "PROPOSAL_ONLY",
-        "candidate policy kind/band",
-    )
-    _require(
-        candidate.get("bindings")
-        == {
-            "audit_binding_digest": receipt["binding_digest"],
-            "input_manifest_digest": receipt["input_manifest"]["digest"],
-            "detector_policy": detector,
-        },
-        "candidate policy bindings differ from the Phase-A receipt",
-    )
-    rules = _candidate_rules(candidate)
+    candidate = parse_yaml(audit.artifacts[CANDIDATE_ARTIFACT])  # the hash-verified bytes
+    rules = verify_candidate(candidate, audit, kind=CANDIDATE_KIND, band=CANDIDATE_BAND)
     thresholds: dict[str, Any] = {}
     for component in sorted(rules):
         thresholds[component] = {
@@ -562,6 +527,7 @@ def freeze_policy(template: Path, audit_output: Path, destination: Path) -> dict
                 "code_identity": receipt["implementation"]["code_identity"],
                 "dependency_sha256": receipt["implementation"]["dependency_sha256"],
                 "c05_overlay": receipt["overlay"] is not None,
+                "operational_envelope": dict(receipt["envelope"]),
             },
             "candidate_policy": {
                 "artifact": CANDIDATE_ARTIFACT,

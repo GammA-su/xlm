@@ -1,0 +1,11 @@
+........................................................................ [ 90%]
+........                                                                 [100%]
+=============================== warnings summary ===============================
+tests/test_quality_cleaning.py::test_interruption_then_resume_gives_identical_artifacts
+tests/test_quality_cleaning.py::test_c05_overlay_is_diagnostic_only
+  /root/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/multiprocessing/resource_tracker.py:147: UserWarning: resource_tracker: process died unexpectedly, relaunching.  Some resources might leak.
+    warnings.warn('resource_tracker: process died unexpectedly, '
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+80 passed, 2 warnings in 23.30s
+exit 0

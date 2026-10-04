@@ -58,6 +58,7 @@ from xlm.data.quality.cleaning_runner import (
 )
 from xlm.data.quality.cli import main
 from xlm.data.quality.detectors import analyze
+from xlm.data.quality.phase_a_history import HistoricalAuditError
 from xlm.data.quality.policy import METRIC_INDEX, METRICS
 from xlm.data.quality.review import ReviewError, read_review_rows
 from xlm.data.quality.runner import Limits, ReviewLimits, run_audit
@@ -231,11 +232,11 @@ def test_freeze_refuses_tampered_candidate_and_existing_destination(
         freeze_policy(TEMPLATE, audit, flow["frozen"])
     path = audit / "candidate-policy-conservative.yaml"
     path.write_bytes(path.read_bytes().replace(b"cut: ", b"cut:  ", 1))
-    with pytest.raises(PolicyError, match="differs from the Phase-A receipt"):
+    with pytest.raises(HistoricalAuditError, match="candidate-policy-conservative.yaml differs"):
         freeze_policy(TEMPLATE, audit, tmp_path / "frozen.yaml")
     assert not (tmp_path / "frozen.yaml").exists()
     (audit / "quality-audit-receipt.json").unlink()
-    with pytest.raises(QualityError, match="no completion receipt"):
+    with pytest.raises(HistoricalAuditError, match="receipt is missing"):
         freeze_policy(TEMPLATE, audit, tmp_path / "frozen.yaml")
 
 
@@ -1027,3 +1028,283 @@ def test_streaming_sampler_equals_a_full_sort_bottom_quota(flow: dict[str, Path]
             for name, ranked in expected.items():
                 bottom = sorted(ranked)[: _quota(quotas, name)]
                 assert [(e["rank"], e["row"]) for e in got.review[name]] == bottom, name
+
+
+# -- historical Phase-A audits (freeze compatibility) -------------------------------------
+
+HISTORICAL_CHUNK_BYTES = 32 * 1024**2  # the accepted pre-performance implementation
+
+
+@pytest.fixture(scope="module")
+def historical(tmp_path_factory: pytest.TempPathFactory) -> Iterator[dict[str, Path]]:
+    """A COMPLETE Phase-A audit whose recorded envelope and binding carry the historical
+    32 MiB scan chunk (the current implementation uses 8 MiB)."""
+    from xlm.data.quality import runner, scan
+
+    assert scan.CHUNK_BYTES != HISTORICAL_CHUNK_BYTES
+    root = tmp_path_factory.mktemp("historical")
+    manifest = build_corpus(root / "corpus", cleaning_layout())
+    audit = root / "audit"
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(scan, "CHUNK_BYTES", HISTORICAL_CHUNK_BYTES)
+        patch.setattr(runner, "CHUNK_BYTES", HISTORICAL_CHUNK_BYTES)
+        run_audit(manifest, audit, limits=limits(2), progress_interval=None)
+    yield {"root": root, "manifest": manifest, "audit": audit}
+
+
+def _receipt_path(audit: Path) -> Path:
+    return audit / "quality-audit-receipt.json"
+
+
+def _read_receipt(audit: Path) -> dict[str, Any]:
+    body: dict[str, Any] = json.loads(_receipt_path(audit).read_bytes())
+    return body
+
+
+def _seal(audit: Path, receipt: dict[str, Any]) -> None:
+    """Re-digest a modified receipt (a forger with write access, no signing key)."""
+    receipt["digest"] = canonical.self_digest(receipt)
+    _receipt_path(audit).write_bytes(canonical.canonical_bytes(receipt))
+
+
+def _replace_artifact(audit: Path, name: str, data: bytes) -> None:
+    """Rewrite an artifact AND consistently reseal its receipt entry, the result digest,
+    the recorded output bytes and the receipt digest, so only semantic checks remain."""
+    receipt = _read_receipt(audit)
+    old = (audit / name).stat().st_size
+    (audit / name).write_bytes(data)
+    receipt["artifacts"][name] = {
+        "bytes": len(data),
+        "sha256": hashlib.sha256(data).hexdigest(),
+        "records": data.count(b"\n"),
+    }
+    table = receipt["artifacts"]
+    receipt["result_digest"] = canonical.digest({n: table[n]["sha256"] for n in sorted(table)})
+    receipt["execution"]["output_bytes_before_receipt"] += len(data) - old
+    _seal(audit, receipt)
+
+
+def _copy(historical: dict[str, Path], tmp_path: Path) -> Path:
+    audit = tmp_path / "audit"
+    shutil.copytree(historical["audit"], audit)
+    return audit
+
+
+def test_historical_audit_with_other_chunk_size_freezes(
+    historical: dict[str, Path], tmp_path: Path
+) -> None:
+    from xlm.data.quality.receipt import load_receipt as load_phase_a_receipt
+    from xlm.data.quality.report import ARTIFACTS as PHASE_A_ARTIFACTS
+    from xlm.data.quality.scan import CHUNK_BYTES
+
+    audit = historical["audit"]
+    receipt = _read_receipt(audit)
+    assert receipt["envelope"]["chunk_bytes"] == HISTORICAL_CHUNK_BYTES != CHUNK_BYTES
+    assert receipt["binding"]["chunk_bytes"] == HISTORICAL_CHUNK_BYTES
+    # The CURRENT-run verifier (audit / report / materialize-review) stays strict.
+    with pytest.raises(QualityError, match="chunk_bytes differs from the implementation"):
+        load_phase_a_receipt(audit, PHASE_A_ARTIFACTS, "quality-audit-receipt.json")
+    before = corpus_hashes(historical["root"])
+    frozen = tmp_path / "frozen.yaml"
+    result = freeze_policy(TEMPLATE, audit, frozen)
+    assert result["frozen"] is True
+    assert corpus_hashes(historical["root"]) == before  # the historical audit is read-only
+    compiled = load_frozen(frozen)
+    phase_a = compiled.provenance["phase_a"]
+    assert phase_a["receipt_digest"] == receipt["digest"]
+    assert phase_a["binding_digest"] == receipt["binding_digest"]
+    assert phase_a["code_identity"] == receipt["implementation"]["code_identity"]
+    assert phase_a["operational_envelope"] == receipt["envelope"]  # preserved, not compared
+    assert phase_a["operational_envelope"]["chunk_bytes"] == HISTORICAL_CHUNK_BYTES
+    assert set(compiled.components) == set(DOCS)
+    # The frozen policy drives a CURRENT (8 MiB) dry run and its full verification.
+    output = tmp_path / "dry"
+    run_dry_run(historical["manifest"], output, frozen, limits=limits(), progress_interval=None)
+    assert verify_dry_run(historical["manifest"], output, frozen)["verified"] is True
+
+
+def _mutate_receipt_manifest(audit: Path) -> None:
+    receipt = _read_receipt(audit)
+    receipt["input_manifest"]["digest"] = "0" * 64
+    _seal(audit, receipt)
+
+
+def _forge_binding(audit: Path, change: Any) -> None:
+    """Consistently rewrite binding, binding file and receipt (all self-digests valid)."""
+    receipt = _read_receipt(audit)
+    binding = receipt["binding"]
+    change(binding)
+    binding["digest"] = canonical.self_digest(binding)
+    (audit / "audit-binding.json").write_bytes(canonical.canonical_bytes(binding))
+    receipt["binding_digest"] = binding["digest"]
+    receipt["input_manifest"]["digest"] = binding["input_manifest"]["digest"]
+    receipt["detector_policy"] = binding["detector_policy"]
+    _seal(audit, receipt)
+
+
+def _set_manifest_digest(binding: dict[str, Any]) -> None:
+    binding["input_manifest"]["digest"] = "1" * 64
+
+
+def _set_detector_digest(binding: dict[str, Any]) -> None:
+    binding["detector_policy"]["digest"] = "2" * 64
+
+
+def _status_incomplete(audit: Path) -> None:
+    receipt = _read_receipt(audit)
+    receipt["status"] = "INCOMPLETE"
+    _seal(audit, receipt)
+
+
+def _unsealed_edit(audit: Path) -> None:
+    receipt = _read_receipt(audit)
+    receipt["execution"]["wall_seconds"] = 0.5
+    _receipt_path(audit).write_bytes(canonical.canonical_bytes(receipt))
+
+
+def _inconsistent_envelope(audit: Path) -> None:
+    receipt = _read_receipt(audit)
+    receipt["envelope"]["chunk_bytes"] = 8 * 1024**2  # binding still records 32 MiB
+    receipt["producer_envelopes"] = [receipt["envelope"]]
+    _seal(audit, receipt)
+
+
+def _missing_unit(audit: Path) -> None:
+    next((audit / "units").iterdir()).unlink()
+
+
+def _edit_bytes(name: str, old: bytes, new: bytes) -> Any:
+    def apply(audit: Path) -> None:
+        path = audit / name
+        path.write_bytes(path.read_bytes().replace(old, new, 1))
+
+    return apply
+
+
+@pytest.mark.parametrize(
+    ("tamper", "message"),
+    [
+        (
+            _edit_bytes("candidate-policy-conservative.yaml", b"cut: ", b"cut:  "),
+            "candidate-policy-conservative.yaml differs",
+        ),
+        (_edit_bytes("quality-audit.json", b'"documents"', b'"Documents"'), "quality-audit.json"),
+        (_edit_bytes("audit-binding.json", b'"line_ceiling"', b'"Line_ceiling"'), "binding"),
+        (_mutate_receipt_manifest, "input manifest differs"),
+        (lambda a: _forge_binding(a, _set_manifest_digest), "bindings"),
+        (lambda a: _forge_binding(a, _set_detector_digest), "differs from the current detectors"),
+        (_status_incomplete, "not COMPLETE"),
+        (lambda a: _receipt_path(a).unlink(), "receipt is missing"),
+        (_unsealed_edit, "self-digest"),
+        (lambda a: (a / "quality-audit.json").unlink(), "quality-audit.json is missing"),
+        (lambda a: (a / "candidate-policy-conservative.yaml").unlink(), "is missing"),
+        (_inconsistent_envelope, "envelope chunk vs binding"),
+        (_missing_unit, "audit unit is missing"),
+    ],
+)
+def test_historical_freeze_still_refuses_tampering(
+    historical: dict[str, Path], tmp_path: Path, tamper: Any, message: str
+) -> None:
+    audit = _copy(historical, tmp_path)
+    tamper(audit)
+    destination = tmp_path / "frozen.yaml"
+    with pytest.raises(QualityError, match=message):
+        freeze_policy(TEMPLATE, audit, destination)
+    assert not destination.exists()
+
+
+def _candidate_edit(change: Any) -> Any:
+    def apply(audit: Path) -> None:
+        import yaml
+
+        name = "candidate-policy-conservative.yaml"
+        body = yaml.safe_load((audit / name).read_bytes())
+        change(body)
+        _replace_artifact(audit, name, dump_yaml(body))
+
+    return apply
+
+
+def _first_rules(body: dict[str, Any]) -> list[dict[str, Any]]:
+    rules: list[dict[str, Any]] = body["components"]["finewiki_en"]["rules"]
+    return rules
+
+
+def _set_action(body: dict[str, Any]) -> None:
+    _first_rules(body)[-1]["action"] = "DROP"
+
+
+def _duplicate_rule(body: dict[str, Any]) -> None:
+    _first_rules(body).append(dict(_first_rules(body)[-1]))
+
+
+def _unknown_detector(body: dict[str, Any]) -> None:
+    rule = _first_rules(body)[-1]
+    rule["detector"], rule["id"] = "urls", "finewiki_en.urls"
+
+
+def _drop_component(body: dict[str, Any]) -> None:
+    del body["components"]["finewiki_en"]
+
+
+def _extra_component(body: dict[str, Any]) -> None:
+    body["components"]["invented_component"] = body["components"]["finewiki_en"]
+
+
+def _executable(body: dict[str, Any]) -> None:
+    body["executable"] = True
+
+
+def _status_reviewed(body: dict[str, Any]) -> None:
+    body["status"] = "REVIEWED"
+
+
+def _string_cut(body: dict[str, Any]) -> None:
+    for rule in _first_rules(body):
+        if rule["detector"] == "dup_line_byte_ratio":
+            rule["cut"] = "0.5"
+
+
+def _wrong_comparator(body: dict[str, Any]) -> None:
+    for rule in _first_rules(body):
+        if rule["detector"] == "compression_ratio":
+            rule["comparator"] = ">="
+
+
+def _wrong_bindings(body: dict[str, Any]) -> None:
+    body["bindings"]["input_manifest_digest"] = "3" * 64
+
+
+@pytest.mark.parametrize(
+    ("change", "message"),
+    [
+        (_set_action, "action is not null"),
+        (_duplicate_rule, "duplicate candidate rule"),
+        (_unknown_detector, "unexpected detector"),
+        (_drop_component, "component set differs"),
+        (_extra_component, "component set differs"),
+        (_executable, "executable"),
+        (_status_reviewed, "status"),
+        (_string_cut, "threshold cut"),
+        (_wrong_comparator, "threshold comparator"),
+        (_wrong_bindings, "bindings differ"),
+    ],
+)
+def test_historical_freeze_refuses_malformed_candidate_even_when_resealed(
+    historical: dict[str, Path], tmp_path: Path, change: Any, message: str
+) -> None:
+    audit = _copy(historical, tmp_path)
+    _candidate_edit(change)(audit)
+    destination = tmp_path / "frozen.yaml"
+    with pytest.raises(QualityError, match=message):
+        freeze_policy(TEMPLATE, audit, destination)
+    assert not destination.exists()
+
+
+def test_resealed_candidate_without_semantic_change_still_freezes(
+    historical: dict[str, Path], tmp_path: Path
+) -> None:
+    """Control for the reseal helper: a consistent reseal alone is not what refuses."""
+    audit = _copy(historical, tmp_path)
+    _candidate_edit(lambda body: None)(audit)
+    assert freeze_policy(TEMPLATE, audit, tmp_path / "frozen.yaml")["frozen"] is True

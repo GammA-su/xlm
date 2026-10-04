@@ -30,6 +30,27 @@ provenance:
 After the freeze the dry run reads only the frozen file. It never reads the mutable
 candidate YAML again. The frozen file is content-free and may be committed.
 
+**Historical Phase-A audits.** The Phase-A audit may come from an earlier accepted
+implementation, e.g. the pre-performance one with 32 MiB scan chunks and workers
+1/2/4/8/16; the current one uses 8 MiB. The freeze therefore uses a dedicated
+historical verifier (`xlm.data.quality.phase_a_history`). It checks the audit against
+its OWN recorded identities and artifacts:
+
+- the receipt: kind, schema, COMPLETE, self-digest;
+- the binding: self-digest, plus byte identity with `audit-binding.json`;
+- the manifest digest, the implementation/code identity and the overlay against the
+  binding;
+- the detector policy against the CURRENT detectors;
+- every artifact's size, SHA-256 and record count, and the result digest;
+- the recorded envelope against its own binding and measured facts;
+- the output bytes, re-derived from the files;
+- the candidate YAML and component set.
+
+The historical envelope (`chunk_bytes`, workers, queue) is preserved as
+`provenance.phase_a.operational_envelope`. It is never compared with current
+implementation constants. `audit`, `report`, `materialize-review`, `clean-dry-run`
+and `clean-report` keep their strict current-implementation checks.
+
 | rule | action | condition |
 |---|---|---|
 | `hard.full_html` | DROP | `markup_full_html` (true HTML page; fenced/indented/inline code examples never set it) |
