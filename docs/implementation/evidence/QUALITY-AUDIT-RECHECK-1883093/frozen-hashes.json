@@ -1,0 +1,114 @@
+[
+ {
+  "path": "docs/implementation/evidence/QUALITY-AUDIT-INDEPENDENT-96F38F3/COMMANDS.md",
+  "git_blob_identical": true,
+  "raw_disk_identical": true,
+  "disk_sha256": "2672cc379bfc52c5e5d2faafcd514b457196428e4b3134acead7b31003dcc395",
+  "old_blob_sha256": "2672cc379bfc52c5e5d2faafcd514b457196428e4b3134acead7b31003dcc395"
+ },
+ {
+  "path": "docs/implementation/evidence/QUALITY-AUDIT-INDEPENDENT-96F38F3/benchmark.json",
+  "git_blob_identical": true,
+  "raw_disk_identical": true,
+  "disk_sha256": "24c40be7612b64bfa64c6c0dba3eb4eb0d0c7953fbf7f23c52cbd1c062cd4048",
+  "old_blob_sha256": "24c40be7612b64bfa64c6c0dba3eb4eb0d0c7953fbf7f23c52cbd1c062cd4048"
+ },
+ {
+  "path": "docs/implementation/evidence/QUALITY-AUDIT-INDEPENDENT-96F38F3/detector-matrix.json",
+  "git_blob_identical": true,
+  "raw_disk_identical": true,
+  "disk_sha256": "bf1d3388efb654d2b3672610f8a69118c5c7ce87bfd24690b7ea56d497240da2",
+  "old_blob_sha256": "bf1d3388efb654d2b3672610f8a69118c5c7ce87bfd24690b7ea56d497240da2"
+ },
+ {
+  "path": "docs/implementation/evidence/QUALITY-AUDIT-INDEPENDENT-96F38F3/extra.xml",
+  "git_blob_identical": true,
+  "raw_disk_identical": true,
+  "disk_sha256": "a9eea675a389428f98918af8a5e7ea4f632ff7632d7153ce27b308591413ccd8",
+  "old_blob_sha256": "a9eea675a389428f98918af8a5e7ea4f632ff7632d7153ce27b308591413ccd8"
+ },
+ {
+  "path": "docs/implementation/evidence/QUALITY-AUDIT-INDEPENDENT-96F38F3/final-probes.xml",
+  "git_blob_identical": true,
+  "raw_disk_identical": true,
+  "disk_sha256": "5cb8ab22955258b0e190afce9c403bb13cac47e70143fae96fb631255e31547c",
+  "old_blob_sha256": "5cb8ab22955258b0e190afce9c403bb13cac47e70143fae96fb631255e31547c"
+ },
+ {
+  "path": "docs/implementation/evidence/QUALITY-AUDIT-INDEPENDENT-96F38F3/kernel-profile.txt",
+  "git_blob_identical": true,
+  "raw_disk_identical": true,
+  "disk_sha256": "563abe1231ae80edd1d87f705fe8ad7f1d4e289232fc654120d70d962bee448f",
+  "old_blob_sha256": "563abe1231ae80edd1d87f705fe8ad7f1d4e289232fc654120d70d962bee448f"
+ },
+ {
+  "path": "docs/implementation/evidence/QUALITY-AUDIT-INDEPENDENT-96F38F3/measure.py",
+  "git_blob_identical": true,
+  "raw_disk_identical": true,
+  "disk_sha256": "e8288dd3dc514be427972a8a1fa9a52db448c3ade988dee5d8226336475b8413",
+  "old_blob_sha256": "e8288dd3dc514be427972a8a1fa9a52db448c3ade988dee5d8226336475b8413"
+ },
+ {
+  "path": "docs/implementation/evidence/QUALITY-AUDIT-INDEPENDENT-96F38F3/mypy-strict.log",
+  "git_blob_identical": true,
+  "raw_disk_identical": true,
+  "disk_sha256": "4145c91ac4a1338ed274ecf530616bcf5cb68399a375ca31cfa938b2bdf63305",
+  "old_blob_sha256": "4145c91ac4a1338ed274ecf530616bcf5cb68399a375ca31cfa938b2bdf63305"
+ },
+ {
+  "path": "docs/implementation/evidence/QUALITY-AUDIT-INDEPENDENT-96F38F3/policy-definitions.json",
+  "git_blob_identical": true,
+  "raw_disk_identical": true,
+  "disk_sha256": "37796b04bf8365d6f05bbdff46eaf2860e6e859d3ea10d0ac309d0d75017f242",
+  "old_blob_sha256": "37796b04bf8365d6f05bbdff46eaf2860e6e859d3ea10d0ac309d0d75017f242"
+ },
+ {
+  "path": "docs/implementation/evidence/QUALITY-AUDIT-INDEPENDENT-96F38F3/profile.txt",
+  "git_blob_identical": true,
+  "raw_disk_identical": true,
+  "disk_sha256": "4458705dae305faed92ab2c553479497e100b023752ae2e8232bed820f7dcb81",
+  "old_blob_sha256": "4458705dae305faed92ab2c553479497e100b023752ae2e8232bed820f7dcb81"
+ },
+ {
+  "path": "docs/implementation/evidence/QUALITY-AUDIT-INDEPENDENT-96F38F3/ruff-check.log",
+  "git_blob_identical": true,
+  "raw_disk_identical": true,
+  "disk_sha256": "05e2ba97f9a27a7afe45443427c884270e42c972b36530ddb9a6c4061d7a5995",
+  "old_blob_sha256": "05e2ba97f9a27a7afe45443427c884270e42c972b36530ddb9a6c4061d7a5995"
+ },
+ {
+  "path": "docs/implementation/evidence/QUALITY-AUDIT-INDEPENDENT-96F38F3/ruff-format.log",
+  "git_blob_identical": true,
+  "raw_disk_identical": true,
+  "disk_sha256": "d73322498c4ce842f9dd3184b32e91e6a764a29d26947d3839ce1e500ece8ac4",
+  "old_blob_sha256": "d73322498c4ce842f9dd3184b32e91e6a764a29d26947d3839ce1e500ece8ac4"
+ },
+ {
+  "path": "docs/implementation/evidence/QUALITY-AUDIT-INDEPENDENT-96F38F3/scaling.json",
+  "git_blob_identical": true,
+  "raw_disk_identical": true,
+  "disk_sha256": "6fbf99c9d117a003b05ef8969f8b530efc7f069b7b4c6ae992945130ccad8757",
+  "old_blob_sha256": "6fbf99c9d117a003b05ef8969f8b530efc7f069b7b4c6ae992945130ccad8757"
+ },
+ {
+  "path": "docs/implementation/evidence/QUALITY-AUDIT-INDEPENDENT-96F38F3/scratch-logical-bytes.json",
+  "git_blob_identical": true,
+  "raw_disk_identical": true,
+  "disk_sha256": "146c63675225fdd59c74bdcd28867c367cd351ded4793be77edcded3bc1524f1",
+  "old_blob_sha256": "146c63675225fdd59c74bdcd28867c367cd351ded4793be77edcded3bc1524f1"
+ },
+ {
+  "path": "docs/implementation/evidence/QUALITY-AUDIT-INDEPENDENT-96F38F3/test_independent.py",
+  "git_blob_identical": true,
+  "raw_disk_identical": true,
+  "disk_sha256": "5527a6eda7015b1b584831385825332b963f2adceaf6e86091cedce674c75837",
+  "old_blob_sha256": "5527a6eda7015b1b584831385825332b963f2adceaf6e86091cedce674c75837"
+ },
+ {
+  "path": "docs/implementation/reports/QUALITY-AUDIT-INDEPENDENT-96F38F3.md",
+  "git_blob_identical": true,
+  "raw_disk_identical": true,
+  "disk_sha256": "de15c43023e3bc36064d18348d10c4d3b9a69ef78b0c8e1ef2231d41e294998e",
+  "old_blob_sha256": "de15c43023e3bc36064d18348d10c4d3b9a69ef78b0c8e1ef2231d41e294998e"
+ }
+]

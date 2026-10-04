@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="1.179" timestamp="2026-10-04T11:45:24.863682+02:00" hostname="GammA-DeskMain"><testcase classname="test_repair_edges" name="test_i04_failure_reported_by_inflight_sample_during_shutdown" time="0.561"><failure message="assert (False)">F:\qa188-review\test_repair_edges.py:133: in test_i04_failure_reported_by_inflight_sample_during_shutdown
+    assert refused and not (out/RECEIPT_FILE).exists()
+E   assert (False)</failure></testcase></testsuite></testsuites>

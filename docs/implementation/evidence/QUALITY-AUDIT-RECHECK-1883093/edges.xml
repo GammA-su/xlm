@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="9" skipped="0" tests="9" time="5.661" timestamp="2026-10-04T11:44:46.600742+02:00" hostname="GammA-DeskMain"><testcase classname="test_repair_edges" name="test_i04_publication_checks_current_resource_state[disk]" time="0.305"><failure message="assert (False)">F:\qa188-review\test_repair_edges.py:64: in test_i04_publication_checks_current_resource_state
+    assert refused and not (out/RECEIPT_FILE).exists()
+E   assert (False)</failure></testcase><testcase classname="test_repair_edges" name="test_i04_publication_checks_current_resource_state[rss]" time="0.235"><failure message="assert (False)">F:\qa188-review\test_repair_edges.py:64: in test_i04_publication_checks_current_resource_state
+    assert refused and not (out/RECEIPT_FILE).exists()
+E   assert (False)</failure></testcase><testcase classname="test_repair_edges" name="test_i10_impossible_effective_envelope_refuses[workers-0]" time="0.519"><failure message="Failed: DID NOT RAISE QualityError">F:\qa188-review\test_repair_edges.py:76: in test_i10_impossible_effective_envelope_refuses
+    with pytest.raises(QualityError):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE QualityError</failure></testcase><testcase classname="test_repair_edges" name="test_i10_impossible_effective_envelope_refuses[max_rss_bytes-0]" time="0.565"><failure message="Failed: DID NOT RAISE QualityError">F:\qa188-review\test_repair_edges.py:76: in test_i10_impossible_effective_envelope_refuses
+    with pytest.raises(QualityError):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE QualityError</failure></testcase><testcase classname="test_repair_edges" name="test_i10_impossible_effective_envelope_refuses[deadline_seconds-0]" time="0.526"><failure message="Failed: DID NOT RAISE QualityError">F:\qa188-review\test_repair_edges.py:76: in test_i10_impossible_effective_envelope_refuses
+    with pytest.raises(QualityError):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE QualityError</failure></testcase><testcase classname="test_repair_edges" name="test_i10_impossible_effective_envelope_refuses[queue_tasks-999]" time="0.521"><failure message="Failed: DID NOT RAISE QualityError">F:\qa188-review\test_repair_edges.py:76: in test_i10_impossible_effective_envelope_refuses
+    with pytest.raises(QualityError):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE QualityError</failure></testcase><testcase classname="test_repair_edges" name="test_i08_code_examples_are_ambiguous[Example HTML source:\n\n    &lt;!DOCTYPE html&gt;\n    &lt;html&gt;&lt;body&gt;example&lt;/body&gt;&lt;/html&gt;\n]" time="0.001"><failure message="AssertionError: assert 'markup_full_html' not in {'chars_lt128', 'chars_lt256', 'has_body', 'has_closing_tag', 'has_html_doctype', 'has_html_open', ...}">F:\qa188-review\test_repair_edges.py:86: in test_i08_code_examples_are_ambiguous
+    assert 'markup_full_html' not in {FLAGS[i] for i in result.flags}
+E   AssertionError: assert 'markup_full_html' not in {'chars_lt128', 'chars_lt256', 'has_body', 'has_closing_tag', 'has_html_doctype', 'has_html_open', ...}</failure></testcase><testcase classname="test_repair_edges" name="test_i08_code_examples_are_ambiguous[The literal `&lt;html&gt;` starts an HTML document; this sentence is documentation.]" time="0.001"><failure message="AssertionError: assert 'markup_full_html' not in {'chars_lt128', 'chars_lt256', 'has_html_open', 'markup_any', 'markup_full_html'}">F:\qa188-review\test_repair_edges.py:86: in test_i08_code_examples_are_ambiguous
+    assert 'markup_full_html' not in {FLAGS[i] for i in result.flags}
+E   AssertionError: assert 'markup_full_html' not in {'chars_lt128', 'chars_lt256', 'has_html_open', 'markup_any', 'markup_full_html'}</failure></testcase><testcase classname="test_repair_edges" name="test_i11_changed_content_digest_suffix_refuses" time="2.345"><failure message="Failed: DID NOT RAISE any of (QualityError, OverlayError)">F:\qa188-review\test_repair_edges.py:98: in test_i11_changed_content_digest_suffix_refuses
+    with pytest.raises((QualityError,OverlayError)):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE any of (QualityError, OverlayError)</failure></testcase></testsuite></testsuites>

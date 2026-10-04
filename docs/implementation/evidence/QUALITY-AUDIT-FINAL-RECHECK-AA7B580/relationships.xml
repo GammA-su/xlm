@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="4" skipped="0" tests="4" time="2.138" timestamp="2026-10-04T12:15:05.456698+02:00" hostname="GammA-DeskMain"><testcase classname="" name="test_impossible_effective_envelope_refuses[max_output_bytes]" time="0.868"><failure message="Failed: DID NOT RAISE QualityError">F:\qa-aa7-review\test_envelope_relationships.py:44: in test_impossible_effective_envelope_refuses
+    with pytest.raises(QualityError):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE QualityError</failure></testcase><testcase classname="" name="test_impossible_effective_envelope_refuses[max_rss_bytes]" time="0.225"><failure message="Failed: DID NOT RAISE QualityError">F:\qa-aa7-review\test_envelope_relationships.py:44: in test_impossible_effective_envelope_refuses
+    with pytest.raises(QualityError):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE QualityError</failure></testcase><testcase classname="" name="test_impossible_effective_envelope_refuses[max_document_bytes]" time="0.225"><failure message="Failed: DID NOT RAISE QualityError">F:\qa-aa7-review\test_envelope_relationships.py:44: in test_impossible_effective_envelope_refuses
+    with pytest.raises(QualityError):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE QualityError</failure></testcase><testcase classname="" name="test_impossible_effective_envelope_refuses[review_per_stratum]" time="0.220"><failure message="Failed: DID NOT RAISE QualityError">F:\qa-aa7-review\test_envelope_relationships.py:44: in test_impossible_effective_envelope_refuses
+    with pytest.raises(QualityError):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE QualityError</failure></testcase></testsuite></testsuites>

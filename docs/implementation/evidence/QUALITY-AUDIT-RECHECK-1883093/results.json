@@ -1,0 +1,71 @@
+{
+  "head": "1883093bc2b33730d81d5d6b9db4c8dcf23908b2",
+  "initial_worktree": "clean",
+  "final_worktree": "clean",
+  "implementation_modified": false,
+  "frozen_evidence": {
+    "reference": "824b23e",
+    "files": 16,
+    "raw_bytes_equal": true,
+    "git_blobs_equal": true,
+    "hashes": "F:/qa188-review/frozen-hashes.json"
+  },
+  "scope": "Only I01-I14 repairs; authored offline fixtures. Focused suite includes authored synthetic C05 fixture; no real C05, G:, X:, network, real text, tokenizer or training.",
+  "environment": {
+    "python": "3.12.13",
+    "windows": "11 10.0.26200",
+    "workers": "pytest -n 0",
+    "settings": "PYTHONDONTWRITEBYTECODE=1; OMP_NUM_THREADS=MKL_NUM_THREADS=OPENBLAS_NUM_THREADS=NUMEXPR_NUM_THREADS=1; TOKENIZERS_PARALLELISM=false"
+  },
+  "tests": [
+    {
+      "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python -m pytest docs/implementation/evidence/QUALITY-AUDIT-INDEPENDENT-96F38F3/test_independent.py -n 0 --basetemp F:/qa188-astra -q --tb=short -p no:cacheprovider --junitxml=F:/qa188-astra.xml",
+      "exit": 0,
+      "passed": 49,
+      "seconds": 26.13
+    },
+    {
+      "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python -m pytest tests/test_quality_detectors.py tests/test_quality_audit.py tests/test_quality_hardening.py -n 0 --basetemp F:/qa188-quality -q --tb=short -p no:cacheprovider --junitxml=F:/qa188-quality.xml",
+      "exit": 0,
+      "passed": 143,
+      "seconds": 68.33
+    },
+    {
+      "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python -m pytest F:/qa188-review/test_repair_edges.py -n 0 --basetemp F:/qa188-edges -q --tb=short -p no:cacheprovider --junitxml=F:/qa188-review/edges.xml",
+      "exit": 1,
+      "failed": 9,
+      "seconds": 5.7,
+      "note": "At this execution script contained 9 cases; one later added. Unknown serial_exclusive marker warning from imported repository test module in external pytest root."
+    },
+    {
+      "command": "uv run --offline --locked --no-sync --extra cpu --extra eval python -m pytest F:/qa188-review/test_repair_edges.py::test_i04_failure_reported_by_inflight_sample_during_shutdown -n 0 --basetemp F:/qa188-late -q --tb=short -p no:cacheprovider --junitxml=F:/qa188-review/late.xml",
+      "exit": 1,
+      "failed": 1,
+      "seconds": 1.21
+    }
+  ],
+  "static": {
+    "format": {
+      "exit": 0,
+      "files": 19
+    },
+    "ruff": {
+      "exit": 0
+    },
+    "mypy": {
+      "exit": 0,
+      "files": 18
+    },
+    "diff_check": {
+      "exit": 0
+    },
+    "selection": "src/xlm/data/quality tests/test_quality_audit.py tests/test_quality_detectors.py tests/test_quality_hardening.py tests/quality_fixtures.py scripts/quality_audit_benchmark.py; format/check also docs/implementation/evidence/QUALITY-AUDIT-HARDENING/measure_hardening.py"
+  },
+  "remaining": {
+    "I04": "Three failure probes. RSS/disk transition during publication is not synchronously sampled. An in-flight monitor sample records DISK_REASON during Supervisor.__exit__ join, after final guard.check; Guard exit fails to check recorded failure and audit returns complete with receipt. Simulated resources/delayed sampler; no actual resource exhaustion.",
+    "I08": "Indented Markdown HTML source and inline `<html>` documentation remain markup_full_html; only fences protected.",
+    "I10": "Self-digested envelope with workers=0, RSS=0, deadline=0 or queue_tasks=999 passes report; only nonnegative numeric check, missing allowed ranges/relationships.",
+    "I11": "Signed authored membership with changed final content SHA-256 hex digit is accepted because identity stores/compares only first 16 bytes; no unsigned signature bypass."
+  },
+  "verdict": "QUALITY AUDIT REPAIR STILL BLOCKED"
+}

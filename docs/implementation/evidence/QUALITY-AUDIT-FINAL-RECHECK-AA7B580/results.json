@@ -1,0 +1,269 @@
+{
+  "head": "aa7b580d2273676236ee2d8c3e5f37bc8925f7a8",
+  "clean": true,
+  "environment": {
+    "python": "3.12.13",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "tests": {
+    "historical_49": {
+      "junit": "F:/qa-aa7-astra.xml",
+      "name": "pytest",
+      "errors": "0",
+      "failures": "1",
+      "skipped": "0",
+      "tests": "49",
+      "time": "25.727",
+      "timestamp": "2026-10-04T12:09:26.543475+02:00",
+      "hostname": "GammA-DeskMain",
+      "failed_nodes": [
+        {
+          "name": "test_child_rss_included",
+          "failure": "docs\\implementation\\evidence\\QUALITY-AUDIT-INDEPENDENT-96F38F3\\test_independent.py:398: in test_child_rss_included\n    list(pool.map(memory_worker, [64*1024**2, 64*1024**2]))\nsrc\\xlm\\data\\quality\\scan.py:532: in map\n    result = self._wait(pending[0])\n             ^^^^^^^^^^^^^^^^^^^^^^\nsrc\\xlm\\data\\quality\\scan.py:543: in _wait\n    return future.result(timeout=POLL_SECONDS)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\gamma\\AppData\\Roaming\\uv\\python\\cpython-3.12.13-windows-x86_64-none\\Lib\\concurrent\\futures\\_base.py:456: in result\n    return self.__get_result()\n           ^^^^^^^^^^^^^^^^^^^\nC:\\Users\\gamma\\AppData\\Roaming\\uv\\python\\cpython-3.12.13-windows-x86_64-none\\Lib\\concurrent\\futures\\_base.py:401: in __get_result\n    raise self._exception\nE   concurrent.futures.process.BrokenProcessPool: A process in the process pool was terminated abruptly while the future was running or pending."
+        }
+      ]
+    },
+    "preserved_prior_edges": {
+      "junit": "F:/qa-aa7-prior.xml",
+      "name": "pytest",
+      "errors": "0",
+      "failures": "3",
+      "skipped": "0",
+      "tests": "10",
+      "time": "6.160",
+      "timestamp": "2026-10-04T12:10:00.463780+02:00",
+      "hostname": "GammA-DeskMain",
+      "failed_nodes": [
+        {
+          "name": "test_i04_publication_checks_current_resource_state[disk]",
+          "failure": "F:\\qa188-review\\test_repair_edges.py:64: in test_i04_publication_checks_current_resource_state\n    assert refused and not (out/RECEIPT_FILE).exists()\nE   assert (False)"
+        },
+        {
+          "name": "test_i04_publication_checks_current_resource_state[rss]",
+          "failure": "F:\\qa188-review\\test_repair_edges.py:64: in test_i04_publication_checks_current_resource_state\n    assert refused and not (out/RECEIPT_FILE).exists()\nE   assert (False)"
+        },
+        {
+          "name": "test_i04_failure_reported_by_inflight_sample_during_shutdown",
+          "failure": "F:\\qa188-review\\test_repair_edges.py:128: in test_i04_failure_reported_by_inflight_sample_during_shutdown\n    audit(corpus,out)\ntests\\test_quality_audit.py:57: in audit\n    return run_audit(manifest, output, limits=limits(workers), progress_interval=None, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nsrc\\xlm\\data\\quality\\runner.py:549: in run_audit\n    tree.write(RECEIPT_FILE, raw)\nsrc\\xlm\\data\\quality\\outputs.py:160: in write\n    canonical.write_atomic(path, payload)\nF:\\qa188-review\\test_repair_edges.py:122: in write\n    assert sampling.wait(3), 'test monitor did not begin sampling'\nE   AssertionError: test monitor did not begin sampling\nE   assert False\nE    +  where False = wait(3)\nE    +    where wait = <threading.Event at 0x1dfca74ce60: unset>.wait"
+        }
+      ]
+    },
+    "focused_regressions": {
+      "junit": "F:/qa-aa7-focused.xml",
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "tests": "103",
+      "time": "27.441",
+      "timestamp": "2026-10-04T12:11:39.016186+02:00",
+      "hostname": "GammA-DeskMain",
+      "failed_nodes": []
+    },
+    "new_independent": {
+      "junit": "F:/qa-aa7-review/independent.xml",
+      "name": "pytest",
+      "errors": "0",
+      "failures": "3",
+      "skipped": "0",
+      "tests": "44",
+      "time": "6.008",
+      "timestamp": "2026-10-04T12:13:39.604917+02:00",
+      "hostname": "GammA-DeskMain",
+      "failed_nodes": [
+        {
+          "name": "test_i04_no_complete_or_success[receipt_disk]",
+          "failure": "F:\\qa-aa7-review\\test_final_independent.py:85: in test_i04_no_complete_or_success\n    assert rc!=0 and value.get('refused') is True and 'complete' not in value\nE   assert (0 != 0)"
+        },
+        {
+          "name": "test_i04_no_complete_or_success[receipt_rss]",
+          "failure": "F:\\qa-aa7-review\\test_final_independent.py:85: in test_i04_no_complete_or_success\n    assert rc!=0 and value.get('refused') is True and 'complete' not in value\nE   assert (0 != 0)"
+        },
+        {
+          "name": "test_i04_no_complete_or_success[receipt_deadline]",
+          "failure": "F:\\qa-aa7-review\\test_final_independent.py:85: in test_i04_no_complete_or_success\n    assert rc!=0 and value.get('refused') is True and 'complete' not in value\nE   assert (0 != 0)"
+        }
+      ]
+    },
+    "envelope_relationships": {
+      "junit": "F:/qa-aa7-review/relationships.xml",
+      "name": "pytest",
+      "errors": "0",
+      "failures": "4",
+      "skipped": "0",
+      "tests": "4",
+      "time": "2.138",
+      "timestamp": "2026-10-04T12:15:05.456698+02:00",
+      "hostname": "GammA-DeskMain",
+      "failed_nodes": [
+        {
+          "name": "test_impossible_effective_envelope_refuses[max_output_bytes]",
+          "failure": "F:\\qa-aa7-review\\test_envelope_relationships.py:44: in test_impossible_effective_envelope_refuses\n    with pytest.raises(QualityError):\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   Failed: DID NOT RAISE QualityError"
+        },
+        {
+          "name": "test_impossible_effective_envelope_refuses[max_rss_bytes]",
+          "failure": "F:\\qa-aa7-review\\test_envelope_relationships.py:44: in test_impossible_effective_envelope_refuses\n    with pytest.raises(QualityError):\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   Failed: DID NOT RAISE QualityError"
+        },
+        {
+          "name": "test_impossible_effective_envelope_refuses[max_document_bytes]",
+          "failure": "F:\\qa-aa7-review\\test_envelope_relationships.py:44: in test_impossible_effective_envelope_refuses\n    with pytest.raises(QualityError):\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   Failed: DID NOT RAISE QualityError"
+        },
+        {
+          "name": "test_impossible_effective_envelope_refuses[review_per_stratum]",
+          "failure": "F:\\qa-aa7-review\\test_envelope_relationships.py:44: in test_impossible_effective_envelope_refuses\n    with pytest.raises(QualityError):\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   Failed: DID NOT RAISE QualityError"
+        }
+      ]
+    }
+  },
+  "totals": {
+    "passed": 199,
+    "failed": 11,
+    "skipped": 0,
+    "focused_deselected": 34
+  },
+  "prior_harness_note": "One preserved edge probe waits for a monitor sample during receipt write, but this implementation already stopped the monitor. This failure is not counted as evidence of a product shutdown defect.",
+  "verdicts": {
+    "I04": "BLOCKED",
+    "I08": "PASS",
+    "I10": "BLOCKED",
+    "I11": "PASS"
+  },
+  "blockers": [
+    "Receipt-write disk/RSS/deadline deterioration returns exit 0, success JSON and leaves COMPLETE: monitor stopped and no fresh checks after write.",
+    "Redigested effective envelopes with 1-byte output, RSS, document limits or review_per_stratum=1 still verify despite contradictory artifacts/execution/binding/policy.",
+    "Unchanged original test_child_rss_included fails with BrokenProcessPool rather than the expected RSS C05Error."
+  ],
+  "relationship_facts": {
+    "artifact_bytes": 385355,
+    "peak_rss": 77471744,
+    "bound_line_ceiling": 1048576,
+    "recorded_review_per_stratum": 4,
+    "max_actual_review_rows_per_component_detector_bin": 4
+  },
+  "static": {
+    "scope": "src/xlm/data/quality + tests/test_quality_audit.py + tests/test_quality_detectors.py + tests/test_quality_hardening.py + tests/test_quality_final_repairs.py + tests/quality_fixtures.py + scripts/quality_audit_benchmark.py",
+    "ruff_format_check": 0,
+    "ruff_check": 0,
+    "mypy_strict": 0,
+    "git_diff_check": 0,
+    "files": 20
+  },
+  "frozen_files": [
+    {
+      "path": "docs/implementation/evidence/QUALITY-AUDIT-INDEPENDENT-96F38F3/COMMANDS.md",
+      "git_blob_identical": true,
+      "raw_disk_identical": true,
+      "disk_sha256": "2672cc379bfc52c5e5d2faafcd514b457196428e4b3134acead7b31003dcc395",
+      "old_blob_sha256": "2672cc379bfc52c5e5d2faafcd514b457196428e4b3134acead7b31003dcc395"
+    },
+    {
+      "path": "docs/implementation/evidence/QUALITY-AUDIT-INDEPENDENT-96F38F3/benchmark.json",
+      "git_blob_identical": true,
+      "raw_disk_identical": true,
+      "disk_sha256": "24c40be7612b64bfa64c6c0dba3eb4eb0d0c7953fbf7f23c52cbd1c062cd4048",
+      "old_blob_sha256": "24c40be7612b64bfa64c6c0dba3eb4eb0d0c7953fbf7f23c52cbd1c062cd4048"
+    },
+    {
+      "path": "docs/implementation/evidence/QUALITY-AUDIT-INDEPENDENT-96F38F3/detector-matrix.json",
+      "git_blob_identical": true,
+      "raw_disk_identical": true,
+      "disk_sha256": "bf1d3388efb654d2b3672610f8a69118c5c7ce87bfd24690b7ea56d497240da2",
+      "old_blob_sha256": "bf1d3388efb654d2b3672610f8a69118c5c7ce87bfd24690b7ea56d497240da2"
+    },
+    {
+      "path": "docs/implementation/evidence/QUALITY-AUDIT-INDEPENDENT-96F38F3/extra.xml",
+      "git_blob_identical": true,
+      "raw_disk_identical": true,
+      "disk_sha256": "a9eea675a389428f98918af8a5e7ea4f632ff7632d7153ce27b308591413ccd8",
+      "old_blob_sha256": "a9eea675a389428f98918af8a5e7ea4f632ff7632d7153ce27b308591413ccd8"
+    },
+    {
+      "path": "docs/implementation/evidence/QUALITY-AUDIT-INDEPENDENT-96F38F3/final-probes.xml",
+      "git_blob_identical": true,
+      "raw_disk_identical": true,
+      "disk_sha256": "5cb8ab22955258b0e190afce9c403bb13cac47e70143fae96fb631255e31547c",
+      "old_blob_sha256": "5cb8ab22955258b0e190afce9c403bb13cac47e70143fae96fb631255e31547c"
+    },
+    {
+      "path": "docs/implementation/evidence/QUALITY-AUDIT-INDEPENDENT-96F38F3/kernel-profile.txt",
+      "git_blob_identical": true,
+      "raw_disk_identical": true,
+      "disk_sha256": "563abe1231ae80edd1d87f705fe8ad7f1d4e289232fc654120d70d962bee448f",
+      "old_blob_sha256": "563abe1231ae80edd1d87f705fe8ad7f1d4e289232fc654120d70d962bee448f"
+    },
+    {
+      "path": "docs/implementation/evidence/QUALITY-AUDIT-INDEPENDENT-96F38F3/measure.py",
+      "git_blob_identical": true,
+      "raw_disk_identical": true,
+      "disk_sha256": "e8288dd3dc514be427972a8a1fa9a52db448c3ade988dee5d8226336475b8413",
+      "old_blob_sha256": "e8288dd3dc514be427972a8a1fa9a52db448c3ade988dee5d8226336475b8413"
+    },
+    {
+      "path": "docs/implementation/evidence/QUALITY-AUDIT-INDEPENDENT-96F38F3/mypy-strict.log",
+      "git_blob_identical": true,
+      "raw_disk_identical": true,
+      "disk_sha256": "4145c91ac4a1338ed274ecf530616bcf5cb68399a375ca31cfa938b2bdf63305",
+      "old_blob_sha256": "4145c91ac4a1338ed274ecf530616bcf5cb68399a375ca31cfa938b2bdf63305"
+    },
+    {
+      "path": "docs/implementation/evidence/QUALITY-AUDIT-INDEPENDENT-96F38F3/policy-definitions.json",
+      "git_blob_identical": true,
+      "raw_disk_identical": true,
+      "disk_sha256": "37796b04bf8365d6f05bbdff46eaf2860e6e859d3ea10d0ac309d0d75017f242",
+      "old_blob_sha256": "37796b04bf8365d6f05bbdff46eaf2860e6e859d3ea10d0ac309d0d75017f242"
+    },
+    {
+      "path": "docs/implementation/evidence/QUALITY-AUDIT-INDEPENDENT-96F38F3/profile.txt",
+      "git_blob_identical": true,
+      "raw_disk_identical": true,
+      "disk_sha256": "4458705dae305faed92ab2c553479497e100b023752ae2e8232bed820f7dcb81",
+      "old_blob_sha256": "4458705dae305faed92ab2c553479497e100b023752ae2e8232bed820f7dcb81"
+    },
+    {
+      "path": "docs/implementation/evidence/QUALITY-AUDIT-INDEPENDENT-96F38F3/ruff-check.log",
+      "git_blob_identical": true,
+      "raw_disk_identical": true,
+      "disk_sha256": "05e2ba97f9a27a7afe45443427c884270e42c972b36530ddb9a6c4061d7a5995",
+      "old_blob_sha256": "05e2ba97f9a27a7afe45443427c884270e42c972b36530ddb9a6c4061d7a5995"
+    },
+    {
+      "path": "docs/implementation/evidence/QUALITY-AUDIT-INDEPENDENT-96F38F3/ruff-format.log",
+      "git_blob_identical": true,
+      "raw_disk_identical": true,
+      "disk_sha256": "d73322498c4ce842f9dd3184b32e91e6a764a29d26947d3839ce1e500ece8ac4",
+      "old_blob_sha256": "d73322498c4ce842f9dd3184b32e91e6a764a29d26947d3839ce1e500ece8ac4"
+    },
+    {
+      "path": "docs/implementation/evidence/QUALITY-AUDIT-INDEPENDENT-96F38F3/scaling.json",
+      "git_blob_identical": true,
+      "raw_disk_identical": true,
+      "disk_sha256": "6fbf99c9d117a003b05ef8969f8b530efc7f069b7b4c6ae992945130ccad8757",
+      "old_blob_sha256": "6fbf99c9d117a003b05ef8969f8b530efc7f069b7b4c6ae992945130ccad8757"
+    },
+    {
+      "path": "docs/implementation/evidence/QUALITY-AUDIT-INDEPENDENT-96F38F3/scratch-logical-bytes.json",
+      "git_blob_identical": true,
+      "raw_disk_identical": true,
+      "disk_sha256": "146c63675225fdd59c74bdcd28867c367cd351ded4793be77edcded3bc1524f1",
+      "old_blob_sha256": "146c63675225fdd59c74bdcd28867c367cd351ded4793be77edcded3bc1524f1"
+    },
+    {
+      "path": "docs/implementation/evidence/QUALITY-AUDIT-INDEPENDENT-96F38F3/test_independent.py",
+      "git_blob_identical": true,
+      "raw_disk_identical": true,
+      "disk_sha256": "5527a6eda7015b1b584831385825332b963f2adceaf6e86091cedce674c75837",
+      "old_blob_sha256": "5527a6eda7015b1b584831385825332b963f2adceaf6e86091cedce674c75837"
+    },
+    {
+      "path": "docs/implementation/reports/QUALITY-AUDIT-INDEPENDENT-96F38F3.md",
+      "git_blob_identical": true,
+      "raw_disk_identical": true,
+      "disk_sha256": "de15c43023e3bc36064d18348d10c4d3b9a69ef78b0c8e1ef2231d41e294998e",
+      "old_blob_sha256": "de15c43023e3bc36064d18348d10c4d3b9a69ef78b0c8e1ef2231d41e294998e"
+    }
+  ],
+  "probe_sha256": {
+    "F:\\Project\\xlm-quality-audit\\docs\\implementation\\evidence\\QUALITY-AUDIT-INDEPENDENT-96F38F3\\test_independent.py": "5527a6eda7015b1b584831385825332b963f2adceaf6e86091cedce674c75837",
+    "F:\\qa188-review\\test_repair_edges.py": "c91b3cb51f346b331f9e6990e318df14ec86909f3442004ce7147af70a7febad"
+  }
+}
