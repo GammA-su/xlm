@@ -42,10 +42,14 @@ from xlm.data.quality.scan import QualityError, read_bounded
 
 POLICY_KIND = "xlm_quality_cleaning_policy"
 POLICY_V1 = "cleaning_policy_v1"
+POLICY_V2 = "cleaning_policy_v2"
 TEMPLATE_STATUS = "RULES_FROZEN_THRESHOLDS_PENDING"
 FROZEN_STATUS = "FROZEN"
 # canonical.digest of the template's ``policy`` section (the reviewed v1 rule set).
 POLICY_SECTION_DIGEST = "d1eb1990448ea76fbffbba9d44ff016d9dada68caabebe92ed7f61627cfe77e2"
+# canonical.digest of the v2 template's ``policy`` section (the human-reviewed successor).
+POLICY_SECTION_DIGEST_V2 = "cb4c52853969046f49bebfa72dc82e2ad922f0ae9e5781128a5f886caefdc0c4"
+SECTION_DIGESTS = {POLICY_V1: POLICY_SECTION_DIGEST, POLICY_V2: POLICY_SECTION_DIGEST_V2}
 TEMPLATE_KEYS = frozenset({"kind", "version", "status", "policy", "thresholds", "provenance"})
 FROZEN_KEYS = TEMPLATE_KEYS | {"template_sha256", "digest"}
 MAX_POLICY_BYTES = 4 * 1024**2
@@ -57,6 +61,13 @@ FROZEN_BANNER = (
     "# Thresholds are copied verbatim from the verified Phase-A conservative candidate\n"
     "# policy named in `provenance`. Self-digested: any edit refuses. DRY-RUN ONLY.\n"
 )
+FROZEN_BANNER_V2 = (
+    "# XLM cleaning policy v2 (human-reviewed successor of v1) - FROZEN. Written by\n"
+    "# `clean-freeze-policy`; do not edit. Thresholds are copied verbatim from the verified\n"
+    "# Phase-A conservative candidate policy and equal the v1 frozen cuts (`provenance`).\n"
+    "# Self-digested: any edit refuses. DRY-RUN ONLY.\n"
+)
+BANNERS = {POLICY_V1: FROZEN_BANNER, POLICY_V2: FROZEN_BANNER_V2}
 
 OUTCOMES = ("KEEP", "DROP", "REVIEW")
 KEEP, DROP, REVIEW = 0, 1, 2
@@ -75,10 +86,61 @@ RULES: tuple[tuple[str, int], ...] = (
     ("enc.replacement_and_mojibake", DROP),
     ("enc.with_forbidden_controls", DROP),
 )
-RULE_IDS = tuple(name for name, _ in RULES)
-RULE_BIT = {name: 1 << n for n, name in enumerate(RULE_IDS)}
-DROP_MASK = sum(1 << n for n, (_, action) in enumerate(RULES) if action == DROP)
-REVIEW_MASK = sum(1 << n for n, (_, action) in enumerate(RULES) if action == REVIEW)
+# v2 (human-reviewed): no full-HTML rule, no REVIEW rule; encoding thresholds DROP.
+RULES_V2: tuple[tuple[str, int], ...] = (
+    ("hard.nul", DROP),
+    ("hard.noncharacters", DROP),
+    ("rep.severe_default", DROP),
+    ("rep.severe_structured", DROP),
+    ("ocr.finepdfs_with_repetition", DROP),
+    ("enc.replacement_chars", DROP),
+    ("enc.mojibake_hits", DROP),
+    ("enc.replacement_and_mojibake", DROP),
+    ("enc.with_forbidden_controls", DROP),
+)
+
+
+@dataclass(frozen=True)
+class RuleSet:
+    """One policy version's rules in fixed bit order, with derived masks."""
+
+    version: str
+    rules: tuple[tuple[str, int], ...]
+    ids: tuple[str, ...]
+    bit: Mapping[str, int]
+    drop_mask: int
+    review_mask: int
+    rep_mask: int
+    enc_mask: int
+    strata: tuple[str, ...]  # review stratum of each rule (``drop.<id>`` / ``review.<id>``)
+
+
+def make_ruleset(version: str, rules: tuple[tuple[str, int], ...]) -> RuleSet:
+    ids = tuple(name for name, _ in rules)
+    bit = {name: 1 << n for n, name in enumerate(ids)}
+    return RuleSet(
+        version=version,
+        rules=rules,
+        ids=ids,
+        bit=bit,
+        drop_mask=sum(bit[name] for name, action in rules if action == DROP),
+        review_mask=sum(bit[name] for name, action in rules if action == REVIEW),
+        rep_mask=sum(bit[name] for name in ids if name.startswith("rep.")),
+        enc_mask=sum(bit[name] for name in ids if name.startswith("enc.")),
+        strata=tuple(
+            f"drop.{name}" if action == DROP else f"review.{name}" for name, action in rules
+        ),
+    )
+
+
+RULESET_V1 = make_ruleset(POLICY_V1, RULES)
+RULESET_V2 = make_ruleset(POLICY_V2, RULES_V2)
+RULESETS = {POLICY_V1: RULESET_V1, POLICY_V2: RULESET_V2}
+# v1 module-level names (unchanged; the historical v1 API).
+RULE_IDS = RULESET_V1.ids
+RULE_BIT = dict(RULESET_V1.bit)
+DROP_MASK = RULESET_V1.drop_mask
+REVIEW_MASK = RULESET_V1.review_mask
 REP_SIGNALS = (
     "compression_ratio",
     "ngram10_excess_ratio",
@@ -94,6 +156,10 @@ THRESHOLD_KEYS = frozenset(
 IMPACT_KEYS = frozenset({"docs", "bytes", "docs_pct", "bytes_pct"})
 COMPONENT_KEYS = frozenset({"repetition", "ocr"})
 PROVENANCE_KEYS = frozenset({"phase_a", "candidate_policy", "copy_rule", "frozen_by"})
+PROVENANCE_KEYS_V2 = PROVENANCE_KEYS | {"predecessor"}
+PREDECESSOR_KEYS = frozenset(
+    {"version", "policy_digest", "file_sha256", "phase_a_receipt_digest", "thresholds_digest"}
+)
 PHASE_A_KEYS = frozenset(
     {
         "receipt_digest",
@@ -191,7 +257,7 @@ class RuleParams:
     noncharacters_at_least: int
     default_drop_at_least: int
     structured_drop_at_least: int
-    structured_review_equals: int
+    structured_review_equals: int | None
     ocr_components: frozenset[str]
     ocr_at_least: int
     ocr_drop_severe_at_least: int
@@ -202,13 +268,32 @@ class RuleParams:
     max_rows: int
     seed: str
     strata: tuple[Stratum, ...]
+    # Version semantics (v1 values reproduce v1 exactly).
+    version: str
+    ruleset: RuleSet
+    full_html_drop: bool
+    ocr_review: bool
+    replacement_rule: str
+    mojibake_rule: str
+    outcomes: tuple[str, ...]
+
+    @property
+    def stratum_names(self) -> frozenset[str]:
+        return frozenset(s.name for s in self.strata)
 
 
-def rule_params(policy: Mapping[str, Any]) -> RuleParams:
+def rule_params(policy: Mapping[str, Any], version: str = POLICY_V1) -> RuleParams:
     try:
         section = canonical.digest(policy)
     except canonical.CanonicalError:
         raise PolicyError("cleaning policy refused: policy section is not plain data") from None
+    if version == POLICY_V2:
+        _require(
+            section == POLICY_SECTION_DIGEST_V2,
+            "policy section is not the human-reviewed v2 rule set",
+        )
+        return _rule_params_v2(policy)
+    _require(version == POLICY_V1, "unknown policy version")
     _require(section == POLICY_SECTION_DIGEST, "policy section is not the reviewed v1 rule set")
     groups = policy["class_groups"]
     _require(
@@ -254,6 +339,86 @@ def rule_params(policy: Mapping[str, Any]) -> RuleParams:
         max_rows=int(sampling["max_rows"]),
         seed=str(sampling["seed"]),
         strata=tuple(Stratum(str(s["name"]), int(s["quota"])) for s in sampling["strata"]),
+        version=POLICY_V1,
+        ruleset=RULESET_V1,
+        full_html_drop=True,
+        ocr_review=True,
+        replacement_rule="enc.replacement_review",
+        mojibake_rule="enc.mojibake_review",
+        outcomes=tuple(policy["outcomes"]),
+    )
+
+
+def _guardrails(rails: Mapping[str, Any]) -> tuple[tuple[str, int], ...]:
+    return tuple(
+        (key, int(rails[key]))
+        for key in (
+            "component_drop_docs_pct_gt",
+            "global_drop_docs_pct_gt",
+            "component_drop_bytes_pct_gt",
+            "global_drop_bytes_pct_gt",
+        )
+    )
+
+
+def _rule_params_v2(policy: Mapping[str, Any]) -> RuleParams:
+    """v2 semantics from its digest-pinned section (no full-HTML rule, no REVIEW)."""
+    groups = policy["class_groups"]
+    _require(
+        sorted([*groups["default"], *groups["structured"]]) == sorted(CLASS_ORDER),
+        "class groups must partition the interpretation classes",
+    )
+    _require(policy["outcomes"] == ["KEEP", "DROP"], "v2 outcomes")
+    _require(policy["human_review"]["successor_of"] == POLICY_V1, "v2 predecessor version")
+    _require(
+        policy["human_review"]["predecessor_policy_section_digest"] == POLICY_SECTION_DIGEST,
+        "v2 predecessor rule set",
+    )
+    rep = policy["severe_repetition"]["rules"]
+    ocr = policy["finepdfs_ocr"]
+    enc = policy["encoding"]
+    sampling = policy["review_sampling"]
+    _require(
+        tuple(policy["severe_repetition"]["signals"]) == REP_SIGNALS
+        and tuple(ocr["signals"]) == OCR_SIGNALS,
+        "signal lists",
+    )
+    names = [*policy["hard_corruption"], *rep, *ocr["rules"], *enc["rules"]]
+    _require(sorted(names) == sorted(RULESET_V2.ids), "rule identifiers")
+    _require(
+        all(
+            rule["action"] == "DROP"
+            for group in (policy["hard_corruption"], rep, ocr["rules"], enc["rules"])
+            for rule in group.values()
+        ),
+        "v2 rules are DROP only",
+    )
+    return RuleParams(
+        structured_classes=frozenset(groups["structured"]),
+        nul_at_least=int(policy["hard_corruption"]["hard.nul"]["at_least"]),
+        noncharacters_at_least=int(policy["hard_corruption"]["hard.noncharacters"]["at_least"]),
+        default_drop_at_least=int(rep["rep.severe_default"]["signal_count_at_least"]),
+        structured_drop_at_least=int(rep["rep.severe_structured"]["signal_count_at_least"]),
+        structured_review_equals=None,
+        ocr_components=frozenset(ocr["components"]),
+        ocr_at_least=int(ocr["rules"]["ocr.finepdfs_with_repetition"]["ocr_signal_count_at_least"]),
+        ocr_drop_severe_at_least=int(
+            ocr["rules"]["ocr.finepdfs_with_repetition"]["severe_repetition_signal_count_at_least"]
+        ),
+        replacement_at_least=int(enc["rules"]["enc.replacement_chars"]["at_least"]),
+        mojibake_at_least=int(enc["rules"]["enc.mojibake_hits"]["at_least"]),
+        forbidden_controls=tuple(enc["forbidden_controls"]),
+        guardrails=_guardrails(policy["guardrails"]),
+        max_rows=int(sampling["max_rows"]),
+        seed=str(sampling["seed"]),
+        strata=tuple(Stratum(str(s["name"]), int(s["quota"])) for s in sampling["strata"]),
+        version=POLICY_V2,
+        ruleset=RULESET_V2,
+        full_html_drop=False,
+        ocr_review=False,
+        replacement_rule="enc.replacement_chars",
+        mojibake_rule="enc.mojibake_hits",
+        outcomes=tuple(policy["outcomes"]),
     )
 
 
@@ -326,10 +491,22 @@ def _check_threshold(metric: str, entry: Any, component: str) -> Threshold | Non
     return Threshold(metric, METRIC_INDEX[metric], entry["comparator"] == ">=", cut)
 
 
-def _check_provenance(provenance: Any) -> None:
-    _require(
-        isinstance(provenance, dict) and set(provenance) == PROVENANCE_KEYS, "provenance schema"
-    )
+def _check_provenance(provenance: Any, version: str = POLICY_V1) -> None:
+    keys = PROVENANCE_KEYS_V2 if version == POLICY_V2 else PROVENANCE_KEYS
+    _require(isinstance(provenance, dict) and set(provenance) == keys, "provenance schema")
+    if version == POLICY_V2:
+        predecessor = provenance["predecessor"]
+        _require(
+            isinstance(predecessor, dict)
+            and set(predecessor) == PREDECESSOR_KEYS
+            and predecessor["version"] == POLICY_V1
+            and all(_sha(predecessor[k]) for k in PREDECESSOR_KEYS - {"version"}),
+            "v2 predecessor provenance",
+        )
+        _require(
+            predecessor["phase_a_receipt_digest"] == provenance["phase_a"]["receipt_digest"],
+            "v2 must be frozen from the same Phase-A audit as its predecessor",
+        )
     phase_a = provenance["phase_a"]
     _require(isinstance(phase_a, dict) and set(phase_a) == PHASE_A_KEYS, "Phase-A provenance")
     for name in (
@@ -381,12 +558,13 @@ def _band_quantile() -> list[int]:
 
 def _check_common(body: Mapping[str, Any]) -> RuleParams:
     _require(body.get("kind") == POLICY_KIND, "kind")
-    _require(body.get("version") == POLICY_V1, "version")
+    version = body.get("version")
+    _require(version in SECTION_DIGESTS, "version")
     policy = body.get("policy")
     if not isinstance(policy, dict):
         raise PolicyError("cleaning policy refused: policy section")
     _require(policy.get("detector_policy_version") == POLICY_VERSION, "detector policy version")
-    return rule_params(policy)
+    return rule_params(policy, str(version))
 
 
 def validate_template(body: Mapping[str, Any]) -> RuleParams:
@@ -403,10 +581,15 @@ def validate_frozen(body: Mapping[str, Any], file_sha256: str) -> CompiledPolicy
     _require(body["digest"] == canonical.self_digest(body), "self-digest")
     _require(_sha(body["template_sha256"]), "template SHA-256")
     params = _check_common(body)
-    _check_provenance(body["provenance"])
+    _check_provenance(body["provenance"], params.version)
     thresholds = body["thresholds"]
     if not isinstance(thresholds, dict) or not thresholds:
         raise PolicyError("cleaning policy refused: thresholds")
+    if params.version == POLICY_V2:
+        _require(
+            canonical.digest(thresholds) == body["provenance"]["predecessor"]["thresholds_digest"],
+            "v2 thresholds differ from the predecessor's frozen cuts",
+        )
     components: dict[str, ComponentRules] = {}
     for component, entry in thresholds.items():
         _require(type(component) is str and bool(component), "threshold component")
@@ -470,8 +653,33 @@ def _copy(rules: Mapping[str, Any], component: str, metric: str) -> dict[str, An
     return entry
 
 
-def freeze_policy(template: Path, audit_output: Path, destination: Path) -> dict[str, Any]:
+def _predecessor(path: Path | None, version: str) -> dict[str, Any] | None:
+    """v2 requires its FROZEN v1 predecessor (same audit, identical cuts); v1 takes none."""
+    if version == POLICY_V1:
+        _require(path is None, "a v1 policy has no predecessor")
+        return None
+    _require(path is not None, "a v2 freeze requires --predecessor (the frozen v1 policy)")
+    assert path is not None
+    body, raw = read_policy(path)
+    compiled = validate_frozen(body, hashlib.sha256(raw).hexdigest())
+    _require(compiled.version == POLICY_V1, "the predecessor must be a FROZEN v1 policy")
+    return {
+        "version": POLICY_V1,
+        "policy_digest": compiled.digest,
+        "file_sha256": compiled.file_sha256,
+        "phase_a_receipt_digest": body["provenance"]["phase_a"]["receipt_digest"],
+        "thresholds_digest": canonical.digest(body["thresholds"]),
+    }
+
+
+def freeze_policy(
+    template: Path, audit_output: Path, destination: Path, predecessor: Path | None = None
+) -> dict[str, Any]:
     """Copy the Phase-A conservative cuts into a new FROZEN policy file (read-only input).
+
+    v2 additionally requires ``predecessor`` (the frozen v1 policy): the Phase-A audit
+    must be the predecessor's (same receipt digest) and the copied cuts must equal the
+    predecessor's exactly; the predecessor identity is recorded in the provenance.
 
     The Phase-A output may come from an earlier accepted implementation (e.g. 32 MiB
     scan chunks). It is verified by :func:`phase_a_history.verify_historical_audit`
@@ -482,6 +690,7 @@ def freeze_policy(template: Path, audit_output: Path, destination: Path) -> dict
 
     template_body, template_raw = read_policy(template)
     params = validate_template(template_body)
+    prior = _predecessor(predecessor, params.version)
     destination = Path(destination)
     _require(not destination.exists() and not destination.is_symlink(), "destination exists")
     _require(destination.absolute().parent.is_dir(), "destination directory does not exist")
@@ -507,10 +716,19 @@ def freeze_policy(template: Path, audit_output: Path, destination: Path) -> dict
             ),
         }
     _require(bool(thresholds), "candidate policy has no components")
+    if prior is not None:
+        _require(
+            prior["phase_a_receipt_digest"] == receipt["digest"],
+            "the predecessor was frozen from a different Phase-A audit",
+        )
+        _require(
+            prior["thresholds_digest"] == canonical.digest(thresholds),
+            "copied cuts differ from the predecessor's frozen cuts",
+        )
     binding = receipt["binding"]
     body: dict[str, Any] = {
         "kind": POLICY_KIND,
-        "version": POLICY_V1,
+        "version": params.version,
         "status": FROZEN_STATUS,
         "policy": template_body["policy"],
         "thresholds": thresholds,
@@ -543,8 +761,10 @@ def freeze_policy(template: Path, audit_output: Path, destination: Path) -> dict
         },
         "template_sha256": hashlib.sha256(template_raw).hexdigest(),
     }
+    if prior is not None:
+        body["provenance"]["predecessor"] = prior
     body["digest"] = canonical.self_digest(body)
-    payload = FROZEN_BANNER.encode("utf-8") + dump_yaml(body)
+    payload = BANNERS[params.version].encode("utf-8") + dump_yaml(body)
     reloaded = parse_yaml(payload)
     _require(reloaded == body, "frozen policy does not round-trip through YAML")
     compiled = validate_frozen(reloaded, hashlib.sha256(payload).hexdigest())
@@ -557,6 +777,7 @@ def freeze_policy(template: Path, audit_output: Path, destination: Path) -> dict
         "components": sorted(thresholds),
         "phase_a_receipt_digest": receipt["digest"],
         "candidate_policy_sha256": entry["sha256"],
+        "version": params.version,
     }
 
 

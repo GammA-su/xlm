@@ -1,0 +1,10 @@
+# v1 reproducibility: previous code (worktree 24bb9a1) vs this change, same authored corpus + Phase-A audit
+## frozen v1 policy file bytes
+IDENTICAL v1 frozen file (sha256 0b9570cfa03e37031ea0df2d996d09379a97ffe66954f13f0385166d39686b17)
+## v1 dry-run artifacts (only the dry-run binding digest may differ: it binds the code identity)
+IDENTICAL cleaning-dry-run-summary.md
+DIFF cleaning-dry-run.json: identical after normalizing only the binding digest
+DIFF cleaning-by-component.json: identical after normalizing only the binding digest
+DIFF cleaning-by-rule.json: identical after normalizing only the binding digest
+DIFF cleaning-rule-intersections.json: identical after normalizing only the binding digest
+IDENTICAL cleaning-review-manifest.jsonl

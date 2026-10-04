@@ -38,17 +38,15 @@ import numpy.typing as npt
 from xlm.data.quality.aggregate import CLASS_INDEX, AggregateError
 from xlm.data.quality.cleaning_policy import (
     DROP,
-    DROP_MASK,
     KEEP,
     OCR_SIGNALS,
     OUTCOMES,
     REP_SIGNALS,
     REVIEW,
-    REVIEW_MASK,
-    RULE_BIT,
-    RULE_IDS,
+    RULESET_V1,
     ComponentRules,
     RuleParams,
+    RuleSet,
     Stratum,
 )
 from xlm.data.quality.detectors import analyze
@@ -57,7 +55,6 @@ from xlm.data.quality.policy import CLASS_ORDER, FLAG_INDEX, METRIC_INDEX
 from xlm.data.quality.review import doc_rank
 from xlm.data.quality.scan import ChunkTask, QualityError, _verify_kept, parse_row
 
-N_RULES = len(RULE_IDS)
 N_CLASSES = len(CLASS_ORDER)
 N_REP = len(REP_SIGNALS)
 N_OCR = len(OCR_SIGNALS)
@@ -78,9 +75,6 @@ ROW_METRICS = (
     "nul",
     "noncharacters",
 )
-REP_RULES = RULE_BIT["rep.severe_default"] | RULE_BIT["rep.severe_structured"]
-REP_RULES |= RULE_BIT["rep.structured_two_signals"]
-ENC_RULES = sum(RULE_BIT[r] for r in RULE_IDS if r.startswith("enc."))
 COMPRESSION_BIT = 1 << REP_SIGNALS.index("compression_ratio")
 RUN_BITS = (1 << REP_SIGNALS.index("max_char_run")) | (
     1 << REP_SIGNALS.index("repeated_char_ratio")
@@ -95,7 +89,7 @@ SAMPLING_SEED_SEPARATOR = "\0"
 @dataclass(frozen=True)
 class Decision:
     outcome: int
-    rules: int  # bit n = RULE_IDS[n] fired
+    rules: int  # bit n = params.ruleset.ids[n] fired
     severe: int  # bit k = REP_SIGNALS[k] fired
     severe_count: int
     severe_na: int  # bit k = REP_SIGNALS[k] not applicable (value None)
@@ -138,41 +132,48 @@ def evaluate(
                 ocr |= 1 << k
     ocr_count = ocr.bit_count()
 
+    # Rule bits of THIS policy version. The v1 parameters reproduce v1 exactly; v2 has no
+    # full-HTML rule (``full_html_drop`` false), no structured or OCR REVIEW, and DROP
+    # encoding rules.
+    bit = params.ruleset.bit
     fired = 0
-    if FULL_HTML in flags:
-        fired |= RULE_BIT["hard.full_html"]
+    if params.full_html_drop and FULL_HTML in flags:
+        fired |= bit["hard.full_html"]
     if int(values[M["nul"]] or 0) >= params.nul_at_least:
-        fired |= RULE_BIT["hard.nul"]
+        fired |= bit["hard.nul"]
     if int(values[M["noncharacters"]] or 0) >= params.noncharacters_at_least:
-        fired |= RULE_BIT["hard.noncharacters"]
+        fired |= bit["hard.noncharacters"]
     if structured:
         if severe_count >= params.structured_drop_at_least:
-            fired |= RULE_BIT["rep.severe_structured"]
-        elif severe_count == params.structured_review_equals:
-            fired |= RULE_BIT["rep.structured_two_signals"]
+            fired |= bit["rep.severe_structured"]
+        elif (
+            params.structured_review_equals is not None
+            and severe_count == params.structured_review_equals
+        ):
+            fired |= bit["rep.structured_two_signals"]
     elif severe_count >= params.default_drop_at_least:
-        fired |= RULE_BIT["rep.severe_default"]
+        fired |= bit["rep.severe_default"]
     if ocr_scope and ocr_count >= params.ocr_at_least:
         if severe_count >= params.ocr_drop_severe_at_least:
-            fired |= RULE_BIT["ocr.finepdfs_with_repetition"]
-        else:
-            fired |= RULE_BIT["ocr.finepdfs_review"]
+            fired |= bit["ocr.finepdfs_with_repetition"]
+        elif params.ocr_review:
+            fired |= bit["ocr.finepdfs_review"]
     replacement = int(values[M["replacement_chars"]] or 0) >= params.replacement_at_least
     mojibake = int(values[M["mojibake_hits"]] or 0) >= params.mojibake_at_least
     if replacement:
-        fired |= RULE_BIT["enc.replacement_review"]
+        fired |= bit[params.replacement_rule]
     if mojibake:
-        fired |= RULE_BIT["enc.mojibake_review"]
+        fired |= bit[params.mojibake_rule]
     if replacement and mojibake:
-        fired |= RULE_BIT["enc.replacement_and_mojibake"]
+        fired |= bit["enc.replacement_and_mojibake"]
     if (replacement or mojibake) and any(
         int(values[M[name]] or 0) >= 1 for name in params.forbidden_controls
     ):
-        fired |= RULE_BIT["enc.with_forbidden_controls"]
+        fired |= bit["enc.with_forbidden_controls"]
 
-    if fired & DROP_MASK:
+    if fired & params.ruleset.drop_mask:
         outcome = DROP
-    elif fired & REVIEW_MASK:
+    elif fired & params.ruleset.review_mask:
         outcome = REVIEW
     else:
         outcome = KEEP
@@ -181,8 +182,8 @@ def evaluate(
     )
 
 
-def rule_names(mask: int) -> list[str]:
-    return [name for n, name in enumerate(RULE_IDS) if mask >> n & 1]
+def rule_names(mask: int, ruleset: RuleSet = RULESET_V1) -> list[str]:
+    return [name for n, name in enumerate(ruleset.ids) if mask >> n & 1]
 
 
 def signal_names(mask: int, names: Sequence[str]) -> list[str]:
@@ -193,14 +194,15 @@ def signal_names(mask: int, names: Sequence[str]) -> list[str]:
 
 
 def expand_strata(params: RuleParams, components: Sequence[str]) -> list[Stratum]:
-    """The ordered strata with ``coverage.<component>.<outcome>`` expanded."""
+    """The ordered strata with ``coverage.<component>.<outcome>`` expanded over the
+    version's outcomes."""
     out: list[Stratum] = []
     for stratum in params.strata:
         if stratum.name == "coverage.<component>.<outcome>":
             out += [
                 Stratum(f"coverage.{c}.{o}", stratum.quota)
                 for c in sorted(components)
-                for o in OUTCOMES
+                for o in params.outcomes
             ]
         else:
             out.append(stratum)
@@ -220,36 +222,46 @@ def strata_of(
     values: Sequence[float | int | None],
     params: RuleParams,
 ) -> list[str]:
-    """Every review stratum this document belongs to (v1 definitions in the policy)."""
+    """Every review stratum of the policy version this document belongs to.
+
+    Candidate memberships are computed for every known definition and kept only when
+    the version lists that stratum (``coverage.*`` always applies).
+    """
+    ruleset = params.ruleset
     out = [_coverage_name(component, decision.outcome)]
     fired = decision.rules
-    rep = bool(fired & REP_RULES)
+    rep = bool(fired & ruleset.rep_mask)
     if component == "finewiki_en":
         if rep:
             out.append("priority.finewiki_en.severe_repetition")
         if decision.severe & COMPRESSION_BIT:
             out.append("priority.finewiki_en.compression")
-    if fired & RULE_BIT["ocr.finepdfs_with_repetition"]:
+    if fired & ruleset.bit["ocr.finepdfs_with_repetition"]:
         out.append("priority.finepdfs_en.ocr_repetition")
     if component == "common_pile_prose" and rep and decision.severe & RUN_BITS:
         out.append("priority.common_pile_prose.char_runs")
     if component == "ultrax_ultrafineweb" and rep:
         out.append("priority.ultrax_ultrafineweb.severe_tail")
-    if fired & ENC_RULES and component in ENCODING_PRIORITY:
+    if fired & ruleset.enc_mask and component in ENCODING_PRIORITY:
         out.append(ENCODING_STRATA[component])
-    for n in range(N_RULES):
-        if fired >> n & 1:
-            if (1 << n) & DROP_MASK:
-                out.append(RULE_STRATA[n])
-            elif decision.outcome == REVIEW:
-                out.append(RULE_STRATA[n])
+    for n, (_, action) in enumerate(ruleset.rules):
+        if fired >> n & 1 and (action == DROP or decision.outcome == REVIEW):
+            out.append(ruleset.strata[n])
     keep = decision.outcome == KEEP
     if keep and decision.structured and decision.severe_count == 1:
         out.append("protected.structured_one_signal")
     if CODE_EXAMPLE in flags and FULL_HTML not in flags:
         out.append("protected.code_example_markup")
+    if keep and FULL_HTML in flags:
+        out.append("protected.full_html_keep")
     if keep and not decision.structured and decision.severe_count == 1:
         out.append("control.default_one_signal")
+    if keep and decision.severe_count == 2:
+        out.append(
+            "control.structured_two_signals"
+            if decision.structured
+            else "control.default_two_signals"
+        )
     if keep:
         replacement = int(values[M["replacement_chars"]] or 0)
         mojibake = int(values[M["mojibake_hits"]] or 0)
@@ -261,13 +273,17 @@ def strata_of(
             out.append("control.encoding_near")
         if decision.ocr_scope and decision.ocr_count == 1:
             out.append("control.finepdfs_ocr_one")
-    return out
+        if (
+            decision.ocr_scope
+            and decision.ocr_count >= params.ocr_at_least
+            and decision.severe_count == 0
+        ):
+            out.append("control.finepdfs_ocr_only")
+    allowed = params.stratum_names
+    return [name for name in out if name in allowed or name.startswith("coverage.")]
 
 
 ENCODING_STRATA = {c: f"priority.encoding.{c}" for c in ENCODING_PRIORITY}
-RULE_STRATA = tuple(
-    f"drop.{name}" if (1 << n) & DROP_MASK else f"review.{name}" for n, name in enumerate(RULE_IDS)
-)
 
 
 @lru_cache(maxsize=1024)
@@ -318,30 +334,34 @@ def _quota(quotas: Mapping[str, int], name: str) -> int:
 
 # -- mergeable statistics -------------------------------------------------------------------
 
-_SHAPES: dict[str, tuple[int, ...]] = {
-    "outcome": (3, 2),
-    "class_outcome": (N_CLASSES, 3, 2),
-    "rule": (N_RULES, 2),
-    "rule_exclusive": (N_RULES, 2),
-    "rule_pair": (N_RULES, N_RULES, 2),
-    "rule_class": (N_RULES, N_CLASSES, 2),
-    "severe": (2, N_REP + 1, 3, 2),
-    "signal": (2, N_REP, 2),
-    "signal_na": (N_REP, 2),
-    "ocr": (N_OCR + 1, 3, 2),
-    "ocr_signal": (N_OCR, 2),
-}
+
+def _shapes(n_rules: int) -> dict[str, tuple[int, ...]]:
+    return {
+        "outcome": (3, 2),
+        "class_outcome": (N_CLASSES, 3, 2),
+        "rule": (n_rules, 2),
+        "rule_exclusive": (n_rules, 2),
+        "rule_pair": (n_rules, n_rules, 2),
+        "rule_class": (n_rules, N_CLASSES, 2),
+        "severe": (2, N_REP + 1, 3, 2),
+        "signal": (2, N_REP, 2),
+        "signal_na": (N_REP, 2),
+        "ocr": (N_OCR + 1, 3, 2),
+        "ocr_signal": (N_OCR, 2),
+    }
 
 
 class CleanStats:
     """Exact integer counters (documents, canonical UTF-8 bytes) of one population."""
 
-    def __init__(self) -> None:
+    def __init__(self, ruleset: RuleSet = RULESET_V1) -> None:
+        self.ruleset = ruleset
+        self.shapes = _shapes(len(ruleset.ids))
         self.docs = 0
         self.bytes = 0
         self.line_bytes = 0
         self.max_text_bytes = 0
-        self.arrays = {name: np.zeros(shape, dtype=np.int64) for name, shape in _SHAPES.items()}
+        self.arrays = {name: np.zeros(shape, dtype=np.int64) for name, shape in self.shapes.items()}
         self.combos: dict[int, list[int]] = {}  # rule mask -> [docs, bytes]
         self.strata: dict[str, list[int]] = {}  # review stratum -> [docs, bytes]
 
@@ -379,14 +399,16 @@ class CleanStats:
         add(a["outcome"], (outcome,))
         add(a["class_outcome"], (classes, outcome))
         add(a["severe"], (structured, severe_count, outcome))
-        bits = ((rules[:, None] >> np.arange(N_RULES)) & 1).astype(np.int64)  # (n, R)
+        n_rules = len(self.ruleset.ids)
+        bits = ((rules[:, None] >> np.arange(n_rules)) & 1).astype(np.int64)  # (n, R)
         a["rule"] += bits.T @ weights
         a["rule_pair"] += _pairs(bits, bits, weights)
         one_hot = np.zeros((n, N_CLASSES), dtype=np.int64)
         one_hot[np.arange(n), classes] = 1
         a["rule_class"] += _pairs(bits, one_hot, weights)
-        drop_bits = bits * np.array([(1 << r) & DROP_MASK != 0 for r in range(N_RULES)])
-        review_bits = bits * np.array([(1 << r) & REVIEW_MASK != 0 for r in range(N_RULES)])
+        drop_mask, review_mask = self.ruleset.drop_mask, self.ruleset.review_mask
+        drop_bits = bits * np.array([(1 << r) & drop_mask != 0 for r in range(n_rules)])
+        review_bits = bits * np.array([(1 << r) & review_mask != 0 for r in range(n_rules)])
         only_drop = drop_bits * (drop_bits.sum(axis=1) == 1)[:, None]
         only_review = review_bits * ((review_bits.sum(axis=1) == 1) & (outcome == REVIEW))[:, None]
         a["rule_exclusive"] += (only_drop + only_review).T @ weights
@@ -421,7 +443,9 @@ class CleanStats:
         self.bytes += other.bytes
         self.line_bytes += other.line_bytes
         self.max_text_bytes = max(self.max_text_bytes, other.max_text_bytes)
-        for name in _SHAPES:
+        if other.ruleset != self.ruleset:
+            raise AggregateError("cleaning statistics of different policy versions")
+        for name in self.shapes:
             self.arrays[name] += other.arrays[name]
         for mask, (d, b) in other.combos.items():
             entry = self.combos.setdefault(mask, [0, 0])
@@ -438,14 +462,14 @@ class CleanStats:
             "bytes": self.bytes,
             "line_bytes": self.line_bytes,
             "max_text_bytes": self.max_text_bytes,
-            "arrays": {name: self.arrays[name].tolist() for name in sorted(_SHAPES)},
+            "arrays": {name: self.arrays[name].tolist() for name in sorted(self.shapes)},
             "combos": {str(k): list(v) for k, v in sorted(self.combos.items())},
             "strata": {k: list(v) for k, v in sorted(self.strata.items())},
         }
 
     @classmethod
-    def from_json(cls, data: Mapping[str, Any]) -> CleanStats:
-        stats = cls()
+    def from_json(cls, data: Mapping[str, Any], ruleset: RuleSet = RULESET_V1) -> CleanStats:
+        stats = cls(ruleset)
         if not isinstance(data, Mapping) or set(data) != {
             "docs",
             "bytes",
@@ -462,14 +486,17 @@ class CleanStats:
                 raise AggregateError("cleaning statistics schema")
             setattr(stats, name, value)
         arrays = data["arrays"]
-        if not isinstance(arrays, Mapping) or set(arrays) != set(_SHAPES):
+        if not isinstance(arrays, Mapping) or set(arrays) != set(stats.shapes):
             raise AggregateError("cleaning statistics schema")
-        for name, shape in _SHAPES.items():
+        for name, shape in stats.shapes.items():
             array = np.asarray(arrays[name])
             if array.shape != shape or array.dtype.kind != "i" or (array < 0).any():
                 raise AggregateError("cleaning statistics schema")
             stats.arrays[name] = array.astype(np.int64)
-        for field, table, limit in (("combos", stats.combos, 1 << N_RULES), ("strata", None, 0)):
+        for field, table, limit in (
+            ("combos", stats.combos, 1 << len(ruleset.ids)),
+            ("strata", None, 0),
+        ):
             raw = data[field]
             if not isinstance(raw, Mapping):
                 raise AggregateError("cleaning statistics schema")
@@ -504,7 +531,7 @@ class CleanStats:
         combo = [sum(v[0] for v in self.combos.values()), sum(v[1] for v in self.combos.values())]
         if combo != totals:
             raise AggregateError("cleaning statistics are inconsistent (rule combinations)")
-        for outcome, mask in ((DROP, DROP_MASK),):
+        for outcome, mask in ((DROP, self.ruleset.drop_mask),):
             union = [sum(v[i] for k, v in self.combos.items() if k & mask) for i in (0, 1)]
             if union != a["outcome"][outcome].tolist():
                 raise AggregateError("cleaning statistics are inconsistent (DROP union)")
@@ -653,6 +680,7 @@ def measure_clean_chunk(task: CleanTask) -> CleanChunkResult:
                 decision,
                 result.values,
                 strata,
+                params.ruleset,
             ),
         )
         count += 1
@@ -670,7 +698,7 @@ def measure_clean_chunk(task: CleanTask) -> CleanChunkResult:
     populations: dict[str, CleanStats] = {}
     for pop_name in sorted(set(columns["names"])):
         members = np.flatnonzero(name_array == pop_name)
-        stats = populations[pop_name] = CleanStats()
+        stats = populations[pop_name] = CleanStats(params.ruleset)
         stats.add_batch(
             sizes=arrays["sizes"][members],
             line_bytes=int(arrays["lines"][members].sum()),
@@ -708,6 +736,7 @@ def _recorder(
     decision: Decision,
     values: Sequence[float | int | None],
     strata: Sequence[str],
+    ruleset: RuleSet,
 ) -> Callable[[], dict[str, Any]]:
     """A deferred review record (built only if the document enters some stratum)."""
 
@@ -719,7 +748,7 @@ def _recorder(
             "row_sha256": row_digest.hex(),
             "doc_class": doc_class,
             "outcome": OUTCOMES[decision.outcome],
-            "rules": rule_names(decision.rules),
+            "rules": rule_names(decision.rules, ruleset),
             "severe_repetition_signals": signal_names(decision.severe, REP_SIGNALS),
             "severe_repetition_signal_count": decision.severe_count,
             "ocr_signals": signal_names(decision.ocr, OCR_SIGNALS),

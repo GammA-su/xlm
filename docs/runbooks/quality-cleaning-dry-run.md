@@ -199,3 +199,50 @@ Return these content-free files and the `clean-report` JSON line:
 - the frozen policy file
 
 Materialized review text never leaves the operator machine.
+
+## Policy v2 (human-reviewed)
+
+`recipes/quality/cleaning_policy_v2.yaml` is the human-reviewed successor of v1; v1 stays
+unchanged as historical evidence. v2 outcomes are KEEP and DROP only.
+
+Rule changes:
+
+- full HTML alone is KEEP;
+- the default and structured class groups DROP at >= 3 severe signals, and <= 2 is KEEP;
+- `finepdfs_en` DROPs only with >= 2 OCR signals and >= 1 severe signal; otherwise KEEP;
+- `replacement_chars >= 8` and `mojibake_hits >= 16` are DROP.
+
+Unchanged from v1:
+
+- NUL and noncharacter DROP;
+- the combined and forbidden-control encoding DROP;
+- all component cuts.
+
+See the [v2 report](../implementation/reports/QUALITY-CLEANING-POLICY-V2.md).
+
+```powershell
+$q = 'uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.quality'
+$m = '<the "manifest" path inside G:/XLM/c05/p0002.proof.json>'
+$p = 'G:/XLM/c05/p0002.proof.json'
+$a = 'G:/XLM/quality/audit-v3'
+$f2 = 'recipes/quality/cleaning_policy_v2.frozen.yaml'                # NEW file (content-free)
+$o2 = 'G:/XLM/quality/clean-dry-run-v2'                               # NEW, empty or absent
+$l2 = 'C:/XLM-logs/quality-clean-dry-run-v2.progress.log'
+# 0. Freeze v2 from the SAME audit; --predecessor must be the frozen v1 (same receipt, identical cuts).
+Invoke-Expression "$q clean-freeze-policy --template recipes/quality/cleaning_policy_v2.yaml --audit-output $a --predecessor recipes/quality/cleaning_policy_v1.frozen.yaml --destination $f2"
+# 1. v2 dry run (resumable; rerun the identical command after an interruption).
+Invoke-Expression "$q clean-dry-run --manifest $m --policy $f2 --output $o2 --c05-proof $p --workers 16 --max-rss-gib 12 --free-reserve-gib 8 --max-output-gib 4 --max-document-mib 64 --deadline-hours 12 --progress-interval-seconds 5 --progress-log $l2"
+# 2. Verification.
+Invoke-Expression "$q clean-report --manifest $m --policy $f2 --output $o2 --c05-proof $p --workers 4 --max-rss-gib 8 --deadline-hours 6"
+# 3. OPERATOR ONLY, optional review material (e.g. the newly kept full-HTML pages).
+Invoke-Expression "$q clean-materialize-review --output $o2 --c05-proof $p --destination C:/XLM-review/clean-dry-run-v2 --operator-confirm --max-documents 150 --max-chars 20000 --max-output-mib 256"
+```
+
+The v2 review strata replace v1's REVIEW strata with:
+
+- `protected.full_html_keep`;
+- `control.default_two_signals`;
+- `control.structured_two_signals`;
+- `control.finepdfs_ocr_only`.
+
+These sample exactly the documents v2 keeps where v1 did not.

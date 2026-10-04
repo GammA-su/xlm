@@ -1,0 +1,150 @@
+# XLM global quality cleaning policy v2 (Phase B). HUMAN-REVIEWED SUCCESSOR of v1.
+# DRY-RUN ONLY: KEEP / DROP. There is no REVIEW outcome and no TRANSFORM in v2.
+#
+# v1 (cleaning_policy_v1.yaml, its frozen file, semantics, tests and evidence) is kept
+# unchanged as historical evidence. v2 changes ONLY the decision rules, after the operator
+# manually reviewed the 119 materialized v1 dry-run examples. No corpus text or review
+# excerpt is recorded anywhere; the review conclusions below are content-free.
+#
+# The `policy` section is pinned by digest in code
+# (xlm.data.quality.cleaning_policy.POLICY_SECTION_DIGEST_V2); any edit refuses.
+# The numeric thresholds are NOT authored here. They are frozen from the SAME
+# authenticated Phase-A audit as v1, and must equal v1's frozen cuts exactly:
+#
+#   python -m xlm.data.quality clean-freeze-policy --template recipes/quality/cleaning_policy_v2.yaml
+#       --audit-output <Phase-A audit directory>
+#       --predecessor recipes/quality/cleaning_policy_v1.frozen.yaml
+#       --destination recipes/quality/cleaning_policy_v2.frozen.yaml
+kind: xlm_quality_cleaning_policy
+version: cleaning_policy_v2
+status: RULES_FROZEN_THRESHOLDS_PENDING
+policy:
+  mode: DRY_RUN_ONLY
+  outcomes: [KEEP, DROP]
+  transform: DISABLED
+  precedence: DROP if any DROP rule fires; otherwise KEEP
+  detector_policy_version: xlm-quality-audit-detectors-v3
+  human_review:
+    successor_of: cleaning_policy_v1
+    predecessor_policy_section_digest: d1eb1990448ea76fbffbba9d44ff016d9dada68caabebe92ed7f61627cfe77e2
+    reviewed_examples: 119
+    review_material: v1 dry-run review manifest, materialized locally by the operator; no text recorded
+    thresholds: identical to the predecessor's frozen per-component conservative cuts
+    changes:
+      - hard.full_html removed: complete HTML syntax alone is KEEP (systematic false positives on programming / Q&A / tutorial documents)
+      - default class group severe-repetition DROP threshold 2 -> 3 (exactly 2 signals is KEEP)
+      - structured class group exactly-two-signals REVIEW -> KEEP (DROP stays at >= 3)
+      - finepdfs_en OCR-only REVIEW -> KEEP (DROP stays at >= 2 OCR and >= 1 severe signal)
+      - encoding REVIEW thresholds -> DROP (replacement_chars >= 8, mojibake_hits >= 16)
+  class_groups:
+    default: [empty, markup_like, other, prose_like]
+    structured: [code_like, math_table_like]
+  hard_corruption:
+    hard.nul:
+      action: DROP
+      metric: nul
+      at_least: 1
+    hard.noncharacters:
+      action: DROP
+      metric: noncharacters
+      at_least: 1
+  full_html: KEEP unless another DROP rule fires (markup_full_html is not a DROP condition in v2)
+  severe_repetition:
+    threshold_band: conservative
+    threshold_source: Phase-A candidate-policy-conservative.yaml, per component, frozen at clean-freeze-policy
+    signals: [compression_ratio, ngram10_excess_ratio, dup_line_byte_ratio, dup_paragraph_byte_ratio, repeated_char_ratio, max_char_run]
+    signal_fires: value <comparator> cut with the frozen Phase-A comparator; a not-applicable value never fires
+    rules:
+      rep.severe_default:
+        action: DROP
+        class_group: default
+        signal_count_at_least: 3
+      rep.severe_structured:
+        action: DROP
+        class_group: structured
+        signal_count_at_least: 3
+    below_threshold: every class group with <= 2 signals is KEEP
+  finepdfs_ocr:
+    components: [finepdfs_en]
+    threshold_band: conservative
+    signals: [page_number_line_ratio, repeated_header_ratio, single_char_line_ratio]
+    rules:
+      ocr.finepdfs_with_repetition:
+        action: DROP
+        ocr_signal_count_at_least: 2
+        severe_repetition_signal_count_at_least: 1
+    otherwise: KEEP
+  encoding:
+    forbidden_controls: [c0_controls, c1_controls]
+    rules:
+      enc.replacement_chars:
+        action: DROP
+        metric: replacement_chars
+        at_least: 8
+      enc.mojibake_hits:
+        action: DROP
+        metric: mojibake_hits
+        at_least: 16
+      enc.replacement_and_mojibake:
+        action: DROP
+        all_of: [enc.replacement_chars, enc.mojibake_hits]
+      enc.with_forbidden_controls:
+        action: DROP
+        any_of: [enc.replacement_chars, enc.mojibake_hits]
+        and_any_forbidden_control_at_least: 1
+  never_drop_alone: [non_ascii, accents, cjk, arabic_hebrew, emoji, combining_marks, zwj_zwnj, math_unicode, bom, bidi_controls, zero_width, urls, generic_markup, light_markup, full_html_syntax, code_examples, boilerplate, page_numbers, headers, code, math, tables]
+  guardrails:
+    flag: POLICY_REQUIRES_REVIEW
+    comparison: strictly greater than, exact integer arithmetic on documents / canonical UTF-8 bytes
+    component_drop_docs_pct_gt: 2
+    global_drop_docs_pct_gt: 2
+    component_drop_bytes_pct_gt: 10
+    global_drop_bytes_pct_gt: 5
+    crossing_is_execution_failure: false
+  review_sampling:
+    max_rows: 150
+    seed: xlm-quality-cleaning-review-v2
+    rank: keyed BLAKE2b of (path, row) under SHA-256(seed, input manifest digest), XOR a per-stratum salt; ties on (path, row)
+    selection: strata in this order; a stratum takes new documents only until `quota` selected rows belong to it; stop at max_rows
+    strata:
+      - {name: priority.finewiki_en.severe_repetition, quota: 6}
+      - {name: priority.finewiki_en.compression, quota: 4}
+      - {name: priority.finepdfs_en.ocr_repetition, quota: 6}
+      - {name: priority.common_pile_prose.char_runs, quota: 6}
+      - {name: priority.ultrax_ultrafineweb.severe_tail, quota: 6}
+      - {name: priority.encoding.essential_science, quota: 3}
+      - {name: priority.encoding.essential_prose, quota: 3}
+      - {name: priority.encoding.ultrax_ultrafineweb, quota: 3}
+      - {name: drop.hard.nul, quota: 8}
+      - {name: drop.hard.noncharacters, quota: 8}
+      - {name: drop.rep.severe_default, quota: 8}
+      - {name: drop.rep.severe_structured, quota: 8}
+      - {name: drop.ocr.finepdfs_with_repetition, quota: 8}
+      - {name: drop.enc.replacement_chars, quota: 8}
+      - {name: drop.enc.mojibake_hits, quota: 8}
+      - {name: drop.enc.replacement_and_mojibake, quota: 4}
+      - {name: drop.enc.with_forbidden_controls, quota: 4}
+      - {name: coverage.<component>.<outcome>, quota: 1}
+      - {name: protected.full_html_keep, quota: 6}
+      - {name: protected.code_example_markup, quota: 4}
+      - {name: control.default_two_signals, quota: 6}
+      - {name: control.structured_two_signals, quota: 4}
+      - {name: control.finepdfs_ocr_only, quota: 4}
+      - {name: control.encoding_near, quota: 4}
+    definitions:
+      priority.finewiki_en.severe_repetition: component finewiki_en and any rep.* rule fired
+      priority.finewiki_en.compression: component finewiki_en and the compression_ratio signal fired
+      priority.finepdfs_en.ocr_repetition: ocr.finepdfs_with_repetition fired
+      priority.common_pile_prose.char_runs: component common_pile_prose, max_char_run or repeated_char_ratio signal fired, and any rep.* rule fired
+      priority.ultrax_ultrafineweb.severe_tail: component ultrax_ultrafineweb and any rep.* rule fired
+      priority.encoding.<component>: that component and any enc.* rule fired
+      drop.<rule>: the DROP rule fired
+      coverage.<component>.<outcome>: that component and that outcome (one per manifest component and outcome KEEP / DROP)
+      protected.full_html_keep: markup_full_html flag and outcome KEEP (the v1 hard.full_html cases v2 keeps)
+      protected.code_example_markup: markup_code_example flag without markup_full_html
+      control.default_two_signals: default class group, exactly 2 severe signals, outcome KEEP (v1 DROP, v2 KEEP)
+      control.structured_two_signals: structured class group, exactly 2 severe signals, outcome KEEP (v1 REVIEW, v2 KEEP)
+      control.finepdfs_ocr_only: component finepdfs_en, >= 2 OCR signals, 0 severe signals, outcome KEEP (v1 REVIEW, v2 KEEP)
+      control.encoding_near: outcome KEEP and (4 <= replacement_chars < 8 or 8 <= mojibake_hits < 16)
+thresholds: null
+provenance: null

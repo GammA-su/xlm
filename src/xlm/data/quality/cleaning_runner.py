@@ -45,9 +45,11 @@ from xlm.data.quality.cleaning_policy import (
     OCR_SIGNALS,
     OUTCOMES,
     REP_SIGNALS,
-    RULE_IDS,
+    RULESET_V1,
+    RULESETS,
     CompiledPolicy,
     PolicyError,
+    RuleSet,
     load_frozen,
 )
 from xlm.data.quality.cleaning_report import (
@@ -332,7 +334,9 @@ def commit_unit(
     tree.write(unit_name(item.ordinal), payload)
 
 
-def load_unit(output: Path, item: AuditFile, binding: str) -> dict[str, Any]:
+def load_unit(
+    output: Path, item: AuditFile, binding: str, ruleset: RuleSet = RULESET_V1
+) -> dict[str, Any]:
     path = unit_path(output, item.ordinal)
     body = decode_unit(read_bounded(path, MAX_UNIT_FILE_BYTES, "dry-run unit"))
     if body.get("kind") != UNIT_KIND or body.get("dry_run_binding") != binding:
@@ -343,7 +347,7 @@ def load_unit(output: Path, item: AuditFile, binding: str) -> dict[str, Any]:
     populations = body.get("populations")
     if not isinstance(populations, dict) or not isinstance(body.get("review"), dict):
         raise QualityError("dry-run unit schema")
-    stats = [CleanStats.from_json(v) for v in populations.values()]
+    stats = [CleanStats.from_json(v, ruleset) for v in populations.values()]
     if (
         sum(s.docs for s in stats) != item.documents
         or sum(s.bytes for s in stats) != item.canonical_bytes
@@ -380,13 +384,14 @@ def stream_units(
     threads: int = VERIFY_THREADS,
     envelopes: list[dict[str, Any]] | None = None,
     facts: list[dict[str, Any]] | None = None,
+    ruleset: RuleSet = RULESET_V1,
 ) -> Iterator[dict[str, Any]]:
     if rehash:
         verify_sources(manifest.data_root, manifest.files, threads=threads, check=check)
     for item in manifest.files:
         if check is not None:
             check()
-        unit = load_unit(output, item, digest)
+        unit = load_unit(output, item, digest, ruleset)
         identities.append(
             {
                 "path": item.path,
@@ -634,7 +639,7 @@ def run_dry_run(
                         "resume-verify", sum(f.file_bytes for f in resumed), "bytes"
                     )
                     for item in resumed:
-                        load_unit(output, item, digest)
+                        load_unit(output, item, digest, policy.params.ruleset)
                     verify_sources(
                         manifest.data_root,
                         resumed,
@@ -668,6 +673,7 @@ def run_dry_run(
                             rehash=False,  # resumed files re-hashed above; fresh at commit
                             envelopes=producers,
                             facts=units_seen,
+                            ruleset=policy.params.ruleset,
                         ),
                         telemetry.advance,
                     ),
@@ -894,6 +900,7 @@ def _verify(
             threads=workers,
             envelopes=producers,
             facts=unit_facts,
+            ruleset=policy.params.ruleset,
         ),
         policy,
         sorted({f.component for f in ready.manifest.files}),
@@ -926,7 +933,7 @@ def _verify(
     files = {f.path for f in ready.manifest.files}
     for row in iter_review_rows(output / REVIEW_MANIFEST, receipt["artifacts"][REVIEW_MANIFEST]):
         guard.check()
-        check_review_row(row)
+        check_review_row(row, policy.params.ruleset)
         if row["path"] not in files:
             raise QualityError("review row outside the manifest")
         rows += 1
@@ -942,7 +949,7 @@ def _verify(
     return result, ready, receipt
 
 
-def check_review_row(row: Mapping[str, Any]) -> None:
+def check_review_row(row: Mapping[str, Any], ruleset: RuleSet = RULESET_V1) -> None:
     """Exact dry-run review-row schema: locators, digests, names and numbers only."""
     if set(row) != ROW_KEYS:
         raise ReviewError("review manifest row schema")
@@ -960,7 +967,7 @@ def check_review_row(row: Mapping[str, Any]) -> None:
     if row["outcome"] not in OUTCOMES or row["kept"] not in (True, False, None):
         raise ReviewError("review manifest row schema")
     for name, allowed in (
-        ("rules", set(RULE_IDS)),
+        ("rules", set(ruleset.ids)),
         ("severe_repetition_signals", set(REP_SIGNALS)),
         ("ocr_signals", set(OCR_SIGNALS)),
     ):
@@ -1068,7 +1075,7 @@ def materialize_review(
         rows = iter_review_rows(output / REVIEW_MANIFEST, receipt["artifacts"][REVIEW_MANIFEST])
         for row in rows:
             guard.check()
-            check_review_row(row)
+            check_review_row(row, RULESETS[receipt["binding"]["cleaning_policy"]["version"]])
             if row["path"] not in files:
                 raise ReviewError("review row names a file outside the dry-run manifest")
             if (

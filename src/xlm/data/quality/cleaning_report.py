@@ -28,15 +28,11 @@ from xlm.data.quality.cleaning import (
 )
 from xlm.data.quality.cleaning_policy import (
     DROP,
-    DROP_MASK,
     KEEP,
     OCR_SIGNALS,
     OUTCOMES,
     REP_SIGNALS,
     REVIEW,
-    REVIEW_MASK,
-    RULE_IDS,
-    RULES,
     CompiledPolicy,
     threshold_table,
 )
@@ -120,7 +116,7 @@ def rule_impacts(stats: CleanStats) -> dict[str, Any]:
             "marginal": _pair(a["rule"][n], stats),
             "exclusive": _pair(a["rule_exclusive"][n], stats),
         }
-        for n, (name, action) in enumerate(RULES)
+        for n, (name, action) in enumerate(stats.ruleset.rules)
     }
 
 
@@ -186,13 +182,19 @@ def combinations(stats: CleanStats) -> list[dict[str, Any]]:
     """Exact rule-combination table (every observed fired-rule set)."""
     rows = []
     for mask, (docs, nbytes) in stats.combos.items():
-        if mask & DROP_MASK:
+        if mask & stats.ruleset.drop_mask:
             outcome = "DROP"
-        elif mask & REVIEW_MASK:
+        elif mask & stats.ruleset.review_mask:
             outcome = "REVIEW"
         else:
             outcome = "KEEP"
-        rows.append({"rules": rule_names(mask), "outcome": outcome, **impact(docs, nbytes, stats)})
+        rows.append(
+            {
+                "rules": rule_names(mask, stats.ruleset),
+                "outcome": outcome,
+                **impact(docs, nbytes, stats),
+            }
+        )
     rows.sort(key=lambda r: (-r["docs"], r["rules"]))
     return rows
 
@@ -202,7 +204,8 @@ def union_check(stats: CleanStats) -> dict[str, Any]:
     drop = [0, 0]
     review = [0, 0]
     for mask, (docs, nbytes) in stats.combos.items():
-        target = drop if mask & DROP_MASK else review if mask & REVIEW_MASK else None
+        drop_mask, review_mask = stats.ruleset.drop_mask, stats.ruleset.review_mask
+        target = drop if mask & drop_mask else review if mask & review_mask else None
         if target is not None:
             target[0] += docs
             target[1] += nbytes
@@ -224,11 +227,12 @@ def union_check(stats: CleanStats) -> dict[str, Any]:
 def overlaps(stats: CleanStats) -> dict[str, Any]:
     pair = stats.arrays["rule_pair"]
     out: dict[str, Any] = {}
-    for i, left in enumerate(RULE_IDS):
-        for j in range(i + 1, len(RULE_IDS)):
+    ids = stats.ruleset.ids
+    for i, left in enumerate(ids):
+        for j in range(i + 1, len(ids)):
             docs, nbytes = int(pair[i, j, 0]), int(pair[i, j, 1])
             if docs:
-                out[f"{left} & {RULE_IDS[j]}"] = impact(docs, nbytes, stats)
+                out[f"{left} & {ids[j]}"] = impact(docs, nbytes, stats)
     return out
 
 
@@ -338,13 +342,16 @@ def build_artifacts(
     candidates: dict[str, list[Any]] = {}
     quotas = quota_of(policy.params)
     for unit in units:
-        parts = {k: CleanStats.from_json(v) for k, v in unit["populations"].items()}
+        parts = {
+            k: CleanStats.from_json(v, policy.params.ruleset)
+            for k, v in unit["populations"].items()
+        }
         allowed = {"c05_kept", "c05_removed"} if overlay else {"all"}
         if not set(parts) <= allowed:
             raise AggregateError("cleaning unit population names")
         component = unit["file"]["component"]
         for scope in ("global", f"component:{component}"):
-            target = scopes.setdefault(scope, {n: CleanStats() for n in names})
+            target = scopes.setdefault(scope, {n: CleanStats(policy.params.ruleset) for n in names})
             for name, stats in parts.items():
                 target[name].merge(stats)
                 if overlay:
@@ -435,7 +442,7 @@ def build_artifacts(
             },
         }
     )
-    actions = {name: OUTCOMES[action] for name, action in RULES}
+    actions = {name: OUTCOMES[action] for name, action in policy.params.ruleset.rules}
     definitions = _rule_definitions(policy)
     artifacts["cleaning-by-rule.json"] = _json(
         {
@@ -464,7 +471,7 @@ def build_artifacts(
                         comp: rule_impacts(stats)[name] for comp, stats in by_component.items()
                     },
                 }
-                for n, name in enumerate(RULE_IDS)
+                for n, name in enumerate(policy.params.ruleset.ids)
             },
         }
     )
@@ -496,7 +503,7 @@ def build_artifacts(
 
 def _rule_definitions(policy: CompiledPolicy) -> dict[str, str]:
     p = policy.params
-    return {
+    definitions = {
         "hard.full_html": "markup_full_html flag (true HTML page; code/example markup excluded)",
         "hard.nul": f"nul >= {p.nul_at_least}",
         "hard.noncharacters": f"noncharacters >= {p.noncharacters_at_least}",
@@ -519,14 +526,15 @@ def _rule_definitions(policy: CompiledPolicy) -> dict[str, str]:
             f"OCR-scoped component, ocr_signal_count >= {p.ocr_at_least} and "
             "severe_repetition_signal_count == 0"
         ),
-        "enc.replacement_review": f"replacement_chars >= {p.replacement_at_least}",
-        "enc.mojibake_review": f"mojibake_hits >= {p.mojibake_at_least}",
-        "enc.replacement_and_mojibake": "enc.replacement_review and enc.mojibake_review",
+        p.replacement_rule: f"replacement_chars >= {p.replacement_at_least}",
+        p.mojibake_rule: f"mojibake_hits >= {p.mojibake_at_least}",
+        "enc.replacement_and_mojibake": f"{p.replacement_rule} and {p.mojibake_rule}",
         "enc.with_forbidden_controls": (
-            "(enc.replacement_review or enc.mojibake_review) and any of "
+            f"({p.replacement_rule} or {p.mojibake_rule}) and any of "
             f"{', '.join(p.forbidden_controls)} >= 1"
         ),
     }
+    return {name: definitions[name] for name in p.ruleset.ids}
 
 
 def summary_markdown(
@@ -592,7 +600,7 @@ def summary_markdown(
         "|---|---|---:|---:|---:|",
     ]
     a = global_all.arrays
-    for n, (name, action) in enumerate(RULES):
+    for n, (name, action) in enumerate(global_all.ruleset.rules):
         lines.append(
             f"| {name} | {OUTCOMES[action]} | {int(a['rule'][n, 0]):,} | "
             f"{int(a['rule'][n, 1]):,} | {int(a['rule_exclusive'][n, 0]):,} |"

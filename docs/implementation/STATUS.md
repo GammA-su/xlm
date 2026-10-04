@@ -1,3 +1,25 @@
+> **QUALITY CLEANING POLICY V2 (2026-10-04): HUMAN-REVIEWED SUCCESSOR IMPLEMENTED; FIXTURE-VERIFIED; REAL V2 FREEZE AND DRY RUN NOT RUN.**
+>
+> The operator reviewed the 119 materialized v1 examples. `cleaning_policy_v2.yaml`
+> applies the conclusions:
+> - full HTML alone is KEEP;
+> - the default severe threshold moves from 2 to 3;
+> - structured exactly-two REVIEW becomes KEEP;
+> - OCR-only REVIEW becomes KEEP;
+> - the encoding thresholds become DROP.
+>
+> NUL and noncharacter DROP and all audit-v3 component cuts are unchanged. v2 has no
+> REVIEW outcome. The v2 freeze requires the frozen v1 as `--predecessor`: the same
+> Phase-A receipt and identical cuts, recorded in the provenance. v1 (template, frozen
+> file, semantics, tests, evidence) is unchanged. A v1 freeze is byte-identical to the
+> previous code, and the v1 dry-run artifacts are identical except the code-bound
+> binding digest.
+> Tests: v2 42 passed; v1 (unchanged file) 80 passed.
+> [Report](reports/QUALITY-CLEANING-POLICY-V2.md),
+> [evidence](evidence/QUALITY-CLEANING-POLICY-V2/COMMANDS.md),
+> [runbook](../runbooks/quality-cleaning-dry-run.md#policy-v2-human-reviewed).
+> Next: the runbook's v2 freeze -> `clean-dry-run` -> `clean-report` on the Windows machine.
+>
 > **QUALITY CLEANING PHASE B HISTORICAL FREEZE COMPATIBILITY (2026-10-04): FIXED.**
 >
 > `clean-freeze-policy` refused the valid historical `audit-v3` with

@@ -122,6 +122,12 @@ def _clean_parsers(commands: Any) -> None:
     freeze.add_argument("--template", type=Path, required=True, help="cleaning_policy_v1.yaml")
     freeze.add_argument("--audit-output", type=Path, required=True, help="Phase-A audit output")
     freeze.add_argument("--destination", type=Path, required=True, help="new frozen policy file")
+    freeze.add_argument(
+        "--predecessor",
+        type=Path,
+        default=None,
+        help="v2 only: the FROZEN v1 policy (same Phase-A audit, identical cuts)",
+    )
 
     dry = commands.add_parser(
         "clean-dry-run",
@@ -194,7 +200,9 @@ def _clean_parsers(commands: Any) -> None:
 def _clean_freeze(args: argparse.Namespace, started: float) -> dict[str, Any]:
     from xlm.data.quality.cleaning_policy import freeze_policy
 
-    return freeze_policy(args.template, args.audit_output, args.destination)
+    return freeze_policy(
+        args.template, args.audit_output, args.destination, predecessor=args.predecessor
+    )
 
 
 def _clean_dry_run(args: argparse.Namespace, started: float) -> dict[str, Any]:
