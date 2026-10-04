@@ -225,6 +225,7 @@ class Supervisor:
         self.failure: str | None = None
         self.failed_at: float | None = None
         self.peak_rss = 0
+        self.min_free: dict[str, int] = {}  # minimum observed free bytes per watched volume
         self.samples = 0
         self.unreaped: list[int] = []
         self.last_warning: float | None = None
@@ -292,6 +293,7 @@ class Supervisor:
             except OSError:
                 self.fail(DISK_REASON)
                 return
+            self.min_free[path] = min(free, self.min_free.get(path, free))
             if free < reserve:
                 self.fail(DISK_REASON)
                 return

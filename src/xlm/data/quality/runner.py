@@ -2,24 +2,31 @@
 
 ``Guard`` wraps the shared process-tree supervisor from command dispatch until the
 end: argument checks, proof/overlay validation, resume validation and source
-re-hashing, scanning, aggregation, artifact and receipt publication and cleanup.
-It enforces, independently of progress output, an absolute monotonic deadline, the
+re-hashing, scanning, aggregation, artifact writing and receipt staging. It
+enforces, independently of progress output, an absolute monotonic deadline, the
 whole process-tree RSS ceiling and the free-space reserve; every write is precharged
-against the output ceiling. The receipt is published only through ``Guard.gate``
-(no recorded failure and enough deadline margin) and is withdrawn if a failure is
-recorded during its publication, so a deadline/RAM/disk failure can never leave a
-COMPLETE receipt behind.
+against the output ceiling.
+
+The COMPLETE receipt (the sole completion signal) is published by a two-phase
+protocol (:func:`_publish_receipt`): it is built in memory and staged (written,
+flushed, fsynced) while the monitor still runs; the monitor is then stopped and
+joined; ``Guard.final`` reconciles every failure ever recorded and re-measures the
+deadline, process-tree RSS, free space, output bytes and supervisor state; only then
+is the staged receipt atomically renamed into place. A synchronous post-publication
+gate follows and withdraws the receipt (directory fsynced) if it fails. Success is
+returned to the caller only after that gate passes.
 """
 
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import math
 import shutil
 import threading
 import time
 from collections import deque
-from collections.abc import Callable, Iterable, Iterator, Sequence
+from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
 from concurrent.futures import Future, ThreadPoolExecutor
 from concurrent.futures import TimeoutError as FutureTimeout
 from dataclasses import dataclass
@@ -172,6 +179,7 @@ class Guard:
     ) -> None:
         from xlm.data.exclusion.supervisor import Deadline, Supervisor
 
+        self.started = started
         self.max_rss_bytes = max_rss_bytes
         self.volumes = {str(_existing(p)): reserve_bytes for p in watch}
         self.stopped = False
@@ -219,7 +227,10 @@ class Guard:
         if rss > self.max_rss_bytes:
             self.supervisor.fail(RSS_REASON)
         for path, reserve in self.volumes.items():
-            if _free_bytes(path) < reserve:
+            free = _free_bytes(path)
+            minimum = self.supervisor.min_free
+            minimum[path] = min(free, minimum.get(path, free))
+            if free < reserve:
                 self.supervisor.fail(DISK_REASON)
         self.check()
         if output_check is not None:
@@ -248,6 +259,30 @@ class Guard:
     @property
     def peak_rss(self) -> int:
         return int(self.supervisor.peak_rss)
+
+    def elapsed(self) -> float:
+        """Supervised elapsed seconds since dispatch (the deadline's own clock)."""
+        return round(time.monotonic() - self.started, 3)
+
+    def free_space(self) -> list[dict[str, int]]:
+        """Measured minimum free bytes per watched volume (path-free), with its reserve."""
+        observed = self.supervisor.min_free
+        if set(observed) != set(self.volumes):
+            raise QualityError("free space was not measured on every watched volume")
+        return [
+            {"reserve_bytes": reserve, "min_observed_free_bytes": int(observed[path])}
+            for path, reserve in sorted(self.volumes.items())
+        ]
+
+    def unit_facts(self) -> dict[str, Any]:
+        """Measured facts recorded in each committed unit."""
+        return {
+            "elapsed_seconds": float(self.elapsed()),
+            "peak_process_tree_rss_bytes": self.peak_rss,
+            "min_observed_free_bytes": min(
+                (v["min_observed_free_bytes"] for v in self.free_space()), default=0
+            ),
+        }
 
 
 # -- inputs and outputs -----------------------------------------------------------------------
@@ -357,6 +392,7 @@ def _tree(output: Path, protected: Sequence[Path], budget: OutputBudget | None) 
         owned=(RECEIPT_FILE, *ARTIFACTS),
         protected=protected,
         charge=charge,
+        staged=(RECEIPT_FILE,),
     )
 
 
@@ -410,12 +446,15 @@ def stream_units(
     rehash: bool = True,
     threads: int = VERIFY_THREADS,
     envelopes: list[dict[str, Any]] | None = None,
+    facts: list[dict[str, Any]] | None = None,
 ) -> Iterator[dict[str, Any]]:
     """Verified units one at a time, in manifest order (never all in memory).
 
     With ``rehash`` every source file is first re-hashed against the frozen manifest
     (SHA-256, size, rows), so a stale unit can never describe changed source bytes.
     ``identities`` collects each file's content-free source identity for the receipt.
+    Every unit's measured facts are checked against its own producer envelope;
+    ``facts`` collects them for the receipt's cross-checks.
     """
     if rehash:
         verify_sources(manifest.data_root, manifest.files, threads=threads, check=check)
@@ -433,7 +472,38 @@ def stream_units(
         )
         if envelopes is not None and unit["producer_envelope"] not in envelopes:
             envelopes.append(unit["producer_envelope"])
+        check_unit_against_producer(unit)
+        if facts is not None:
+            facts.append(
+                {
+                    "max_line_bytes": unit["max_line_bytes"],
+                    **unit["producer_facts"],
+                }
+            )
         yield unit
+
+
+def check_unit_against_producer(unit: Mapping[str, Any]) -> None:
+    """A unit's measured facts must lie inside the envelope that produced it."""
+    from xlm.data.quality.receipt import check_envelope
+
+    envelope = unit["producer_envelope"]
+    check_envelope(envelope)
+    facts = unit["producer_facts"]
+    if (
+        unit["max_line_bytes"] > envelope["max_document_bytes"]
+        or facts["peak_process_tree_rss_bytes"] > envelope["max_rss_bytes"]
+        or facts["elapsed_seconds"] > envelope["deadline_seconds"]
+        or facts["min_observed_free_bytes"] < envelope["free_reserve_bytes"]
+    ):
+        raise QualityError("audit unit measured facts contradict its producer envelope")
+    # Independently accumulated statistics: the largest canonical text cannot exceed
+    # the largest row, and the largest row cannot exceed all row bytes together.
+    longest = unit["max_line_bytes"]
+    text_max = [p["metrics"]["utf8_bytes"]["max"] for p in unit["populations"].values()]
+    line_total = sum(int(p["line_bytes"]) for p in unit["populations"].values())
+    if any(v is not None and v > longest for v in text_max) or longest > line_total:
+        raise QualityError("audit unit largest row contradicts its statistics")
 
 
 # -- audit ----------------------------------------------------------------------------------
@@ -453,113 +523,160 @@ def run_audit(
     started = time.monotonic() if started is None else started
     limits.check()
     envelope = limits.envelope()
-    with Guard(
-        deadline_seconds=limits.deadline_seconds,
-        started=started,
-        max_rss_bytes=limits.max_rss_bytes,
-        watch=[output],
-        reserve_bytes=limits.free_reserve_bytes,
-    ) as guard:
-        ready = prepare(
-            manifest_path,
-            output,
-            data_root=data_root,
-            proof=proof,
-            allow_authored_proof=allow_authored_proof,
-            line_ceiling=limits.line_ceiling,
-            check=guard.check,
-        )
-        manifest, binding = ready.manifest, ready.binding
-        guard.check()
-        budget = OutputBudget(limits.max_output_bytes)
-        tree = _tree(output, ready.protected, budget)
-        tree.open(create=True)
-        budget.used = tree.used_bytes()
-        budget.charge(0)
-        if (output / RECEIPT_FILE).exists():
-            raise QualityError("audit already complete in this output directory; use `report`")
-        if (output / BINDING_FILE).exists():
-            if _read_binding(output) != binding:
-                raise QualityError(
-                    "output directory belongs to a different audit binding (code, policy, "
-                    "manifest or overlay changed); use a new output directory"
-                )
-        else:
-            tree.write(BINDING_FILE, canonical.canonical_bytes(binding))
-        tree.remove_owned_staging()
-        digest = str(binding["digest"])
-        reporter = Progress(progress_interval, manifest.totals)
-        resumed = [f for f in manifest.files if unit_path(output, f.ordinal).exists()]
-        if resumed:
-            reporter.stage(f"RESUME | re-hashing {len(resumed):,} committed source files")
-            for item in resumed:
-                load_unit(output, item, digest)
-            verify_sources(manifest.data_root, resumed, threads=VERIFY_THREADS, check=guard.check)
-        done = {f.ordinal for f in resumed}
-        pending = [f for f in manifest.files if f.ordinal not in done]
-        measured = _scan(tree, manifest, ready.overlay, pending, digest, limits, guard, reporter)
-        measured["peak_process_tree_rss_bytes"] = guard.peak_rss
-        reporter.stage("AGGREGATE")
-        identities: list[dict[str, Any]] = []
-        producers: list[dict[str, Any]] = []
-        artifacts, result_digest = build_artifacts(
-            binding,
-            stream_units(
+    staged: list[OutputTree] = []
+    try:
+        with Guard(
+            deadline_seconds=limits.deadline_seconds,
+            started=started,
+            max_rss_bytes=limits.max_rss_bytes,
+            watch=[output],
+            reserve_bytes=limits.free_reserve_bytes,
+        ) as guard:
+            ready = prepare(
+                manifest_path,
                 output,
-                manifest,
-                digest,
-                identities,
+                data_root=data_root,
+                proof=proof,
+                allow_authored_proof=allow_authored_proof,
+                line_ceiling=limits.line_ceiling,
                 check=guard.check,
-                rehash=False,  # resumed files were re-hashed above; fresh ones at commit
-                envelopes=producers,
-            ),
-        )
-        guard.check()
-        for name in ARTIFACTS:
-            tree.write(name, artifacts[name])
+            )
+            manifest, binding = ready.manifest, ready.binding
             guard.check()
-        elapsed = time.monotonic() - started
-        raw = build_receipt(
-            binding=binding,
-            manifest_path=manifest_path,
-            implementation=ready.identity,
-            sources=identities,
-            artifacts=artifacts,
-            result_digest=result_digest,
-            envelope=envelope,
-            producer_envelopes=sorted(producers, key=canonical.canonical_bytes),
-            execution={
+            budget = OutputBudget(limits.max_output_bytes)
+            tree = _tree(output, ready.protected, budget)
+            tree.open(create=True)
+            budget.used = tree.used_bytes()
+            budget.charge(0)
+            if (output / RECEIPT_FILE).exists():
+                raise QualityError("audit already complete in this output directory; use `report`")
+            if (output / BINDING_FILE).exists():
+                if _read_binding(output) != binding:
+                    raise QualityError(
+                        "output directory belongs to a different audit binding (code, policy, "
+                        "manifest or overlay changed); use a new output directory"
+                    )
+            else:
+                tree.write(BINDING_FILE, canonical.canonical_bytes(binding))
+            tree.remove_owned_staging()
+            digest = str(binding["digest"])
+            reporter = Progress(progress_interval, manifest.totals)
+            resumed = [f for f in manifest.files if unit_path(output, f.ordinal).exists()]
+            if resumed:
+                reporter.stage(f"RESUME | re-hashing {len(resumed):,} committed source files")
+                for item in resumed:
+                    load_unit(output, item, digest)
+                verify_sources(
+                    manifest.data_root, resumed, threads=VERIFY_THREADS, check=guard.check
+                )
+            done = {f.ordinal for f in resumed}
+            pending = [f for f in manifest.files if f.ordinal not in done]
+            measured = _scan(
+                tree, manifest, ready.overlay, pending, digest, limits, guard, reporter
+            )
+            reporter.stage("AGGREGATE")
+            identities: list[dict[str, Any]] = []
+            producers: list[dict[str, Any]] = []
+            units_seen: list[dict[str, Any]] = []
+            artifacts, result_digest = build_artifacts(
+                binding,
+                stream_units(
+                    output,
+                    manifest,
+                    digest,
+                    identities,
+                    check=guard.check,
+                    rehash=False,  # resumed files were re-hashed above; fresh ones at commit
+                    envelopes=producers,
+                    facts=units_seen,
+                ),
+            )
+            guard.check()
+            for name in ARTIFACTS:
+                tree.write(name, artifacts[name])
+                guard.check()
+            reporter.stage("PUBLISH")
+            guard.check()
+            # Phase 1, monitor still active: the receipt is built entirely in memory from
+            # measured facts and written to the owned staging directory only.
+            execution = {
                 "files_scanned": len(pending),
                 "files_resumed": len(resumed),
-                "wall_seconds": round(elapsed, 3),
+                "wall_seconds": guard.elapsed(),
                 **measured,
+                "peak_process_tree_rss_bytes": guard.peak_rss,
+                "supervisor_samples": int(guard.supervisor.samples),
+                "free_space": guard.free_space(),
+                "output_bytes_before_receipt": tree.used_bytes(),
+                "max_document_bytes_observed": max(
+                    (int(u["max_line_bytes"]) for u in units_seen), default=0
+                ),
                 "note": "execution facts are operational and excluded from result_digest",
-            },
-        )
-        guard.check()
-    # The monitor and every worker are stopped here. Publication-last: the receipt is
-    # written only after the single final gate passes on fresh measurements.
-    reporter.stage("PUBLISH")
-
-    def output_check() -> None:
-        if tree.used_bytes() + len(raw) > limits.max_output_bytes:
-            raise QualityError("output byte ceiling (--max-output-gib) would be exceeded")
-
-    guard.final(PUBLICATION_MARGIN, output_check)
-    tree.write(RECEIPT_FILE, raw)
-    if guard.failed():  # never trust a success after any recorded failure
-        (output / RECEIPT_FILE).unlink(missing_ok=True)  # job-owned; never left COMPLETE
-        guard.check()
-        raise QualityError("supervisor refused; nothing published")
+            }
+            raw = build_receipt(
+                binding=binding,
+                manifest_path=manifest_path,
+                implementation=ready.identity,
+                sources=identities,
+                artifacts=artifacts,
+                result_digest=result_digest,
+                envelope=envelope,
+                producer_envelopes=sorted(producers, key=canonical.canonical_bytes),
+                execution=execution,
+            )
+            guard.check()
+            staged.append(tree)
+            tree.stage(RECEIPT_FILE, raw)
+            guard.check()
+        # Phase 2: the monitor is stopped and joined (by leaving the guard).
+        _publish_receipt(guard, tree, raw, limits.max_output_bytes)
+    except BaseException:
+        for tree in staged:  # a staged receipt is never a completion signal; discard it
+            with contextlib.suppress(OSError, QualityError):
+                tree.discard(RECEIPT_FILE)
+        raise
     return {
         "complete": True,
         "result_digest": result_digest,
         "output": str(output),
         "files_scanned": len(pending),
         "files_resumed": len(resumed),
-        "wall_seconds": round(elapsed, 3),
-        "scan": measured,
+        "wall_seconds": execution["wall_seconds"],
+        "scan": {
+            **measured,
+            "peak_process_tree_rss_bytes": execution["peak_process_tree_rss_bytes"],
+        },
     }
+
+
+def _publish_receipt(guard: Guard, tree: OutputTree, raw: bytes, max_output_bytes: int) -> None:
+    """Reconcile, re-measure, atomically publish the staged receipt, then re-check.
+
+    Nothing but the atomic rename happens between the pre-publication gate and the
+    post-publication gate. Any failure leaves no COMPLETE receipt: before the rename
+    the staged copy is discarded; after it the receipt is withdrawn (directory
+    fsynced) and the command refuses.
+    """
+
+    def output_check() -> None:
+        if tree.used_bytes() > max_output_bytes:
+            raise QualityError("output byte ceiling (--max-output-gib) would be exceeded")
+
+    published = False
+    try:
+        tree.verify_staged(RECEIPT_FILE, raw)
+        guard.final(PUBLICATION_MARGIN, output_check)  # reconcile + fresh measurements
+        tree.publish(RECEIPT_FILE)  # the ONLY step between the two gates
+        published = True
+        guard.final(0.0, output_check)  # immediate post-publication synchronous gate
+        if guard.failed():
+            raise QualityError("supervisor refused; nothing published")
+    except BaseException:
+        if published:
+            tree.withdraw(RECEIPT_FILE)  # an error here propagates: the command refuses
+        with contextlib.suppress(OSError, QualityError):
+            tree.discard(RECEIPT_FILE)
+        raise
 
 
 def _scan(
@@ -609,15 +726,16 @@ def _scan(
                 except FutureTimeout:
                     continue
             waiting.popleft()
-            commit_unit(tree, digest, acc, envelope)
+            commit_unit(tree, digest, acc, envelope, guard.unit_facts())
             progress["files"] += 1
             progress["bytes"] += acc.item.file_bytes
 
     by_ordinal = {f.ordinal: f for f in pending}
     current: FileAccumulator | None = None
     verifier = ThreadPoolExecutor(max_workers=VERIFY_THREADS)
+    pool = OrderedPool(limits.workers, guard)
     try:
-        with OrderedPool(limits.workers, guard) as pool:
+        with pool:
             for result in pool.map(process_chunk, tasks()):
                 if current is None or current.item.ordinal != result.ordinal:
                     current = FileAccumulator(by_ordinal[result.ordinal])
@@ -648,6 +766,8 @@ def _scan(
         "scanned_file_bytes": scanned_bytes,
         "file_mb_per_s": round(scanned_bytes / 1e6 / max(seconds, 1e-9), 3),
         "documents_per_s": round(scanned_docs / max(seconds, 1e-9), 1),
+        "workers": pool.workers,
+        "peak_tasks_in_flight": pool.peak_in_flight,
     }
 
 
@@ -680,9 +800,11 @@ def _verify(
     )
     if ready.binding != binding_on_disk:
         raise QualityError("current code/policy/manifest/overlay differ from the audit binding")
-    _tree(output, ready.protected, None).open(create=False)
+    tree = _tree(output, ready.protected, None)
+    tree.open(create=False)
     identities: list[dict[str, Any]] = []
     producers: list[dict[str, Any]] = []
+    unit_facts: list[dict[str, Any]] = []
     artifacts, result_digest = build_artifacts(
         ready.binding,
         stream_units(
@@ -694,6 +816,7 @@ def _verify(
             rehash=rehash_sources,
             threads=workers,
             envelopes=producers,
+            facts=unit_facts,
         ),
     )
     if identities != receipt["source_files"]:
@@ -707,6 +830,7 @@ def _verify(
             on_disk = stream.read(len(data) + 1)  # bounded: one byte past the derivation
         if on_disk != data:
             raise QualityError(f"artifact {name} differs from its re-derivation")
+    _verify_envelope_facts(output, tree, ready.manifest, receipt, artifacts, unit_facts, guard)
     result = {
         "verified": True,
         "result_digest": result_digest,
@@ -714,6 +838,69 @@ def _verify(
         "sources_rehashed": rehash_sources,
     }
     return result, ready, receipt
+
+
+def _verify_envelope_facts(
+    output: Path,
+    tree: OutputTree,
+    manifest: InputManifest,
+    receipt: Mapping[str, Any],
+    artifacts: Mapping[str, bytes],
+    unit_facts: Sequence[Mapping[str, Any]],
+    guard: Guard,
+) -> None:
+    """Re-derive what actually happened and check it against the receipt envelope.
+
+    The receipt's own validation already compared its claimed facts with its
+    envelope; here the facts themselves are re-derived from the verified files
+    (artifacts, units, binding, review manifest), never trusted from the receipt.
+    """
+    envelope, execution = receipt["envelope"], receipt["execution"]
+
+    def require(condition: bool, what: str) -> None:
+        if not condition:
+            raise QualityError(f"receipt contradicts the verified audit: {what}")
+
+    # Output bytes: everything the audit publishes under --max-output-gib.
+    units = sum(unit_path(output, f.ordinal).stat().st_size for f in manifest.files)
+    before = (output / BINDING_FILE).stat().st_size + units
+    before += sum(len(data) for data in artifacts.values())
+    receipt_bytes = (output / RECEIPT_FILE).stat().st_size
+    require(before == execution["output_bytes_before_receipt"], "output bytes")
+    require(tree.used_bytes() == before + receipt_bytes, "unaccounted output bytes")
+    require(before + receipt_bytes <= envelope["max_output_bytes"], "output ceiling")
+    # Largest audited row (unit facts were checked against their producer envelopes).
+    longest = max((int(f["max_line_bytes"]) for f in unit_facts), default=0)
+    require(longest == execution["max_document_bytes_observed"], "largest audited row")
+    require(longest <= envelope["max_document_bytes"], "document ceiling")
+    if execution["files_resumed"] == 0:  # every unit was measured by this very run
+        for fact in unit_facts:
+            require(
+                fact["peak_process_tree_rss_bytes"] <= execution["peak_process_tree_rss_bytes"]
+                and fact["elapsed_seconds"] <= execution["wall_seconds"]
+                and all(
+                    fact["min_observed_free_bytes"] >= v["min_observed_free_bytes"]
+                    for v in execution["free_space"]
+                ),
+                "unit facts differ from the run that produced them",
+            )
+    # Review manifest: re-read the verified file; strata, rows and row size limits.
+    entry = receipt["artifacts"]["review-manifest.jsonl"]
+    per_stratum: dict[tuple[str, str, int], int] = {}
+    total = 0
+    files = {f.path for f in manifest.files}
+    for row in iter_review_rows(output / "review-manifest.jsonl", entry):
+        guard.check()
+        check_review_row(row)
+        require(row["path"] in files, "review row outside the manifest")
+        key = (row["component"], row["detector"], row["coarse_bin"])
+        per_stratum[key] = per_stratum.get(key, 0) + 1
+        total += 1
+    require(total == entry["records"], "review row count")
+    require(
+        all(count <= envelope["review_per_stratum"] for count in per_stratum.values()),
+        "review rows per stratum exceed the envelope",
+    )
 
 
 def verify_report(

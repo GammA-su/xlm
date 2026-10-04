@@ -1,0 +1,13 @@
+Artifact equivalence, fix vs aa7b580 (AUTHORED 8 MiB synthetic corpus, same --root path,
+workers=1, scripts/quality_audit_benchmark.py; outputs compared file by file).
+Binding keys differing: digest, implementation (code identity only).
+candidate-policy-aggressive.yaml   identical modulo binding digest
+candidate-policy-conservative.yaml identical modulo binding digest
+candidate-policy-moderate.yaml     identical modulo binding digest
+quality-audit.json                 identical modulo binding digest
+quality-by-component.json          identical modulo binding digest
+quality-histograms.json            identical modulo binding digest
+quality-intersections.json         identical modulo binding digest
+quality-language.json              identical modulo binding digest
+quality-summary.md                 identical
+review-manifest.jsonl              identical

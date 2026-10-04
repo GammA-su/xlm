@@ -1,0 +1,60 @@
+bringing up nodes...
+bringing up nodes...
+
+........................................................................ [ 17%]
+........................................................................ [ 35%]
+...........................................F.F.......................... [ 53%]
+........................................................................ [ 70%]
+........................................................................ [ 88%]
+..............................................                           [100%]
+=================================== FAILURES ===================================
+______________ test_a1_blocked_workers_are_killed_within_a_bound _______________
+[gw3] linux -- Python 3.12.3 /tmp/claude-0/-home-user-xlm/1426786d-dac4-55cd-a712-8e99557772e2/scratchpad/venv/bin/python
+
+    def test_a1_blocked_workers_are_killed_within_a_bound() -> None:
+        began = time.monotonic()
+        with pytest.raises(C05Error, match="deadline"):
+            with fitscan.OrderedPool(2, tables(), Deadline(0.3, began)) as pool:
+                for _ in pool.map(sleep_task, [30.0, 30.0, 30.0]):
+                    pass
+        assert time.monotonic() - began < 8
+>       assert not psutil.Process().children(recursive=True)
+E       AssertionError: assert not [psutil.Process(pid=9273, name='python', status='sleeping', started='10:53:45')]
+E        +  where [psutil.Process(pid=9273, name='python', status='sleeping', started='10:53:45')] = children(recursive=True)
+E        +    where children = psutil.Process(pid=8706, name='python', status='running').children
+E        +      where psutil.Process(pid=8706, name='python', status='running') = <class 'psutil.Process'>()
+E        +        where <class 'psutil.Process'> = psutil.Process
+
+tests/test_c06_fast_hardening.py:190: AssertionError
+______________ test_a1_interrupt_kills_rather_than_drains_workers ______________
+[gw3] linux -- Python 3.12.3 /tmp/claude-0/-home-user-xlm/1426786d-dac4-55cd-a712-8e99557772e2/scratchpad/venv/bin/python
+
+    def test_a1_interrupt_kills_rather_than_drains_workers() -> None:
+        began = time.monotonic()
+        with pytest.raises(KeyboardInterrupt):
+            with fitscan.OrderedPool(2, tables()) as pool:
+                for _ in pool.map(sleep_task, [0.01, 30.0]):
+                    raise KeyboardInterrupt
+        assert time.monotonic() - began < 8
+>       assert not psutil.Process().children(recursive=True)
+E       AssertionError: assert not [psutil.Process(pid=9273, name='python', status='sleeping', started='10:53:45')]
+E        +  where [psutil.Process(pid=9273, name='python', status='sleeping', started='10:53:45')] = children(recursive=True)
+E        +    where children = psutil.Process(pid=8706, name='python', status='running').children
+E        +      where psutil.Process(pid=8706, name='python', status='running') = <class 'psutil.Process'>()
+E        +        where <class 'psutil.Process'> = psutil.Process
+
+tests/test_c06_fast_hardening.py:200: AssertionError
+=============================== warnings summary ===============================
+tests/test_quality_hardening.py: 1 warning
+tests/test_c06_fast_hardening.py: 4 warnings
+tests/test_quality_audit.py: 1 warning
+tests/test_quality_final_repairs.py: 1 warning
+tests/test_quality_acceptance_fixes.py: 7 warnings
+  /usr/lib/python3.12/multiprocessing/resource_tracker.py:123: UserWarning: resource_tracker: process died unexpectedly, relaunching.  Some resources might leak.
+    warnings.warn('resource_tracker: process died unexpectedly, '
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_c06_fast_hardening.py::test_a1_blocked_workers_are_killed_within_a_bound
+FAILED tests/test_c06_fast_hardening.py::test_a1_interrupt_kills_rather_than_drains_workers
+2 failed, 404 passed, 14 warnings in 58.71s

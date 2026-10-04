@@ -1,4 +1,28 @@
-> **GLOBAL QUALITY AUDIT FINAL REPAIRS (2026-10-04): RECHECK BLOCKERS I04/I08/I10/I11 REPAIRED; READY FOR RE-AUDIT; REAL AUDIT NOT RUN.**
+> **GLOBAL QUALITY AUDIT ACCEPTANCE FIXES (2026-10-04): I04, HISTORICAL RSS PROBE AND I10 REPAIRED; READY FOR NATIVE RE-AUDIT; REAL AUDIT NOT RUN.**
+>
+> Repairs:
+> - I04: a two-phase receipt publication. The receipt is staged and fsynced while the
+>   monitor runs. The monitor is then joined, failures are reconciled and limits are
+>   measured again. Then comes one atomic rename and a post-publication gate, which
+>   withdraws the receipt on failure.
+> - Historical RSS probe: pool breakage resolves to the recorded supervisor reason,
+>   otherwise to a controlled `WorkerPoolError`.
+> - I10: schema-3 receipts with measured execution facts and unit-v3 producer facts.
+>   Verification re-derives output bytes, the largest row, review strata and unit facts
+>   against the envelope.
+>
+> Results: Astra's 49 frozen probes pass on a Linux shim (the baseline fails exactly
+> `test_child_rss_included`). There are 108 new probes, including 49 I04 fault
+> injections and 37 re-digested receipt attacks. The 5 quality modules give 331
+> passed, 0 failed; static checks are clean. Two C06 failures are pre-existing on
+> Linux and identical at aa7b580.
+>
+> Not run: native Windows, and Astra's FINAL-RECHECK-AA7B580 probes (the directory is
+> absent). The previous I04/I10 entry below is superseded.
+> [Report](reports/QUALITY-AUDIT-ACCEPTANCE-FIXES.md),
+> [evidence](evidence/QUALITY-AUDIT-ACCEPTANCE-FIXES/COMMANDS.md).
+>
+> **GLOBAL QUALITY AUDIT FINAL REPAIRS (2026-10-04): RECHECK BLOCKERS I04/I08/I10/I11 REPAIRED** (I04/I10 superseded by the acceptance fixes above; I08/I11 accepted; history).
 >
 > Repairs:
 > - I04: one final-success gate after supervisor shutdown, using fresh deadline, RSS,

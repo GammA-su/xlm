@@ -27,12 +27,13 @@ import time
 import zlib
 from collections import deque
 from collections.abc import Callable, Iterable, Iterator, Mapping
-from concurrent.futures import Future, ProcessPoolExecutor
+from concurrent.futures import BrokenExecutor, CancelledError, Future, ProcessPoolExecutor
 from concurrent.futures import TimeoutError as FutureTimeout
+from concurrent.futures.process import BrokenProcessPool
 from dataclasses import dataclass, field
 from multiprocessing import get_context
 from pathlib import Path
-from typing import Any, TypeVar
+from typing import Any, NoReturn, TypeVar
 
 import numpy as np
 
@@ -47,7 +48,7 @@ from xlm.data.quality.review import ChunkDocs, merge_samples, review_key, sample
 
 CHUNK_BYTES = 32 * 1024**2
 VERIFY_BLOCK_BYTES = 8 * 1024**2
-UNIT_KIND = "xlm_quality_audit_unit_v2"
+UNIT_KIND = "xlm_quality_audit_unit_v3"
 BINDING_KIND = "xlm_quality_audit_binding_v2"
 BINDING_FILE = "audit-binding.json"
 UNITS_DIR = "units"
@@ -95,6 +96,26 @@ R = TypeVar("R")
 
 class QualityError(ValueError):
     """Content-free refusal of the quality audit."""
+
+
+class WorkerPoolError(QualityError, BrokenProcessPool):
+    """Controlled fail-closed refusal: a worker process died with no supervisor reason.
+
+    It is a :class:`QualityError` (the CLI refuses with a content-free message) and
+    still a :class:`BrokenProcessPool` for callers that classify executor breakage.
+    """
+
+
+WORKER_FAILURE = "a worker process terminated abnormally; nothing published"
+# Executor breakage after a worker was killed (by the supervisor or otherwise).
+POOL_BREAKAGE: tuple[type[BaseException], ...] = (
+    BrokenExecutor,
+    CancelledError,
+    EOFError,
+    ConnectionError,
+)
+# ``submit`` on a broken or shut-down executor raises a RuntimeError subclass.
+SUBMIT_BREAKAGE: tuple[type[BaseException], ...] = (*POOL_BREAKAGE, RuntimeError)
 
 
 # -- manifest -------------------------------------------------------------------------------
@@ -291,6 +312,7 @@ class ChunkResult:
     canonical_bytes: int
     populations: dict[str, Population]
     review: dict[str, list[Any]]
+    max_line_bytes: int = 0
 
 
 def worker_init() -> None:
@@ -438,6 +460,7 @@ def process_chunk(task: ChunkTask) -> ChunkResult:
         canonical_bytes=int(size_array.sum()),
         populations=populations,
         review=review,
+        max_line_bytes=int(line_array.max()) if count else 0,
     )
 
 
@@ -463,7 +486,12 @@ class OrderedPool:
     """At most ``2 x workers`` tasks outstanding; results in task order.
 
     ``workers=1`` runs in-process. Any abnormal exit terminates the worker processes
-    instead of draining them.
+    instead of draining them. Executor breakage (``BrokenProcessPool``, a cancelled
+    future, ``EOFError`` or a broken pipe) never escapes raw: a failure the supervisor
+    already recorded (RSS ceiling, deadline, disk, cancellation; it records the reason
+    BEFORE it terminates the workers) is re-raised as that reason, and breakage with no
+    recorded reason is a controlled :class:`WorkerPoolError`. ``peak_in_flight`` is the
+    measured maximum number of outstanding tasks.
     """
 
     def __init__(self, workers: int, supervisor: Checkable | None = None) -> None:
@@ -472,6 +500,7 @@ class OrderedPool:
         self.workers = workers
         self.supervisor = supervisor
         self.executor: ProcessPoolExecutor | None = None
+        self.peak_in_flight = 0
 
     def __enter__(self) -> OrderedPool:
         if self.workers > 1:
@@ -512,10 +541,16 @@ class OrderedPool:
         if self.supervisor is not None:
             self.supervisor.check()
 
+    def _broken(self) -> NoReturn:
+        """Resolve executor breakage to the recorded supervisor reason, else refuse."""
+        self._check()
+        raise WorkerPoolError(WORKER_FAILURE)
+
     def map(self, function: Callable[[T], R], tasks: Iterable[T]) -> Iterator[R]:
         if self.executor is None:
             for task in tasks:
                 self._check()
+                self.peak_in_flight = max(self.peak_in_flight, 1)
                 result = function(task)
                 self._check()  # a non-cooperative in-process task cannot outlive a failure
                 yield result
@@ -525,16 +560,26 @@ class OrderedPool:
         limit = 2 * self.workers
         for task in iterator:
             self._check()
-            pending.append(self.executor.submit(function, task))
+            pending.append(self._submit(function, task))
+            self.peak_in_flight = max(self.peak_in_flight, len(pending))
             if len(pending) >= limit:
                 break
         while pending:
             result = self._wait(pending[0])
             pending.popleft()
             for task in iterator:
-                pending.append(self.executor.submit(function, task))
+                pending.append(self._submit(function, task))
+                self.peak_in_flight = max(self.peak_in_flight, len(pending))
                 break
             yield result
+
+    def _submit(self, function: Callable[[T], R], task: T) -> Future[R]:
+        assert self.executor is not None
+        try:
+            future = self.executor.submit(function, task)
+        except SUBMIT_BREAKAGE:
+            self._broken()
+        return future
 
     def _wait(self, future: Future[R]) -> R:
         while True:
@@ -543,6 +588,8 @@ class OrderedPool:
                 return future.result(timeout=POLL_SECONDS)
             except FutureTimeout:
                 continue
+            except POOL_BREAKAGE:
+                self._broken()
 
 
 # -- source reading -----------------------------------------------------------------------------
@@ -634,10 +681,12 @@ class FileAccumulator:
     canonical_bytes: int = 0
     populations: dict[str, Population] = field(default_factory=dict)
     review: dict[str, list[Any]] = field(default_factory=dict)
+    max_line_bytes: int = 0
 
     def add(self, result: ChunkResult) -> None:
         self.rows += result.rows
         self.canonical_bytes += result.canonical_bytes
+        self.max_line_bytes = max(self.max_line_bytes, result.max_line_bytes)
         for name, population in result.populations.items():
             mine = self.populations.get(name)
             if mine is None:
@@ -686,8 +735,19 @@ def decode_unit(raw: bytes) -> dict[str, Any]:
     return body
 
 
-def commit_unit(tree: Any, binding: str, acc: FileAccumulator, envelope: Mapping[str, Any]) -> None:
-    """``tree`` is the job's :class:`~xlm.data.quality.outputs.OutputTree`."""
+def commit_unit(
+    tree: Any,
+    binding: str,
+    acc: FileAccumulator,
+    envelope: Mapping[str, Any],
+    facts: Mapping[str, Any],
+) -> None:
+    """``tree`` is the job's :class:`~xlm.data.quality.outputs.OutputTree`.
+
+    ``facts`` are the producing run's MEASURED operational facts at commit time
+    (supervised elapsed seconds, peak process-tree RSS, minimum observed free bytes);
+    verification checks them, and ``max_line_bytes``, against ``producer_envelope``.
+    """
     item = acc.item
     if acc.rows != item.documents:
         raise QualityError("source row count differs from the manifest")
@@ -699,6 +759,8 @@ def commit_unit(tree: Any, binding: str, acc: FileAccumulator, envelope: Mapping
             "audit_binding": binding,
             "file": item.record(),
             "producer_envelope": dict(envelope),
+            "producer_facts": dict(facts),
+            "max_line_bytes": acc.max_line_bytes,
             "populations": {k: v.to_json() for k, v in sorted(acc.populations.items())},
             "review": {k: acc.review[k] for k in sorted(acc.review)},
         }
@@ -717,7 +779,33 @@ def load_unit(
         raise QualityError("audit unit belongs to a different audit binding")
     if body.get("file") != item.record():
         raise QualityError("audit unit file record differs from the manifest")
+    check_unit_facts(body, item)
     return body
+
+
+UNIT_FACT_KEYS = frozenset(
+    {"elapsed_seconds", "peak_process_tree_rss_bytes", "min_observed_free_bytes"}
+)
+
+
+def check_unit_facts(body: Mapping[str, Any], item: AuditFile) -> None:
+    """Exact types of a unit's measured facts (relations are checked against its
+    producer envelope by verification)."""
+    longest = body.get("max_line_bytes")
+    facts = body.get("producer_facts")
+    if (
+        type(longest) is not int
+        or not (0 < longest <= MAX_LINE_CEILING if item.documents else longest == 0)
+        or not isinstance(facts, dict)
+        or set(facts) != UNIT_FACT_KEYS
+        or type(facts["elapsed_seconds"]) is not float
+        or not 0 <= facts["elapsed_seconds"] < float("inf")
+        or type(facts["peak_process_tree_rss_bytes"]) is not int
+        or facts["peak_process_tree_rss_bytes"] <= 0
+        or type(facts["min_observed_free_bytes"]) is not int
+        or facts["min_observed_free_bytes"] < 0
+    ):
+        raise QualityError("audit unit measured facts are invalid")
 
 
 # -- binding ----------------------------------------------------------------------------------

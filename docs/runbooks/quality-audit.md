@@ -84,10 +84,14 @@ is given, and needs the same `--c05-proof` when the audit used one.
   parent (about 0.6 GiB for 15.1 M rows).
 - **Disk.** `--max-output-gib` is charged before every write (binding, units,
   artifacts, receipt). `--free-reserve-gib` is checked at start and sampled
-  throughout. Nothing is written outside `--output`; no scratch is used.
+  throughout; the minimum free space observed is recorded. Nothing is written outside
+  `--output`; no scratch is used.
 - **Documents.** `--max-document-mib` is the canonical row ceiling (C05's is 64 MiB).
 - **Deadline.** `--deadline-hours` runs from command dispatch and covers every stage.
   A deadline/RSS/disk failure publishes no receipt; committed units stay for resume.
+- **Worker failure.** If the supervisor kills the workers (RSS, deadline, disk), the
+  command refuses with that reason. A worker that dies for any other reason gives a
+  controlled refusal ("a worker process terminated abnormally"), never a traceback.
 - **Chunking.** 32 MiB line-aligned chunks, fixed and bound into the audit identity.
 
 ## Integrity and resume
@@ -107,12 +111,36 @@ is given, and needs the same `--c05-proof` when the audit used one.
   resume; every producer envelope is recorded.
 - **Ownership.** The output directory must be absent, empty, or owned by the same
   audit. Foreign files refuse and are never deleted; only exact job-owned `.tmp`
-  staging names are cleaned. Every written path component must not be a link,
+  staging names and a leftover staged receipt in `receipt-staging/` are cleaned. Every written path component must not be a link,
   junction or reparse point; no audit input (manifest, proof, plan, trust, completion,
   corpus directories) may be inside or around the output.
-- **Receipt.** `quality-audit-receipt.json` (schema 2, self-digested) is published
-  last, through a final success gate, and is the only completion signal. `report` and
-  `materialize-review` refuse anything that is not a strictly valid COMPLETE receipt.
+- **Receipt.** `quality-audit-receipt.json` (schema 3, self-digested) is the only
+  completion signal. It is published in two phases:
+  1. While the monitor still runs, the receipt is built in memory, written to
+     `receipt-staging/`, flushed and fsynced.
+  2. The monitor is stopped and joined. Every failure it recorded is reconciled, and
+     the deadline, process-tree RSS, free space and output bytes are measured again.
+  3. Only then is the staged receipt renamed atomically into place.
+  4. A post-publication check follows. If it fails, the receipt is removed (directory
+     fsynced) and the command refuses.
+
+  The success JSON is printed only after step 4. On Windows, directory fsync is not
+  available through Python; the rename relies on NTFS journaling.
+- **Receipt semantics.** `report` and `materialize-review` refuse anything that is not
+  a strictly valid COMPLETE receipt, and they check its envelope against what actually
+  happened:
+  - output bytes, re-derived from the binding, units, artifacts and receipt;
+  - measured peak process-tree RSS against the RSS ceiling;
+  - supervised elapsed time against the deadline;
+  - the largest audited row, re-derived from the units, against the document ceiling;
+  - the minimum observed free space against the reserve;
+  - the worker setting and the tasks in flight against the queue bound;
+  - review rows per stratum, re-read from the verified review manifest;
+  - each unit's measured facts against the envelope that produced it.
+
+  A re-digested receipt claiming, say, a 1-byte RSS or output ceiling refuses. The
+  receipt is not signed: a forger who rewrites the receipt AND every unit
+  consistently is outside what self-consistency can detect.
   Aggregate artifacts say explicitly that they are not a completion signal.
 
 ## Outputs (`--output`)
@@ -127,9 +155,10 @@ is given, and needs the same `--c05-proof` when the audit used one.
 | `review-manifest.jsonl` | bounded review locators (path, row, offset, `doc_id_sha256`, `row_sha256`, metric value, roles); no text, no raw ids |
 | `candidate-policy-{conservative,moderate,aggressive}.yaml` | PROPOSAL_ONLY tail census per component with exact comparator and cut; every `action` is null |
 | `quality-summary.md` | human-readable presence and language tables |
-| `quality-audit-receipt.json` | schema-2 receipt: bindings, source identities, artifact SHA-256/bytes/records, result digest, effective and producer envelopes |
+| `quality-audit-receipt.json` | schema-3 receipt: bindings, source identities, artifact SHA-256/bytes/records, result digest, effective and producer envelopes, measured execution facts |
 | `audit-binding.json` | the audit identity and output-ownership marker |
-| `units/` | per-file committed statistics (resume) |
+| `units/` | per-file committed statistics with the producer envelope and its measured facts (resume) |
+| `receipt-staging/` | empty after success; holds only the staged receipt during publication |
 
 `materialize-review` writes `review.jsonl`, `review.html` (HTML-escaped) and
 `README.txt` to a new destination, streamed under `--max-output-mib`. **This is corpus

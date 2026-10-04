@@ -1,0 +1,63 @@
+{
+ "kind": "bounded_timing_check",
+ "label": "AUTHORED 32 MiB synthetic corpus, 3 alternating rounds, Linux container (4 logical CPUs); not the 256 MiB benchmark",
+ "median_file_mb_per_s": {
+  "aa7b580_w1": 4.568,
+  "aa7b580_w4": 11.474,
+  "fix_w1": 4.764,
+  "fix_w4": 12.354
+ },
+ "rounds": [
+  {
+   "aa7b580_result_digest": [
+    "518ab7668dad1a786582cec201b19f79ae138e4f99df033cd98ffc3900395029"
+   ],
+   "aa7b580_w1_file_mb_per_s": 4.601,
+   "aa7b580_w1_wall_seconds": 8.055,
+   "aa7b580_w4_file_mb_per_s": 11.579,
+   "aa7b580_w4_wall_seconds": 3.481,
+   "fix_result_digest": [
+    "d1f87644c09a9ab497cae1a15de0deb41443984b1351ba50c29aa62f1c2f8fd9"
+   ],
+   "fix_w1_file_mb_per_s": 4.659,
+   "fix_w1_wall_seconds": 7.822,
+   "fix_w4_file_mb_per_s": 12.453,
+   "fix_w4_wall_seconds": 3.355,
+   "round": 1
+  },
+  {
+   "aa7b580_result_digest": [
+    "518ab7668dad1a786582cec201b19f79ae138e4f99df033cd98ffc3900395029"
+   ],
+   "aa7b580_w1_file_mb_per_s": 4.568,
+   "aa7b580_w1_wall_seconds": 8.069,
+   "aa7b580_w4_file_mb_per_s": 11.474,
+   "aa7b580_w4_wall_seconds": 3.532,
+   "fix_result_digest": [
+    "d1f87644c09a9ab497cae1a15de0deb41443984b1351ba50c29aa62f1c2f8fd9"
+   ],
+   "fix_w1_file_mb_per_s": 4.771,
+   "fix_w1_wall_seconds": 7.612,
+   "fix_w4_file_mb_per_s": 12.354,
+   "fix_w4_wall_seconds": 3.255,
+   "round": 2
+  },
+  {
+   "aa7b580_result_digest": [
+    "518ab7668dad1a786582cec201b19f79ae138e4f99df033cd98ffc3900395029"
+   ],
+   "aa7b580_w1_file_mb_per_s": 4.251,
+   "aa7b580_w1_wall_seconds": 8.722,
+   "aa7b580_w4_file_mb_per_s": 11.355,
+   "aa7b580_w4_wall_seconds": 3.53,
+   "fix_result_digest": [
+    "d1f87644c09a9ab497cae1a15de0deb41443984b1351ba50c29aa62f1c2f8fd9"
+   ],
+   "fix_w1_file_mb_per_s": 4.764,
+   "fix_w1_wall_seconds": 7.703,
+   "fix_w4_file_mb_per_s": 12.013,
+   "fix_w4_wall_seconds": 3.381,
+   "round": 3
+  }
+ ]
+}
