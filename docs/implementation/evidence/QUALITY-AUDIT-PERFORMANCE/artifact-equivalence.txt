@@ -1,0 +1,111 @@
+# old = c517fe0 worktree (32 MiB chunks, 4 workers); new = this change (8 MiB chunks) at 1/2/4 workers.
+# Each artifact compared byte-for-byte after replacing the single embedded audit-binding digest (which binds code identity and chunk size).
+## old vs new, workers 1
+bench    candidate-policy-aggressive.yaml   raw=diff normalized=IDENTICAL binding_occurrences=1
+bench    candidate-policy-conservative.yaml raw=diff normalized=IDENTICAL binding_occurrences=1
+bench    candidate-policy-moderate.yaml     raw=diff normalized=IDENTICAL binding_occurrences=1
+bench    quality-audit.json                 raw=diff normalized=IDENTICAL binding_occurrences=1
+bench    quality-by-component.json          raw=diff normalized=IDENTICAL binding_occurrences=1
+bench    quality-histograms.json            raw=diff normalized=IDENTICAL binding_occurrences=1
+bench    quality-intersections.json         raw=diff normalized=IDENTICAL binding_occurrences=1
+bench    quality-language.json              raw=diff normalized=IDENTICAL binding_occurrences=1
+bench    quality-summary.md                 raw=same normalized=IDENTICAL binding_occurrences=0
+bench    review-manifest.jsonl              raw=same normalized=IDENTICAL binding_occurrences=0
+fixture  candidate-policy-aggressive.yaml   raw=diff normalized=IDENTICAL binding_occurrences=1
+fixture  candidate-policy-conservative.yaml raw=diff normalized=IDENTICAL binding_occurrences=1
+fixture  candidate-policy-moderate.yaml     raw=diff normalized=IDENTICAL binding_occurrences=1
+fixture  quality-audit.json                 raw=diff normalized=IDENTICAL binding_occurrences=1
+fixture  quality-by-component.json          raw=diff normalized=IDENTICAL binding_occurrences=1
+fixture  quality-histograms.json            raw=diff normalized=IDENTICAL binding_occurrences=1
+fixture  quality-intersections.json         raw=diff normalized=IDENTICAL binding_occurrences=1
+fixture  quality-language.json              raw=diff normalized=IDENTICAL binding_occurrences=1
+fixture  quality-summary.md                 raw=same normalized=IDENTICAL binding_occurrences=0
+fixture  review-manifest.jsonl              raw=same normalized=IDENTICAL binding_occurrences=0
+overlay  candidate-policy-aggressive.yaml   raw=diff normalized=IDENTICAL binding_occurrences=1
+overlay  candidate-policy-conservative.yaml raw=diff normalized=IDENTICAL binding_occurrences=1
+overlay  candidate-policy-moderate.yaml     raw=diff normalized=IDENTICAL binding_occurrences=1
+overlay  quality-audit.json                 raw=diff normalized=IDENTICAL binding_occurrences=1
+overlay  quality-by-component.json          raw=diff normalized=IDENTICAL binding_occurrences=1
+overlay  quality-histograms.json            raw=diff normalized=IDENTICAL binding_occurrences=1
+overlay  quality-intersections.json         raw=diff normalized=IDENTICAL binding_occurrences=1
+overlay  quality-language.json              raw=diff normalized=IDENTICAL binding_occurrences=1
+overlay  quality-summary.md                 raw=same normalized=IDENTICAL binding_occurrences=0
+overlay  review-manifest.jsonl              raw=same normalized=IDENTICAL binding_occurrences=0
+ALL IDENTICAL (binding digest normalized)
+## old vs new, workers 2
+bench    candidate-policy-aggressive.yaml   raw=diff normalized=IDENTICAL binding_occurrences=1
+bench    candidate-policy-conservative.yaml raw=diff normalized=IDENTICAL binding_occurrences=1
+bench    candidate-policy-moderate.yaml     raw=diff normalized=IDENTICAL binding_occurrences=1
+bench    quality-audit.json                 raw=diff normalized=IDENTICAL binding_occurrences=1
+bench    quality-by-component.json          raw=diff normalized=IDENTICAL binding_occurrences=1
+bench    quality-histograms.json            raw=diff normalized=IDENTICAL binding_occurrences=1
+bench    quality-intersections.json         raw=diff normalized=IDENTICAL binding_occurrences=1
+bench    quality-language.json              raw=diff normalized=IDENTICAL binding_occurrences=1
+bench    quality-summary.md                 raw=same normalized=IDENTICAL binding_occurrences=0
+bench    review-manifest.jsonl              raw=same normalized=IDENTICAL binding_occurrences=0
+fixture  candidate-policy-aggressive.yaml   raw=diff normalized=IDENTICAL binding_occurrences=1
+fixture  candidate-policy-conservative.yaml raw=diff normalized=IDENTICAL binding_occurrences=1
+fixture  candidate-policy-moderate.yaml     raw=diff normalized=IDENTICAL binding_occurrences=1
+fixture  quality-audit.json                 raw=diff normalized=IDENTICAL binding_occurrences=1
+fixture  quality-by-component.json          raw=diff normalized=IDENTICAL binding_occurrences=1
+fixture  quality-histograms.json            raw=diff normalized=IDENTICAL binding_occurrences=1
+fixture  quality-intersections.json         raw=diff normalized=IDENTICAL binding_occurrences=1
+fixture  quality-language.json              raw=diff normalized=IDENTICAL binding_occurrences=1
+fixture  quality-summary.md                 raw=same normalized=IDENTICAL binding_occurrences=0
+fixture  review-manifest.jsonl              raw=same normalized=IDENTICAL binding_occurrences=0
+overlay  candidate-policy-aggressive.yaml   raw=diff normalized=IDENTICAL binding_occurrences=1
+overlay  candidate-policy-conservative.yaml raw=diff normalized=IDENTICAL binding_occurrences=1
+overlay  candidate-policy-moderate.yaml     raw=diff normalized=IDENTICAL binding_occurrences=1
+overlay  quality-audit.json                 raw=diff normalized=IDENTICAL binding_occurrences=1
+overlay  quality-by-component.json          raw=diff normalized=IDENTICAL binding_occurrences=1
+overlay  quality-histograms.json            raw=diff normalized=IDENTICAL binding_occurrences=1
+overlay  quality-intersections.json         raw=diff normalized=IDENTICAL binding_occurrences=1
+overlay  quality-language.json              raw=diff normalized=IDENTICAL binding_occurrences=1
+overlay  quality-summary.md                 raw=same normalized=IDENTICAL binding_occurrences=0
+overlay  review-manifest.jsonl              raw=same normalized=IDENTICAL binding_occurrences=0
+ALL IDENTICAL (binding digest normalized)
+## old vs new, workers 4
+bench    candidate-policy-aggressive.yaml   raw=diff normalized=IDENTICAL binding_occurrences=1
+bench    candidate-policy-conservative.yaml raw=diff normalized=IDENTICAL binding_occurrences=1
+bench    candidate-policy-moderate.yaml     raw=diff normalized=IDENTICAL binding_occurrences=1
+bench    quality-audit.json                 raw=diff normalized=IDENTICAL binding_occurrences=1
+bench    quality-by-component.json          raw=diff normalized=IDENTICAL binding_occurrences=1
+bench    quality-histograms.json            raw=diff normalized=IDENTICAL binding_occurrences=1
+bench    quality-intersections.json         raw=diff normalized=IDENTICAL binding_occurrences=1
+bench    quality-language.json              raw=diff normalized=IDENTICAL binding_occurrences=1
+bench    quality-summary.md                 raw=same normalized=IDENTICAL binding_occurrences=0
+bench    review-manifest.jsonl              raw=same normalized=IDENTICAL binding_occurrences=0
+fixture  candidate-policy-aggressive.yaml   raw=diff normalized=IDENTICAL binding_occurrences=1
+fixture  candidate-policy-conservative.yaml raw=diff normalized=IDENTICAL binding_occurrences=1
+fixture  candidate-policy-moderate.yaml     raw=diff normalized=IDENTICAL binding_occurrences=1
+fixture  quality-audit.json                 raw=diff normalized=IDENTICAL binding_occurrences=1
+fixture  quality-by-component.json          raw=diff normalized=IDENTICAL binding_occurrences=1
+fixture  quality-histograms.json            raw=diff normalized=IDENTICAL binding_occurrences=1
+fixture  quality-intersections.json         raw=diff normalized=IDENTICAL binding_occurrences=1
+fixture  quality-language.json              raw=diff normalized=IDENTICAL binding_occurrences=1
+fixture  quality-summary.md                 raw=same normalized=IDENTICAL binding_occurrences=0
+fixture  review-manifest.jsonl              raw=same normalized=IDENTICAL binding_occurrences=0
+overlay  candidate-policy-aggressive.yaml   raw=diff normalized=IDENTICAL binding_occurrences=1
+overlay  candidate-policy-conservative.yaml raw=diff normalized=IDENTICAL binding_occurrences=1
+overlay  candidate-policy-moderate.yaml     raw=diff normalized=IDENTICAL binding_occurrences=1
+overlay  quality-audit.json                 raw=diff normalized=IDENTICAL binding_occurrences=1
+overlay  quality-by-component.json          raw=diff normalized=IDENTICAL binding_occurrences=1
+overlay  quality-histograms.json            raw=diff normalized=IDENTICAL binding_occurrences=1
+overlay  quality-intersections.json         raw=diff normalized=IDENTICAL binding_occurrences=1
+overlay  quality-language.json              raw=diff normalized=IDENTICAL binding_occurrences=1
+overlay  quality-summary.md                 raw=same normalized=IDENTICAL binding_occurrences=0
+overlay  review-manifest.jsonl              raw=same normalized=IDENTICAL binding_occurrences=0
+ALL IDENTICAL (binding digest normalized)
+## result digests
+old bench binding=e2e94cbb8f37a28c
+old fixture binding=bb269a63fdd3f371
+old overlay binding=d4d82b63e0a1f46e
+new_w1 bench binding=d086ae939b3b616a
+new_w1 fixture binding=00ab6a565157cd39
+new_w1 overlay binding=c1eb5e1a7dad0fac
+new_w2 bench binding=d086ae939b3b616a
+new_w2 fixture binding=00ab6a565157cd39
+new_w2 overlay binding=c1eb5e1a7dad0fac
+new_w4 bench binding=d086ae939b3b616a
+new_w4 fixture binding=00ab6a565157cd39
+new_w4 overlay binding=c1eb5e1a7dad0fac

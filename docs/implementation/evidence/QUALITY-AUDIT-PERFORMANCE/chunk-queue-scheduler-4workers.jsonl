@@ -1,0 +1,13 @@
+{"w": 4, "chunk_mib": 32, "queue_factor": 2, "sched": "new", "mb_s": 16.77, "busy": 0.8364, "parent_cores": 0.31, "rss_gib": 1.16, "peak_inflight": 8, "conc": 4, "digest": "5207bee1f98b"}
+{"w": 4, "chunk_mib": 8, "queue_factor": 2, "sched": "new", "mb_s": 19.37, "busy": 0.9176, "parent_cores": 0.24, "rss_gib": 0.85, "peak_inflight": 8, "conc": 4, "digest": "a47c8acaecbd"}
+{"w": 4, "chunk_mib": 16, "queue_factor": 2, "sched": "new", "mb_s": 18.06, "busy": 0.8818, "parent_cores": 0.24, "rss_gib": 1.02, "peak_inflight": 8, "conc": 4, "digest": "3bb5656481d7"}
+{"w": 4, "chunk_mib": 64, "queue_factor": 2, "sched": "new", "mb_s": 16.41, "busy": 0.7822, "parent_cores": 0.28, "rss_gib": 1.43, "peak_inflight": 8, "conc": 4, "digest": "a2a84798ba80"}
+{"w": 4, "chunk_mib": 32, "queue_factor": 3, "sched": "new", "mb_s": 17.69, "busy": 0.8663, "parent_cores": 0.28, "rss_gib": 1.26, "peak_inflight": 12, "conc": 4, "digest": "5207bee1f98b"}
+{"w": 4, "chunk_mib": 32, "queue_factor": 4, "sched": "new", "mb_s": 18.25, "busy": 0.8462, "parent_cores": 0.26, "rss_gib": 1.3, "peak_inflight": 16, "conc": 4, "digest": "5207bee1f98b"}
+{"w": 4, "chunk_mib": 16, "queue_factor": 3, "sched": "new", "mb_s": 19.3, "busy": 0.8921, "parent_cores": 0.23, "rss_gib": 1.11, "peak_inflight": 12, "conc": 4, "digest": "3bb5656481d7"}
+{"w": 4, "chunk_mib": 32, "queue_factor": 2, "sched": "new", "mb_s": 18.56, "busy": 0.8742, "parent_cores": 0.25, "rss_gib": 1.16, "peak_inflight": 8, "conc": 4, "digest": "5207bee1f98b"}
+{"w": 4, "chunk_mib": 8, "queue_factor": 2, "sched": "new", "mb_s": 19.22, "busy": 0.9119, "parent_cores": 0.24, "rss_gib": 0.83, "peak_inflight": 8, "conc": 4, "digest": "a47c8acaecbd"}
+{"w": 4, "chunk_mib": 8, "queue_factor": 3, "sched": "new", "mb_s": 19.71, "busy": 0.913, "parent_cores": 0.24, "rss_gib": 0.87, "peak_inflight": 12, "conc": 4, "digest": "a47c8acaecbd"}
+{"w": 4, "chunk_mib": 16, "queue_factor": 2, "sched": "new", "mb_s": 18.6, "busy": 0.8971, "parent_cores": 0.23, "rss_gib": 1.04, "peak_inflight": 8, "conc": 4, "digest": "3bb5656481d7"}
+{"w": 4, "chunk_mib": 32, "queue_factor": 2, "sched": "old", "mb_s": 17.96, "busy": 0.862, "parent_cores": 0.26, "rss_gib": 1.17, "peak_inflight": 8, "conc": 4, "digest": "5207bee1f98b"}
+{"w": 4, "chunk_mib": 8, "queue_factor": 2, "sched": "old", "mb_s": 18.35, "busy": 0.8941, "parent_cores": 0.23, "rss_gib": 0.84, "peak_inflight": 8, "conc": 4, "digest": "a47c8acaecbd"}

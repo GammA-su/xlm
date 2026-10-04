@@ -1,3 +1,39 @@
+> **GLOBAL QUALITY AUDIT PERFORMANCE + OPERATOR VISIBILITY (2026-10-04): LIVE PROGRESS, PROGRESS LOG, READ-ONLY STATUS, BENCHMARK COMMAND; DETECTOR 1.4x, OVERLAY 1.6x, EXACTLY EQUIVALENT; REAL AUDIT NOT RUN.**
+>
+> Findings: `--workers 8` did run 8 worker processes (50 % of 16 logical CPUs in
+> Task Manager is exactly 8 busy workers). The silent single-thread stage before
+> the scan is the C05 kept-membership load, which parses every membership row in
+> the parent and printed nothing. The earlier "33 MB/s at 8 workers" came from a
+> benchmark with about 8 chunks in total, so it measured process start-up.
+>
+> Changes:
+> - Exact detector rewrites (n-grams, page/soft-break counting, whitespace collapse,
+>   run probe, class table) and a strict JSON loader without the post-parse walk.
+> - A faster overlay parser.
+> - 8 MiB chunks.
+> - A scheduler that does not stall behind a slow head chunk.
+> - `--workers 12`.
+> - Phase-aware stderr progress with `--progress-interval-seconds` and
+>   `--progress-log`, and `status [--watch]`.
+> - `benchmark` (about 2-4 minutes, authored data) and measured `activity` facts.
+>
+> All 10 artifacts are byte-identical to c517fe0 output at 1/2/4 workers on three
+> authored corpora (C05 overlay included), with only the binding digest normalized.
+> Same 512 MiB authored corpus, old -> new MB/s (4-vCPU container): 1 worker
+> 3.51 -> 5.07, 2 workers 7.05 -> 10.63, 4 workers 12.91 -> 19.46. Projected on the
+> 5700X3D: about 26.5 min likely (22 optimistic, 33 conservative) at 16 workers.
+> That is a projection; <= 30 min is not yet measured and <= 20 min needs a
+> further reviewed change (a compiled detector kernel).
+> Tests: 374 passed; the 2 PowerShell-junction tests pass under the Linux shim;
+> serial 1 passed; ruff, mypy --strict and diff-check are clean. The scan, overlay and
+> runner changed, so the pending native re-audit of the acceptance fixes below must
+> cover this commit.
+> [Report](reports/QUALITY-AUDIT-PERFORMANCE.md),
+> [evidence](evidence/QUALITY-AUDIT-PERFORMANCE/COMMANDS.md),
+> [runbook](../runbooks/quality-audit.md).
+> Next: run the runbook's `benchmark` command on the Windows machine and return its
+> JSON; review the report's proposals if <= 20 minutes is required.
+>
 > **GLOBAL QUALITY AUDIT ACCEPTANCE FIXES (2026-10-04): I04, HISTORICAL RSS PROBE AND I10 REPAIRED; READY FOR NATIVE RE-AUDIT; REAL AUDIT NOT RUN.**
 >
 > Repairs:

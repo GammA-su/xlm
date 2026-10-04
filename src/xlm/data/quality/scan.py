@@ -22,13 +22,18 @@ from __future__ import annotations
 import dataclasses
 import hashlib
 import os
-import sys
 import time
 import zlib
 from collections import deque
 from collections.abc import Callable, Iterable, Iterator, Mapping
-from concurrent.futures import BrokenExecutor, CancelledError, Future, ProcessPoolExecutor
-from concurrent.futures import TimeoutError as FutureTimeout
+from concurrent.futures import (
+    FIRST_COMPLETED,
+    BrokenExecutor,
+    CancelledError,
+    Future,
+    ProcessPoolExecutor,
+    wait,
+)
 from concurrent.futures.process import BrokenProcessPool
 from dataclasses import dataclass, field
 from multiprocessing import get_context
@@ -42,11 +47,14 @@ from xlm.data.evidence_v2 import canonical
 from xlm.data.exclusion.supervisor import Checkable
 from xlm.data.quality.aggregate import CLASS_INDEX, N_METRICS, Population
 from xlm.data.quality.detectors import analyze
+from xlm.data.quality.envelope import QUEUE_FACTOR
 from xlm.data.quality.overlay import IDENTITY, KeptOverlay, doc_digest
 from xlm.data.quality.policy import POLICY_VERSION, SPLIT_VALUES, policy_identity
+from xlm.data.quality.progress import Telemetry
 from xlm.data.quality.review import ChunkDocs, merge_samples, review_key, sample_chunk
+from xlm.data.quality.strictjson import loads_strict_bytes
 
-CHUNK_BYTES = 32 * 1024**2
+CHUNK_BYTES = 8 * 1024**2
 VERIFY_BLOCK_BYTES = 8 * 1024**2
 UNIT_KIND = "xlm_quality_audit_unit_v3"
 BINDING_KIND = "xlm_quality_audit_binding_v2"
@@ -65,13 +73,14 @@ FILE_KEYS = (
     "canonical_bytes",
     "documents",
 )
-WORKER_CHOICES = (1, 2, 4, 8, 16)
+WORKER_CHOICES = (1, 2, 4, 8, 12, 16)
 MAX_FILES = 10_000
 MAX_LINE_CEILING = 256 * 1024**2
 MAX_MANIFEST_BYTES = 8 * 1024**2
 MAX_UNIT_FILE_BYTES = 64 * 1024**2
 MAX_UNIT_DECODED_BYTES = 512 * 1024**2
 POLL_SECONDS = 0.05
+RESULT_BACKLOG = 2  # finished-but-unconsumed results, in multiples of the queue bound
 NAN = float("nan")
 HEX = frozenset("0123456789abcdef")
 CANONICAL_FIELDS = frozenset(f.name for f in dataclasses.fields(CanonicalDocument))
@@ -249,11 +258,13 @@ def verify_source(
     *,
     check: Callable[[], None] | None = None,
     probes: Mapping[int, int] | None = None,
+    progress: Callable[[int], None] | None = None,
 ) -> set[int]:
     """Full re-hash: SHA-256, byte size and row count must equal the frozen manifest.
 
     ``probes`` maps byte offsets to the 1-based row expected to start there; the
-    offsets proven to start exactly that row are returned.
+    offsets proven to start exactly that row are returned. ``progress`` (operational
+    only) receives the size of every block read.
     """
     path = root / item.path
     digest = hashlib.sha256()
@@ -279,6 +290,8 @@ def verify_source(
             newlines += block.count(b"\n")
             size = end
             previous = block[-1:]
+            if progress is not None:
+                progress(len(block))
             if size > item.file_bytes:
                 break
     rows = newlines + (1 if size and previous != b"\n" else 0)
@@ -313,6 +326,13 @@ class ChunkResult:
     populations: dict[str, Population]
     review: dict[str, list[Any]]
     max_line_bytes: int = 0
+    # Operational only (never in a unit, artifact or receipt): who measured the chunk,
+    # when (monotonic, system-wide), for how long and with how much CPU.
+    nbytes: int = 0
+    pid: int = 0
+    started: float = 0.0
+    finished: float = 0.0
+    cpu_seconds: float = 0.0
 
 
 def worker_init() -> None:
@@ -330,7 +350,7 @@ def parse_row(body: bytes) -> dict[str, Any]:
     """Strict canonical JSON (strict UTF-8, no duplicate keys, no NaN/Infinity) with the
     exact CanonicalDocument field set and types."""
     try:
-        document = canonical.loads_bytes_strict(body)
+        document = loads_strict_bytes(body)
     except ValueError:
         raise QualityError(
             "malformed canonical JSONL row (strict canonical JSON required)"
@@ -357,7 +377,19 @@ def parse_row(body: bytes) -> dict[str, Any]:
 
 
 def process_chunk(task: ChunkTask) -> ChunkResult:
-    """Parse, verify and measure every row of one chunk (pure; never writes)."""
+    """Parse, verify and measure every row of one chunk (pure; never writes), with the
+    operational activity record of the process that did it."""
+    started, cpu = time.monotonic(), time.process_time()
+    result = measure_chunk(task)
+    result.nbytes = len(task.data)
+    result.pid = os.getpid()
+    result.cpu_seconds = time.process_time() - cpu
+    result.started, result.finished = started, time.monotonic()
+    return result
+
+
+def measure_chunk(task: ChunkTask) -> ChunkResult:
+    """The scientific measurement of one chunk."""
     data = task.data
     kept = None if task.kept is None else np.frombuffer(task.kept, dtype=np.bool_)
     identity = None if task.identity is None else np.frombuffer(task.identity, dtype=IDENTITY)
@@ -483,7 +515,13 @@ def _verify_kept(
 
 
 class OrderedPool:
-    """At most ``2 x workers`` tasks outstanding; results in task order.
+    """At most ``QUEUE_FACTOR x workers`` tasks in flight; results in task order.
+
+    "In flight" means submitted and not yet finished by a worker: only those tasks
+    hold chunk bytes. Results are consumed strictly in task order (so aggregation is
+    deterministic), but a slow task at the head no longer stalls submission: up to
+    ``RESULT_BACKLOG x queue`` finished, not-yet-consumed (small, content-free)
+    results may wait behind it while the other workers keep working.
 
     ``workers=1`` runs in-process. Any abnormal exit terminates the worker processes
     instead of draining them. Executor breakage (``BrokenProcessPool``, a cancelled
@@ -491,16 +529,23 @@ class OrderedPool:
     already recorded (RSS ceiling, deadline, disk, cancellation; it records the reason
     BEFORE it terminates the workers) is re-raised as that reason, and breakage with no
     recorded reason is a controlled :class:`WorkerPoolError`. ``peak_in_flight`` is the
-    measured maximum number of outstanding tasks.
+    measured maximum number of tasks in flight.
     """
 
-    def __init__(self, workers: int, supervisor: Checkable | None = None) -> None:
+    def __init__(
+        self,
+        workers: int,
+        supervisor: Checkable | None = None,
+        telemetry: Telemetry | None = None,
+    ) -> None:
         if workers not in WORKER_CHOICES:
-            raise QualityError("workers must be 1, 2, 4, 8 or 16")
+            raise QualityError("workers must be 1, 2, 4, 8, 12 or 16")
         self.workers = workers
         self.supervisor = supervisor
+        self.telemetry = telemetry
         self.executor: ProcessPoolExecutor | None = None
         self.peak_in_flight = 0
+        self.limit = QUEUE_FACTOR * workers if workers > 1 else 1
 
     def __enter__(self) -> OrderedPool:
         if self.workers > 1:
@@ -547,31 +592,55 @@ class OrderedPool:
         raise WorkerPoolError(WORKER_FAILURE)
 
     def map(self, function: Callable[[T], R], tasks: Iterable[T]) -> Iterator[R]:
+        telemetry = self.telemetry
         if self.executor is None:
             for task in tasks:
                 self._check()
                 self.peak_in_flight = max(self.peak_in_flight, 1)
+                if telemetry is not None:
+                    telemetry.submitted(1)
                 result = function(task)
                 self._check()  # a non-cooperative in-process task cannot outlive a failure
+                if telemetry is not None:
+                    telemetry.completed(0, 1)
                 yield result
             return
-        pending: deque[Future[R]] = deque()
+        pending: deque[Future[R]] = deque()  # every unconsumed task, in task order
+        running: set[Future[R]] = set()  # submitted, not yet finished (holds chunk bytes)
         iterator = iter(tasks)
-        limit = 2 * self.workers
-        for task in iterator:
+        exhausted = False
+        backlog = RESULT_BACKLOG * self.limit
+        while True:
+            while not exhausted and len(running) < self.limit and len(pending) < backlog:
+                self._check()
+                try:
+                    task = next(iterator)
+                except StopIteration:
+                    exhausted = True
+                    break
+                future = self._submit(function, task)
+                pending.append(future)
+                running.add(future)
+                self.peak_in_flight = max(self.peak_in_flight, len(running))
+                if telemetry is not None:
+                    telemetry.submitted(len(running))
+            if not pending:
+                return
             self._check()
-            pending.append(self._submit(function, task))
-            self.peak_in_flight = max(self.peak_in_flight, len(pending))
-            if len(pending) >= limit:
-                break
-        while pending:
-            result = self._wait(pending[0])
-            pending.popleft()
-            for task in iterator:
-                pending.append(self._submit(function, task))
-                self.peak_in_flight = max(self.peak_in_flight, len(pending))
-                break
-            yield result
+            finished = {future for future in running if future.done()}
+            if not finished and not pending[0].done():
+                finished, _ = wait(running, timeout=POLL_SECONDS, return_when=FIRST_COMPLETED)
+            if finished:
+                running -= finished
+                if telemetry is not None:
+                    telemetry.completed(len(running), len(finished))
+            while pending and pending[0].done():
+                head = pending.popleft()
+                if head in running:  # finished after the scan above
+                    running.discard(head)
+                    if telemetry is not None:
+                        telemetry.completed(len(running), 1)
+                yield self._result(head)
 
     def _submit(self, function: Callable[[T], R], task: T) -> Future[R]:
         assert self.executor is not None
@@ -581,15 +650,12 @@ class OrderedPool:
             self._broken()
         return future
 
-    def _wait(self, future: Future[R]) -> R:
-        while True:
-            self._check()
-            try:
-                return future.result(timeout=POLL_SECONDS)
-            except FutureTimeout:
-                continue
-            except POOL_BREAKAGE:
-                self._broken()
+    def _result(self, future: Future[R]) -> R:
+        self._check()
+        try:
+            return future.result(timeout=0)
+        except POOL_BREAKAGE:
+            self._broken()
 
 
 # -- source reading -----------------------------------------------------------------------------
@@ -846,48 +912,3 @@ def audit_binding(
     }
     body["digest"] = canonical.digest(body)
     return body
-
-
-# -- progress ---------------------------------------------------------------------------------
-
-
-class Progress:
-    """Content-free stage lines on stderr (stdout stays the single final JSON)."""
-
-    def __init__(self, interval: float | None, totals: dict[str, int]) -> None:
-        self.interval = interval
-        self.totals = totals
-        self.started = time.monotonic()
-        self.last = 0.0
-        self.samples: deque[tuple[float, int]] = deque()
-
-    def stage(self, name: str) -> None:
-        if self.interval is not None:
-            print(f"[QUALITY] {name}", file=sys.stderr, flush=True)
-
-    def update(self, files: int, docs: int, read_bytes: int, rss: int, force: bool = False) -> None:
-        if self.interval is None:
-            return
-        now = time.monotonic()
-        if not force and now - self.last < self.interval:
-            return
-        self.last = now
-        self.samples.append((now, read_bytes))
-        while self.samples and now - self.samples[0][0] > 30:
-            self.samples.popleft()
-        elapsed = max(now - self.started, 1e-9)
-        first_t, first_b = self.samples[0]
-        rolling = (read_bytes - first_b) / max(now - first_t, 1e-9)
-        total = self.totals["file_bytes"]
-        eta = "--:--:--"
-        if rolling > 0 and now - self.started >= 10:
-            eta = time.strftime("%H:%M:%S", time.gmtime((total - read_bytes) / rolling))
-        print(
-            f"[QUALITY] SCAN | files {files:,}/{self.totals['files']:,} | docs {docs:,}/"
-            f"{self.totals['documents']:,} | {read_bytes / 2**30:.2f}/{total / 2**30:.2f} GiB | "
-            f"{rolling / 1e6:.1f} MB/s rolling | {read_bytes / elapsed / 1e6:.1f} MB/s avg | "
-            f"RSS {rss / 2**30:.2f} GiB | elapsed "
-            f"{time.strftime('%H:%M:%S', time.gmtime(elapsed))} | ETA {eta}",
-            file=sys.stderr,
-            flush=True,
-        )

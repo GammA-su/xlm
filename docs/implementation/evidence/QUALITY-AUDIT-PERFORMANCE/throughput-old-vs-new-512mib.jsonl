@@ -1,0 +1,8 @@
+old {"workers": 1, "scan_mb_s": 3.508, "steady_mb_s": null, "wall_s": 154.0, "rss_gib": 0.34, "peak_inflight": 1, "busy": null}
+new {"workers": 1, "scan_mb_s": 5.066, "steady_mb_s": 5.08, "wall_s": 106.9, "rss_gib": 0.2, "peak_inflight": 1, "busy": 0.9673}
+old {"workers": 2, "scan_mb_s": 7.049, "steady_mb_s": null, "wall_s": 77.1, "rss_gib": 0.77, "peak_inflight": 4, "busy": null}
+new {"workers": 2, "scan_mb_s": 10.633, "steady_mb_s": 10.84, "wall_s": 51.4, "rss_gib": 0.53, "peak_inflight": 4, "busy": 0.9565}
+old {"workers": 4, "scan_mb_s": 12.912, "steady_mb_s": null, "wall_s": 42.6, "rss_gib": 1.18, "peak_inflight": 8, "busy": null}
+new {"workers": 4, "scan_mb_s": 19.456, "steady_mb_s": 20.37, "wall_s": 28.5, "rss_gib": 0.84, "peak_inflight": 8, "busy": 0.9144}
+old {"workers": 8, "scan_mb_s": 11.912, "steady_mb_s": null, "wall_s": 46.0, "rss_gib": 1.89, "peak_inflight": 16, "busy": null}
+new {"workers": 8, "scan_mb_s": 17.829, "steady_mb_s": 18.97, "wall_s": 31.0, "rss_gib": 1.44, "peak_inflight": 16, "busy": 0.8923}

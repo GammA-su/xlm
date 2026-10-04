@@ -34,9 +34,11 @@ from pathlib import Path
 from typing import Any
 
 from xlm.data.evidence_v2 import canonical
+from xlm.data.quality.envelope import QUEUE_FACTOR
 from xlm.data.quality.outputs import OutputTree, overlaps
 from xlm.data.quality.overlay import KeptOverlay, load_overlay
 from xlm.data.quality.policy import REVIEW_PER_STRATUM
+from xlm.data.quality.progress import Reporter, Telemetry
 from xlm.data.quality.receipt import build_receipt, load_receipt
 from xlm.data.quality.report import ARTIFACTS, build_artifacts
 from xlm.data.quality.review import (
@@ -63,7 +65,6 @@ from xlm.data.quality.scan import (
     InputManifest,
     OrderedPool,
     OutputBudget,
-    Progress,
     QualityError,
     audit_binding,
     commit_unit,
@@ -97,7 +98,7 @@ class Limits:
 
     def check(self) -> None:
         if self.workers not in WORKER_CHOICES:
-            raise QualityError("workers must be 1, 2, 4, 8 or 16")
+            raise QualityError("workers must be 1, 2, 4, 8, 12 or 16")
         if not 0 < self.max_rss_bytes <= MAX_RSS_BYTES:
             raise QualityError("--max-rss-gib must be in (0, 16]")
         if not 0 < self.line_ceiling <= MAX_LINE_CEILING:
@@ -128,7 +129,7 @@ class Limits:
     def _envelope_body(self) -> dict[str, Any]:
         return {
             "workers": self.workers,
-            "queue_tasks": 2 * self.workers if self.workers > 1 else 1,
+            "queue_tasks": QUEUE_FACTOR * self.workers if self.workers > 1 else 1,
             "max_rss_bytes": self.max_rss_bytes,
             "free_reserve_bytes": self.free_reserve_bytes,
             "max_output_bytes": self.max_output_bytes,
@@ -343,8 +344,11 @@ def prepare(
     allow_authored_proof: bool,
     line_ceiling: int,
     check: Callable[[], None] | None = None,
+    telemetry: Telemetry | None = None,
 ) -> Prepared:
     manifest = load_manifest(manifest_path, data_root)
+    if telemetry is not None:
+        telemetry.set_totals(manifest.totals)
     inputs: list[Path] = [manifest_path]
     if proof is not None:
         inputs += _proof_inputs(proof)
@@ -358,8 +362,11 @@ def prepare(
             allow_authored=allow_authored_proof,
             consumes=[manifest.data_root, output],
             check=check,
+            telemetry=telemetry,
         )
         inputs += [Path(p) for p in overlay.forbidden_roots]
+        if telemetry is not None:
+            telemetry.set_phase("prepare")
     identity = implementation()
     binding = audit_binding(manifest, overlay, line_ceiling, identity)
     protected = [*inputs, *{(manifest.data_root / f.path).parent for f in manifest.files}]
@@ -405,6 +412,7 @@ def verify_sources(
     *,
     threads: int,
     check: Callable[[], None] | None,
+    progress: Callable[[int], None] | None = None,
 ) -> None:
     """Re-hash every file against its frozen SHA-256/size/rows (bounded threads)."""
     items = list(files)
@@ -419,7 +427,10 @@ def verify_sources(
             check()
 
     with ThreadPoolExecutor(max_workers=max(1, min(threads, len(items)))) as pool:
-        futures = [pool.submit(verify_source, root, item, check=cooperative) for item in items]
+        futures = [
+            pool.submit(verify_source, root, item, check=cooperative, progress=progress)
+            for item in items
+        ]
         try:
             for future in futures:
                 while True:
@@ -518,118 +529,153 @@ def run_audit(
     proof: Path | None = None,
     allow_authored_proof: bool = False,
     progress_interval: float | None = 5.0,
+    progress_log: Path | None = None,
     started: float | None = None,
 ) -> dict[str, Any]:
+    """The audit. Progress (stderr every ``progress_interval`` seconds unless None, and
+    optionally appended to ``progress_log``) is operational only."""
     started = time.monotonic() if started is None else started
     limits.check()
     envelope = limits.envelope()
+    if progress_log is not None:
+        check_progress_log(progress_log, output, manifest_path, data_root, proof)
+    telemetry = Telemetry(limits.workers, started)
+    reporter = Reporter(
+        telemetry,
+        5.0 if progress_interval is None else progress_interval,
+        stderr=progress_interval is not None,
+        log=progress_log,
+    )
     staged: list[OutputTree] = []
     try:
-        with Guard(
-            deadline_seconds=limits.deadline_seconds,
-            started=started,
-            max_rss_bytes=limits.max_rss_bytes,
-            watch=[output],
-            reserve_bytes=limits.free_reserve_bytes,
-        ) as guard:
-            ready = prepare(
-                manifest_path,
-                output,
-                data_root=data_root,
-                proof=proof,
-                allow_authored_proof=allow_authored_proof,
-                line_ceiling=limits.line_ceiling,
-                check=guard.check,
-            )
-            manifest, binding = ready.manifest, ready.binding
-            guard.check()
-            budget = OutputBudget(limits.max_output_bytes)
-            tree = _tree(output, ready.protected, budget)
-            tree.open(create=True)
-            budget.used = tree.used_bytes()
-            budget.charge(0)
-            if (output / RECEIPT_FILE).exists():
-                raise QualityError("audit already complete in this output directory; use `report`")
-            if (output / BINDING_FILE).exists():
-                if _read_binding(output) != binding:
-                    raise QualityError(
-                        "output directory belongs to a different audit binding (code, policy, "
-                        "manifest or overlay changed); use a new output directory"
-                    )
-            else:
-                tree.write(BINDING_FILE, canonical.canonical_bytes(binding))
-            tree.remove_owned_staging()
-            digest = str(binding["digest"])
-            reporter = Progress(progress_interval, manifest.totals)
-            resumed = [f for f in manifest.files if unit_path(output, f.ordinal).exists()]
-            if resumed:
-                reporter.stage(f"RESUME | re-hashing {len(resumed):,} committed source files")
-                for item in resumed:
-                    load_unit(output, item, digest)
-                verify_sources(
-                    manifest.data_root, resumed, threads=VERIFY_THREADS, check=guard.check
-                )
-            done = {f.ordinal for f in resumed}
-            pending = [f for f in manifest.files if f.ordinal not in done]
-            measured = _scan(
-                tree, manifest, ready.overlay, pending, digest, limits, guard, reporter
-            )
-            reporter.stage("AGGREGATE")
-            identities: list[dict[str, Any]] = []
-            producers: list[dict[str, Any]] = []
-            units_seen: list[dict[str, Any]] = []
-            artifacts, result_digest = build_artifacts(
-                binding,
-                stream_units(
+        with reporter:
+            with Guard(
+                deadline_seconds=limits.deadline_seconds,
+                started=started,
+                max_rss_bytes=limits.max_rss_bytes,
+                watch=[output],
+                reserve_bytes=limits.free_reserve_bytes,
+            ) as guard:
+                ready = prepare(
+                    manifest_path,
                     output,
-                    manifest,
-                    digest,
-                    identities,
+                    data_root=data_root,
+                    proof=proof,
+                    allow_authored_proof=allow_authored_proof,
+                    line_ceiling=limits.line_ceiling,
                     check=guard.check,
-                    rehash=False,  # resumed files were re-hashed above; fresh ones at commit
-                    envelopes=producers,
-                    facts=units_seen,
-                ),
-            )
-            guard.check()
-            for name in ARTIFACTS:
-                tree.write(name, artifacts[name])
+                    telemetry=telemetry,
+                )
+                manifest, binding = ready.manifest, ready.binding
                 guard.check()
-            reporter.stage("PUBLISH")
-            guard.check()
-            # Phase 1, monitor still active: the receipt is built entirely in memory from
-            # measured facts and written to the owned staging directory only.
-            execution = {
-                "files_scanned": len(pending),
-                "files_resumed": len(resumed),
-                "wall_seconds": guard.elapsed(),
-                **measured,
-                "peak_process_tree_rss_bytes": guard.peak_rss,
-                "supervisor_samples": int(guard.supervisor.samples),
-                "free_space": guard.free_space(),
-                "output_bytes_before_receipt": tree.used_bytes(),
-                "max_document_bytes_observed": max(
-                    (int(u["max_line_bytes"]) for u in units_seen), default=0
-                ),
-                "note": "execution facts are operational and excluded from result_digest",
-            }
-            raw = build_receipt(
-                binding=binding,
-                manifest_path=manifest_path,
-                implementation=ready.identity,
-                sources=identities,
-                artifacts=artifacts,
-                result_digest=result_digest,
-                envelope=envelope,
-                producer_envelopes=sorted(producers, key=canonical.canonical_bytes),
-                execution=execution,
-            )
-            guard.check()
-            staged.append(tree)
-            tree.stage(RECEIPT_FILE, raw)
-            guard.check()
-        # Phase 2: the monitor is stopped and joined (by leaving the guard).
-        _publish_receipt(guard, tree, raw, limits.max_output_bytes)
+                budget = OutputBudget(limits.max_output_bytes)
+                tree = _tree(output, ready.protected, budget)
+                tree.open(create=True)
+                budget.used = tree.used_bytes()
+                budget.charge(0)
+                if (output / RECEIPT_FILE).exists():
+                    raise QualityError(
+                        "audit already complete in this output directory; use `report`"
+                    )
+                if (output / BINDING_FILE).exists():
+                    if _read_binding(output) != binding:
+                        raise QualityError(
+                            "output directory belongs to a different audit binding (code, policy, "
+                            "manifest or overlay changed); use a new output directory"
+                        )
+                else:
+                    tree.write(BINDING_FILE, canonical.canonical_bytes(binding))
+                tree.remove_owned_staging()
+                telemetry.set_output_bytes(tree.used_bytes())
+                digest = str(binding["digest"])
+                resumed = [f for f in manifest.files if unit_path(output, f.ordinal).exists()]
+                if resumed:
+                    telemetry.set_phase(
+                        "resume-verify", sum(f.file_bytes for f in resumed), "bytes"
+                    )
+                    for item in resumed:
+                        load_unit(output, item, digest)
+                    verify_sources(
+                        manifest.data_root,
+                        resumed,
+                        threads=VERIFY_THREADS,
+                        check=guard.check,
+                        progress=telemetry.advance,
+                    )
+                    telemetry.resumed(
+                        len(resumed),
+                        sum(f.documents for f in resumed),
+                        sum(f.file_bytes for f in resumed),
+                    )
+                done = {f.ordinal for f in resumed}
+                pending = [f for f in manifest.files if f.ordinal not in done]
+                measured, activity = _scan(
+                    tree, manifest, ready.overlay, pending, digest, limits, guard, telemetry, budget
+                )
+                telemetry.set_phase("aggregate", len(manifest.files), "units")
+                identities: list[dict[str, Any]] = []
+                producers: list[dict[str, Any]] = []
+                units_seen: list[dict[str, Any]] = []
+                artifacts, result_digest = build_artifacts(
+                    binding,
+                    _counted(
+                        stream_units(
+                            output,
+                            manifest,
+                            digest,
+                            identities,
+                            check=guard.check,
+                            rehash=False,  # resumed files were re-hashed above; fresh at commit
+                            envelopes=producers,
+                            facts=units_seen,
+                        ),
+                        telemetry.advance,
+                    ),
+                )
+                guard.check()
+                telemetry.set_phase("write", len(ARTIFACTS), "artifacts")
+                for name in ARTIFACTS:
+                    tree.write(name, artifacts[name])
+                    telemetry.advance(1)
+                    telemetry.set_output_bytes(budget.used)
+                    guard.check()
+                telemetry.set_phase("publish")
+                guard.check()
+                # Phase 1, monitor still active: the receipt is built entirely in memory from
+                # measured facts and written to the owned staging directory only.
+                execution = {
+                    "files_scanned": len(pending),
+                    "files_resumed": len(resumed),
+                    "wall_seconds": guard.elapsed(),
+                    **measured,
+                    "peak_process_tree_rss_bytes": guard.peak_rss,
+                    "supervisor_samples": int(guard.supervisor.samples),
+                    "free_space": guard.free_space(),
+                    "output_bytes_before_receipt": tree.used_bytes(),
+                    "max_document_bytes_observed": max(
+                        (int(u["max_line_bytes"]) for u in units_seen), default=0
+                    ),
+                    "note": "execution facts are operational and excluded from result_digest",
+                }
+                raw = build_receipt(
+                    binding=binding,
+                    manifest_path=manifest_path,
+                    implementation=ready.identity,
+                    sources=identities,
+                    artifacts=artifacts,
+                    result_digest=result_digest,
+                    envelope=envelope,
+                    producer_envelopes=sorted(producers, key=canonical.canonical_bytes),
+                    execution=execution,
+                )
+                guard.check()
+                staged.append(tree)
+                tree.stage(RECEIPT_FILE, raw)
+                guard.check()
+            # Phase 2: the monitor is stopped and joined (by leaving the guard).
+            _publish_receipt(guard, tree, raw, limits.max_output_bytes)
+            telemetry.set_output_bytes(tree.used_bytes())
+            telemetry.set_phase("complete")
     except BaseException:
         for tree in staged:  # a staged receipt is never a completion signal; discard it
             with contextlib.suppress(OSError, QualityError):
@@ -646,7 +692,40 @@ def run_audit(
             **measured,
             "peak_process_tree_rss_bytes": execution["peak_process_tree_rss_bytes"],
         },
+        "activity": activity,
+        "phase_seconds": telemetry.phase_seconds(),
+        "note": "scan.activity and phase_seconds are operational, not in the receipt",
     }
+
+
+def _counted(units: Iterator[dict[str, Any]], advance: Callable[[int], None]) -> Iterator[Any]:
+    for unit in units:
+        yield unit
+        advance(1)
+
+
+def check_progress_log(
+    log: Path, output: Path, manifest_path: Path, data_root: Path | None, proof: Path | None
+) -> None:
+    """The progress log is operational: outside the audit output, the corpus data root
+    and every audit input; an existing regular file (appended to) or a new file in an
+    existing directory; never a link."""
+    log = Path(log)
+    parent = log.absolute().parent
+    if not parent.is_dir():
+        raise QualityError("progress log directory does not exist")
+    if log.is_symlink() or (log.exists() and not log.is_file()):
+        raise QualityError("progress log must be a regular file")
+    target = parent.resolve() / log.name
+    if target.is_relative_to(output.resolve()):
+        raise QualityError("progress log must be outside the audit output directory")
+    manifest = load_manifest(manifest_path, data_root)
+    if target.is_relative_to(manifest.data_root.resolve()):
+        raise QualityError("progress log must be outside the corpus data root")
+    inputs = [manifest_path, *([] if proof is None else _proof_inputs(proof))]
+    for item in inputs:
+        if overlaps(target, Path(item)):
+            raise QualityError("progress log overlaps an audit input (manifest/proof/C05)")
 
 
 def _publish_receipt(guard: Guard, tree: OutputTree, raw: bytes, max_output_bytes: int) -> None:
@@ -687,18 +766,16 @@ def _scan(
     digest: str,
     limits: Limits,
     guard: Guard,
-    reporter: Progress,
-) -> dict[str, Any]:
+    telemetry: Telemetry,
+    budget: OutputBudget,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Measure every pending file; return (receipt execution facts, operational activity)."""
     root = manifest.data_root
     started = time.monotonic()
     envelope = limits.envelope()
     key = review_key(manifest.digest)
     scanned_bytes = sum(f.file_bytes for f in pending)
-    progress = {
-        "docs": sum(f.documents for f in manifest.files) - sum(f.documents for f in pending),
-        "bytes": sum(f.file_bytes for f in manifest.files) - scanned_bytes,
-        "files": len(manifest.files) - len(pending),
-    }
+    telemetry.set_phase("scan", scanned_bytes, "bytes")
     stop = threading.Event()
 
     def check() -> None:
@@ -727,40 +804,43 @@ def _scan(
                     continue
             waiting.popleft()
             commit_unit(tree, digest, acc, envelope, guard.unit_facts())
-            progress["files"] += 1
-            progress["bytes"] += acc.item.file_bytes
+            telemetry.committed(budget.used, len(waiting))
 
     by_ordinal = {f.ordinal: f for f in pending}
     current: FileAccumulator | None = None
+    spans: list[tuple[float, float, int]] = []
     verifier = ThreadPoolExecutor(max_workers=VERIFY_THREADS)
-    pool = OrderedPool(limits.workers, guard)
+    pool = OrderedPool(limits.workers, guard, telemetry)
     try:
         with pool:
             for result in pool.map(process_chunk, tasks()):
                 if current is None or current.item.ordinal != result.ordinal:
                     current = FileAccumulator(by_ordinal[result.ordinal])
                 current.add(result)
-                progress["docs"] += result.rows
+                spans.append((result.started, result.finished, result.pid))
+                telemetry.measured(
+                    result.rows,
+                    result.nbytes,
+                    result.finished - result.started,
+                    result.cpu_seconds,
+                    result.pid,
+                )
                 if result.last:
                     # Measurement of this file is complete: re-hash it again before commit.
                     waiting.append(
                         (current, verifier.submit(verify_source, root, current.item, check=check))
                     )
+                    telemetry.verifying(len(waiting))
                     current = None
                 drain(False)
-                reporter.update(
-                    progress["files"], progress["docs"], progress["bytes"], guard.peak_rss
-                )
+        telemetry.set_phase("verify-drain", len(waiting), "files")
         drain(True)
     finally:
         stop.set()
         verifier.shutdown(wait=True, cancel_futures=True)
     seconds = time.monotonic() - started
-    reporter.update(
-        progress["files"], progress["docs"], progress["bytes"], guard.peak_rss, force=True
-    )
     scanned_docs = sum(f.documents for f in pending)
-    return {
+    measured = {
         "scan_seconds": round(seconds, 3),
         "scanned_documents": scanned_docs,
         "scanned_file_bytes": scanned_bytes,
@@ -768,6 +848,34 @@ def _scan(
         "documents_per_s": round(scanned_docs / max(seconds, 1e-9), 1),
         "workers": pool.workers,
         "peak_tasks_in_flight": pool.peak_in_flight,
+    }
+    return measured, worker_activity(spans, pool.workers, seconds, telemetry)
+
+
+def worker_activity(
+    spans: Sequence[tuple[float, float, int]],
+    workers: int,
+    seconds: float,
+    telemetry: Telemetry,
+) -> dict[str, Any]:
+    """Measured (not configured) parallelism: which processes executed chunk tasks, the
+    largest number executing at the same instant, and how busy the workers were."""
+    events = sorted([(a, 1) for a, _, _ in spans] + [(b, -1) for _, b, _ in spans])
+    concurrent = peak = 0
+    for _, delta in events:
+        concurrent += delta
+        peak = max(peak, concurrent)
+    snap = telemetry.snapshot()
+    busy = sum(b - a for a, b, _ in spans)
+    steady = max(b for _, b, _ in spans) - min(a for a, _, _ in spans) if spans else 0.0
+    return {
+        "chunks": len(spans),
+        "worker_span_seconds": round(steady, 3),
+        "worker_processes_used": len({pid for _, _, pid in spans}),
+        "max_concurrent_tasks": peak,
+        "worker_busy_seconds": round(busy, 3),
+        "worker_cpu_seconds": round(float(snap["worker_cpu_seconds"]), 3),
+        "worker_busy_fraction": round(busy / (workers * seconds), 4) if seconds > 0 else None,
     }
 
 

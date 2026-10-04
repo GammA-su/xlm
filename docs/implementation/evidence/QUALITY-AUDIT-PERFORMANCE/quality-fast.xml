@@ -1,0 +1,399 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="376" time="61.548" timestamp="2026-10-04T12:39:36.207078+00:00" hostname="vm"><testcase classname="tests.test_quality_performance" name="test_analyze_equals_the_frozen_reference_implementation" time="4.050" /><testcase classname="tests.test_quality_detectors" name="test_whitespace_variants_of_a_paragraph_are_duplicates" time="0.116" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[staging_fsync-recorded:rss]" time="0.623" /><testcase classname="tests.test_quality_final_repairs" name="test_i04_disk_failure_recorded_during_shutdown" time="0.699" /><testcase classname="tests.test_quality_detectors" name="test_code_braces_are_not_repeated_prose" time="0.002" /><testcase classname="tests.test_quality_detectors" name="test_generated_loop_is_a_strong_ngram_and_compression_signal" time="0.002" /><testcase classname="tests.test_quality_detectors" name="test_legitimate_unicode_is_not_corruption[accented_latin]" time="0.001" /><testcase classname="tests.test_quality_detectors" name="test_legitimate_unicode_is_not_corruption[japanese]" time="0.003" /><testcase classname="tests.test_quality_detectors" name="test_legitimate_unicode_is_not_corruption[emoji]" time="0.002" /><testcase classname="tests.test_quality_detectors" name="test_legitimate_unicode_is_not_corruption[combining_marks]" time="0.001" /><testcase classname="tests.test_quality_detectors" name="test_legitimate_unicode_is_not_corruption[ordinary_prose]" time="0.002" /><testcase classname="tests.test_quality_detectors" name="test_emoji_joiners_are_reported_separately_from_zero_width_junk" time="0.001" /><testcase classname="tests.test_quality_detectors" name="test_japanese_prose_is_prose_like" time="0.001" /><testcase classname="tests.test_quality_detectors" name="test_control_junk_is_counted_per_kind" time="0.001" /><testcase classname="tests.test_quality_detectors" name="test_format_junk_is_counted_per_kind" time="0.001" /><testcase classname="tests.test_quality_detectors" name="test_mojibake_sequences_are_counted" time="0.001" /><testcase classname="tests.test_quality_detectors" name="test_page_headers_and_numbers" time="0.001" /><testcase classname="tests.test_quality_detectors" name="test_hyphenation_breaks_are_measured_not_joined" time="0.001" /><testcase classname="tests.test_quality_detectors" name="test_page_number_forms" time="0.002" /><testcase classname="tests.test_quality_detectors" name="test_clean_scientific_text_has_no_ocr_signals" time="0.001" /><testcase classname="tests.test_quality_detectors" name="test_isolated_single_character_lines" time="0.001" /><testcase classname="tests.test_quality_detectors" name="test_document_classes[python_code-code_like]" time="0.002" /><testcase classname="tests.test_quality_detectors" name="test_document_classes[code_braces-code_like]" time="0.001" /><testcase classname="tests.test_quality_detectors" name="test_document_classes[latex_equation-math_table_like]" time="0.001" /><testcase classname="tests.test_quality_detectors" name="test_document_classes[markdown_table-math_table_like]" time="0.001" /><testcase classname="tests.test_quality_detectors" name="test_document_classes[ordinary_prose-prose_like]" time="0.002" /><testcase classname="tests.test_quality_detectors" name="test_document_classes[garbage_symbols-other]" time="0.001" /><testcase classname="tests.test_quality_detectors" name="test_document_classes[html_page-markup_like]" time="0.001" /><testcase classname="tests.test_quality_detectors" name="test_document_classes[empty-empty]" time="0.001" /><testcase classname="tests.test_quality_detectors" name="test_document_classes[whitespace_only-empty]" time="0.001" /><testcase classname="tests.test_quality_detectors" name="test_url_list_is_url_dense" time="0.001" /><testcase classname="tests.test_quality_detectors" name="test_garbage_symbols_are_symbol_heavy_and_low_alpha" time="0.001" /><testcase classname="tests.test_quality_detectors" name="test_boilerplate_categories_record_only_the_category" time="0.002" /><testcase classname="tests.test_quality_detectors" name="test_size_buckets" time="0.012" /><testcase classname="tests.test_quality_detectors" name="test_no_detector_emits_a_decision_or_text" time="0.009" /><testcase classname="tests.test_quality_detectors" name="test_analysis_bounds_set_the_truncation_flag" time="0.054" /><testcase classname="tests.test_quality_detectors" name="test_vectorized_bins_equal_scalar_bins" time="0.026" /><testcase classname="tests.test_quality_detectors" name="test_population_merge_is_associative_and_order_independent" time="0.045" /><testcase classname="tests.test_quality_detectors" name="test_review_sampling_is_input_order_independent" time="0.037" /><testcase classname="tests.test_quality_detectors" name="test_coarse_index_matches_bisect" time="0.001" /><testcase classname="tests.test_quality_detectors" name="test_policy_identity_is_stable_and_declares_no_thresholds" time="0.003" /><testcase classname="tests.test_quality_hardening" name="test_i01_fresh_scan_rehashes_after_measurement" time="0.172" /><testcase classname="tests.test_quality_hardening" name="test_i01_report_rehashes_every_source" time="0.581" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[staging_fsync-recorded:disk]" time="0.544" /><testcase classname="tests.test_quality_final_repairs" name="test_i04_monitor_failure_after_last_worker_result" time="0.171" /><testcase classname="tests.test_quality_final_repairs" name="test_i04_failure_immediately_before_complete_publication" time="0.510" /><testcase classname="tests.test_quality_hardening" name="test_i01_mtime_is_not_part_of_any_identity" time="0.879" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[staging_fsync-recorded:deadline]" time="0.558" /><testcase classname="tests.test_quality_final_repairs" name="test_i04_cli_returns_no_success_json" time="0.542" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[staging_fsync-measured:rss]" time="0.490" /><testcase classname="tests.test_quality_final_repairs" name="test_i04_report_success_needs_the_final_gate" time="0.941" /><testcase classname="tests.test_quality_hardening" name="test_i02_inputs_inside_output_refuse_without_writing" time="0.016" /><testcase classname="tests.test_quality_hardening" name="test_i02_foreign_output_content_is_refused_and_kept" time="0.263" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[staging_fsync-measured:disk]" time="0.592" /><testcase classname="tests.test_quality_hardening" name="test_i02_owned_units_junction_is_refused_before_cleanup" time="0.200"><failure message="FileNotFoundError: [Errno 2] No such file or directory: 'powershell'">corpus = PosixPath('/tmp/pytest-of-root/pytest-6/popen-gw1/test_i02_owned_units_junction_0/corpus/manifest.json')
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-6/popen-gw1/test_i02_owned_units_junction_0')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x7fb45f2c90a0&gt;
+
+    def test_i02_owned_units_junction_is_refused_before_cleanup(
+        corpus: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -&gt; None:
+        output = tmp_path / "out"
+        interrupted(corpus, output, monkeypatch)
+        target = tmp_path / "elsewhere"
+        target.mkdir()
+        sentinel = target / "f00001.unit.zz.tmp"  # a job-owned staging NAME, outside the job
+        sentinel.write_bytes(b"AUTHORED RETAINED MATERIAL")
+        shutil.rmtree(output / "units")
+&gt;       junction(output / "units", target)
+
+tests/test_quality_hardening.py:183:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests/test_quality_hardening.py:71: in junction
+    result = subprocess.run(
+/root/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/subprocess.py:548: in run
+    with Popen(*popenargs, **kwargs) as process:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/subprocess.py:1026: in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;Popen: returncode: 255 args: ['powershell', '-NoProfile', '-Command', "New-...&gt;
+args = ['powershell', '-NoProfile', '-Command', "New-Item -ItemType Junction -Path '/tmp/pytest-of-root/pytest-6/popen-gw1/te...on_0/out/units' -Target '/tmp/pytest-of-root/pytest-6/popen-gw1/test_i02_owned_units_junction_0/elsewhere' | Out-Null"]
+executable = b'powershell', preexec_fn = None, close_fds = True, pass_fds = ()
+cwd = None, env = None, startupinfo = None, creationflags = 0, shell = False
+p2cread = -1, p2cwrite = -1, c2pread = 13, c2pwrite = 14, errread = 15
+errwrite = 16, restore_signals = True, gid = None, gids = None, uid = None
+umask = -1, start_new_session = False, process_group = -1
+
+    def _execute_child(self, args, executable, preexec_fn, close_fds,
+                       pass_fds, cwd, env,
+                       startupinfo, creationflags, shell,
+                       p2cread, p2cwrite,
+                       c2pread, c2pwrite,
+                       errread, errwrite,
+                       restore_signals,
+                       gid, gids, uid, umask,
+                       start_new_session, process_group):
+        """Execute program (POSIX version)"""
+
+        if isinstance(args, (str, bytes)):
+            args = [args]
+        elif isinstance(args, os.PathLike):
+            if shell:
+                raise TypeError('path-like args is not allowed when '
+                                'shell is true')
+            args = [args]
+        else:
+            args = list(args)
+
+        if shell:
+            # On Android the default shell is at '/system/bin/sh'.
+            unix_shell = ('/system/bin/sh' if
+                      hasattr(sys, 'getandroidapilevel') else '/bin/sh')
+            args = [unix_shell, "-c"] + args
+            if executable:
+                args[0] = executable
+
+        if executable is None:
+            executable = args[0]
+
+        sys.audit("subprocess.Popen", executable, args, cwd, env)
+
+        if (_USE_POSIX_SPAWN
+                and os.path.dirname(executable)
+                and preexec_fn is None
+                and not close_fds
+                and not pass_fds
+                and cwd is None
+                and (p2cread == -1 or p2cread &gt; 2)
+                and (c2pwrite == -1 or c2pwrite &gt; 2)
+                and (errwrite == -1 or errwrite &gt; 2)
+                and not start_new_session
+                and process_group == -1
+                and gid is None
+                and gids is None
+                and uid is None
+                and umask &lt; 0):
+            self._posix_spawn(args, executable, env, restore_signals,
+                              p2cread, p2cwrite,
+                              c2pread, c2pwrite,
+                              errread, errwrite)
+            return
+
+        orig_executable = executable
+
+        # For transferring possible exec failure from child to parent.
+        # Data format: "exception name:hex errno:description"
+        # Pickle is not used; it is complex and involves memory allocation.
+        errpipe_read, errpipe_write = os.pipe()
+        # errpipe_write must not be in the standard io 0, 1, or 2 fd range.
+        low_fds_to_close = []
+        while errpipe_write &lt; 3:
+            low_fds_to_close.append(errpipe_write)
+            errpipe_write = os.dup(errpipe_write)
+        for low_fd in low_fds_to_close:
+            os.close(low_fd)
+        try:
+            try:
+                # We must avoid complex work that could involve
+                # malloc or free in the child process to avoid
+                # potential deadlocks, thus we do all this here.
+                # and pass it to fork_exec()
+
+                if env is not None:
+                    env_list = []
+                    for k, v in env.items():
+                        k = os.fsencode(k)
+                        if b'=' in k:
+                            raise ValueError("illegal environment variable name")
+                        env_list.append(k + b'=' + os.fsencode(v))
+                else:
+                    env_list = None  # Use execv instead of execve.
+                executable = os.fsencode(executable)
+                if os.path.dirname(executable):
+                    executable_list = (executable,)
+                else:
+                    # This matches the behavior of os._execvpe().
+                    executable_list = tuple(
+                        os.path.join(os.fsencode(dir), executable)
+                        for dir in os.get_exec_path(env))
+                fds_to_keep = set(pass_fds)
+                fds_to_keep.add(errpipe_write)
+                self.pid = _fork_exec(
+                        args, executable_list,
+                        close_fds, tuple(sorted(map(int, fds_to_keep))),
+                        cwd, env_list,
+                        p2cread, p2cwrite, c2pread, c2pwrite,
+                        errread, errwrite,
+                        errpipe_read, errpipe_write,
+                        restore_signals, start_new_session,
+                        process_group, gid, gids, uid, umask,
+                        preexec_fn, _USE_VFORK)
+                self._child_created = True
+            finally:
+                # be sure the FD is closed no matter what
+                os.close(errpipe_write)
+
+            self._close_pipe_fds(p2cread, p2cwrite,
+                                 c2pread, c2pwrite,
+                                 errread, errwrite)
+
+            # Wait for exec to fail or succeed; possibly raising an
+            # exception (limited in size)
+            errpipe_data = bytearray()
+            while True:
+                part = os.read(errpipe_read, 50000)
+                errpipe_data += part
+                if not part or len(errpipe_data) &gt; 50000:
+                    break
+        finally:
+            # be sure the FD is closed no matter what
+            os.close(errpipe_read)
+
+        if errpipe_data:
+            try:
+                pid, sts = os.waitpid(self.pid, 0)
+                if pid == self.pid:
+                    self._handle_exitstatus(sts)
+                else:
+                    self.returncode = sys.maxsize
+            except ChildProcessError:
+                pass
+
+            try:
+                exception_name, hex_errno, err_msg = (
+                        errpipe_data.split(b':', 2))
+                # The encoding here should match the encoding
+                # written in by the subprocess implementations
+                # like _posixsubprocess
+                err_msg = err_msg.decode()
+            except ValueError:
+                exception_name = b'SubprocessError'
+                hex_errno = b'0'
+                err_msg = 'Bad exception data from child: {!r}'.format(
+                              bytes(errpipe_data))
+            child_exception_type = getattr(
+                    builtins, exception_name.decode('ascii'),
+                    SubprocessError)
+            if issubclass(child_exception_type, OSError) and hex_errno:
+                errno_num = int(hex_errno, 16)
+                if err_msg == "noexec:chdir":
+                    err_msg = ""
+                    # The error must be from chdir(cwd).
+                    err_filename = cwd
+                elif err_msg == "noexec":
+                    err_msg = ""
+                    err_filename = None
+                else:
+                    err_filename = orig_executable
+                if errno_num != 0:
+                    err_msg = os.strerror(errno_num)
+                if err_filename is not None:
+&gt;                   raise child_exception_type(errno_num, err_msg, err_filename)
+E                   FileNotFoundError: [Errno 2] No such file or directory: 'powershell'
+
+/root/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/subprocess.py:1955: FileNotFoundError</failure></testcase><testcase classname="tests.test_quality_hardening" name="test_i02_owned_staging_is_the_only_cleanup" time="0.861" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[staging_fsync-measured:deadline]" time="0.750" /><testcase classname="tests.test_quality_final_repairs" name="test_i08_example_context_is_never_full_html[fenced_html]" time="0.002" /><testcase classname="tests.test_quality_final_repairs" name="test_i08_example_context_is_never_full_html[fenced_xml]" time="0.002" /><testcase classname="tests.test_quality_final_repairs" name="test_i08_example_context_is_never_full_html[indented_snippet]" time="0.001" /><testcase classname="tests.test_quality_final_repairs" name="test_i08_example_context_is_never_full_html[inline_body]" time="0.001" /><testcase classname="tests.test_quality_final_repairs" name="test_i08_example_context_is_never_full_html[inline_html]" time="0.001" /><testcase classname="tests.test_quality_final_repairs" name="test_i08_example_context_is_never_full_html[prose_mentioning_html]" time="0.001" /><testcase classname="tests.test_quality_final_repairs" name="test_i08_example_context_is_never_full_html[real_page]" time="0.001" /><testcase classname="tests.test_quality_final_repairs" name="test_i08_example_context_is_never_full_html[real_page_without_doctype]" time="0.001" /><testcase classname="tests.test_quality_final_repairs" name="test_i08_raw_example_tag_counts_are_kept" time="0.001" /><testcase classname="tests.test_quality_hardening" name="test_i02_aliased_review_destination_refuses" time="0.567"><failure message="FileNotFoundError: [Errno 2] No such file or directory: 'powershell'">corpus = PosixPath('/tmp/pytest-of-root/pytest-6/popen-gw1/test_i02_aliased_review_destin0/corpus/manifest.json')
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-6/popen-gw1/test_i02_aliased_review_destin0')
+
+    def test_i02_aliased_review_destination_refuses(corpus: Path, tmp_path: Path) -&gt; None:
+        output = tmp_path / "out"
+        audit(corpus, output)
+        real = tmp_path / "real"
+        real.mkdir()
+&gt;       junction(tmp_path / "alias", real)
+
+tests/test_quality_hardening.py:205:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests/test_quality_hardening.py:71: in junction
+    result = subprocess.run(
+/root/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/subprocess.py:548: in run
+    with Popen(*popenargs, **kwargs) as process:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/subprocess.py:1026: in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;Popen: returncode: 255 args: ['powershell', '-NoProfile', '-Command', "New-...&gt;
+args = ['powershell', '-NoProfile', '-Command', "New-Item -ItemType Junction -Path '/tmp/pytest-of-root/pytest-6/popen-gw1/te...eview_destin0/alias' -Target '/tmp/pytest-of-root/pytest-6/popen-gw1/test_i02_aliased_review_destin0/real' | Out-Null"]
+executable = b'powershell', preexec_fn = None, close_fds = True, pass_fds = ()
+cwd = None, env = None, startupinfo = None, creationflags = 0, shell = False
+p2cread = -1, p2cwrite = -1, c2pread = 13, c2pwrite = 14, errread = 15
+errwrite = 16, restore_signals = True, gid = None, gids = None, uid = None
+umask = -1, start_new_session = False, process_group = -1
+
+    def _execute_child(self, args, executable, preexec_fn, close_fds,
+                       pass_fds, cwd, env,
+                       startupinfo, creationflags, shell,
+                       p2cread, p2cwrite,
+                       c2pread, c2pwrite,
+                       errread, errwrite,
+                       restore_signals,
+                       gid, gids, uid, umask,
+                       start_new_session, process_group):
+        """Execute program (POSIX version)"""
+
+        if isinstance(args, (str, bytes)):
+            args = [args]
+        elif isinstance(args, os.PathLike):
+            if shell:
+                raise TypeError('path-like args is not allowed when '
+                                'shell is true')
+            args = [args]
+        else:
+            args = list(args)
+
+        if shell:
+            # On Android the default shell is at '/system/bin/sh'.
+            unix_shell = ('/system/bin/sh' if
+                      hasattr(sys, 'getandroidapilevel') else '/bin/sh')
+            args = [unix_shell, "-c"] + args
+            if executable:
+                args[0] = executable
+
+        if executable is None:
+            executable = args[0]
+
+        sys.audit("subprocess.Popen", executable, args, cwd, env)
+
+        if (_USE_POSIX_SPAWN
+                and os.path.dirname(executable)
+                and preexec_fn is None
+                and not close_fds
+                and not pass_fds
+                and cwd is None
+                and (p2cread == -1 or p2cread &gt; 2)
+                and (c2pwrite == -1 or c2pwrite &gt; 2)
+                and (errwrite == -1 or errwrite &gt; 2)
+                and not start_new_session
+                and process_group == -1
+                and gid is None
+                and gids is None
+                and uid is None
+                and umask &lt; 0):
+            self._posix_spawn(args, executable, env, restore_signals,
+                              p2cread, p2cwrite,
+                              c2pread, c2pwrite,
+                              errread, errwrite)
+            return
+
+        orig_executable = executable
+
+        # For transferring possible exec failure from child to parent.
+        # Data format: "exception name:hex errno:description"
+        # Pickle is not used; it is complex and involves memory allocation.
+        errpipe_read, errpipe_write = os.pipe()
+        # errpipe_write must not be in the standard io 0, 1, or 2 fd range.
+        low_fds_to_close = []
+        while errpipe_write &lt; 3:
+            low_fds_to_close.append(errpipe_write)
+            errpipe_write = os.dup(errpipe_write)
+        for low_fd in low_fds_to_close:
+            os.close(low_fd)
+        try:
+            try:
+                # We must avoid complex work that could involve
+                # malloc or free in the child process to avoid
+                # potential deadlocks, thus we do all this here.
+                # and pass it to fork_exec()
+
+                if env is not None:
+                    env_list = []
+                    for k, v in env.items():
+                        k = os.fsencode(k)
+                        if b'=' in k:
+                            raise ValueError("illegal environment variable name")
+                        env_list.append(k + b'=' + os.fsencode(v))
+                else:
+                    env_list = None  # Use execv instead of execve.
+                executable = os.fsencode(executable)
+                if os.path.dirname(executable):
+                    executable_list = (executable,)
+                else:
+                    # This matches the behavior of os._execvpe().
+                    executable_list = tuple(
+                        os.path.join(os.fsencode(dir), executable)
+                        for dir in os.get_exec_path(env))
+                fds_to_keep = set(pass_fds)
+                fds_to_keep.add(errpipe_write)
+                self.pid = _fork_exec(
+                        args, executable_list,
+                        close_fds, tuple(sorted(map(int, fds_to_keep))),
+                        cwd, env_list,
+                        p2cread, p2cwrite, c2pread, c2pwrite,
+                        errread, errwrite,
+                        errpipe_read, errpipe_write,
+                        restore_signals, start_new_session,
+                        process_group, gid, gids, uid, umask,
+                        preexec_fn, _USE_VFORK)
+                self._child_created = True
+            finally:
+                # be sure the FD is closed no matter what
+                os.close(errpipe_write)
+
+            self._close_pipe_fds(p2cread, p2cwrite,
+                                 c2pread, c2pwrite,
+                                 errread, errwrite)
+
+            # Wait for exec to fail or succeed; possibly raising an
+            # exception (limited in size)
+            errpipe_data = bytearray()
+            while True:
+                part = os.read(errpipe_read, 50000)
+                errpipe_data += part
+                if not part or len(errpipe_data) &gt; 50000:
+                    break
+        finally:
+            # be sure the FD is closed no matter what
+            os.close(errpipe_read)
+
+        if errpipe_data:
+            try:
+                pid, sts = os.waitpid(self.pid, 0)
+                if pid == self.pid:
+                    self._handle_exitstatus(sts)
+                else:
+                    self.returncode = sys.maxsize
+            except ChildProcessError:
+                pass
+
+            try:
+                exception_name, hex_errno, err_msg = (
+                        errpipe_data.split(b':', 2))
+                # The encoding here should match the encoding
+                # written in by the subprocess implementations
+                # like _posixsubprocess
+                err_msg = err_msg.decode()
+            except ValueError:
+                exception_name = b'SubprocessError'
+                hex_errno = b'0'
+                err_msg = 'Bad exception data from child: {!r}'.format(
+                              bytes(errpipe_data))
+            child_exception_type = getattr(
+                    builtins, exception_name.decode('ascii'),
+                    SubprocessError)
+            if issubclass(child_exception_type, OSError) and hex_errno:
+                errno_num = int(hex_errno, 16)
+                if err_msg == "noexec:chdir":
+                    err_msg = ""
+                    # The error must be from chdir(cwd).
+                    err_filename = cwd
+                elif err_msg == "noexec":
+                    err_msg = ""
+                    err_filename = None
+                else:
+                    err_filename = orig_executable
+                if errno_num != 0:
+                    err_msg = os.strerror(errno_num)
+                if err_filename is not None:
+&gt;                   raise child_exception_type(errno_num, err_msg, err_filename)
+E                   FileNotFoundError: [Errno 2] No such file or directory: 'powershell'
+
+/root/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/subprocess.py:1955: FileNotFoundError</failure></testcase><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[staging_fsync-measured:output]" time="0.641" /><testcase classname="tests.test_quality_performance" name="test_whitespace_is_never_printable_except_the_ascii_space" time="0.123" /><testcase classname="tests.test_quality_performance" name="test_line_level_layout_counts_equal_the_regex_counts" time="0.087" /><testcase classname="tests.test_quality_hardening" name="test_i03_forged_but_well_formed_receipt_refuses" time="0.827" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[staging_dir_fsync-recorded:rss]" time="0.502" /><testcase classname="tests.test_quality_performance" name="test_packed_ngram_counts_equal_tuple_counting" time="0.120" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[chunk_zero-envelope]" time="3.396" /><testcase classname="tests.test_quality_performance" name="test_run_probe_agrees_with_maximal_runs" time="0.002" /><testcase classname="tests.test_quality_performance" name="test_strict_loader_accepts_and_refuses_exactly_like_canonical[{&quot;a&quot;:1.5,&quot;b&quot;:[1,2,{&quot;c&quot;:-0.0}],&quot;d&quot;:&quot;x&quot;}]" time="0.001" /><testcase classname="tests.test_quality_performance" name="test_strict_loader_accepts_and_refuses_exactly_like_canonical[{&quot;a&quot;:1e999}]" time="0.001" /><testcase classname="tests.test_quality_performance" name="test_strict_loader_accepts_and_refuses_exactly_like_canonical[{&quot;a&quot;:[-1e999]}]" time="0.001" /><testcase classname="tests.test_quality_performance" name="test_strict_loader_accepts_and_refuses_exactly_like_canonical[{&quot;a&quot;:{&quot;b&quot;:NaN}}]" time="0.001" /><testcase classname="tests.test_quality_performance" name="test_strict_loader_accepts_and_refuses_exactly_like_canonical[{&quot;a&quot;:Infinity}]" time="0.001" /><testcase classname="tests.test_quality_performance" name="test_strict_loader_accepts_and_refuses_exactly_like_canonical[{&quot;a&quot;:-Infinity}]" time="0.001" /><testcase classname="tests.test_quality_performance" name="test_strict_loader_accepts_and_refuses_exactly_like_canonical[{&quot;a&quot;:1,&quot;a&quot;:2}]" time="0.001" /><testcase classname="tests.test_quality_performance" name="test_strict_loader_accepts_and_refuses_exactly_like_canonical[{&quot;a&quot;:{&quot;b&quot;:1,&quot;b&quot;:1}}]" time="0.001" /><testcase classname="tests.test_quality_performance" name="test_strict_loader_accepts_and_refuses_exactly_like_canonical[\xef\xbb\xbf{}]" time="0.001" /><testcase classname="tests.test_quality_performance" name="test_strict_loader_accepts_and_refuses_exactly_like_canonical[{&quot;a&quot;:&quot;\xff&quot;}]" time="0.001" /><testcase classname="tests.test_quality_performance" name="test_strict_loader_accepts_and_refuses_exactly_like_canonical[{&quot;a&quot;:&quot;\ud800&quot;}]" time="0.001" /><testcase classname="tests.test_quality_performance" name="test_strict_loader_accepts_and_refuses_exactly_like_canonical[{&quot;a&quot;:1} x]" time="0.001" /><testcase classname="tests.test_quality_performance" name="test_strict_loader_accepts_and_refuses_exactly_like_canonical[[1e308, 2.5e-320, 123456789012345678901234567890]]" time="0.001" /><testcase classname="tests.test_quality_performance" name="test_strict_loader_accepts_and_refuses_exactly_like_canonical[{&quot;a&quot;:&quot;\t&quot;}]" time="0.001" /><testcase classname="tests.test_quality_performance" name="test_strict_loader_accepts_and_refuses_exactly_like_canonical[]" time="0.001" /><testcase classname="tests.test_quality_performance" name="test_strict_loader_accepts_and_refuses_exactly_like_canonical[   {}   ]" time="0.001" /><testcase classname="tests.test_quality_performance" name="test_membership_parser_arrays_equal_numpy_scalar_assignment" time="0.116" /><testcase classname="tests.test_quality_performance" name="test_membership_parser_refuses_like_before[&lt;lambda&gt;-ascending]" time="0.001" /><testcase classname="tests.test_quality_performance" name="test_membership_parser_refuses_like_before[&lt;lambda&gt;-repeats]" time="0.001" /><testcase classname="tests.test_quality_performance" name="test_membership_parser_refuses_like_before[&lt;lambda&gt;-schema]" time="0.001" /><testcase classname="tests.test_quality_performance" name="test_membership_parser_refuses_like_before[&lt;lambda&gt;-outside]" time="0.001" /><testcase classname="tests.test_quality_performance" name="test_membership_parser_refuses_like_before[&lt;lambda&gt;-allocation]" time="0.001" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[staging_dir_fsync-recorded:disk]" time="0.584" /><testcase classname="tests.test_quality_hardening" name="test_i03_review_text_is_streamed_under_an_output_ceiling" time="1.389" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[staging_dir_fsync-recorded:deadline]" time="0.998" /><testcase classname="tests.test_quality_performance" name="test_workers_really_execute_chunks_concurrently" time="3.445" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[chunk_zero-producer]" time="0.035" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[staging_dir_fsync-measured:rss]" time="0.960" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[deadline_huge-envelope]" time="0.026" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[deadline_huge-producer]" time="0.026" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[deadline_int_type-envelope]" time="0.026" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[deadline_int_type-producer]" time="0.027" /><testcase classname="tests.test_quality_hardening" name="test_i04_deadline_starts_at_dispatch" time="0.040" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[deadline_negative-envelope]" time="0.021" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[deadline_negative-producer]" time="0.020" /><testcase classname="tests.test_quality_hardening" name="test_i04_publication_gate_withholds_complete" time="1.474" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[deadline_zero-envelope]" time="0.030" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[deadline_zero-producer]" time="0.034" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[document_huge-envelope]" time="0.032" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[document_huge-producer]" time="0.019" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[document_zero-envelope]" time="0.010" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[document_zero-producer]" time="0.032" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[interval_zero-envelope]" time="0.029" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[interval_zero-producer]" time="0.023" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[margin_above_deadline-envelope]" time="0.010" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[margin_above_deadline-producer]" time="0.015" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[margin_negative-envelope]" time="0.026" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[margin_negative-producer]" time="0.015" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[missing_field-envelope]" time="0.023" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[missing_field-producer]" time="0.023" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[output_zero-envelope]" time="0.030" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[output_zero-producer]" time="0.032" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[pending_huge-envelope]" time="0.011" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[pending_huge-producer]" time="0.016" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[pending_zero-envelope]" time="0.031" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[pending_zero-producer]" time="0.014" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[queue_below_workers-envelope]" time="0.015" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[queue_below_workers-producer]" time="0.033" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[queue_grossly_above-envelope]" time="0.034" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[queue_grossly_above-producer]" time="0.023" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[reserve_negative-envelope]" time="0.028" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[reserve_negative-producer]" time="0.062" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[review_huge-envelope]" time="0.027" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[staging_dir_fsync-measured:disk]" time="0.562" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[review_huge-producer]" time="0.010" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[review_zero-envelope]" time="0.022" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[review_zero-producer]" time="0.138" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[rss_huge-envelope]" time="0.022" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[rss_huge-producer]" time="0.022" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[rss_string-envelope]" time="0.019" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[rss_string-producer]" time="0.011" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[rss_zero-envelope]" time="0.010" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[rss_zero-producer]" time="0.010" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[unknown_field-envelope]" time="0.011" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[unknown_field-producer]" time="0.010" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[verify_threads_zero-envelope]" time="0.010" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[verify_threads_zero-producer]" time="0.010" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[workers_above_max-envelope]" time="0.010" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[workers_above_max-producer]" time="0.011" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[workers_bool-envelope]" time="0.014" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[workers_bool-producer]" time="0.009" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[workers_negative-envelope]" time="0.012" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[workers_negative-producer]" time="0.011" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[workers_unsupported-envelope]" time="0.011" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[workers_unsupported-producer]" time="0.010" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[workers_zero-envelope]" time="0.011" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_invalid_envelopes_refuse[workers_zero-producer]" time="0.011" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_nonfinite_values_refuse" time="0.001" /><testcase classname="tests.test_quality_final_repairs" name="test_i10_real_receipt_still_verifies" time="0.339" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[staging_dir_fsync-measured:deadline]" time="0.551" /><testcase classname="tests.test_quality_hardening" name="test_i04_process_tree_rss_ceiling_refuses" time="2.102" /><testcase classname="tests.test_quality_performance" name="test_worker_counts_1_2_4_8_12_produce_identical_artifacts" time="15.070" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[staging_dir_fsync-measured:output]" time="0.563" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[monitor_shutdown-recorded:rss]" time="0.625" /><testcase classname="tests.test_quality_final_repairs" name="test_i11_every_content_digest_mismatch_refuses[same_first_1_byte]" time="1.586" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[monitor_shutdown-recorded:disk]" time="0.642" /><testcase classname="tests.test_quality_final_repairs" name="test_i11_every_content_digest_mismatch_refuses[same_first_8_bytes]" time="0.317" /><testcase classname="tests.test_quality_final_repairs" name="test_i11_every_content_digest_mismatch_refuses[same_first_16_bytes]" time="0.477" /><testcase classname="tests.test_quality_hardening" name="test_i04_report_is_supervised" time="0.778" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[monitor_shutdown-recorded:deadline]" time="0.671" /><testcase classname="tests.test_quality_final_repairs" name="test_i11_every_content_digest_mismatch_refuses[final_bit]" time="0.502" /><testcase classname="tests.test_quality_hardening" name="test_i05_1001_distinct_numeric_values_merge_in_any_order" time="4.149" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[monitor_shutdown-measured:rss]" time="0.565" /><testcase classname="tests.test_quality_final_repairs" name="test_i11_every_content_digest_mismatch_refuses[all]" time="0.300" /><testcase classname="tests.test_quality_final_repairs" name="test_i11_identity_holds_full_digests" time="0.001" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[serialization-recorded:rss]" time="0.779" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[monitor_shutdown-measured:disk]" time="0.942" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[serialization-recorded:disk]" time="1.084" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[monitor_shutdown-measured:deadline]" time="1.082" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[serialization-recorded:deadline]" time="1.049" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[monitor_shutdown-measured:output]" time="0.991" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[serialization-measured:rss]" time="0.881" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[before_rename-recorded:rss]" time="1.135" /><testcase classname="tests.test_quality_hardening" name="test_i06_linear_runs_equal_the_reference_exactly" time="0.311" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[serialization-measured:disk]" time="1.198" /><testcase classname="tests.test_quality_hardening" name="test_i06_caches_are_bounded" time="0.238" /><testcase classname="tests.test_quality_hardening" name="test_i07_no_source_string_reaches_any_output" time="0.914" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[before_rename-recorded:disk]" time="1.586" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[serialization-measured:deadline]" time="1.085" /><testcase classname="tests.test_quality_hardening" name="test_i07_adapter_provenance_maps_to_categories" time="0.089" /><testcase classname="tests.test_quality_hardening" name="test_i08_markup_semantics" time="0.002" /><testcase classname="tests.test_quality_hardening" name="test_i09_ratio_bins_match_printed_edges_exactly" time="0.022" /><testcase classname="tests.test_quality_hardening" name="test_i09_every_candidate_rule_matches_its_impact" time="1.426" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[before_rename-recorded:deadline]" time="0.810" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[serialization-measured:output]" time="0.770" /><testcase classname="tests.test_quality_hardening" name="test_i09_saturated_ratio_cut_is_exactly_one" time="0.190" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[before_rename-measured:rss]" time="0.784" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[staging_write-recorded:rss]" time="1.333" /><testcase classname="tests.test_quality_hardening" name="test_i14_ocr_presence_boundary_is_inclusive" time="0.217" /><testcase classname="tests.test_quality_hardening" name="test_i10_receipt_schema_is_strict[&lt;lambda&gt;0]" time="3.807" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[before_rename-measured:disk]" time="1.582" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[staging_write-recorded:disk]" time="1.692" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[before_rename-measured:deadline]" time="1.619" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[staging_write-recorded:deadline]" time="1.413" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[before_rename-measured:output]" time="1.152" /><testcase classname="tests.test_quality_hardening" name="test_i10_receipt_schema_is_strict[&lt;lambda&gt;1]" time="1.068" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[staging_write-measured:rss]" time="0.639" /><testcase classname="tests.test_quality_performance" name="test_a_slow_head_task_does_not_stall_the_other_workers" time="2.841" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[after_rename-recorded:rss]" time="0.810" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[staging_write-measured:disk]" time="0.836" /><testcase classname="tests.test_quality_hardening" name="test_i10_receipt_schema_is_strict[&lt;lambda&gt;2]" time="0.877" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[after_rename-recorded:disk]" time="0.631" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[staging_write-measured:deadline]" time="0.662" /><testcase classname="tests.test_quality_hardening" name="test_i10_receipt_schema_is_strict[&lt;lambda&gt;3]" time="0.588" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[after_rename-recorded:deadline]" time="0.600" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[staging_write-measured:output]" time="0.675" /><testcase classname="tests.test_quality_hardening" name="test_i10_receipt_schema_is_strict[&lt;lambda&gt;4]" time="0.630" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[after_rename-measured:rss]" time="0.723" /><testcase classname="tests.test_quality_hardening" name="test_i10_receipt_schema_is_strict[&lt;lambda&gt;5]" time="0.552" /><testcase classname="tests.test_quality_audit" name="test_output_byte_ceiling_refuses" time="0.166" /><testcase classname="tests.test_quality_audit" name="test_limits_outside_their_bounds_refuse[change0]" time="0.026" /><testcase classname="tests.test_quality_audit" name="test_limits_outside_their_bounds_refuse[change1]" time="0.034" /><testcase classname="tests.test_quality_audit" name="test_limits_outside_their_bounds_refuse[change2]" time="0.034" /><testcase classname="tests.test_quality_audit" name="test_limits_outside_their_bounds_refuse[change3]" time="0.036" /><testcase classname="tests.test_quality_performance" name="test_twelve_workers_is_an_accepted_operational_setting" time="0.002" /><testcase classname="tests.test_quality_performance" name="test_progress_line_holds_the_operator_fields" time="0.002" /><testcase classname="tests.test_quality_performance" name="test_rates_use_monotonic_windows_and_a_smooth_ewma" time="0.002" /><testcase classname="tests.test_quality_performance" name="test_progress_interval_bounds" time="0.002" /><testcase classname="tests.test_quality_performance" name="test_progress_enabled_goes_to_stderr_and_log_without_text" time="3.011" /><testcase classname="tests.test_quality_hardening" name="test_i10_receipt_schema_is_strict[&lt;lambda&gt;6]" time="0.815" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[after_rename-measured:disk]" time="0.715" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[after_rename-measured:deadline]" time="0.672" /><testcase classname="tests.test_quality_hardening" name="test_i10_receipt_schema_is_strict[&lt;lambda&gt;7]" time="0.657" /><testcase classname="tests.test_quality_audit" name="test_overlay_splits_all_into_kept_and_removed" time="8.535" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_late_failure_never_publishes[after_rename-measured:output]" time="0.575" /><testcase classname="tests.test_quality_hardening" name="test_i10_receipt_schema_is_strict[&lt;lambda&gt;8]" time="0.749" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_protocol_order" time="0.952" /><testcase classname="tests.test_quality_hardening" name="test_i10_receipt_schema_is_strict[&lt;lambda&gt;9]" time="0.556" /><testcase classname="tests.test_quality_hardening" name="test_i10_receipt_self_digest_and_envelope" time="3.668" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_withdrawn_receipt_directory_is_fsynced" time="0.835" /><testcase classname="tests.test_quality_performance" name="test_progress_disabled_writes_nothing_to_stderr_but_keeps_an_explicit_log" time="3.248" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_partial_staging_is_discarded_and_resume_succeeds" time="1.463" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i04_foreign_file_in_staging_refuses" time="0.788" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_pool_breakage_resolves_to_recorded_supervisor_reason[deadline]" time="0.515" /><testcase classname="tests.test_quality_performance" name="test_progress_log_must_stay_outside_output_data_and_inputs" time="0.031" /><testcase classname="tests.test_quality_performance" name="test_resume_reports_the_resume_verification_phase" time="2.764" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_pool_breakage_resolves_to_recorded_supervisor_reason[disk]" time="0.518" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_pool_breakage_resolves_to_recorded_supervisor_reason[rss]" time="0.513" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_pool_breakage_without_reason_is_controlled" time="0.741" /><testcase classname="tests.test_quality_hardening" name="test_i11_signed_wrong_content_digest_refuses" time="1.835" /><testcase classname="tests.test_quality_hardening" name="test_i11_signed_wrong_doc_id_refuses" time="0.315" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_audit_pool_killed_by_supervisor_reports_its_reason[deadline]" time="2.432" /><testcase classname="tests.test_quality_audit" name="test_overlay_refuses_authored_proof_without_explicit_rehearsal_flag" time="2.022" /><testcase classname="tests.test_quality_hardening" name="test_i11_signed_wrong_allocation_refuses" time="0.032" /><testcase classname="tests.test_quality_hardening" name="test_i11_kept_identity_checked_in_the_worker" time="0.007" /><testcase classname="tests.test_quality_hardening" name="test_i12_boilerplate_lines_are_distinct_lines" time="0.001" /><testcase classname="tests.test_quality_hardening" name="test_i13_noncanonical_rows_refuse[&lt;lambda&gt;-strict canonical JSON]" time="0.090" /><testcase classname="tests.test_quality_hardening" name="test_i13_noncanonical_rows_refuse[&lt;lambda&gt;-strict0]" time="0.071" /><testcase classname="tests.test_quality_hardening" name="test_i13_noncanonical_rows_refuse[&lt;lambda&gt;-strict1]" time="0.079" /><testcase classname="tests.test_quality_hardening" name="test_i13_noncanonical_rows_refuse[&lt;lambda&gt;-strict2]" time="0.067" /><testcase classname="tests.test_quality_hardening" name="test_i13_noncanonical_rows_refuse[&lt;lambda&gt;-strict3]" time="0.070" /><testcase classname="tests.test_quality_hardening" name="test_i13_noncanonical_rows_refuse[&lt;lambda&gt;-schema0]" time="0.065" /><testcase classname="tests.test_quality_performance" name="test_status_is_read_only_and_derives_committed_progress" time="0.661" /><testcase classname="tests.test_quality_hardening" name="test_i13_noncanonical_rows_refuse[&lt;lambda&gt;-schema1]" time="0.066" /><testcase classname="tests.test_quality_hardening" name="test_i13_noncanonical_rows_refuse[&lt;lambda&gt;-strict|schema]" time="0.065" /><testcase classname="tests.test_quality_hardening" name="test_i13_noncanonical_rows_refuse[&lt;lambda&gt;-schema2]" time="0.069" /><testcase classname="tests.test_quality_hardening" name="test_i13_oversized_manifest_and_unit_refuse" time="9.140" /><testcase classname="tests.test_quality_performance" name="test_status_discovers_a_running_audit_process_tree" time="3.111" /><testcase classname="tests.test_quality_audit" name="test_overlay_refuses_changed_membership" time="0.113" /><testcase classname="tests.test_quality_audit" name="test_overlay_refuses_a_different_manifest" time="0.028" /><testcase classname="tests.test_quality_audit" name="test_materialize_review_writes_escaped_local_text" time="1.071" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_audit_pool_killed_by_supervisor_reports_its_reason[disk]" time="2.441" /><testcase classname="tests.test_quality_audit" name="test_materialize_review_destination_refusals" time="2.396" /><testcase classname="tests.test_quality_performance" name="test_benchmark_corpus_is_authored_valid_and_reproducible" time="2.422" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_audit_pool_killed_by_supervisor_reports_its_reason[rss]" time="2.434" /><testcase classname="tests.test_quality_audit" name="test_materialize_refuses_any_review_manifest_change[&lt;lambda&gt;0]" time="0.851" /><testcase classname="tests.test_quality_audit" name="test_materialize_refuses_any_review_manifest_change[&lt;lambda&gt;1]" time="1.026" /><testcase classname="tests.test_quality_performance" name="test_projection_arithmetic" time="0.001" /><testcase classname="tests.test_quality_performance" name="test_measure_run_reports_process_cpu_and_activity" time="2.414" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_audit_worker_crash_without_reason_is_controlled" time="3.596" /><testcase classname="tests.test_quality_audit" name="test_materialize_refuses_any_review_manifest_change[&lt;lambda&gt;2]" time="1.410" /><testcase classname="tests.test_quality_audit" name="test_materialize_refuses_any_review_manifest_change[&lt;lambda&gt;3]" time="0.878" /><testcase classname="tests.test_quality_audit" name="test_audit_is_complete_content_free_and_read_only" time="0.553" /><testcase classname="tests.test_quality_audit" name="test_materialize_refuses_any_review_manifest_change[&lt;lambda&gt;4]" time="0.919" /><testcase classname="tests.test_quality_audit" name="test_candidate_policies_are_proposal_only" time="0.679" /><testcase classname="tests.test_quality_hardening" name="test_review_ranks_are_bound_to_the_manifest" time="1.332" /><testcase classname="tests.test_quality_audit" name="test_review_manifest_holds_locators_roles_and_no_text" time="0.597" /><testcase classname="tests.test_quality_audit" name="test_materialize_refuses_any_review_manifest_change[&lt;lambda&gt;5]" time="1.035" /><testcase classname="tests.test_quality_audit" name="test_language_evidence_distinguishes_inherited_from_row_level" time="0.717" /><testcase classname="tests.test_quality_hardening" name="test_aggregates_never_claim_completion" time="0.572" /><testcase classname="tests.test_quality_audit" name="test_materialize_rehashes_selected_sources" time="1.066" /><testcase classname="tests.test_quality_audit" name="test_worker_counts_produce_byte_identical_artifacts" time="7.454" /><testcase classname="tests.test_quality_hardening" name="test_population_merge_order_independence_with_language" time="0.043" /><testcase classname="tests.test_quality_final_repairs" name="test_i04_deadline_failure_during_finalization" time="0.457" /><testcase classname="tests.test_quality_final_repairs" name="test_i04_rss_failure_during_finalization" time="0.460" /><testcase classname="tests.test_quality_audit" name="test_materialize_refuses_unverifiable_receipts" time="0.923" /><testcase classname="tests.test_quality_final_repairs" name="test_i04_fresh_free_space_check_at_finalization" time="0.530" /><testcase classname="tests.test_quality_audit" name="test_cli_audit_report_and_operator_confirmation" time="1.605" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_redigested_receipt_contradiction_refuses[output_1_byte]" time="5.068" /><testcase classname="tests.test_quality_audit" name="test_module_entry_point_spawns_workers" time="3.966" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_redigested_receipt_contradiction_refuses[output_just_below_actual]" time="0.026" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_redigested_receipt_contradiction_refuses[rss_1_byte]" time="0.024" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_redigested_receipt_contradiction_refuses[rss_just_below_peak]" time="0.023" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_redigested_receipt_contradiction_refuses[deadline_below_elapsed]" time="0.023" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_redigested_receipt_contradiction_refuses[document_1_byte]" time="0.027" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_redigested_receipt_contradiction_refuses[document_just_below_largest]" time="0.043" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_redigested_receipt_contradiction_refuses[review_1_per_stratum]" time="0.032" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_redigested_receipt_contradiction_refuses[reserve_above_observed]" time="0.073" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_redigested_receipt_contradiction_refuses[workers_other_setting]" time="0.101" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_redigested_receipt_contradiction_refuses[workers_inline_setting]" time="0.098" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_redigested_receipt_contradiction_refuses[chunk_other]" time="0.084" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_redigested_receipt_contradiction_refuses[verify_threads_other]" time="0.066" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_redigested_receipt_contradiction_refuses[pending_commits_other]" time="0.056" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_redigested_receipt_contradiction_refuses[interval_other]" time="0.049" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_redigested_receipt_contradiction_refuses[margin_other]" time="0.085" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_redigested_receipt_contradiction_refuses[exec_rss_tiny]" time="2.433" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_redigested_receipt_contradiction_refuses[exec_free_inflated]" time="7.497" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_redigested_receipt_contradiction_refuses[exec_rss_above_ceiling]" time="0.029" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_redigested_receipt_contradiction_refuses[exec_elapsed_zero]" time="0.036" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_redigested_receipt_contradiction_refuses[exec_elapsed_above_deadline]" time="0.028" /><testcase classname="tests.test_quality_detectors" name="test_real_html_page_is_full_markup_with_structure_indicators" time="0.002" /><testcase classname="tests.test_quality_detectors" name="test_light_markup_is_not_full_html" time="0.003" /><testcase classname="tests.test_quality_detectors" name="test_templates_and_xml_are_ambiguous_not_html[cpp_templates]" time="0.003" /><testcase classname="tests.test_quality_audit" name="test_chunking_never_changes_measurements" time="1.945" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_redigested_receipt_contradiction_refuses[exec_output_bytes]" time="1.182" /><testcase classname="tests.test_quality_detectors" name="test_templates_and_xml_are_ambiguous_not_html[xml_code]" time="0.002" /><testcase classname="tests.test_quality_detectors" name="test_xml_declaration_is_reported" time="0.003" /><testcase classname="tests.test_quality_detectors" name="test_mathematical_angle_brackets_are_not_markup" time="0.004" /><testcase classname="tests.test_quality_detectors" name="test_cpp_generics_are_code_like" time="0.002" /><testcase classname="tests.test_quality_detectors" name="test_character_spam_records_runs_by_class" time="0.002" /><testcase classname="tests.test_quality_detectors" name="test_markdown_separator_is_measured_but_document_stays_prose" time="0.002" /><testcase classname="tests.test_quality_detectors" name="test_ascii_art_has_no_long_runs_or_duplicate_eligible_lines" time="0.001" /><testcase classname="tests.test_quality_detectors" name="test_repeated_paragraphs_are_counted_on_the_comparison_form" time="0.002" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_redigested_receipt_contradiction_refuses[exec_largest_row_1]" time="1.193" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_redigested_receipt_contradiction_refuses[exec_workers]" time="0.024" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_redigested_receipt_contradiction_refuses[exec_in_flight_above_queue]" time="0.026" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_redigested_receipt_contradiction_refuses[exec_in_flight_zero]" time="0.029" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_redigested_receipt_contradiction_refuses[exec_no_samples]" time="0.037" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_redigested_receipt_contradiction_refuses[exec_files_scanned]" time="0.029" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_redigested_receipt_contradiction_refuses[exec_unknown_field]" time="0.022" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_redigested_receipt_contradiction_refuses[exec_float_as_int]" time="0.024" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_redigested_receipt_contradiction_refuses[both_rss_1]" time="0.029" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_redigested_receipt_contradiction_refuses[both_deadline]" time="0.025" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_redigested_receipt_contradiction_refuses[both_document_1]" time="0.031" /><testcase classname="tests.test_quality_audit" name="test_resume_reuses_committed_units_and_equals_a_clean_run" time="3.349" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_redigested_receipt_contradiction_refuses[both_reserve]" time="0.026" /><testcase classname="tests.test_quality_audit" name="test_manifest_row_count_mismatch_refuses" time="0.198" /><testcase classname="tests.test_quality_audit" name="test_tampered_manifest_digest_refuses" time="0.017" /><testcase classname="tests.test_quality_audit" name="test_row_above_the_document_ceiling_refuses" time="0.074" /><testcase classname="tests.test_quality_audit" name="test_malformed_row_refuses" time="0.100" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_redigested_receipt_contradiction_refuses[exec_largest_row_above_ceiling]" time="0.023" /><testcase classname="tests.test_quality_audit" name="test_output_overlapping_corpus_files_refuses" time="0.026" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_redigested_receipt_contradiction_refuses[exec_free_below_reserve]" time="0.034" /><testcase classname="tests.test_quality_audit" name="test_output_beside_corpus_files_under_the_data_root_is_allowed" time="0.471" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_unit_facts_contradicting_their_producer_refuse[producer_elapsed_above_deadline]" time="0.090" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_unit_facts_contradicting_their_producer_refuse[producer_facts_bool]" time="0.089" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_unit_facts_contradicting_their_producer_refuse[producer_facts_missing]" time="0.088" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_unit_facts_contradicting_their_producer_refuse[producer_free_below_reserve]" time="0.086" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_redigested_receipt_contradiction_refuses[both_output_1]" time="4.750" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_unit_facts_contradicting_their_producer_refuse[producer_rss_above_ceiling]" time="0.082" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_review_strata_rederived_independently" time="0.402" /><testcase classname="tests.test_quality_audit" name="test_incomplete_audit_is_never_a_report" time="0.134" /><testcase classname="tests.test_quality_audit" name="test_source_bytes_differing_from_manifest_refuse" time="0.160" /><testcase classname="tests.test_quality_audit" name="test_declared_byte_count_mismatch_refuses" time="0.070" /><testcase classname="tests.test_quality_audit" name="test_resume_refuses_a_changed_detector_policy" time="0.232" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_unit_facts_contradicting_their_producer_refuse[largest_row_above_producer_ceiling]" time="0.111" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_unit_facts_contradicting_their_producer_refuse[largest_row_below_largest_text]" time="0.090" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_genuine_receipt_binds_measured_facts" time="0.486" /><testcase classname="tests.test_quality_audit" name="test_completed_audit_refuses_rerun_and_report_rederives" time="1.618" /><testcase classname="tests.test_quality_acceptance_fixes" name="test_i10_attack_list_is_complete" time="0.002" /><testcase classname="tests.test_quality_audit" name="test_resume_rehashes_committed_files_and_ignores_mtime" time="0.671" /></testsuite></testsuites>

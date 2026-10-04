@@ -1,4 +1,4 @@
-"""Operator CLI: ``python -m xlm.data.quality {audit,report,materialize-review}``.
+"""Operator CLI: ``python -m xlm.data.quality {audit,report,status,benchmark,materialize-review}``.
 
 stdout carries one final JSON object; progress goes to stderr. Refusals print a
 content-free message (every message in this package is authored, never corpus text).
@@ -32,14 +32,27 @@ def _parser() -> argparse.ArgumentParser:
         action="store_true",
         help="rehearsal only: accept an authored (non-protected) C05 proof",
     )
-    audit.add_argument("--workers", type=int, choices=(1, 2, 4, 8, 16), required=True)
+    audit.add_argument("--workers", type=int, choices=(1, 2, 4, 8, 12, 16), required=True)
     audit.add_argument("--max-rss-gib", type=float, default=12.0)
     audit.add_argument("--free-reserve-gib", type=float, default=8.0)
     audit.add_argument("--max-output-gib", type=float, default=4.0)
     audit.add_argument("--max-document-mib", type=int, default=64)
     audit.add_argument("--deadline-hours", type=float, default=12.0)
-    audit.add_argument("--progress-interval", type=float, default=5.0)
-    audit.add_argument("--no-progress", action="store_true")
+    audit.add_argument(
+        "--progress-interval-seconds",
+        "--progress-interval",
+        dest="progress_interval",
+        type=float,
+        default=5.0,
+        help="stderr progress line period (default 5; operational only)",
+    )
+    audit.add_argument("--no-progress", action="store_true", help="no stderr progress lines")
+    audit.add_argument(
+        "--progress-log",
+        type=Path,
+        default=None,
+        help="also append progress lines here (outside --output, the data root and inputs)",
+    )
 
     report = commands.add_parser(
         "report", help="validate the receipt, re-hash sources, re-derive every artifact"
@@ -49,9 +62,31 @@ def _parser() -> argparse.ArgumentParser:
     report.add_argument("--data-root", type=Path, default=None)
     report.add_argument("--c05-proof", type=Path, default=None)
     report.add_argument("--allow-authored-proof", action="store_true")
-    report.add_argument("--workers", type=int, choices=(1, 2, 4, 8, 16), default=4)
+    report.add_argument("--workers", type=int, choices=(1, 2, 4, 8, 12, 16), default=4)
     report.add_argument("--max-rss-gib", type=float, default=8.0)
     report.add_argument("--deadline-hours", type=float, default=6.0)
+
+    status = commands.add_parser(
+        "status", help="READ-ONLY progress of an audit output (safe while it runs)"
+    )
+    status.add_argument("--manifest", type=Path, required=True)
+    status.add_argument("--output", type=Path, required=True)
+    status.add_argument("--data-root", type=Path, default=None)
+    status.add_argument("--progress-log", type=Path, default=None, help="read its last line")
+    status.add_argument("--watch", action="store_true", help="repeat until COMPLETE")
+    status.add_argument("--interval-seconds", type=float, default=10.0)
+    status.add_argument("--max-watch-hours", type=float, default=24.0)
+    status.add_argument("--no-process", action="store_true", help="skip process discovery")
+
+    bench = commands.add_parser(
+        "benchmark",
+        help="bounded AUTHORED-data throughput benchmark of the production audit path",
+    )
+    bench.add_argument("--scratch", type=Path, required=True, help="NEW empty directory")
+    bench.add_argument("--corpus-mib", type=int, default=768)
+    bench.add_argument("--workers", type=int, nargs="+", choices=(1, 2, 4, 8, 12, 16), default=None)
+    bench.add_argument("--budget-seconds", type=float, default=300.0)
+    bench.add_argument("--keep", action="store_true", help="keep the generated corpus")
 
     review = commands.add_parser(
         "materialize-review",
@@ -77,6 +112,7 @@ def _parser() -> argparse.ArgumentParser:
 
 
 def _audit(args: argparse.Namespace, started: float) -> dict[str, Any]:
+    from xlm.data.quality.progress import check_interval
     from xlm.data.quality.runner import Limits, run_audit
 
     limits = Limits(
@@ -94,7 +130,8 @@ def _audit(args: argparse.Namespace, started: float) -> dict[str, Any]:
         data_root=args.data_root,
         proof=args.c05_proof,
         allow_authored_proof=args.allow_authored_proof,
-        progress_interval=None if args.no_progress else args.progress_interval,
+        progress_interval=None if args.no_progress else check_interval(args.progress_interval),
+        progress_log=args.progress_log,
         started=started,
     )
 
@@ -112,6 +149,38 @@ def _report(args: argparse.Namespace, started: float) -> dict[str, Any]:
         max_rss_bytes=int(args.max_rss_gib * GIB),
         deadline_seconds=args.deadline_hours * 3600,
         started=started,
+    )
+
+
+def _status(args: argparse.Namespace, started: float) -> dict[str, Any]:
+    from xlm.data.quality.status import audit_status, status_line, watch
+
+    def produce() -> dict[str, Any]:
+        return audit_status(
+            args.manifest,
+            args.output,
+            data_root=args.data_root,
+            progress_log=args.progress_log,
+            processes=not args.no_process,
+        )
+
+    if args.watch:
+        return watch(produce, args.interval_seconds, args.max_watch_hours * 3600)
+    state = produce()
+    print(status_line(state), file=sys.stderr, flush=True)
+    return state
+
+
+def _benchmark(args: argparse.Namespace, started: float) -> dict[str, Any]:
+    from xlm.data.quality.bench import run_benchmark
+
+    return run_benchmark(
+        args.scratch,
+        corpus_mib=args.corpus_mib,
+        workers=args.workers,
+        budget_seconds=args.budget_seconds,
+        keep=args.keep,
+        log=lambda line: print(f"[quality-bench] {line}", file=sys.stderr, flush=True),
     )
 
 
@@ -150,14 +219,21 @@ def main(argv: list[str] | None = None) -> int:
     started = time.monotonic()  # the whole-command deadline starts at dispatch
     from xlm.data.quality.aggregate import AggregateError
     from xlm.data.quality.overlay import OverlayError
+    from xlm.data.quality.progress import ProgressError
     from xlm.data.quality.review import ReviewError
     from xlm.data.quality.scan import QualityError
 
     args = _parser().parse_args(argv)
-    handlers = {"audit": _audit, "report": _report, "materialize-review": _materialize}
+    handlers = {
+        "audit": _audit,
+        "report": _report,
+        "status": _status,
+        "benchmark": _benchmark,
+        "materialize-review": _materialize,
+    }
     try:
         result = handlers[args.command](args, started)
-    except (QualityError, OverlayError, ReviewError, AggregateError) as exc:
+    except (QualityError, OverlayError, ReviewError, AggregateError, ProgressError) as exc:
         print(json.dumps({"refused": True, "error": str(exc)}))
         return 1
     except (OSError, ValueError, KeyError, TypeError) as exc:

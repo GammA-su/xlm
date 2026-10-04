@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, ConfigDict, StrictFloat, StrictInt, model_validator
 
-WORKER_CHOICES = (1, 2, 4, 8, 16)
+WORKER_CHOICES = (1, 2, 4, 8, 12, 16)
 MAX_RSS_BYTES = 16 * 1024**3
 MAX_DEADLINE_SECONDS = 7 * 86400.0
 MAX_DOCUMENT_BYTES = 256 * 1024**2
@@ -61,7 +61,7 @@ class OperationalEnvelope(BaseModel):
             if not condition:
                 raise ValueError(f"envelope {what}")
 
-        need(self.workers in WORKER_CHOICES, "workers must be 1, 2, 4, 8 or 16")
+        need(self.workers in WORKER_CHOICES, "workers must be 1, 2, 4, 8, 12 or 16")
         expected_queue = QUEUE_FACTOR * self.workers if self.workers > 1 else 1
         need(self.queue_tasks >= self.workers, "queue must hold at least one task per worker")
         need(self.queue_tasks == expected_queue, "queue must equal the implementation bound")

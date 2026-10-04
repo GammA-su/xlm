@@ -1,0 +1,4 @@
+# overlay arrays: c517fe0 load_overlay vs new MembershipParser on 200,000 authored membership rows
+arrays identical: True arrays: 20
+binding identical: True
+old: 22.6 us/row (4.53 s); new: 13.9 us/row (2.79 s) on this container

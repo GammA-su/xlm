@@ -20,14 +20,27 @@ from __future__ import annotations
 import hashlib
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import numpy.typing as npt
 
+from xlm.data.quality.strictjson import loads_strict_bytes
+
+if TYPE_CHECKING:
+    from xlm.data.quality.progress import Telemetry
+
 MEMBERSHIP_CHUNK = 16 * 1024**2
 # Full digests only: no prefix or truncated digest can authorize an identity.
 IDENTITY = np.dtype([("doc", "u1", (32,)), ("content", "u1", (32,)), ("bytes", "<u8")])
+IDENTITY_SIZE = 72
+_OFFSETS = (
+    [int(IDENTITY.fields[name][1]) for name in ("doc", "content", "bytes")]
+    if IDENTITY.fields
+    else []
+)
+if IDENTITY.itemsize != IDENTITY_SIZE or _OFFSETS != [0, 32, 64]:
+    raise RuntimeError("IDENTITY record layout is not the packed 32+32+8 byte layout")
 HEX = frozenset("0123456789abcdef")
 
 
@@ -50,6 +63,100 @@ class KeptOverlay:
         return self.kept[path]
 
 
+class MembershipParser:
+    """Strict per-row parsing of the authenticated kept membership, in stream order.
+
+    Rows are written into zero-filled byte buffers laid out exactly as the final arrays
+    (``IDENTITY`` is a packed 72-byte record; ``bool_`` is one 0/1 byte) and viewed as
+    those arrays without a copy at the end: per-row slice writes instead of numpy scalar
+    assignments, identical array contents. No parsed value may be used before the
+    caller has authenticated the whole stream.
+    """
+
+    def __init__(
+        self, plan_files: dict[str, Any], documents: dict[str, int], expected_rows: int
+    ) -> None:
+        from xlm.data.exclusion.fitscan import MEMBERSHIP_KEYS, SPLIT_CODES
+        from xlm.data.exclusion.selection import allocation_key
+
+        self.keys = MEMBERSHIP_KEYS
+        self.splits = SPLIT_CODES
+        self.plan_files = plan_files
+        self.expected_rows = expected_rows
+        self.kept_bytes = {path: bytearray(count) for path, count in documents.items()}
+        self.identity_bytes = {
+            path: bytearray(count * IDENTITY_SIZE) for path, count in documents.items()
+        }
+        self.allocations = {
+            p: allocation_key(f.component, f.view, f.upstream_component)
+            for p, f in plan_files.items()
+        }
+        self.kept_by_allocation: dict[str, int] = {}
+        self.train_bytes: dict[str, int] = {}
+        self.kept_by_split = dict.fromkeys(SPLIT_CODES, 0)
+        self.rows = 0
+        self.previous: bytes | None = None
+
+    def stage(self, line: bytes) -> None:
+        try:
+            row = loads_strict_bytes(line)
+        except ValueError:
+            raise OverlayError("C05 membership row is not strict JSON") from None
+        if type(row) is not dict or row.keys() != self.keys or row["decision"] != "kept":
+            raise OverlayError("C05 membership row schema")
+        doc_id, path, number, nbytes = row["doc_id"], row["file"], row["row"], row["bytes"]
+        content, split = row["content"], row["split"]
+        if (
+            type(doc_id) is not str
+            or not doc_id
+            or type(path) is not str
+            or type(number) is not int
+            or type(nbytes) is not int
+            or nbytes < 0
+            or split not in self.splits
+            or type(content) is not str
+            or len(content) != 64
+            or not HEX.issuperset(content)
+        ):
+            raise OverlayError("C05 membership row schema")
+        item = self.plan_files.get(path)
+        if item is None or not 1 <= number <= item.documents:
+            raise OverlayError("C05 membership row outside its plan file")
+        if (row["component"], row["view"], row["upstream_component"], row["source_id"]) != (
+            item.component,
+            item.view,
+            item.upstream_component,
+            item.source_id,
+        ):
+            raise OverlayError("C05 membership row allocation differs from its plan file")
+        raw = doc_id.encode("utf-8", "surrogatepass")
+        if self.previous is not None and raw <= self.previous:
+            raise OverlayError("C05 membership is not in strictly ascending document id order")
+        self.previous = raw
+        bitmap = self.kept_bytes[path]
+        if bitmap[number - 1]:
+            raise OverlayError("C05 membership repeats a source location")
+        bitmap[number - 1] = 1
+        offset = (number - 1) * IDENTITY_SIZE
+        record = doc_digest(doc_id) + bytes.fromhex(content) + nbytes.to_bytes(8, "little")
+        self.identity_bytes[path][offset : offset + IDENTITY_SIZE] = record
+        key = self.allocations[path]
+        self.kept_by_allocation[key] = self.kept_by_allocation.get(key, 0) + 1
+        if split == "train":
+            self.train_bytes[key] = self.train_bytes.get(key, 0) + nbytes
+        self.kept_by_split[split] += 1
+        self.rows += 1
+        if self.rows > self.expected_rows:
+            raise OverlayError("C05 membership count disagrees with its completion")
+
+    def arrays(
+        self,
+    ) -> tuple[dict[str, npt.NDArray[np.bool_]], dict[str, npt.NDArray[Any]]]:
+        kept = {p: np.frombuffer(b, dtype=np.bool_) for p, b in self.kept_bytes.items()}
+        identity = {p: np.frombuffer(b, dtype=IDENTITY) for p, b in self.identity_bytes.items()}
+        return kept, identity
+
+
 def load_overlay(
     proof: Path,
     *,
@@ -58,13 +165,11 @@ def load_overlay(
     allow_authored: bool,
     consumes: list[Path | str],
     check: Any = None,
+    telemetry: Telemetry | None = None,
 ) -> KeptOverlay:
     """Authenticated per-file kept bitmaps and identities (row ``r`` is index ``r - 1``)."""
-    from xlm.data.evidence_v2 import canonical
     from xlm.data.exclusion.fitfast import open_streamed
-    from xlm.data.exclusion.fitscan import MEMBERSHIP_KEYS, SPLIT_CODES
     from xlm.data.exclusion.policy import C05Error
-    from xlm.data.exclusion.selection import allocation_key
 
     try:
         view = open_streamed(proof, allow_authored=allow_authored, consumes=consumes)
@@ -79,74 +184,15 @@ def load_overlay(
     expected_bytes = int(completion["membership_bytes"])
     expected_rows = int(completion["kept"])
     ceiling = int(view.plan.resources.document_bytes)
-    kept = {path: np.zeros(count, dtype=np.bool_) for path, count in documents.items()}
-    identity = {path: np.zeros(count, dtype=IDENTITY) for path, count in documents.items()}
-    allocations = {
-        p: allocation_key(f.component, f.view, f.upstream_component) for p, f in plan_files.items()
-    }
-    kept_by_allocation: dict[str, int] = {}
-    train_bytes: dict[str, int] = {}
-    kept_by_split = dict.fromkeys(SPLIT_CODES, 0)
+    parser = MembershipParser(plan_files, documents, expected_rows)
     digest = hashlib.sha256()
-    size = rows = 0
+    size = 0
     pending = b""
-    previous: bytes | None = None
-
-    def stage(line: bytes) -> None:
-        nonlocal previous, rows
-        try:
-            row = canonical.loads_bytes_strict(line)
-        except ValueError:
-            raise OverlayError("C05 membership row is not strict JSON") from None
-        if type(row) is not dict or row.keys() != MEMBERSHIP_KEYS or row["decision"] != "kept":
-            raise OverlayError("C05 membership row schema")
-        doc_id, path, number, nbytes = row["doc_id"], row["file"], row["row"], row["bytes"]
-        content, split = row["content"], row["split"]
-        if (
-            type(doc_id) is not str
-            or not doc_id
-            or type(path) is not str
-            or type(number) is not int
-            or type(nbytes) is not int
-            or nbytes < 0
-            or split not in SPLIT_CODES
-            or type(content) is not str
-            or len(content) != 64
-            or not HEX.issuperset(content)
-        ):
-            raise OverlayError("C05 membership row schema")
-        item = plan_files.get(path)
-        if item is None or not 1 <= number <= item.documents:
-            raise OverlayError("C05 membership row outside its plan file")
-        if (row["component"], row["view"], row["upstream_component"], row["source_id"]) != (
-            item.component,
-            item.view,
-            item.upstream_component,
-            item.source_id,
-        ):
-            raise OverlayError("C05 membership row allocation differs from its plan file")
-        raw = doc_id.encode("utf-8", "surrogatepass")
-        if previous is not None and raw <= previous:
-            raise OverlayError("C05 membership is not in strictly ascending document id order")
-        previous = raw
-        bitmap = kept[path]
-        if bitmap[number - 1]:
-            raise OverlayError("C05 membership repeats a source location")
-        bitmap[number - 1] = True
-        table = identity[path]
-        table["doc"][number - 1] = np.frombuffer(doc_digest(doc_id), dtype=np.uint8)
-        table["content"][number - 1] = np.frombuffer(bytes.fromhex(content), dtype=np.uint8)
-        table["bytes"][number - 1] = nbytes
-        key = allocations[path]
-        kept_by_allocation[key] = kept_by_allocation.get(key, 0) + 1
-        if split == "train":
-            train_bytes[key] = train_bytes.get(key, 0) + nbytes
-        kept_by_split[split] += 1
-        rows += 1
-        if rows > expected_rows:
-            raise OverlayError("C05 membership count disagrees with its completion")
+    stage = parser.stage
 
     membership = view.directory / "membership.jsonl"
+    if telemetry is not None:
+        telemetry.set_phase("overlay", expected_bytes, "bytes")
     with membership.open("rb", buffering=0) as stream:
         while block := stream.read(min(MEMBERSHIP_CHUNK, expected_bytes - size + 1)):
             if check is not None:
@@ -162,14 +208,23 @@ def load_overlay(
                 raise OverlayError("C05 membership record ceiling")
             for line in data[:cut].split(b"\n")[:-1]:
                 stage(line)
+            if telemetry is not None:
+                telemetry.advance(len(block))
     if pending:
         stage(pending)
     # Authenticate before any parsed value is used.
     if size != expected_bytes or digest.hexdigest() != completion["membership_sha256"]:
         raise OverlayError("C05 membership changed")
-    if rows != expected_rows:
+    if parser.rows != expected_rows:
         raise OverlayError("C05 membership count disagrees with its completion")
-    _reconcile(completion, plan_files, allocations, kept_by_allocation, train_bytes)
+    _reconcile(
+        completion,
+        plan_files,
+        parser.allocations,
+        parser.kept_by_allocation,
+        parser.train_bytes,
+    )
+    kept, identity = parser.arrays()
     forbidden: list[str] = [str(view.plan.scratch_root)]
     if view.plan.isolation is not None:
         forbidden.append(str(view.plan.isolation.protected_root.path))
@@ -180,7 +235,7 @@ def load_overlay(
             "completion_digest": view.receipt_digest,
             "membership_sha256": completion["membership_sha256"],
             "kept": expected_rows,
-            "kept_by_split": kept_by_split,
+            "kept_by_split": parser.kept_by_split,
             "mode": view.mode,
             "identity_verification": (
                 "per kept row: full doc_id SHA-256, full 32-byte C05 content digest, bytes"

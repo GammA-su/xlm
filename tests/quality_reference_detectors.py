@@ -1,22 +1,11 @@
-"""Per-document quality measurements (pure, bounded, content-free outputs).
+"""FROZEN reference oracle: the detector implementation of accepted commit c517fe0.
 
-:func:`analyze` returns numbers, flag indices and one interpretation class. It never
-returns or retains document text. Every detector is a heuristic measurement; none
-is a decision. Comparison representations (stripped / whitespace-collapsed lines and
-paragraphs, whitespace word units) exist only inside this function and never alter
-the source text.
-
-Bounds: n-gram and lexical statistics read at most ``NGRAM_MAX_WORDS`` words and the
-compression estimate at most ``COMPRESSION_MAX_BYTES``; when a bound applies the
-``truncated_analysis`` flag is set. Everything else is linear in the document.
-
-Evaluation strategy is not policy: several measurements are computed by exactly
-equivalent, cheaper procedures than a literal reading of their definition (per-line
-evaluation of the line-anchored page-number pattern, a line-pair scan for the
-non-overlapping soft-break pattern, collision-free packed-integer n-gram counting, a
-cached whitespace-collapsed line form). ``tests/quality_reference_detectors.py`` holds
-the frozen literal implementation; tests prove the results identical.
+Copied verbatim (below this docstring) so optimized detectors can be proven exactly
+equivalent. Never edit; never import from production code.
 """
+
+# ruff: noqa
+# mypy: ignore-errors
 
 from __future__ import annotations
 
@@ -25,7 +14,6 @@ import unicodedata
 import zlib
 from bisect import bisect_right
 from collections import Counter
-from itertools import count, islice
 from operator import itemgetter
 from typing import Any
 
@@ -447,45 +435,6 @@ def char_counts(text: str, codes: np.ndarray | None = None) -> dict[str, int]:
     return {chr(code): n for code, n in zip(values, numbers, strict=True)}
 
 
-CLASS_BITS = (ALPHA, DIGIT, SPACE, PUNCT, SYMBOL, NONASCII, MATH) + (
-    NUL,
-    C0,
-    C1,
-    FFFD,
-    ZW,
-    ZWJ,
-    BOM,
-    BIDI,
-    PUA,
-    NONCHAR,
-    SURR,
-)
-MOJIBAKE_LEAD_CODES = tuple(sorted(ord(ch) for ch in MOJIBAKE_LEADS))
-_DENSE_BITS: list[np.ndarray] = []  # per process: the char_mask bits of every dense code
-
-
-def _dense_bits() -> np.ndarray:
-    """``(DENSE_CODE_LIMIT, len(CLASS_BITS))`` 0/1 matrix of :func:`char_mask` bits."""
-    if not _DENSE_BITS:
-        masks = np.array([char_mask(chr(c)) for c in range(DENSE_CODE_LIMIT)], dtype=np.int64)
-        bits = np.array(CLASS_BITS, dtype=np.int64)
-        _DENSE_BITS.append(((masks[:, None] & bits[None, :]) != 0).astype(np.int64))
-    return _DENSE_BITS[0]
-
-
-def dense_class_totals(codes: np.ndarray) -> tuple[int, dict[int, int], bool]:
-    """(distinct code points, class totals, any mojibake lead) for a non-empty text
-    whose code points are all below ``DENSE_CODE_LIMIT``: the same per-code-point
-    :func:`char_mask` classes summed with one integer matrix product."""
-    dense = np.bincount(codes)
-    present = np.flatnonzero(dense)
-    sums = (dense[present] @ _dense_bits()[present]).tolist()
-    totals = dict(zip(CLASS_BITS, sums, strict=True))
-    size = int(dense.shape[0])
-    lead = any(code < size and dense[code] for code in MOJIBAKE_LEAD_CODES)
-    return int(present.shape[0]), totals, lead
-
-
 def _run_class(mask: int) -> str:
     if mask & SPACE:
         return "space"
@@ -505,24 +454,24 @@ def analyze(text: str, utf8_bytes: int) -> Analysis:
     v[M["chars"]] = chars
 
     # Character classes: one vectorized count, then per distinct code point.
+    by_mask: dict[int, int] = {}
     codes = code_points(text)
-    if chars and int(codes.max()) < DENSE_CODE_LIMIT:
-        unique, totals, mojibake_lead = dense_class_totals(codes)
-    else:
-        by_mask: dict[int, int] = {}
-        counts = char_counts(text, codes)
-        unique = len(counts)
-        for ch, n in counts.items():
-            mask = _CLASS_CACHE.get(ch)
-            if mask is None:
-                mask = char_mask(ch)
-            by_mask[mask] = by_mask.get(mask, 0) + n
-        totals = dict.fromkeys(CLASS_BITS, 0)
-        for mask, n in by_mask.items():
-            for bit in totals:
-                if mask & bit:
-                    totals[bit] += n
-        mojibake_lead = not MOJIBAKE_LEADS.isdisjoint(counts)
+    counts = char_counts(text, codes)
+    unique = len(counts)
+    for ch, n in counts.items():
+        mask = _CLASS_CACHE.get(ch)
+        if mask is None:
+            mask = char_mask(ch)
+        by_mask[mask] = by_mask.get(mask, 0) + n
+    totals = dict.fromkeys(
+        (ALPHA, DIGIT, SPACE, PUNCT, SYMBOL, NONASCII, MATH)
+        + (NUL, C0, C1, FFFD, ZW, ZWJ, BOM, BIDI, PUA, NONCHAR, SURR),
+        0,
+    )
+    for mask, n in by_mask.items():
+        for bit in totals:
+            if mask & bit:
+                totals[bit] += n
     v[M["unique_chars"]] = unique
     for name, bit in (
         ("nul", NUL),
@@ -619,13 +568,8 @@ def analyze(text: str, utf8_bytes: int) -> Analysis:
     else:
         code_lines = 0
 
-    # Exact duplicate lines on a whitespace-collapsed comparison form. Collapsing never
-    # lengthens a line, so lines already shorter than the minimum are never collapsed.
-    eligible = [
-        c
-        for c in (collapse(s) for s in stripped if len(s) >= MIN_LINE_CHARS)
-        if len(c) >= MIN_LINE_CHARS
-    ]
+    # Exact duplicate lines on a whitespace-collapsed comparison form.
+    eligible = [c for c in (" ".join(s.split()) for s in stripped) if len(c) >= MIN_LINE_CHARS]
     line_counts = Counter(eligible)
     if eligible:
         v[M["dup_lines"]] = len(eligible) - len(line_counts)
@@ -657,11 +601,7 @@ def analyze(text: str, utf8_bytes: int) -> Analysis:
     if "\n" in text:
         paragraphs = [
             c
-            for c in (
-                collapse(p.strip())
-                for p in PARAGRAPH_RE.split(text)
-                if len(p) >= MIN_PARAGRAPH_CHARS  # collapsing never lengthens a paragraph
-            )
+            for c in (" ".join(p.split()) for p in PARAGRAPH_RE.split(text))
             if len(c) >= MIN_PARAGRAPH_CHARS
         ]
     else:
@@ -799,15 +739,17 @@ def analyze(text: str, utf8_bytes: int) -> Analysis:
 
     # OCR / PDF layout.
     if nonempty:
-        v[M["page_number_line_ratio"]] = page_number_lines(lines) / nonempty
+        v[M["page_number_line_ratio"]] = sum(1 for _ in PAGE_NUMBER_RE.finditer(text)) / nonempty
         hyphen = sum(1 for _ in HYPHEN_BREAK_RE.finditer(text)) if "-\n" in text else 0
         v[M["hyphen_break_ratio"]] = min(1.0, hyphen / nonempty)
     newlines = text.count("\n")
-    v[M["soft_break_ratio"]] = soft_breaks(lines) / newlines if newlines else 0.0
+    v[M["soft_break_ratio"]] = (
+        sum(1 for _ in SOFT_BREAK_RE.finditer(text)) / newlines if newlines else 0.0
+    )
 
     # Encoding damage (conservative sequences only).
     mojibake = 0
-    if totals[NONASCII] and mojibake_lead:
+    if totals[NONASCII] and not MOJIBAKE_LEADS.isdisjoint(counts):
         mojibake = sum(1 for _ in MOJIBAKE_RE.finditer(text))
     v[M["mojibake_hits"]] = mojibake
 
@@ -815,19 +757,21 @@ def analyze(text: str, utf8_bytes: int) -> Analysis:
     truncated = word_count > NGRAM_MAX_WORDS
     analysed = words[:NGRAM_MAX_WORDS] if truncated else words
     total = len(analysed)
-    distinct, five, ten, top = ngram_counts(analysed)
     if total:
+        distinct = len(set(analysed))
         v[M["distinct_words"]] = distinct
         v[M["type_token_ratio"]] = distinct / total
     else:
         v[M["distinct_words"]] = 0
     if total >= 5:
         positions = total - 4
-        v[M["ngram5_excess_ratio"]] = (positions - five) / positions
+        five = set(zip(*(analysed[k:] for k in range(5)), strict=False))
+        v[M["ngram5_excess_ratio"]] = (positions - len(five)) / positions
     if total >= 10:
         positions = total - 9
-        v[M["ngram10_excess_ratio"]] = (positions - ten) / positions
-        v[M["ngram10_top_share"]] = top / positions
+        ten = Counter(zip(*(analysed[k:] for k in range(10)), strict=False))
+        v[M["ngram10_excess_ratio"]] = (positions - len(ten)) / positions
+        v[M["ngram10_top_share"]] = max(ten.values()) / positions
     if utf8_bytes >= COMPRESSION_MIN_BYTES:
         raw = text.encode("utf-8")
         if len(raw) > COMPRESSION_MAX_BYTES:
@@ -860,32 +804,10 @@ def maximal_runs(codes: np.ndarray, minimum: int) -> tuple[np.ndarray, np.ndarra
     return codes[starts[long]], lengths[long].astype(np.int64)
 
 
-def has_run(codes: np.ndarray, minimum: int) -> bool:
-    """Whether any maximal same-code-point run reaches ``minimum`` (``minimum >= 2``).
-
-    A run of length >= m starting at i means ``m - 1`` consecutive equal neighbours;
-    window conjunctions of doubling span answer that in a few vectorized passes.
-    """
-    if int(codes.shape[0]) < minimum:
-        return False
-    need = minimum - 1
-    window = codes[1:] == codes[:-1]  # window[i]: codes[i] == codes[i + 1]
-    span = 1
-    while span * 2 <= need:  # window[i]: equal neighbours over i .. i + span - 1
-        window = window[:-span] & window[span:]
-        span *= 2
-    if span < need:
-        window = window[: -(need - span)] & window[need - span :]
-    return bool(window.any())
-
-
 def _runs(text: str, codes: np.ndarray, v: list[float | int | None]) -> None:
     """Same-character runs >= RUN_MIN by class, from one linear pass over ``codes``."""
     best = {"space": 0, "punct": 0, "alnum": 0, "other": 0}
-    if has_run(codes, RUN_MIN):
-        run_codes, lengths = maximal_runs(codes, RUN_MIN)
-    else:  # the common case: no run at all (identical to an empty maximal_runs result)
-        run_codes, lengths = EMPTY_CODES, np.zeros(0, dtype=np.int64)
+    run_codes, lengths = maximal_runs(codes, RUN_MIN)
     covered = int(lengths.sum())
     for code, length in zip(run_codes.tolist(), lengths.tolist(), strict=True):
         ch = chr(code)
@@ -901,111 +823,6 @@ def _runs(text: str, codes: np.ndarray, v: list[float | int | None]) -> None:
     v[M["max_alnum_run"]] = best["alnum"]
     v[M["max_other_run"]] = best["other"]
     v[M["repeated_char_ratio"]] = covered / len(text) if text else None
-
-
-def collapse(stripped: str) -> str:
-    """``" ".join(stripped.split())`` for an already stripped string.
-
-    Every character ``str.split`` treats as whitespace except U+0020 is non-printable
-    (Unicode Other/Separator), so a printable stripped string without a double space
-    holds only single spaces between non-space characters and is its own collapsed
-    form (``tests`` re-check this property over every code point).
-    """
-    if stripped.isprintable() and "  " not in stripped:
-        return stripped
-    return " ".join(stripped.split())
-
-
-SOFT_BEFORE = frozenset("abcdefghijklmnopqrstuvwxyz,;")
-SOFT_AFTER = frozenset("abcdefghijklmnopqrstuvwxyz")
-
-
-def page_number_lines(lines: list[str]) -> int:
-    """``len(PAGE_NUMBER_RE.findall(text))`` evaluated line by line.
-
-    Both alternatives are anchored by ``^`` and ``$`` (MULTILINE) and contain no
-    newline, so every match is exactly one whole ``\\n``-separated line and each line
-    holds at most one; ``lines`` is ``text.split("\\n")`` (a trailing empty segment,
-    which cannot match, may be dropped).
-    """
-    return len(list(filter(None, map(PAGE_NUMBER_RE.match, lines))))
-
-
-def soft_breaks(lines: list[str]) -> int:
-    """``len(SOFT_BREAK_RE.findall(text))`` from adjacent ``\\n``-separated lines.
-
-    A match is ``[a-z,;]`` ending line k, the newline, ``[a-z]`` starting line k+1.
-    Leftmost non-overlapping scanning only rejects a candidate when the previous match
-    already consumed its first character: the previous newline matched and line k is a
-    single character. ``lines`` is ``text.split("\\n")`` (a trailing empty segment may
-    be dropped: it can never start a match).
-    """
-    found = 0
-    taken = False
-    previous = lines[0] if lines else ""
-    for line in islice(lines, 1, None):
-        if taken and len(previous) == 1:
-            taken = False
-        else:
-            taken = bool(
-                previous and line and previous[-1] in SOFT_BEFORE and line[0] in SOFT_AFTER
-            )
-            found += taken
-        previous = line
-    return found
-
-
-NGRAM_VECTOR_MIN_WORDS = 48
-INT64_LIMIT = 2**63
-if NGRAM_MAX_WORDS**3 >= INT64_LIMIT:  # the packed fallback needs base**3 < 2**63
-    raise RuntimeError("NGRAM_MAX_WORDS too large for exact packed n-gram counting")
-
-
-def _dense(keys: np.ndarray) -> tuple[np.ndarray, int]:
-    """Exact dense rank of every key (equal keys share a rank) and the distinct count."""
-    ordered = np.sort(keys)
-    fresh = np.empty(ordered.shape, dtype=np.bool_)
-    fresh[:1] = True
-    np.not_equal(ordered[1:], ordered[:-1], out=fresh[1:])
-    distinct = ordered[fresh]
-    return np.searchsorted(distinct, keys), int(distinct.shape[0])
-
-
-def ngram_counts(words: list[str]) -> tuple[int, int, int, int]:
-    """(distinct words, distinct 5-grams, distinct 10-grams, top 10-gram count).
-
-    Counts that do not apply (fewer than 5 or 10 words) are 0. Short inputs use word
-    tuples. Longer inputs label words by first-seen order (labels < n), pack each
-    5-gram injectively into one int64 (base n; for n**5 >= 2**63 the leading 3-gram
-    is first replaced by its exact dense rank) and each 10-gram as the exact pair of
-    its two 5-gram ranks: no hashing, no collisions, identical counts.
-    """
-    total = len(words)
-    if total < NGRAM_VECTOR_MIN_WORDS:
-        distinct = len(set(words))
-        five = len(set(zip(*(words[k:] for k in range(5)), strict=False))) if total >= 5 else 0
-        ten = top = 0
-        if total >= 10:
-            grams = Counter(zip(*(words[k:] for k in range(10)), strict=False))
-            ten, top = len(grams), max(grams.values())
-        return distinct, five, ten, top
-    index: dict[str, int] = {}
-    ids = np.fromiter(map(index.setdefault, words, count()), dtype=np.int64, count=total)
-    base = total
-    if base**5 < INT64_LIMIT:
-        packed = (((ids[:-4] * base + ids[1:-3]) * base + ids[2:-2]) * base + ids[3:-1]) * base
-        packed += ids[4:]
-    else:  # base <= NGRAM_MAX_WORDS, so base**3 < 2**63
-        lead, _ = _dense((ids[:-2] * base + ids[1:-1]) * base + ids[2:])
-        packed = (lead[:-2] * base + ids[3:-1]) * base + ids[4:]
-    rank5, five = _dense(packed)
-    grams = np.sort(rank5[:-5] * five + rank5[5:])
-    fresh = np.empty(grams.shape, dtype=np.bool_)
-    fresh[:1] = True
-    np.not_equal(grams[1:], grams[:-1], out=fresh[1:])
-    starts = np.flatnonzero(fresh)
-    runs = np.diff(starts, append=grams.shape[0])
-    return len(index), five, int(starts.shape[0]), int(runs.max())
 
 
 def _line_starts(lines: list[str]) -> list[int]:

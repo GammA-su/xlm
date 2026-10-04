@@ -45,18 +45,36 @@ Keep it unchanged.
 ## Commands
 
 The CLI is `python -m xlm.data.quality`. Stdout carries one JSON result; progress
-lines go to stderr and start with `[QUALITY]`. Every command is supervised from
+lines go to stderr and start with `[quality-audit]`. Every command is supervised from
 dispatch: absolute deadline, whole process-tree RSS and free-space reserve.
+
+**Before the real audit, benchmark this machine (about 2-4 minutes, authored data
+only, nothing read from `G:`)** and use its recommended `--workers`:
+
+```powershell
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.quality benchmark --scratch C:/XLM-bench/quality-perf-1 --corpus-mib 512 --budget-seconds 300 > C:/XLM-bench/quality-perf-1.json
+```
+
+The scratch directory must be new or empty and is deleted afterwards (`--keep`
+keeps it). It prints one line per worker count (steady MB/s, worker busy %, CPU,
+parent cores, measured worker processes and concurrency, RSS), then the recommended
+worker count and the projected 104.5 GB wall time (optimistic/likely/conservative);
+the JSON goes to stdout. It also checks that every worker count produced
+byte-identical artifacts.
 
 ```powershell
 $q = 'uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.quality'
 $m = '<the "manifest" path inside G:/XLM/c05/p0002.proof.json>'   # expected digest 11724d92...
 $p = 'G:/XLM/c05/p0002.proof.json'
-$o = 'G:/XLM/quality/audit-v2'                                     # NEW, empty or absent
+$o = 'G:/XLM/quality/audit-v3'                                     # NEW, empty or absent
+$l = 'C:/XLM-logs/quality-audit-v3.progress.log'                   # operational log, NOT under $o or G:/XLM/data
+$w = 16                                                            # the benchmark's recommended_workers
 # 0. Detach X: first. --c05-proof refuses while the protected root is mounted.
 #    Every key environment variable named by the proof's trust file must be set (same as C06).
 # 1. The audit. Resumable: after any interruption rerun the IDENTICAL command.
-Invoke-Expression "$q audit --manifest $m --output $o --c05-proof $p --workers 8 --max-rss-gib 12 --free-reserve-gib 8 --max-output-gib 4 --max-document-mib 64 --deadline-hours 12"
+Invoke-Expression "$q audit --manifest $m --output $o --c05-proof $p --workers $w --max-rss-gib 12 --free-reserve-gib 8 --max-output-gib 4 --max-document-mib 64 --deadline-hours 12 --progress-interval-seconds 5 --progress-log $l"
+# 1b. In a SECOND window, at any time (read-only; never changes the audit):
+Invoke-Expression "$q status --manifest $m --output $o --progress-log $l --watch --interval-seconds 30"
 # 2. Verification: strict receipt, current binding, FULL source re-hash, every artifact
 #    re-derived from the units and compared byte for byte.
 Invoke-Expression "$q report --manifest $m --output $o --c05-proof $p --workers 4 --max-rss-gib 8 --deadline-hours 6"
@@ -73,15 +91,66 @@ exists for fixture rehearsals only; a protected proof never needs it.
 `materialize-review` reads the manifest path from the receipt unless `--manifest`
 is given, and needs the same `--c05-proof` when the audit used one.
 
+## Live progress, progress log and status
+
+Every phase reports, so a long silent stage no longer exists:
+
+| phase | what runs | parallel? |
+|---|---|---|
+| `prepare` | manifest, C05 proof signature/plan checks, code identity | parent only (seconds) |
+| `overlay` | streams and strictly parses the whole C05 `membership.jsonl` (one row per kept document), hashing it | **parent only, one core**; shows GB done and a phase ETA |
+| `resume-verify` | re-hashes every already committed source file (resume only) | 2 hashing threads |
+| `scan` | parent reads + SHA-256s each file and frames 8 MiB chunks; worker processes parse, verify and measure; each finished file is re-hashed (2 threads) and committed | `--workers` processes |
+| `verify-drain` | the last files' second hashes | 2 threads |
+| `aggregate`, `write`, `publish` | units -> artifacts -> receipt | parent only (tens of seconds) |
+
+A scan line looks like:
+
+```text
+[quality-audit] scan 31.7% | 646/2035 files | 4.82M/15.10M docs | 33.1/104.5 GB | 71.8 MB/s now | 70.2 MB/s ewma | ETA 16m57s | elapsed 7m50s | workers 8/8 active | inflight 16 | chunks 3900/3916 | resumed 0 new 646 | verify 1 | CPU 0.9+7.8 cores | RSS 3.20 GiB | out 0.21 GiB
+```
+
+- Percent, GB and docs count measured chunks (a large file progresses chunk by chunk);
+  `files` counts committed files (after the second hash).
+- `now` is the rate over the last ~15 s, `ewma` an exponentially weighted rate
+  (30 s time constant) that drives the ETA. All times are monotonic.
+- `workers A/N active` counts worker processes that used at least half a core in the
+  last interval (measured from process CPU times, not assumed). `CPU p+c cores` is
+  parent plus children. `inflight` is chunk tasks submitted and not yet finished.
+- `--progress-interval-seconds` (default 5, 0.2-3600) sets the period; `--no-progress`
+  silences stderr. `--progress-log PATH` also appends every line (flushed) to a file
+  that must be outside `--output`, outside the corpus data root and not an audit
+  input. The log is operational only: not in any digest, unit, artifact or receipt,
+  and never a completion signal. It holds numbers and phase names only (no text,
+  metadata, paths or keys). Its first line records the audit PID.
+- The final JSON adds `activity` (worker processes that actually executed chunks,
+  maximum concurrently executing chunks, worker busy fraction and CPU seconds) and
+  `phase_seconds`. Both are operational and are not in the receipt.
+
+`status` is READ-ONLY and safe while the audit runs. It reads the manifest and the
+binding, `stat`s committed units (it never opens them), checks for the receipt,
+optionally reads the last progress-log line, and finds the audit process by its
+command line (`--output`) to report PID, elapsed time, active children, CPU cores and
+process-tree RSS. Committed progress lags live progress by the files in flight; the
+progress-log line shows chunk-level progress. `--watch` repeats until COMPLETE, until
+the process is gone, or for at most `--max-watch-hours` (default 24). `--no-process`
+skips process discovery.
+
 ## Resources and bounds
 
-- **Workers.** 1/2/4/8/16; at most `2 x workers` chunk tasks in flight (1 inline).
-  Worker count is operational only: aggregate artifacts are byte-identical for every
-  value. On the 16-thread/8-core development machine 8 workers was fastest.
+- **Workers.** 1/2/4/8/12/16; at most `2 x workers` chunk tasks in flight (submitted
+  and not yet finished; 1 inline). Results are consumed in task order, but a slow
+  chunk at the head no longer stops the other workers: up to `4 x workers` finished
+  results may wait behind it. Worker count is operational only: aggregate artifacts
+  are byte-identical for every value. Choose it with the `benchmark` command. The
+  earlier "8 workers was fastest" result came from a benchmark with only about 8
+  chunks in total, which mostly measured start-up.
 - **Memory.** `--max-rss-gib` (at most 16) is a whole process-tree RSS ceiling,
   sampled every 0.25 s and enforced at every task, file commit, aggregation step and
-  publication. The kept-identity overlay adds about 41 bytes per manifest row in the
-  parent (about 0.6 GiB for 15.1 M rows).
+  publication. The kept-identity overlay adds 73 bytes per manifest row in the
+  parent (a 72-byte identity record plus a 1-byte kept flag), about 1.0 GiB for
+  15.1 M rows. An earlier version of this page said 41 bytes and 0.6 GiB; that was
+  wrong.
 - **Disk.** `--max-output-gib` is charged before every write (binding, units,
   artifacts, receipt). `--free-reserve-gib` is checked at start and sampled
   throughout; the minimum free space observed is recorded. Nothing is written outside
@@ -92,7 +161,8 @@ is given, and needs the same `--c05-proof` when the audit used one.
 - **Worker failure.** If the supervisor kills the workers (RSS, deadline, disk), the
   command refuses with that reason. A worker that dies for any other reason gives a
   controlled refusal ("a worker process terminated abnormally"), never a traceback.
-- **Chunking.** 32 MiB line-aligned chunks, fixed and bound into the audit identity.
+- **Chunking.** 8 MiB line-aligned chunks (32 MiB before this change), fixed and bound
+  into the audit identity. Measurements never depend on it.
 
 ## Integrity and resume
 
@@ -178,8 +248,9 @@ Return these files (all content-free):
 - the three `candidate-policy-*.yaml`
 - the `report` JSON line
 
-Also return the stderr tail of the audit, so measured throughput and RSS are
-recorded. `quality-histograms.json` and `review-manifest.jsonl` are useful and also
+Also return the progress log (or the stderr tail) and the audit's final JSON line
+(it includes `activity` and `phase_seconds`), so measured throughput, worker
+utilization and RSS are recorded. `quality-histograms.json` and `review-manifest.jsonl` are useful and also
 content-free. Do not return review text. Instead, for each detector you reviewed,
 return the counts of `strong_positive`, `near_threshold` and `control` rows that you
 judged true positives, false positives and unclear.

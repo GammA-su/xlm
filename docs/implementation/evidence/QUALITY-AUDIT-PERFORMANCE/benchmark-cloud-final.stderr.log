@@ -1,0 +1,11 @@
+[quality-bench] generating a 512 MiB AUTHORED corpus (no real data is read)
+[quality-bench] corpus ready in 31.5s
+[quality-bench] C05 kept-membership parse: 82,601 rows/s (authored rows)
+[quality-bench] workers  1: steady    5.2 MB/s (whole scan 5.2) | busy  95% | CPU  25% | parent 1.00 cores | 1 procs, 1 concurrent | RSS 0.22 GiB
+[quality-bench] workers  2: steady   10.8 MB/s (whole scan 10.0) | busy  90% | CPU  47% | parent 0.16 cores | 2 procs, 2 concurrent | RSS 0.56 GiB
+[quality-bench] workers  4: steady   20.0 MB/s (whole scan 19.1) | busy  91% | CPU  89% | parent 0.23 cores | 4 procs, 4 concurrent | RSS 0.91 GiB
+[quality-bench] workers  8: steady   18.7 MB/s (whole scan 17.5) | busy  88% | CPU  88% | parent 0.22 cores | 8 procs, 8 concurrent | RSS 1.50 GiB
+[quality-bench] workers 12: steady   17.5 MB/s (whole scan 16.2) | busy  83% | CPU  84% | parent 0.21 cores | 12 procs, 12 concurrent | RSS 2.09 GiB
+[quality-bench] workers 16: steady   15.9 MB/s (whole scan 14.7) | busy  79% | CPU  82% | parent 0.22 cores | 16 procs, 16 concurrent | RSS 2.71 GiB
+[quality-bench] best: 4 workers 20.0 MB/s; recommended --workers 4; projected 104.5 GB audit: optimistic 84.4 min, likely 92.3 min, conservative 121.3 min
+exit=0
