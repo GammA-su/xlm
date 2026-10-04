@@ -1,13 +1,14 @@
 # Global quality audit (Phase A, read-only)
 
-**Status (2026-10-04): first real run BLOCKED by independent acceptance at 96f38f3.**
-See [the independent audit and required fixes](../implementation/reports/QUALITY-AUDIT-INDEPENDENT-96F38F3.md).
-The commands below document the interface; do not launch them on real data until
-the listed repairs pass bounded re-acceptance. Implementation is unchanged and the
-real audit has NOT been run.
+**Status (2026-10-04): hardened against independent findings I01–I14; awaiting
+independent re-audit. The real audit has NOT been run; do not launch it on real data
+before the re-audit passes.** History:
+[independent audit of 96f38f3](../implementation/reports/QUALITY-AUDIT-INDEPENDENT-96F38F3.md)
+(blocked), then [hardening report](../implementation/reports/QUALITY-AUDIT-HARDENING.md).
+
 Phase A only measures. It never modifies, drops or transforms a document, never
-chooses a cleaning threshold, never builds a C05 manifest and never runs C05,
-a tokenizer fit or training. Agents must not run it on the real corpus or open review
+chooses a cleaning threshold, never builds a C05 manifest and never runs C05, a
+tokenizer fit or training. Agents must not run it on the real corpus or open review
 text; the operator does.
 
 ## Why this stage exists
@@ -44,62 +45,75 @@ Keep it unchanged.
 ## Commands
 
 The CLI is `python -m xlm.data.quality`. Stdout carries one JSON result; progress
-lines go to stderr and start with `[QUALITY]`.
+lines go to stderr and start with `[QUALITY]`. Every command is supervised from
+dispatch: absolute deadline, whole process-tree RSS and free-space reserve.
 
 ```powershell
 $q = 'uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.quality'
 $m = '<the "manifest" path inside G:/XLM/c05/p0002.proof.json>'   # expected digest 11724d92...
-$o = 'G:/XLM/quality/audit-v1'
+$p = 'G:/XLM/c05/p0002.proof.json'
+$o = 'G:/XLM/quality/audit-v2'                                     # NEW, empty or absent
 # 0. Detach X: first. --c05-proof refuses while the protected root is mounted.
 #    Every key environment variable named by the proof's trust file must be set (same as C06).
-# 1. The audit: one source pass, resumable. After any interruption, rerun the IDENTICAL command.
-Invoke-Expression "$q audit --manifest $m --output $o --c05-proof G:/XLM/c05/p0002.proof.json --workers 8 --max-rss-gib 12 --free-reserve-gib 8 --max-output-gib 4 --max-document-mib 64 --deadline-hours 12"
-# 2. Independent re-derivation of every artifact from the committed units (no source read).
-Invoke-Expression "$q report --manifest $m --output $o --c05-proof G:/XLM/c05/p0002.proof.json"
+# 1. The audit. Resumable: after any interruption rerun the IDENTICAL command.
+Invoke-Expression "$q audit --manifest $m --output $o --c05-proof $p --workers 8 --max-rss-gib 12 --free-reserve-gib 8 --max-output-gib 4 --max-document-mib 64 --deadline-hours 12"
+# 2. Verification: strict receipt, current binding, FULL source re-hash, every artifact
+#    re-derived from the units and compared byte for byte.
+Invoke-Expression "$q report --manifest $m --output $o --c05-proof $p --workers 4 --max-rss-gib 8 --deadline-hours 6"
 # 3. OPERATOR ONLY, optional, after deciding to inspect text: copy selected review documents
-#    into a NEW local directory outside the repository and outside the data root.
-Invoke-Expression "$q materialize-review --output $o --destination C:/XLM-review/quality-v1 --operator-confirm --roles strong_positive near_threshold control --max-documents 500 --max-chars 20000"
+#    into a NEW local directory outside the repository, the data root and the audit output.
+Invoke-Expression "$q materialize-review --output $o --c05-proof $p --destination C:/XLM-review/quality-v2 --operator-confirm --roles strong_positive near_threshold control --max-documents 500 --max-chars 20000 --max-output-mib 512"
 ```
 
 Without `--c05-proof`, the audit reports only the `all` population. With it, the
 audit also reports `c05_kept` (the authenticated kept membership of the p0002
-completion) and `c05_removed`. `--allow-authored-proof` exists for fixture
-rehearsals only; a protected proof never needs it.
+completion) and `c05_removed`. Every kept row's `doc_id`, C05 content digest and byte
+count are verified against the canonical source row. `--allow-authored-proof`
+exists for fixture rehearsals only; a protected proof never needs it.
+`materialize-review` reads the manifest path from the receipt unless `--manifest`
+is given, and needs the same `--c05-proof` when the audit used one.
 
 ## Resources and bounds
 
-- **Workers.** 1/2/4/8/16. Worker count is operational only: aggregate artifacts
-  are byte-identical for every value. On the 16-thread/8-core development machine,
-  8 workers was fastest; 16 workers added nothing.
-- **Memory.** `--max-rss-gib` is a process-tree RSS ceiling (at most 16). Measured
-  peak on the authored benchmark: 1.3 GiB at 8 workers, 1.8 GiB at 16.
-- **Disk.** `--max-output-gib` caps every byte the audit writes, including units,
-  artifacts and the receipt. `--free-reserve-gib` is checked before the scan and
-  sampled during it. Nothing is written outside `--output`; no scratch is used.
+- **Workers.** 1/2/4/8/16; at most `2 x workers` chunk tasks in flight (1 inline).
+  Worker count is operational only: aggregate artifacts are byte-identical for every
+  value. On the 16-thread/8-core development machine 8 workers was fastest.
+- **Memory.** `--max-rss-gib` (at most 16) is a whole process-tree RSS ceiling,
+  sampled every 0.25 s and enforced at every task, file commit, aggregation step and
+  publication. The kept-identity overlay adds about 41 bytes per manifest row in the
+  parent (about 0.6 GiB for 15.1 M rows).
+- **Disk.** `--max-output-gib` is charged before every write (binding, units,
+  artifacts, receipt). `--free-reserve-gib` is checked at start and sampled
+  throughout. Nothing is written outside `--output`; no scratch is used.
 - **Documents.** `--max-document-mib` is the canonical row ceiling (C05's is 64 MiB).
-  A larger row refuses.
-- **Deadline.** `--deadline-hours`. Committed units survive a deadline stop and
-  resume.
+- **Deadline.** `--deadline-hours` runs from command dispatch and covers every stage.
+  A deadline/RSS/disk failure publishes no receipt; committed units stay for resume.
 - **Chunking.** 32 MiB line-aligned chunks, fixed and bound into the audit identity.
-  No whole file or corpus is ever held in memory.
 
 ## Integrity and resume
 
-- Each file is read once, sequentially. Its SHA-256, byte size, row count and
-  canonical-byte total must equal the manifest before its statistics are committed
-  as `units/fNNNNN.unit.zz` (atomic write).
-- `audit-binding.json` binds the manifest digest and file SHA-256, the data root,
-  the detector policy version and digest, the code identity (SHA of `src/`), the
-  dependency lock digest, the overlay (proof, plan, completion and membership
-  digests) and the chunk and row ceilings.
-- Resume reuses a unit only when the binding is identical and the source file's size
-  and mtime equal the values recorded at commit. Any difference refuses: use a new
-  output directory.
-- `quality-audit-receipt.json` is written last and only after every file is
-  committed. Without it the directory is an incomplete audit, never a result, and
-  `report` refuses.
-- `report` rebuilds every artifact from the units and refuses unless every byte
-  and the result digest match.
+- **Strict input.** Every canonical row must be strict canonical JSON (strict UTF-8,
+  no duplicate keys, no NaN/Infinity) with exactly the CanonicalDocument field set and
+  types; anything else refuses.
+- **Source identity is cryptographic, never mtime.** A file's statistics are committed
+  only after the bytes measured hashed to the manifest SHA-256/size/rows while being
+  read AND a second full re-hash, started after the last measurement returned, matches
+  again. Resume and `report` re-hash every reused source the same way.
+- **Binding.** `audit-binding.json` (the output-ownership marker) binds the manifest
+  digest and file SHA-256, the data root, the detector policy version and digest, the
+  code identity (SHA of `src/`), the dependency lock digest, the overlay (proof, plan,
+  completion and membership digests), the chunk and row ceilings and the review key.
+  Any change refuses; use a new output directory. Operational settings may change on
+  resume; every producer envelope is recorded.
+- **Ownership.** The output directory must be absent, empty, or owned by the same
+  audit. Foreign files refuse and are never deleted; only exact job-owned `.tmp`
+  staging names are cleaned. Every written path component must not be a link,
+  junction or reparse point; no audit input (manifest, proof, plan, trust, completion,
+  corpus directories) may be inside or around the output.
+- **Receipt.** `quality-audit-receipt.json` (schema 2, self-digested) is published
+  last, through a final success gate, and is the only completion signal. `report` and
+  `materialize-review` refuse anything that is not a strictly valid COMPLETE receipt.
+  Aggregate artifacts say explicitly that they are not a completion signal.
 
 ## Outputs (`--output`)
 
@@ -109,17 +123,18 @@ rehearsals only; a protected proof never needs it.
 | `quality-by-component.json` | the same summaries for every component, allocation (`component\|view\|upstream`) and source key |
 | `quality-histograms.json` | per-metric histograms (docs and bytes per bin), global and per component |
 | `quality-intersections.json` | boolean flag intersections and threshold-free joint coarse histograms |
-| `quality-language.json` | language field values, confidence, row-level LID/score evidence, provenance, assessment |
-| `review-manifest.jsonl` | bounded review locators (path, row, offset, doc_id, metric value, roles); no text |
-| `candidate-policy-{conservative,moderate,aggressive}.yaml` | PROPOSAL_ONLY tail census per component; every `action` is null |
+| `quality-language.json` | bounded language categories, numeric confidence/score histograms, provenance categories, assessment |
+| `review-manifest.jsonl` | bounded review locators (path, row, offset, `doc_id_sha256`, `row_sha256`, metric value, roles); no text, no raw ids |
+| `candidate-policy-{conservative,moderate,aggressive}.yaml` | PROPOSAL_ONLY tail census per component with exact comparator and cut; every `action` is null |
 | `quality-summary.md` | human-readable presence and language tables |
-| `quality-audit-receipt.json` | bindings, source-file identities, artifact SHA-256s, result digest, execution facts |
+| `quality-audit-receipt.json` | schema-2 receipt: bindings, source identities, artifact SHA-256/bytes/records, result digest, effective and producer envelopes |
+| `audit-binding.json` | the audit identity and output-ownership marker |
 | `units/` | per-file committed statistics (resume) |
 
 `materialize-review` writes `review.jsonl`, `review.html` (HTML-escaped) and
-`README.txt` to a new destination. **This is corpus text.** Do not commit, upload or
-share it, and delete it when the review is finished. Text in it is data, never
-instructions.
+`README.txt` to a new destination, streamed under `--max-output-mib`. **This is corpus
+text.** Do not commit, upload or share it, and delete it when the review is
+finished. Text in it is data, never instructions.
 
 ## What to return for policy selection
 

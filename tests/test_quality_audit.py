@@ -11,6 +11,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import shutil
 import subprocess
 import sys
 import zlib
@@ -26,8 +27,14 @@ from xlm.data.evidence_v2 import canonical
 from xlm.data.quality import runner, scan
 from xlm.data.quality.cli import main
 from xlm.data.quality.report import ARTIFACTS
-from xlm.data.quality.review import ReviewError, materialize_review, read_review_rows
-from xlm.data.quality.runner import Limits, run_audit, verify_report
+from xlm.data.quality.review import ReviewError, read_review_rows
+from xlm.data.quality.runner import (
+    Limits,
+    ReviewLimits,
+    materialize_from_audit,
+    run_audit,
+    verify_report,
+)
 from xlm.data.quality.scan import RECEIPT_FILE, QualityError
 
 REPO = Path(__file__).resolve().parents[1]
@@ -129,7 +136,10 @@ def test_review_manifest_holds_locators_roles_and_no_text(corpus: Path, tmp_path
     roles = {role for row in rows for role in row["roles"]}
     assert {"strong_positive", "control"} <= roles
     for row in rows:
-        assert {"path", "row", "offset", "doc_id", "detector", "component", "value"} <= set(row)
+        assert {"path", "row", "offset", "doc_id_sha256", "row_sha256", "detector", "value"} <= set(
+            row
+        )
+        assert "doc_id" not in row
         assert "text" not in row and "excerpt" not in row
     keys = [(r["component"], r["detector"], r["coarse_bin"]) for r in rows]
     for key in set(keys):
@@ -145,7 +155,8 @@ def test_language_evidence_distinguishes_inherited_from_row_level(
     pdf = scopes["component:finepdfs_en"]["all"]
     stories = scopes["component:simple_stories"]["all"]
     assert pdf["row_level_evidence_fraction"]["upstream_full_doc_lid"] == 1.0
-    assert pdf["labels"]["upstream_full_doc_lid"]["values"] == {"eng_Latn": 40}
+    labels = pdf["labels"]["upstream_full_doc_lid"]["values"]
+    assert set(labels) == {"eng_Latn"} and labels["eng_Latn"]["docs"] == 40
     assert stories["assessment"].startswith("inherited only")
     assert stories["language_confidence_constant_1_0"] is True
 
@@ -221,7 +232,7 @@ def test_resume_reuses_committed_units_and_equals_a_clean_run(
     assert artifacts(resumed) == artifacts(clean)
 
 
-def test_resume_refuses_a_changed_committed_file(
+def test_resume_rehashes_committed_files_and_ignores_mtime(
     corpus: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     output = tmp_path / "out"
@@ -229,9 +240,19 @@ def test_resume_refuses_a_changed_committed_file(
     manifest = json.loads(corpus.read_bytes())
     first = corpus.parent / "data" / manifest["files"][0]["path"]
     stat = first.stat()
+    # A touched mtime with identical bytes is not a change (mtime is never trusted) ...
     os.utime(first, ns=(stat.st_atime_ns, stat.st_mtime_ns + 5_000_000_000))
-    with pytest.raises(QualityError, match="changed since its unit"):
+    resumed = tmp_path / "copy"
+    shutil.copytree(output, resumed)
+    assert audit(corpus, resumed)["files_resumed"] == 1
+    # ... while the same size with one changed byte and a restored mtime refuses.
+    raw = bytearray(first.read_bytes())
+    raw[-3] ^= 1
+    first.write_bytes(bytes(raw))
+    os.utime(first, ns=(stat.st_atime_ns, stat.st_mtime_ns))
+    with pytest.raises(QualityError, match="frozen manifest"):
         audit(corpus, output)
+    assert not (output / RECEIPT_FILE).exists()
 
 
 def test_resume_refuses_a_changed_detector_policy(
@@ -254,6 +275,7 @@ def test_completed_audit_refuses_rerun_and_report_rederives(corpus: Path, tmp_pa
         "verified": True,
         "result_digest": first["result_digest"],
         "artifacts": len(ARTIFACTS),
+        "sources_rehashed": True,
     }
     target = output / "quality-summary.md"
     target.write_bytes(target.read_bytes() + b"\nedited\n")
@@ -306,7 +328,7 @@ def test_manifest_row_count_mismatch_refuses(corpus: Path, tmp_path: Path) -> No
     _rewrite_manifest(
         corpus, lambda m: m["files"][3].update(documents=m["files"][3]["documents"] + 1)
     )
-    with pytest.raises(QualityError, match="row count"):
+    with pytest.raises(QualityError, match="rows|row count"):
         audit(corpus, tmp_path / "out")
 
 
@@ -486,65 +508,101 @@ def _complete(corpus: Path, tmp_path: Path) -> tuple[Path, dict[str, Any]]:
     return output, receipt
 
 
+def materialize(output: Path, destination: Path, **kwargs: Any) -> dict[str, Any]:
+    limits = ReviewLimits(max_documents=kwargs.pop("max_documents", 10), max_chars=10_000)
+    return materialize_from_audit(output, destination, limits=limits, **kwargs)
+
+
 def test_materialize_review_writes_escaped_local_text(corpus: Path, tmp_path: Path) -> None:
-    output, receipt = _complete(corpus, tmp_path)
-    rows = [
-        r
-        for r in read_review_rows(output / "review-manifest.jsonl")
-        if r["detector"] == "html_tag_char_ratio" and "strong_positive" in r["roles"]
-    ]
-    assert rows
+    output, _ = _complete(corpus, tmp_path)
     destination = tmp_path / "review"
-    result = materialize_review(
-        rows,
-        data_root=corpus.parent / "data",
-        files={f["path"]: f for f in receipt["source_files"]},
-        destination=destination,
-        max_documents=10,
-        max_chars=10_000,
-        line_ceiling=1024**2,
+    result = materialize(
+        output, destination, detectors=["html_tag_char_ratio"], roles=["strong_positive"]
     )
-    assert result["materialized"] == len(rows[:10])
+    assert result["materialized"] >= 1
     page = (destination / "review.html").read_text(encoding="utf-8")
     assert "<script>var" not in page and "&lt;script&gt;" in page
     records = [
         json.loads(x) for x in (destination / "review.jsonl").read_text("utf-8").splitlines()
     ]
     assert any("Buy now" in r["excerpt"] for r in records)
+    assert all(isinstance(r["doc_id"], str) and r["doc_id"] for r in records)
     assert (destination / "README.txt").exists()
 
 
-def test_materialize_review_refusals(corpus: Path, tmp_path: Path) -> None:
-    output, receipt = _complete(corpus, tmp_path)
-    rows = read_review_rows(output / "review-manifest.jsonl")[:3]
-    files = {f["path"]: f for f in receipt["source_files"]}
-    common: dict[str, Any] = {
-        "data_root": corpus.parent / "data",
-        "files": files,
-        "max_documents": 5,
-        "max_chars": 1000,
-        "line_ceiling": 1024**2,
-    }
+def _tamper_review(output: Path, change: Any) -> None:
+    path = output / "review-manifest.jsonl"
+    rows = read_review_rows(path)
+    change(rows)
+    path.write_bytes(b"".join(json.dumps(r, sort_keys=True).encode() + b"\n" for r in rows))
+
+
+def test_materialize_review_destination_refusals(corpus: Path, tmp_path: Path) -> None:
+    output, _ = _complete(corpus, tmp_path)
     with pytest.raises(ReviewError, match="inside the repository"):
-        materialize_review(rows, destination=REPO / "quality-review-should-not-exist", **common)
-    with pytest.raises(ReviewError, match="inside the corpus data root"):
-        materialize_review(rows, destination=corpus.parent / "data" / "review", **common)
+        materialize(output, REPO / "quality-review-should-not-exist")
+    with pytest.raises(ReviewError, match="overlaps"):
+        materialize(output, corpus.parent / "data" / "review")
+    with pytest.raises(ReviewError, match="overlaps"):
+        materialize(output, output / "review")
     existing = tmp_path / "exists"
     existing.mkdir()
     with pytest.raises(ReviewError, match="already exists"):
-        materialize_review(rows, destination=existing, **common)
-    shifted = [{**rows[0], "offset": rows[0]["offset"] + 1}]
-    with pytest.raises((ReviewError, ValueError)):
-        materialize_review(shifted, destination=tmp_path / "shifted", **common)
-    wrong = [{**rows[0], "doc_id": "not-this-document"}]
-    with pytest.raises(ReviewError, match="recorded document"):
-        materialize_review(wrong, destination=tmp_path / "wrong", **common)
+        materialize(output, existing)
+    assert not (REPO / "quality-review-should-not-exist").exists()
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        lambda rows: rows[0].update(offset=rows[0]["offset"] + 1),
+        lambda rows: rows[0].update(row=rows[0]["row"] + 1),
+        lambda rows: rows[0].update(doc_id_sha256="0" * 64),
+        lambda rows: rows[0].update(path="../outside.jsonl"),
+        lambda rows: rows[0].update(note="smuggled free text"),
+        lambda rows: rows.pop(),
+    ],
+)
+def test_materialize_refuses_any_review_manifest_change(
+    corpus: Path, tmp_path: Path, change: Any
+) -> None:
+    output, _ = _complete(corpus, tmp_path)
+    _tamper_review(output, change)
+    with pytest.raises((ReviewError, QualityError), match="differs"):
+        materialize(output, tmp_path / "review")
+    assert not (tmp_path / "review").exists()
+
+
+def test_materialize_rehashes_selected_sources(corpus: Path, tmp_path: Path) -> None:
+    output, _ = _complete(corpus, tmp_path)
+    rows = read_review_rows(output / "review-manifest.jsonl")
     source = corpus.parent / "data" / rows[0]["path"]
     stat = source.stat()
-    os.utime(source, ns=(stat.st_atime_ns, stat.st_mtime_ns + 7_000_000_000))
-    with pytest.raises(ReviewError, match="changed since the audit"):
-        materialize_review(rows, destination=tmp_path / "changed", **common)
-    assert not (REPO / "quality-review-should-not-exist").exists()
+    raw = bytearray(source.read_bytes())
+    raw[-3] ^= 1  # same size, then restore the mtime: mtime is never trusted
+    source.write_bytes(bytes(raw))
+    os.utime(source, ns=(stat.st_atime_ns, stat.st_mtime_ns))
+    with pytest.raises(QualityError, match="frozen manifest"):
+        materialize(output, tmp_path / "review", components=[rows[0]["component"]])
+    assert not (tmp_path / "review").exists()
+
+
+def test_materialize_refuses_unverifiable_receipts(corpus: Path, tmp_path: Path) -> None:
+    output, receipt = _complete(corpus, tmp_path)
+    path = output / RECEIPT_FILE
+    for change in ("status", "digest", "envelope"):
+        body = json.loads(path.read_bytes())
+        if change == "status":
+            body["status"] = "INCOMPLETE"
+        elif change == "digest":
+            body["result_digest"] = "0" * 64
+        else:
+            del body["envelope"]["workers"]
+        path.write_bytes(canonical.canonical_bytes(body))
+        with pytest.raises(QualityError, match="receipt invalid"):
+            materialize(output, tmp_path / f"review-{change}")
+    path.write_bytes(canonical.canonical_bytes(receipt))
+    assert materialize(output, tmp_path / "review-ok", max_documents=2)["materialized"] == 2
 
 
 def test_cli_audit_report_and_operator_confirmation(

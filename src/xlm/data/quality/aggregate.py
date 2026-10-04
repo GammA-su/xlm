@@ -3,15 +3,23 @@
 A population (all documents, or the C05-kept / C05-removed documents of a file) is a
 set of integer arrays: per-metric histograms (documents and canonical UTF-8 bytes per
 bin), not-applicable counts, integer sums, extrema, flag / class / intersection
-counts and threshold-free joint histograms, plus bounded language-metadata counts.
+counts and threshold-free joint histograms, plus language-metadata statistics.
 
 Every quantity is an integer (byte sums are accumulated in float64 only while they
 are far below 2**53 and converted back exactly), so merging is associative and
 commutative: worker count, chunking and merge order cannot change a result.
+
+Language metadata never carries a source string into an artifact: numeric evidence
+goes into dense fixed histograms, and every categorical value is first mapped onto a
+bounded vocabulary (:mod:`policy`); anything else becomes ``<unrecognized>``.
+Categorical maps are merged exactly without caps; a map larger than the hard limit
+refuses, and the final union decides that, so the outcome is order independent.
 """
 
 from __future__ import annotations
 
+import hashlib
+import re
 from collections.abc import Mapping, Sequence
 from typing import Any
 
@@ -20,17 +28,22 @@ import numpy.typing as npt
 
 from xlm.data.quality.policy import (
     BOOL_INTERSECTIONS,
+    CATEGORY_HARD_LIMIT,
     CLASS_ORDER,
+    DOCUMENT_KIND_VALUES,
     FLAG_INDEX,
     FLAGS,
     JOINT_PAIRS,
+    LANGUAGE_CODE_PATTERN,
     LANGUAGE_LABEL_KEYS,
     LANGUAGE_PROVENANCE_KEY,
     LANGUAGE_SCORE_KEYS,
-    MAX_LABEL_CHARS,
-    MAX_LABEL_VALUES,
     METRIC_INDEX,
     METRICS,
+    PROVENANCE_CATEGORIES,
+    RATIO_FINE_EDGES,
+    SPLIT_VALUES,
+    UNRECOGNIZED,
 )
 
 NBINS = 1001
@@ -39,11 +52,29 @@ IS_RATIO = np.array([m.kind == "ratio" for m in METRICS])
 IS_INTEGRAL = np.array([m.kind == "count" for m in METRICS])
 CLASS_INDEX = {c: n for n, c in enumerate(CLASS_ORDER)}
 EXACT_FLOAT_LIMIT = 2**52
-OTHER_LABEL = "<other>"
+RATIO_EDGES_ARRAY = np.asarray(RATIO_FINE_EDGES, dtype=np.float64)
+
+# Numeric language histograms: bins 0..1000, then three tail slots.
+OUT_OF_RANGE, NON_NUMERIC, ABSENT = NBINS, NBINS + 1, NBINS + 2
+NUMERIC_SLOTS = NBINS + 3
+NUMERIC_FIELDS = ("language_confidence", *LANGUAGE_SCORE_KEYS)
+CATEGORY_FIELDS = ("language", "document_kind", "split", "provenance", *LANGUAGE_LABEL_KEYS)
+KNOWN_LANGUAGE_KEYS = frozenset(
+    (*LANGUAGE_SCORE_KEYS, *LANGUAGE_LABEL_KEYS, LANGUAGE_PROVENANCE_KEY)
+)
+_LANGUAGE_CODE = re.compile(LANGUAGE_CODE_PATTERN)
+_SPLITS = frozenset(SPLIT_VALUES)
+_KINDS = frozenset(DOCUMENT_KIND_VALUES)
 
 
 class AggregateError(ValueError):
     """Content-free failure while building or merging statistics."""
+
+
+def ratio_bins(column: npt.NDArray[np.float64]) -> npt.NDArray[np.int64]:
+    """Vectorized :func:`policy.ratio_bin` on the exact float edges (no NaN input)."""
+    index = np.searchsorted(RATIO_EDGES_ARRAY, column, side="right").astype(np.int64) - 1
+    return np.clip(index, 0, NBINS - 1)
 
 
 def bin_matrix(values: npt.NDArray[np.float64]) -> npt.NDArray[np.int64]:
@@ -51,10 +82,9 @@ def bin_matrix(values: npt.NDArray[np.float64]) -> npt.NDArray[np.int64]:
     out = np.full(values.shape, -1, dtype=np.int64)
     present = ~np.isnan(values)
     ratio = values[:, IS_RATIO]
-    ratio_bins = np.clip(np.floor(ratio * 1000), 0, 1000)
     sub = out[:, IS_RATIO]
     mask = ~np.isnan(ratio)
-    sub[mask] = ratio_bins[mask].astype(np.int64)
+    sub[mask] = ratio_bins(ratio[mask])
     out[:, IS_RATIO] = sub
     counts = np.floor(values[:, ~IS_RATIO])
     count_out = out[:, ~IS_RATIO]
@@ -80,29 +110,123 @@ def coarse_matrix(values: npt.NDArray[np.float64], metric: int) -> npt.NDArray[n
     return index
 
 
-def _empty_language() -> dict[str, Any]:
-    return {
-        "language": {},
-        "confidence_bins": {},
-        "confidence_absent": 0,
-        "scores": {k: {"present": 0, "out_of_range": 0, "bins": {}} for k in LANGUAGE_SCORE_KEYS},
-        "labels": {k: {"present": 0, "values": {}} for k in LANGUAGE_LABEL_KEYS},
-        "provenance": {},
-        "other_language_keys": {},
-        "document_kind": {},
-        "split": {},
-    }
+# -- bounded vocabularies --------------------------------------------------------------
 
 
-def _bump(table: dict[str, Any], key: str, amount: int = 1) -> None:
-    key = key[:MAX_LABEL_CHARS]
-    if key not in table and len(table) >= MAX_LABEL_VALUES:
-        key = OTHER_LABEL
-    table[key] = table.get(key, 0) + amount
+def language_code(value: Any) -> str:
+    if type(value) is str and len(value) <= 16 and _LANGUAGE_CODE.fullmatch(value):
+        return value
+    return UNRECOGNIZED
 
 
-def _ratio_bin(value: float) -> str:
-    return str(min(max(int(value * 1000), 0), 1000))
+def provenance_category(value: Any) -> str:
+    if type(value) is not str:
+        return UNRECOGNIZED
+    digest = hashlib.sha256(value.encode("utf-8", "surrogatepass")).hexdigest()
+    return PROVENANCE_CATEGORIES.get(digest, UNRECOGNIZED)
+
+
+def _numeric_slot(value: Any) -> int:
+    if isinstance(value, bool) or not isinstance(value, int | float):
+        return NON_NUMERIC
+    number = float(value)
+    if not 0.0 <= number <= 1.0:  # NaN fails this comparison as well
+        return OUT_OF_RANGE
+    return min(max(int(np.searchsorted(RATIO_EDGES_ARRAY, number, side="right")) - 1, 0), 1000)
+
+
+class LanguageStats:
+    """Existing language evidence only; no free source string is retained."""
+
+    def __init__(self) -> None:
+        self.numeric = {name: np.zeros(NUMERIC_SLOTS, dtype=np.int64) for name in NUMERIC_FIELDS}
+        self.categories: dict[str, dict[str, list[int]]] = {f: {} for f in CATEGORY_FIELDS}
+        self.unrecognized_language_keys = 0
+
+    def _count(self, field: str, value: str, nbytes: int) -> None:
+        table = self.categories[field]
+        entry = table.get(value)
+        if entry is None:
+            if len(table) >= CATEGORY_HARD_LIMIT:
+                raise AggregateError("categorical language vocabulary exceeds its hard limit")
+            table[value] = [1, nbytes]
+        else:
+            entry[0] += 1
+            entry[1] += nbytes
+
+    def add(self, row: Mapping[str, Any], nbytes: int) -> None:
+        self._count("language", language_code(row.get("language")), nbytes)
+        split = row.get("split")
+        self._count("split", split if split in _SPLITS else UNRECOGNIZED, nbytes)
+        kind = row.get("document_kind")
+        self._count("document_kind", kind if kind in _KINDS else UNRECOGNIZED, nbytes)
+        self.numeric["language_confidence"][_numeric_slot(row.get("language_confidence"))] += 1
+        metadata = row.get("source_metadata")
+        if not isinstance(metadata, Mapping):
+            metadata = {}
+        for key in LANGUAGE_SCORE_KEYS:
+            self.numeric[key][_numeric_slot(metadata[key]) if key in metadata else ABSENT] += 1
+        for key in LANGUAGE_LABEL_KEYS:
+            if key in metadata:
+                self._count(key, language_code(metadata[key]), nbytes)
+        if LANGUAGE_PROVENANCE_KEY in metadata:
+            self._count(
+                "provenance", provenance_category(metadata[LANGUAGE_PROVENANCE_KEY]), nbytes
+            )
+        for key in metadata:
+            low = key.lower() if isinstance(key, str) else ""
+            if ("lang" in low or "lid" in low) and key not in KNOWN_LANGUAGE_KEYS:
+                # Only the count of such documents; key names are source-derived text.
+                self.unrecognized_language_keys += 1
+                break
+
+    def merge(self, other: LanguageStats) -> None:
+        for name in NUMERIC_FIELDS:
+            self.numeric[name] += other.numeric[name]
+        for field, table in other.categories.items():
+            mine = self.categories[field]
+            for value, (docs, nbytes) in table.items():
+                entry = mine.get(value)
+                if entry is None:
+                    mine[value] = [docs, nbytes]
+                else:
+                    entry[0] += docs
+                    entry[1] += nbytes
+            if len(mine) > CATEGORY_HARD_LIMIT:
+                raise AggregateError("categorical language vocabulary exceeds its hard limit")
+        self.unrecognized_language_keys += other.unrecognized_language_keys
+
+    def to_json(self) -> dict[str, Any]:
+        return {
+            "numeric": {
+                name: [[int(b), int(array[b])] for b in np.flatnonzero(array)]
+                for name, array in self.numeric.items()
+            },
+            "categories": {
+                field: {value: list(entry) for value, entry in sorted(table.items())}
+                for field, table in self.categories.items()
+            },
+            "unrecognized_language_keys": self.unrecognized_language_keys,
+        }
+
+    @classmethod
+    def from_json(cls, data: Mapping[str, Any]) -> LanguageStats:
+        stats = cls()
+        if set(data["numeric"]) != set(NUMERIC_FIELDS):
+            raise AggregateError("unit language numeric fields differ from the policy")
+        if set(data["categories"]) != set(CATEGORY_FIELDS):
+            raise AggregateError("unit language categorical fields differ from the policy")
+        for name, cells in data["numeric"].items():
+            for slot, count in cells:
+                if not 0 <= slot < NUMERIC_SLOTS:
+                    raise AggregateError("unit language histogram slot out of range")
+                stats.numeric[name][slot] = count
+        for field, table in data["categories"].items():
+            if len(table) > CATEGORY_HARD_LIMIT:
+                raise AggregateError("categorical language vocabulary exceeds its hard limit")
+            stats.categories[field] = {value: [int(e[0]), int(e[1])] for value, e in table.items()}
+        stats.unrecognized_language_keys = int(data["unrecognized_language_keys"])
+        return stats
 
 
 class Population:
@@ -115,6 +239,7 @@ class Population:
         self.hist_docs = np.zeros((N_METRICS, NBINS), dtype=np.int64)
         self.hist_bytes = np.zeros((N_METRICS, NBINS), dtype=np.int64)
         self.na = np.zeros(N_METRICS, dtype=np.int64)
+        self.na_bytes = np.zeros(N_METRICS, dtype=np.int64)
         self.sums = np.zeros(N_METRICS, dtype=np.int64)
         self.maxima = np.full(N_METRICS, np.nan)
         self.minima = np.full(N_METRICS, np.nan)
@@ -132,7 +257,7 @@ class Population:
             )
             for _, a, b in JOINT_PAIRS
         ]
-        self.language = _empty_language()
+        self.language = LanguageStats()
 
     # -- accumulation ----------------------------------------------------------------
 
@@ -159,6 +284,7 @@ class Population:
             column = bins[:, metric]
             present = column >= 0
             self.na[metric] += rows - int(present.sum())
+            self.na_bytes[metric] += int(nbytes[~present].sum())
             if not present.any():
                 continue
             selected = column[present]
@@ -208,53 +334,7 @@ class Population:
 
     def add_language(self, row: Mapping[str, Any], nbytes: int) -> None:
         """Language evidence already present in the canonical row (no classification)."""
-        lang = self.language
-        value = row.get("language")
-        bucket = lang["language"].setdefault(
-            str(value)[:MAX_LABEL_CHARS]
-            if len(lang["language"]) < MAX_LABEL_VALUES
-            or str(value)[:MAX_LABEL_CHARS] in lang["language"]
-            else OTHER_LABEL,
-            [0, 0],
-        )
-        bucket[0] += 1
-        bucket[1] += nbytes
-        confidence = row.get("language_confidence")
-        if isinstance(confidence, int | float) and not isinstance(confidence, bool):
-            key = _ratio_bin(float(confidence))
-            lang["confidence_bins"][key] = lang["confidence_bins"].get(key, 0) + 1
-        else:
-            lang["confidence_absent"] += 1
-        _bump(lang["document_kind"], str(row.get("document_kind")))
-        _bump(lang["split"], str(row.get("split")))
-        metadata = row.get("source_metadata")
-        if not isinstance(metadata, Mapping):
-            return
-        for key in LANGUAGE_SCORE_KEYS:
-            if key in metadata:
-                entry = lang["scores"][key]
-                entry["present"] += 1
-                score = metadata[key]
-                if (
-                    isinstance(score, int | float)
-                    and not isinstance(score, bool)
-                    and 0.0 <= float(score) <= 1.0
-                ):
-                    b = _ratio_bin(float(score))
-                    entry["bins"][b] = entry["bins"].get(b, 0) + 1
-                else:
-                    entry["out_of_range"] += 1
-        for key in LANGUAGE_LABEL_KEYS:
-            if key in metadata:
-                entry = lang["labels"][key]
-                entry["present"] += 1
-                _bump(entry["values"], str(metadata[key]))
-        if LANGUAGE_PROVENANCE_KEY in metadata:
-            _bump(lang["provenance"], str(metadata[LANGUAGE_PROVENANCE_KEY]))
-        for key in metadata:
-            low = str(key).lower()
-            if ("lang" in low or "lid" in low) and key not in KNOWN_LANGUAGE_KEYS:
-                _bump(lang["other_language_keys"], str(key))
+        self.language.add(row, nbytes)
 
     # -- merging / serialization ---------------------------------------------------------
 
@@ -265,6 +345,7 @@ class Population:
         self.hist_docs += other.hist_docs
         self.hist_bytes += other.hist_bytes
         self.na += other.na
+        self.na_bytes += other.na_bytes
         self.sums += other.sums
         self.maxima = np.fmax(self.maxima, other.maxima)
         self.minima = np.fmin(self.minima, other.minima)
@@ -273,7 +354,7 @@ class Population:
         self.bools += other.bools
         for mine, theirs in zip(self.joints, other.joints, strict=True):
             mine += theirs
-        _merge_language(self.language, other.language)
+        self.language.merge(other.language)
 
     def to_json(self) -> dict[str, Any]:
         metrics: dict[str, Any] = {}
@@ -284,6 +365,7 @@ class Population:
                     [int(b), int(self.hist_docs[n, b]), int(self.hist_bytes[n, b])] for b in nonzero
                 ],
                 "not_applicable": int(self.na[n]),
+                "not_applicable_bytes": int(self.na_bytes[n]),
                 "sum": int(self.sums[n]) if IS_INTEGRAL[n] else None,
                 "max": _number(self.maxima[n]),
                 "min": _number(self.minima[n]),
@@ -306,7 +388,7 @@ class Population:
                 ]
                 for n, (name, _, _) in enumerate(JOINT_PAIRS)
             },
-            "language": self.language,
+            "language": self.language.to_json(),
         }
 
     @classmethod
@@ -320,12 +402,17 @@ class Population:
         for name, entry in data["metrics"].items():
             n = METRIC_INDEX[name]
             for b, docs, nbytes in entry["bins"]:
+                if not 0 <= b < NBINS:
+                    raise AggregateError("unit histogram bin out of range")
                 pop.hist_docs[n, b] = docs
                 pop.hist_bytes[n, b] = nbytes
             pop.na[n] = entry["not_applicable"]
+            pop.na_bytes[n] = entry["not_applicable_bytes"]
             pop.sums[n] = entry["sum"] or 0
             pop.maxima[n] = np.nan if entry["max"] is None else entry["max"]
             pop.minima[n] = np.nan if entry["min"] is None else entry["min"]
+        if set(data["flags"]) != set(FLAG_INDEX):
+            raise AggregateError("unit flag set differs from the detector policy")
         for name, (docs, nbytes) in data["flags"].items():
             pop.flags[FLAG_INDEX[name]] = (docs, nbytes)
         for name, (docs, nbytes) in data["classes"].items():
@@ -335,15 +422,13 @@ class Population:
             pop.bools[bools[name]] = (docs, nbytes)
         joints = {name: n for n, (name, _, _) in enumerate(JOINT_PAIRS)}
         for name, cells in data["joints"].items():
+            grid = pop.joints[joints[name]]
             for i, j, docs, nbytes in cells:
-                pop.joints[joints[name]][i, j] = (docs, nbytes)
-        pop.language = _copy_language(data["language"])
+                if not (0 <= i < grid.shape[0] and 0 <= j < grid.shape[1]):
+                    raise AggregateError("unit joint cell out of range")
+                grid[i, j] = (docs, nbytes)
+        pop.language = LanguageStats.from_json(data["language"])
         return pop
-
-
-KNOWN_LANGUAGE_KEYS = frozenset(
-    (*LANGUAGE_SCORE_KEYS, *LANGUAGE_LABEL_KEYS, LANGUAGE_PROVENANCE_KEY)
-)
 
 
 def _number(value: float) -> float | int | None:
@@ -365,41 +450,6 @@ def _operand(
         column = values[:, METRIC_INDEX[operand[4:]]]
         return np.nan_to_num(column, nan=0.0) > 0
     return ((flag_bits >> FLAG_INDEX[operand]) & 1).astype(bool)
-
-
-def _merge_counts(mine: dict[str, Any], theirs: Mapping[str, Any]) -> None:
-    for key, amount in theirs.items():
-        if key not in mine and len(mine) >= MAX_LABEL_VALUES:
-            key = OTHER_LABEL
-        if isinstance(amount, list):
-            entry = mine.setdefault(key, [0, 0])
-            entry[0] += amount[0]
-            entry[1] += amount[1]
-        else:
-            mine[key] = mine.get(key, 0) + amount
-
-
-def _merge_language(mine: dict[str, Any], theirs: Mapping[str, Any]) -> None:
-    for name in ("language", "confidence_bins", "provenance", "other_language_keys"):
-        _merge_counts(mine[name], theirs[name])
-    for name in ("document_kind", "split"):
-        _merge_counts(mine[name], theirs[name])
-    mine["confidence_absent"] += theirs["confidence_absent"]
-    for key, entry in theirs["scores"].items():
-        target = mine["scores"][key]
-        target["present"] += entry["present"]
-        target["out_of_range"] += entry["out_of_range"]
-        _merge_counts(target["bins"], entry["bins"])
-    for key, entry in theirs["labels"].items():
-        target = mine["labels"][key]
-        target["present"] += entry["present"]
-        _merge_counts(target["values"], entry["values"])
-
-
-def _copy_language(data: Mapping[str, Any]) -> dict[str, Any]:
-    fresh = _empty_language()
-    _merge_language(fresh, data)
-    return fresh
 
 
 def merged(populations: Sequence[Population]) -> Population:

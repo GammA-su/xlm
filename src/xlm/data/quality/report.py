@@ -17,10 +17,19 @@ import numpy as np
 import yaml
 
 from xlm.data.evidence_v2 import canonical
-from xlm.data.quality.aggregate import NBINS, Population
+from xlm.data.quality.aggregate import (
+    ABSENT,
+    NBINS,
+    NON_NUMERIC,
+    NUMERIC_FIELDS,
+    OUT_OF_RANGE,
+    AggregateError,
+    Population,
+)
 from xlm.data.quality.policy import (
     BOOL_INTERSECTIONS,
     CANDIDATE_BANDS,
+    CANDIDATE_RULE,
     CLASS_ORDER,
     COMPONENT_SOURCE_TYPE,
     DETECTOR_SCOPE,
@@ -31,6 +40,7 @@ from xlm.data.quality.policy import (
     METRIC_INDEX,
     METRICS,
     POLICY_VERSION,
+    PUBLISHED_CATEGORY_VALUES,
     QUANTILES,
     SIZE_FLAGS,
     STATUS_PROPOSAL,
@@ -159,6 +169,7 @@ def metric_summary(pop: Population, spec: MetricSpec) -> dict[str, Any]:
     return {
         "applicable": applicable,
         "not_applicable": int(pop.na[n]),
+        "not_applicable_bytes": int(pop.na_bytes[n]),
         "quantiles_bin_lo_hi": quantiles,
         "max": None if np.isnan(pop.maxima[n]) else _number(pop.maxima[n]),
         "min": None if np.isnan(pop.minima[n]) else _number(pop.minima[n]),
@@ -167,7 +178,15 @@ def metric_summary(pop: Population, spec: MetricSpec) -> dict[str, Any]:
 
 
 def tail(pop: Population, spec: MetricSpec, num: int, den: int) -> dict[str, Any] | None:
-    """Documents strictly beyond the bin holding the q-quantile on the suspicious side."""
+    """The tail census rule (``policy.CANDIDATE_RULE``) with an EXACT comparator.
+
+    High-is-suspicious: cut bin ``c`` = the bin holding the q-quantile, never the clean
+    bin 0; the rule is ``value >= lo(c)`` and its impact is exactly the documents in
+    bins >= c. Low-is-suspicious: ``c`` = the bin holding the (1-q)-quantile, never the
+    clean exact-1.0 ratio bin; the rule is ``value < hi(c)`` and its impact is exactly
+    the documents in bins <= c. Bins are half-open on the same floats that are printed,
+    so the comparator, the printed cut and the impact agree for every value.
+    """
     n = METRIC_INDEX[spec.name]
     row = pop.hist_docs[n]
     applicable = int(row.sum())
@@ -176,14 +195,16 @@ def tail(pop: Population, spec: MetricSpec, num: int, den: int) -> dict[str, Any
     if spec.direction == "high":
         b = quantile_bin(row, applicable, num, den)
         assert b is not None
-        selected = slice(b + 1, NBINS)
-        cut = bin_bounds(spec, b)[1]
+        c = max(b, 1)
+        selected = slice(c, NBINS)
+        cut = bin_bounds(spec, c)[0]
         comparator = ">="
     else:
         b = quantile_bin(row, applicable, den - num, den)
         assert b is not None
-        selected = slice(0, b)
-        cut = bin_bounds(spec, b)[0]
+        c = min(b, NBINS - 2) if spec.kind == "ratio" else b
+        selected = slice(0, c + 1)
+        cut = bin_bounds(spec, c)[1]
         comparator = "<"
     docs = int(pop.hist_docs[n, selected].sum())
     nbytes = int(pop.hist_bytes[n, selected].sum())
@@ -191,6 +212,7 @@ def tail(pop: Population, spec: MetricSpec, num: int, den: int) -> dict[str, Any
         "comparator": comparator,
         "cut": _number(cut),
         "quantile_bin": b,
+        "cut_bin": c,
         "impact": impact(docs, nbytes, pop),
     }
 
@@ -216,12 +238,17 @@ def summarize(pop: Population) -> dict[str, Any]:
                     int(pop.hist_docs[n, first:].sum()), int(pop.hist_bytes[n, first:].sum()), pop
                 )
             run_buckets[spec.name] = buckets
+    # Ratio bin >= 1 is EXACTLY value >= 0.001 (exact float edges), hence ``ge``.
     ratio_presence = {
-        name: impact(
-            int(pop.hist_docs[METRIC_INDEX[name], 1:].sum()),
-            int(pop.hist_bytes[METRIC_INDEX[name], 1:].sum()),
-            pop,
-        )
+        name: {
+            "comparator": ">=",
+            "cut": 0.001,
+            **impact(
+                int(pop.hist_docs[METRIC_INDEX[name], 1:].sum()),
+                int(pop.hist_bytes[METRIC_INDEX[name], 1:].sum()),
+                pop,
+            ),
+        }
         for name in ("page_number_line_ratio", "hyphen_break_ratio", "single_char_line_ratio")
     }
     return {
@@ -231,7 +258,7 @@ def summarize(pop: Population) -> dict[str, Any]:
         "size_buckets": {f: flags[f] for f in SIZE_FLAGS},
         "flags": {f: v for f, v in flags.items() if f not in SIZE_FLAGS},
         "presence_count_ge_1": presence,
-        "presence_ratio_gt_0_001": ratio_presence,
+        "presence_ratio_ge_0_001": ratio_presence,
         "character_run_buckets": run_buckets,
         "classes": {c: pair_impact(pop.classes[n], pop) for n, c in enumerate(CLASS_ORDER)},
         "bool_intersections": {
@@ -307,15 +334,52 @@ def _axis(spec: MetricSpec, index: int, size: int) -> Any:
     return [lo, hi]
 
 
+def _top(table: Mapping[str, list[int]]) -> dict[str, Any]:
+    """Deterministic top values by (documents desc, value asc) plus an exact remainder."""
+    ordered = sorted(table.items(), key=lambda kv: (-kv[1][0], kv[0]))
+    shown = ordered[:PUBLISHED_CATEGORY_VALUES]
+    rest = ordered[PUBLISHED_CATEGORY_VALUES:]
+    return {
+        "values": {value: {"docs": e[0], "bytes": e[1]} for value, e in shown},
+        "other": {
+            "distinct": len(rest),
+            "docs": sum(e[0] for _, e in rest),
+            "bytes": sum(e[1] for _, e in rest),
+        },
+    }
+
+
+def _numeric(array: np.ndarray, docs: int) -> dict[str, Any]:
+    spec = METRICS[METRIC_INDEX["alpha_ratio"]]  # any ratio spec: exact 1000-bin bounds
+    bins = array[:NBINS]
+    in_range = int(bins.sum())
+    quantiles = {}
+    for label, num, den in QUANTILES:
+        b = quantile_bin(bins, in_range, num, den)
+        quantiles[label] = None if b is None else [_number(x) for x in bin_bounds(spec, b)]
+    return {
+        "present": docs - int(array[ABSENT]),
+        "in_range": in_range,
+        "out_of_range": int(array[OUT_OF_RANGE]),
+        "non_numeric": int(array[NON_NUMERIC]),
+        "absent": int(array[ABSENT]),
+        "exactly_1_0": int(bins[NBINS - 1]),
+        "below_0_5": {"comparator": "<", "cut": 0.5, "docs": int(bins[:500].sum())},
+        "quantiles_bin_lo_hi": quantiles,
+        "bins_nonzero": [[int(b), int(bins[b])] for b in np.flatnonzero(bins)],
+    }
+
+
 def language(pop: Population) -> dict[str, Any]:
-    lang = pop.language
-    bins = lang["confidence_bins"]
-    constant_one = pop.docs > 0 and bins.get("1000", 0) == pop.docs
+    stats = pop.language
+    docs = pop.docs
+    numeric = {name: _numeric(stats.numeric[name], docs) for name in NUMERIC_FIELDS}
     fractions = {}
     for key in LANGUAGE_SCORE_KEYS:
-        fractions[key] = round(lang["scores"][key]["present"] / pop.docs, 6) if pop.docs else 0.0
+        fractions[key] = round(numeric[key]["present"] / docs, 6) if docs else 0.0
     for key in LANGUAGE_LABEL_KEYS:
-        fractions[key] = round(lang["labels"][key]["present"] / pop.docs, 6) if pop.docs else 0.0
+        present = sum(e[0] for e in stats.categories[key].values())
+        fractions[key] = round(present / docs, 6) if docs else 0.0
     best = max(fractions.values(), default=0.0)
     if best >= 0.99:
         assessment = "row-level language evidence on (nearly) every document"
@@ -323,36 +387,24 @@ def language(pop: Population) -> dict[str, Any]:
         assessment = "row-level language evidence on part of the documents"
     else:
         assessment = "inherited only: no row-level language evidence in canonical metadata"
-    scores = {}
-    for key in LANGUAGE_SCORE_KEYS:
-        entry = lang["scores"][key]
-        row = np.zeros(NBINS, dtype=np.int64)
-        for b, count in entry["bins"].items():
-            row[int(b)] = count
-        quantiles = {}
-        spec = METRICS[METRIC_INDEX["alpha_ratio"]]  # any ratio spec: 1000-bin bounds
-        for label, num, den in QUANTILES:
-            b = quantile_bin(row, int(row.sum()), num, den)
-            quantiles[label] = None if b is None else [_number(x) for x in bin_bounds(spec, b)]
-        scores[key] = {
-            "present": entry["present"],
-            "out_of_range": entry["out_of_range"],
-            "quantiles_bin_lo_hi": quantiles,
-            "low_tail_lt_0_5": int(row[:500].sum()),
-        }
+    confidence = numeric.pop("language_confidence")
     return {
-        "documents": pop.docs,
-        "language_field": lang["language"],
-        "language_confidence_constant_1_0": constant_one,
-        "language_confidence_bins": dict(sorted(bins.items(), key=lambda kv: int(kv[0]))),
-        "language_confidence_absent": lang["confidence_absent"],
+        "documents": docs,
+        "vocabulary_note": (
+            "Values are bounded categories only: language-code-shaped values, the split and "
+            "document-kind allowlists, adapter provenance categories (exact-literal SHA-256 "
+            "match); anything else is <unrecognized>. No source string is copied."
+        ),
+        "language_field": _top(stats.categories["language"]),
+        "language_confidence": confidence,
+        "language_confidence_constant_1_0": docs > 0 and confidence["exactly_1_0"] == docs,
         "row_level_evidence_fraction": fractions,
-        "scores": scores,
-        "labels": lang["labels"],
-        "provenance": lang["provenance"],
-        "other_language_like_metadata_keys": lang["other_language_keys"],
-        "document_kind": lang["document_kind"],
-        "split_field": lang["split"],
+        "scores": numeric,
+        "labels": {key: _top(stats.categories[key]) for key in LANGUAGE_LABEL_KEYS},
+        "provenance": _top(stats.categories["provenance"]),
+        "documents_with_unrecognized_language_like_keys": stats.unrecognized_language_keys,
+        "document_kind": _top(stats.categories["document_kind"]),
+        "split_field": _top(stats.categories["split"]),
         "assessment": assessment,
     }
 
@@ -407,10 +459,12 @@ def candidate_policy(
                     "definition": f"value {result['comparator']} {result['cut']!r}",
                     "comparator": result["comparator"],
                     "cut": result["cut"],
+                    "cut_bin": result["cut_bin"],
+                    "quantile_bin": result["quantile_bin"],
                     "scope_proposal": scope,
                     "applies_by_default": applies,
                     "action": None,
-                    "action_options": ACTION_OPTIONS[spec.dimension],
+                    "action_options": list(ACTION_OPTIONS[spec.dimension]),
                     "estimated_impact": result["impact"],
                 }
             )
@@ -421,17 +475,16 @@ def candidate_policy(
             "rules": rules,
         }
     return {
-        "kind": "xlm_quality_candidate_policy_v1",
+        "kind": "xlm_quality_candidate_policy_v2",
         "status": STATUS_PROPOSAL,
         "executable": False,
         "band": band,
         "derivation": (
-            f"Mechanical tail census, NOT a reviewed threshold: for each component and "
-            f"candidate detector, documents strictly beyond the histogram bin holding the "
-            f"component's {num}/{den} quantile on the suspicious side "
-            f"(low-is-suspicious detectors use the {den - num}/{den} quantile). Impacts are "
-            f"MARGINAL per rule; the union of rules is not derivable from marginal "
-            f"histograms and needs a Phase-B dry run."
+            f"Mechanical tail census at the component's {num}/{den} quantile, NOT a reviewed "
+            f"threshold. {CANDIDATE_RULE} Each rule's `estimated_impact` is exactly the "
+            f"documents satisfying `value <comparator> cut`. Impacts are MARGINAL per rule; "
+            f"the union of rules is not derivable from marginal histograms and needs a "
+            f"Phase-B dry run."
         ),
         "action_schema": {
             "KEEP": "retain unchanged",
@@ -464,8 +517,11 @@ def near_bins(scopes: Mapping[str, Population]) -> dict[str, dict[str, int | Non
             if not spec.review:
                 continue
             result = tail(pop, spec, num, den)
+            # The coarse bin holding the cut BIN (its lower edge), for either direction.
             entries[spec.name] = (
-                None if result is None else coarse_index(spec, float(result["cut"]))
+                None
+                if result is None
+                else coarse_index(spec, float(bin_bounds(spec, result["cut_bin"])[0]))
             )
         out[component] = entries
     return out
@@ -496,9 +552,9 @@ def build_artifacts(
         parts = {k: Population.from_json(v) for k, v in unit["populations"].items()}
         if overlay:
             if not set(parts) <= {"c05_kept", "c05_removed"}:
-                raise ValueError("overlay unit population names")
+                raise AggregateError("overlay unit population names")
         elif set(parts) - {"all"}:
-            raise ValueError("unit population names")
+            raise AggregateError("unit population names")
         for scope in scope_names(unit["file"]):
             target = scopes.setdefault(scope, {n: Population() for n in names})
             for name, pop in parts.items():
@@ -514,7 +570,10 @@ def build_artifacts(
     }
     header = {
         "phase": "A_READ_ONLY_AUDIT",
-        "status": "COMPLETE",
+        "completion": (
+            "NOT a completion signal: valid only together with a quality-audit-receipt.json "
+            "that passes strict validation (`report` re-derives and verifies it)"
+        ),
         "mode": binding["input_manifest"]["mode"],
         "populations": list(names),
         "population_meaning": {
@@ -529,7 +588,7 @@ def build_artifacts(
     artifacts: dict[str, bytes] = {}
     artifacts["quality-audit.json"] = _json(
         {
-            "kind": "xlm_quality_audit_v1",
+            "kind": "xlm_quality_audit_v2",
             **header,
             "input_manifest": binding["input_manifest"],
             "overlay": binding["overlay"],

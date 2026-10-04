@@ -2,6 +2,7 @@
 
 stdout carries one final JSON object; progress goes to stderr. Refusals print a
 content-free message (every message in this package is authored, never corpus text).
+The whole-command deadline starts at dispatch, before any argument is acted on.
 """
 
 from __future__ import annotations
@@ -9,6 +10,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import time
 from pathlib import Path
 from typing import Any
 
@@ -39,12 +41,17 @@ def _parser() -> argparse.ArgumentParser:
     audit.add_argument("--progress-interval", type=float, default=5.0)
     audit.add_argument("--no-progress", action="store_true")
 
-    report = commands.add_parser("report", help="re-derive and verify every artifact")
+    report = commands.add_parser(
+        "report", help="validate the receipt, re-hash sources, re-derive every artifact"
+    )
     report.add_argument("--manifest", type=Path, required=True)
     report.add_argument("--output", type=Path, required=True)
     report.add_argument("--data-root", type=Path, default=None)
     report.add_argument("--c05-proof", type=Path, default=None)
     report.add_argument("--allow-authored-proof", action="store_true")
+    report.add_argument("--workers", type=int, choices=(1, 2, 4, 8, 16), default=4)
+    report.add_argument("--max-rss-gib", type=float, default=8.0)
+    report.add_argument("--deadline-hours", type=float, default=6.0)
 
     review = commands.add_parser(
         "materialize-review",
@@ -52,17 +59,24 @@ def _parser() -> argparse.ArgumentParser:
     )
     review.add_argument("--output", type=Path, required=True, help="completed audit directory")
     review.add_argument("--destination", type=Path, required=True, help="new directory")
+    review.add_argument("--manifest", type=Path, default=None, help="default: from the receipt")
     review.add_argument("--data-root", type=Path, default=None)
+    review.add_argument("--c05-proof", type=Path, default=None)
+    review.add_argument("--allow-authored-proof", action="store_true")
     review.add_argument("--operator-confirm", action="store_true", required=False)
     review.add_argument("--roles", nargs="*", default=None)
     review.add_argument("--detectors", nargs="*", default=None)
     review.add_argument("--components", nargs="*", default=None)
     review.add_argument("--max-documents", type=int, default=500)
     review.add_argument("--max-chars", type=int, default=20_000)
+    review.add_argument("--max-output-mib", type=int, default=512)
+    review.add_argument("--max-rss-gib", type=float, default=8.0)
+    review.add_argument("--free-reserve-gib", type=float, default=1.0)
+    review.add_argument("--deadline-hours", type=float, default=3.0)
     return parser
 
 
-def _audit(args: argparse.Namespace) -> dict[str, Any]:
+def _audit(args: argparse.Namespace, started: float) -> dict[str, Any]:
     from xlm.data.quality.runner import Limits, run_audit
 
     limits = Limits(
@@ -81,10 +95,11 @@ def _audit(args: argparse.Namespace) -> dict[str, Any]:
         proof=args.c05_proof,
         allow_authored_proof=args.allow_authored_proof,
         progress_interval=None if args.no_progress else args.progress_interval,
+        started=started,
     )
 
 
-def _report(args: argparse.Namespace) -> dict[str, Any]:
+def _report(args: argparse.Namespace, started: float) -> dict[str, Any]:
     from xlm.data.quality.runner import verify_report
 
     return verify_report(
@@ -93,44 +108,46 @@ def _report(args: argparse.Namespace) -> dict[str, Any]:
         data_root=args.data_root,
         proof=args.c05_proof,
         allow_authored_proof=args.allow_authored_proof,
+        workers=args.workers,
+        max_rss_bytes=int(args.max_rss_gib * GIB),
+        deadline_seconds=args.deadline_hours * 3600,
+        started=started,
     )
 
 
-def _materialize(args: argparse.Namespace) -> dict[str, Any]:
-    from xlm.data.quality.review import ReviewError, materialize_review, read_review_rows
-    from xlm.data.quality.scan import RECEIPT_FILE
+def _materialize(args: argparse.Namespace, started: float) -> dict[str, Any]:
+    from xlm.data.quality.review import ReviewError
+    from xlm.data.quality.runner import ReviewLimits, materialize_from_audit
 
     if not args.operator_confirm:
         raise ReviewError(
             "materialize-review copies corpus text; rerun with --operator-confirm "
             "(operator only, never an automated agent)"
         )
-    receipt = json.loads((args.output / RECEIPT_FILE).read_bytes())
-    if receipt.get("status") != "COMPLETE":
-        raise ReviewError("audit is not complete")
-    binding = receipt["binding"]
-    root = args.data_root if args.data_root is not None else Path(binding["data_root"])
-    files = {f["path"]: f for f in receipt["source_files"]}
-    rows = read_review_rows(args.output / "review-manifest.jsonl")
-    selected = [
-        r
-        for r in rows
-        if (args.roles is None or set(r["roles"]) & set(args.roles))
-        and (args.detectors is None or r["detector"] in args.detectors)
-        and (args.components is None or r["component"] in args.components)
-    ]
-    return materialize_review(
-        selected,
-        data_root=root,
-        files=files,
-        destination=args.destination,
-        max_documents=args.max_documents,
-        max_chars=args.max_chars,
-        line_ceiling=int(binding["line_ceiling"]),
+    return materialize_from_audit(
+        args.output,
+        args.destination,
+        limits=ReviewLimits(
+            max_documents=args.max_documents,
+            max_chars=args.max_chars,
+            max_output_bytes=args.max_output_mib * MIB,
+            max_rss_bytes=int(args.max_rss_gib * GIB),
+            free_reserve_bytes=int(args.free_reserve_gib * GIB),
+            deadline_seconds=args.deadline_hours * 3600,
+        ),
+        manifest_path=args.manifest,
+        data_root=args.data_root,
+        proof=args.c05_proof,
+        allow_authored_proof=args.allow_authored_proof,
+        roles=args.roles,
+        detectors=args.detectors,
+        components=args.components,
+        started=started,
     )
 
 
 def main(argv: list[str] | None = None) -> int:
+    started = time.monotonic()  # the whole-command deadline starts at dispatch
     from xlm.data.quality.aggregate import AggregateError
     from xlm.data.quality.overlay import OverlayError
     from xlm.data.quality.review import ReviewError
@@ -139,7 +156,7 @@ def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     handlers = {"audit": _audit, "report": _report, "materialize-review": _materialize}
     try:
-        result = handlers[args.command](args)
+        result = handlers[args.command](args, started)
     except (QualityError, OverlayError, ReviewError, AggregateError) as exc:
         print(json.dumps({"refused": True, "error": str(exc)}))
         return 1

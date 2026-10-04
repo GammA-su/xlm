@@ -45,7 +45,7 @@ def test_real_html_page_is_full_markup_with_structure_indicators() -> None:
     result = run("html_page")
     assert result.doc_class == "markup_like"
     assert {
-        "has_doctype",
+        "has_html_doctype",
         "has_html_open",
         "has_head",
         "has_body",
@@ -377,10 +377,12 @@ def test_review_sampling_is_input_order_independent() -> None:
         for a, b in zip(bounds, bounds[1:], strict=False):
             idx = order[a:b]
             docs = ChunkDocs(
+                key=b"k" * 32,
                 path="p",
                 rows=[i + 1 for i in idx],
                 offsets=[i * 10 for i in idx],
-                doc_ids=[f"d{i}" for i in idx],
+                doc_id_digests=[f"{i:064x}" for i in idx],
+                row_digests=[f"{i + 1:064x}" for i in idx],
                 kept=[None] * len(idx),
                 classes=classes[idx],
             )

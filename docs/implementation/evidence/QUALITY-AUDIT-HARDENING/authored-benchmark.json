@@ -1,0 +1,73 @@
+{
+ "corpus": {
+  "canonical_bytes": 237326851,
+  "documents": 47015,
+  "file_bytes": 268480026,
+  "files": 8,
+  "generation_seconds": 9.2
+ },
+ "kind": "xlm_quality_audit_benchmark_v1",
+ "label": "AUTHORED SYNTHETIC CORPUS MEASUREMENT + PROJECTION (not a real-corpus run)",
+ "machine": {
+  "logical_cpus": 16,
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.12.13"
+ },
+ "mean_jsonl_row_bytes": 5710.5,
+ "projection_caveats": [
+  "authored text mix, not the real detector-cost mix",
+  "corpus generated on this machine; the real corpus is read from the operator's G: SSD",
+  "projection excludes overlay membership streaming and final aggregation"
+ ],
+ "real_target": {
+  "canonical_bytes": 81859652239,
+  "documents": 15097174,
+  "file_bytes": 104506534003,
+  "mean_jsonl_row_bytes": 6922.3
+ },
+ "runs": [
+  {
+   "PROJECTION_real_scan_hours_by_bytes": 4.83,
+   "PROJECTION_real_scan_hours_by_documents": 3.99,
+   "documents_per_s": 1051.7,
+   "file_mb_per_s": 6.006,
+   "peak_process_tree_rss_gib": 0.155,
+   "scan_seconds": 44.703,
+   "wall_seconds": 45.484,
+   "workers": 1
+  },
+  {
+   "PROJECTION_real_scan_hours_by_bytes": 2.84,
+   "PROJECTION_real_scan_hours_by_documents": 2.34,
+   "documents_per_s": 1790.0,
+   "file_mb_per_s": 10.222,
+   "peak_process_tree_rss_gib": 0.406,
+   "scan_seconds": 26.265,
+   "wall_seconds": 27.0,
+   "workers": 2
+  },
+  {
+   "PROJECTION_real_scan_hours_by_bytes": 1.54,
+   "PROJECTION_real_scan_hours_by_documents": 1.27,
+   "documents_per_s": 3292.1,
+   "file_mb_per_s": 18.8,
+   "peak_process_tree_rss_gib": 0.738,
+   "scan_seconds": 14.281,
+   "wall_seconds": 15.016,
+   "workers": 4
+  },
+  {
+   "PROJECTION_real_scan_hours_by_bytes": 0.96,
+   "PROJECTION_real_scan_hours_by_documents": 0.79,
+   "documents_per_s": 5279.0,
+   "file_mb_per_s": 30.146,
+   "peak_process_tree_rss_gib": 1.333,
+   "scan_seconds": 8.906,
+   "wall_seconds": 9.656,
+   "workers": 8
+  }
+ ],
+ "worker_independent_result_digest": [
+  "c1f0bb778b281231382d9a60ed476ea7de0c6e388080f316a13ad3895ef0b8a7"
+ ]
+}

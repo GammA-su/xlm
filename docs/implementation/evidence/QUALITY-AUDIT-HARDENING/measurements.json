@@ -1,0 +1,56 @@
+{
+ "chunk_profile": {
+  "bytes": 5693927,
+  "identity_overhead_ratio": 0.991,
+  "plain_mb_per_s_one_core": 6.79,
+  "plain_seconds": 0.839,
+  "rows": 1500,
+  "with_kept_identity_seconds": 0.831
+ },
+ "label": "AUTHORED MEASUREMENTS (not a real-corpus run)",
+ "overlay_staging": {
+  "PROJECTION_seconds_per_million_kept_rows": 12.7,
+  "algorithm": "one pass; each row indexes its own file array (O(kept rows)), no per-file masks",
+  "row_bytes": 424,
+  "rows": 200000,
+  "rows_per_s": 79044.4
+ },
+ "run_detector_scaling": [
+  {
+   "best_full_analyze_seconds": 0.00087,
+   "best_run_detector_seconds": 0.000261,
+   "distinct_code_points": 1000,
+   "utf8_bytes": 24000
+  },
+  {
+   "best_full_analyze_seconds": 0.001674,
+   "best_run_detector_seconds": 0.000495,
+   "distinct_code_points": 2000,
+   "utf8_bytes": 48000
+  },
+  {
+   "best_full_analyze_seconds": 0.003079,
+   "best_run_detector_seconds": 0.000945,
+   "distinct_code_points": 4000,
+   "utf8_bytes": 96000
+  },
+  {
+   "best_full_analyze_seconds": 0.006104,
+   "best_run_detector_seconds": 0.001905,
+   "distinct_code_points": 8000,
+   "utf8_bytes": 192000
+  },
+  {
+   "best_full_analyze_seconds": 0.012647,
+   "best_run_detector_seconds": 0.003787,
+   "distinct_code_points": 16000,
+   "utf8_bytes": 384000
+  },
+  {
+   "best_full_analyze_seconds": 0.02668,
+   "best_run_detector_seconds": 0.008191,
+   "distinct_code_points": 32000,
+   "utf8_bytes": 768000
+  }
+ ]
+}

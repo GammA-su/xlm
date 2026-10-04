@@ -1,0 +1,31 @@
+         706714 function calls (676714 primitive calls) in 1.101 seconds
+
+   Ordered by: internal time
+   List reduced from 164 to 25 due to restriction <25>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+     1500    0.205    0.000    0.843    0.001 detectors.py:406(analyze)
+     1500    0.092    0.000    0.092    0.000 {built-in method zlib.compress}
+     4500    0.081    0.000    0.081    0.000 {built-in method _collections._count_elements}
+    17890    0.080    0.000    0.080    0.000 {method 'split' of 'str' objects}
+        1    0.071    0.071    1.101    1.101 scan.py:337(process_chunk)
+     1500    0.052    0.000    0.052    0.000 detectors.py:699(<genexpr>)
+     1500    0.039    0.000    0.068    0.000 detectors.py:743(maximal_runs)
+     1500    0.037    0.000    0.037    0.000 detectors.py:694(<genexpr>)
+     1500    0.024    0.000    0.046    0.000 detectors.py:379(char_counts)
+31500/1500    0.024    0.000    0.034    0.000 canonical.py:55(_reject_nonfinite)
+    14890    0.022    0.000    0.022    0.000 {method 'join' of 'str' objects}
+     1500    0.017    0.000    0.021    0.000 decoder.py:344(raw_decode)
+   108046    0.015    0.000    0.020    0.000 {built-in method builtins.isinstance}
+     9000    0.014    0.000    0.014    0.000 {built-in method builtins.max}
+     1500    0.013    0.000    0.014    0.000 _function_base_impl.py:1413(diff)
+    70534    0.012    0.000    0.012    0.000 {method 'get' of 'dict' objects}
+     1500    0.012    0.000    0.050    0.000 aggregate.py:157(add)
+     3429    0.012    0.000    0.012    0.000 {method 'reduce' of 'numpy.ufunc' objects}
+     8945    0.010    0.000    0.047    0.000 detectors.py:530(<genexpr>)
+     3058    0.010    0.000    0.010    0.000 {method 'searchsorted' of 'numpy.ndarray' objects}
+     8945    0.009    0.000    0.043    0.000 detectors.py:562(<genexpr>)
+    16500    0.009    0.000    0.009    0.000 detectors.py:724(<genexpr>)
+    67379    0.009    0.000    0.009    0.000 {built-in method builtins.len}
+     1500    0.009    0.000    0.085    0.000 scan.py:307(parse_row)
+     3000    0.009    0.000    0.026    0.000 aggregate.py:129(_numeric_slot)

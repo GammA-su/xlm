@@ -16,6 +16,7 @@ from __future__ import annotations
 import re
 import unicodedata
 import zlib
+from bisect import bisect_right
 from collections import Counter
 from operator import itemgetter
 from typing import Any
@@ -57,6 +58,7 @@ BIDI_CONTROLS = frozenset(
 )
 MOJIBAKE_LEADS = frozenset("ÃÂâïÐÑ")
 
+CLASS_CACHE_LIMIT = 65_536
 _CLASS_CACHE: dict[str, int] = {}
 
 
@@ -104,7 +106,8 @@ def char_mask(ch: str) -> int:
         mask |= NONCHAR
     if category == "Cs":
         mask |= SURR
-    _CLASS_CACHE[ch] = mask
+    if len(_CLASS_CACHE) < CLASS_CACHE_LIMIT:
+        _CLASS_CACHE[ch] = mask  # Bounded; beyond the limit masks are recomputed.
     return mask
 
 
@@ -126,9 +129,14 @@ KNOWN_TAG_RE = re.compile(
 )
 GENERIC_TAG_RE = re.compile(r"</?[A-Za-z][A-Za-z0-9:_-]{0,31}(?:\s[^<>\n]{0,256})?/?>")
 STRUCTURE_RE = re.compile(
-    r"<(!doctype|\?xml|html|head|body|script|style|nav|footer|form)(?=[\s>/])",
+    r"<(\?xml|html|head|body|script|style|nav|footer|form)(?=[\s>/])",
     re.IGNORECASE,
 )
+# The doctype NAME decides HTML versus XML: ``<!DOCTYPE html>`` is HTML,
+# ``<!DOCTYPE note>`` (or any other name) is an XML/SGML document type.
+DOCTYPE_RE = re.compile(r"<!doctype\s+([A-Za-z_][\w.:-]{0,63})", re.IGNORECASE)
+# Fenced code examples (``` or ~~~, same fence to close, or until the end).
+FENCE_RE = re.compile(r"^[ \t]*(`{3,}|~{3,})[^\n]*\n.*?(?:^[ \t]*\1[ \t]*$|\Z)", re.M | re.S)
 CLOSING_RE = re.compile(r"</(?:" + HTML_ELEMENTS + r")\s*>", re.IGNORECASE)
 ENTITY_RE = re.compile(r"&(?:[A-Za-z][A-Za-z0-9]{1,31}|#[0-9]{1,7}|#[xX][0-9A-Fa-f]{1,6});")
 URL_RE = re.compile(r"(?:https?://|www\.)[^\s<>\"'\]\)]{1,2048}", re.IGNORECASE)
@@ -290,6 +298,8 @@ def pattern_sources() -> dict[str, Any]:
         "known_tag": KNOWN_TAG_RE.pattern,
         "generic_tag": GENERIC_TAG_RE.pattern,
         "structure": STRUCTURE_RE.pattern,
+        "doctype": DOCTYPE_RE.pattern,
+        "fence": FENCE_RE.pattern,
         "closing": CLOSING_RE.pattern,
         "entity": ENTITY_RE.pattern,
         "url": URL_RE.pattern,
@@ -297,7 +307,8 @@ def pattern_sources() -> dict[str, Any]:
         "boilerplate_phrases": [[c, list(k), p.pattern] for c, k, p in BOILERPLATE_PHRASES],
         "boilerplate_lines": sorted(BOILERPLATE_LINES.items()),
         "menu_line": [MENU_LINE_MAX_CHARS, MENU_STRIP],
-        "run": "probe ch*RUN_MIN, then escaped ch{RUN_MIN,}",
+        "run": "maximal adjacent same-code-point runs >= RUN_MIN (linear)",
+        "class_cache_limit": CLASS_CACHE_LIMIT,
         "dense_code_limit": DENSE_CODE_LIMIT,
         "paragraph": PARAGRAPH_RE.pattern,
         "page_number": PAGE_NUMBER_RE.pattern,
@@ -330,6 +341,8 @@ ZERO_WHEN_EMPTY = (
     "html_entities",
     "script_style_blocks",
     "boilerplate_lines",
+    "boilerplate_phrase_hits",
+    "fenced_tags",
     "urls",
     "domain_mentions",
     "dup_lines",
@@ -353,13 +366,22 @@ class Analysis:
 
 
 DENSE_CODE_LIMIT = 0x3000
+EMPTY_CODES = np.zeros(0, dtype="<u4")
 
 
-def char_counts(text: str) -> dict[str, int]:
+def code_points(text: str) -> np.ndarray:
+    """The text as a UTF-32 code-point array (lone surrogates kept, never decoded)."""
+    if not text:
+        return EMPTY_CODES
+    return np.frombuffer(text.encode("utf-32-le", "surrogatepass"), dtype="<u4")
+
+
+def char_counts(text: str, codes: np.ndarray | None = None) -> dict[str, int]:
     """Exact code-point counts: ``bincount`` for small code points, else ``unique``."""
     if not text:
         return {}
-    codes = np.frombuffer(text.encode("utf-32-le", "surrogatepass"), dtype="<u4")
+    if codes is None:
+        codes = code_points(text)
     if int(codes.max()) < DENSE_CODE_LIMIT:
         dense = np.bincount(codes)
         present = np.flatnonzero(dense)
@@ -391,7 +413,8 @@ def analyze(text: str, utf8_bytes: int) -> Analysis:
 
     # Character classes: one vectorized count, then per distinct code point.
     by_mask: dict[int, int] = {}
-    counts = char_counts(text)
+    codes = code_points(text)
+    counts = char_counts(text, codes)
     unique = len(counts)
     for ch, n in counts.items():
         mask = _CLASS_CACHE.get(ch)
@@ -450,7 +473,7 @@ def analyze(text: str, utf8_bytes: int) -> Analysis:
         v[M["max_line_chars"]] = max(map(len, lines_all), default=0)
         for name in ZERO_WHEN_EMPTY:
             v[M[name]] = 0
-        _runs(text, counts, v)
+        _runs(text, codes, v)
         if whitespace_only:
             v[M["whitespace_ratio"]] = 1.0
         return Analysis(v, flags, "empty")
@@ -550,24 +573,38 @@ def analyze(text: str, utf8_bytes: int) -> Analysis:
     v[M["dup_paragraph_byte_ratio"]] = min(1.0, dup_paragraph_bytes / utf8_bytes)
 
     # Character runs.
-    _runs(text, counts, v)
+    _runs(text, codes, v)
 
-    # Markup.
-    html_tags = generic_tags = entities = script_style = 0
+    # Markup. Structure is judged on the text OUTSIDE fenced code examples (``` / ~~~);
+    # tag-shaped tokens inside fences are only counted as ``fenced_tags``.
+    html_tags = generic_tags = entities = script_style = fenced_tags = 0
     tag_chars = 0
-    if "<" in text:
-        for match in KNOWN_TAG_RE.finditer(text):
+    full = xml = False
+    surface = text
+    if "<" in text and ("```" in text or "~~~" in text):
+        examples = [m.group(0) for m in FENCE_RE.finditer(text)]
+        if examples:
+            surface = FENCE_RE.sub("\n", text)
+            fenced_tags = sum(1 for e in examples for _ in GENERIC_TAG_RE.finditer(e))
+    if fenced_tags:
+        flags.append(F["markup_fenced_example"])
+    if "<" in surface:
+        for match in KNOWN_TAG_RE.finditer(surface):
             html_tags += 1
             tag_chars += match.end() - match.start()
-        generic_tags = sum(1 for _ in GENERIC_TAG_RE.finditer(text))
+        generic_tags = sum(1 for _ in GENERIC_TAG_RE.finditer(surface))
         seen: set[str] = set()
-        for match in STRUCTURE_RE.finditer(text):
-            key = match.group(1).lower().rstrip()
+        for match in STRUCTURE_RE.finditer(surface):
+            key = match.group(1).lower()
             seen.add(key)
             if key in ("script", "style"):
                 script_style += 1
+        doctypes = {m.group(1).lower() for m in DOCTYPE_RE.finditer(surface)}
+        if "html" in doctypes:
+            flags.append(F["has_html_doctype"])
+        if doctypes - {"html"}:
+            flags.append(F["has_other_doctype"])
         structure = {
-            "!doctype": "has_doctype",
             "?xml": "has_xml_decl",
             "html": "has_html_open",
             "head": "has_head",
@@ -581,19 +618,21 @@ def analyze(text: str, utf8_bytes: int) -> Analysis:
         for key, flag in structure.items():
             if key in seen:
                 flags.append(F[flag])
-        if CLOSING_RE.search(text):
+        if CLOSING_RE.search(surface):
             flags.append(F["has_closing_tag"])
-        if "<!--" in text:
+        if "<!--" in surface:
             flags.append(F["has_html_comment"])
-        full = "!doctype" in seen or "html" in seen or ("head" in seen and "body" in seen)
-    else:
-        full = False
-    if "&" in text:
-        entities = sum(1 for _ in ENTITY_RE.finditer(text))
+        # Only an HTML doctype or HTML document elements make full HTML; an XML
+        # declaration or a non-HTML doctype (``<!DOCTYPE note>``) is XML instead.
+        full = "html" in doctypes or "html" in seen or ("head" in seen and "body" in seen)
+        xml = "?xml" in seen or bool(doctypes - {"html"})
+    if "&" in surface:
+        entities = sum(1 for _ in ENTITY_RE.finditer(surface))
         if entities:
             flags.append(F["has_entity"])
     v[M["html_tags"]] = html_tags
     v[M["generic_tags"]] = generic_tags
+    v[M["fenced_tags"]] = fenced_tags
     v[M["html_entities"]] = entities
     v[M["script_style_blocks"]] = script_style
     tag_ratio = tag_chars * inv
@@ -602,33 +641,43 @@ def analyze(text: str, utf8_bytes: int) -> Analysis:
         flags.append(F["markup_full_html"])
     elif html_tags or entities:
         flags.append(F["markup_light"])
+    if xml:
+        flags.append(F["markup_xml"])
     if generic_tags > html_tags:
         flags.append(F["markup_ambiguous_code"])
-    if full or html_tags or entities or {F["has_xml_decl"], F["has_html_comment"]} & set(flags):
+    if full or xml or html_tags or entities or F["has_html_comment"] in flags:
         flags.append(F["markup_any"])
 
-    # Boilerplate / links (short lines only for phrase categories).
-    bp_lines = 0
+    # Boilerplate / links (short lines only). ``boilerplate_lines`` counts DISTINCT
+    # matching lines; ``boilerplate_phrase_hits`` counts every category match.
+    phrase_hits = 0
+    matched_lines: set[int] = set()
     categories: set[str] = set()
-    short = "\n".join(s for s in stripped if len(s) <= BOILERPLATE_LINE_MAX_CHARS).lower()
-    if short:
+    short_lines = [s.lower() for s in stripped if len(s) <= BOILERPLATE_LINE_MAX_CHARS]
+    if short_lines:
+        short = "\n".join(short_lines)
+        starts: list[int] | None = None
         for category, keywords, pattern in BOILERPLATE_PHRASES:
             if any(k in short for k in keywords):
-                hits = sum(1 for _ in pattern.finditer(short))
-                if hits:
-                    bp_lines += hits
+                for match in pattern.finditer(short):
+                    if starts is None:
+                        starts = _line_starts(short_lines)
+                    phrase_hits += 1
                     categories.add(category)
-        for s in stripped:
+                    matched_lines.add(bisect_right(starts, match.start()) - 1)
+        for index, s in enumerate(short_lines):
             if len(s) <= MENU_LINE_MAX_CHARS:
-                menu = BOILERPLATE_LINES.get(" ".join(s.lower().strip(MENU_STRIP).split()))
+                menu = BOILERPLATE_LINES.get(" ".join(s.strip(MENU_STRIP).split()))
                 if menu is not None:
-                    bp_lines += 1
+                    phrase_hits += 1
                     categories.add(menu)
+                    matched_lines.add(index)
     for category in sorted(categories):
         flags.append(_BP_FLAG[category])
     if categories:
         flags.append(F["boilerplate_any"])
-    v[M["boilerplate_lines"]] = bp_lines
+    v[M["boilerplate_lines"]] = len(matched_lines)
+    v[M["boilerplate_phrase_hits"]] = phrase_hits
     urls = url_chars = 0
     if "://" in text or "www." in text or "WWW." in text:
         for match in URL_RE.finditer(text):
@@ -691,39 +740,51 @@ def analyze(text: str, utf8_bytes: int) -> Analysis:
     return Analysis(v, flags, doc_class)
 
 
-_RUN_PATTERNS: dict[str, re.Pattern[str]] = {}
+def maximal_runs(codes: np.ndarray, minimum: int) -> tuple[np.ndarray, np.ndarray]:
+    """Code point and length of every maximal same-code-point run >= ``minimum``.
+
+    One vectorized pass over adjacent differences: O(n) in the document length,
+    independent of how many distinct code points it contains.
+    """
+    size = int(codes.shape[0])
+    if size < minimum:
+        return EMPTY_CODES, np.zeros(0, dtype=np.int64)
+    boundaries = np.flatnonzero(codes[1:] != codes[:-1]) + 1
+    starts = np.concatenate(([0], boundaries))
+    lengths = np.diff(np.concatenate((starts, [size])))
+    long = lengths >= minimum
+    return codes[starts[long]], lengths[long].astype(np.int64)
 
 
-def _run_pattern(ch: str) -> re.Pattern[str]:
-    pattern = _RUN_PATTERNS.get(ch)
-    if pattern is None:
-        pattern = re.compile(re.escape(ch) + "{" + str(RUN_MIN) + ",}")
-        _RUN_PATTERNS[ch] = pattern
-    return pattern
-
-
-def _runs(text: str, counts: dict[str, int], v: list[float | int | None]) -> None:
-    """Same-character runs >= RUN_MIN: probe only code points that could form one."""
+def _runs(text: str, codes: np.ndarray, v: list[float | int | None]) -> None:
+    """Same-character runs >= RUN_MIN by class, from one linear pass over ``codes``."""
     best = {"space": 0, "punct": 0, "alnum": 0, "other": 0}
-    covered = 0
-    for ch, n in counts.items():
-        if n < RUN_MIN or ch * RUN_MIN not in text:
-            continue
+    run_codes, lengths = maximal_runs(codes, RUN_MIN)
+    covered = int(lengths.sum())
+    for code, length in zip(run_codes.tolist(), lengths.tolist(), strict=True):
+        ch = chr(code)
         mask = _CLASS_CACHE.get(ch)
         if mask is None:
             mask = char_mask(ch)
         kind = _run_class(mask)
-        for match in _run_pattern(ch).finditer(text):
-            length = match.end() - match.start()
-            covered += length
-            if length > best[kind]:
-                best[kind] = length
+        if length > best[kind]:
+            best[kind] = length
     v[M["max_char_run"]] = max(best.values())
     v[M["max_space_run"]] = best["space"]
     v[M["max_punct_run"]] = best["punct"]
     v[M["max_alnum_run"]] = best["alnum"]
     v[M["max_other_run"]] = best["other"]
     v[M["repeated_char_ratio"]] = covered / len(text) if text else None
+
+
+def _line_starts(lines: list[str]) -> list[int]:
+    """Start offset of each line in ``"\\n".join(lines)``."""
+    starts = [0] * len(lines)
+    offset = 0
+    for index, line in enumerate(lines):
+        starts[index] = offset
+        offset += len(line) + 1
+    return starts
 
 
 def _classify(

@@ -2,30 +2,31 @@
 
 The parent reads every manifest file once, sequentially, hashing every byte, and cuts
 fixed-size blocks at line boundaries into chunk tasks. Workers (spawned processes, or
-in-process for ``workers=1``) parse, verify and measure rows and return content-free
-statistics. Results are consumed strictly in task order. A file's statistics are
-committed as one atomic unit only after its SHA-256, byte size, row count and
-canonical-byte total equal the manifest; anything earlier is discarded on failure.
+in-process for ``workers=1``) strictly parse, verify and measure rows and return
+content-free statistics. Results are consumed strictly in task order.
+
+Source identity (never mtime): a file's statistics are committed as one atomic unit
+only after (1) the bytes that were measured hashed to the manifest SHA-256, size and
+row count while being read, and (2) a SECOND full re-hash, started only after the
+last measurement of that file returned, matches again (``verify_source``). Any
+mutation persisting from before the scan, during it, or after it until the commit is
+refused. Resume, ``report`` and review materialization re-hash every reused source
+file the same way before trusting it.
 
 Chunk size is fixed (bound into the audit identity), so worker count is operational
 only: aggregate artifacts are byte-identical for 1/2/4/8/16 workers.
-
-Resume: a unit is reused only when the audit binding (manifest digest, detector
-policy, implementation identity, overlay, chunking) is identical and the source
-file's size and modification time still equal the values recorded at commit; any
-other difference refuses. A partial run never writes the completion receipt.
 """
 
 from __future__ import annotations
 
+import dataclasses
 import hashlib
-import json
 import os
 import sys
 import time
 import zlib
 from collections import deque
-from collections.abc import Callable, Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator, Mapping
 from concurrent.futures import Future, ProcessPoolExecutor
 from concurrent.futures import TimeoutError as FutureTimeout
 from dataclasses import dataclass, field
@@ -35,17 +36,19 @@ from typing import Any, TypeVar
 
 import numpy as np
 
+from xlm.core.contracts import CanonicalDocument
 from xlm.data.evidence_v2 import canonical
 from xlm.data.exclusion.supervisor import Checkable
 from xlm.data.quality.aggregate import CLASS_INDEX, N_METRICS, Population
 from xlm.data.quality.detectors import analyze
-from xlm.data.quality.overlay import KeptOverlay
-from xlm.data.quality.policy import POLICY_VERSION, policy_identity
-from xlm.data.quality.review import ChunkDocs, merge_samples, sample_chunk
+from xlm.data.quality.overlay import IDENTITY, KeptOverlay, doc_digest
+from xlm.data.quality.policy import POLICY_VERSION, SPLIT_VALUES, policy_identity
+from xlm.data.quality.review import ChunkDocs, merge_samples, review_key, sample_chunk
 
 CHUNK_BYTES = 32 * 1024**2
-UNIT_KIND = "xlm_quality_audit_unit_v1"
-BINDING_KIND = "xlm_quality_audit_binding_v1"
+VERIFY_BLOCK_BYTES = 8 * 1024**2
+UNIT_KIND = "xlm_quality_audit_unit_v2"
+BINDING_KIND = "xlm_quality_audit_binding_v2"
 BINDING_FILE = "audit-binding.json"
 UNITS_DIR = "units"
 RECEIPT_FILE = "quality-audit-receipt.json"
@@ -64,9 +67,27 @@ FILE_KEYS = (
 WORKER_CHOICES = (1, 2, 4, 8, 16)
 MAX_FILES = 10_000
 MAX_LINE_CEILING = 256 * 1024**2
+MAX_MANIFEST_BYTES = 8 * 1024**2
+MAX_UNIT_FILE_BYTES = 64 * 1024**2
+MAX_UNIT_DECODED_BYTES = 512 * 1024**2
 POLL_SECONDS = 0.05
 NAN = float("nan")
 HEX = frozenset("0123456789abcdef")
+CANONICAL_FIELDS = frozenset(f.name for f in dataclasses.fields(CanonicalDocument))
+_STR_FIELDS = (
+    "doc_id",
+    "source_id",
+    "source_revision",
+    "source_file",
+    "raw_hash",
+    "clean_hash",
+    "text",
+    "language",
+    "document_kind",
+    "license_reference",
+    "split",
+)
+_SPLITS = frozenset(SPLIT_VALUES)
 
 T = TypeVar("T")
 R = TypeVar("R")
@@ -123,15 +144,25 @@ class InputManifest:
         }
 
 
-def load_manifest(path: Path, data_root: Path | None = None) -> InputManifest:
-    """Read a C05 input manifest (digest-checked, 8 MiB bound) and validate its files."""
-    from xlm.data.exclusion.inputs import InputError, contained, read_metadata
+def read_bounded(path: Path, limit: int, what: str) -> bytes:
+    with path.open("rb") as stream:
+        raw = stream.read(limit + 1)
+    if len(raw) > limit:
+        raise QualityError(f"{what} exceeds its size bound")
+    return raw
 
-    raw = path.read_bytes()
+
+def load_manifest(path: Path, data_root: Path | None = None) -> InputManifest:
+    """One bounded read of a C05 input manifest: strict JSON, self-digest, schema."""
+    from xlm.data.exclusion.inputs import InputError, contained
+
+    raw = read_bounded(path, MAX_MANIFEST_BYTES, "input manifest")
     try:
-        body = read_metadata(path)
-    except (InputError, ValueError) as exc:
-        raise QualityError(f"input manifest refused: {exc}") from None
+        body = canonical.loads_bytes_strict(raw)
+    except ValueError:
+        raise QualityError("input manifest refused: not strict canonical JSON") from None
+    if not isinstance(body, dict) or body.get("digest") != canonical.self_digest(body):
+        raise QualityError("input manifest refused: self-digest mismatch")
     kind = body.get("kind")
     if kind not in MANIFEST_KINDS:
         raise QualityError("input manifest kind is not a C05 input manifest")
@@ -188,6 +219,53 @@ def load_manifest(path: Path, data_root: Path | None = None) -> InputManifest:
     )
 
 
+# -- source identity ------------------------------------------------------------------------
+
+
+def verify_source(
+    root: Path,
+    item: AuditFile,
+    *,
+    check: Callable[[], None] | None = None,
+    probes: Mapping[int, int] | None = None,
+) -> set[int]:
+    """Full re-hash: SHA-256, byte size and row count must equal the frozen manifest.
+
+    ``probes`` maps byte offsets to the 1-based row expected to start there; the
+    offsets proven to start exactly that row are returned.
+    """
+    path = root / item.path
+    digest = hashlib.sha256()
+    size = newlines = 0
+    previous = b"\n"
+    targets = sorted(probes or {})
+    verified: set[int] = set()
+    pointer = 0
+    with path.open("rb", buffering=0) as stream:
+        while block := stream.read(min(VERIFY_BLOCK_BYTES, item.file_bytes - size + 1)):
+            if check is not None:
+                check()
+            end = size + len(block)
+            while pointer < len(targets) and targets[pointer] < end:
+                offset = targets[pointer]
+                local = offset - size
+                before = previous if local == 0 else block[local - 1 : local]
+                row = newlines + block.count(b"\n", 0, local) + 1
+                if before == b"\n" and probes is not None and probes[offset] == row:
+                    verified.add(offset)
+                pointer += 1
+            digest.update(block)
+            newlines += block.count(b"\n")
+            size = end
+            previous = block[-1:]
+            if size > item.file_bytes:
+                break
+    rows = newlines + (1 if size and previous != b"\n" else 0)
+    if (size, digest.hexdigest(), rows) != (item.file_bytes, item.documents_sha256, item.documents):
+        raise QualityError("source file differs from the frozen manifest SHA-256/size/rows")
+    return verified
+
+
 # -- worker kernel ----------------------------------------------------------------------------
 
 
@@ -201,6 +279,8 @@ class ChunkTask:
     kept: bytes | None
     line_ceiling: int
     last: bool
+    identity: bytes | None = None
+    review_key: bytes = b"\0" * 32
 
 
 @dataclass
@@ -224,10 +304,41 @@ def worker_init() -> None:
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
+def parse_row(body: bytes) -> dict[str, Any]:
+    """Strict canonical JSON (strict UTF-8, no duplicate keys, no NaN/Infinity) with the
+    exact CanonicalDocument field set and types."""
+    try:
+        document = canonical.loads_bytes_strict(body)
+    except ValueError:
+        raise QualityError(
+            "malformed canonical JSONL row (strict canonical JSON required)"
+        ) from None
+    if type(document) is not dict or document.keys() != CANONICAL_FIELDS:
+        raise QualityError("canonical row schema")
+    for name in _STR_FIELDS:
+        if type(document[name]) is not str:
+            raise QualityError("canonical row schema")
+    for name in ("utf8_byte_count", "source_row"):
+        if type(document[name]) is not int:
+            raise QualityError("canonical row schema")
+    confidence = document["language_confidence"]
+    if type(confidence) not in (int, float):
+        raise QualityError("canonical row schema")
+    if type(document["source_metadata"]) is not dict or type(document["cluster_ids"]) is not dict:
+        raise QualityError("canonical row schema")
+    for name in ("parent_ids", "transform_log", "quality_reasons"):
+        if type(document[name]) is not list:
+            raise QualityError("canonical row schema")
+    if document["split"] not in _SPLITS:
+        raise QualityError("canonical row schema")
+    return document
+
+
 def process_chunk(task: ChunkTask) -> ChunkResult:
     """Parse, verify and measure every row of one chunk (pure; never writes)."""
     data = task.data
     kept = None if task.kept is None else np.frombuffer(task.kept, dtype=np.bool_)
+    identity = None if task.identity is None else np.frombuffer(task.identity, dtype=IDENTITY)
     values: list[list[float]] = []
     sizes: list[int] = []
     lines: list[int] = []
@@ -236,7 +347,8 @@ def process_chunk(task: ChunkTask) -> ChunkResult:
     names: list[str] = []
     offsets: list[int] = []
     rows: list[int] = []
-    doc_ids: list[str] = []
+    id_digests: list[str] = []
+    row_digests: list[str] = []
     kept_flags: list[bool | None] = []
     populations: dict[str, Population] = {}
     pos, row, end_of_data = 0, task.first_row, len(data)
@@ -245,26 +357,16 @@ def process_chunk(task: ChunkTask) -> ChunkResult:
         stop = end_of_data if newline < 0 else newline + 1
         if stop - pos > task.line_ceiling:
             raise QualityError("canonical row exceeds the document ceiling")
-        try:
-            document = json.loads(data[pos:stop])
-        except ValueError:
-            raise QualityError("malformed canonical JSONL row") from None
-        if not isinstance(document, dict):
-            raise QualityError("canonical row is not an object")
-        text, declared, doc_id = (
-            document.get("text"),
-            document.get("utf8_byte_count"),
-            document.get("doc_id"),
-        )
-        if type(text) is not str or type(declared) is not int or type(doc_id) is not str:
-            raise QualityError("canonical row schema")
+        body = data[pos:newline] if newline >= 0 else data[pos:stop]
+        row_digest = hashlib.sha256(body).digest()
+        document = parse_row(body)
+        text, declared, doc_id = document["text"], document["utf8_byte_count"], document["doc_id"]
         try:
             nbytes = len(text.encode("utf-8"))
         except UnicodeEncodeError:
             raise QualityError("canonical text is not valid Unicode scalar values") from None
         if nbytes != declared:
             raise QualityError("canonical utf8_byte_count disagrees with its text")
-        result = analyze(text, nbytes)
         index = row - task.first_row
         if kept is None:
             membership: bool | None = None
@@ -274,6 +376,10 @@ def process_chunk(task: ChunkTask) -> ChunkResult:
                 raise QualityError("C05 overlay row count disagrees with the chunk")
             membership = bool(kept[index])
             name = "c05_kept" if membership else "c05_removed"
+            if membership:
+                assert identity is not None
+                _verify_kept(identity[index], doc_id, nbytes, row_digest, document)
+        result = analyze(text, nbytes)
         population = populations.get(name)
         if population is None:
             population = populations[name] = Population()
@@ -289,7 +395,8 @@ def process_chunk(task: ChunkTask) -> ChunkResult:
         names.append(name)
         offsets.append(task.base_offset + pos)
         rows.append(row)
-        doc_ids.append(doc_id)
+        id_digests.append(hashlib.sha256(doc_id.encode("utf-8")).hexdigest())
+        row_digests.append(row_digest.hex())
         kept_flags.append(membership)
         row += 1
         pos = stop
@@ -314,10 +421,12 @@ def process_chunk(task: ChunkTask) -> ChunkResult:
     review = sample_chunk(
         matrix,
         ChunkDocs(
+            key=task.review_key,
             path=task.path,
             rows=rows,
             offsets=offsets,
-            doc_ids=doc_ids,
+            doc_id_digests=id_digests,
+            row_digests=row_digests,
             kept=kept_flags,
             classes=class_array,
         ),
@@ -330,6 +439,19 @@ def process_chunk(task: ChunkTask) -> ChunkResult:
         populations=populations,
         review=review,
     )
+
+
+def _verify_kept(
+    expected: Any, doc_id: str, nbytes: int, row_digest: bytes, document: dict[str, Any]
+) -> None:
+    """A kept C05 row must be exactly this canonical row: doc_id, bytes and content."""
+    if expected["doc"].tobytes() != doc_digest(doc_id) or int(expected["bytes"]) != nbytes:
+        raise QualityError("C05 kept-row identity differs from the canonical source row")
+    content = expected["content"].tobytes()
+    # Fast path: the stored row is already canonical bytes, so its SHA-256 is the C05
+    # content digest; otherwise recompute canonical.digest of the parsed row.
+    if row_digest[:16] != content and bytes.fromhex(canonical.digest(document))[:16] != content:
+        raise QualityError("C05 kept-row content differs from the canonical source row")
 
 
 # -- ordered pool -----------------------------------------------------------------------------
@@ -392,7 +514,9 @@ class OrderedPool:
         if self.executor is None:
             for task in tasks:
                 self._check()
-                yield function(task)
+                result = function(task)
+                self._check()  # a non-cooperative in-process task cannot outlive a failure
+                yield result
             return
         pending: deque[Future[R]] = deque()
         iterator = iter(tasks)
@@ -423,10 +547,17 @@ class OrderedPool:
 
 
 def file_tasks(
-    root: Path, item: AuditFile, kept: np.ndarray | None, line_ceiling: int
+    root: Path,
+    item: AuditFile,
+    kept: np.ndarray | None,
+    line_ceiling: int,
+    *,
+    identity: np.ndarray | None = None,
+    key: bytes = b"\0" * 32,
 ) -> Iterator[ChunkTask]:
     """Fixed-size line-aligned chunks; the final task is created only after the file
-    hash and size equal the manifest (so a commit implies a verified file)."""
+    hash, size and row count equal the manifest (the bytes measured are the bytes
+    hashed)."""
     path = root / item.path
     digest = hashlib.sha256()
     size = 0
@@ -438,12 +569,16 @@ def file_tasks(
     def make(data: bytes, last: bool) -> ChunkTask:
         nonlocal row, offset
         rows = data.count(b"\n") + (1 if data and not data.endswith(b"\n") else 0)
-        bitmap = None
+        bitmap = slab = None
+        if row - 1 + rows > item.documents:
+            raise QualityError("file holds more rows than the manifest declares")
         if kept is not None:
-            if row - 1 + rows > kept.shape[0]:
-                raise QualityError("file holds more rows than the manifest declares")
             bitmap = kept[row - 1 : row - 1 + rows].tobytes()
-        task = ChunkTask(item.ordinal, item.path, row, offset, data, bitmap, line_ceiling, last)
+            if identity is not None:
+                slab = identity[row - 1 : row - 1 + rows].tobytes()
+        task = ChunkTask(
+            item.ordinal, item.path, row, offset, data, bitmap, line_ceiling, last, slab, key
+        )
         row += rows
         offset += len(data)
         return task
@@ -474,12 +609,16 @@ def file_tasks(
             yield held
             yield make(pending, True)
         else:
-            yield ChunkTask(**{**held.__dict__, "last": True})
+            yield dataclasses.replace(held, last=True)
     else:
         yield make(pending, True)
 
 
 # -- units ----------------------------------------------------------------------------------
+
+
+def unit_name(ordinal: int) -> str:
+    return f"{UNITS_DIR}/f{ordinal:05d}.unit.zz"
 
 
 def unit_path(output: Path, ordinal: int) -> Path:
@@ -507,9 +646,11 @@ class FileAccumulator:
 
 
 class OutputBudget:
-    def __init__(self, limit: int, output: Path) -> None:
+    """Every byte the job writes is charged BEFORE it is written."""
+
+    def __init__(self, limit: int, used: int = 0) -> None:
         self.limit = limit
-        self.used = sum(p.stat().st_size for p in output.rglob("*") if p.is_file())
+        self.used = used
         if self.used > limit:
             raise QualityError("output directory already exceeds --max-output-gib")
 
@@ -526,47 +667,54 @@ def encode_unit(body: dict[str, Any]) -> bytes:
 
 
 def decode_unit(raw: bytes) -> dict[str, Any]:
+    if len(raw) > MAX_UNIT_FILE_BYTES:
+        raise QualityError("audit unit exceeds its size bound")
     try:
-        body = canonical.loads_bytes_strict(zlib.decompress(raw))
-    except (zlib.error, ValueError):
+        inflater = zlib.decompressobj()
+        expanded = inflater.decompress(raw, MAX_UNIT_DECODED_BYTES)
+        if inflater.unconsumed_tail or not inflater.eof:
+            raise QualityError("audit unit expands beyond its bound or is truncated")
+        body = canonical.loads_bytes_strict(expanded)
+    except (zlib.error, ValueError) as exc:
+        if isinstance(exc, QualityError):
+            raise
         raise QualityError("unreadable audit unit; use a new output directory") from None
     if not isinstance(body, dict) or body.get("digest") != canonical.self_digest(body):
         raise QualityError("audit unit digest mismatch; use a new output directory")
     return body
 
 
-def commit_unit(
-    output: Path, binding: str, acc: FileAccumulator, root: Path, budget: OutputBudget
-) -> None:
+def commit_unit(tree: Any, binding: str, acc: FileAccumulator, envelope: Mapping[str, Any]) -> None:
+    """``tree`` is the job's :class:`~xlm.data.quality.outputs.OutputTree`."""
     item = acc.item
     if acc.rows != item.documents:
         raise QualityError("source row count differs from the manifest")
     if acc.canonical_bytes != item.canonical_bytes:
         raise QualityError("source canonical byte total differs from the manifest")
-    stat = (root / item.path).stat()
     payload = encode_unit(
         {
             "kind": UNIT_KIND,
             "audit_binding": binding,
             "file": item.record(),
-            "stat": {"size": stat.st_size, "mtime_ns": stat.st_mtime_ns},
+            "producer_envelope": dict(envelope),
             "populations": {k: v.to_json() for k, v in sorted(acc.populations.items())},
             "review": {k: acc.review[k] for k in sorted(acc.review)},
         }
     )
-    budget.charge(len(payload))
-    canonical.write_atomic(unit_path(output, item.ordinal), payload)
+    tree.write(unit_name(item.ordinal), payload)
 
 
-def load_unit(output: Path, item: AuditFile, binding: str, root: Path) -> dict[str, Any]:
-    body = decode_unit(unit_path(output, item.ordinal).read_bytes())
+def load_unit(
+    output: Path, item: AuditFile, binding: str, root: Path | None = None
+) -> dict[str, Any]:
+    """Unit statistics bound to this audit and file record (source identity is
+    established separately by :func:`verify_source`, never by mtime)."""
+    path = unit_path(output, item.ordinal)
+    body = decode_unit(read_bounded(path, MAX_UNIT_FILE_BYTES, "audit unit"))
     if body.get("kind") != UNIT_KIND or body.get("audit_binding") != binding:
         raise QualityError("audit unit belongs to a different audit binding")
     if body.get("file") != item.record():
         raise QualityError("audit unit file record differs from the manifest")
-    stat = (root / item.path).stat()
-    if body["stat"] != {"size": stat.st_size, "mtime_ns": stat.st_mtime_ns}:
-        raise QualityError("source file changed since its unit was committed; refusing")
     return body
 
 
@@ -603,6 +751,8 @@ def audit_binding(
         "overlay": None if overlay is None else overlay.binding,
         "chunk_bytes": CHUNK_BYTES,
         "line_ceiling": line_ceiling,
+        "review_key_sha256": hashlib.sha256(review_key(manifest.digest)).hexdigest(),
+        "source_identity": "SHA-256 + size + rows, re-hashed on every reuse; never mtime",
     }
     body["digest"] = canonical.digest(body)
     return body
@@ -620,6 +770,10 @@ class Progress:
         self.started = time.monotonic()
         self.last = 0.0
         self.samples: deque[tuple[float, int]] = deque()
+
+    def stage(self, name: str) -> None:
+        if self.interval is not None:
+            print(f"[QUALITY] {name}", file=sys.stderr, flush=True)
 
     def update(self, files: int, docs: int, read_bytes: int, rss: int, force: bool = False) -> None:
         if self.interval is None:

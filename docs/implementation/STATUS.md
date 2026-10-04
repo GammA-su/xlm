@@ -1,4 +1,33 @@
-> **INDEPENDENT QUALITY ACCEPTANCE (2026-10-04): REAL RUN BLOCKED at 96f38f3.**
+> **GLOBAL QUALITY AUDIT HARDENING (2026-10-04): I01–I14 REPAIRED; READY FOR INDEPENDENT RE-AUDIT; REAL AUDIT NOT RUN.**
+>
+> All 21 independent counterexamples now pass with the historical probe file unchanged
+> (49/49). Repairs:
+> - Source identity is cryptographic: a bracketing re-hash before every commit,
+>   re-hashing on resume, report and review; mtime is never trusted.
+> - A job-owned output tree: input protection, reparse-point checks, owned-only cleanup.
+> - A fully verified review-materialization chain with streamed, bounded output.
+> - One whole-command supervisor with a publication gate.
+> - Dense numeric language bins and bounded content-free vocabularies.
+> - A linear run detector.
+> - HTML/XML/fenced-example semantics.
+> - Exact comparators.
+> - A strict self-digested schema-2 receipt with the effective envelope.
+> - Verified kept-row identity in the C05 overlay.
+> - Distinct-line boilerplate counts.
+> - Strict canonical JSON.
+>
+> Tests: 142 focused passed, plus 1 serial passed. Ruff, mypy strict and diff-check
+> are clean; the full suite was not run. Overlay tests use the AUTHORED synthetic C05
+> fixture; no real C05 ran.
+>
+> Authored performance: 30.1 MB/s at 8 workers (was 32.9). Projected real scan
+> 1.2–1.9 h (likely). Next: an independent re-audit; then the operator `audit` and
+> `report`.
+> [Report](reports/QUALITY-AUDIT-HARDENING.md),
+> [evidence](evidence/QUALITY-AUDIT-HARDENING/COMMANDS.md),
+> [runbook](../runbooks/quality-audit.md).
+
+> **INDEPENDENT QUALITY ACCEPTANCE (2026-10-04): REAL RUN BLOCKED at 96f38f3** (superseded by the hardening entry above; kept as history).
 >
 > Read-only alias/manifest safety, SHA-bound resume, review verification, whole-command
 > resource enforcement, language-bin aggregation, repetition complexity and privacy

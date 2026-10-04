@@ -20,9 +20,9 @@ from typing import Any, Literal
 
 from xlm.data.evidence_v2 import canonical
 
-POLICY_VERSION = "xlm-quality-audit-detectors-v1"
+POLICY_VERSION = "xlm-quality-audit-detectors-v2"
 STATUS_PROPOSAL = "PROPOSAL_ONLY"
-REVIEW_SEED = "xlm-quality-audit-review-v1"
+REVIEW_SEED = "xlm-quality-audit-review-v2"
 
 Kind = Literal["count", "ratio", "real"]
 Direction = Literal["high", "low", "none"]
@@ -123,7 +123,20 @@ METRICS: tuple[MetricSpec, ...] = (
         review=True,
         candidate=True,
     ),
-    _m("generic_tags", "C", "count", "high", "tag-shaped <name ...> tokens of any name"),
+    _m(
+        "generic_tags",
+        "C",
+        "count",
+        "high",
+        "tag-shaped <name ...> tokens of any name, outside fenced code examples",
+    ),
+    _m(
+        "fenced_tags",
+        "C",
+        "count",
+        "none",
+        "tag-shaped tokens inside fenced code examples (``` or ~~~); never full HTML",
+    ),
     _m("html_entities", "C", "count", "high", "HTML/XML character entities", review=True),
     _m("script_style_blocks", "C", "count", "high", "<script / <style openings"),
     # D. boilerplate / web junk
@@ -132,9 +145,16 @@ METRICS: tuple[MetricSpec, ...] = (
         "D",
         "count",
         "high",
-        "short lines matching a boilerplate category",
+        "DISTINCT short lines (<=160 chars) with at least one boilerplate category match",
         review=True,
         candidate=True,
+    ),
+    _m(
+        "boilerplate_phrase_hits",
+        "D",
+        "count",
+        "high",
+        "every boilerplate category match on short lines (one line may hold several)",
     ),
     _m("urls", "D", "count", "high", "http(s):// or www. links"),
     _m("url_char_ratio", "D", "ratio", "high", "characters inside links / characters", review=True),
@@ -342,7 +362,8 @@ SIZE_FLAGS = (
     "bytes_gt4MiB",
 )
 MARKUP_FLAGS = (
-    "has_doctype",
+    "has_html_doctype",
+    "has_other_doctype",
     "has_html_open",
     "has_head",
     "has_body",
@@ -357,7 +378,9 @@ MARKUP_FLAGS = (
     "has_html_comment",
     "markup_full_html",
     "markup_light",
+    "markup_xml",
     "markup_ambiguous_code",
+    "markup_fenced_example",
     "markup_any",
 )
 BOILERPLATE_CATEGORIES = (
@@ -412,8 +435,41 @@ LANGUAGE_SCORE_KEYS = (
 )
 LANGUAGE_LABEL_KEYS = ("upstream_full_doc_lid", "upstream_page_average_lid")
 LANGUAGE_PROVENANCE_KEY = "language_provenance"
-MAX_LABEL_VALUES = 256
-MAX_LABEL_CHARS = 200
+
+# Privacy: no source-derived free string ever reaches an artifact. Every categorical
+# value is mapped onto a bounded vocabulary first; anything else is UNRECOGNIZED.
+UNRECOGNIZED = "<unrecognized>"
+# Language-code-shaped values only (``en``, ``eng``, ``eng_Latn``, ``zh-Hans``).
+LANGUAGE_CODE_PATTERN = r"[a-z]{2,3}(?:[_-][A-Za-z]{4}|[_-][A-Z]{2})?"
+SPLIT_VALUES = ("train", "diagnostic_val", "audit")
+DOCUMENT_KIND_VALUES = ("prose", "code", "dialogue", "qa", "math", "story", "structured")
+# SHA-256 of each exact Mix-01 adapter ``language_provenance`` literal -> category.
+PROVENANCE_CATEGORIES = {
+    "92f9274b236893a7d9b261b0cb6d1673bec1639f4af4903fbc51496e24976ace": ("view_english_registry"),
+    "b833ad47ad43329802a7caf71cb633d1c4db9ed2c709389226ccd588113bf08c": (
+        "essential_web_fasttext_preserved"
+    ),
+    "acc42903ef190bd6031e6f0419bc871e11d167fa7388703111f6fae703597ea4": (
+        "ultrax_documented_english_no_row_field"
+    ),
+    "469b41954dc88346db8ca8a128acb6a8a1e96f8c5d45a33e886e864cb1ccb406": (
+        "nemotron_wiki_rewrite_documented_english_no_row_field"
+    ),
+    "3a7872db8892faa3f0518ace9aa5cb504018558c29967f2226a697c24bafdd23": (
+        "finepdfs_routing_label_eng_latn"
+    ),
+    "f9f3e55119356979d240cb7c5d79dc89670e775c0eb0d1c3259caf75901118b9": (
+        "simple_stories_documented_english_no_row_field"
+    ),
+    "2c650d6b74d29c8b5c3b57e7b84aaafdc9e80e8d287ee039c36153c6da6bb309": (
+        "common_pile_no_row_field_external_selection"
+    ),
+}
+# Exact categorical maps are merged without caps (order independent); a map larger
+# than this refuses deterministically (its final union decides). Artifacts publish
+# the top values by (count desc, value asc) plus an exact ``<other>`` remainder.
+CATEGORY_HARD_LIMIT = 100_000
+PUBLISHED_CATEGORY_VALUES = 64
 
 # Prior detector scope proposals per source type (PROPOSAL_ONLY; the real
 # distribution and reviewed samples decide).
@@ -449,8 +505,15 @@ QUANTILES = (
     ("p99", 99, 100),
     ("p99.9", 999, 1000),
 )
-# Candidate bands: tail census beyond these component quantile bins (PROPOSAL_ONLY).
+# Candidate bands: tail census at these component quantiles (PROPOSAL_ONLY).
 CANDIDATE_BANDS = (("conservative", 999, 1000), ("moderate", 99, 100), ("aggressive", 19, 20))
+CANDIDATE_RULE = (
+    "high-is-suspicious: cut bin c = the bin holding the q-quantile, but never the clean "
+    "bin 0; rule `value >= lo(c)`, impact = documents in bins >= c. low-is-suspicious: "
+    "cut bin c = the bin holding the (1-q)-quantile, but never the clean top bin; rule "
+    "`value < hi(c)` (or `value <= 1.0` never), impact = documents in bins <= c. Bins are "
+    "half-open on exact edges, so the printed comparator and the impact agree exactly."
+)
 REVIEW_PER_STRATUM = 4
 
 
@@ -475,15 +538,21 @@ def count_bin_bounds(index: int) -> tuple[int, int]:
     return (1 << octave) + sub * step, (1 << octave) + (sub + 1) * step
 
 
+# Exact float edges: bin k holds values v with RATIO_FINE_EDGES[k] <= v < edges[k+1];
+# bin 1000 holds exactly 1.0. ``v >= edges[k]`` is therefore EXACTLY ``bin(v) >= k``
+# for the very float printed as the cut (no ``int(v * 1000)`` rounding drift).
+RATIO_FINE_EDGES = tuple(k / 1000 for k in range(1001))
+
+
 def ratio_bin(value: float) -> int:
-    """1000 uniform bins on [0, 1); exactly 1.0 is bin 1000."""
-    return min(max(int(value * 1000), 0), 1000)
+    """1000 bins on [0, 1) at the exact float edges ``k / 1000``; 1.0 is bin 1000."""
+    return min(max(bisect_right(RATIO_FINE_EDGES, value) - 1, 0), 1000)
 
 
 def ratio_bin_bounds(index: int) -> tuple[float, float]:
     if index >= 1000:
         return 1.0, 1.0
-    return index / 1000, (index + 1) / 1000
+    return RATIO_FINE_EDGES[index], RATIO_FINE_EDGES[index + 1]
 
 
 def metric_bin(spec: MetricSpec, value: float) -> int:
@@ -546,15 +615,22 @@ def policy_body() -> dict[str, Any]:
             "score_keys": list(LANGUAGE_SCORE_KEYS),
             "label_keys": list(LANGUAGE_LABEL_KEYS),
             "provenance_key": LANGUAGE_PROVENANCE_KEY,
-            "max_label_values": MAX_LABEL_VALUES,
-            "max_label_chars": MAX_LABEL_CHARS,
+            "numeric": "dense 1001-bin histograms plus out-of-range and absent counts",
+            "language_code_pattern": LANGUAGE_CODE_PATTERN,
+            "split_values": list(SPLIT_VALUES),
+            "document_kind_values": list(DOCUMENT_KIND_VALUES),
+            "provenance_categories": dict(sorted(PROVENANCE_CATEGORIES.items())),
+            "unrecognized": UNRECOGNIZED,
+            "category_hard_limit": CATEGORY_HARD_LIMIT,
+            "published_category_values": PUBLISHED_CATEGORY_VALUES,
         },
         "quantiles": [list(q) for q in QUANTILES],
         "candidate_bands": [list(b) for b in CANDIDATE_BANDS],
+        "candidate_rule": CANDIDATE_RULE,
         "patterns": detectors.pattern_sources(),
         "histogram": {
             "count": "exact below 16; 8 sub-bins per octave on integer boundaries",
-            "ratio": "1000 uniform bins on [0,1); 1.0 exact",
+            "ratio": "bins [k/1000, (k+1)/1000) on exact float edges; 1.0 exact (bin 1000)",
             "real": "floor, then count bins",
         },
     }
