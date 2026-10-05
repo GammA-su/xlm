@@ -27,6 +27,11 @@ The admission record says what it is: permission to PLAN a fresh C05 over this
 manifest. It is not a C05 result; C05 is NOT RUN until a fresh plan is authorized,
 run and its signed completion verified. ``plan`` re-derives the record from the
 recorded evidence paths and refuses unless it is identical.
+
+Downstream (quota report, C06 fit, selection), ``requirements_manifest`` recovers
+the original manifest's source/adapter/quota metadata for a cleaned proof the same
+way: the record beside the plan, re-derived and bound to ``plan.input_admission``.
+Membership, files and counts always stay the cleaned manifest's and the plan's.
 """
 
 from __future__ import annotations
@@ -57,6 +62,9 @@ CLEANED_KINDS = {
     "xlm_cleaned_input_manifest": ("protected", "c05_global_input_manifest"),
     "authored_cleaned_input": ("authored", "authored_c05_input"),
 }
+# Name of the admission record in a cleaned generation's plan root (beside pNNNN.json);
+# downstream lineage reads it only after re-deriving it and binding the plan's digests.
+ADMISSION_FILE = "admission.json"
 MAX_MANIFEST_BYTES = 8 * 1024**2
 MAX_RECORD_BYTES = 1024**2
 MAX_REPORT_BYTES = 64 * 1024
@@ -462,10 +470,8 @@ def binding(record: Mapping[str, Any]) -> InputAdmission:
     )
 
 
-def plan_inputs(
-    manifest: Mapping[str, Any], record: Mapping[str, Any]
-) -> tuple[tuple[InputFile, ...], dict[str, str]]:
-    """Plan files (cleaned bytes, original source identities) and source seals."""
+def _load_original(manifest: Mapping[str, Any], record: Mapping[str, Any]) -> dict[str, Any]:
+    """The admitted original manifest, re-read and re-bound to the record and lineage."""
     evidence = Evidence.from_record(record)
     raw = _read(evidence.original_manifest, MAX_MANIFEST_BYTES, "original manifest")
     original = _strict(raw, "original manifest")
@@ -476,6 +482,19 @@ def plan_inputs(
     )
     _require(manifest["digest"] == record["input_manifest"]["digest"], "manifest changed")
     _check_original(manifest, original, raw, str(original["kind"]))
+    return original
+
+
+def plan_inputs(
+    manifest: Mapping[str, Any], record: Mapping[str, Any]
+) -> tuple[tuple[InputFile, ...], dict[str, str]]:
+    """Plan files (cleaned bytes, original source identities) and source seals."""
+    return _inputs(manifest, _load_original(manifest, record))
+
+
+def _inputs(
+    manifest: Mapping[str, Any], original: Mapping[str, Any]
+) -> tuple[tuple[InputFile, ...], dict[str, str]]:
     sources = {s["source_key"]: s for s in original["sources"]}
     files = tuple(
         InputFile(
@@ -497,6 +516,57 @@ def plan_inputs(
     used = {f.source_key for f in files}
     seals = {k: str(s["seal_digest"]) for k, s in sources.items() if k in used}
     return files, seals
+
+
+def requirements_manifest(
+    plan: ExecutionPlan, manifest: Mapping[str, Any], proof_paths: tuple[Path, Path] | None
+) -> dict[str, Any]:
+    """Source/quota provenance manifest of a verified C05 input manifest (read-only).
+
+    A plan over an original manifest (no ``input_admission``) returns that manifest,
+    unchanged. A cleaned plan returns the ORIGINAL manifest of its admission: the
+    ``admission.json`` beside the plan, re-derived from its recorded evidence
+    (manifest bytes, production cleaning, verification, audit and saved report), bound
+    to every digest in ``plan.input_admission``, with the plan's files and seals
+    re-derived from that lineage. The original supplies only source/adapter/quota
+    metadata; file membership and counts remain the cleaned manifest's and the plan's.
+    ``proof_paths`` are the proof's (plan, manifest) paths; a cleaned plan refuses
+    without them.
+    """
+    from xlm.data.quality.scan import QualityError
+
+    _require(
+        manifest.get("digest") == canonical.self_digest(manifest) == plan.input_manifest_digest,
+        "manifest differs from the plan's input manifest",
+    )
+    if plan.input_admission is None:
+        _require(not is_cleaned(manifest), "a cleaned manifest needs a plan with an admission")
+        return dict(manifest)
+    bound = plan.input_admission
+    _require(is_cleaned(manifest), "an admitted plan's input manifest is not a cleaned manifest")
+    if proof_paths is None:
+        raise C05Error(
+            "cleaned-manifest admission refused: cleaned lineage needs the proof's paths"
+        )
+    plan_path, manifest_path = proof_paths
+    try:
+        record = verify_admission(Path(plan_path).parent / ADMISSION_FILE, manifest_path)
+    except QualityError as exc:
+        # Quality refusals carry fixed literal messages (no record values).
+        raise C05Error("cleaned-manifest admission refused: " + str(exc)) from None
+    _require(record["digest"] == bound.admission_digest, "admission digest differs from the plan")
+    _require(
+        record["original_manifest"]["digest"] == bound.original_manifest_digest,
+        "original manifest digest differs from the plan",
+    )
+    _require(binding(record) == bound, "admission bindings differ from the plan")
+    _require(record["mode"] == plan.mode, "admission mode differs from the plan mode")
+    original = _load_original(manifest, record)
+    _require(
+        _inputs(manifest, original) == (plan.files, plan.source_seals),
+        "plan inputs do not re-derive from the admitted lineage",
+    )
+    return original
 
 
 def check_fresh_generation(

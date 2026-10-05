@@ -163,8 +163,47 @@ Expected refusals (fail-closed, nothing written):
 
 Make every later code change BEFORE step 5. Any change to `src/` changes the code
 identity, and then the receipt, the plan and the run must all be redone from the
-same final commit. Post-C05 commands (quota report, C06 fit, selection) do not yet
-accept a cleaned-manifest proof; see the report's blockers.
+same final commit. This applies to C05 itself: post-C05 consumers verify the plan
+digest, the signed completion and the proof, never the C05 plan's code identity, so a
+later downstream-only commit does not invalidate a finished C05 proof.
+
+### Post-C05 consumers over the cleaned proof (`clean-v1-p0001`)
+
+The cleaned manifest has no `sources`. Commands that need source/quota lineage
+(`quota-report`, `fit-tokenizer`, `fit-tokenizer-reference`, `verify-tokenizer-fit`,
+`verify-kept-index`, `select`) recover it from the ORIGINAL manifest
+(`11724d92…`), and only through the admission:
+
+* the record is `admission.json` beside the proof's plan (`G:/XLM/c05-clean-v1/`);
+* it must re-derive from its recorded evidence: cleaned manifest bytes, cleaning
+  state, verification, post-clean audit and saved report. All of them must still be
+  at their recorded paths, unchanged;
+* its digest, original-manifest digest and every other digest must equal
+  `plan.input_admission`;
+* the plan's files and seals must re-derive from that lineage.
+
+The original manifest supplies only sources, adapter bindings, quota SHA, the IFM split
+and the Common Pile split. Membership, files and counts stay the cleaned manifest's.
+`count-tokens`, `tokenize-selection` and `freeze` do not read the lineage. Nothing is
+regenerated: the plan (`046381…`), completion (`225b33…`) and proof are used as they
+are. Run from the checkout of the commit that adds this layer (or later), with `X:`
+detached:
+
+```powershell
+$cli = 'uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator'
+$c06 = '--c05-proof G:/XLM/c05-clean-v1/clean-v1-p0001.proof.json --fit-shares recipes/tokenizer/mix01_fit_shares_v1.yaml --quotas recipes/mixtures/mix01_quotas_6b.yaml --ifm-split G:/XLM/calib/requirement_splits/ifm_behaviors_general_planning.json'
+$ops = '--workers 8 --bpe-threads 16 --deadline-seconds 1200 --rss-ceiling-gib 24 --free-reserve-gib 16'
+$fit = "$c06 --scratch C:/XLM-scratch/c06-fit-clean-v1 --output G:/XLM/tokfit/mix01-fit-shares-v1-clean-v1 --deficit-report G:/XLM/tokfit/mix01-fit-shares-v1-clean-v1.deficit.json $ops"
+Invoke-Expression "$cli fit-tokenizer $fit --plan-only"     # review; input_manifest_digest must be eda4f994...
+Invoke-Expression "$cli fit-tokenizer $fit --resource-plan-digest <reviewed digest> --issuer GammA --key-env XLM_C05_OPERATOR_KEY"
+Invoke-Expression "$cli verify-tokenizer-fit $c06 --fit G:/XLM/tokfit/mix01-fit-shares-v1-clean-v1 --workers 8"
+Invoke-Expression "$cli verify-kept-index $c06 --index G:/XLM/tokfit/mix01-fit-shares-v1-clean-v1/kept-index --membership --workers 8"
+```
+
+The output paths are fresh. The historical p0002 fit stays where it is and is never a
+fit of the cleaned corpus. Then run the allocation chain below with the same
+`--c05-proof` and the new tokenizer. A missing, moved, changed or mismatched
+admission or original manifest refuses (exit 1) before any corpus read.
 
 ## Compact parallel engine (`c05-facts-v2`, 2026-10-03)
 

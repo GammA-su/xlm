@@ -221,6 +221,19 @@ class StreamedC05:
     plan_digest: str
     receipt_digest: str
     completion: dict[str, Any]
+    # The proof's (plan, manifest) paths, for a cleaned plan's admission lineage.
+    proof_paths: tuple[Path, Path] | None = None
+    _requirements_manifest: dict[str, Any] | None = None
+
+    def requirements_manifest(self) -> dict[str, Any]:
+        """Source/quota provenance (``cleaned.requirements_manifest``), verified once."""
+        if self._requirements_manifest is None:
+            from xlm.data.exclusion.cleaned import requirements_manifest
+
+            self._requirements_manifest = requirements_manifest(
+                self.plan, self.input_manifest, self.proof_paths
+            )
+        return self._requirements_manifest
 
 
 def open_streamed(proof: Path, *, allow_authored: bool, consumes: list[Path | str]) -> StreamedC05:
@@ -258,6 +271,7 @@ def open_streamed(proof: Path, *, allow_authored: bool, consumes: list[Path | st
         plan_digest=plan.identity(),
         receipt_digest=str(envelope["digest"]),
         completion=envelope["payload"],
+        proof_paths=(Path(spec.plan), Path(spec.manifest)),
     )
 
 
@@ -412,6 +426,7 @@ def plan_from_proof_fast(
     locations: Locations | None = None,
 ) -> dict[str, Any]:
     """Metadata-only plan: no corpus or membership bytes. Call ``guard_proof`` first."""
+    from xlm.data.exclusion.cleaned import requirements_manifest
     from xlm.data.exclusion.transport import ProofSpec
 
     spec = ProofSpec.model_validate(read_metadata(proof, digested=False))
@@ -424,7 +439,8 @@ def plan_from_proof_fast(
     completion = read_metadata(Path(spec.completion) / "completion.json", digested=False)
     if completion.get("digest") != spec.completion_digest:
         raise C05Error("C05 completion changed")
-    requirements = _requirements(policy, manifest, quotas, ifm_split)
+    provenance = requirements_manifest(plan, manifest, (Path(spec.plan), Path(spec.manifest)))
+    requirements = _requirements(policy, manifest, quotas, ifm_split, provenance)
     budgets = fit_budgets(policy, requirements["allocations"])
     return fast_resource_plan(
         policy,
@@ -1180,7 +1196,9 @@ def _fit(
     if output.exists():
         raise C05Error("tokenizer-fit output is write-once")
     production = policy.mode == "production" and view.mode == "protected"
-    requirements = _requirements(policy, view.input_manifest, quotas, ifm_split)
+    requirements = _requirements(
+        policy, view.input_manifest, quotas, ifm_split, view.requirements_manifest()
+    )
     budgets = fit_budgets(policy, requirements["allocations"])
     scratch.mkdir(parents=True, exist_ok=True)
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -1533,7 +1551,9 @@ def verify_fit_fast(
     production = policy.mode == "production" and view.mode == "protected"
     if body.get("production") != production:
         raise C05Error("tokenizer fit production flag mismatch")
-    requirements = _requirements(policy, view.input_manifest, quotas, ifm_split)
+    requirements = _requirements(
+        policy, view.input_manifest, quotas, ifm_split, view.requirements_manifest()
+    )
     budgets = fit_budgets(policy, requirements["allocations"])
     planned = read_metadata(directory / RESOURCE_PLAN, digested=False)["plan"]
     if planned.get("digest") != canonical.self_digest(planned) or body.get(
@@ -1678,7 +1698,9 @@ def verify_kept_index(
         "sources_rehashed": False,
     }
     if membership or sources:
-        requirements = _requirements(policy, view.input_manifest, quotas, ifm_split)
+        requirements = _requirements(
+            policy, view.input_manifest, quotas, ifm_split, view.requirements_manifest()
+        )
         allocation_keys = sorted(fit_budgets(policy, requirements["allocations"]))
         if [list(a) for a in index.allocations] != [
             list(canonical.loads_strict(k)) for k in allocation_keys

@@ -321,9 +321,14 @@ def resource_plan(
 
 
 def _requirements(
-    policy: FitPolicy, manifest: Mapping[str, Any], quotas: Path, ifm: Path
+    policy: FitPolicy,
+    manifest: Mapping[str, Any],
+    quotas: Path,
+    ifm: Path,
+    provenance: Mapping[str, Any],
 ) -> dict[str, Any]:
-    requirements = frozen_requirements(manifest, quotas, ifm)
+    """``provenance`` is the view's verified requirements manifest (cleaned: its original)."""
+    requirements = frozen_requirements(manifest, quotas, ifm, provenance=provenance)
     if requirements["quota_sha256"] != policy.internal_splits.quotas_sha256:
         raise C05Error("quota table differs from the fit policy's frozen internal split source")
     if requirements["tokenizer_vocab_size"] != policy.tokenizer.target_vocab_size:
@@ -335,6 +340,7 @@ def plan_from_proof(
     proof: Path, policy: FitPolicy, quotas: Path, ifm_split: Path
 ) -> dict[str, Any]:
     """Metadata-only plan (no corpus, no completion import). Call ``guard_proof`` first."""
+    from xlm.data.exclusion.cleaned import requirements_manifest
     from xlm.data.exclusion.transport import ProofSpec
 
     spec = ProofSpec.model_validate(read_metadata(proof, digested=False))
@@ -344,7 +350,8 @@ def plan_from_proof(
     manifest = read_metadata(Path(spec.manifest))
     if manifest["digest"] != plan.input_manifest_digest:
         raise C05Error("current corpus manifest differs from C05")
-    requirements = _requirements(policy, manifest, quotas, ifm_split)
+    provenance = requirements_manifest(plan, manifest, (Path(spec.plan), Path(spec.manifest)))
+    requirements = _requirements(policy, manifest, quotas, ifm_split, provenance)
     return resource_plan(
         policy, plan, requirements, fit_budgets(policy, requirements["allocations"])
     )
@@ -884,7 +891,9 @@ def fit_tokenizer(
     if output.exists():
         raise C05Error("tokenizer-fit output is write-once")
     production = policy.mode == "production" and gate.mode == "protected"
-    requirements = _requirements(policy, gate.input_manifest, quotas, ifm_split)
+    requirements = _requirements(
+        policy, gate.input_manifest, quotas, ifm_split, gate.requirements_manifest()
+    )
     budgets = fit_budgets(policy, requirements["allocations"])
     planned = resource_plan(policy, gate.plan, requirements, budgets)
     # Provenance of the code that produced the fit (recorded, not a verification gate).
@@ -1035,7 +1044,9 @@ def verify_fit(
         raise C05Error("tokenizer fit used a different fit policy")
     if body.get("production") != (policy.mode == "production" and gate.mode == "protected"):
         raise C05Error("tokenizer fit production flag mismatch")
-    requirements = _requirements(policy, gate.input_manifest, quotas, ifm_split)
+    requirements = _requirements(
+        policy, gate.input_manifest, quotas, ifm_split, gate.requirements_manifest()
+    )
     expected_requirements = {
         "quota_sha256": requirements["quota_sha256"],
         "ifm_split_digest": requirements["ifm_split_digest"],

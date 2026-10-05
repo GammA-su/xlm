@@ -115,6 +115,7 @@ def open_gate(
         lookup,
         authored=plan.mode == "authored",
         signer=signer,
+        proof_paths=(Path(spec.plan), Path(spec.manifest)),
     )
     try:
         if gate.receipt_digest != spec.completion_digest:

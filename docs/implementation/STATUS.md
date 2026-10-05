@@ -1,3 +1,34 @@
+> **POST-C05 CLEANED-PROOF DOWNSTREAM (2026-10-05): ORIGINAL-MANIFEST QUOTA LINEAGE VIA THE VERIFIED ADMISSION; AUTHORED-VERIFIED; REAL C06 NOT RUN.**
+>
+> - Real C05 over the cleaned manifest is complete (operator):
+>   - manifest `eda4f994…`;
+>   - plan `046381…`;
+>   - completion `225b33…`;
+>   - proof `G:/XLM/c05-clean-v1/clean-v1-p0001.proof.json`.
+>
+>   None of these is changed or regenerated.
+> - New `cleaned.requirements_manifest`. An original-manifest plan returns its own
+>   manifest (historical path unchanged). A cleaned plan returns the ORIGINAL manifest,
+>   but only after `admission.json` beside the plan:
+>   - re-derives from its evidence;
+>   - matches every `plan.input_admission` digest;
+>   - re-derives the plan's files and seals.
+> - The original supplies sources, adapter bindings and splits only. Allocations,
+>   files and counts stay the cleaned manifest's. Requirements equal the
+>   original-manifest requirements exactly.
+> - `quota-report`, `fit-tokenizer` (plan-only/fit), `fit-tokenizer-reference`,
+>   `verify-tokenizer-fit`, `verify-kept-index` and `select` use it. Gate-only consumers
+>   never read it.
+>
+> Tests: new 13 passed. The focused C05/C06/selection/quota selection had 289 passed
+> and 1 failed. The failure is the load-sensitive C06 a1 kill test, which passes alone.
+> Engine/parallel-tokens: 58 passed. Ruff, mypy --strict and diff-check are clean. The
+> full suite was NOT RUN. The real lineage on G: has NOT been exercised.
+> [Report](reports/C05-CLEANED-PROOF-DOWNSTREAM.md),
+> [runbook](../runbooks/c05-global-preparation.md#post-c05-consumers-over-the-cleaned-proof-clean-v1-p0001).
+> Next (operator, X: detached): `fit-tokenizer … --plan-only` with
+> `--c05-proof G:/XLM/c05-clean-v1/clean-v1-p0001.proof.json`.
+>
 > **C05 CLEANED-CORPUS RERUN READINESS (2026-10-04): CLEANED-MANIFEST ADMISSION + FRESH GENERATION IMPLEMENTED; AUTHORED-VERIFIED; REAL C05 NOT RUN.**
 >
 > - The compact parallel engine (`2ae48a7`) is already on this branch (an ancestor);

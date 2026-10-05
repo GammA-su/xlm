@@ -10,18 +10,49 @@ from typing import Any
 import yaml
 
 from xlm.data.evidence_v2 import canonical
-from xlm.data.exclusion.gates import MembershipGate
+from xlm.data.exclusion.cleaned import is_cleaned
+from xlm.data.exclusion.gates import C05View, MembershipGate
 from xlm.data.exclusion.inputs import COMPONENTS, read_metadata
 from xlm.data.exclusion.policy import C05Error
 from xlm.data.tokens import TokenShardReader
 
+LABELS = ("component", "view", "upstream_component")
+
+
+def view_requirements(view: C05View, quotas: Path, ifm_split: Path) -> dict[str, Any]:
+    """Frozen requirements of a verified C05 view: its membership, its verified provenance."""
+    return frozen_requirements(
+        view.input_manifest, quotas, ifm_split, provenance=view.requirements_manifest()
+    )
+
 
 def frozen_requirements(
-    manifest: Mapping[str, Any], quotas: Path, ifm_split: Path
+    manifest: Mapping[str, Any],
+    quotas: Path,
+    ifm_split: Path,
+    *,
+    provenance: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Read existing quota decisions, never create/amend/substitute an allocation."""
+    """Read existing quota decisions, never create/amend/substitute an allocation.
+
+    Allocations come from ``manifest`` (the C05 input manifest). Source/adapter/quota
+    bindings come from ``provenance``: the same manifest, or, for a cleaned manifest,
+    its original manifest as verified by ``cleaned.requirements_manifest``.
+    """
     if manifest.get("digest") != canonical.self_digest(manifest):
         raise C05Error("quota input manifest changed")
+    if provenance is None or provenance.get("digest") == manifest["digest"]:
+        if is_cleaned(manifest):
+            raise C05Error("a cleaned manifest needs its verified original for quota provenance")
+        provenance = manifest
+    elif (
+        provenance.get("digest") != canonical.self_digest(provenance)
+        or not is_cleaned(manifest)
+        or manifest["lineage"].get("original_input_manifest_digest") != provenance["digest"]
+        or [[f[k] for k in LABELS] for f in manifest["files"]]
+        != [[f.get(k) for k in LABELS] for f in provenance["files"]]
+    ):
+        raise C05Error("quota provenance is not this cleaned manifest's original")
     raw = quotas.read_bytes()
     if len(raw) > 1024 * 1024:
         raise C05Error("quota metadata size ceiling")
@@ -33,7 +64,7 @@ def frozen_requirements(
     # so a substituted table cannot satisfy the production manifest.
     if set(finals) != COMPONENTS or type(total) is not int or sum(finals.values()) != total:
         raise C05Error("frozen Mix-01 quota coverage/total changed")
-    sources = {s["source_key"]: s for s in manifest["sources"]}
+    sources = {s["source_key"]: s for s in provenance["sources"]}
     for source in sources.values():
         for binding in source.get("adapter_binding", {}).values():
             if binding.get("quotas_sha256") != quota_sha:

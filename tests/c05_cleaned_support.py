@@ -134,6 +134,12 @@ def make_chain(root: Path, *, production_kind: bool = False) -> dict[str, Any]:
     manifest = build_corpus(root / "corpus", c05_layout())
     strip_final_newline(manifest, NO_NEWLINE)
     set_sources(manifest, "c05_global_input_manifest" if production_kind else "authored_c05_input")
+    return clean_chain(root, manifest)
+
+
+def clean_chain(root: Path, manifest: Path) -> dict[str, Any]:
+    """The real cleaning chain over an authored ORIGINAL manifest; returns paths and pins."""
+    root.mkdir(parents=True, exist_ok=True)
     audit = root / "audit-pre"
     run_audit(manifest, audit, limits=limits(), progress_interval=None)
     policies = root / "policies"

@@ -868,7 +868,7 @@ def main(argv: list[str] | None = None) -> int:
             print(json.dumps({"official_claim_binding": "verified"}))
             return 0
         if args.command == "quota-report":
-            from xlm.data.exclusion.quotas import frozen_requirements, quota_report
+            from xlm.data.exclusion.quotas import quota_report, view_requirements
             from xlm.data.exclusion.transport import open_gate
 
             if len(args.shard) > 4096:
@@ -876,7 +876,7 @@ def main(argv: list[str] | None = None) -> int:
             with open_gate(args.c05_proof) as gate:
                 if gate is None:
                     raise C05Error("quota C05 proof absent")
-                requirements = frozen_requirements(gate.input_manifest, args.quotas, args.ifm_split)
+                requirements = view_requirements(gate, args.quotas, args.ifm_split)
                 report = quota_report(gate, requirements, args.shard)
                 write_once(args.output, report)
             print(

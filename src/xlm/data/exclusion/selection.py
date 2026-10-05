@@ -26,7 +26,7 @@ from xlm.data.exclusion.artifacts import InputFile, signed, verify_signed
 from xlm.data.exclusion.gates import C05View, MembershipGate
 from xlm.data.exclusion.inputs import contained, read_metadata
 from xlm.data.exclusion.policy import C05Error, FrozenModel
-from xlm.data.exclusion.quotas import frozen_requirements
+from xlm.data.exclusion.quotas import view_requirements
 from xlm.data.exclusion.runner import file_sha
 from xlm.data.exclusion.storage import OrderedConnection, connect
 
@@ -326,7 +326,7 @@ def select(
     _, identity = tokenizer_identity(tokenizer_dir, gate)
     counts_envelope = verify_counts(counts_dir, gate, identity)
     counts = counts_envelope["payload"]
-    requirements = frozen_requirements(gate.input_manifest, quotas, ifm_split)
+    requirements = view_requirements(gate, quotas, ifm_split)
     if identity["vocab_size"] != requirements["tokenizer_vocab_size"]:
         raise C05Error("tokenizer vocabulary differs from the frozen quota table")
     quotas_by_allocation: dict[str, int] = requirements["allocations"]

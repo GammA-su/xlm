@@ -51,6 +51,9 @@ class C05View(Protocol):
     def input_manifest(self) -> dict[str, Any]: ...
     @property
     def trusted(self) -> dict[str, bytes]: ...
+    def requirements_manifest(self) -> dict[str, Any]:
+        """Verified source/quota provenance (``cleaned.requirements_manifest``)."""
+        ...
 
 
 class MembershipGate:
@@ -71,6 +74,7 @@ class MembershipGate:
         *,
         authored: bool = False,
         signer: tuple[str, bytes] | None = None,
+        proof_paths: tuple[Path, Path] | None = None,
     ) -> None:
         if plan.mode != ("authored" if authored else "protected"):
             raise C05Error("development evidence cannot satisfy protected C05")
@@ -89,6 +93,10 @@ class MembershipGate:
         self.input_manifest = dict(manifest)
         self.trusted = dict(trusted)
         self.signer = signer
+        # The proof's (plan, manifest) paths: needed only to locate a cleaned plan's
+        # admission lineage, and only by consumers of source/quota metadata.
+        self.proof_paths = proof_paths
+        self._requirements_manifest: dict[str, Any] | None = None
         if signer is not None and self.trusted.get(signer[0]) != signer[1]:
             raise C05Error("downstream signer is not a trusted issuer")
         if scratch.exists():
@@ -151,6 +159,19 @@ class MembershipGate:
             (doc_id,),
         ).fetchone()
         return None if row is None else tuple(row)
+
+    def requirements_manifest(self) -> dict[str, Any]:
+        """Source/quota provenance: this manifest, or a cleaned plan's verified original.
+
+        Verified on first use only, so consumers without quota lineage never read it.
+        """
+        if self._requirements_manifest is None:
+            from xlm.data.exclusion.cleaned import requirements_manifest
+
+            self._requirements_manifest = requirements_manifest(
+                self.plan, self.input_manifest, self.proof_paths
+            )
+        return self._requirements_manifest
 
     def verify_token_shard(
         self, directory: Path, *, reset_seen: bool = True, rehearsal: bool = False
