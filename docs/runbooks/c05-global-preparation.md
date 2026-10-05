@@ -214,7 +214,25 @@ first seconds (`OUTPUT PREFLIGHT`). Use a commit that includes the aggregate fix
 
 ```powershell
 Invoke-Expression "$cli count-tokens --c05-proof G:/XLM/c05-clean-v1/clean-v1-p0001.proof.json --tokenizer G:/XLM/tokfit/mix01-fit-shares-v1-clean-v1/tokenizer --scratch C:/XLM-scratch/count-tokens-clean-v1 --output G:/XLM/counts/mix01-clean-v1 --issuer GammA --key-env XLM_C05_OPERATOR_KEY --workers 16 --progress-interval 5"
-``` Then run the allocation chain below with the same
+```
+
+Exact selection over those counts (detach `X:`; run from the checkout of the select
+fast-path commit or later). `select` no longer uses SQLite: one authenticated
+membership stream, one hashed pass over `counts.jsonl` with a positional proof against
+kept-train membership, exact rank-prefix buckets. It is byte-identical to
+`select-reference` (the original SQLite path, about 37+ min projected) and projects to
+about 1.5 min at 8 workers (8 measured fastest; see
+[report](../implementation/reports/SELECT-FAST.md)). Live `[SELECT]` progress goes to
+stderr; stdout is the final JSON only. The output parent is created if missing and
+every output-side filesystem operation is probed first (`OUTPUT PREFLIGHT`). The
+deficit report path must not exist yet. Exit 2 = deficit (report written, nothing
+published); exit 1 = refused (nothing published):
+
+```powershell
+Invoke-Expression "$cli select --c05-proof G:/XLM/c05-clean-v1/clean-v1-p0001.proof.json --tokenizer G:/XLM/tokfit/mix01-fit-shares-v1-clean-v1/tokenizer --scratch C:/XLM-scratch/select-clean-v1 --counts G:/XLM/counts/mix01-clean-v1 --quotas recipes/mixtures/mix01_quotas_6b.yaml --ifm-split G:/XLM/calib/requirement_splits/ifm_behaviors_general_planning.json --deficit-report G:/XLM/selection/mix01-clean-v1.deficit.json --output G:/XLM/selection/mix01-clean-v1 --issuer GammA --key-env XLM_C05_OPERATOR_KEY --workers 8 --progress-interval 5"
+```
+
+Then run the rest of the allocation chain below with the same
 `--c05-proof` and the new tokenizer. A missing, moved, changed or mismatched
 admission or original manifest refuses (exit 1) before any corpus read.
 
@@ -651,7 +669,11 @@ $cli = 'uv run --offline --locked --no-sync --extra cpu --extra eval python -m x
 #    JSON result alone on stdout. Exit 1 = refused (nothing published).
 Invoke-Expression "$cli count-tokens --c05-proof <proof.json> --tokenizer <tokenizer-dir> --scratch <scratch> --output <counts-dir> --issuer <issuer> --key-env <KEY_ENV> --workers 16 --progress-interval 5"
 # 2. Deterministic exact selection per frozen allocation (exit 2 + report on deficit).
-Invoke-Expression "$cli select --c05-proof <proof.json> --tokenizer <tokenizer-dir> --scratch <scratch> --counts <counts-dir> --quotas recipes/mixtures/mix01_quotas_6b.yaml --ifm-split G:/XLM/calib/requirement_splits/ifm_behaviors_general_planning.json --deficit-report <deficit.json> --output <selection-dir> --issuer <issuer> --key-env <KEY_ENV>"
+#    Fast path without SQLite, byte-identical to select-reference (the original
+#    SQLite path). --workers is operational only (default 8; 8 measured fastest on
+#    the 5700X3D). Live [SELECT] progress on stderr; the final JSON alone on stdout.
+#    The deficit report path must not exist yet.
+Invoke-Expression "$cli select --c05-proof <proof.json> --tokenizer <tokenizer-dir> --scratch <scratch> --counts <counts-dir> --quotas recipes/mixtures/mix01_quotas_6b.yaml --ifm-split G:/XLM/calib/requirement_splits/ifm_behaviors_general_planning.json --deficit-report <deficit.json> --output <selection-dir> --issuer <issuer> --key-env <KEY_ENV> --workers 8 --progress-interval 5"
 # 3. One shard per logical component, exactly the selected records.
 Invoke-Expression "$cli tokenize-selection --c05-proof <proof.json> --tokenizer <tokenizer-dir> --selection <selection-dir> --output-root <shards-dir>"
 # 4. Signed final freeze plus the bounded training-data block.

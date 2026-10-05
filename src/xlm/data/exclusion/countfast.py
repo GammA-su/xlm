@@ -803,7 +803,13 @@ def _file_sha(path: Path, progress: RunProgress | NullProgress, size: int) -> tu
 ROW_FIXED_BYTES = 14 + 12 + 64 + 11 + 2 + 17 + 2
 
 
-def preflight_output(stage: Path, owned: OwnedPaths) -> None:
+def preflight_output(
+    stage: Path,
+    owned: OwnedPaths,
+    *,
+    names: tuple[str, ...] = ("counts.jsonl", "counts.json"),
+    probe: bytes = b"count-tokens preflight\n",
+) -> None:
     """Probe every late filesystem operation in seconds, before any counting.
 
     The output parent is created as the reference does (``stage.mkdir(parents=True)``).
@@ -814,17 +820,17 @@ def preflight_output(stage: Path, owned: OwnedPaths) -> None:
     """
     stage.parent.mkdir(parents=True, exist_ok=True)
     owned.directory(stage)
-    for name in ("counts.jsonl", "counts.json"):
+    for name in names:
         ensure_plain_path(stage / name)
-    probe = owned.file(stage / "preflight.probe")
+    probe_path = owned.file(stage / "preflight.probe")
     linked = owned.file(stage / "preflight.link")
-    with probe.open("xb") as stream:
-        stream.write(b"count-tokens preflight\n")
+    with probe_path.open("xb") as stream:
+        stream.write(probe)
         stream.flush()
         os.fsync(stream.fileno())
-    os.link(probe, linked)
+    os.link(probe_path, linked)
     linked.unlink()
-    probe.unlink()
+    probe_path.unlink()
     moved = owned.directory(stage.with_name(stage.name + "-preflight"), create=False)
     os.rename(stage, moved)
     os.rename(moved, stage)

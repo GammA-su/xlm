@@ -1,3 +1,28 @@
+> **SELECT FAST PATH + PROGRESS (2026-10-05): EXACT SELECTION WITHOUT SQLITE; AUTHORED-VERIFIED BYTE-IDENTICAL; 25.3x MEASURED; ~1.5 MIN PROJECTED (8 WORKERS); REAL SELECTION NOT RUN.**
+>
+> - `select` is the fast path; `select-reference` keeps the original SQLite path as
+>   the oracle. Artifacts, stdout and deficit reports are byte-identical. Policy,
+>   seed, rank, quotas, truncation, deficit rule and schemas are unchanged.
+> - One authenticated membership stream; one hashed pass over `counts.jsonl` in which
+>   row `k` must be the exact canonical count row of the `k`-th kept-train membership
+>   row (ordered-merge proof: nothing missing, extra, repeated, reordered or changed).
+> - Exact selection: 16-bit rank-prefix bucket sums per allocation; only the crossing
+>   bucket is sorted by full rank then doc id (31 rows in all on the 1M bench).
+>   Property-tested against a full sort with forced prefix collisions and rank ties.
+> - Export in doc-id order straight from membership; preflight of every output
+>   operation; `[SELECT]` stderr progress (text|jsonl) with ETA; `--workers`.
+> - Authored 1M-row, 17-allocation benchmark: reference 176.0 s; fast 6.95 s at 8
+>   workers (25.3x), 7.37 s at 16, 21.7 s at 1; every artifact identical.
+> - Production projection: about 1.5 min at 8 workers (reference at least 37 min).
+>   The real count artifact is unchanged input; nothing is recounted.
+>
+> Tests: `test_select_fast.py` 54 passed; `test_c05_selection.py` 15 passed;
+> count-tokens fast/lifecycle, cleaned downstream (now also fast = reference on the
+> cleaned proof) and C05 progress 68 passed. [Report](reports/SELECT-FAST.md).
+> Next (operator, X: detached): the `select` command in the
+> [runbook](../runbooks/c05-global-preparation.md) with `--workers 8
+> --progress-interval 5` and a fresh `--deficit-report` path.
+>
 > **COUNT-TOKENS AGGREGATE FIX (2026-10-05): PRODUCTION RUN 1 REFUSED AT AGGREGATE (FileNotFoundError), ROOT-CAUSED AND FIXED; NOT SALVAGEABLE; RERUN REQUIRED (~53-55 MIN).**
 >
 > - Real run 1 (`b5eb4f8`, 16 workers) counted 12,613,085 docs (60.78 GiB text,

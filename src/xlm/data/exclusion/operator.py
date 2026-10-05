@@ -155,6 +155,7 @@ def main(argv: list[str] | None = None) -> int:
         "count-tokens",
         "count-tokens-reference",
         "select",
+        "select-reference",
         "tokenize-selection",
         "freeze",
         "claim-binding",

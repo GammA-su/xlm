@@ -375,6 +375,12 @@ def test_cleaned_proof_c06_fit_verify_count_select_tokenize_freeze(
     select += ["--quotas", str(mix["quotas"]), "--ifm-split", str(mix["ifm"])]
     select += ["--deficit-report", str(tmp_path / "select-deficit.json")]
     assert operator([*select, "--output", str(tmp_path / "selection"), *sign]) == 0
+    # The fast select equals the SQLite reference byte for byte on the cleaned proof.
+    reference = ["select-reference", *select[1:], "--output", str(tmp_path / "ref-selection")]
+    assert operator([*reference, *sign]) == 0
+    for name in ("selected.jsonl", "selection.json"):
+        fast_bytes = (tmp_path / "selection" / name).read_bytes()
+        assert fast_bytes == (tmp_path / "ref-selection" / name).read_bytes()
     selection = read_metadata(tmp_path / "selection" / "selection.json", digested=False)
     requirements = frozen_requirements(read_metadata(mix["original"]), mix["quotas"], mix["ifm"])
     assert selection["payload"]["requirements_digest"] == canonical.digest(requirements)

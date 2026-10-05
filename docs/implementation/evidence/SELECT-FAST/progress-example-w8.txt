@@ -1,0 +1,38 @@
+[SELECT] PROOF VERIFY | started | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[SELECT] PROOF VERIFY | done | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[SELECT] OUTPUT PREFLIGHT | started | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[SELECT] OUTPUT PREFLIGHT | done | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[SELECT] TOKENIZER VERIFY | started | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[SELECT] TOKENIZER VERIFY | done | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[SELECT] COUNTS VERIFY | started | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[SELECT] COUNTS VERIFY | done | RSS 0.1/16.0 GiB (peak 0.1) | scratch 0.00 GiB | free 661.8 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[SELECT] MEMBERSHIP VERIFY | started | 0/1,000,102 rows (0.00%) | RSS 0.1/16.0 GiB (peak 0.1) | scratch 0.00 GiB | free 661.8 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[SELECT] MEMBERSHIP VERIFY | 29,672/1,000,102 rows (2.97%) | 0.27/0.53 GiB input | 21,089 rows/s avg | 193.3 MiB/s | RSS 0.1/16.0 GiB (peak 0.1) | scratch 0.00 GiB | free 661.8 GiB | elapsed 00:00:01 (run 00:00:01) | ETA --:--:--
+[SELECT] MEMBERSHIP VERIFY | 178,068/1,000,102 rows (17.80%) | 0.34/0.53 GiB input | 93,376 rows/s avg | 184.6 MiB/s | RSS 0.1/16.0 GiB (peak 0.1) | scratch 0.00 GiB | free 661.8 GiB | elapsed 00:00:01 (run 00:00:01) | ETA --:--:--
+[SELECT] MEMBERSHIP VERIFY | 385,807/1,000,102 rows (38.58%) | 0.45/0.53 GiB input | 158,247 rows/s avg | 190.3 MiB/s | RSS 0.1/16.0 GiB (peak 0.1) | scratch 0.00 GiB | free 661.8 GiB | elapsed 00:00:02 (run 00:00:02) | ETA --:--:--
+[SELECT] MEMBERSHIP VERIFY | 623,211/1,000,102 rows (62.31%) | 0.53/0.53 GiB input | 208,781 rows/s avg | 180.6 MiB/s | RSS 0.1/16.0 GiB (peak 0.1) | scratch 0.00 GiB | free 661.8 GiB | elapsed 00:00:02 (run 00:00:03) | ETA --:--:--
+[SELECT] MEMBERSHIP VERIFY | 830,981/1,000,102 rows (83.09%) | 0.53/0.53 GiB input | 233,225 rows/s avg | 151.3 MiB/s | RSS 0.1/16.0 GiB (peak 0.1) | scratch 0.00 GiB | free 661.8 GiB | elapsed 00:00:03 (run 00:00:03) | ETA --:--:--
+[SELECT] SLO | membership 144.7 MB/s, 255,977 rows/s, 3.9 s
+[SELECT] MEMBERSHIP VERIFY | 1,000,102/1,000,102 rows (100.00%) | 0.53/0.53 GiB input | 237,950 rows/s avg | 138.0 MiB/s | RSS 0.1/16.0 GiB (peak 0.1) | scratch 0.00 GiB | free 661.8 GiB | elapsed 00:00:04 (run 00:00:04) | ETA 00:00:00
+[SELECT] MEMBERSHIP VERIFY | done | 1,000,102/1,000,102 rows (100.00%) | 0.53/0.53 GiB input | 237,950 rows/s avg | 138.0 MiB/s | RSS 0.1/16.0 GiB (peak 0.1) | scratch 0.00 GiB | free 661.8 GiB | elapsed 00:00:04 (run 00:00:04) | ETA 00:00:00
+[SELECT] RANK PASS | started | 0/999,530 rows (0.00%) | RSS 0.1/16.0 GiB (peak 0.1) | scratch 0.00 GiB | free 661.8 GiB | elapsed 00:00:00 (run 00:00:04) | ETA --:--:--
+[SELECT] RANK PASS | 215,481/999,530 rows (21.56%) | 0.11/0.22 GiB input | 417,599 rows/s avg | 217.1 MiB/s | workers 8/8 busy | tasks 15/16 results 12 | RSS 0.1/16.0 GiB (peak 0.1) | scratch 0.00 GiB | free 661.8 GiB | elapsed 00:00:00 (run 00:00:04) | ETA --:--:--
+[SELECT] RANK PASS | 718,244/999,530 rows (71.86%) | 0.22/0.22 GiB input | 695,973 rows/s avg | 215.7 MiB/s | workers 8/8 busy | tasks 15/16 results 40 | RSS 0.9/16.0 GiB (peak 1.2) | scratch 0.00 GiB | free 661.8 GiB | CPU 41% | elapsed 00:00:01 (run 00:00:05) | ETA --:--:--
+[SELECT] RANK PASS | done | 999,530/999,530 rows (100.00%) | 0.22/0.22 GiB input | 900,477 rows/s avg | 200.6 MiB/s | workers 0/8 busy | tasks 0/16 results 56 | RSS 0.9/16.0 GiB (peak 1.2) | scratch 0.00 GiB | free 661.8 GiB | CPU 41% | elapsed 00:00:01 (run 00:00:05) | ETA 00:00:00
+[SELECT] QUOTA CROSSINGS | started | 0/17 allocations (0.00%) | RSS 0.9/16.0 GiB (peak 1.2) | scratch 0.00 GiB | free 661.8 GiB | CPU 41% | elapsed 00:00:00 (run 00:00:05) | ETA --:--:--
+[SELECT] QUOTA CROSSINGS | 17/17 allocations (100.00%) | 548 allocations/s avg | RSS 0.9/16.0 GiB (peak 1.2) | scratch 0.00 GiB | free 661.8 GiB | CPU 41% | elapsed 00:00:00 (run 00:00:05) | ETA 00:00:00
+[SELECT] QUOTA CROSSINGS | done | 17/17 allocations (100.00%) | 548 allocations/s avg | RSS 0.9/16.0 GiB (peak 1.2) | scratch 0.00 GiB | free 661.8 GiB | CPU 41% | elapsed 00:00:00 (run 00:00:05) | ETA 00:00:00
+[SELECT] CROSSING SORT | started | 0/17 allocations (0.00%) | RSS 0.9/16.0 GiB (peak 1.2) | scratch 0.00 GiB | free 661.8 GiB | CPU 41% | elapsed 00:00:00 (run 00:00:05) | ETA --:--:--
+[SELECT] CROSSING SORT | 17/17 allocations (100.00%) | 548 allocations/s avg | crossing_rows 31 | selected_docs 395,743 | truncated_docs 16 | RSS 0.9/16.0 GiB (peak 1.2) | scratch 0.00 GiB | free 661.8 GiB | CPU 41% | elapsed 00:00:00 (run 00:00:05) | ETA 00:00:00
+[SELECT] CROSSING SORT | done | 17/17 allocations (100.00%) | 362 allocations/s avg | crossing_rows 31 | selected_docs 395,743 | truncated_docs 16 | RSS 0.9/16.0 GiB (peak 1.2) | scratch 0.00 GiB | free 661.8 GiB | CPU 41% | elapsed 00:00:00 (run 00:00:05) | ETA 00:00:00
+[SELECT] EXPORT SELECTION | started | 0/395,743 rows (0.00%) | RSS 0.9/16.0 GiB (peak 1.2) | scratch 0.00 GiB | free 661.8 GiB | CPU 41% | elapsed 00:00:00 (run 00:00:05) | ETA --:--:--
+[SELECT] EXPORT SELECTION | done | 395,743/395,743 rows (100.00%) | 1,102,348 rows/s avg | workers 0/8 busy | tasks 0/16 results 13 | written 102.0 MiB | RSS 0.9/16.0 GiB (peak 1.2) | scratch 0.00 GiB | free 661.8 GiB | CPU 41% | elapsed 00:00:00 (run 00:00:05) | ETA 00:00:00
+[SELECT] FSYNC | started | RSS 0.9/16.0 GiB (peak 1.2) | scratch 0.00 GiB | free 661.8 GiB | CPU 41% | elapsed 00:00:00 (run 00:00:05) | ETA --:--:--
+[SELECT] FSYNC | done | RSS 0.9/16.0 GiB (peak 1.2) | scratch 0.00 GiB | free 661.8 GiB | CPU 41% | elapsed 00:00:00 (run 00:00:05) | ETA --:--:--
+[SELECT] SIGN | started | RSS 0.9/16.0 GiB (peak 1.2) | scratch 0.00 GiB | free 661.8 GiB | CPU 41% | elapsed 00:00:00 (run 00:00:05) | ETA --:--:--
+[SELECT] SIGN | done | RSS 0.9/16.0 GiB (peak 1.2) | scratch 0.00 GiB | free 661.8 GiB | CPU 41% | elapsed 00:00:00 (run 00:00:06) | ETA --:--:--
+[SELECT] VERIFY | started | 0/106,905,448 bytes (0.00%) | RSS 0.9/16.0 GiB (peak 1.2) | scratch 0.00 GiB | free 661.8 GiB | CPU 41% | elapsed 00:00:00 (run 00:00:06) | ETA --:--:--
+[SELECT] VERIFY | done | 106,905,448/106,905,448 bytes (100.00%) | 0.10/0.10 GiB input | 1,137,292,000 bytes/s avg | RSS 0.9/16.0 GiB (peak 1.2) | scratch 0.00 GiB | free 661.8 GiB | CPU 41% | elapsed 00:00:00 (run 00:00:06) | ETA 00:00:00
+[SELECT] PUBLISH | started | RSS 0.9/16.0 GiB (peak 1.2) | scratch 0.00 GiB | free 661.8 GiB | CPU 41% | elapsed 00:00:00 (run 00:00:06) | ETA --:--:--
+[SELECT] PUBLISH | done | RSS 0.9/16.0 GiB (peak 1.2) | scratch 0.00 GiB | free 661.8 GiB | CPU 41% | elapsed 00:00:00 (run 00:00:06) | ETA --:--:--
+[SELECT] COMPLETE | RSS 0.9/16.0 GiB (peak 1.2) | scratch 0.00 GiB | free 661.8 GiB | CPU 41% | elapsed 00:00:00 (run 00:00:06) | ETA --:--:--

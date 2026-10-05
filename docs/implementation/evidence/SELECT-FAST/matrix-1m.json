@@ -1,0 +1,182 @@
+{
+ "all_artifacts_identical": true,
+ "benchmark": {
+  "allocations": 17,
+  "c05_seconds": 91.3,
+  "corpus_seconds": 81.2,
+  "count_rows": 999530,
+  "count_seconds": 41.0,
+  "counts_bytes": 233468792,
+  "documents": 1000136,
+  "kept": 1000102,
+  "membership_bytes": 565362539,
+  "quota": 42000000,
+  "tokenizer_seconds": 103.0,
+  "valid_targets": 106048785
+ },
+ "implementation": {
+  "code_commit": "aa3890457d82fc37a30dab3aade44ae56b7ff4cc",
+  "code_identity": "4823ebf48d2ad133b36fe64e8684b68becd7673d878cd114b64bbd2f6443f320",
+  "dependency_sha256": "a57fc5d14b25cf6f9ae93877f9806770a57c390e55e9e64e007d41f987087dcd"
+ },
+ "machine": {
+  "logical_cpus": 16,
+  "physical_cpus": 8
+ },
+ "results": [
+  {
+   "count_rows_per_s": 5678.6,
+   "counts_mib_per_s": 1.26,
+   "cpu_seconds": 174.2,
+   "cpu_utilization_cores": 0.99,
+   "label": "reference",
+   "mode": "reference",
+   "peak_scratch_mib": 371.5,
+   "peak_tree_rss_mib": 96.7,
+   "selected_jsonl_sha256": "74ffccc1debe8809764cb7b952170cf9b12aee7242c533ba66e31c024332b4b6",
+   "selection_json_sha256": "938f8e0590bedb19278ed16bcca3bce998b06b130e77fbe832dc5ded90de2c66",
+   "speedup_vs_reference": 1.0,
+   "stages": {},
+   "stdout": {
+    "digest": "7a340a9d4dfba3de1ed33f2f9d06be27464ba81286e9eaa4416396b5b47f1550",
+    "mode": "authored"
+   },
+   "wall_seconds": 176.02,
+   "workers": 0
+  },
+  {
+   "count_rows_per_s": 143760.6,
+   "counts_mib_per_s": 32.02,
+   "cpu_seconds": 37.1,
+   "cpu_utilization_cores": 5.34,
+   "label": "fast-w8",
+   "mode": "fast",
+   "peak_scratch_mib": 0.0,
+   "peak_tree_rss_mib": 1200.5,
+   "selected_jsonl_sha256": "74ffccc1debe8809764cb7b952170cf9b12aee7242c533ba66e31c024332b4b6",
+   "selection_json_sha256": "938f8e0590bedb19278ed16bcca3bce998b06b130e77fbe832dc5ded90de2c66",
+   "speedup_vs_reference": 25.33,
+   "stages": {
+    "COUNTS VERIFY": 0.03,
+    "CROSSING SORT": 0.03,
+    "EXPORT SELECTION": 0.34,
+    "FSYNC": 0.2,
+    "MEMBERSHIP VERIFY": 4.22,
+    "OUTPUT PREFLIGHT": 0.02,
+    "PROOF VERIFY": 0.02,
+    "PUBLISH": 0.0,
+    "QUOTA CROSSINGS": 0.05,
+    "RANK PASS": 1.11,
+    "SIGN": 0.0,
+    "TOKENIZER VERIFY": 0.0,
+    "VERIFY": 0.12
+   },
+   "stdout": {
+    "digest": "7a340a9d4dfba3de1ed33f2f9d06be27464ba81286e9eaa4416396b5b47f1550",
+    "mode": "authored"
+   },
+   "wall_seconds": 6.95,
+   "workers": 8
+  },
+  {
+   "count_rows_per_s": 135660.5,
+   "counts_mib_per_s": 30.22,
+   "cpu_seconds": 55.9,
+   "cpu_utilization_cores": 7.59,
+   "label": "fast-w16",
+   "mode": "fast",
+   "peak_scratch_mib": 0.0,
+   "peak_tree_rss_mib": 1935.8,
+   "selected_jsonl_sha256": "74ffccc1debe8809764cb7b952170cf9b12aee7242c533ba66e31c024332b4b6",
+   "selection_json_sha256": "938f8e0590bedb19278ed16bcca3bce998b06b130e77fbe832dc5ded90de2c66",
+   "speedup_vs_reference": 23.88,
+   "stages": {
+    "COUNTS VERIFY": 0.03,
+    "CROSSING SORT": 0.05,
+    "EXPORT SELECTION": 0.38,
+    "FSYNC": 0.28,
+    "MEMBERSHIP VERIFY": 4.47,
+    "OUTPUT PREFLIGHT": 0.0,
+    "PROOF VERIFY": 0.02,
+    "PUBLISH": 0.0,
+    "QUOTA CROSSINGS": 0.03,
+    "RANK PASS": 1.14,
+    "SIGN": 0.0,
+    "TOKENIZER VERIFY": 0.0,
+    "VERIFY": 0.12
+   },
+   "stdout": {
+    "digest": "7a340a9d4dfba3de1ed33f2f9d06be27464ba81286e9eaa4416396b5b47f1550",
+    "mode": "authored"
+   },
+   "wall_seconds": 7.37,
+   "workers": 16
+  },
+  {
+   "count_rows_per_s": 114967.8,
+   "counts_mib_per_s": 25.61,
+   "cpu_seconds": 31.2,
+   "cpu_utilization_cores": 3.58,
+   "label": "fast-w4",
+   "mode": "fast",
+   "peak_scratch_mib": 0.0,
+   "peak_tree_rss_mib": 741.9,
+   "selected_jsonl_sha256": "74ffccc1debe8809764cb7b952170cf9b12aee7242c533ba66e31c024332b4b6",
+   "selection_json_sha256": "938f8e0590bedb19278ed16bcca3bce998b06b130e77fbe832dc5ded90de2c66",
+   "stages": {
+    "COUNTS VERIFY": 0.03,
+    "CROSSING SORT": 0.05,
+    "EXPORT SELECTION": 0.38,
+    "FSYNC": 0.12,
+    "MEMBERSHIP VERIFY": 5.72,
+    "OUTPUT PREFLIGHT": 0.02,
+    "PROOF VERIFY": 0.02,
+    "PUBLISH": 0.0,
+    "QUOTA CROSSINGS": 0.03,
+    "RANK PASS": 1.44,
+    "SIGN": 0.0,
+    "TOKENIZER VERIFY": 0.0,
+    "VERIFY": 0.09
+   },
+   "stdout": {
+    "digest": "7a340a9d4dfba3de1ed33f2f9d06be27464ba81286e9eaa4416396b5b47f1550",
+    "mode": "authored"
+   },
+   "wall_seconds": 8.69,
+   "workers": 4
+  },
+  {
+   "count_rows_per_s": 46077.5,
+   "counts_mib_per_s": 10.26,
+   "cpu_seconds": 24.8,
+   "cpu_utilization_cores": 1.14,
+   "label": "fast-w1",
+   "mode": "fast",
+   "peak_scratch_mib": 0.0,
+   "peak_tree_rss_mib": 396.2,
+   "selected_jsonl_sha256": "74ffccc1debe8809764cb7b952170cf9b12aee7242c533ba66e31c024332b4b6",
+   "selection_json_sha256": "938f8e0590bedb19278ed16bcca3bce998b06b130e77fbe832dc5ded90de2c66",
+   "stages": {
+    "COUNTS VERIFY": 0.03,
+    "CROSSING SORT": 0.05,
+    "EXPORT SELECTION": 0.95,
+    "FSYNC": 0.09,
+    "MEMBERSHIP VERIFY": 15.7,
+    "OUTPUT PREFLIGHT": 0.02,
+    "PROOF VERIFY": 0.03,
+    "PUBLISH": 0.0,
+    "QUOTA CROSSINGS": 0.03,
+    "RANK PASS": 3.88,
+    "SIGN": 0.0,
+    "TOKENIZER VERIFY": 0.0,
+    "VERIFY": 0.11
+   },
+   "stdout": {
+    "digest": "7a340a9d4dfba3de1ed33f2f9d06be27464ba81286e9eaa4416396b5b47f1550",
+    "mode": "authored"
+   },
+   "wall_seconds": 21.69,
+   "workers": 1
+  }
+ ]
+}
