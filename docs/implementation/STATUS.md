@@ -1,3 +1,19 @@
+> **SYNTH EXCLUSION FORENSICS (2026-10-05): GIANT COMPONENT = SYNTH SEED-URL LINEAGE KEYS (PROVEN BY ELIMINATION); BRIDGE TYPE (CO-CITATION CHAIN vs HUB) AND HIT LOCATIONS NEED THE PRODUCTION FORENSIC RUN.**
+>
+> - Only `url:` keys from SYNTH `query_seed_url`/`additional_seed_url` can join SYNTH
+>   rows. Duplicate edges are at most 2,518 unions; SYNTH has no parent, cluster or
+>   lineage-rule metadata. The 2 UltraX members can attach only by duplicate edges.
+> - Transitive families are right for splits but over-broad for contamination: the
+>   additional seed's text is not in a row's training text (Case B, pending the run).
+> - Remaining 484 SYNTH files: about 2.2M kept targets per file; 900M is not
+>   attainable under the current mechanism.
+> - Gutenberg: no lineage metadata, so its 6,320 exclusions are about 6,315+ direct
+>   hits on 73 % of books. Matcher precision is suspected; hold the top-up.
+>
+> New read-only `scripts/c05_component_forensics.py` (14 tests on real authored C05
+> runs). [Report](reports/SYNTH-EXCLUSION-FORENSICS.md). Next (operator, X: attached):
+> its section-6 command.
+>
 > **MIX01 DEFICIT ANALYSIS (2026-10-05): READ-ONLY; 1,097,823,704 TARGETS SHORT; SYNTH CAPPED BY C05 (NOT ACQUISITION); OER/PDR EXHAUSTED; 4 DEFICITS CLOSABLE BY TOP-UP; REAL METADATA SUMMARY REQUIRED BEFORE DECIDING.**
 >
 > - SYNTH: all 14 planned files (1,751,337 docs, 4.77 GB) were acquired; cleaning is
