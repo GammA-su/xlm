@@ -1,3 +1,23 @@
+> **MIX01 DEFICIT ANALYSIS (2026-10-05): READ-ONLY; 1,097,823,704 TARGETS SHORT; SYNTH CAPPED BY C05 (NOT ACQUISITION); OER/PDR EXHAUSTED; 4 DEFICITS CLOSABLE BY TOP-UP; REAL METADATA SUMMARY REQUIRED BEFORE DECIDING.**
+>
+> - SYNTH: all 14 planned files (1,751,337 docs, 4.77 GB) were acquired; cleaning is
+>   negligible; 141.9 B/target vs 5.4-5.7 elsewhere means C05 removed at least 96 %.
+>   The cause is the shared seed context (near-duplicate collapse) and/or
+>   seed-URL-family hit propagation; both saturate, so more SYNTH files will not close
+>   866M.
+> - essential_science: sealed on bytes/4 with a 2 % margin; the real cost is
+>   5.66 B/target; 22,624 inventory files remain. Top-up: 192 files (6 batches).
+> - Common Pile: Gutenberg 8 files, PressBooks 11, LibreTexts 6; OER Commons and PDR
+>   are exhausted (3,171,273 unrecoverable).
+> - Option B (reallocation) invalidates the quota sha bound into every source seal,
+>   the IFM/Common Pile splits, the C06 fit policy and all Mix-01 comparisons; it is
+>   not faster under current contracts.
+>
+> New read-only `scripts/mix01_deficit_summary.py` (2 tests passed).
+> [Report](reports/MIX01-DEFICIT-REMEDIATION-ANALYSIS.md). Next (operator): run its
+> section-9 command (then optionally with `--decisions`, with X: attached) and decide
+> SYNTH, OER and PDR before acquiring anything.
+>
 > **SELECT FAST PATH + PROGRESS (2026-10-05): EXACT SELECTION WITHOUT SQLITE; AUTHORED-VERIFIED BYTE-IDENTICAL; 25.3x MEASURED; ~1.5 MIN PROJECTED (8 WORKERS); REAL SELECTION NOT RUN.**
 >
 > - `select` is the fast path; `select-reference` keeps the original SQLite path as
