@@ -533,6 +533,7 @@ def test_reference_failure_removes_its_staging(
 
 STAGES = (
     "PROOF VERIFY",
+    "OUTPUT PREFLIGHT",
     "TOKENIZER VERIFY",
     "MEMBERSHIP VERIFY",
     "SOURCE COUNT",

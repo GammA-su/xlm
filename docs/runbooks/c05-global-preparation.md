@@ -205,8 +205,12 @@ fit of the cleaned corpus.
 
 Exact counts over the cleaned proof (detach `X:`; run from the checkout of the
 count-tokens fast-path commit or later). Measured on authored data, this projects to
-about 45 minutes on the 5700X3D at 16 workers (the exact BPE backend is CPU-bound;
-see [report](../implementation/reports/COUNT-TOKENS-FAST.md)); the ETA is live:
+about 53-55 minutes on the 5700X3D at 16 workers (the real run 1 SOURCE COUNT took
+51 min 31 s; the exact BPE backend is CPU-bound; see
+[report](../implementation/reports/COUNT-TOKENS-FAST.md)). The output parent is
+created if missing, and every output-side filesystem operation is probed in the
+first seconds (`OUTPUT PREFLIGHT`). Use a commit that includes the aggregate fix:
+`b5eb4f8` alone refuses at AGGREGATE when the output parent is new. The ETA is live:
 
 ```powershell
 Invoke-Expression "$cli count-tokens --c05-proof G:/XLM/c05-clean-v1/clean-v1-p0001.proof.json --tokenizer G:/XLM/tokfit/mix01-fit-shares-v1-clean-v1/tokenizer --scratch C:/XLM-scratch/count-tokens-clean-v1 --output G:/XLM/counts/mix01-clean-v1 --issuer GammA --key-env XLM_C05_OPERATOR_KEY --workers 16 --progress-interval 5"

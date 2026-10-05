@@ -10,8 +10,85 @@ operator key or real counting.
 |---|---|
 | exact artifact equivalence | **yes**: `counts.jsonl` and signed `counts.json` byte-identical to the reference at workers 1/2/4/8/16 and on the chunked path |
 | measured speedup (authored 120k-doc corpus) | **9.0x** end to end at 16 workers (275 s -> 30.5 s); 8.0x at 8 workers |
-| projected real production at 16 workers | **about 45 min** (41 min counting plus fixed stages), vs. about 7.7 h for the reference |
-| <= 30 min target | **not met.** The exact tokenizer backend is CPU-bound at this machine's ceiling (below) |
+| real production SOURCE COUNT at 16 workers (operator run, `b5eb4f8`) | **51 min 31 s** (see below) |
+| projected real production at 16 workers | **about 53-55 min** in total. The synthetic projection had been about 45 min. |
+| <= 30 min target | **not met.** The exact tokenizer backend is CPU-bound at this machine's ceiling (below). The operator accepted the runtime. |
+
+## Production run 1 (`b5eb4f8`): measured, then refused at AGGREGATE
+
+The operator's first real run (16 workers) completed the whole source count. Its
+final telemetry:
+
+| field | value |
+|---|---|
+| kept train docs counted | 12,613,085 / 12,613,085 |
+| kept train text | 60.78 GiB |
+| physical input hashed | 96.85 GiB in 2,035 / 2,035 files |
+| throughput | 4,079 docs/s avg; 20.1 MiB/s of text |
+| SOURCE COUNT elapsed | 00:51:31 (run 00:52:19 at the start of AGGREGATE) |
+| process tree RSS | peak 5.2 GiB (ceiling 48 GiB) |
+| CPU | about 90 % |
+
+It then refused with `{"refused": true, "error_type": "FileNotFoundError"}` right
+after `AGGREGATE | started`.
+
+**Root cause.** It was reproduced on the authored smoke corpus, and the traceback was
+captured privately. The fast path created its staging directory
+`<output>.partial-<uuid>` only after counting, with `OwnedPaths.directory`, which
+calls `Path.mkdir()` without `parents=True`. The reference creates its staging
+directory with `stage.mkdir(parents=True)`. With an output path whose parent did not
+exist yet (for example a new `G:/XLM/counts/`), `os.mkdir` raised `WinError 3`
+(`FileNotFoundError`). That happened at the first filesystem operation after
+`aggregate()`, a pure in-memory step.
+
+No worker result file, unit or temporary file was involved, because there were
+none. The 6,881 task results were integrated into one in-memory array as they
+arrived. Worker teardown deletes nothing; the only scratch file is the private
+tokenizer copy.
+
+**Salvage: not possible.** Every count lived in the parent process's memory. When
+the job refused, `finally` removed its only owned scratch file (the tokenizer copy),
+and the process exited. Nothing durable or verifiable remains. The scratch directory
+is empty and may be reused. The output never existed, and no `.partial-*` directory
+could have been created.
+
+**Fix (commit following `b5eb4f8`).** Every late filesystem operation is now probed
+at the start, in seconds (stage `OUTPUT PREFLIGHT`, before the tokenizer, membership
+or any source byte):
+- the output parent is created as the reference does;
+- the owned staging directory is created and kept for the whole job;
+- both artifact names pass the same link/junction check as `write_once`;
+- a probe file is written, fsynced and hard-linked, because `write_once` publishes
+  by hard link;
+- the staging directory is renamed away and back, because publication is a
+  directory rename.
+
+After the membership stream and before SOURCE COUNT, the job refuses only when the
+export is *guaranteed* to fail: the exact minimum `counts.jsonl` size exceeds the
+plan's output ceiling or the free space on the output volume. Any other failure now
+reports a fixed stage literal and its numeric errno, never a path:
+`{"refused": true, "error_type": ..., "stage": ..., "errno": ...}`.
+
+**Resume: not added.** The fast path has no durable result units. Adding a safe
+resume needs signed per-unit result files that bind plan/completion, tokenizer,
+file/range, rule and row digests, a resume-check/resume protocol, and stale/mixed
+refusal. That is a redesign of the result path, so it would delay this fix. The
+preflight removes the failure class that occurred: every late filesystem dependency
+now fails within seconds of starting.
+
+**Regression evidence.** `tests/test_count_tokens_lifecycle.py` (9 tests, about 40 s):
+- the exact production scenario through the CLI (missing output ancestors, workers
+  1 and 4). It fails on `b5eb4f8` with this refusal; it is byte-identical to the
+  reference now;
+- preflight refusal before any tokenizer, membership or source work: output parent
+  is a file, hard links unsupported;
+- guaranteed export failures refused before SOURCE COUNT, and the lower bound is
+  proven true and tight;
+- aggregation runs after every worker is reaped and needs no scratch file;
+- late failure and KeyboardInterrupt remove the early staging directory;
+- a 2,500-doc generated chain (production vocab) with every kept row its own chunk:
+  more than 2,000 result units through the full lifecycle at workers 1, 4 and 16,
+  byte-identical to the reference.
 
 ## Why it was slow, and what changed
 
@@ -127,7 +204,11 @@ dependency is out of scope.
 The fast path therefore already runs at the machine's ceiling for this backend:
 about 25 MB/s of kept text with 16 workers. SMT adds only about 14 % over 8 workers.
 
-## Production projection
+## Production projection (synthetic, before the real run)
+
+Superseded by the real measurement above: kept text was 60.78 GiB, not about 68 GB,
+and real text ran at 20.1 MiB/s, not 26.5 MiB/s. Real text tokenized about 24 %
+slower than the generated text, as the repo-prose sample had suggested.
 
 The real corpus has 81.37 GB of canonical text over 15,087,207 docs. That gives
 about 68 GB of kept text for 12,624,198 kept docs, assuming kept docs have average
@@ -222,7 +303,9 @@ All commands ran on Windows 11, CPython 3.12.13, `uv` offline and locked
 | command | result |
 |---|---|
 | `pytest tests/test_count_tokens_fast.py -n 0` | 32 passed |
-| `pytest tests/test_count_tokens_fast.py tests/test_c05_selection.py tests/test_c06_tokenizer_fit.py tests/test_c06_fast.py tests/test_c06_fast_hardening.py tests/test_c05_cleaned_downstream.py tests/test_c05_detached_volume.py tests/test_c05_control.py tests/test_c05_progress.py -n 16 --dist=worksteal --max-worker-restart=0` | 290 passed, exit 0 |
+| `pytest tests/test_count_tokens_fast.py tests/test_c05_selection.py tests/test_c06_tokenizer_fit.py tests/test_c06_fast.py tests/test_c06_fast_hardening.py tests/test_c05_cleaned_downstream.py tests/test_c05_detached_volume.py tests/test_c05_control.py tests/test_c05_progress.py -n 16 --dist=worksteal --max-worker-restart=0` | 290 passed, exit 0 (`b5eb4f8`) |
+| aggregate fix: the same selection plus `tests/test_count_tokens_lifecycle.py` | 298 passed, 1 failed, exit 1. The failure was the pinned stage list, which lacked the new `OUTPUT PREFLIGHT`. After updating it, both count-tokens modules passed: 41 passed, exit 0. |
+| `tests/test_count_tokens_lifecycle.py::test_missing_output_parent_is_created_like_the_reference` against the `b5eb4f8` `countfast.py` | 2 failed, with the production refusal `FileNotFoundError` (expected: proves the regression test) |
 | `ruff format --check`, `ruff check` (`src/xlm/data/exclusion`, new tests, script) | clean |
 | `mypy --strict src/xlm/data/exclusion tests/test_count_tokens_fast.py tests/count_workers.py scripts/count_tokens_benchmark.py` | `src` and the new files are clean. 6 errors are in the imported `tests/test_c06_tokenizer_fit.py`; the same file already has 93 strict errors at base `720fbf6`. |
 | `git diff --check` | clean |

@@ -1,3 +1,25 @@
+> **COUNT-TOKENS AGGREGATE FIX (2026-10-05): PRODUCTION RUN 1 REFUSED AT AGGREGATE (FileNotFoundError), ROOT-CAUSED AND FIXED; NOT SALVAGEABLE; RERUN REQUIRED (~53-55 MIN).**
+>
+> - Real run 1 (`b5eb4f8`, 16 workers) counted 12,613,085 docs (60.78 GiB text,
+>   96.85 GiB input) in 51 min 31 s at 4,079 docs/s and 20.1 MiB/s, with peak RSS
+>   5.2 GiB. It then refused entering AGGREGATE.
+> - Cause: the staging directory `<output>.partial-*` was created after counting,
+>   without `parents=True`. The reference creates parents; a new output parent such
+>   as `G:/XLM/counts/` did not exist.
+> - Results were in memory only; nothing durable remains, so nothing can be salvaged
+>   and nothing must be deleted.
+> - Fix: an `OUTPUT PREFLIGHT` stage probes every late filesystem operation in
+>   seconds: parents, staging, link/junction check, fsync, hard link, rename. Export
+>   failures that are already guaranteed (ceiling, free space) are refused before
+>   SOURCE COUNT. Refusals now carry a stage literal and errno.
+> - Resume was not added (it needs durable signed units; that is a redesign).
+>
+> Tests: the new 9-test lifecycle module (more than 2,000 result units at workers
+> 1/4/16, byte-identical) fails on `b5eb4f8` and passes now; the count-tokens modules
+> have 41 passed. [Report](reports/COUNT-TOKENS-FAST.md).
+> Next (operator, X: detached): rerun the same `count-tokens` command from this
+> commit's checkout. It now fails within seconds if the output location is unusable.
+>
 > **COUNT-TOKENS FAST PATH + PROGRESS (2026-10-05): PARALLEL EXACT COUNTS IMPLEMENTED; AUTHORED-VERIFIED BYTE-IDENTICAL; 9.0x MEASURED; <=30 MIN TARGET NOT MET (~45 MIN PROJECTED); REAL COUNT NOT RUN.**
 >
 > - `count-tokens` is now the parallel fast path; `count-tokens-reference` keeps the

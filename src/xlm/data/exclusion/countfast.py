@@ -55,6 +55,7 @@ import numpy as np
 import numpy.typing as npt
 import psutil
 
+from xlm.artifacts.manifest import ensure_plain_path
 from xlm.core.contracts import CanonicalDocument
 from xlm.data.acquisition.source_run import write_once
 from xlm.data.evidence_v2 import canonical
@@ -796,6 +797,61 @@ def _file_sha(path: Path, progress: RunProgress | NullProgress, size: int) -> tu
     return digest.hexdigest(), total
 
 
+# Fixed bytes of one counts row besides the allocation fragment, the doc id and the
+# count digits: '{"allocation":' ',"content":"' 64 hex '","doc_id":' two id quotes
+# ',"valid_targets":' '}' LF.
+ROW_FIXED_BYTES = 14 + 12 + 64 + 11 + 2 + 17 + 2
+
+
+def preflight_output(stage: Path, owned: OwnedPaths) -> None:
+    """Probe every late filesystem operation in seconds, before any counting.
+
+    The output parent is created as the reference does (``stage.mkdir(parents=True)``).
+    The owned staging directory then exists for the whole job; artifact names pass the
+    same link/junction check as ``write_once``; a probe file is written, fsynced and
+    hard-linked (``write_once`` publishes by hard link) and the staging directory is
+    renamed and back (publication is one directory rename). Probes are removed.
+    """
+    stage.parent.mkdir(parents=True, exist_ok=True)
+    owned.directory(stage)
+    for name in ("counts.jsonl", "counts.json"):
+        ensure_plain_path(stage / name)
+    probe = owned.file(stage / "preflight.probe")
+    linked = owned.file(stage / "preflight.link")
+    with probe.open("xb") as stream:
+        stream.write(b"count-tokens preflight\n")
+        stream.flush()
+        os.fsync(stream.fileno())
+    os.link(probe, linked)
+    linked.unlink()
+    probe.unlink()
+    moved = owned.directory(stage.with_name(stage.name + "-preflight"), create=False)
+    os.rename(stage, moved)
+    os.rename(moved, stage)
+
+
+def export_lower_bound(m: Membership, keys: list[str]) -> int:
+    """Smallest possible ``counts.jsonl`` size: one count digit, unescaped ids."""
+    train = m.split == 0
+    fragments = np.asarray(
+        [len(canonical.canonical_bytes(canonical.loads_strict(k))) for k in keys], dtype=np.int64
+    )
+    id_bytes = np.diff(m.id_offsets.astype(np.int64))[train]
+    rows = int(np.count_nonzero(train))
+    return int(
+        ROW_FIXED_BYTES * rows + fragments[m.allocation[train]].sum() + id_bytes.sum() + rows
+    )
+
+
+def preflight_export(m: Membership, keys: list[str], stage: Path, ceiling: int) -> None:
+    """Refuse before counting only when the export is already guaranteed to fail."""
+    needed = export_lower_bound(m, keys)
+    if needed > ceiling:
+        raise C05Error("exact counts would exceed the reviewed output ceiling")
+    if shutil.disk_usage(stage).free < needed:
+        raise C05Error("output volume lacks space for the exact counts")
+
+
 def count_tokens_fast(
     proof: Path,
     tokenizer_dir: Path,
@@ -829,9 +885,17 @@ def count_tokens_fast(
     owned = OwnedPaths()
     stage = output.with_name(output.name + f".partial-{uuid.uuid4().hex}")
     started = time.monotonic()
+    current = ["OUTPUT PREFLIGHT"]
+
+    def begin(name: str, total: int | None = None, unit: str = "steps") -> None:
+        current[0] = name
+        progress.stage(name, total, unit)
+
     try:
+        begin("OUTPUT PREFLIGHT")
+        preflight_output(stage, owned)
         scratch.mkdir(parents=True, exist_ok=True)
-        progress.stage("TOKENIZER VERIFY", None, "steps")
+        begin("TOKENIZER VERIFY")
         snapshot = snapshot_tokenizer(tokenizer_dir, view, scratch, owned)
         membership, keys = count_tables(view)
         tables = CountTables(membership, str(snapshot.copy), str(snapshot.identity["fingerprint"]))
@@ -844,13 +908,16 @@ def count_tokens_fast(
             with OrderedPool(
                 workers, tables, supervisor, inline=inline, initializer=init_count_worker
             ) as pool:
+                current[0] = "MEMBERSHIP VERIFY"
                 m = stream_membership(view, membership, pool, _Reporter(progress), supervisor, {})
                 reconcile(view, m, keys)
+                preflight_export(m, keys, stage, view.plan.resources.output_bytes)
+                current[0] = "SOURCE COUNT"
                 tokens = source_count(view, m, pool, progress, block_bytes=block_bytes)
             supervisor.check()
-            progress.stage("AGGREGATE", None, "steps")
+            begin("AGGREGATE")
             allocations, counted = aggregate(m, tokens, keys)
-            owned.directory(stage)
+            current[0] = "EXPORT COUNTS"
             counts_path = owned.file(stage / "counts.jsonl")
             sha, size = export_counts(
                 counts_path, m, tokens, keys, view.plan.resources.output_bytes, progress
@@ -869,8 +936,9 @@ def count_tokens_fast(
                 issuer,
                 key,
             )
+            current[0] = "SIGN"
             write_once(owned.file(stage / "counts.json"), envelope)
-            progress.stage("VERIFY", size, "bytes")
+            begin("VERIFY", size, "bytes")
             if _file_sha(counts_path, progress, size) != (sha, size):
                 raise C05Error("exact count artifact changed")
             verify_signed(envelope, view.trusted)
@@ -880,12 +948,16 @@ def count_tokens_fast(
             if _directory_digests(snapshot.copy) != digests:
                 raise C05Error("private tokenizer copy changed during counting")
             supervisor.check()
-            progress.stage("PUBLISH", None, "steps")
+            begin("PUBLISH")
             if output.exists():
                 raise C05Error("selection artifacts are write-once")
             os.rename(stage, output)  # The staged names are gone; cleanup skips them.
         progress.complete()
         return envelope
+    except Exception as exc:
+        # A fixed stage literal for the content-free CLI refusal (no paths or values).
+        setattr(exc, "count_stage", current[0])  # noqa: B010
+        raise
     finally:
         owned.cleanup()
 

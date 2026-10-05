@@ -900,6 +900,20 @@ def main(argv: list[str] | None = None) -> int:
                 # Workers were reaped and owned files removed; nothing was published.
                 print(json.dumps({"refused": True, "error_type": "KeyboardInterrupt"}))
                 return 130
+            except Exception as exc:  # noqa: BLE001 - redacted, content-free refusal
+                # Type, fixed stage literal and numeric errno only: never a path or value.
+                errno = getattr(exc, "errno", None)
+                print(
+                    json.dumps(
+                        {
+                            "refused": True,
+                            "error_type": type(exc).__name__,
+                            "stage": getattr(exc, "count_stage", None),
+                            "errno": errno if type(errno) is int else None,
+                        }
+                    )
+                )
+                return 1
         if args.command in {
             "count-tokens-reference",
             "select",
