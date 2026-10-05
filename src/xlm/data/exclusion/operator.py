@@ -153,6 +153,7 @@ def main(argv: list[str] | None = None) -> int:
         "quota-report",
         "final-receipt",
         "count-tokens",
+        "count-tokens-reference",
         "select",
         "tokenize-selection",
         "freeze",

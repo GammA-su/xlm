@@ -371,21 +371,32 @@ def parser() -> argparse.ArgumentParser:
     bridge.add_argument("--freeze", type=Path)
     _trust(bridge, signing=True)
     # Final allocation chain; each consumes the explicit proof specification.
+    # count-tokens is the parallel fast path; count-tokens-reference is the original
+    # single-process SQLite path (the oracle). Both publish byte-identical artifacts.
     counting = commands.add_parser("count-tokens")
+    counting_reference = commands.add_parser("count-tokens-reference")
     selecting = commands.add_parser("select")
     tokenizing = commands.add_parser("tokenize-selection")
     freezing = commands.add_parser("freeze")
     binding = commands.add_parser("claim-binding")
-    for command in (counting, selecting, tokenizing, freezing, binding):
+    counters = (counting, counting_reference)
+    for command in (*counters, selecting, tokenizing, freezing, binding):
         command.add_argument("--c05-proof", type=Path, required=True)
-    for command in (counting, selecting, tokenizing, freezing):
+    for command in (*counters, selecting, tokenizing, freezing):
         command.add_argument("--tokenizer", type=Path, required=True)
-    for command in (counting, selecting):
+    for command in (*counters, selecting):
         command.add_argument("--scratch", type=Path, required=True)
-    for command in (counting, selecting, freezing):
+    for command in (*counters, selecting, freezing):
         command.add_argument("--output", type=Path, required=True)
         command.add_argument("--issuer", required=True)
         command.add_argument("--key-env", required=True)
+    for command in counters:
+        # Operational display only (stderr); never part of an artifact.
+        command.add_argument("--progress-interval", type=float, default=5.0)
+        command.add_argument("--progress-format", choices=["text", "jsonl"], default="text")
+        command.add_argument("--no-progress", action="store_true")
+    # Operational only: the worker count never changes any output byte.
+    counting.add_argument("--workers", type=int, choices=[1, 2, 4, 8, 16], default=8)
     selecting.add_argument("--counts", type=Path, required=True)
     selecting.add_argument(
         "--quotas", type=Path, default=Path("recipes/mixtures/mix01_quotas_6b.yaml")
@@ -532,11 +543,17 @@ def allocation_command(args: argparse.Namespace) -> int:
         key = key_from_env(args.key_env)
         if gate.trusted.get(args.issuer) != key:
             raise C05Error("allocation signer is not trusted")
-        if args.command == "count-tokens":
+        if args.command == "count-tokens-reference":
             from xlm.data.exclusion.selection import count_tokens
 
             result = count_tokens(
-                gate, args.tokenizer, args.output, args.issuer, key, scratch=args.scratch
+                gate,
+                args.tokenizer,
+                args.output,
+                args.issuer,
+                key,
+                scratch=args.scratch,
+                progress=_count_progress(args),
             )
         elif args.command == "select":
             from xlm.data.exclusion.selection import SelectionDeficit, select
@@ -573,6 +590,33 @@ def allocation_command(args: argparse.Namespace) -> int:
             )
         print(json.dumps({"digest": result["digest"], "mode": result["payload"]["mode"]}))
         return 0
+
+
+def _count_progress(args: argparse.Namespace) -> RunProgress | NullProgress:
+    from xlm.data.exclusion.progress import NullProgress, RunProgress
+
+    if args.no_progress:
+        return NullProgress()
+    return RunProgress(interval=args.progress_interval, fmt=args.progress_format, label="COUNT")
+
+
+def count_command(args: argparse.Namespace) -> int:
+    """Fast exact counts over a verified C05 proof (byte-identical to the reference)."""
+    from xlm.data.exclusion.countfast import count_tokens_fast
+
+    key = key_from_env(args.key_env)
+    envelope = count_tokens_fast(
+        args.c05_proof,
+        args.tokenizer,
+        args.output,
+        args.issuer,
+        key,
+        scratch=args.scratch,
+        workers=args.workers,
+        progress=_count_progress(args),
+    )
+    print(json.dumps({"digest": envelope["digest"], "mode": envelope["payload"]["mode"]}))
+    return 0
 
 
 def _fit_progress(args: argparse.Namespace) -> RunProgress | NullProgress:
@@ -845,8 +889,19 @@ def main(argv: list[str] | None = None) -> int:
                 # Staging and job scratch were removed; nothing was published.
                 print(json.dumps({"refused": True, "error_type": "KeyboardInterrupt"}))
                 return 130
+        if args.command == "count-tokens":
+            try:
+                return count_command(args)
+            except C05Error as exc:
+                # Fixed literal reasons (no record values, ids, paths or digests).
+                print(json.dumps({"refused": True, "error_type": "C05Error", "reason": str(exc)}))
+                return 1
+            except KeyboardInterrupt:
+                # Workers were reaped and owned files removed; nothing was published.
+                print(json.dumps({"refused": True, "error_type": "KeyboardInterrupt"}))
+                return 130
         if args.command in {
-            "count-tokens",
+            "count-tokens-reference",
             "select",
             "tokenize-selection",
             "freeze",

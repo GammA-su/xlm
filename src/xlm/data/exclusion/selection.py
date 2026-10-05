@@ -26,6 +26,7 @@ from xlm.data.exclusion.artifacts import InputFile, signed, verify_signed
 from xlm.data.exclusion.gates import C05View, MembershipGate
 from xlm.data.exclusion.inputs import contained, read_metadata
 from xlm.data.exclusion.policy import C05Error, FrozenModel
+from xlm.data.exclusion.progress import NullProgress, RunProgress
 from xlm.data.exclusion.quotas import view_requirements
 from xlm.data.exclusion.runner import file_sha
 from xlm.data.exclusion.storage import OrderedConnection, connect
@@ -222,18 +223,33 @@ def count_tokens(
     key: bytes,
     *,
     scratch: Path,
+    progress: RunProgress | NullProgress | None = None,
 ) -> dict[str, Any]:
-    """Count every kept training record of the C05 inputs exactly, then publish."""
+    """Count every kept training record of the C05 inputs exactly, then publish.
+
+    The single-process reference (``count-tokens-reference``) and the oracle of
+    :mod:`countfast`. ``progress`` is display only (stderr); a failure removes the
+    staging directory this call created.
+    """
+    progress = progress or NullProgress()
+    progress.stage("TOKENIZER VERIFY", None, "steps")
     tokenizer, identity = tokenizer_identity(tokenizer_dir, gate)
     db, db_path = _scratch(gate, scratch, "counts")
     stage = output.with_name(output.name + f".partial-{uuid.uuid4().hex}")
+    published = False
+    total_rows = sum(f.documents for f in gate.plan.files)
     try:
         db.execute(
             "CREATE TABLE counts(id TEXT PRIMARY KEY,content TEXT,allocation TEXT,"
             "tokens INTEGER) WITHOUT ROWID"
         )
+        progress.stage("SOURCE COUNT", total_rows, "rows")
+        seen = 0
         with db:
             for item, doc in iter_plan_documents(gate):
+                seen += 1
+                if seen % 1024 == 0:
+                    progress.update(seen)
                 if gate.lookup(doc.doc_id) is None:
                     continue  # Excluded or duplicate: never counted or selected.
                 content = canonical.digest(doc.to_dict())
@@ -249,15 +265,20 @@ def count_tokens(
                     )
                 except sqlite3.IntegrityError as exc:
                     raise C05Error("repeated record in exact counts") from exc
+        progress.update(seen)
+        progress.stage("AGGREGATE", None, "steps")
         expected = gate.db.execute("SELECT COUNT(*) FROM membership WHERE split='train'")
         counted = db.execute("SELECT COUNT(*) FROM counts").fetchone()[0]
         if counted != expected.fetchone()[0]:
             raise C05Error("exact counts do not cover every kept training record")
         allocations: dict[str, dict[str, int]] = {}
+        progress.stage("EXPORT COUNTS", counted, "rows")
 
         def rows() -> Iterator[dict[str, Any]]:
             query = "SELECT id,content,allocation,tokens FROM counts ORDER BY id"
-            for doc_id, content, allocation, tokens in db.execute(query):
+            for number, (doc_id, content, allocation, tokens) in enumerate(db.execute(query)):
+                if number % 1024 == 0:
+                    progress.update(number)
                 total = allocations.setdefault(allocation, {"documents": 0, "valid_targets": 0})
                 total["documents"] += 1
                 total["valid_targets"] += tokens
@@ -287,11 +308,18 @@ def count_tokens(
             key,
         )
         write_once(stage / "counts.json", envelope)
+        progress.stage("PUBLISH", None, "steps")
         _publish(stage, output)
+        published = True
+        progress.complete()
         return envelope
     finally:
         db.close()
         db_path.unlink(missing_ok=True)
+        if not published and stage.is_dir():
+            for name in ("counts.jsonl", "counts.json"):
+                (stage / name).unlink(missing_ok=True)
+            stage.rmdir()  # Fails loudly if anything this call did not create remains.
 
 
 def verify_counts(

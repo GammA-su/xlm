@@ -201,7 +201,16 @@ Invoke-Expression "$cli verify-kept-index $c06 --index G:/XLM/tokfit/mix01-fit-s
 ```
 
 The output paths are fresh. The historical p0002 fit stays where it is and is never a
-fit of the cleaned corpus. Then run the allocation chain below with the same
+fit of the cleaned corpus.
+
+Exact counts over the cleaned proof (detach `X:`; run from the checkout of the
+count-tokens fast-path commit or later). Measured on authored data, this projects to
+about 45 minutes on the 5700X3D at 16 workers (the exact BPE backend is CPU-bound;
+see [report](../implementation/reports/COUNT-TOKENS-FAST.md)); the ETA is live:
+
+```powershell
+Invoke-Expression "$cli count-tokens --c05-proof G:/XLM/c05-clean-v1/clean-v1-p0001.proof.json --tokenizer G:/XLM/tokfit/mix01-fit-shares-v1-clean-v1/tokenizer --scratch C:/XLM-scratch/count-tokens-clean-v1 --output G:/XLM/counts/mix01-clean-v1 --issuer GammA --key-env XLM_C05_OPERATOR_KEY --workers 16 --progress-interval 5"
+``` Then run the allocation chain below with the same
 `--c05-proof` and the new tokenizer. A missing, moved, changed or mismatched
 admission or original manifest refuses (exit 1) before any corpus read.
 
@@ -632,7 +641,11 @@ chain is a rehearsal that Mix-01 training and official claims refuse.
 $cli = 'uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator'
 # 1. Exact per-record valid-target counts over every kept training record.
 #    The tokenizer directory must carry c05-binding.json for this completion.
-Invoke-Expression "$cli count-tokens --c05-proof <proof.json> --tokenizer <tokenizer-dir> --scratch <scratch> --output <counts-dir> --issuer <issuer> --key-env <KEY_ENV>"
+#    Parallel fast path, byte-identical to count-tokens-reference (the original
+#    single-process SQLite path). --workers is operational only (default 8; 16
+#    measured fastest on the 5700X3D). Live [COUNT] progress on stderr; the final
+#    JSON result alone on stdout. Exit 1 = refused (nothing published).
+Invoke-Expression "$cli count-tokens --c05-proof <proof.json> --tokenizer <tokenizer-dir> --scratch <scratch> --output <counts-dir> --issuer <issuer> --key-env <KEY_ENV> --workers 16 --progress-interval 5"
 # 2. Deterministic exact selection per frozen allocation (exit 2 + report on deficit).
 Invoke-Expression "$cli select --c05-proof <proof.json> --tokenizer <tokenizer-dir> --scratch <scratch> --counts <counts-dir> --quotas recipes/mixtures/mix01_quotas_6b.yaml --ifm-split G:/XLM/calib/requirement_splits/ifm_behaviors_general_planning.json --deficit-report <deficit.json> --output <selection-dir> --issuer <issuer> --key-env <KEY_ENV>"
 # 3. One shard per logical component, exactly the selected records.

@@ -8,7 +8,9 @@ ETA math: a stage's rate is a rolling rate over the last ``window`` seconds of
 samples (taken at most once per second). An ETA is shown only when the stage has
 an exact denominator and the window holds at least ``min_span`` seconds of
 samples; otherwise ``--:--:--``. Every stage transition resets the estimator and
-forces a line, so startup averages never leak into a later stage.
+forces a line, so startup averages never leak into a later stage. A stage may name a
+separate work denominator (``work_total``, e.g. text bytes); its ETA then uses the
+rolling rate of that work, which is steadier than a document rate when record sizes vary.
 """
 
 from __future__ import annotations
@@ -66,10 +68,24 @@ class NullProgress:
 
     lines = 0
 
-    def stage(self, name: str, total: int | None = None, unit: str = "docs") -> None:
+    def stage(
+        self,
+        name: str,
+        total: int | None = None,
+        unit: str = "docs",
+        *,
+        work_total: int | None = None,
+    ) -> None:
         return None
 
-    def update(self, done: int | None = None, *, force: bool = False, **fields: Any) -> None:
+    def update(
+        self,
+        done: int | None = None,
+        *,
+        force: bool = False,
+        work: int | None = None,
+        **fields: Any,
+    ) -> None:
         return None
 
     def advance(self, amount: int = 1, **fields: Any) -> None:
@@ -118,6 +134,9 @@ class RunProgress:
         self.fields: dict[str, int | float] = {}
         self.stage_started = self.started
         self.rate = RollingRate(window, min_span)
+        self.work_total: int | None = None
+        self.work = 0
+        self.work_rate = RollingRate(window, min_span)
         self.last_line: float | None = None
         self.last_telemetry: float | None = None
         self.telemetry: dict[str, int | float] = {}
@@ -128,7 +147,14 @@ class RunProgress:
         self.telemetry_source = telemetry
         self.last_telemetry = None
 
-    def stage(self, name: str, total: int | None = None, unit: str = "docs") -> None:
+    def stage(
+        self,
+        name: str,
+        total: int | None = None,
+        unit: str = "docs",
+        *,
+        work_total: int | None = None,
+    ) -> None:
         if self.name is not None:
             self.finish()
         now = self.clock()
@@ -138,11 +164,24 @@ class RunProgress:
         self.stage_started = now
         self.rate = RollingRate(self.window, self.min_span)
         self.rate.add(now, 0)
+        self.work_total, self.work = work_total, 0
+        self.work_rate = RollingRate(self.window, self.min_span)
+        self.work_rate.add(now, 0)
         self._emit(now, event="stage")
 
-    def update(self, done: int | None = None, *, force: bool = False, **fields: Any) -> None:
+    def update(
+        self,
+        done: int | None = None,
+        *,
+        force: bool = False,
+        work: int | None = None,
+        **fields: Any,
+    ) -> None:
         if done is not None:
             self.done = int(done)
+        if work is not None:
+            self.work = int(work)
+            self.work_rate.add(self.clock(), self.work)
         for key, value in fields.items():
             if isinstance(value, bool) or not isinstance(value, (int, float)):
                 raise C05Error("progress fields must be numeric")
@@ -165,6 +204,7 @@ class RunProgress:
         self.finish(**fields)
         self.name, self.total = "COMPLETE", None
         self.done, self.fields = 0, {}
+        self.work_total = None
         self._emit(self.clock(), event="complete")
         self.name = None
 
@@ -191,6 +231,17 @@ class RunProgress:
             eta = 0.0
         elif remaining is not None and rolling:
             eta = remaining / rolling
+        work: dict[str, Any] = {}
+        if self.work_total is not None:
+            work_rolling = self.work_rate.rate()
+            left = max(0, self.work_total - self.work)
+            eta = 0.0 if left == 0 else (left / work_rolling if work_rolling else None)
+            work = {
+                "work_done": self.work,
+                "work_total": self.work_total,
+                "work_rolling_rate": work_rolling,
+                "work_lifetime_rate": self.work / elapsed if elapsed > 0 else None,
+            }
         return {
             "stage": self.name,
             "unit": self.unit,
@@ -204,6 +255,7 @@ class RunProgress:
             "eta_seconds": eta,
             "fields": dict(self.fields),
             "telemetry": dict(self.telemetry),
+            **work,
         }
 
     def _emit(self, now: float, *, event: str) -> None:
@@ -249,6 +301,8 @@ def render(snap: Mapping[str, Any], event: str, label: str = "C05") -> str:
         parts.append(f"{snap['done']:,}/{total:,} {unit} ({snap['percent'] or 0.0:.2f}%)")
     elif snap["done"]:
         parts.append(f"{snap['done']:,} {unit}")
+    if snap.get("work_total") is not None:
+        parts.append(f"text {snap['work_done'] / GiB:,.2f}/{snap['work_total'] / GiB:,.2f} GiB")
     fields = dict(snap["fields"])
     if "files_total" in fields:
         parts.append(f"files {fields.pop('files_committed', 0):,}/{fields.pop('files_total'):,}")
@@ -263,6 +317,10 @@ def render(snap: Mapping[str, Any], event: str, label: str = "C05") -> str:
         parts.append(f"{rolling:,.0f} {unit}/s rolling")
     if lifetime is not None and snap["done"]:
         parts.append(f"{lifetime:,.0f} {unit}/s avg")
+    if snap.get("work_rolling_rate") is not None:
+        parts.append(f"text {snap['work_rolling_rate'] / MiB:,.1f} MiB/s rolling")
+    if snap.get("work_lifetime_rate") is not None and snap.get("work_done"):
+        parts.append(f"{snap['work_lifetime_rate'] / MiB:,.1f} MiB/s avg")
     if "mib_per_s" in fields:
         parts.append(f"{fields.pop('mib_per_s'):,.1f} MiB/s")
     if "workers" in fields:
@@ -290,6 +348,8 @@ def render(snap: Mapping[str, Any], event: str, label: str = "C05") -> str:
         parts.append(f"scratch {telemetry['scratch'] / GiB:.2f} GiB")
     if "free" in telemetry:
         parts.append(f"free {telemetry['free'] / GiB:.1f} GiB")
+    if "cpu_percent" in telemetry:
+        parts.append(f"CPU {telemetry['cpu_percent']:.0f}%")
     parts.append(f"elapsed {clock(snap['stage_seconds'])} (run {clock(snap['run_seconds'])})")
     parts.append(f"ETA {clock(snap['eta_seconds'])}")
     return " | ".join(parts)

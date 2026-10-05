@@ -16,13 +16,13 @@ import hashlib
 import os
 from collections import deque
 from collections.abc import Callable, Iterable, Iterator
-from concurrent.futures import Future, ProcessPoolExecutor
+from concurrent.futures import FIRST_COMPLETED, Future, ProcessPoolExecutor, wait
 from concurrent.futures import TimeoutError as FutureTimeout
 from concurrent.futures.process import BrokenProcessPool
 from dataclasses import dataclass, field
 from multiprocessing import get_context
 from pathlib import Path
-from typing import TypeVar
+from typing import Any, TypeVar
 
 import numpy as np
 import numpy.typing as npt
@@ -262,30 +262,89 @@ class SourceResult:
     parsed: int = 0
 
 
+def walk_rows(
+    path: Path,
+    sha256: str,
+    file_bytes: int,
+    documents: int,
+    ceiling: int,
+    wanted: list[int],
+    block_bytes: int = 0,
+) -> Iterator[tuple[int, bytes, int]]:
+    """Hash every byte once; yield ``(position, line, offset)`` for each wanted row.
+
+    ``wanted`` holds strictly ascending 1-based row numbers. Exhausting the iterator
+    proves the file: size, SHA-256 and row count equal the frozen plan entry and every
+    wanted row exists. Lines are yielded before that proof, so a consumer publishes
+    nothing until the iterator is exhausted.
+    """
+    if path.stat().st_size != file_bytes:
+        raise C05Error("input file size changed since C05")
+    count = len(wanted)
+    position = 0
+    target = wanted[0] if count else 0
+    digest = hashlib.sha256()
+    total = row = base = 0
+    pending = b""
+    with path.open("rb", buffering=0) as stream:
+        # Never request more than one byte past the frozen size: growth refuses at once.
+        size = block_bytes or SOURCE_BLOCK_BYTES
+        while block := stream.read(min(size, file_bytes - total + 1)):
+            _cancel_check()
+            digest.update(block)
+            total += len(block)
+            if total > file_bytes:
+                raise C05Error("input content changed since C05 (read exceeds frozen bytes)")
+            data = pending + block if pending else block
+            start = 0
+            while (end := data.find(b"\n", start)) >= 0:
+                row += 1
+                if row > documents:
+                    raise C05Error("input content changed since C05 (rows exceed frozen count)")
+                if end + 1 - start > ceiling:
+                    raise C05Error("canonical record ceiling")
+                if row == target:
+                    yield position, data[start : end + 1], base + start
+                    position += 1
+                    target = wanted[position] if position < count else 0
+                start = end + 1
+            pending = data[start:]
+            base += start
+            if len(pending) > ceiling:
+                raise C05Error("canonical record ceiling")
+    if pending:
+        row += 1
+        if row > documents:
+            raise C05Error("input content changed since C05 (rows exceed frozen count)")
+        if row == target:
+            yield position, pending, base
+            position += 1
+    if (digest.hexdigest(), row, total) != (sha256, documents, file_bytes):
+        raise C05Error("input content changed since C05")
+    if position != count:
+        raise C05Error("C05 membership row is outside its source file")
+
+
 def scan_source_file(task: SourceTask) -> SourceResult:
     """Hash every byte once; locate kept rows; strict-parse them; fully decode selected."""
-    path = Path(task.path)
-    if path.stat().st_size != task.file_bytes:
-        raise C05Error("input file size changed since C05")
-    wanted = task.rows.tolist()
     expect_bytes = task.nbytes.tolist()
     assigned = task.assigned.tolist()
     selected = task.selected.tolist()
-    count = len(wanted)
+    count = len(task.rows)
     offsets = np.zeros(count, dtype=np.uint64)
     lengths = np.zeros(count, dtype=np.uint32)
     original = np.full(count, NOT_PARSED, dtype=np.uint8)
     result = SourceResult(task.ordinal, "", 0, 0, offsets, lengths, original)
     content_of = iter(task.selected_content)
-    position = 0
-    target = wanted[0] if count else 0
-    ceiling = task.line_ceiling
-    digest = hashlib.sha256()
-    total = row = base = 0
-    pending = b""
-
-    def handle(line: bytes, offset: int) -> None:
-        nonlocal position, target
+    for position, line, offset in walk_rows(
+        Path(task.path),
+        task.sha256,
+        task.file_bytes,
+        task.documents,
+        task.line_ceiling,
+        task.rows.tolist(),
+        task.block_bytes,
+    ):
         offsets[position] = offset
         lengths[position] = len(line)
         if task.parse:
@@ -297,44 +356,7 @@ def scan_source_file(task: SourceTask) -> SourceResult:
                 next(content_of) if selected[position] else None,
                 result,
             )
-        position += 1
-        target = wanted[position] if position < count else 0
-
-    with path.open("rb", buffering=0) as stream:
-        # Never request more than one byte past the frozen size: growth refuses at once.
-        size = task.block_bytes or SOURCE_BLOCK_BYTES
-        while block := stream.read(min(size, task.file_bytes - total + 1)):
-            _cancel_check()
-            digest.update(block)
-            total += len(block)
-            if total > task.file_bytes:
-                raise C05Error("input content changed since C05 (read exceeds frozen bytes)")
-            data = pending + block if pending else block
-            start = 0
-            while (end := data.find(b"\n", start)) >= 0:
-                row += 1
-                if row > task.documents:
-                    raise C05Error("input content changed since C05 (rows exceed frozen count)")
-                if end + 1 - start > ceiling:
-                    raise C05Error("canonical record ceiling")
-                if row == target:
-                    handle(data[start : end + 1], base + start)
-                start = end + 1
-            pending = data[start:]
-            base += start
-            if len(pending) > ceiling:
-                raise C05Error("canonical record ceiling")
-    if pending:
-        row += 1
-        if row > task.documents:
-            raise C05Error("input content changed since C05 (rows exceed frozen count)")
-        if row == target:
-            handle(pending, base)
-    if (digest.hexdigest(), row, total) != (task.sha256, task.documents, task.file_bytes):
-        raise C05Error("input content changed since C05")
-    if position != count:
-        raise C05Error("C05 membership row is outside its source file")
-    result.sha256, result.rows, result.file_bytes = digest.hexdigest(), row, total
+    result.sha256, result.rows, result.file_bytes = task.sha256, task.documents, task.file_bytes
     return result
 
 
@@ -402,11 +424,12 @@ class OrderedPool:
     def __init__(
         self,
         workers: int,
-        tables: MembershipTables,
+        tables: Any,
         supervisor: Checkable | None = None,
         *,
         inline: bool = False,
         grace: float = 2.0,
+        initializer: Callable[[Any], None] | None = None,
     ) -> None:
         if workers not in (1, 2, 4, 8, 16):
             raise C05Error("fit workers must be 1, 2, 4, 8 or 16")
@@ -415,17 +438,19 @@ class OrderedPool:
         self.supervisor = supervisor
         self.inline = inline
         self.grace = grace
+        # Called once per worker (or once in-process) with ``tables``.
+        self.initializer: Callable[[Any], None] = initializer or init_worker
         self.executor: ProcessPoolExecutor | None = None
         self.aborted = False
 
     def __enter__(self) -> OrderedPool:
         if self.inline:
-            init_worker(self.tables)
+            self.initializer(self.tables)
         else:
             self.executor = ProcessPoolExecutor(
                 max_workers=self.workers,
                 mp_context=get_context("spawn"),
-                initializer=init_worker,
+                initializer=self.initializer,
                 initargs=(self.tables,),
             )
         return self
@@ -512,3 +537,38 @@ class OrderedPool:
             except BrokenProcessPool as exc:
                 self._check()  # A supervisor kill reports its own reason first.
                 raise C05Error("C06 worker process terminated unexpectedly") from exc
+
+    # -- unordered use (results integrated by position, never by completion order) ----
+
+    def submit(self, function: Callable[[T], R], task: T) -> Future[R]:
+        """Submit one task; ``inline`` runs it now (cooperative cancellation checks)."""
+        global _CANCEL
+        self._check()
+        if self.executor is not None:
+            return self.executor.submit(function, task)
+        future: Future[R] = Future()
+        _CANCEL = self._check
+        try:
+            future.set_result(function(task))
+        finally:
+            _CANCEL = None
+        return future
+
+    def completed(self, pending: set[Future[R]]) -> list[Future[R]]:
+        """Block (polling the supervisor) until at least one pending task finishes.
+
+        A failed task re-raises here; a dead worker refuses. The caller's ``with``
+        block then aborts the pool, so no task result is used after a failure.
+        """
+        while True:
+            self._check()
+            done, _ = wait(pending, timeout=POLL_SECONDS, return_when=FIRST_COMPLETED)
+            if not done:
+                continue
+            for future in done:
+                try:
+                    future.result()
+                except BrokenProcessPool as exc:
+                    self._check()
+                    raise C05Error("worker process terminated unexpectedly") from exc
+            return list(done)

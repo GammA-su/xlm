@@ -1,3 +1,30 @@
+> **COUNT-TOKENS FAST PATH + PROGRESS (2026-10-05): PARALLEL EXACT COUNTS IMPLEMENTED; AUTHORED-VERIFIED BYTE-IDENTICAL; 9.0x MEASURED; <=30 MIN TARGET NOT MET (~45 MIN PROJECTED); REAL COUNT NOT RUN.**
+>
+> - `count-tokens` is now the parallel fast path; `count-tokens-reference` keeps the
+>   original single-process SQLite path as the oracle. The artifacts are
+>   byte-identical, and the select input is unchanged.
+> - Membership is the authenticated `membership.jsonl` stream (as in the C06 fast
+>   fit), with no SQLite. Every plan file is hashed in full once. Large files are
+>   counted in verified byte-range chunks.
+> - Every kept row is checked for id, exact content digest and the train split.
+> - The tokenizer is a verified private snapshot; train rows are counted with the
+>   native `count_valid_targets`.
+> - The kept index is not used: it would save no source reads.
+> - New options: `--workers {1,2,4,8,16}`, `--progress-interval`,
+>   `--progress-format text|jsonl`, `--no-progress`. Stages are `[COUNT]` PROOF
+>   VERIFY ... COMPLETE, with a rolling text-byte ETA.
+> - Authored 120k-doc benchmark (production vocab 32,768): reference 275 s; 16
+>   workers 30.5 s (9.0x); 8 workers 34.3 s (8.0x); every artifact identical.
+> - The exact BPE backend is the ceiling: about 4.2 MB/s per thread, and about
+>   25 MB/s of kept text machine-wide.
+>
+> Tests: new 32 passed; the focused C05/C06/selection/progress selection had 290
+> passed. Ruff and diff-check are clean. `mypy --strict` is clean on `src` and the
+> new files; the errors in the imported C06 test file pre-exist at base.
+> [Report](reports/COUNT-TOKENS-FAST.md).
+> Next (operator, X: detached): the cleaned-proof `count-tokens ... --workers 16
+> --progress-interval 5` command in the runbook; then `select`.
+>
 > **POST-C05 CLEANED-PROOF DOWNSTREAM (2026-10-05): ORIGINAL-MANIFEST QUOTA LINEAGE VIA THE VERIFIED ADMISSION; AUTHORED-VERIFIED; REAL C06 NOT RUN.**
 >
 > - Real C05 over the cleaned manifest is complete (operator):
