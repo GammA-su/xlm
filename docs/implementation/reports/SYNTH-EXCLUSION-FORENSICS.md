@@ -184,11 +184,11 @@ items, the top-up stands (its observed yield already includes the 73 % loss).
 * optionally the protected index (pattern kind and token length only).
 
 It prints no text, ids, raw URLs or benchmark text. Identifiers appear only as
-16-hex HMAC fingerprints with a per-run salt. It runs about 10-20 min and uses a few
-GB of RAM.
+16-hex HMAC fingerprints with a per-run salt. Since the fast path ([C05-FORENSICS-FAST](C05-FORENSICS-FAST.md)) it projects to about 1.5-2.5 min at 8 workers, with live `[FORENSICS]` progress on stderr.
+Check `$LASTEXITCODE` (0) before reading the redirected report.
 
 ```powershell
-uv run --offline --locked --no-sync --extra cpu --extra eval python -m scripts.c05_component_forensics --plan G:/XLM/c05-clean-v1/p0001.json --read-corpus --focus-allocation common_pile_prose/common_pile_prose/project_gutenberg --focus-allocation synth_en_explanations/default/- --benchmark-index X:/C05-Protected/prepared-clean-v1/index.jsonl | Set-Content -Encoding utf8 C:/XLM-scratch/c05-component-forensics.json
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m scripts.c05_component_forensics --plan G:/XLM/c05-clean-v1/p0001.json --read-corpus --focus-allocation common_pile_prose/common_pile_prose/project_gutenberg --focus-allocation synth_en_explanations/default/- --benchmark-index X:/C05-Protected/prepared-clean-v1/index.jsonl --workers 8 --progress-interval 5 | Set-Content -Encoding utf8 C:/XLM-scratch/c05-component-forensics.json
 ```
 
 Read in the output:

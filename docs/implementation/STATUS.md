@@ -1,3 +1,20 @@
+> **C05 FORENSICS FAST PATH + PROGRESS (2026-10-05): REPORT IDENTICAL TO THE 858eb9e ORACLE (EXCEPT THE CORRECTED CORPUS BREAKDOWN); 3.6x MEASURED; ~1.5-2.5 MIN PROJECTED AT 8 WORKERS; REAL RUN NOT DONE.**
+>
+> - One ledger pass (was 3), parsed by `--workers` into compact columns; fact units and
+>   the protected index read once.
+> - Corpus: only the target's majority allocation plus member files, each hashed and
+>   verified against the C05 plan. The old breakdown mixed every UltraX row into the
+>   SYNTH counts and scanned about 21 GB.
+> - Graph: C05's own exact `components()`, incremental stages, shared-base removal
+>   probes.
+> - `[FORENSICS]` stderr progress (text|jsonl) with ETA; stdout is only the report.
+> - Authored 895k-row bench: reference 39.0 s, fast 10.85 s at 8 workers; reports are
+>   byte-identical at 1/2/4/8/16 workers.
+>
+> Tests: 65 passed. [Report](reports/C05-FORENSICS-FAST.md). Next (operator, X: and G:
+> attached): the command in that report (`--workers 8 --progress-interval 5`), then
+> check `$LASTEXITCODE`.
+>
 > **SYNTH EXCLUSION FORENSICS (2026-10-05): GIANT COMPONENT = SYNTH SEED-URL LINEAGE KEYS (PROVEN BY ELIMINATION); BRIDGE TYPE (CO-CITATION CHAIN vs HUB) AND HIT LOCATIONS NEED THE PRODUCTION FORENSIC RUN.**
 >
 > - Only `url:` keys from SYNTH `query_seed_url`/`additional_seed_url` can join SYNTH
