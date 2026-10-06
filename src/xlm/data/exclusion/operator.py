@@ -154,6 +154,7 @@ def main(argv: list[str] | None = None) -> int:
         "final-receipt",
         "count-tokens",
         "count-tokens-reference",
+        "verify-counts",
         "select",
         "select-reference",
         "tokenize-selection",

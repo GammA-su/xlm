@@ -1,0 +1,31 @@
+{
+  "count": {
+    "100000": {
+      "counts_sha256": "1629d45726f823c0360c3c584c685f6269efa3de73dabc1b5e7bfb338087b0a6",
+      "identical_to_stock": true,
+      "seconds": 6.283,
+      "text_mib_s": 3.217,
+      "tokens": 5072851
+    },
+    "1000000": {
+      "counts_sha256": "1629d45726f823c0360c3c584c685f6269efa3de73dabc1b5e7bfb338087b0a6",
+      "identical_to_stock": true,
+      "seconds": 6.566,
+      "text_mib_s": 3.079,
+      "tokens": 5072851
+    },
+    "stock": {
+      "counts_sha256": "1629d45726f823c0360c3c584c685f6269efa3de73dabc1b5e7bfb338087b0a6",
+      "identical_to_stock": true,
+      "seconds": 6.912,
+      "text_mib_s": 2.924,
+      "tokens": 5072851
+    }
+  },
+  "line_bytes": 26847561,
+  "mode": "single",
+  "rows": 3857,
+  "text_bytes": 21195012,
+  "tokens_per_text_byte": 0.2393,
+  "verify_s": 0.39
+}

@@ -1,0 +1,26 @@
+[COUNT] PROOF VERIFY | started | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[COUNT] PROOF VERIFY | done | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[COUNT] OUTPUT PREFLIGHT | started | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[COUNT] OUTPUT PREFLIGHT | done | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[COUNT] TOKENIZER VERIFY | started | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[COUNT] TOKENIZER VERIFY | done | RSS 0.1/16.0 GiB (peak 0.1) | scratch 0.00 GiB | free 612.5 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[COUNT] MEMBERSHIP VERIFY | started | 0/29,035 rows (0.00%) | RSS 0.1/16.0 GiB (peak 0.1) | scratch 0.00 GiB | free 612.5 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[COUNT] SLO | membership 12.2 MB/s, 22,386 rows/s, 1.3 s
+[COUNT] MEMBERSHIP VERIFY | done | 29,035/29,035 rows (100.00%) | 0.01/0.01 GiB input | 21,847 rows/s avg | 11.6 MiB/s | RSS 0.1/16.0 GiB (peak 0.1) | scratch 0.00 GiB | free 612.5 GiB | elapsed 00:00:01 (run 00:00:01) | ETA 00:00:00
+[COUNT] SOURCE COUNT | started | 0/28,173 docs (0.00%) | text 0.00/0.15 GiB | RSS 0.1/16.0 GiB (peak 0.1) | scratch 0.00 GiB | free 612.5 GiB | elapsed 00:00:00 (run 00:00:01) | ETA --:--:--
+[COUNT] SOURCE COUNT | 248/28,173 docs (0.88%) | text 0.00/0.15 GiB | files 1/32 | 0.10/0.18 GiB input | 91 docs/s avg | 0.6 MiB/s avg | workers 16/16 busy | tasks 31/32 results 3 | gb_per_s 0.04 | mtokens_per_s 0.10 | queued 5 | RSS 0.1/16.0 GiB (peak 0.1) | scratch 0.00 GiB | free 612.5 GiB | elapsed 00:00:02 (run 00:00:04) | ETA --:--:--
+[COUNT] SOURCE COUNT | 9,299/28,173 docs (33.01%) | text 0.05/0.15 GiB | files 28/32 | 0.15/0.18 GiB input | 1,872 docs/s avg | 10.7 MiB/s avg | workers 8/16 busy | tasks 8/32 results 31 | gb_per_s 0.03 | mtokens_per_s 1.79 | queued 0 | RSS 2.3/16.0 GiB (peak 2.3) | scratch 0.00 GiB | free 612.5 GiB | CPU 60% | elapsed 00:00:04 (run 00:00:06) | ETA --:--:--
+[COUNT] SOURCE COUNT | 13,873/28,173 docs (49.24%) | text 0.08/0.15 GiB | files 30/32 | 0.18/0.18 GiB input | 1,790 docs/s avg | 10.2 MiB/s avg | workers 6/16 busy | tasks 6/32 results 33 | gb_per_s 0.03 | mtokens_per_s 1.71 | queued 0 | RSS 2.3/16.0 GiB (peak 2.3) | scratch 0.00 GiB | free 612.5 GiB | CPU 60% | elapsed 00:00:07 (run 00:00:09) | ETA --:--:--
+[COUNT] SOURCE COUNT | 28,173/28,173 docs (100.00%) | text 0.15/0.15 GiB | files 32/32 | 0.18/0.18 GiB input | 2,844 docs/s avg | 16.0 MiB/s avg | workers 0/16 busy | tasks 0/32 results 39 | gb_per_s 0.02 | mtokens_per_s 2.77 | queued 0 | RSS 2.3/16.0 GiB (peak 2.3) | scratch 0.00 GiB | free 612.5 GiB | CPU 60% | elapsed 00:00:09 (run 00:00:11) | ETA 00:00:00
+[COUNT] SOURCE COUNT | done | 28,173/28,173 docs (100.00%) | text 0.15/0.15 GiB | files 32/32 | 0.18/0.18 GiB input | 2,844 docs/s avg | 16.0 MiB/s avg | workers 0/16 busy | tasks 0/32 results 39 | gb_per_s 0.02 | mtokens_per_s 2.77 | queued 0 | RSS 2.3/16.0 GiB (peak 2.3) | scratch 0.00 GiB | free 612.5 GiB | CPU 60% | elapsed 00:00:09 (run 00:00:11) | ETA 00:00:00
+[COUNT] AGGREGATE | started | RSS 2.3/16.0 GiB (peak 2.3) | scratch 0.00 GiB | free 612.5 GiB | CPU 60% | elapsed 00:00:00 (run 00:00:11) | ETA --:--:--
+[COUNT] AGGREGATE | done | RSS 2.3/16.0 GiB (peak 2.3) | scratch 0.00 GiB | free 612.5 GiB | CPU 60% | elapsed 00:00:00 (run 00:00:11) | ETA --:--:--
+[COUNT] EXPORT COUNTS | started | 0/28,173 rows (0.00%) | RSS 2.3/16.0 GiB (peak 2.3) | scratch 0.00 GiB | free 612.5 GiB | CPU 60% | elapsed 00:00:00 (run 00:00:11) | ETA --:--:--
+[COUNT] EXPORT COUNTS | done | 28,173/28,173 rows (100.00%) | 258,468 rows/s avg | written 6.0 MiB | RSS 0.1/16.0 GiB (peak 2.3) | scratch 0.00 GiB | free 612.5 GiB | CPU 0% | elapsed 00:00:00 (run 00:00:11) | ETA 00:00:00
+[COUNT] FSYNC | started | RSS 0.1/16.0 GiB (peak 2.3) | scratch 0.00 GiB | free 612.5 GiB | CPU 0% | elapsed 00:00:00 (run 00:00:12) | ETA --:--:--
+[COUNT] FSYNC | done | RSS 0.1/16.0 GiB (peak 2.3) | scratch 0.00 GiB | free 612.5 GiB | CPU 0% | elapsed 00:00:00 (run 00:00:12) | ETA --:--:--
+[COUNT] VERIFY | started | 0/6,295,104 bytes (0.00%) | RSS 0.1/16.0 GiB (peak 2.3) | scratch 0.00 GiB | free 612.5 GiB | CPU 0% | elapsed 00:00:00 (run 00:00:12) | ETA --:--:--
+[COUNT] VERIFY | done | 6,295,104/6,295,104 bytes (100.00%) | 0.01/0.01 GiB input | 10,336,788 bytes/s avg | RSS 0.1/16.0 GiB (peak 2.3) | scratch 0.00 GiB | free 612.5 GiB | CPU 0% | elapsed 00:00:00 (run 00:00:12) | ETA 00:00:00
+[COUNT] PUBLISH | started | RSS 0.1/16.0 GiB (peak 2.3) | scratch 0.00 GiB | free 612.5 GiB | CPU 0% | elapsed 00:00:00 (run 00:00:12) | ETA --:--:--
+[COUNT] PUBLISH | done | RSS 0.1/16.0 GiB (peak 2.3) | scratch 0.00 GiB | free 612.5 GiB | CPU 0% | elapsed 00:00:00 (run 00:00:12) | ETA --:--:--
+[COUNT] COMPLETE | RSS 0.1/16.0 GiB (peak 2.3) | scratch 0.00 GiB | free 612.5 GiB | CPU 0% | elapsed 00:00:00 (run 00:00:12) | ETA --:--:--

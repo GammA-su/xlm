@@ -32,6 +32,7 @@ from xlm.data.exclusion.runner import file_sha
 from xlm.data.exclusion.storage import OrderedConnection, connect
 
 if TYPE_CHECKING:
+    from xlm.data.exclusion.countbind import CountPins
     from xlm.tokenizers.base import BaseTokenizer
 
 # Identical to TokenShardWriter(add_special_tokens=True): every token but the first.
@@ -224,16 +225,28 @@ def count_tokens(
     *,
     scratch: Path,
     progress: RunProgress | NullProgress | None = None,
+    c06: Path | None = None,
+    pins: CountPins | None = None,
 ) -> dict[str, Any]:
     """Count every kept training record of the C05 inputs exactly, then publish.
 
     The single-process reference (``count-tokens-reference``) and the oracle of
     :mod:`countfast`. ``progress`` is display only (stderr); a failure removes the
-    staging directory this call created.
+    staging directory this call created. ``c06``/``pins``: see :mod:`countbind`.
     """
+    from xlm.data.exclusion.countbind import CountPins, check_totals, open_c06
+
+    pins = pins or CountPins()
+    if c06 is None and pins.needs_fit():
+        raise C05Error("C06 fit or kept-index pins require the C06 fit directory")
     progress = progress or NullProgress()
     progress.stage("TOKENIZER VERIFY", None, "steps")
     tokenizer, identity = tokenizer_identity(tokenizer_dir, gate)
+    pins.check_tokenizer(identity)
+    binding = None
+    if c06 is not None:
+        binding = open_c06(c06, gate, identity, pins)
+        binding.release()  # The reference compares per-allocation totals only.
     db, db_path = _scratch(gate, scratch, "counts")
     stage = output.with_name(output.name + f".partial-{uuid.uuid4().hex}")
     published = False
@@ -271,6 +284,7 @@ def count_tokens(
         counted = db.execute("SELECT COUNT(*) FROM counts").fetchone()[0]
         if counted != expected.fetchone()[0]:
             raise C05Error("exact counts do not cover every kept training record")
+        pins.check_documents(counted)
         allocations: dict[str, dict[str, int]] = {}
         progress.stage("EXPORT COUNTS", counted, "rows")
 
@@ -293,6 +307,8 @@ def count_tokens(
         sha, size = _bounded_export(
             rows(), stage / "counts.jsonl", gate.plan.resources.output_bytes
         )
+        if binding is not None:
+            check_totals(binding, allocations)
         envelope = signed(
             {
                 "kind": "c05_exact_token_counts_v1",
@@ -303,11 +319,14 @@ def count_tokens(
                 "allocations": dict(sorted(allocations.items())),
                 "counts_sha256": sha,
                 "counts_bytes": size,
+                **({} if binding is None else {"c06_fit": binding.record()}),
             },
             issuer,
             key,
         )
         write_once(stage / "counts.json", envelope)
+        if binding is not None:
+            binding.reverify()
         progress.stage("PUBLISH", None, "steps")
         _publish(stage, output)
         published = True

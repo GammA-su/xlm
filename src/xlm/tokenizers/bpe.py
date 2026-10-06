@@ -455,6 +455,42 @@ class ByteLevelBPETokenizer(BaseTokenizer):
         return counts
 
 
+def with_bpe_cache(tokenizer: ByteLevelBPETokenizer, capacity: int) -> None:
+    """Rebuild only the backend BPE model with a larger word cache (speed, not output).
+
+    The cache maps a pre-tokenized word to its merge result and never changes an
+    encoding. The rebuilt model takes every serialized field of the loaded one and the
+    serialized tokenizer must stay byte-identical, so vocabulary, merges, options,
+    pre-tokenizer and fingerprint are untouched. Dropout (non-deterministic) refuses.
+    """
+    if type(capacity) is not int or capacity < 1:
+        raise ValueError("BPE cache capacity must be a positive integer")
+    serialized = tokenizer._tok.to_str()
+    model = json.loads(serialized)["model"]
+    if model.get("type") != "BPE" or model.get("dropout") is not None:
+        raise ValueError("BPE cache rebuild needs a deterministic BPE model")
+    merges = [tuple(m.split(" ", 1)) if isinstance(m, str) else tuple(m) for m in model["merges"]]
+    # Optional string options are omitted when unset (the binding rejects None).
+    options = {
+        name: model[name]
+        for name in ("unk_token", "continuing_subword_prefix", "end_of_word_suffix")
+        if model[name] is not None
+    }
+    rebuilt = Tokenizer.from_str(serialized)
+    rebuilt.model = BPE(
+        vocab=model["vocab"],
+        merges=merges,
+        cache_capacity=capacity,
+        fuse_unk=model["fuse_unk"],
+        byte_fallback=model["byte_fallback"],
+        ignore_merges=model["ignore_merges"],
+        **options,
+    )
+    if rebuilt.to_str() != serialized:
+        raise ValueError("BPE cache rebuild changed the serialized tokenizer")
+    tokenizer._tok = rebuilt
+
+
 def _check_vocab_size(target_vocab_size: int) -> None:
     if target_vocab_size < MINIMUM_VOCAB_SIZE:
         raise ValueError(

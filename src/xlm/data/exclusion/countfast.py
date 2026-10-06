@@ -29,6 +29,16 @@ work changes, and every reference check is kept:
    count and scheduling cannot change any byte. Export, signing and publication are
    the parent's alone: stage directory, fsync, re-read verification, one rename.
 
+6. **C06 binding** (``c06``, optional; :mod:`countbind`): the signed fit and its kept
+   index must name this C05 and the counted tokenizer; the kept index must equal
+   authenticated membership column by column before SOURCE COUNT and the counted
+   documents per allocation afterwards. The payload then records ``c06_fit``. Operator
+   pins (tokenizer fingerprint, fit and kept-index digests, train document count)
+   refuse before any source byte is counted.
+
+Workers rebuild their BPE model with a larger word cache (``COUNT_BPE_CACHE``); the
+serialized tokenizer must stay byte-identical, so only speed changes.
+
 Interruption or failure terminates and reaps every worker and removes exactly the
 files this job created; no complete output directory can exist unless publication
 succeeded. Resume is not supported (a rerun starts over).
@@ -60,6 +70,13 @@ from xlm.core.contracts import CanonicalDocument
 from xlm.data.acquisition.source_run import write_once
 from xlm.data.evidence_v2 import canonical
 from xlm.data.exclusion.artifacts import signed, verify_signed
+from xlm.data.exclusion.countbind import (
+    C06Binding,
+    CountPins,
+    check_totals,
+    compare_membership,
+    open_c06,
+)
 from xlm.data.exclusion.fitfast import (
     Membership,
     OwnedPaths,
@@ -104,6 +121,10 @@ CHUNK_SPAN_BYTES = 16 * MiB
 BATCH_TEXT_BYTES = 4 * MiB
 EXPORT_BUFFER_BYTES = 8 * MiB
 HASH_BLOCK = 8 * MiB
+# BPE word-cache capacity of each worker's tokenizer (stock: 10,000). Speed only: the
+# cache never changes an encoding and the rebuilt tokenizer serializes byte-identically.
+# Measured on real text: +3-9 % kept-text throughput at 4-16 workers, identical counts.
+COUNT_BPE_CACHE = 100_000
 
 
 # -- worker side ----------------------------------------------------------------------------
@@ -135,6 +156,14 @@ def init_count_worker(tables: CountTables) -> None:
     if tokenizer.fingerprint != tables.fingerprint:
         _TOKENIZER_ERROR = "count tokenizer differs from its verified identity"
         return
+    from xlm.tokenizers.bpe import ByteLevelBPETokenizer, with_bpe_cache
+
+    if isinstance(tokenizer, ByteLevelBPETokenizer):
+        try:
+            with_bpe_cache(tokenizer, COUNT_BPE_CACHE)
+        except ValueError:
+            _TOKENIZER_ERROR = "count tokenizer cannot take a larger BPE cache unchanged"
+            return
     _TOKENIZER = tokenizer
 
 
@@ -594,10 +623,10 @@ def source_count(
     large_set = set(large)
     progress.stage("SOURCE COUNT", total_docs, "docs", work_total=total_text)
     begun = time.monotonic()
-    counted_docs = counted_text = hashed = files_done = results = 0
+    counted_docs = counted_text = counted_tokens = hashed = files_done = results = 0
 
     def accept(positions: npt.NDArray[np.int64], result: CountResult) -> None:
-        nonlocal counted_docs, counted_text
+        nonlocal counted_docs, counted_text, counted_tokens
         values = result.tokens
         if len(values) != len(positions):
             raise C05Error("count result size differs from its task")
@@ -609,6 +638,7 @@ def source_count(
         tokens[positions] = values
         counted_docs += int(np.count_nonzero(expected_train))
         counted_text += int(m.nbytes[positions[expected_train]].sum(dtype=np.uint64))
+        counted_tokens += int(values[expected_train].sum())
 
     while files_queue or chunks or in_flight:
         while len(in_flight) < capacity:
@@ -680,6 +710,8 @@ def source_count(
                 bytes_done=hashed,
                 bytes_total=total_bytes,
                 gb_per_s=hashed / elapsed / 1e9,
+                # Exact valid targets counted so far per second (tokenizer throughput).
+                mtokens_per_s=round(counted_tokens / elapsed / 1e6, 3),
                 workers=pool.workers,
                 busy=min(pool.workers, len(in_flight)),
                 tasks=len(in_flight),
@@ -873,20 +905,30 @@ def count_tokens_fast(
     inline: bool = False,
     block_bytes: int = 0,
     allow_authored: bool = True,
+    c06: Path | None = None,
+    pins: CountPins | None = None,
 ) -> dict[str, Any]:
-    """Count every kept training record exactly (see module doc); returns the envelope."""
+    """Count every kept training record exactly (see module doc); returns the envelope.
+
+    ``c06`` (a fast-path C06 fit directory) binds the counts to that fit and its kept
+    index (:mod:`countbind`); ``pins`` are operator expectations that refuse early.
+    """
     if workers not in WORKER_CHOICES:
         raise C05Error("count workers must be 1, 2, 4, 8 or 16")
+    pins = pins or CountPins()
+    if c06 is None and pins.needs_fit():
+        raise C05Error("C06 fit or kept-index pins require the C06 fit directory")
     progress = progress or NullProgress()
     progress.stage("PROOF VERIFY", None, "steps")
+    extra: list[Path | str] = [] if c06 is None else [c06]
     view = open_streamed(
         proof,
         allow_authored=allow_authored,
-        consumes=[tokenizer_dir, scratch, output, *(consumes or [])],
+        consumes=[tokenizer_dir, scratch, output, *extra, *(consumes or [])],
     )
     if view.trusted.get(issuer) != key:
         raise C05Error("allocation signer is not trusted")
-    _check_roots(view, tokenizer_dir, scratch, output)
+    _check_roots(view, tokenizer_dir, scratch, output, c06)
     if output.exists():
         raise C05Error("selection artifacts are write-once")
     owned = OwnedPaths()
@@ -904,6 +946,11 @@ def count_tokens_fast(
         scratch.mkdir(parents=True, exist_ok=True)
         begin("TOKENIZER VERIFY")
         snapshot = snapshot_tokenizer(tokenizer_dir, view, scratch, owned)
+        pins.check_tokenizer(snapshot.identity)
+        binding: C06Binding | None = None
+        if c06 is not None:
+            begin("C06 BINDING VERIFY")
+            binding = open_c06(c06, view, snapshot.identity, pins)
         membership, keys = count_tables(view)
         tables = CountTables(membership, str(snapshot.copy), str(snapshot.identity["fingerprint"]))
         supervisor = Supervisor(Deadline(None, started), view.plan.resources.ram_bytes)
@@ -918,12 +965,20 @@ def count_tokens_fast(
                 current[0] = "MEMBERSHIP VERIFY"
                 m = stream_membership(view, membership, pool, _Reporter(progress), supervisor, {})
                 reconcile(view, m, keys)
+                pins.check_documents(int(np.count_nonzero(m.split == 0)))
+                if binding is not None:
+                    current[0] = "C06 KEPT-INDEX COMPARE"
+                    compare_membership(binding, m, keys)
+                    binding.release()  # Only the section digests are kept.
                 preflight_export(m, keys, stage, view.plan.resources.output_bytes)
                 current[0] = "SOURCE COUNT"
                 tokens = source_count(view, m, pool, progress, block_bytes=block_bytes)
             supervisor.check()
             begin("AGGREGATE")
             allocations, counted = aggregate(m, tokens, keys)
+            pins.check_documents(counted)
+            if binding is not None:
+                check_totals(binding, allocations)
             current[0] = "EXPORT COUNTS"
             counts_path = owned.file(stage / "counts.jsonl")
             sha, size = export_counts(
@@ -939,6 +994,7 @@ def count_tokens_fast(
                     "allocations": dict(sorted(allocations.items())),
                     "counts_sha256": sha,
                     "counts_bytes": size,
+                    **({} if binding is None else {"c06_fit": binding.record()}),
                 },
                 issuer,
                 key,
@@ -954,6 +1010,8 @@ def count_tokens_fast(
                 raise C05Error("tokenizer changed after counting started")
             if _directory_digests(snapshot.copy) != digests:
                 raise C05Error("private tokenizer copy changed during counting")
+            if binding is not None:
+                binding.reverify()
             supervisor.check()
             begin("PUBLISH")
             if output.exists():
@@ -969,15 +1027,19 @@ def count_tokens_fast(
         owned.cleanup()
 
 
-def _check_roots(view: StreamedC05, tokenizer_dir: Path, scratch: Path, output: Path) -> None:
-    """Scratch and output never overlap the corpus, C05 output, tokenizer or each other."""
+def _check_roots(
+    view: StreamedC05, tokenizer_dir: Path, scratch: Path, output: Path, c06: Path | None = None
+) -> None:
+    """Scratch and output never overlap the corpus, C05 output, tokenizer, C06 fit or each other."""
     from xlm.data.exclusion.isolation import overlaps
 
-    immutable = (
+    immutable = [
         ("C05 data root", view.plan.data_root),
         ("C05 completion", str(view.directory)),
         ("tokenizer", str(tokenizer_dir)),
-    )
+    ]
+    if c06 is not None:
+        immutable.append(("C06 fit", str(c06)))
     for name, path in (("count scratch", scratch), ("count output", output)):
         for role, other in immutable:
             if overlaps(path, other):

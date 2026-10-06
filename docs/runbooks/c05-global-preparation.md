@@ -366,14 +366,26 @@ Run these only after steps 1-8 pass, with X: detached. Old counts and selections
 refused for this chain by the tokenizer and completion binding.
 
 ```powershell
-uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator count-tokens --c05-proof G:/XLM/c05-policy-v2/policy-v2-p0001.proof.json --tokenizer G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2/tokenizer --scratch C:/XLM-scratch/count-tokens-policy-v2 --output G:/XLM/counts/mix01-policy-v2 --issuer GammA --key-env XLM_C05_OPERATOR_KEY --workers 16 --progress-interval 5
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator count-tokens --c05-proof G:/XLM/c05-policy-v2/policy-v2-p0001.proof.json --tokenizer G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2/tokenizer --c06-fit G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2 --expect-c05-plan-digest c15b54542238b0a4d6cce371c81ce0fe71caed5ed7c6bc23f937e4e85bbb8c59 --expect-c05-completion-digest df9834ab459bf00fac7ee4ffe69503432fc8e95b9af15009dcca7897a81c0a27 --expect-tokenizer-fingerprint 50bf9d45f6f6fa88062483d0e83f3be419e610dee6b75d37809252504bac5b54 --expect-c06-fit-digest 41dba5163cc27ffa66d09152cc09c71c96c2ea8896c189147a7073e42a8f3d61 --expect-kept-index-digest 201e8fc6b5fa16330b31b9fe883c470ccd8cdffa0da4b699030f2983c310c8d5 --expect-documents 14917655 --scratch C:/XLM-scratch/count-tokens-policy-v2 --output G:/XLM/counts/mix01-policy-v2 --issuer GammA --key-env XLM_C05_OPERATOR_KEY --workers 16 --progress-interval 5
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator verify-counts --c05-proof G:/XLM/c05-policy-v2/policy-v2-p0001.proof.json --tokenizer G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2/tokenizer --counts G:/XLM/counts/mix01-policy-v2 --c06-fit G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2 --expect-c05-plan-digest c15b54542238b0a4d6cce371c81ce0fe71caed5ed7c6bc23f937e4e85bbb8c59 --expect-c05-completion-digest df9834ab459bf00fac7ee4ffe69503432fc8e95b9af15009dcca7897a81c0a27 --expect-tokenizer-fingerprint 50bf9d45f6f6fa88062483d0e83f3be419e610dee6b75d37809252504bac5b54 --expect-c06-fit-digest 41dba5163cc27ffa66d09152cc09c71c96c2ea8896c189147a7073e42a8f3d61 --expect-kept-index-digest 201e8fc6b5fa16330b31b9fe883c470ccd8cdffa0da4b699030f2983c310c8d5 --expect-documents 14917655 --progress-interval 5
 uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator select --c05-proof G:/XLM/c05-policy-v2/policy-v2-p0001.proof.json --tokenizer G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2/tokenizer --scratch C:/XLM-scratch/select-policy-v2 --counts G:/XLM/counts/mix01-policy-v2 --quotas recipes/mixtures/mix01_quotas_6b.yaml --ifm-split G:/XLM/calib/requirement_splits/ifm_behaviors_general_planning.json --deficit-report G:/XLM/selection/mix01-policy-v2.deficit.json --output G:/XLM/selection/mix01-policy-v2 --issuer GammA --key-env XLM_C05_OPERATOR_KEY --workers 8 --progress-interval 5
 ```
 
-* `count-tokens` counts exactly the train-kept rows. Its `documents` must equal step 6's
-  `assigned_splits.train`.
-* Expect about 53-55 min at 16 workers. That figure is the historical real run (about
-  4,079 docs/s); the time scales with the new train count.
+* Run both from `F:\Project\xlm-count-tokens-policy-v2` (branch
+  `perf/count-tokens-policy-v2`). `XLM_C05_OPERATOR_KEY` must be set for both.
+* `count-tokens` counts exactly the train-kept rows. `--c06-fit` binds the counts to
+  the signed fit and its kept index (`c06_fit` in the payload). The pins refuse a stale
+  proof, tokenizer, fit or kept index before any source read. `--expect-documents`
+  refuses before SOURCE COUNT and again after it unless exactly 14,917,655 (step 6's
+  `assigned_splits.train`) are counted.
+* `verify-counts` re-verifies the published artifact read-only: every row against the
+  kept index's train rows, plus totals, signature and pins. It prints `counts_digest`.
+* Expect about 64 min at 16 workers: SOURCE COUNT about 61 min for 74.60 GiB of train
+  text at about 20-21 MiB/s. The exact tokenizer is the CPU-bound limit; <= 30 min is not
+  reachable ([report](../implementation/reports/COUNT-TOKENS-POLICY-V2.md)).
+* No resume. After Ctrl-C the job cleans up; rerun the same command. After a crash,
+  delete only `G:/XLM/counts/mix01-policy-v2.partial-*` and
+  `C:/XLM-scratch/count-tokens-policy-v2/count-tokenizer-*`, then rerun.
 * `select` exit 0 means every frozen 6B quota is met exactly. Exit 2 is a deficit; read
   the deficit report.
 * The audit's `prompt8 x query_seed_family` projection used the OLD tokenizer

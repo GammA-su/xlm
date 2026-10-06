@@ -1,0 +1,24 @@
+{
+  "caveat": "OS file cache not controlled; distinct files per run",
+  "mode": "disk",
+  "runs": {
+    "r1": {
+      "bytes": 473331308,
+      "mib_s": 500.5,
+      "readers": 1,
+      "seconds": 0.902
+    },
+    "r16": {
+      "bytes": 671088640,
+      "mib_s": 519.0,
+      "readers": 16,
+      "seconds": 1.233
+    },
+    "r4": {
+      "bytes": 1896696445,
+      "mib_s": 536.7,
+      "readers": 4,
+      "seconds": 3.37
+    }
+  }
+}

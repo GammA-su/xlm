@@ -45,6 +45,7 @@ from xlm.data.exclusion.preparation import benchmark_requirements
 from xlm.data.exclusion.runner import resume_check, run, verify_completion
 
 if TYPE_CHECKING:
+    from xlm.data.exclusion.countbind import CountPins
     from xlm.data.exclusion.progress import NullProgress, RunProgress
 
 
@@ -405,6 +406,26 @@ def parser() -> argparse.ArgumentParser:
         command.add_argument("--progress-interval", type=float, default=5.0)
         command.add_argument("--progress-format", choices=["text", "jsonl"], default="text")
         command.add_argument("--no-progress", action="store_true")
+    # Read-only re-verification of a published count artifact (countverify).
+    verifying_counts = commands.add_parser("verify-counts")
+    verifying_counts.add_argument("--c05-proof", type=Path, required=True)
+    verifying_counts.add_argument("--tokenizer", type=Path, required=True)
+    verifying_counts.add_argument("--counts", type=Path, required=True)
+    verifying_counts.add_argument("--progress-interval", type=float, default=5.0)
+    verifying_counts.add_argument("--progress-format", choices=["text", "jsonl"], default="text")
+    verifying_counts.add_argument("--no-progress", action="store_true")
+    for command in (*counters, verifying_counts):
+        # Optional C06 binding (countbind): the counted tokenizer is that fit's and its
+        # kept index agrees; the payload then records the fit and kept-index digests.
+        command.add_argument("--c06-fit", type=Path)
+        # Optional operator pins: a mismatch refuses before any membership or source
+        # read (the train document count: before SOURCE COUNT and again after it).
+        command.add_argument("--expect-c05-plan-digest")
+        command.add_argument("--expect-c05-completion-digest")
+        command.add_argument("--expect-tokenizer-fingerprint")
+        command.add_argument("--expect-c06-fit-digest")
+        command.add_argument("--expect-kept-index-digest")
+        command.add_argument("--expect-documents", type=int)
     # Operational only: the worker count never changes any output byte.
     for command in (counting, selecting):
         command.add_argument("--workers", type=int, choices=[1, 2, 4, 8, 16], default=8)
@@ -526,9 +547,12 @@ def allocation_command(args: argparse.Namespace) -> int:
             "selection",
             "output_root",
             "shards",
+            "c06_fit",
         )
         if getattr(args, name, None) is not None
     ]
+    if args.command == "count-tokens-reference":
+        expect_c05_chain(args)
     with open_gate(args.c05_proof, allow_authored=True, consumes=consumes) as gate:
         if gate is None:
             raise C05Error("C05 proof absent")
@@ -570,6 +594,8 @@ def allocation_command(args: argparse.Namespace) -> int:
                 key,
                 scratch=args.scratch,
                 progress=_count_progress(args),
+                c06=args.c06_fit,
+                pins=_count_pins(args),
             )
         elif args.command == "select-reference":
             from xlm.data.exclusion.selection import SelectionDeficit, select
@@ -616,10 +642,22 @@ def _count_progress(args: argparse.Namespace) -> RunProgress | NullProgress:
     return RunProgress(interval=args.progress_interval, fmt=args.progress_format, label="COUNT")
 
 
+def _count_pins(args: argparse.Namespace) -> CountPins:
+    from xlm.data.exclusion.countbind import CountPins
+
+    return CountPins(
+        tokenizer_fingerprint=args.expect_tokenizer_fingerprint,
+        fit_digest=args.expect_c06_fit_digest,
+        kept_index_digest=args.expect_kept_index_digest,
+        documents=args.expect_documents,
+    )
+
+
 def count_command(args: argparse.Namespace) -> int:
     """Fast exact counts over a verified C05 proof (byte-identical to the reference)."""
     from xlm.data.exclusion.countfast import count_tokens_fast
 
+    expect_c05_chain(args)
     key = key_from_env(args.key_env)
     envelope = count_tokens_fast(
         args.c05_proof,
@@ -630,8 +668,33 @@ def count_command(args: argparse.Namespace) -> int:
         scratch=args.scratch,
         workers=args.workers,
         progress=_count_progress(args),
+        c06=args.c06_fit,
+        pins=_count_pins(args),
     )
     print(json.dumps({"digest": envelope["digest"], "mode": envelope["payload"]["mode"]}))
+    return 0
+
+
+def verify_counts_command(args: argparse.Namespace) -> int:
+    """Read-only verification of a published count artifact; prints a content-free summary."""
+    from xlm.data.exclusion.countverify import verify_counts_artifact
+    from xlm.data.exclusion.progress import NullProgress, RunProgress
+
+    expect_c05_chain(args)
+    progress = (
+        NullProgress()
+        if args.no_progress
+        else RunProgress(interval=args.progress_interval, fmt=args.progress_format, label="VERIFY")
+    )
+    result = verify_counts_artifact(
+        args.c05_proof,
+        args.tokenizer,
+        args.counts,
+        c06=args.c06_fit,
+        pins=_count_pins(args),
+        progress=progress,
+    )
+    print(json.dumps(result, sort_keys=True))
     return 0
 
 
@@ -965,8 +1028,12 @@ def main(argv: list[str] | None = None) -> int:
                 # Staging and job scratch were removed; nothing was published.
                 print(json.dumps({"refused": True, "error_type": "KeyboardInterrupt"}))
                 return 130
-        if args.command in {"count-tokens", "select"}:
-            fast = count_command if args.command == "count-tokens" else select_command
+        if args.command in {"count-tokens", "select", "verify-counts"}:
+            fast = {
+                "count-tokens": count_command,
+                "select": select_command,
+                "verify-counts": verify_counts_command,
+            }[args.command]
             try:
                 return fast(args)
             except C05Error as exc:

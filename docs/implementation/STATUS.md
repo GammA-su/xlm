@@ -1,3 +1,33 @@
+> **COUNT-TOKENS POLICY-V2 (2026-10-06): FAST COUNTER VERIFIED ON `c05_membership_v3` (AUTHORED); C06 FIT/KEPT-INDEX BINDING, PINS AND `verify-counts` ADDED; PRODUCTION COUNT NOT RUN.**
+>
+> - The fast counter from `aa38904` is already in `488273e` (it is an ancestor), so
+>   nothing needed porting. The counter was already v3-aware (`contract=`).
+> - New `--c06-fit` (`countbind.py`):
+>   - the signed fit names this C05, and its tokenizer is the counted one;
+>   - the kept index verifies and equals authenticated membership column by column
+>     before SOURCE COUNT;
+>   - per-allocation train docs equal the kept index;
+>   - the payload records `c06_fit` (fit and kept-index digests).
+> - New pins: plan, completion, fingerprint, fit, kept index and
+>   `--expect-documents`. New read-only `verify-counts` (`countverify.py`).
+> - Worker BPE word cache 100k: byte-identical tokenizer, +3.5 % at 16 workers.
+>   Progress shows `mtokens_per_s`.
+> - Exact: reference = fast at workers 1/4/8/16 on the v3 chain (bound and unbound), and
+>   equal to an independent oracle. diagnostic_val, audit, excluded and duplicate rows
+>   are absent; group fields cannot reach counting.
+> - Performance: the exact tokenizer is the bottleneck, at about 20.9 MiB/s of real text
+>   with 16 workers. G: reads at 500+ MiB/s with 1, 4 or 16 readers, so storage is not
+>   the limit. Projected production is about 64 min (SOURCE COUNT about 61 min);
+>   **<= 30 min is not achievable** with this backend on this CPU.
+>
+> Tests: 24 new; the focused selection passed 135 (count, C06 v3, select-fast,
+> fit-stream). ruff is clean. mypy shows 5 pre-existing errors, identical at `488273e`.
+> [Report](reports/COUNT-TOKENS-POLICY-V2.md).
+>
+> Next (operator, X: detached, key env set): from `F:\Project\xlm-count-tokens-policy-v2`,
+> run the bound `count-tokens` and then `verify-counts` in the runbook section "Prepared,
+> NOT part of C06". `documents` must be 14,917,655. Then do the selector transition.
+>
 > **C06 POLICY-V2 TRANSITION (2026-10-06): C06 FAST PATH VERIFIED ON `c05_membership_v3` (AUTHORED); CHAIN PINS ADDED; REAL C06 NOT RUN.**
 >
 > The real C05 production-v3 run is sealed:
