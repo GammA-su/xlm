@@ -1,0 +1,198 @@
+F                                                                        [100%]
+================================== FAILURES ===================================
+__________ test_resolved_v1_v2_policy_chain_batches_trace_and_resume __________
+
+flow = {'root': WindowsPath('C:/Users/gamma/AppData/Local/Temp/pytest-of-gamma/pytest-346/tokfast0/root'), 'summary': {'fixtu...son', '--tokenizer', 'C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-346\\tokfast0\\root\\tokenizer']}
+tmp_path = WindowsPath('C:/Users/gamma/AppData/Local/Temp/pytest-of-gamma/pytest-346/test_resolved_v1_v2_policy_cha0')
+
+    def test_resolved_v1_v2_policy_chain_batches_trace_and_resume(
+        flow: dict[str, Any], tmp_path: Path
+    ) -> None:
+        from scripts.c05_authored_pilot import KEY
+        from scripts.c05_synthetic_flow import ISSUER
+
+        from xlm.data.exclusion.freezefast import freeze_fast
+        from xlm.data.sampling.prefetch import PrefetchingBatcher, ProducerSpec
+
+        root = flow["root"]
+        sources = []
+        for name, shards, policy in (
+            ("old", flow["reference"], None),
+            ("new", root / "shards", POLICY_ID),
+        ):
+            freeze_fast(
+                root / "proof.json",
+                root / "selection",
+                shards,
+                root / "tokenizer",
+                tmp_path / name,
+                ISSUER,
+                KEY.encode(),
+                workers=1,
+                inline=True,
+                training_input_policy=policy,
+            )
+            data = json.loads((tmp_path / name / "training-data.json").read_bytes())
+            sources.append(resolve_training_input(data, ArtifactPaths(root=tmp_path))[0])
+        a, b = map(batcher, sources)
+        try:
+            for _ in range(5):
+                assert a.next_step_microbatches() == b.next_step_microbatches()
+                a.commit()
+                b.commit()
+            assert a.get_state() == b.get_state()
+            # JSON is the checkpoint's primitive state boundary; prefetched work is speculative.
+            checkpoint = json.loads(json.dumps(a.get_state()))
+            resumed = batcher(sources[1])
+            resumed.load_state(checkpoint)
+            prefetched = PrefetchingBatcher(ProducerSpec.from_batcher(resumed), checkpoint)
+            try:
+                for _ in range(4):
+                    expected = a.next_step_microbatches()
+                    assert expected == b.next_step_microbatches() == resumed.next_step_microbatches()
+                    got = prefetched.next_step_microbatches()
+                    # Prefetch presents tensors; the synchronous oracle uses primitive lists.
+>                   assert json.dumps(
+                        [vars(x) for x in got], sort_keys=True, default=lambda x: x.tolist()
+                    ) == json.dumps([vars(x) for x in expected], sort_keys=True)
+E                   assert '[{"input_ids...tion": null}]' == '[{"input_ids...afineweb"]]}]'
+E
+E                     Skipping 823 identical leading characters in diff, use -v to show
+E                     - _mask": [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]], "is_partial": false, "packing_mode": "causal_stream", "sequence_count": 2, "target_byte_spans": [[[134, 136], [136, 137], [137, 138], [138, 139], [139, 140], [140, 141], [141, 142], [142, 143], [143, 146], [146, 147], [147, 148], [148, 149], [149, 150], [150, 152], [152, 154], [154, 155], [155, 156], [...
+E
+E                     ...Full output truncated (2 lines hidden), use '-vv' to show
+
+tests\test_c07_consumer_v2.py:319: AssertionError
+---------------------------- Captured stdout setup ----------------------------
+{"decision_digest": "f753d945ce0807023f674181abbe49a969327faca450723325ac09b61da6f537"}
+{"decision_digest": "f8e7c3910e7f4efe08a2f34a8199c539b074a731e2fac68113d50da94adf45c1"}
+{"decision_digest": "79913007b69eba843462b0b787d3fc4ca7ace5fe117338abe8e39e3e3ee6c309"}
+{"sequence": 1, "plan_digest": "ff2c76b46995831dd46e17a6b7d478483043eb48a4fee990e402861cb98654c7", "mode": "authored"}
+{"verified": true, "command": "authorize", "plan_digest": "ff2c76b46995831dd46e17a6b7d478483043eb48a4fee990e402861cb98654c7", "mode": "authored"}
+{"plan_digest": "ff2c76b46995831dd46e17a6b7d478483043eb48a4fee990e402861cb98654c7", "stage": "group", "reusable_files_verified": 17, "files_total": 17, "documents_committed": 383, "documents_total": 383, "compiled_matcher": "verified", "incomplete_matcher_staging": false, "resume_checked": true, "execution_performed": false}
+{"verified": true, "command": "resume", "plan_digest": "ff2c76b46995831dd46e17a6b7d478483043eb48a4fee990e402861cb98654c7", "mode": "authored"}
+{"verified": true, "command": "verify", "plan_digest": "ff2c76b46995831dd46e17a6b7d478483043eb48a4fee990e402861cb98654c7", "mode": "authored"}
+{"digest": "e7e9aac5bd2190277f112875d86d2e1281bd8bac7104379c3c5c69c0c66fa6d7", "mode": "authored"}
+{"digest": "a9ac449285318201c9190c0bb766dfcbd146c9ea7a2e9724e6a17ce185aebcbd", "mode": "authored"}
+{"documents": 34, "index_schema": "c07-offsets-v2", "measured": {"peak_rss": 685944832, "seconds": 2.515, "source_docs_per_s": 121.0, "source_input_mib_per_s": 1.51, "source_mtokens_per_s": 0.036, "source_seconds": 0.281, "source_text_mib_per_s": 0.07}, "shards": ["common_pile_prose", "essential_practical", "essential_prose", "essential_science", "finepdfs_en", "finewiki_en", "ifm_behaviors_general_planning", "nemotron_wiki_rewrite", "simple_stories", "synth_en_explanations", "ultrax_ultrafineweb"], "skipped": [], "token_ids": 10034}
+{"digest": "979804ad0c50ec6db87af093ddbdeb304ed7889a76c8d84c52fbeee39dab61c6", "mode": "authored"}
+{"receipt_id": "c05-22e43c5752b2d4fffb102b75ac1862fc849a3901d0a0c6e11deee5896323acd0", "mode": "development"}
+{"claim_binding": "C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-346\\tokfast0\\root\\claim-binding.json", "mode": "authored"}
+{"refused": true, "error_type": "ReceiptValidationError"}
+{"shards": ["common_pile_prose", "essential_practical", "essential_prose", "essential_science", "finepdfs_en", "finewiki_en", "ifm_behaviors_general_planning", "nemotron_wiki_rewrite", "simple_stories", "synth_en_explanations", "ultrax_ultrafineweb"], "mode": "authored"}
+---------------------------- Captured stderr setup ----------------------------
+[C05] PREFLIGHT | started | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] PREFLIGHT | done | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] INDEX VERIFY | started | 0/1,213 bytes (0.00%) | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] INDEX VERIFY | done | 1,213/1,213 bytes (100.00%) | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] MATCHER VERIFY: VERIFY OPEN | started | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] MATCHER VERIFY: VERIFY OPEN | done | 836 steps | 52,250 steps/s avg | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] MATCHER VERIFY: VERIFY STRUCTURE | started | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] MATCHER VERIFY: VERIFY STRUCTURE | done | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] SCAN: VERIFY COMMITTED | started | 0/445,821 bytes (0.00%) | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] SCAN: VERIFY COMMITTED | done | 445,821/445,821 bytes (100.00%) | files 17 | 13,931,906 bytes/s avg | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: PREPARE | started | 0/383 docs (0.00%) | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] GROUP: PREPARE | done | 383/383 docs (100.00%) | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: EXACT | started | 0/383 docs (0.00%) | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] GROUP: EXACT | done | 383/383 docs (100.00%) | edges 17 | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: BAND INDEX BUILD | started | 0/12,256 postings (0.00%) | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] GROUP: BAND INDEX BUILD | done | 12,256/12,256 postings (100.00%) | passes 1 | 395,355 postings/s avg | workers 0/1 busy | tasks 0/1 results 0 | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: NEAR | started | 0/383 docs (0.00%) | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] GROUP: NEAR | done | 383/383 docs (100.00%) | candidates 50 | comparisons 66 | 25,533 docs/s avg | candidate_cap_documents 0 | oversized_bands 0 | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: LINEAGE INDEX BUILD | started | 0/383 keys (0.00%) | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] GROUP: LINEAGE INDEX BUILD | done | 383/383 keys (100.00%) | runs 0 | 23,937 keys/s avg | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: LINEAGE | started | 0/383 keys (0.00%) | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] GROUP: LINEAGE | done | 383/383 keys (100.00%) | edges 0 | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: PARENTS | started | 0/0 edges (0.00%) | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: PARENTS | done | 0/0 edges (0.00%) | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: FAMILY PROPAGATION | started | 0/383 docs (0.00%) | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] GROUP: FAMILY PROPAGATION | done | 383/383 docs (100.00%) | edges 0 | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: PATH COMPRESSION | started | 0/383 docs (0.00%) | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] GROUP: PATH COMPRESSION | done | 383/383 docs (100.00%) | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: SURVIVORS | started | 0/383 docs (0.00%) | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] GROUP: SURVIVORS | done | 383/383 docs (100.00%) | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: FAMILY BUILD | started | 0/383 docs (0.00%) | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] GROUP: FAMILY BUILD | done | 383/383 docs (100.00%) | families 366 | 23,938 docs/s avg | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: SPLITS | started | 0/366 families (0.00%) | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] GROUP: SPLITS | done | 366/366 families (100.00%) | 24,400 families/s avg | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] GROUP: DIGEST | started | 0/749 rows (0.00%) | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] GROUP: DIGEST | done | 749/749 rows (100.00%) | 7,968 rows/s avg | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] PUBLISH: MEMBERSHIP | started | 0/383 docs (0.00%) | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] PUBLISH: MEMBERSHIP | done | 383/383 docs (100.00%) | kept 349 | excluded 17 | duplicates 17 | 23,938 docs/s avg | written 0.4 MiB | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[C05] PUBLISH: FSYNC | started | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] PUBLISH: FSYNC | done | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] PUBLISH: COMPLETION | started | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] PUBLISH: COMPLETION | done | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[C05] COMPLETE | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[COUNT] PROOF VERIFY | started | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[COUNT] PROOF VERIFY | done | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[COUNT] OUTPUT PREFLIGHT | started | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[COUNT] OUTPUT PREFLIGHT | done | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[COUNT] TOKENIZER VERIFY | started | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[COUNT] TOKENIZER VERIFY | done | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[COUNT] MEMBERSHIP VERIFY | started | 0/349 rows (0.00%) | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[COUNT] SLO | membership 0.3 MB/s, 496 rows/s, 0.7 s
+[COUNT] MEMBERSHIP VERIFY | done | 349/349 rows (100.00%) | 0.00/0.00 GiB input | 496 rows/s avg | 0.3 MiB/s | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:01) | ETA 00:00:00
+[COUNT] SOURCE COUNT | started | 0/342 docs (0.00%) | text 0.00/0.00 GiB | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:01) | ETA --:--:--
+[COUNT] SOURCE COUNT | done | 342/342 docs (100.00%) | text 0.00/0.00 GiB | files 17/17 | 0.00/0.00 GiB input | 365 docs/s avg | 0.2 MiB/s avg | workers 0/8 busy | tasks 0/16 results 17 | gb_per_s 0.00 | mtokens_per_s 0.61 | queued 0 | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:02) | ETA 00:00:00
+[COUNT] AGGREGATE | started | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:02) | ETA --:--:--
+[COUNT] AGGREGATE | done | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:02) | ETA --:--:--
+[COUNT] EXPORT COUNTS | started | 0/342 rows (0.00%) | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:02) | ETA --:--:--
+[COUNT] EXPORT COUNTS | done | 342/342 rows (100.00%) | written 0.1 MiB | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:02) | ETA 00:00:00
+[COUNT] FSYNC | started | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:02) | ETA --:--:--
+[COUNT] FSYNC | done | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:02) | ETA --:--:--
+[COUNT] VERIFY | started | 0/80,269 bytes (0.00%) | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:02) | ETA --:--:--
+[COUNT] VERIFY | done | 80,269/80,269 bytes (100.00%) | 0.00/0.00 GiB input | 171,149 bytes/s avg | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:02) | ETA 00:00:00
+[COUNT] PUBLISH | started | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:02) | ETA --:--:--
+[COUNT] PUBLISH | done | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:02) | ETA --:--:--
+[COUNT] COMPLETE | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:02) | ETA --:--:--
+[SELECT] PROOF VERIFY | started | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[SELECT] PROOF VERIFY | done | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[SELECT] OUTPUT PREFLIGHT | started | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[SELECT] OUTPUT PREFLIGHT | done | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[SELECT] TOKENIZER VERIFY | started | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[SELECT] TOKENIZER VERIFY | done | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[SELECT] COUNTS VERIFY | started | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[SELECT] COUNTS VERIFY | done | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[SELECT] MEMBERSHIP VERIFY | started | 0/349 rows (0.00%) | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[SELECT] SLO | membership 0.3 MB/s, 496 rows/s, 0.7 s
+[SELECT] MEMBERSHIP VERIFY | done | 349/349 rows (100.00%) | 0.00/0.00 GiB input | 496 rows/s avg | 0.3 MiB/s | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[SELECT] RANK PASS | started | 0/342 rows (0.00%) | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[SELECT] RANK PASS | done | 342/342 rows (100.00%) | 0.00/0.00 GiB input | 76,550,483.7 MiB/s | workers 0/8 busy | tasks 0/16 results 1 | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[SELECT] QUOTA CROSSINGS | started | 0/17 allocations (0.00%) | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[SELECT] QUOTA CROSSINGS | 17/17 allocations (100.00%) | 1,063 allocations/s avg | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[SELECT] QUOTA CROSSINGS | done | 17/17 allocations (100.00%) | 1,063 allocations/s avg | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[SELECT] CROSSING SORT | started | 0/17 allocations (0.00%) | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[SELECT] CROSSING SORT | 17/17 allocations (100.00%) | crossing_rows 17 | selected_docs 34 | truncated_docs 17 | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[SELECT] CROSSING SORT | done | 17/17 allocations (100.00%) | crossing_rows 17 | selected_docs 34 | truncated_docs 17 | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[SELECT] EXPORT SELECTION | started | 0/34 rows (0.00%) | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[SELECT] EXPORT SELECTION | done | 34/34 rows (100.00%) | workers 0/8 busy | tasks 0/16 results 1 | written 0.0 MiB | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[SELECT] FSYNC | started | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[SELECT] FSYNC | done | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[SELECT] SIGN | started | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[SELECT] SIGN | done | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[SELECT] VERIFY | started | 0/9,237 bytes (0.00%) | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[SELECT] VERIFY | done | 9,237/9,237 bytes (100.00%) | 0.00/0.00 GiB input | 577,312 bytes/s avg | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[SELECT] PUBLISH | started | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[SELECT] PUBLISH | done | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[SELECT] COMPLETE | RSS 0.2/2.0 GiB (peak 0.2) | scratch 0.00 GiB | free 609.4 GiB | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[FREEZE] PROOF VERIFY | started | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[FREEZE] PROOF VERIFY | done | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[FREEZE] TOKENIZER VERIFY | started | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[FREEZE] TOKENIZER VERIFY | done | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[FREEZE] MEMBERSHIP VERIFY | started | 0/349 rows (0.00%) | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[FREEZE] MEMBERSHIP VERIFY | done | 349/349 rows (100.00%) | 0.00/0.00 GiB input | 604 rows/s avg | 0.3 MiB/s | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[FREEZE] SELECTION VERIFY | started | 0/34 rows (0.00%) | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[FREEZE] SELECTION VERIFY | done | 34/34 rows (100.00%) | 0.00/0.00 GiB input | 218 rows/s avg | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[FREEZE] SHARD HASH | started | 0/44,227 bytes (0.00%) | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[FREEZE] SHARD HASH | done | 44,227/44,227 bytes (100.00%) | 1,426,677 bytes/s avg | 1.4 MiB/s | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[FREEZE] SHARD VERIFY | started | 0/11 shards (0.00%) | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[FREEZE] SHARD VERIFY | done | 11/11 shards (100.00%) | 54 shards/s avg | elapsed 00:00:00 (run 00:00:01) | ETA 00:00:00
+[FREEZE] EXPOSURE PLAN | started | elapsed 00:00:00 (run 00:00:01) | ETA --:--:--
+[FREEZE] EXPOSURE PLAN | done | elapsed 00:00:00 (run 00:00:01) | ETA --:--:--
+[FREEZE] PUBLISH | started | elapsed 00:00:00 (run 00:00:01) | ETA --:--:--
+[FREEZE] PUBLISH | done | elapsed 00:00:00 (run 00:00:01) | ETA --:--:--
+[FREEZE] COMPLETE | elapsed 00:00:00 (run 00:00:01) | ETA --:--:--
+=========================== short test summary info ===========================
+FAILED tests/test_c07_consumer_v2.py::test_resolved_v1_v2_policy_chain_batches_trace_and_resume
+1 failed in 15.39s

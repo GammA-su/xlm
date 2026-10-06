@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
@@ -16,6 +17,7 @@ from xlm.data.input_limits import (
     MAX_SHARD_JSON_BYTES,
     SHARD_INPUT_FILES,
 )
+from xlm.data.input_policy import TrainingInputPolicy, admit_sources, policy_from_binding
 from xlm.data.tokens import TokenShardReader
 
 
@@ -27,17 +29,20 @@ class MixtureInput:
     document_order: dict[str, Any] | None = None
 
 
-def _shard(path: Path) -> TokenShardReader:
+def _shard(path: Path, policy: TrainingInputPolicy | None = None) -> TokenShardReader:
     from xlm.artifacts.manifest import ensure_plain_path
 
+    if policy is not None:
+        admit_sources({"source": path}, policy)
     total = 0
     for name in SHARD_INPUT_FILES:
         item = path / name
         ensure_plain_path(item)
         if item.is_file():
             total += item.stat().st_size
-            if total > MAX_FROZEN_SHARD_INPUT_BYTES or (
-                name.endswith(".json") and item.stat().st_size > MAX_SHARD_JSON_BYTES
+            if policy is None and (
+                total > MAX_FROZEN_SHARD_INPUT_BYTES
+                or (name.endswith(".json") and item.stat().st_size > MAX_SHARD_JSON_BYTES)
             ):
                 raise ValueError("frozen shard input exceeds byte limit")
     reader = TokenShardReader(path)
@@ -46,35 +51,9 @@ def _shard(path: Path) -> TokenShardReader:
 
 
 def _validate_training_index(reader: TokenShardReader) -> None:
-    """Validate bounded document metadata without materializing a corpus."""
-    cursor = count = 0
-    with (reader.directory / "offsets.jsonl").open("rb") as stream:
-        while raw := stream.readline(8 * 1024**2 + 1):
-            if len(raw) > 8 * 1024**2:
-                raise ValueError("document index entry exceeds 8 MiB")
-            record = json.loads(raw)
-            if record.get("source_id") != reader.manifest.source_id:
-                raise ValueError("document source differs from shard source")
-            if record.get("split") != "train":
-                raise ValueError("training requires explicitly train-split documents")
-            tokens = record.get("token_count")
-            if type(tokens) is not int or tokens < 1 or record.get("token_start") != cursor:
-                raise ValueError("document token index must be contiguous and nonempty")
-            spans = record.get("token_byte_spans")
-            if spans is not None and (
-                len(spans) != tokens
-                or any(
-                    len(span) != 2
-                    or any(type(n) is not int for n in span)
-                    or not 0 <= span[0] <= span[1] <= record["byte_count"]
-                    for span in spans
-                )
-            ):
-                raise ValueError("invalid per-token canonical byte spans")
-            cursor += tokens
-            count += 1
-    if cursor != reader.manifest.num_tokens or count != reader.manifest.num_documents:
-        raise ValueError("document index coverage differs from shard manifest")
+    from xlm.data.input_validation import validate_training_index
+
+    validate_training_index(reader)
 
 
 def normalize_training_data(data: dict[str, Any], training: dict[str, Any]) -> None:
@@ -198,6 +177,31 @@ def _source_path(value: str, paths: ArtifactPaths) -> Path:
 
 
 def resolve_training_input(data: dict[str, Any], paths: ArtifactPaths) -> tuple[Any, str]:
+    policy = policy_from_binding(data.get("training_input_policy"))
+    if policy is None:
+        return _resolve_training_input(data, paths)
+    if not data.get("c05_freeze") or not data.get("mixture"):
+        raise ValueError("training input policy requires an explicit signed mixture freeze")
+    if data.get("document_order") is not None:
+        raise ValueError("Mix-01 policy-v2 admits shard-native order only")
+    import time
+
+    from xlm.data.exclusion.supervisor import Deadline, Supervisor
+
+    with Supervisor(
+        Deadline(policy.verification_seconds, time.monotonic()), policy.verification_rss_bytes
+    ) as guard:
+        result = _resolve_training_input(data, paths, policy, guard.check)
+        guard.check()
+        return result
+
+
+def _resolve_training_input(
+    data: dict[str, Any],
+    paths: ArtifactPaths,
+    policy: TrainingInputPolicy | None = None,
+    check: Callable[[], None] | None = None,
+) -> tuple[Any, str]:
     """Resolve a bounded authored token list or a verified single token shard."""
     unsupported = set(data) - {
         "synthetic_tokens",
@@ -213,6 +217,7 @@ def resolve_training_input(data: dict[str, Any], paths: ArtifactPaths) -> tuple[
         "c05_proof",
         "c05_binding",
         "c05_freeze",
+        "training_input_policy",
     }
     if unsupported:
         raise ValueError(f"unsupported training data fields: {sorted(unsupported)}; no fallback")
@@ -231,6 +236,21 @@ def resolve_training_input(data: dict[str, Any], paths: ArtifactPaths) -> tuple[
             raise ValueError("mixture source bindings must be a mapping with at most 64 sources")
         if set(bindings) - {c.source_id for c in recipe.components}:
             raise ValueError("unused source bindings are unsupported")
+        if policy is not None:
+            declared = {}
+            for component in recipe.components:
+                reference = bindings.get(component.source_id) or component.shard_id
+                if reference is None and data.get("pool_artifact"):
+                    reference = str(
+                        _source_path(data["pool_artifact"], paths) / component.source_id
+                    )
+                if not reference:
+                    raise ValueError("missing shard for policy admission")
+                declared[component.source_id] = _source_path(reference, paths)
+            admit_sources(declared, policy)
+            from xlm.data.input_policy import validate_headers
+
+            validate_headers(declared, policy)
         readers = {}
         identities = {}
         input_bytes = 0
@@ -248,14 +268,18 @@ def resolve_training_input(data: dict[str, Any], paths: ArtifactPaths) -> tuple[
                 != (_source_path(data["pool_artifact"], paths) / component.source_id).resolve()
             ):
                 raise ValueError("explicit source path differs from declared pool shard root")
-            reader = _shard(path)
-            _validate_training_index(reader)
+            reader = _shard(path, policy)
+            if policy is not None and reader.index_schema != policy.index_schema:
+                raise ValueError("training input policy requires c07-offsets-v2")
+            from xlm.data.input_validation import validate_training_index
+
+            validate_training_index(reader, check)
             input_bytes += sum(
                 (path / name).stat().st_size
                 for name in AGGREGATE_INPUT_FILES
                 if (path / name).is_file()
             )
-            if input_bytes > MAX_AGGREGATE_FROZEN_INPUT_BYTES:
+            if policy is None and input_bytes > MAX_AGGREGATE_FROZEN_INPUT_BYTES:
                 raise ValueError("aggregate frozen shard inputs exceed 2 GiB")
             if reader.manifest.source_id != component.source_id:
                 raise ValueError("shard source identity differs from declared mixture source")
@@ -314,6 +338,10 @@ def resolve_training_input(data: dict[str, Any], paths: ArtifactPaths) -> tuple[
             proof = verify_training_shards(data, shards)
         if proof is not None:
             identity["c05"] = proof
+        if policy is not None:
+            if sum(r.manifest.num_documents for r in readers.values()) > policy.documents:
+                raise ValueError("training input document ceiling")
+            identity["training_input_policy"] = policy.binding()
         order_manifest = None
         if data.get("document_order") is not None:
             from xlm.data.ordering import resolve_document_order

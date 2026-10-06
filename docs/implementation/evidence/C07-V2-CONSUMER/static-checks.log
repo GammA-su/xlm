@@ -1,0 +1,16 @@
+COMMAND: uv run --offline --locked --extra cpu --extra eval ruff check src/xlm/data/exclusion/control.py src/xlm/data/exclusion/freeze.py src/xlm/data/exclusion/freezefast.py src/xlm/data/ordering/index.py src/xlm/data/ordering/membership.py src/xlm/data/sampling/prefetch.py src/xlm/data/sampling/stream.py src/xlm/data/token_cache.py src/xlm/data/tokens.py src/xlm/experiments/science_pilot.py src/xlm/training/inputs.py scripts/c07_consumer_probe.py src/xlm/data/input_policy.py src/xlm/data/input_validation.py src/xlm/training/input_preflight.py tests/test_c07_consumer_v2.py
+EXIT: 0
+All checks passed!
+
+
+COMMAND: uv run --offline --locked --extra cpu --extra eval mypy --strict src/xlm/data/exclusion/control.py src/xlm/data/exclusion/freeze.py src/xlm/data/exclusion/freezefast.py src/xlm/data/ordering/index.py src/xlm/data/ordering/membership.py src/xlm/data/sampling/prefetch.py src/xlm/data/sampling/stream.py src/xlm/data/token_cache.py src/xlm/data/tokens.py src/xlm/experiments/science_pilot.py src/xlm/training/inputs.py scripts/c07_consumer_probe.py src/xlm/data/input_policy.py src/xlm/data/input_validation.py src/xlm/training/input_preflight.py
+EXIT: 0
+pyproject.toml: note: unused section(s): module = ['lm_eval', 'lm_eval.*']
+Success: no issues found in 15 source files
+
+
+COMMAND: git diff --check
+EXIT: 0
+
+COMMAND: git diff --cached --check
+EXIT: 0

@@ -1,3 +1,13 @@
+> **C07-V2 TRAINING CONSUMER (2026-10-06): READY UNDER THE EXPLICIT SIGNED POLICY; PRODUCTION NOT RUN.**
+>
+> Independent frozen-tokenizer proof: 10,150 strings / 100,215 prefixes, zero mismatches.
+> `training-input-policy-v2` admits the reviewed 6B v2 corpus with finite file, aggregate,
+> record, window and verification limits; legacy v1 limits remain unchanged. Authored
+> signed v1/v2 batches, trace, resume and prefetch agree. The old 2 GiB consumer blocker
+> described in the historical Opus entry below is resolved for this explicit policy.
+> [Review/evidence](reports/C07-V2-CONSUMER.md) | [Operator next commands](../runbooks/c07-v2-consumer.md).
+> Full 6B materialization, production signatures and baseline training remain NOT RUN.
+
 > **C07 TOKENIZE/FREEZE FAST PATH (2026-10-06, `perf/tokenize-freeze-opus`): IMPLEMENTED AND VERIFIED ON THE AUTHORED CHAIN; REAL KERNELS BENCHMARKED; PRODUCTION NOT RUN (NO KEY).**
 >
 > - `tokenize-selection` is now the parallel fast path; the original is

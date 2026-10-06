@@ -1,0 +1,115 @@
+........................................................................ [ 42%]
+......................F.............................................F... [ 84%]
+..........................                                               [100%]
+================================== FAILURES ===================================
+________________ test_public_cli_executes_registered_objective ________________
+
+tmp_path = WindowsPath('C:/Users/gamma/AppData/Local/Temp/pytest-of-gamma/pytest-348/test_public_cli_executes_regis0')
+
+    @pytest.mark.serial
+    def test_public_cli_executes_registered_objective(tmp_path: Path) -> None:
+        from xlm.config import schemas  # register the existing built-ins
+        from xlm.core.registry import objectives
+
+        assert schemas is not None and objectives.get("noop_objective", "1").factory is not None
+        plan = {
+            "id": "d03_registered_objective",
+            "model": {
+                "architecture": "transformer_baseline",
+                "vocab_size": 64,
+                "hidden_size": 16,
+                "intermediate_size": 32,
+                "num_layers": 1,
+                "num_attention_heads": 2,
+                "context_length": 8,
+                "attention_backend": "eager",
+            },
+            "objective": {"type": "noop_objective", "version": "1"},
+            "optimizer": {"type": "adamw", "lr": 0.01},
+            "data": {"synthetic_tokens": [4 + i % 50 for i in range(64)]},
+            "training": {
+                "device": "cpu",
+                "precision": "fp32",
+                "context_length": 8,
+                "global_batch_valid_targets": 8,
+                "budget": {"max_valid_targets": 8, "max_train_seconds": 10},
+                "schedule": {
+                    "type": "warmup_cosine",
+                    "warmup_valid_targets": 0,
+                    "horizon_valid_targets": 8,
+                },
+            },
+        }
+        path = tmp_path / "plan.json"
+        path.write_text(json.dumps(plan), encoding="utf-8")
+        result = subprocess.run(
+            [sys.executable, "-m", "xlm.cli.main", "train", str(path), "--device", "cpu"],
+            env={**os.environ, "XLM_HOME": str(tmp_path / "home")},
+            capture_output=True,
+            text=True,
+            timeout=180,
+        )
+        (tmp_path / "observed.json").write_text(
+            json.dumps(
+                {
+                    "returncode": result.returncode,
+                    "stdout": result.stdout,
+                    "stderr": result.stderr,
+                    "checkpoints": [str(p) for p in (tmp_path / "home").rglob("model.pt")],
+                }
+            ),
+            encoding="utf-8",
+        )
+>       assert result.returncode == 0, result.stderr
+E       AssertionError: <frozen runpy>:128: RuntimeWarning: 'xlm.cli.main' found in sys.modules after import of package 'xlm.cli', but prior to execution of 'xlm.cli.main'; this may result in unpredictable behaviour
+E         Error: [Errno 2] No such file or directory: 'C:\\Users\\gamma\\AppData\\Local\\Temp\\pytest-of-gamma\\pytest-348\\test_public_cli_executes_regis0\\home\\runs\\direct-40464a0179c14f9ead419b2989cad841\\.capture-11fbbd776fb74493a1d48c7d27c5e40e\\code\\recipes\\science_comparisons\\draft_science_v1_microbatch_b8_b16_b32.yaml'
+E
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['F:\\Project\\xlm-training-input-v2\\.venv\\Scripts\\python.exe', '-m', 'xlm.cli.main', 'train'...76fb74493a1d48c7d27c5e40e\\\\code\\\\recipes\\\\science_comparisons\\\\draft_science_v1_microbatch_b8_b16_b32.yaml'\n").returncode
+
+tests\test_configurable_training.py:144: AssertionError
+_______________ test_input_check_blocks_without_raising_the_cap _______________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001B48330AE70>
+
+    def test_input_check_blocks_without_raising_the_cap(monkeypatch: pytest.MonkeyPatch) -> None:
+        import xlm.experiments.science_pilot as module
+
+        monkeypatch.setattr(
+            module,
+            "frozen_input_sizes",
+            lambda sources: sizes({s: 1024**3 for s in sources}),  # authored stat results
+        )
+        findings = Findings()
+>       module.check_input_bytes({"data": {"sources": {"a": "/x/a", "b": "/x/b"}}}, findings)
+
+tests\test_p35_readiness_planner.py:309:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+config = {'data': {'sources': {'a': '/x/a', 'b': '/x/b'}}}
+findings = Findings(blockers=[], warnings=[], preflight={})
+
+    def check_input_bytes(config: Mapping[str, Any], findings: Findings) -> dict[str, Any] | None:
+        """Report frozen input sizes against the unchanged caps before resolution hashes anything.
+
+        The caps are not relaxed: an excess is a blocker naming the source(s) and
+        bytes, so the operator can tell immediately whether the cap is the blocker.
+        """
+        before = len(findings.blockers)
+        sources = _get(config, "data.sources")
+        if not isinstance(sources, Mapping) or not sources:
+            findings.section("input_bytes", before=before, status="NOT_RUN", note="no bound sources")
+            return None
+        binding = _get(config, "data.training_input_policy")
+        try:
+            report = frozen_input_report(
+>               frozen_input_sizes({str(k): str(v) for k, v in sources.items()}, binding), binding
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            )
+E           TypeError: test_input_check_blocks_without_raising_the_cap.<locals>.<lambda>() takes 1 positional argument but 2 were given
+
+src\xlm\experiments\science_pilot.py:1513: TypeError
+=========================== short test summary info ===========================
+FAILED tests/test_configurable_training.py::test_public_cli_executes_registered_objective
+FAILED tests/test_p35_readiness_planner.py::test_input_check_blocks_without_raising_the_cap
+2 failed, 168 passed in 112.97s (0:01:52)

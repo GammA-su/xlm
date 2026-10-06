@@ -274,9 +274,10 @@ class MixtureBatcher:
                 offset = after
         with (self.readers[source_id].directory / "offsets.jsonl").open("rb") as index:
             index.seek(offset)
-            while raw := index.readline(8 * 1024**2 + 1):
-                if len(raw) > 8 * 1024**2:
-                    raise MixtureStreamError("document index entry exceeds 8 MiB")
+            ceiling = self.readers[source_id].index_record_bytes
+            while raw := index.readline(ceiling + 1):
+                if len(raw) > ceiling:
+                    raise MixtureStreamError("document index entry exceeds byte limit")
                 loaded = json.loads(raw)
                 if not isinstance(loaded, dict):
                     raise MixtureStreamError("document index entry must be an object")

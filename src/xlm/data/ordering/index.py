@@ -25,7 +25,7 @@ from collections.abc import Callable, Sequence
 from typing import Any
 
 from xlm.data.ordering.manifest import OrderManifestError
-from xlm.data.ordering.membership import MAX_DOCUMENTS, MAX_INDEX_LINE_BYTES, TRAIN_SPLIT
+from xlm.data.ordering.membership import MAX_DOCUMENTS, TRAIN_SPLIT
 from xlm.data.tokens import TokenShardReader
 
 TokenFetch = Callable[[int, int], list[int]]
@@ -52,11 +52,11 @@ class OrderedSourceIndex:
         with path.open("rb") as stream:
             while True:
                 offset = stream.tell()
-                raw = stream.readline(MAX_INDEX_LINE_BYTES + 1)
+                raw = stream.readline(reader.index_record_bytes + 1)
                 if not raw:
                     break
-                if len(raw) > MAX_INDEX_LINE_BYTES:
-                    raise OrderManifestError("document index entry exceeds 8 MiB")
+                if len(raw) > reader.index_record_bytes:
+                    raise OrderManifestError("document index entry exceeds schema byte limit")
                 if not raw.strip():
                     continue
                 record = json.loads(raw)
@@ -142,7 +142,9 @@ class OrderedSourceIndex:
         ordinal = self._order[k]
         with (self.reader.directory / "offsets.jsonl").open("rb") as stream:
             stream.seek(self._index_offsets[ordinal])
-            raw = stream.readline(MAX_INDEX_LINE_BYTES + 1)
+            raw = stream.readline(self.reader.index_record_bytes + 1)
+            if len(raw) > self.reader.index_record_bytes:
+                raise OrderManifestError("document index entry exceeds byte limit")
         record: dict[str, Any] = json.loads(raw)
         if int(record["token_start"]) != self._physical_starts[ordinal]:
             raise OrderManifestError("document index changed while in use")

@@ -149,9 +149,34 @@ def freeze(
     key: bytes,
     *,
     block_size: int = 8192,
+    training_input_policy: str | None = None,
 ) -> dict[str, Any]:
+    from xlm.data.input_policy import (
+        TrainingInputPolicy,
+        admit_sources,
+        check_frozen_policy,
+        policy_fields,
+    )
+
+    fields = policy_fields(training_input_policy)
+    if fields:
+        admit_sources(
+            {p.name: p for p in shards_root.iterdir() if not p.name.startswith(".")},
+            TrainingInputPolicy(),
+        )
     selection = SelectionGate(gate, selection_dir)
-    _, identity = tokenizer_identity(tokenizer_dir, gate)
+    tokenizer, identity = tokenizer_identity(tokenizer_dir, gate)
+    if fields:
+        import hashlib
+
+        from xlm.data.input_policy import validate_headers
+        from xlm.data.tokens import token_byte_lengths
+
+        validate_headers(
+            {p.name: p for p in shards_root.iterdir() if not p.name.startswith(".")},
+            TrainingInputPolicy(),
+            hashlib.sha256(token_byte_lengths(tokenizer)).hexdigest(),
+        )
     if identity != selection.body["tokenizer"]:
         raise C05Error("freeze tokenizer differs from the exact-count tokenizer")
     components: dict[str, dict[str, int]] = selection.body["components"]
@@ -171,6 +196,7 @@ def freeze(
     exposure = exposure_plan(recipe, gate, shards, components, total, block_size)
     envelope = signed(
         {
+            **fields,
             "kind": FREEZE_KIND,
             **binding_of(gate),
             "selection_path": str(selection_dir.resolve()),
@@ -191,11 +217,13 @@ def freeze(
         issuer,
         key,
     )
+    check_frozen_policy(envelope["payload"])
     output.mkdir(parents=True, exist_ok=True)
     write_once(output / "freeze.json", envelope)
     write_once(
         output / "training-data.json",
         {
+            **fields,
             "mixture": recipe.model_dump(mode="json"),
             "sources": {c: r["path"] for c, r in shards.items()},
             "exposure_plan": exposure,
@@ -213,6 +241,9 @@ def verify_freeze(path: Path, gate: MembershipGate) -> dict[str, Any]:
     envelope = read_metadata(path, digested=False)
     body = verify_signed(envelope, gate.trusted)
     check_binding(body, gate, FREEZE_KIND)
+    from xlm.data.input_policy import check_frozen_policy
+
+    check_frozen_policy(body)
     selection = SelectionGate(gate, Path(body["selection_path"]))
     if (
         selection.digest != body["selection_digest"]
@@ -252,31 +283,42 @@ def verify_training_freeze(
     proof, frozen = data.get("c05_proof"), data.get("c05_freeze")
     if not isinstance(proof, str) or not isinstance(frozen, str):
         raise C05Error("final training requires explicit C05 proof and freeze paths")
-    with open_gate(
-        Path(proof), allow_authored=not production, consumes=(frozen, *sources.values())
-    ) as gate:
-        if gate is None:
-            raise C05Error("C05 proof absent")
-        envelope = verify_freeze(Path(frozen), gate)
-        body = envelope["payload"]
-        if production and body["mode"] != "protected":
-            raise C05Error("authored rehearsal cannot satisfy Mix-01 training")
-        if MixtureRecipe.model_validate(data["mixture"]).identity() != body["recipe_identity"]:
-            raise C05Error("training mixture differs from the signed freeze")
-        if data.get("exposure_plan") != body["exposure_plan"]:
-            raise C05Error("training exposure plan differs from the signed freeze")
-        actual = {name: str(Path(path).resolve()) for name, path in sources.items()}
-        if actual != {c: r["path"] for c, r in body["shards"].items()}:
-            raise C05Error("training shards differ from the signed freeze")
-        binding = {
-            "mode": body["mode"],
-            "plan_digest": gate.plan_digest,
-            "completion_digest": gate.receipt_digest,
-            "selection_digest": body["selection_digest"],
-            "selected_membership_sha256": body["selected_membership_sha256"],
-            "freeze_digest": envelope["digest"],
-        }
-        if data.get("c05_binding", binding) != binding:
-            raise C05Error("training C05 binding changed")
-        data["c05_binding"] = binding
-        return binding
+    from xlm.data.input_policy import check_frozen_policy, policy_from_binding
+
+    policy = policy_from_binding(data.get("training_input_policy"))
+    if policy is not None:
+        from xlm.data.exclusion.freezefast import verify_freeze_fast
+
+        envelope = verify_freeze_fast(Path(frozen), Path(proof), allow_authored=not production)
+    else:
+        with open_gate(
+            Path(proof), allow_authored=not production, consumes=(frozen, *sources.values())
+        ) as gate:
+            if gate is None:
+                raise C05Error("C05 proof absent")
+            envelope = verify_freeze(Path(frozen), gate)
+    body = envelope["payload"]
+    check_frozen_policy(body)
+    if data.get("training_input_policy") != body.get("training_input_policy"):
+        raise C05Error("training input policy differs from signed freeze")
+    if production and body["mode"] != "protected":
+        raise C05Error("authored rehearsal cannot satisfy Mix-01 training")
+    if MixtureRecipe.model_validate(data["mixture"]).identity() != body["recipe_identity"]:
+        raise C05Error("training mixture differs from the signed freeze")
+    if data.get("exposure_plan") != body["exposure_plan"]:
+        raise C05Error("training exposure plan differs from the signed freeze")
+    actual = {name: str(Path(path).resolve()) for name, path in sources.items()}
+    if actual != {c: r["path"] for c, r in body["shards"].items()}:
+        raise C05Error("training shards differ from the signed freeze")
+    binding = {
+        "mode": body["mode"],
+        "plan_digest": body["plan_digest"],
+        "completion_digest": body["completion_digest"],
+        "selection_digest": body["selection_digest"],
+        "selected_membership_sha256": body["selected_membership_sha256"],
+        "freeze_digest": envelope["digest"],
+    }
+    if data.get("c05_binding", binding) != binding:
+        raise C05Error("training C05 binding changed")
+    data["c05_binding"] = binding
+    return binding

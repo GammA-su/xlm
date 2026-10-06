@@ -486,6 +486,7 @@ def parser() -> argparse.ArgumentParser:
     for command in freezers:
         command.add_argument("--shards", type=Path, required=True)
         command.add_argument("--block-size", type=int, default=8192)
+        command.add_argument("--training-input-policy", choices=["training-input-policy-v2"])
     binding.add_argument("--plan", type=Path, required=True)
     binding.add_argument("--freeze", type=Path, required=True)
     binding.add_argument("--checkpoint-hash", required=True)
@@ -673,6 +674,7 @@ def allocation_command(args: argparse.Namespace) -> int:
                 args.issuer,
                 key,
                 block_size=args.block_size,
+                training_input_policy=args.training_input_policy,
             )
         print(json.dumps({"digest": result["digest"], "mode": result["payload"]["mode"]}))
         return 0
@@ -793,6 +795,7 @@ def freeze_command(args: argparse.Namespace) -> int:
         args.issuer,
         key,
         block_size=args.block_size,
+        training_input_policy=args.training_input_policy,
         workers=args.workers,
         progress=_freeze_progress(args),
     )

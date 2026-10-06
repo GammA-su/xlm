@@ -1422,14 +1422,19 @@ def check_recoverability(
     return rows
 
 
-def frozen_input_sizes(sources: Mapping[str, str]) -> dict[str, dict[str, int]]:
+def frozen_input_sizes(
+    sources: Mapping[str, str], policy_binding: Any = None
+) -> dict[str, dict[str, int]]:
     """Observed shard file sizes by ``stat`` only: nothing is opened, read or hashed."""
     from xlm.data.input_limits import SHARD_INPUT_FILES
+    from xlm.data.input_policy import file_limits, policy_from_binding
 
+    policy = policy_from_binding(policy_binding)
+    names = file_limits(policy) if policy is not None else SHARD_INPUT_FILES
     sizes: dict[str, dict[str, int]] = {}
     for source, path in sorted(sources.items()):
         files: dict[str, int] = {}
-        for name in SHARD_INPUT_FILES:
+        for name in names:
             item = Path(path) / name
             if item.is_file():
                 files[name] = item.stat().st_size
@@ -1437,7 +1442,9 @@ def frozen_input_sizes(sources: Mapping[str, str]) -> dict[str, dict[str, int]]:
     return sizes
 
 
-def frozen_input_report(sizes: Mapping[str, Mapping[str, int]]) -> dict[str, Any]:
+def frozen_input_report(
+    sizes: Mapping[str, Mapping[str, int]], policy_binding: Any = None
+) -> dict[str, Any]:
     """Observed bytes against the unchanged frozen-input caps; which sources exceed them."""
     from xlm.data.input_limits import (
         AGGREGATE_INPUT_FILES,
@@ -1445,34 +1452,44 @@ def frozen_input_report(sizes: Mapping[str, Mapping[str, int]]) -> dict[str, Any
         MAX_FROZEN_SHARD_INPUT_BYTES,
         MAX_SHARD_JSON_BYTES,
     )
+    from xlm.data.input_policy import admit_sizes, file_limits, policy_from_binding
 
+    policy = policy_from_binding(policy_binding)
+    shard_cap = policy.shard_bytes if policy is not None else MAX_FROZEN_SHARD_INPUT_BYTES
+    aggregate_cap = (
+        policy.aggregate_bytes if policy is not None else MAX_AGGREGATE_FROZEN_INPUT_BYTES
+    )
+    json_cap = policy.sidecar_bytes if policy is not None else MAX_SHARD_JSON_BYTES
+    aggregate_files = file_limits(policy) if policy is not None else AGGREGATE_INPUT_FILES
+    if policy is not None:
+        admit_sizes(sizes, policy)
     per_source: dict[str, Any] = {}
     aggregate = 0
     for source, files in sorted(sizes.items()):
         shard_total = sum(int(v) for v in files.values())
-        counted = sum(int(files.get(name, 0)) for name in AGGREGATE_INPUT_FILES)
+        counted = sum(int(files.get(name, 0)) for name in aggregate_files)
         aggregate += counted
         oversized_json = sorted(
-            n for n, v in files.items() if n.endswith(".json") and int(v) > MAX_SHARD_JSON_BYTES
+            n for n, v in files.items() if n.endswith(".json") and int(v) > json_cap
         )
         per_source[source] = {
             "files": dict(sorted((k, int(v)) for k, v in files.items())),
             "shard_bytes": shard_total,
             "aggregate_counted_bytes": counted,
-            "exceeds_shard_cap": shard_total > MAX_FROZEN_SHARD_INPUT_BYTES,
+            "exceeds_shard_cap": shard_total > shard_cap,
             "oversized_json": oversized_json,
         }
     return {
         "basis": "stat() of the bound shard files before any hashing or index scan",
         "caps": {
-            "per_shard_bytes": MAX_FROZEN_SHARD_INPUT_BYTES,
-            "aggregate_bytes": MAX_AGGREGATE_FROZEN_INPUT_BYTES,
-            "json_file_bytes": MAX_SHARD_JSON_BYTES,
+            "per_shard_bytes": shard_cap,
+            "aggregate_bytes": aggregate_cap,
+            "json_file_bytes": json_cap,
         },
         "per_source": per_source,
         "aggregate_bytes": aggregate,
-        "exceeds_aggregate_cap": aggregate > MAX_AGGREGATE_FROZEN_INPUT_BYTES,
-        "aggregate_excess_bytes": max(0, aggregate - MAX_AGGREGATE_FROZEN_INPUT_BYTES),
+        "exceeds_aggregate_cap": aggregate > aggregate_cap,
+        "aggregate_excess_bytes": max(0, aggregate - aggregate_cap),
         "sources_exceeding_shard_cap": sorted(
             s for s, r in per_source.items() if r["exceeds_shard_cap"] or r["oversized_json"]
         ),
@@ -1490,7 +1507,17 @@ def check_input_bytes(config: Mapping[str, Any], findings: Findings) -> dict[str
     if not isinstance(sources, Mapping) or not sources:
         findings.section("input_bytes", before=before, status="NOT_RUN", note="no bound sources")
         return None
-    report = frozen_input_report(frozen_input_sizes({str(k): str(v) for k, v in sources.items()}))
+    binding = _get(config, "data.training_input_policy")
+    try:
+        paths = {str(k): str(v) for k, v in sources.items()}
+        report = frozen_input_report(
+            frozen_input_sizes(paths) if binding is None else frozen_input_sizes(paths, binding),
+            binding,
+        )
+    except ValueError as exc:
+        findings.block("frozen_input_policy_refused", str(exc))
+        findings.section("input_bytes", before=before, status="BLOCKED")
+        return None
     for source in report["sources_exceeding_shard_cap"]:
         row = report["per_source"][source]
         findings.block(

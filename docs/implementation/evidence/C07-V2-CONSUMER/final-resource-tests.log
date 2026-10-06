@@ -1,0 +1,4 @@
+{"sparse_bytes": 2147483776, "rss_delta_bytes": 208896, "hash_verification": "NOT RUN: authored sparse layout/window test"}
+.{"long_doc_tokens": 511581, "v1_index_bytes": 8986549, "v2_index_bytes": 294, "process_peak_rss_bytes": 445661184}
+....
+5 passed in 6.63s

@@ -20,6 +20,7 @@ from filelock import FileLock
 
 from xlm.core.contracts import CanonicalDocument, TokenShardManifest
 from xlm.data.exclusion.gates import MembershipGate, screened_documents
+from xlm.data.input_policy import V2_DOCUMENT_TOKENS, V2_READ_TOKENS, V2_RECORD_BYTES
 from xlm.tokenizers.base import BaseTokenizer
 
 if TYPE_CHECKING:
@@ -394,6 +395,8 @@ class TokenShardReader:
         manifest_path = self.directory / "shard_manifest.json"
         if not manifest_path.is_file():
             raise FileNotFoundError(f"Shard manifest not found: {manifest_path}")
+        if manifest_path.stat().st_size > 8 * 1024**2:
+            raise ValueError("shard manifest exceeds byte limit")
 
         data = json.loads(manifest_path.read_text(encoding="utf-8"))
         self.manifest = TokenShardManifest(**data)
@@ -439,11 +442,19 @@ class TokenShardReader:
         ``physical_start`` is the record's ``tokens.bin`` start when a caller has
         rebased ``token_start`` (ordered views).
         """
-        if "token_byte_spans" in record or self.index_schema == INDEX_SCHEMA_V1:
+        if self.index_schema == INDEX_SCHEMA_V1:
             return record
+        if self.manifest.endianness != "little":
+            raise ValueError("v2 span reconstruction requires little-endian token IDs")
+        if "token_byte_spans" in record:
+            raise ValueError("v2 index must not override derived byte spans")
         start = int(record["token_start"]) if physical_start is None else int(physical_start)
         count = int(record["token_count"])
-        if start < 0 or count < 0 or start + count > self.manifest.num_tokens:
+        if (
+            start < 0
+            or not 1 <= count <= V2_DOCUMENT_TOKENS
+            or start + count > self.manifest.num_tokens
+        ):
             raise ValueError("document index entry lies outside tokens.bin")
         code = "<u2" if self.manifest.token_dtype == "uint16" else "<u4"
         ids = np.fromfile(
@@ -454,8 +465,40 @@ class TokenShardReader:
         )
         if len(ids) != count:
             raise ValueError("tokens.bin is shorter than its document index")
+        self.validate_v2_ids(record, ids)
         record["token_byte_spans"] = derived_byte_spans(ids, self.token_byte_table())
         return record
+
+    @property
+    def index_record_bytes(self) -> int:
+        return V2_RECORD_BYTES if self.index_schema == INDEX_SCHEMA_V2 else 8 * 1024**2
+
+    def check_read_window(self, count: int) -> None:
+        if self.index_schema == INDEX_SCHEMA_V2 and not 0 <= count <= V2_READ_TOKENS:
+            raise ValueError("v2 token read exceeds bounded window")
+
+    def validate_v2_ids(self, record: dict[str, Any], ids: Any) -> None:
+        """Validate v2 coverage without building Python spans (streaming startup)."""
+        lengths = self.token_byte_table()
+        count = record.get("token_count")
+        if type(count) is not int or not 1 <= count <= V2_DOCUMENT_TOKENS or len(ids) != count:
+            raise ValueError("v2 document token ceiling or count mismatch")
+        if "token_byte_spans" in record or int(ids.max()) >= len(lengths) or int(ids.min()) < 0:
+            raise ValueError("invalid v2 token IDs or explicit spans")
+        sizes = lengths[ids]
+        covered = int(sizes.sum())
+        nbytes = record.get("byte_count")
+        if (
+            type(nbytes) is not int
+            or not 0 <= covered <= nbytes
+            or record.get("covered_bytes") != covered
+        ):
+            raise ValueError("v2 canonical byte coverage mismatch")
+        bos, eos = record.get("bos_positions"), record.get("eos_positions")
+        if bos not in ([], [0]) or eos not in ([], [count - 1]):
+            raise ValueError("v2 structural positions are not a protected token prefix")
+        if (bos and sizes[0] != 0) or (eos and (sizes[-1] != 0 or covered != nbytes)):
+            raise ValueError("v2 structural byte spans differ from v1 framing")
 
     def verify_integrity(self) -> None:
         """Verify binary and index files against manifest checksums."""
@@ -499,6 +542,7 @@ class TokenShardReader:
             raise ValueError(f"Invalid start offset {start} for shard of {total_tokens} tokens")
 
         num_to_read = total_tokens - start if count is None else min(count, total_tokens - start)
+        self.check_read_window(num_to_read)
         byte_start = start * self.token_bytes_size
         byte_len = num_to_read * self.token_bytes_size
 
@@ -535,6 +579,7 @@ class TokenShardReader:
         if start < 0 or start > total:
             raise ValueError(f"Invalid start offset {start} for shard of {total} tokens")
         num_to_read = total - start if count is None else min(count, total - start)
+        self.check_read_window(num_to_read)
         if num_to_read <= 0:
             return []
 
@@ -552,6 +597,13 @@ class TokenShardReader:
         callers; this is the bounded path for a shard with many documents.
         """
         idx_path = self.directory / "offsets.jsonl"
+        if self.index_schema == INDEX_SCHEMA_V2:
+            with idx_path.open("rb") as stream:
+                while raw := stream.readline(V2_RECORD_BYTES + 1):
+                    if len(raw) > V2_RECORD_BYTES:
+                        raise ValueError("v2 index record exceeds byte limit")
+                    yield json.loads(raw)
+            return
         with idx_path.open("r", encoding="utf-8") as handle:
             for line in handle:
                 if line.strip():
@@ -567,12 +619,18 @@ class TokenShardReader:
         path = self.directory / "shard_counters.json"
         if not path.is_file():
             return {}
+        if path.stat().st_size > 8 * 1024**2:
+            raise ValueError("shard counters exceed byte limit")
         loaded: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
         return loaded
 
     def read_document_offsets(self) -> list[dict[str, Any]]:
         """Read document index entries."""
         idx_path = self.directory / "offsets.jsonl"
+        if self.index_schema == INDEX_SCHEMA_V2:
+            if idx_path.stat().st_size > 8 * 1024**2:
+                raise ValueError("large v2 indexes require iter_document_offsets")
+            return list(self.iter_document_offsets())
         records: list[dict[str, Any]] = []
         with idx_path.open("r", encoding="utf-8") as f:
             for line in f:

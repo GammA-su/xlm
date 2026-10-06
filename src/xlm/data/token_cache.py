@@ -78,6 +78,7 @@ class TokenMapCache:
         if not 0 <= start <= total or count < 0:
             raise ValueError("invalid token slice")
         size = min(count, total - start)
+        reader.check_read_window(size)
         if size == 0:
             return []
         key = reader.directory
@@ -100,6 +101,8 @@ class TokenMapCache:
             paths = tuple(
                 key / name for name in ("tokens.bin", "offsets.jsonl", "shard_manifest.json")
             )
+            if reader.index_schema == "c07-offsets-v2":
+                paths += (key / "shard_counters.json", key / "token_bytes.u16")
             identities = tuple(map(_identity, paths))
             if json.loads(paths[2].read_text(encoding="utf-8")) != reader.manifest.to_dict():
                 raise ValueError("token artifact manifest changed since reader creation")

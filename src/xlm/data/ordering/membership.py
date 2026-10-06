@@ -184,9 +184,9 @@ def _source_membership(
         (reader.directory / "offsets.jsonl").open("rb") as index,
         (reader.directory / "tokens.bin").open("rb") as tokens,
     ):
-        while raw := index.readline(MAX_INDEX_LINE_BYTES + 1):
-            if len(raw) > MAX_INDEX_LINE_BYTES:
-                raise MembershipError("document index entry exceeds 8 MiB")
+        while raw := index.readline(reader.index_record_bytes + 1):
+            if len(raw) > reader.index_record_bytes:
+                raise MembershipError("document index entry exceeds schema byte limit")
             if not raw.strip():
                 continue
             record = json.loads(raw)
@@ -219,9 +219,13 @@ def _source_membership(
             byte_count = record.get("byte_count")
             if type(byte_count) is not int or byte_count < 0:
                 raise MembershipError(f"document '{doc_id}' has an invalid byte_count")
+            reader.check_read_window(count)
             payload = tokens.read(count * size)
             if len(payload) != count * size:
                 raise MembershipError(f"token payload of '{doc_id}' is truncated")
+            if reader.index_schema == "c07-offsets-v2":
+                # Scientific document identity includes spans under either storage schema.
+                record = reader.with_byte_spans(record)
             if admitted_so_far + len(doc_ids) >= max_documents:
                 raise MembershipError(f"membership exceeds {max_documents} documents")
             seen.add(doc_id)

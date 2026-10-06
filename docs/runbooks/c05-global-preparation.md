@@ -1,3 +1,9 @@
+> **C07-v2 consumer update (2026-10-06):** For the next Mix-01 production step use
+> [the reviewed consumer runbook](c07-v2-consumer.md) from `F:/Project/xlm-training-input-v2`.
+> Its freeze command explicitly signs `training-input-policy-v2`; older C07 commands
+> below omit that policy and retain the 2 GiB training-consumer blocker. Earlier stage
+> commands remain historical instructions.
+
 # Global C05 preparation
 
 **Current state (2026-10-02, independent engineering acceptance audit):** the operator

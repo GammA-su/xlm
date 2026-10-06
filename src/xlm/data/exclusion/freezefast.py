@@ -61,10 +61,12 @@ from xlm.data.exclusion.tokenfast import (
     verify_selection_envelope,
     work_plan,
 )
+from xlm.data.input_policy import V2_DOCUMENT_TOKENS, V2_RECORD_BYTES
 from xlm.data.tokens import TokenShardReader
 
 if TYPE_CHECKING:
     from xlm.data.exclusion.gates import MembershipGate
+    from xlm.data.input_policy import TrainingInputPolicy
 
 LABEL = "FREEZE"
 WORKER_CHOICES = (1, 2, 4, 8, 16)
@@ -82,6 +84,8 @@ class IndexTask:
     block: bytes
     receipt: str
     selection: str
+    component: str = ""
+    v2: bool = False
 
 
 @dataclass
@@ -93,6 +97,8 @@ class IndexChunk:
     chosen: npt.NDArray[np.int64]
     valid: npt.NDArray[np.int64]
     lineage_ok: bool  # every record: c05_receipt, c05_selection and split as required
+    starts: npt.NDArray[np.int64]
+    token_counts: npt.NDArray[np.int64]
 
 
 def _integer(value: Any) -> int:
@@ -107,6 +113,8 @@ def parse_index_block(task: IndexTask) -> IndexChunk:
     counted: list[int] = []
     chosen: list[int] = []
     valid: list[int] = []
+    starts: list[int] = []
+    token_counts: list[int] = []
     ok = True
     zero = bytes(32)
     for raw in task.block.splitlines():
@@ -114,9 +122,18 @@ def parse_index_block(task: IndexTask) -> IndexChunk:
             continue
         if len(ids) % 4096 == 4095:
             _cancel_check()
+        if task.v2 and len(raw) + 1 > V2_RECORD_BYTES:
+            raise C05Error("v2 index record exceeds policy")
         record = json.loads(raw)
         if type(record) is not dict:
             raise C05Error("token shard index record must be an object")
+        if task.v2:
+            if "token_byte_spans" in record:
+                raise C05Error("v2 index record exceeds policy or contains explicit spans")
+            if not 1 <= _integer(record.get("token_count")) <= V2_DOCUMENT_TOKENS:
+                raise C05Error("v2 document token ceiling")
+        if task.component and record.get("source_id") != task.component:
+            raise C05Error("index component differs from shard")
         doc_id, content = record.get("doc_id"), record.get("c05_content")
         if type(doc_id) is not str:
             raise C05Error("token shard document lacks exact kept membership")
@@ -133,6 +150,8 @@ def parse_index_block(task: IndexTask) -> IndexChunk:
         counted.append(_integer(record.get("c05_counted_valid_targets")))
         chosen.append(_integer(record.get("c05_selected_valid_targets")))
         valid.append(_integer(record.get("valid_targets")))
+        starts.append(_integer(record.get("token_start")))
+        token_counts.append(_integer(record.get("token_count")))
         ok = ok and (
             record.get("c05_receipt") == task.receipt
             and record.get("split") == "train"
@@ -146,10 +165,14 @@ def parse_index_block(task: IndexTask) -> IndexChunk:
         np.asarray(chosen, dtype=np.int64),
         np.asarray(valid, dtype=np.int64),
         ok,
+        np.asarray(starts, dtype=np.int64),
+        np.asarray(token_counts, dtype=np.int64),
     )
 
 
-def _index_blocks(path: Path, receipt: str, selection: str) -> Iterator[IndexTask]:
+def _index_blocks(
+    path: Path, receipt: str, selection: str, component: str = "", v2: bool = False
+) -> Iterator[IndexTask]:
     pending = b""
     with path.open("rb", buffering=0) as stream:
         while block := stream.read(INDEX_BLOCK_BYTES):
@@ -157,13 +180,15 @@ def _index_blocks(path: Path, receipt: str, selection: str) -> Iterator[IndexTas
             cut = data.rfind(b"\n") + 1
             if cut == 0:
                 pending = data
-                if len(pending) > INDEX_LINE_CEILING:
+                if len(pending) > (V2_RECORD_BYTES if v2 else INDEX_LINE_CEILING):
                     raise C05Error("token shard index record ceiling")
                 continue
             pending = data[cut:]
-            yield IndexTask(data[:cut], receipt, selection)
+            if v2 and len(pending) > V2_RECORD_BYTES:
+                raise C05Error("v2 index record ceiling")
+            yield IndexTask(data[:cut], receipt, selection, component, v2)
     if pending:
-        yield IndexTask(pending, receipt, selection)
+        yield IndexTask(pending, receipt, selection, component, v2)
 
 
 def _file_sha(path: Path) -> str:
@@ -254,10 +279,20 @@ def verify_component(
     documents = tokens = 0
     for chunk in pool.map(
         parse_index_block,
-        _index_blocks(directory / "offsets.jsonl", view.receipt_digest, chain.digest),
+        _index_blocks(
+            directory / "offsets.jsonl",
+            view.receipt_digest,
+            chain.digest,
+            plan.name,
+            reader.index_schema == "c07-offsets-v2",
+        ),
     ):
         if not chunk.lineage_ok:
             raise C05Error("shard exact count or selection drifted")
+        if not np.array_equal(chunk.token_counts, chunk.chosen + 1) or not np.array_equal(
+            chunk.starts, tokens + documents + np.cumsum(chunk.token_counts) - chunk.token_counts
+        ):
+            raise C05Error("shard token layout is not contiguous selected prefixes")
         found = np.fromiter(
             (expected_rows.get(doc_id, -1) for doc_id in chunk.ids),
             dtype=np.int64,
@@ -281,6 +316,8 @@ def verify_component(
         tokens += int(s.chosen[found].sum())
     if documents != reader.manifest.num_documents:
         raise C05Error("token shard membership count mismatch")
+    if reader.manifest.num_tokens != tokens + documents:
+        raise C05Error("shard token total differs from selected prefixes")
     if (documents, tokens) != (plan.documents, plan.valid_targets) or tokens != counters[
         "valid_targets"
     ]:
@@ -368,10 +405,19 @@ def verify_shards(
 
 
 def _supervised(
-    view: StreamedC05, workers: int, inline: bool, started: float
+    view: StreamedC05,
+    workers: int,
+    inline: bool,
+    started: float,
+    policy: TrainingInputPolicy | None = None,
 ) -> tuple[Supervisor, OrderedPool]:
     membership, _ = count_tables(view)
-    supervisor = Supervisor(Deadline(None, started), view.plan.resources.ram_bytes)
+    ram = view.plan.resources.ram_bytes
+    seconds: float | None = None
+    if policy is not None:
+        ram = min(ram, policy.verification_rss_bytes)
+        seconds = policy.verification_seconds
+    supervisor = Supervisor(Deadline(seconds, started), ram)
     pool = OrderedPool(workers, membership, supervisor, inline=inline, initializer=init_worker)
     return supervisor, pool
 
@@ -386,6 +432,7 @@ def freeze_fast(
     key: bytes,
     *,
     block_size: int = 8192,
+    training_input_policy: str | None = None,
     workers: int = 8,
     progress: RunProgress | NullProgress | None = None,
     inline: bool = False,
@@ -394,6 +441,19 @@ def freeze_fast(
     """:func:`freeze.freeze`, streamed (see module doc); returns the signed envelope."""
     if workers not in WORKER_CHOICES:
         raise C05Error("freeze workers must be 1, 2, 4, 8 or 16")
+    from xlm.data.input_policy import (
+        TrainingInputPolicy,
+        admit_sources,
+        check_frozen_policy,
+        policy_fields,
+    )
+
+    fields = policy_fields(training_input_policy)
+    if fields:
+        admit_sources(
+            {p.name: p for p in shards_root.iterdir() if not p.name.startswith(".")},
+            TrainingInputPolicy(),
+        )
     progress = progress or NullProgress()
     started = time.monotonic()
     progress.stage("PROOF VERIFY", None, "steps")
@@ -405,8 +465,21 @@ def freeze_fast(
     if view.trusted.get(issuer) != key:
         raise C05Error("allocation signer is not trusted")
     progress.stage("TOKENIZER VERIFY", None, "steps")
-    _, identity = tokenizer_identity(tokenizer_dir, view)
-    supervisor, pool = _supervised(view, workers, inline, started)
+    tokenizer, identity = tokenizer_identity(tokenizer_dir, view)
+    if fields:
+        import hashlib
+
+        from xlm.data.input_policy import validate_headers
+        from xlm.data.tokens import token_byte_lengths
+
+        validate_headers(
+            {p.name: p for p in shards_root.iterdir() if not p.name.startswith(".")},
+            TrainingInputPolicy(),
+            hashlib.sha256(token_byte_lengths(tokenizer)).hexdigest(),
+        )
+    supervisor, pool = _supervised(
+        view, workers, inline, started, TrainingInputPolicy() if fields else None
+    )
     with supervisor, pool:
         chain = verified_chain(view, selection_dir, pool, supervisor, progress)
         if identity != chain.body["tokenizer"]:
@@ -423,6 +496,7 @@ def freeze_fast(
     exposure = exposure_plan(recipe, _as_gate(view, proofs), records, components, total, block_size)
     envelope = signed(
         {
+            **fields,
             "kind": FREEZE_KIND,
             **binding_of(view),
             "selection_path": str(selection_dir.resolve()),
@@ -443,12 +517,14 @@ def freeze_fast(
         issuer,
         key,
     )
+    check_frozen_policy(envelope["payload"])
     progress.stage("PUBLISH", None, "steps")
     output.mkdir(parents=True, exist_ok=True)
     write_once(output / "freeze.json", envelope)
     write_once(
         output / "training-data.json",
         {
+            **fields,
             "mixture": recipe.model_dump(mode="json"),
             "sources": {c: r["path"] for c, r in records.items()},
             "exposure_plan": exposure,
@@ -487,7 +563,19 @@ def verify_freeze_fast(
     )
     body = verify_signed(envelope, view.trusted)
     check_binding(body, view, FREEZE_KIND)
-    supervisor, pool = _supervised(view, workers, inline, started)
+    from xlm.data.input_policy import admit_sources, check_frozen_policy
+
+    policy = check_frozen_policy(body)
+    if policy is not None:
+        admit_sources({c: Path(r["path"]) for c, r in body["shards"].items()}, policy)
+        from xlm.data.input_policy import PINNED_TABLE_SHA, validate_headers
+
+        validate_headers(
+            {c: Path(r["path"]) for c, r in body["shards"].items()},
+            policy,
+            PINNED_TABLE_SHA if body["mode"] == "protected" else None,
+        )
+    supervisor, pool = _supervised(view, workers, inline, started, policy)
     with supervisor, pool:
         chain = verified_chain(view, Path(body["selection_path"]), pool, supervisor, progress)
         if (

@@ -106,6 +106,8 @@ class ProducerSpec:
     document_order: dict[str, Any] | None = None
     # A module-level callable, pickled by reference. Tests inject failures here.
     factory: Callable[[ProducerSpec], MixtureBatcher] | None = None
+    # Counters authenticate the v2 byte table; snapshot them across process startup.
+    counters: dict[str, dict[str, Any]] | None = None
 
     @classmethod
     def from_batcher(cls, batcher: MixtureBatcher) -> ProducerSpec:
@@ -122,6 +124,7 @@ class ProducerSpec:
             exposure_plan=copy.deepcopy(batcher.exposure_plan),
             max_open_shards=batcher.max_open_shards,
             document_order=copy.deepcopy(batcher.document_order),
+            counters={s: r.counters for s, r in batcher.readers.items()},
         )
 
     def build(self) -> MixtureBatcher:
@@ -133,6 +136,8 @@ class ProducerSpec:
             reader = TokenShardReader(Path(directory))
             if reader.manifest.to_dict() != self.manifests[source_id]:
                 raise PrefetchProducerError(f"shard manifest for {source_id} changed")
+            if self.counters is not None and reader.counters != self.counters[source_id]:
+                raise PrefetchProducerError("shard counters changed before producer startup")
             reader.verify_integrity()
             readers[source_id] = reader
         return MixtureBatcher(
