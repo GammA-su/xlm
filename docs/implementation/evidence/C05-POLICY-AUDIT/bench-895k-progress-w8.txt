@@ -1,0 +1,28 @@
+[POLICY AUDIT] PLAN VERIFY | started | RSS 0.1/71.9 GiB (peak 0.1) | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[POLICY AUDIT] PLAN VERIFY | done | RSS 0.1/71.9 GiB (peak 0.1) | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[POLICY AUDIT] INPUT DISCOVERY | started | 0/7 steps (0.00%) | RSS 0.1/71.9 GiB (peak 0.1) | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[POLICY AUDIT] INPUT DISCOVERY | 7/7 steps (100.00%) | documents 895,136 | files 17 | RSS 0.1/71.9 GiB (peak 0.1) | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[POLICY AUDIT] INPUT DISCOVERY | done | 7/7 steps (100.00%) | documents 895,136 | files 17 | RSS 0.1/71.9 GiB (peak 0.1) | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[POLICY AUDIT] GROUP VERIFY | started | 0/2 steps (0.00%) | RSS 0.1/71.9 GiB (peak 0.1) | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[POLICY AUDIT] GROUP VERIFY | 2/2 steps (100.00%) | 14 steps/s avg | RSS 0.1/71.9 GiB (peak 0.1) | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[POLICY AUDIT] GROUP VERIFY | done | 2/2 steps (100.00%) | 13 steps/s avg | RSS 0.1/71.9 GiB (peak 0.1) | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[POLICY AUDIT] DECISION LEDGER | started | 0/895,136 rows (0.00%) | RSS 0.1/71.9 GiB (peak 0.1) | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[POLICY AUDIT] DECISION LEDGER | done | 895,136/895,136 rows (100.00%) | 0.47/0.47 GiB input | 371,889 rows/s avg | 219.7 MiB/s | workers 8/8 busy | RSS 0.2/71.9 GiB (peak 0.2) | CPU 4% | elapsed 00:00:02 (run 00:00:02) | ETA 00:00:00
+[POLICY AUDIT] FACT UNITS | started | 0/17 files (0.00%) | RSS 0.2/71.9 GiB (peak 0.2) | CPU 4% | elapsed 00:00:00 (run 00:00:02) | ETA --:--:--
+[POLICY AUDIT] FACT UNITS | done | 17/17 files (100.00%) | 156 files/s avg | hits 24,547 | incidences 633,610 | RSS 0.2/71.9 GiB (peak 0.2) | CPU 4% | elapsed 00:00:00 (run 00:00:02) | ETA 00:00:00
+[POLICY AUDIT] BENCHMARK INDEX | started | 0/1,213 bytes (0.00%) | RSS 0.2/71.9 GiB (peak 0.2) | CPU 4% | elapsed 00:00:00 (run 00:00:02) | ETA --:--:--
+[POLICY AUDIT] BENCHMARK INDEX | done | 1,213/1,213 bytes (100.00%) | 1,617 bytes/s avg | workers 8/8 busy | records 8 | RSS 0.2/71.9 GiB (peak 0.2) | CPU 4% | elapsed 00:00:00 (run 00:00:03) | ETA 00:00:00
+[POLICY AUDIT] MATCHER IDENTITIES | started | 0/8 patterns (0.00%) | RSS 0.2/71.9 GiB (peak 0.2) | CPU 4% | elapsed 00:00:00 (run 00:00:03) | ETA --:--:--
+[POLICY AUDIT] MATCHER IDENTITIES | done | 8/8 patterns (100.00%) | 10 patterns/s avg | workers 8/8 busy | RSS 0.2/71.9 GiB (peak 0.2) | CPU 4% | elapsed 00:00:00 (run 00:00:04) | ETA 00:00:00
+[POLICY AUDIT] CORPUS RESCAN | started | 0/895,136 docs (0.00%) | RSS 0.2/71.9 GiB (peak 0.2) | CPU 4% | elapsed 00:00:00 (run 00:00:04) | ETA --:--:--
+[POLICY AUDIT] CORPUS RESCAN | 867,112/895,136 docs (96.87%) | files 13/17 | 1.69/1.71 GiB input | 173,422 docs/s avg | 346.9 MiB/s | workers 8/8 busy | RSS 0.8/71.9 GiB (peak 0.8) | CPU 33% | elapsed 00:00:05 (run 00:00:09) | ETA --:--:--
+[POLICY AUDIT] CORPUS RESCAN | done | 895,136/895,136 docs (100.00%) | files 17/17 | 1.71/1.71 GiB input | 145,788 docs/s avg | 318.1 MiB/s | workers 8/8 busy | RSS 0.8/71.9 GiB (peak 0.8) | CPU 33% | elapsed 00:00:06 (run 00:00:10) | ETA 00:00:00
+[POLICY AUDIT] LINEAGE | started | 0/4 steps (0.00%) | RSS 0.8/71.9 GiB (peak 0.8) | CPU 33% | elapsed 00:00:00 (run 00:00:10) | ETA --:--:--
+[POLICY AUDIT] LINEAGE | done | 4/4 steps (100.00%) | 3 steps/s avg | RSS 0.4/71.9 GiB (peak 0.8) | CPU 0% | elapsed 00:00:01 (run 00:00:11) | ETA 00:00:00
+[POLICY AUDIT] COUNTERFACTUAL MATRIX | started | 0/12 combinations (0.00%) | RSS 0.4/71.9 GiB (peak 0.8) | CPU 0% | elapsed 00:00:00 (run 00:00:11) | ETA --:--:--
+[POLICY AUDIT] COUNTERFACTUAL MATRIX | done | 12/12 combinations (100.00%) | 11 combinations/s avg | RSS 0.4/71.9 GiB (peak 0.8) | CPU 0% | elapsed 00:00:01 (run 00:00:12) | ETA 00:00:00
+[POLICY AUDIT] PATTERN CENSUS | started | 0/3 steps (0.00%) | RSS 0.4/71.9 GiB (peak 0.8) | CPU 0% | elapsed 00:00:00 (run 00:00:12) | ETA --:--:--
+[POLICY AUDIT] PATTERN CENSUS | done | 3/3 steps (100.00%) | 187 steps/s avg | RSS 0.4/71.9 GiB (peak 0.8) | CPU 0% | elapsed 00:00:00 (run 00:00:12) | ETA 00:00:00
+[POLICY AUDIT] REPORT VERIFY | started | 0/2 steps (0.00%) | RSS 0.4/71.9 GiB (peak 0.8) | CPU 0% | elapsed 00:00:00 (run 00:00:12) | ETA --:--:--
+[POLICY AUDIT] REPORT VERIFY | done | 2/2 steps (100.00%) | 43 steps/s avg | RSS 0.4/71.9 GiB (peak 0.8) | CPU 0% | elapsed 00:00:00 (run 00:00:12) | ETA 00:00:00
+[POLICY AUDIT] COMPLETE | RSS 0.4/71.9 GiB (peak 0.8) | CPU 0% | elapsed 00:00:00 (run 00:00:12) | ETA --:--:--

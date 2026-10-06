@@ -1,0 +1,11 @@
+[TOKEN SUPPLY] INPUT VERIFY | started | 0/4 steps (0.00%) | RSS 0.1/71.9 GiB (peak 0.1) | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[TOKEN SUPPLY] INPUT VERIFY | 4/4 steps (100.00%) | 129 steps/s avg | RSS 0.1/71.9 GiB (peak 0.1) | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[TOKEN SUPPLY] INPUT VERIFY | done | 4/4 steps (100.00%) | 85 steps/s avg | RSS 0.1/71.9 GiB (peak 0.1) | elapsed 00:00:00 (run 00:00:00) | ETA 00:00:00
+[TOKEN SUPPLY] TOKENIZE | started | 0/3,008 docs (0.00%) | RSS 0.1/71.9 GiB (peak 0.1) | elapsed 00:00:00 (run 00:00:00) | ETA --:--:--
+[TOKEN SUPPLY] TOKENIZE | 3,008/3,008 docs (100.00%) | files 1/1 | 0.00/0.00 GiB input | 3,008 docs/s avg | 3.7 MiB/s | workers 8/8 busy | RSS 0.1/71.9 GiB (peak 0.1) | elapsed 00:00:01 (run 00:00:01) | ETA 00:00:00
+[TOKEN SUPPLY] TOKENIZE | done | 3,008/3,008 docs (100.00%) | files 1/1 | 0.00/0.00 GiB input | 2,602 docs/s avg | 3.6 MiB/s | workers 8/8 busy | RSS 0.1/71.9 GiB (peak 0.1) | elapsed 00:00:01 (run 00:00:01) | ETA 00:00:00
+[TOKEN SUPPLY] PROJECTION | started | 0/12 combinations (0.00%) | RSS 0.1/71.9 GiB (peak 0.1) | elapsed 00:00:00 (run 00:00:01) | ETA --:--:--
+[TOKEN SUPPLY] PROJECTION | done | 12/12 combinations (100.00%) | 750 combinations/s avg | RSS 0.1/71.9 GiB (peak 0.1) | elapsed 00:00:00 (run 00:00:01) | ETA 00:00:00
+[TOKEN SUPPLY] REPORT VERIFY | started | 0/1 steps (0.00%) | RSS 0.1/71.9 GiB (peak 0.1) | elapsed 00:00:00 (run 00:00:01) | ETA --:--:--
+[TOKEN SUPPLY] REPORT VERIFY | done | 1/1 steps (100.00%) | 67 steps/s avg | RSS 0.1/71.9 GiB (peak 0.1) | elapsed 00:00:00 (run 00:00:01) | ETA 00:00:00
+[TOKEN SUPPLY] COMPLETE | RSS 0.1/71.9 GiB (peak 0.1) | elapsed 00:00:00 (run 00:00:01) | ETA --:--:--

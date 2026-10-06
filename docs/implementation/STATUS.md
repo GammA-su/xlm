@@ -1,3 +1,30 @@
+> **C05 CONTAMINATION-POLICY AUDIT (2026-10-06): MATCHER ROOT CAUSE TRACED; READ-ONLY 4 MATCHERS x 3 LINEAGES COUNTERFACTUAL + EXACT TOKEN PROJECTION BUILT AND ORACLE-VERIFIED (AUTHORED); PRODUCTION RUN NOT DONE (X: DETACHED).**
+>
+> - Root cause: c05-matcher-v4 emits every rendered prompt of 4-13 tokens (BLiMP
+>   sentence: 3-13) WHOLE as one exact pattern. The floors are prompt 4 / 16 / 3 and
+>   sentence 3 / 12 / 3. Any token-aligned occurrence anywhere marks a document, and one
+>   mark excludes its family. Gutenberg's 4 % -> 48 % -> 82 % hit rate by size is
+>   chance occurrence of common n-grams, not copying.
+> - Lineage: A (transitive, as run), B (`query_seed_url` family, `additional_seed_url`
+>   ignored) and C (B plus one hop) are evaluated separately from the matcher. Split
+>   grouping is kept separate.
+> - Candidates: `floor8` (8 / 40 / 5 for every kind) and `floor8_pair` (plus a same-item
+>   co-located short-pattern pair); `prompt8` is a diagnostic. No pattern lists.
+> - Recall: per task/split and kind/length at index level, plus injected exact copies
+>   with `--benchmark-material`. The losses (bare short prompts, tiny items) are made
+>   explicit.
+> - `scripts/c05_policy_counterfactual.py audit` (X: attached) reproduces every ledger
+>   decision and split and the production families, then evaluates all 12 cells.
+>   `project-tokens` (X: detached) gives exact valid targets under tokenizer
+>   `8ef1a2dd...` versus every frozen quota.
+> - 895k-row authored bench: 12 s at 8 workers (8 is optimal); production about
+>   9-11 min full scope (4-5 min focused) plus 3-4 min for tokens.
+>
+> Tests: 49 passed (all 12 cells equal an independent naive oracle).
+> [Report](reports/C05-CONTAMINATION-POLICY-AUDIT.md). Next (operator): its section-9
+> stage-1 command with X: attached, then detach X: and run stage 2. Adopt a policy only
+> after reading the recall tables. **C05 POLICY AUDIT NEEDS PRODUCTION COUNTERFACTUAL.**
+>
 > **C05 FORENSICS FAST PATH + PROGRESS (2026-10-05): REPORT IDENTICAL TO THE 858eb9e ORACLE (EXCEPT THE CORRECTED CORPUS BREAKDOWN); 3.6x MEASURED; ~1.5-2.5 MIN PROJECTED AT 8 WORKERS; REAL RUN NOT DONE.**
 >
 > - One ledger pass (was 3), parsed by `--workers` into compact columns; fact units and

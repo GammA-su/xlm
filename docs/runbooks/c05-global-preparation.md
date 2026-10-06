@@ -495,6 +495,28 @@ refusal (see `ceiling`). With the current `automaton_nodes = 8000000`, expect ex
 `X:\C05-Scratch\matcher-audit` afterwards: it is a private signature copy.
 Details: [report](../implementation/reports/C05-COMPACT-MATCHER.md).
 
+## Contamination-policy counterfactual (read-only, 2026-10-06)
+
+`scripts/c05_policy_counterfactual.py` changes nothing in C05. It answers which
+matcher/lineage policy is defensible and whether the acquired corpus would then meet every
+frozen quota. Design, recall caveats and the decision rule:
+[C05-CONTAMINATION-POLICY-AUDIT](../implementation/reports/C05-CONTAMINATION-POLICY-AUDIT.md).
+
+```powershell
+# Stage 1: X: and G: attached. Writes only the report and a NEW state file (no text).
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m scripts.c05_policy_counterfactual audit --plan G:/XLM/c05-clean-v1/p0001.json --benchmark-index X:/C05-Protected/prepared-clean-v1/index.jsonl --benchmark-receipt G:/XLM/c05-clean-v1/benchmark-preparation.receipt.json --benchmark-material X:/C05-Protected/material --state-out C:/XLM-scratch/c05-policy-audit.state.npz --workers 8 --progress-interval 5 | Set-Content -Encoding utf8 C:/XLM-scratch/c05-policy-audit.json
+$LASTEXITCODE   # 0, then every reproduction.* must be true
+
+# Stage 2: DETACH X: first (tokenization never runs with the protected volume mounted).
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m scripts.c05_policy_counterfactual project-tokens --state C:/XLM-scratch/c05-policy-audit.state.npz --plan G:/XLM/c05-clean-v1/p0001.json --counts G:/XLM/counts/mix01-clean-v1/counts.json --deficit-report G:/XLM/selection/mix01-clean-v1.deficit.json --tokenizer G:/XLM/tokfit/mix01-fit-shares-v1-clean-v1/tokenizer --expect-fingerprint 8ef1a2dde17084f34e216c0595527d7cd02b1252cb742bf6714b18b40e1eb965 --workers 8 --progress-interval 5 | Set-Content -Encoding utf8 C:/XLM-scratch/c05-policy-supply.json
+$LASTEXITCODE
+```
+
+* Progress: `[POLICY AUDIT]` / `[TOKEN SUPPLY]` stages with ETA on stderr. Refusals
+  are one content-free JSON line on stderr, exit 1.
+* `--rescan-allocation COMPONENT/VIEW/UPSTREAM` (repeatable) limits rescans. Hits
+  outside the scope stay hits and are counted in `conservative_unverified_hits`.
+
 ## Readiness check (metadata only)
 
 ```powershell
