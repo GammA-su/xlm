@@ -195,25 +195,191 @@ Mixing them with the v2 chain refuses (completion digest binding):
 * a tokenizer fitted on clean-v1 is refused for the v2 proof;
 * clean-v1 counts are refused for the v2 proof.
 
-**Downstream after the v2 proof (documented; run only after review, X: detached)**
+### C06 after the policy-v2 proof (`fix/c06-c05-v3-transition`, 2026-10-06): operator sequence
+
+Run this only after review, with X: detached.
 
 ```text
-fresh C05 policy-v2 -> fresh C06 fit bound to the new completion -> fresh kept index
--> fast count-tokens -> fast select -> verify exact 6B quotas
+sealed C05 policy-v2 (plan c15b5454..., completion df9834ab...)
+  -> C06 fit (tokenizer AND kept index, one atomic write-once output)
+  -> verify fit -> verify kept index
+  -> fast count-tokens -> fast select -> exact 6B quotas
 ```
 
+Report: [C06-POLICY-V2-TRANSITION](../implementation/reports/C06-POLICY-V2-TRANSITION.md).
+
+* Order (the existing contract):
+  * `fit-tokenizer` streams the signed membership once and builds the kept index during
+    its single source pass;
+  * it publishes the tokenizer and `kept-index/` together in one write-once directory;
+  * there is no separate build-index command. `verify-kept-index` re-verifies the index.
+* The kept index covers EVERY kept row (14,927,848) and records each row's C05-assigned
+  split.
+* The train-kept documents are its `assigned_split = train` rows. The fit and
+  count-tokens use exactly this set.
+* The completion has no train document count, only per-allocation `kept` and
+  `train_bytes`. The count is known at step 6 (`assigned_splits.train`).
+* The fit policy `recipes/tokenizer/mix01_fit_shares_v1.yaml` is reused unchanged:
+  * digest `9db3872b…637667c`;
+  * 512 MiB, ByteLevel BPE 32,768, seed 20260919, `<pad>/<bos>/<eos>/<unk>`;
+  * equal weights over 11 components, kept train only.
+
+  The fit manifest binds it together with the NEW plan, completion, kept-membership
+  SHA-256 and input manifest.
+* `--expect-c05-plan-digest` / `--expect-c05-completion-digest` (C06 commands) refuse
+  any other proof before any membership or corpus read. Passing the clean-v1 proof by
+  mistake exits 1.
+
+Fresh roots (never reuse `G:/XLM/tokfit/mix01-fit-shares-v1-clean-v1`,
+`G:/XLM/counts/mix01-clean-v1` or `G:/XLM/selection/mix01-clean-v1*`; they stay
+historical):
+
+| role | path |
+|---|---|
+| C06 fit output (tokenizer, sample, manifests, kept index) | `G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2` |
+| C06 tokenizer | `G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2/tokenizer` |
+| C06 kept index | `G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2/kept-index` |
+| C06 deficit report (written only on a deficit) | `G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2.deficit.json` |
+| C06 scratch (NVMe; ~0.6 GB spool) | `C:/XLM-scratch/c06-fit-policy-v2` |
+| reviewed C06 plan (stdout of step 3) | `C:/XLM-scratch/c06-fit-policy-v2.plan.json` |
+| counts (later) | `G:/XLM/counts/mix01-policy-v2` |
+| selection and its deficit report (later) | `G:/XLM/selection/mix01-policy-v2`, `G:/XLM/selection/mix01-policy-v2.deficit.json` |
+
+Run every command alone:
+
+* from `F:\Project\xlm-c06-policy-v2`, at the final commit;
+* with X: detached;
+* `XLM_C05_OPERATOR_KEY` is needed by step 4 only.
+
+**1. Verify the worktree**
+
 ```powershell
-uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator fit-tokenizer --c05-proof G:/XLM/c05-policy-v2/policy-v2-p0001.proof.json --fit-shares recipes/tokenizer/mix01_fit_shares_v1.yaml --quotas recipes/mixtures/mix01_quotas_6b.yaml --ifm-split G:/XLM/calib/requirement_splits/ifm_behaviors_general_planning.json --scratch C:/XLM-scratch/c06-fit-policy-v2 --output G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2 --deficit-report G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2.deficit.json --workers 8 --bpe-threads 16 --deadline-seconds 1200 --rss-ceiling-gib 24 --free-reserve-gib 16 --plan-only
-uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator fit-tokenizer --c05-proof G:/XLM/c05-policy-v2/policy-v2-p0001.proof.json --fit-shares recipes/tokenizer/mix01_fit_shares_v1.yaml --quotas recipes/mixtures/mix01_quotas_6b.yaml --ifm-split G:/XLM/calib/requirement_splits/ifm_behaviors_general_planning.json --scratch C:/XLM-scratch/c06-fit-policy-v2 --output G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2 --deficit-report G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2.deficit.json --workers 8 --bpe-threads 16 --deadline-seconds 1200 --rss-ceiling-gib 24 --free-reserve-gib 16 --resource-plan-digest <reviewed digest> --issuer GammA --key-env XLM_C05_OPERATOR_KEY
-uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator verify-kept-index --c05-proof G:/XLM/c05-policy-v2/policy-v2-p0001.proof.json --fit-shares recipes/tokenizer/mix01_fit_shares_v1.yaml --quotas recipes/mixtures/mix01_quotas_6b.yaml --ifm-split G:/XLM/calib/requirement_splits/ifm_behaviors_general_planning.json --index G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2/kept-index --membership --workers 8
+Set-Location F:\Project\xlm-c06-policy-v2
+git rev-parse HEAD
+git branch --show-current
+git status --short
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m pytest tests/test_c06_policy_v2.py -n 0 -q -p no:cacheprovider --basetemp=C:/t/c06-policy-v2-verify
+```
+
+* The branch is `fix/c06-c05-v3-transition`; `git status --short` prints nothing.
+* The test must print `12 passed`.
+* If `.venv` is missing, first run `uv sync --offline --locked --extra cpu --extra eval`.
+
+**2. Verify the new C05 proof (read-only)**
+
+```powershell
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator verify --plan G:/XLM/c05-policy-v2/p0001.json --trust G:/XLM/c05-policy-v2/trust.json
+Get-Content -Raw G:/XLM/c05-policy-v2/policy-v2-p0001.proof.json | ConvertFrom-Json | Select-Object plan_digest,completion_digest,completion
+(Get-Content -Raw G:/C05-output-policy-v2/c15b54542238b0a4d6cce371c81ce0fe71caed5ed7c6bc23f937e4e85bbb8c59/completion.json | ConvertFrom-Json).digest
+(Get-Content -Raw G:/C05-output-policy-v2/c15b54542238b0a4d6cce371c81ce0fe71caed5ed7c6bc23f937e4e85bbb8c59/completion.json | ConvertFrom-Json).payload | Select-Object kind,output_contract,documents,kept,excluded,duplicates,membership_sha256
+```
+
+Expect, in order:
+
+1. `"verified": true` with `plan_digest` `c15b5454…bbb8c59`.
+2. The proof's `plan_digest` `c15b…`, `completion_digest` `df9834ab…0a27`, and
+   completion directory `G:/C05-output-policy-v2/c15b…`.
+3. The completion digest `df9834ab…0a27`.
+4. `c05_completion_v3` and `c05_membership_v3`; documents 15,087,207, kept 14,927,848,
+   excluded 38,364, duplicates 120,995.
+
+**3. Prepare the fresh C06 fit**
+
+Metadata only: this reads no membership or corpus bytes. Then print the values to review.
+
+```powershell
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator fit-tokenizer --c05-proof G:/XLM/c05-policy-v2/policy-v2-p0001.proof.json --expect-c05-plan-digest c15b54542238b0a4d6cce371c81ce0fe71caed5ed7c6bc23f937e4e85bbb8c59 --expect-c05-completion-digest df9834ab459bf00fac7ee4ffe69503432fc8e95b9af15009dcca7897a81c0a27 --fit-shares recipes/tokenizer/mix01_fit_shares_v1.yaml --quotas recipes/mixtures/mix01_quotas_6b.yaml --ifm-split G:/XLM/calib/requirement_splits/ifm_behaviors_general_planning.json --scratch C:/XLM-scratch/c06-fit-policy-v2 --output G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2 --deficit-report G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2.deficit.json --workers 8 --bpe-threads 16 --deadline-seconds 1200 --rss-ceiling-gib 24 --free-reserve-gib 16 --plan-only | Set-Content -Encoding ascii C:/XLM-scratch/c06-fit-policy-v2.plan.json
+Get-Content -Raw C:/XLM-scratch/c06-fit-policy-v2.plan.json | ConvertFrom-Json | Select-Object resource_plan_digest,@{n='plan_digest';e={$_.resource_plan.plan_digest}},@{n='completion_digest';e={$_.resource_plan.completion_digest}},@{n='policy_digest';e={$_.resource_plan.policy_digest}},@{n='kept_records';e={$_.resource_plan.inputs.kept_records}},@{n='target_bytes';e={$_.resource_plan.sample.target_bytes}} | Format-List
+```
+
+Review:
+
+* `plan_digest` `c15b…` and `completion_digest` `df9834ab…`;
+* `policy_digest` `9db3872b…637667c`;
+* `kept_records` 14,927,848 and `target_bytes` 536,870,912.
+
+Use `resource_plan_digest` in step 4.
+
+**4. Run the tokenizer fit**
+
+Use IDENTICAL flags. Exit 0 = published; 2 = deficit report written; 1 = refused and
+nothing published.
+
+```powershell
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator fit-tokenizer --c05-proof G:/XLM/c05-policy-v2/policy-v2-p0001.proof.json --expect-c05-plan-digest c15b54542238b0a4d6cce371c81ce0fe71caed5ed7c6bc23f937e4e85bbb8c59 --expect-c05-completion-digest df9834ab459bf00fac7ee4ffe69503432fc8e95b9af15009dcca7897a81c0a27 --fit-shares recipes/tokenizer/mix01_fit_shares_v1.yaml --quotas recipes/mixtures/mix01_quotas_6b.yaml --ifm-split G:/XLM/calib/requirement_splits/ifm_behaviors_general_planning.json --scratch C:/XLM-scratch/c06-fit-policy-v2 --output G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2 --deficit-report G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2.deficit.json --workers 8 --bpe-threads 16 --deadline-seconds 1200 --rss-ceiling-gib 24 --free-reserve-gib 16 --resource-plan-digest <resource_plan_digest from step 3> --issuer GammA --key-env XLM_C05_OPERATOR_KEY --progress-interval 5
+$LASTEXITCODE
+```
+
+* `[C06]` stderr progress, for each stage:
+  * rate (rows/s, MB/s, GB/s);
+  * elapsed and ETA;
+  * process-tree RSS: current, ceiling, peak.
+* `TOKENIZER FIT` shows only elapsed and RSS heartbeats, because BPE merge progress is
+  not observable.
+* Expect about 5.5-6 min and a peak around 4-4.5 GiB. This is the operator-measured
+  clean-v1 fit (333.8 s, ~4.2 GiB) with the same stages, corpus and sample size; the
+  membership now has 14.93M kept rows.
+
+**5. Verify the tokenizer fit**
+
+This re-derives the sample from authenticated membership. Add `--sources` to also
+re-hash every source and the BPE spool (one more source pass).
+
+```powershell
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator verify-tokenizer-fit --c05-proof G:/XLM/c05-policy-v2/policy-v2-p0001.proof.json --expect-c05-plan-digest c15b54542238b0a4d6cce371c81ce0fe71caed5ed7c6bc23f937e4e85bbb8c59 --expect-c05-completion-digest df9834ab459bf00fac7ee4ffe69503432fc8e95b9af15009dcca7897a81c0a27 --fit-shares recipes/tokenizer/mix01_fit_shares_v1.yaml --quotas recipes/mixtures/mix01_quotas_6b.yaml --ifm-split G:/XLM/calib/requirement_splits/ifm_behaviors_general_planning.json --fit G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2 --workers 8 --progress-interval 5
+```
+
+**6. Verify the published kept index against membership (prints the train-kept count)**
+
+```powershell
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator verify-kept-index --c05-proof G:/XLM/c05-policy-v2/policy-v2-p0001.proof.json --expect-c05-plan-digest c15b54542238b0a4d6cce371c81ce0fe71caed5ed7c6bc23f937e4e85bbb8c59 --expect-c05-completion-digest df9834ab459bf00fac7ee4ffe69503432fc8e95b9af15009dcca7897a81c0a27 --fit-shares recipes/tokenizer/mix01_fit_shares_v1.yaml --quotas recipes/mixtures/mix01_quotas_6b.yaml --ifm-split G:/XLM/calib/requirement_splits/ifm_behaviors_general_planning.json --index G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2/kept-index --membership --workers 8 --progress-interval 5
+```
+
+Expect:
+
+* `"verified": true` and `"membership_rederived": true`;
+* `rows` 14,927,848, with the new `plan_digest` and `completion_digest`;
+* `assigned_splits` (train, diagnostic_val, audit) summing to 14,927,848.
+
+`assigned_splits.train` is the real train-kept document count; `train_canonical_bytes`
+is its canonical text size.
+
+**7. Print the tokenizer fingerprint and its C05 binding**
+
+```powershell
+Get-Content -Raw G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2/tokenizer/c05-binding.json | ConvertFrom-Json | Format-List
+```
+
+* The fingerprint is expected to differ from the historical `8ef1a2dd…`.
+* If it differs, no old count or selection is usable; binding refuses them anyway.
+
+**8. Print the remaining digests, counts and measured resources**
+
+```powershell
+Get-Content -Raw G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2/tokenizer_fit_manifest.json | ConvertFrom-Json | Select-Object digest,@{n='plan_digest';e={$_.payload.plan_digest}},@{n='completion_digest';e={$_.payload.completion_digest}},@{n='input_manifest_digest';e={$_.payload.input_manifest_digest}},@{n='kept_membership_sha256';e={$_.payload.kept_membership_sha256}},@{n='policy_digest';e={$_.payload.policy_digest}},@{n='fingerprint';e={$_.payload.tokenizer.fingerprint}},@{n='sample_sha256';e={$_.payload.sample.selected_membership_sha256}},@{n='sample_documents';e={$_.payload.sample.documents}},@{n='sample_bytes';e={$_.payload.sample.canonical_bytes}},@{n='training_input_hash';e={$_.payload.sample.training_input_hash}},@{n='kept_index_digest';e={$_.payload.kept_index.manifest_digest}} | Format-List
+(Get-Content -Raw G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2/tokenizer_fit_resource_plan.json | ConvertFrom-Json).measured | Select-Object membership_seconds,source_seconds,bpe_seconds,elapsed_before_publication_seconds,peak_process_tree_rss_bytes | Format-List
+```
+
+**Prepared, NOT part of C06: exact counts and selection with the new tokenizer**
+
+Run these only after steps 1-8 pass, with X: detached. Old counts and selections are
+refused for this chain by the tokenizer and completion binding.
+
+```powershell
 uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator count-tokens --c05-proof G:/XLM/c05-policy-v2/policy-v2-p0001.proof.json --tokenizer G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2/tokenizer --scratch C:/XLM-scratch/count-tokens-policy-v2 --output G:/XLM/counts/mix01-policy-v2 --issuer GammA --key-env XLM_C05_OPERATOR_KEY --workers 16 --progress-interval 5
 uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator select --c05-proof G:/XLM/c05-policy-v2/policy-v2-p0001.proof.json --tokenizer G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2/tokenizer --scratch C:/XLM-scratch/select-policy-v2 --counts G:/XLM/counts/mix01-policy-v2 --quotas recipes/mixtures/mix01_quotas_6b.yaml --ifm-split G:/XLM/calib/requirement_splits/ifm_behaviors_general_planning.json --deficit-report G:/XLM/selection/mix01-policy-v2.deficit.json --output G:/XLM/selection/mix01-policy-v2 --issuer GammA --key-env XLM_C05_OPERATOR_KEY --workers 8 --progress-interval 5
 ```
 
-* `select` exit 0 means every frozen 6B quota is met exactly.
-* Exit 2 is a deficit; read the deficit report.
-* The audit's `prompt8 x query_seed_family` projection (old tokenizer) met every quota;
-  it is not a guarantee for the new tokenizer.
+* `count-tokens` counts exactly the train-kept rows. Its `documents` must equal step 6's
+  `assigned_splits.train`.
+* Expect about 53-55 min at 16 workers. That figure is the historical real run (about
+  4,079 docs/s); the time scales with the new train count.
+* `select` exit 0 means every frozen 6B quota is met exactly. Exit 2 is a deficit; read
+  the deficit report.
+* The audit's `prompt8 x query_seed_family` projection used the OLD tokenizer
+  `8ef1a2dd…`. Its thinnest margins were PDR +149,595 and OER +524,374 valid targets.
+* A new tokenizer changes exact counts. A successful C06 therefore does NOT show that
+  Mix-01 is sufficient; only the fresh count and select decide.
 * Cleaning and acquisition are reused unchanged.
 
 ## Cleaned-corpus C05 rerun (`clean-v1`, 2026-10-04): operator sequence
@@ -839,6 +1005,8 @@ Invoke-Expression "$cli verify-kept-index $c06 --index G:/XLM/tokfit/mix01-fit-s
 ```
 
 `--plan-only` refuses early if:
+- `--expect-c05-plan-digest` or `--expect-c05-completion-digest` is given and the proof
+  names another chain (every C06 command accepts these pins);
 - the quota table bytes differ from the policy pin;
 - the sealed sources bind a different table or IFM split;
 - the proof's completion digest changed;

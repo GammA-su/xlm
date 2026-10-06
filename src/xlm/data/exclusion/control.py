@@ -439,6 +439,10 @@ def parser() -> argparse.ArgumentParser:
             "--quotas", type=Path, default=Path("recipes/mixtures/mix01_quotas_6b.yaml")
         )
         command.add_argument("--ifm-split", type=Path, required=True)
+        # Optional operator pins of the C05 chain: a proof naming any other plan or
+        # completion refuses before any membership or corpus read.
+        command.add_argument("--expect-c05-plan-digest")
+        command.add_argument("--expect-c05-completion-digest")
     for command in (fitting, reference):
         for name in ("scratch", "output", "deficit-report"):
             command.add_argument("--" + name, type=Path, required=True)
@@ -677,6 +681,27 @@ def _fit_progress(args: argparse.Namespace) -> RunProgress | NullProgress:
     return RunProgress(interval=args.progress_interval, fmt=args.progress_format, label="C06")
 
 
+def expect_c05_chain(args: argparse.Namespace) -> None:
+    """Refuse a proof that names another C05 plan or completion than the operator pinned.
+
+    Only the proof's claimed digests are compared here. Every C06 path then verifies
+    them against the plan file and the completion before using either, so a
+    matching pin binds the command to exactly that chain.
+    """
+    from xlm.data.exclusion.transport import ProofSpec
+
+    pins = {
+        "plan_digest": args.expect_c05_plan_digest,
+        "completion_digest": args.expect_c05_completion_digest,
+    }
+    if all(value is None for value in pins.values()):
+        return
+    spec = ProofSpec.model_validate(read_metadata(args.c05_proof, digested=False))
+    for name, value in pins.items():
+        if value is not None and getattr(spec, name) != value:
+            raise C05Error("C05 proof is not the pinned chain: " + name)
+
+
 def tokenizer_fit_command(args: argparse.Namespace) -> int:
     """C06 fit/verify; refuses before any corpus read while the protected volume is mounted."""
     from xlm.data.exclusion import fitfast
@@ -690,6 +715,7 @@ def tokenizer_fit_command(args: argparse.Namespace) -> int:
     )
     from xlm.data.exclusion.transport import guard_proof, open_gate
 
+    expect_c05_chain(args)
     consumes: list[Path | str] = [args.fit_shares, args.quotas, args.ifm_split]
     reporter = _fit_progress(args)
     if args.command == "verify-kept-index":

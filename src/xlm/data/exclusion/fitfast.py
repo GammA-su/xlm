@@ -58,6 +58,7 @@ from xlm.data.acquisition.source_run import write_once
 from xlm.data.evidence_v2 import canonical
 from xlm.data.exclusion.artifacts import ExecutionPlan, signed, verify_signed
 from xlm.data.exclusion.fitscan import (
+    SPLIT_NAMES,
     FileRef,
     MembershipChunk,
     MembershipTables,
@@ -1691,10 +1692,17 @@ def verify_kept_index(
 ) -> dict[str, Any]:
     """Signature, bindings, private snapshot, structure; optionally re-derive from inputs."""
     index = open_index(directory, view)
+    assigned = np.bincount(index.rows["assigned_split"], minlength=len(SPLIT_NAMES))
+    train = index.rows["assigned_split"] == 0
     result: dict[str, Any] = {
         "verified": True,
         "rows": len(index),
         "index_digest": index.manifest["digest"],
+        "plan_digest": view.plan_digest,
+        "completion_digest": view.receipt_digest,
+        # Content-free counts of the verified snapshot: kept rows by C05-assigned split.
+        "assigned_splits": {name: int(assigned[n]) for n, name in enumerate(SPLIT_NAMES)},
+        "train_canonical_bytes": int(index.rows["bytes"][train].sum(dtype=np.uint64)),
         "membership_rederived": False,
         "sources_rehashed": False,
     }
