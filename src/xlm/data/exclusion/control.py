@@ -386,18 +386,40 @@ def parser() -> argparse.ArgumentParser:
     # path (the oracle). Both publish byte-identical artifacts and deficit reports.
     selecting = commands.add_parser("select")
     selecting_reference = commands.add_parser("select-reference")
+    # tokenize-selection is the parallel fast path (tokenfast); tokenize-selection-reference
+    # is the original single-process path (the oracle). With --index-schema
+    # c07-offsets-v1 both publish byte-identical shards.
     tokenizing = commands.add_parser("tokenize-selection")
+    tokenizing_reference = commands.add_parser("tokenize-selection-reference")
+    tokenizers = (tokenizing, tokenizing_reference)
+    # freeze / verify-freeze are the streamed fast paths (freezefast); the -reference
+    # commands are the original SQLite paths (the oracles), byte-identical results.
     freezing = commands.add_parser("freeze")
+    freezing_reference = commands.add_parser("freeze-reference")
+    freezers = (freezing, freezing_reference)
+    verifying_freeze = commands.add_parser("verify-freeze")
+    verifying_freeze_reference = commands.add_parser("verify-freeze-reference")
+    verifying_training = commands.add_parser("verify-training-freeze")
+    for command in (verifying_freeze, verifying_freeze_reference):
+        command.add_argument("--c05-proof", type=Path, required=True)
+        command.add_argument("--freeze", type=Path, required=True)
+    verifying_training.add_argument("--training-data", type=Path, required=True)
+    verifying_training.add_argument("--production", action="store_true")
+    for command in (freezing, verifying_freeze):
+        command.add_argument("--workers", type=int, choices=[1, 2, 4, 8, 16], default=8)
+        command.add_argument("--progress-interval", type=float, default=5.0)
+        command.add_argument("--progress-format", choices=["text", "jsonl"], default="text")
+        command.add_argument("--no-progress", action="store_true")
     binding = commands.add_parser("claim-binding")
     counters = (counting, counting_reference)
     selectors = (selecting, selecting_reference)
-    for command in (*counters, *selectors, tokenizing, freezing, binding):
+    for command in (*counters, *selectors, *tokenizers, *freezers, binding):
         command.add_argument("--c05-proof", type=Path, required=True)
-    for command in (*counters, *selectors, tokenizing, freezing):
+    for command in (*counters, *selectors, *tokenizers, *freezers):
         command.add_argument("--tokenizer", type=Path, required=True)
     for command in (*counters, *selectors):
         command.add_argument("--scratch", type=Path, required=True)
-    for command in (*counters, *selectors, freezing):
+    for command in (*counters, *selectors, *freezers):
         command.add_argument("--output", type=Path, required=True)
         command.add_argument("--issuer", required=True)
         command.add_argument("--key-env", required=True)
@@ -436,12 +458,34 @@ def parser() -> argparse.ArgumentParser:
         )
         command.add_argument("--ifm-split", type=Path, required=True)
         command.add_argument("--deficit-report", type=Path, required=True)
-    for command in (tokenizing, freezing):
+    for command in (*tokenizers, *freezers):
         command.add_argument("--selection", type=Path, required=True)
-    tokenizing.add_argument("--output-root", type=Path, required=True)
-    tokenizing.add_argument("--batch-size", type=int, default=1)
-    freezing.add_argument("--shards", type=Path, required=True)
-    freezing.add_argument("--block-size", type=int, default=8192)
+    for command in tokenizers:
+        command.add_argument("--output-root", type=Path, required=True)
+    tokenizing_reference.add_argument("--batch-size", type=int, default=1)
+    # Operational only: workers never change a byte; the schema is recorded in the
+    # counters (c07-offsets-v1 equals the reference byte for byte).
+    tokenizing.add_argument("--scratch", type=Path, required=True)
+    tokenizing.add_argument("--workers", type=int, choices=[1, 2, 4, 8, 16], default=16)
+    tokenizing.add_argument(
+        "--index-schema", choices=["c07-offsets-v2", "c07-offsets-v1"], default="c07-offsets-v2"
+    )
+    tokenizing.add_argument("--resume", action="store_true")
+    # Prints the deterministic size/resource plan after verification; reads no source.
+    tokenizing.add_argument("--plan-only", action="store_true")
+    tokenizing.add_argument("--output-reserve-gib", type=float, default=32.0)
+    tokenizing.add_argument("--scratch-reserve-gib", type=float, default=4.0)
+    tokenizing.add_argument("--expect-c05-plan-digest")
+    tokenizing.add_argument("--expect-c05-completion-digest")
+    tokenizing.add_argument("--expect-selection-digest")
+    tokenizing.add_argument("--expect-selected-membership-sha256")
+    tokenizing.add_argument("--expect-tokenizer-fingerprint")
+    tokenizing.add_argument("--progress-interval", type=float, default=5.0)
+    tokenizing.add_argument("--progress-format", choices=["text", "jsonl"], default="text")
+    tokenizing.add_argument("--no-progress", action="store_true")
+    for command in freezers:
+        command.add_argument("--shards", type=Path, required=True)
+        command.add_argument("--block-size", type=int, default=8192)
     binding.add_argument("--plan", type=Path, required=True)
     binding.add_argument("--freeze", type=Path, required=True)
     binding.add_argument("--checkpoint-hash", required=True)
@@ -572,7 +616,7 @@ def allocation_command(args: argparse.Namespace) -> int:
             write_once(args.output, asdict(expected))
             print(json.dumps({"claim_binding": str(args.output), "mode": gate.mode}))
             return 0
-        if args.command == "tokenize-selection":
+        if args.command == "tokenize-selection-reference":
             from xlm.data.exclusion.freeze import tokenize_selection
 
             shards = tokenize_selection(
@@ -672,6 +716,136 @@ def count_command(args: argparse.Namespace) -> int:
         pins=_count_pins(args),
     )
     print(json.dumps({"digest": envelope["digest"], "mode": envelope["payload"]["mode"]}))
+    return 0
+
+
+def tokenize_command(args: argparse.Namespace) -> int:
+    """Fast exact C07 tokenization of the signed selection (see ``tokenfast``)."""
+    from xlm.data.exclusion.progress import GiB, NullProgress, RunProgress
+    from xlm.data.exclusion.tokenfast import TokenizePins, tokenize_selection_fast
+
+    progress = (
+        NullProgress()
+        if args.no_progress
+        else RunProgress(
+            interval=args.progress_interval, fmt=args.progress_format, label="TOKENIZE"
+        )
+    )
+    result = tokenize_selection_fast(
+        args.c05_proof,
+        args.selection,
+        args.tokenizer,
+        args.output_root,
+        scratch=args.scratch,
+        workers=args.workers,
+        index_schema=args.index_schema,
+        resume=args.resume,
+        plan_only=args.plan_only,
+        progress=progress,
+        pins=TokenizePins(
+            selection_digest=args.expect_selection_digest,
+            selected_membership_sha256=args.expect_selected_membership_sha256,
+            tokenizer_fingerprint=args.expect_tokenizer_fingerprint,
+            plan_digest=args.expect_c05_plan_digest,
+            completion_digest=args.expect_c05_completion_digest,
+        ),
+        output_reserve=int(args.output_reserve_gib * GiB),
+        scratch_reserve=int(args.scratch_reserve_gib * GiB),
+    )
+    if args.plan_only:
+        print(json.dumps({"plan_only": True, **result["plan"]}, sort_keys=True))
+        return 0
+    print(
+        json.dumps(
+            {
+                "shards": sorted(result["shards"]),
+                "skipped": result["skipped"],
+                "index_schema": args.index_schema,
+                "documents": sum(m["num_documents"] for m in result["shards"].values()),
+                "token_ids": sum(m["num_tokens"] for m in result["shards"].values()),
+                "measured": result["measured"],
+            },
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
+def _freeze_progress(args: argparse.Namespace) -> RunProgress | NullProgress:
+    from xlm.data.exclusion.progress import NullProgress, RunProgress
+
+    if args.no_progress:
+        return NullProgress()
+    return RunProgress(interval=args.progress_interval, fmt=args.progress_format, label="FREEZE")
+
+
+def freeze_command(args: argparse.Namespace) -> int:
+    """Streamed final freeze (byte-identical to ``freeze-reference``)."""
+    from xlm.data.exclusion.freezefast import freeze_fast
+
+    key = key_from_env(args.key_env)
+    envelope = freeze_fast(
+        args.c05_proof,
+        args.selection,
+        args.shards,
+        args.tokenizer,
+        args.output,
+        args.issuer,
+        key,
+        block_size=args.block_size,
+        workers=args.workers,
+        progress=_freeze_progress(args),
+    )
+    print(json.dumps({"digest": envelope["digest"], "mode": envelope["payload"]["mode"]}))
+    return 0
+
+
+def _freeze_summary(envelope: dict[str, Any]) -> dict[str, Any]:
+    body = envelope["payload"]
+    return {
+        "verified": True,
+        "freeze_digest": envelope["digest"],
+        "mode": body["mode"],
+        "plan_digest": body["plan_digest"],
+        "completion_digest": body["completion_digest"],
+        "selection_digest": body["selection_digest"],
+        "selected_membership_sha256": body["selected_membership_sha256"],
+        "tokenizer_fingerprint": body["tokenizer"]["fingerprint"],
+        "exposure_plan_digest": body["exposure_plan_digest"],
+        "valid_targets": body["valid_targets"],
+        "documents": sum(r["documents"] for r in body["shards"].values()),
+        "shards": {c: r["valid_targets"] for c, r in sorted(body["shards"].items())},
+    }
+
+
+def verify_freeze_command(args: argparse.Namespace) -> int:
+    """Read-only full re-verification of a signed freeze; prints a content-free summary."""
+    if args.command == "verify-freeze-reference":
+        from xlm.data.exclusion.freeze import verify_freeze
+        from xlm.data.exclusion.transport import open_gate
+
+        with open_gate(args.c05_proof, allow_authored=True, consumes=[args.freeze]) as gate:
+            if gate is None:
+                raise C05Error("C05 proof absent")
+            envelope = verify_freeze(args.freeze, gate)
+    else:
+        from xlm.data.exclusion.freezefast import verify_freeze_fast
+
+        envelope = verify_freeze_fast(
+            args.freeze, args.c05_proof, workers=args.workers, progress=_freeze_progress(args)
+        )
+    print(json.dumps(_freeze_summary(envelope), sort_keys=True))
+    return 0
+
+
+def verify_training_freeze_command(args: argparse.Namespace) -> int:
+    """The training-input binding check of ``training-data.json`` (reference verifier)."""
+    from xlm.data.exclusion.freeze import verify_training_freeze
+
+    data = read_metadata(args.training_data, digested=False)
+    sources = {name: Path(path) for name, path in dict(data.get("sources", {})).items()}
+    binding = verify_training_freeze(data, sources, production=args.production)
+    print(json.dumps({"verified": True, "c05_binding": binding}, sort_keys=True))
     return 0
 
 
@@ -1028,12 +1202,18 @@ def main(argv: list[str] | None = None) -> int:
                 # Staging and job scratch were removed; nothing was published.
                 print(json.dumps({"refused": True, "error_type": "KeyboardInterrupt"}))
                 return 130
-        if args.command in {"count-tokens", "select", "verify-counts"}:
-            fast = {
-                "count-tokens": count_command,
-                "select": select_command,
-                "verify-counts": verify_counts_command,
-            }[args.command]
+        fast_commands = {
+            "count-tokens": count_command,
+            "select": select_command,
+            "verify-counts": verify_counts_command,
+            "tokenize-selection": tokenize_command,
+            "freeze": freeze_command,
+            "verify-freeze": verify_freeze_command,
+            "verify-freeze-reference": verify_freeze_command,
+            "verify-training-freeze": verify_training_freeze_command,
+        }
+        if args.command in fast_commands:
+            fast = fast_commands[args.command]
             try:
                 return fast(args)
             except C05Error as exc:
@@ -1053,7 +1233,9 @@ def main(argv: list[str] | None = None) -> int:
                             "refused": True,
                             "error_type": type(exc).__name__,
                             "stage": getattr(
-                                exc, "count_stage", getattr(exc, "select_stage", None)
+                                exc,
+                                "count_stage",
+                                getattr(exc, "select_stage", getattr(exc, "tokenize_stage", None)),
                             ),
                             "errno": errno if type(errno) is int else None,
                         }
@@ -1063,8 +1245,8 @@ def main(argv: list[str] | None = None) -> int:
         if args.command in {
             "count-tokens-reference",
             "select-reference",
-            "tokenize-selection",
-            "freeze",
+            "tokenize-selection-reference",
+            "freeze-reference",
             "claim-binding",
         }:
             return allocation_command(args)

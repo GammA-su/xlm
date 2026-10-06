@@ -486,6 +486,16 @@ def allocate(paths: dict[str, Any], c05: dict[str, Any], plan_path: Path) -> dic
             str(root / "selection"),
             "--output-root",
             str(root / "shards"),
+            "--scratch",
+            str(root / "tokenize-scratch"),
+            "--workers",
+            "2",
+            "--no-progress",
+            # Authored fixture volumes are small; the production reserves stay default.
+            "--output-reserve-gib",
+            "0",
+            "--scratch-reserve-gib",
+            "0",
         ]
     )
     run_operator(

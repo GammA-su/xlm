@@ -284,6 +284,9 @@ class MixtureBatcher:
                 record["_xlm_index_after"] = index.tell()
                 begin, count = int(record["token_start"]), int(record["token_count"])
                 if begin <= position < begin + count:
+                    # A C07 v2 index omits the per-token spans; they are re-derived
+                    # exactly from this document's token IDs (v1 records unchanged).
+                    record = self.readers[source_id].with_byte_spans(record)
                     if cached is not None:
                         self._previous_document[source_id] = cached[0]
                     self._document_cache[source_id] = (record, index.tell())

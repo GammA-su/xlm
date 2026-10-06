@@ -386,10 +386,18 @@ def test_cleaned_proof_c06_fit_verify_count_select_tokenize_freeze(
     assert selection["payload"]["requirements_digest"] == canonical.digest(requirements)
     assert selection["payload"]["selected_valid_targets"] == requirements["valid_target_quota"]
     tokenize = ["tokenize-selection", *chain, "--selection", str(tmp_path / "selection")]
+    tokenize += ["--scratch", str(tmp_path / "tokenize-scratch"), "--workers", "1"]
+    tokenize += ["--no-progress", "--output-reserve-gib", "0", "--scratch-reserve-gib", "0"]
     assert operator([*tokenize, "--output-root", str(tmp_path / "shards")]) == 0
-    freeze = ["freeze", *chain, "--selection", str(tmp_path / "selection")]
-    freeze += ["--shards", str(tmp_path / "shards"), "--output", str(tmp_path / "freeze")]
-    assert operator([*freeze, *sign]) == 0
+    reference = ["tokenize-selection-reference", *chain, "--selection", str(tmp_path / "selection")]
+    assert operator([*reference, "--output-root", str(tmp_path / "reference-shards")]) == 0
+    for name in ("freeze", "freeze-reference"):
+        freeze = [name, *chain, "--selection", str(tmp_path / "selection")]
+        freeze += ["--shards", str(tmp_path / "shards"), "--output", str(tmp_path / name)]
+        assert operator([*freeze, *sign]) == 0
+    assert (tmp_path / "freeze/freeze.json").read_bytes() == (
+        tmp_path / "freeze-reference/freeze.json"
+    ).read_bytes()
 
 
 def test_consumers_without_quota_lineage_never_read_the_admission(

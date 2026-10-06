@@ -1,3 +1,38 @@
+> **C07 TOKENIZE/FREEZE FAST PATH (2026-10-06, `perf/tokenize-freeze-opus`): IMPLEMENTED AND VERIFIED ON THE AUTHORED CHAIN; REAL KERNELS BENCHMARKED; PRODUCTION NOT RUN (NO KEY).**
+>
+> - `tokenize-selection` is now the parallel fast path; the original is
+>   `tokenize-selection-reference`.
+>   - No SQLite; one hashed physical pass (96.85 GiB).
+>   - Full recount of every document; exact truncation of all 17 crossings.
+>   - Ordered, deterministic writer; atomic per-component publication.
+>   - Fully verified `--resume`, disk preflight, `--plan-only`, content-free `[TOKENIZE]`
+>     progress.
+> - New index schema `c07-offsets-v2`.
+>   - Same records without `token_byte_spans`, which are re-derived exactly from a SHA-bound
+>     `token_bytes.u16`. The stream and ordered reader do this; v1 shards are unchanged.
+>   - `offsets.jsonl` goes from about 89 GB to about 4.1 GB.
+>   - With `--index-schema c07-offsets-v1`, the output is byte-identical to the reference.
+> - `freeze` and `verify-freeze` are streamed fast paths, byte-identical to
+>   `freeze-reference` / `verify-freeze-reference`. `verify-training-freeze` is a new command.
+> - Real data (16 workers): 18.65 MiB/s of text (reference writer 1.57); the HF tokenizer
+>   ceiling is 21.4 MiB/s.
+>   - Projection: tokenize about 24–26 min, freeze about 3 min, about 15 GiB output.
+>   - The ≤ 15 min tokenize target is not reachable with HF on this CPU.
+> - Blocking findings:
+>   - A v1 index line for the largest real document is 9.1 MB, over the 8 MiB training
+>     ceiling; v2 fixes this.
+>   - The 2 GiB frozen-input bounds in `input_limits.py` still block Mix-01 training
+>     resolution under either schema. Not changed here.
+>
+> Tests: 28 new passed. The related selection had 849 passed and 2 failed: one test updated
+> (it now passes), and the known kill-timing test passes serially. The serial
+> `test_configurable_workflow` failures are pre-existing (the base exceeds its `< 400`
+> source-file bound). ruff and mypy --strict are clean.
+> [Report](reports/TOKENIZE-FREEZE-OPUS.md).
+>
+> Next (operator, X: detached, key env set): from `F:\Project\xlm-tokenize-freeze-opus`, run the
+> runbook section "C07 tokenize-selection and freeze on the policy-v2 chain", steps 1–18.
+>
 > **COUNT-TOKENS POLICY-V2 (2026-10-06): FAST COUNTER VERIFIED ON `c05_membership_v3` (AUTHORED); C06 FIT/KEPT-INDEX BINDING, PINS AND `verify-counts` ADDED; PRODUCTION COUNT NOT RUN.**
 >
 > - The fast counter from `aa38904` is already in `488273e` (it is an ancestor), so

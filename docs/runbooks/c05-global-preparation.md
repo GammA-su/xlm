@@ -1249,3 +1249,79 @@ fit and final component selection. The current train-split check is insufficient
 Then generate a concrete plan and resource envelope for operator review, with a
 new execution digest and exact authorization/run/post-run commands. Until then,
 do not run C05 globally or use first-pass data for tokenizer/model training.
+
+## C07 tokenize-selection and freeze on the policy-v2 chain (fast path, `perf/tokenize-freeze-opus`)
+
+Prerequisites:
+
+- run from `F:\Project\xlm-tokenize-freeze-opus`;
+- X: detached;
+- `$env:XLM_C05_OPERATOR_KEY` set (never printed);
+- the real roots below must not exist before step 8.
+
+`tokenize-selection` is the parallel fast path. It writes index schema `c07-offsets-v2` by
+default; `--index-schema c07-offsets-v1` is byte-identical to `tokenize-selection-reference`.
+`freeze` and `verify-freeze` are byte-identical to `freeze-reference` and
+`verify-freeze-reference`. See [the report](../implementation/reports/TOKENIZE-FREEZE-OPUS.md).
+
+Roots:
+
+- shards `G:/XLM/shards/mix01-policy-v2`;
+- freeze `G:/XLM/freeze/mix01-policy-v2`;
+- scratch `C:/XLM-scratch/tokenize-selection-policy-v2`.
+
+Expected: 5,824,661 documents, 6,005,824,661 token IDs, 6,000,000,000 valid targets, about
+15 GiB of shards, about 24–26 min tokenize, about 3 min freeze.
+
+```powershell
+# 1 worktree/commit
+git -C F:\Project\xlm-tokenize-freeze-opus rev-parse HEAD; git -C F:\Project\xlm-tokenize-freeze-opus branch --show-current; git -C F:\Project\xlm-tokenize-freeze-opus status --short
+# 2 focused tests
+$env:OMP_NUM_THREADS=1; $env:MKL_NUM_THREADS=1; $env:OPENBLAS_NUM_THREADS=1; $env:NUMEXPR_NUM_THREADS=1; $env:TOKENIZERS_PARALLELISM='false'; uv run --offline --locked --extra cpu --extra eval python -m pytest tests/test_tokenize_freeze_fast.py tests/test_c05_selection.py -n 8 --dist=worksteal --max-worker-restart=0 -q; "exit=$LASTEXITCODE"
+# 3 verify selection (signature, binding, streamed SHA, join to C05 kept-train membership, per-allocation totals); reads no corpus
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator tokenize-selection --c05-proof G:/XLM/c05-policy-v2/policy-v2-p0001.proof.json --tokenizer G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2/tokenizer --selection G:/XLM/selection/mix01-policy-v2 --output-root G:/XLM/shards/mix01-policy-v2 --scratch C:/XLM-scratch/tokenize-selection-policy-v2 --workers 16 --plan-only --expect-c05-plan-digest c15b54542238b0a4d6cce371c81ce0fe71caed5ed7c6bc23f937e4e85bbb8c59 --expect-c05-completion-digest df9834ab459bf00fac7ee4ffe69503432fc8e95b9af15009dcca7897a81c0a27 --expect-selection-digest 17b1cfce2ce643ecb72d53f367f95ade00f1a842d23a242c6f3a234c74c34662 --expect-selected-membership-sha256 a4539473bdfcbcf0d52efc621dcfb8efa3fff1cbba8e0e7cc943cf31cad54be9 --expect-tokenizer-fingerprint 50bf9d45f6f6fa88062483d0e83f3be419e610dee6b75d37809252504bac5b54 --progress-interval 5; "exit=$LASTEXITCODE"
+# 4 selection totals and digest (display only; step 3 is the verification)
+$s = Get-Content G:/XLM/selection/mix01-policy-v2/selection.json -Raw | ConvertFrom-Json; $s.digest; $s.payload.selected_documents; $s.payload.selected_valid_targets; $s.payload.selected_membership_sha256; $s.payload.selected_membership_bytes; (Get-FileHash G:/XLM/selection/mix01-policy-v2/selected.jsonl -Algorithm SHA256).Hash.ToLower()
+# 5 X detached
+if (Test-Path X:\) { 'X: ATTACHED - detach before continuing' } else { 'X: detached' }
+# 6 size/resource preflight: step 3 prints output_bytes_required, tokens_bin_bytes (12011649322), token_ids (6005824661) and free bytes; volumes:
+Get-PSDrive G,C | Select-Object Name,@{n='FreeGiB';e={[math]::Round($_.Free/1GB,1)}}
+# 7 real roots fresh
+foreach ($p in 'G:/XLM/shards/mix01-policy-v2','G:/XLM/freeze/mix01-policy-v2') { if (Test-Path $p) { "EXISTS (stop): $p" } else { "fresh: $p" } }
+# 8 tokenize-selection
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator tokenize-selection --c05-proof G:/XLM/c05-policy-v2/policy-v2-p0001.proof.json --tokenizer G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2/tokenizer --selection G:/XLM/selection/mix01-policy-v2 --output-root G:/XLM/shards/mix01-policy-v2 --scratch C:/XLM-scratch/tokenize-selection-policy-v2 --workers 16 --expect-c05-plan-digest c15b54542238b0a4d6cce371c81ce0fe71caed5ed7c6bc23f937e4e85bbb8c59 --expect-c05-completion-digest df9834ab459bf00fac7ee4ffe69503432fc8e95b9af15009dcca7897a81c0a27 --expect-selection-digest 17b1cfce2ce643ecb72d53f367f95ade00f1a842d23a242c6f3a234c74c34662 --expect-selected-membership-sha256 a4539473bdfcbcf0d52efc621dcfb8efa3fff1cbba8e0e7cc943cf31cad54be9 --expect-tokenizer-fingerprint 50bf9d45f6f6fa88062483d0e83f3be419e610dee6b75d37809252504bac5b54 --progress-interval 5; "exit=$LASTEXITCODE"
+# 9 resume after an interruption (verifies and skips complete components; regenerates the rest)
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator tokenize-selection --c05-proof G:/XLM/c05-policy-v2/policy-v2-p0001.proof.json --tokenizer G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2/tokenizer --selection G:/XLM/selection/mix01-policy-v2 --output-root G:/XLM/shards/mix01-policy-v2 --scratch C:/XLM-scratch/tokenize-selection-policy-v2 --workers 16 --resume --expect-c05-plan-digest c15b54542238b0a4d6cce371c81ce0fe71caed5ed7c6bc23f937e4e85bbb8c59 --expect-c05-completion-digest df9834ab459bf00fac7ee4ffe69503432fc8e95b9af15009dcca7897a81c0a27 --expect-selection-digest 17b1cfce2ce643ecb72d53f367f95ade00f1a842d23a242c6f3a234c74c34662 --expect-selected-membership-sha256 a4539473bdfcbcf0d52efc621dcfb8efa3fff1cbba8e0e7cc943cf31cad54be9 --expect-tokenizer-fingerprint 50bf9d45f6f6fa88062483d0e83f3be419e610dee6b75d37809252504bac5b54 --progress-interval 5; "exit=$LASTEXITCODE"
+# 10 verify every shard completely (read-only; every component must report resume_skip true)
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator tokenize-selection --c05-proof G:/XLM/c05-policy-v2/policy-v2-p0001.proof.json --tokenizer G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2/tokenizer --selection G:/XLM/selection/mix01-policy-v2 --output-root G:/XLM/shards/mix01-policy-v2 --scratch C:/XLM-scratch/tokenize-selection-policy-v2 --workers 16 --resume --plan-only --no-progress; "exit=$LASTEXITCODE"
+# 11 documents (expect 5824661)
+(Get-ChildItem G:/XLM/shards/mix01-policy-v2 -Directory | ForEach-Object { Get-Content (Join-Path $_.FullName shard_counters.json) -Raw | ConvertFrom-Json } | Measure-Object num_documents -Sum).Sum
+# 12 token IDs (expect 6005824661)
+(Get-ChildItem G:/XLM/shards/mix01-policy-v2 -Directory | ForEach-Object { Get-Content (Join-Path $_.FullName shard_counters.json) -Raw | ConvertFrom-Json } | Measure-Object num_tokens -Sum).Sum
+# 13 valid targets (expect 6000000000)
+(Get-ChildItem G:/XLM/shards/mix01-policy-v2 -Directory | ForEach-Object { Get-Content (Join-Path $_.FullName shard_counters.json) -Raw | ConvertFrom-Json } | Measure-Object valid_targets -Sum).Sum
+# 14 per-component counters
+Get-ChildItem G:/XLM/shards/mix01-policy-v2 -Directory | ForEach-Object { Get-Content (Join-Path $_.FullName shard_counters.json) -Raw | ConvertFrom-Json } | Format-Table source_id,num_documents,num_tokens,valid_targets,canonical_bytes,covered_bytes,index_schema -AutoSize
+# 15 freeze
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator freeze --c05-proof G:/XLM/c05-policy-v2/policy-v2-p0001.proof.json --tokenizer G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2/tokenizer --selection G:/XLM/selection/mix01-policy-v2 --shards G:/XLM/shards/mix01-policy-v2 --output G:/XLM/freeze/mix01-policy-v2 --issuer GammA --key-env XLM_C05_OPERATOR_KEY --workers 16 --progress-interval 5; "exit=$LASTEXITCODE"
+# 16 verify freeze (streamed; verify-freeze-reference is the SQLite oracle, about 10 min)
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator verify-freeze --c05-proof G:/XLM/c05-policy-v2/policy-v2-p0001.proof.json --freeze G:/XLM/freeze/mix01-policy-v2/freeze.json --workers 16; "exit=$LASTEXITCODE"
+# 17 training-data.json, then the protected training binding check (reference verifier)
+$t = Get-Content G:/XLM/freeze/mix01-policy-v2/training-data.json -Raw | ConvertFrom-Json; $t.mixture.mixture_id; $t.sources; $t.c05_proof; $t.c05_freeze; $t.exposure_plan.plan_id; $t.exposure_plan.budget_targets; uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator verify-training-freeze --training-data G:/XLM/freeze/mix01-policy-v2/training-data.json --production; "exit=$LASTEXITCODE"
+# 18 freeze digest and bindings
+$f = Get-Content G:/XLM/freeze/mix01-policy-v2/freeze.json -Raw | ConvertFrom-Json; $f.digest; $f.payload.mode; $f.payload.plan_digest; $f.payload.completion_digest; $f.payload.selection_digest; $f.payload.selected_membership_sha256; $f.payload.counts_digest; $f.payload.tokenizer.fingerprint; $f.payload.valid_targets
+```
+
+Expected bindings in step 18:
+
+- `mode` protected;
+- plan `c15b5454…`;
+- completion `df9834ab…`;
+- selection `17b1cfce…`;
+- membership `a4539473…`;
+- counts `e0348ee8…`;
+- tokenizer `50bf9d45…`;
+- `valid_targets` 6000000000.
+
+Mix-01 *training* resolution additionally needs the reviewed raise of the 2 GiB frozen-input
+bounds in `src/xlm/data/input_limits.py` (report section 9).

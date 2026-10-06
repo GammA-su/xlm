@@ -14,6 +14,8 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+import numpy as np
+import numpy.typing as npt
 from filelock import FileLock
 
 from xlm.core.contracts import CanonicalDocument, TokenShardManifest
@@ -22,6 +24,52 @@ from xlm.tokenizers.base import BaseTokenizer
 
 if TYPE_CHECKING:
     from xlm.data.exclusion.selection import SelectionGate
+
+#: C07 document-index schemas. v1 (implicit: counters without ``index_schema``) stores
+#: every token's canonical byte span in ``offsets.jsonl``. v2 stores the identical
+#: records without ``token_byte_spans``; the spans are an exact function of the token
+#: IDs and the per-ID canonical byte lengths in ``TOKEN_BYTES_FILE`` (bound by SHA-256
+#: in the counters, hence in the C05 attestation) and are re-derived on read.
+INDEX_SCHEMA_V1 = "c07-offsets-v1"
+INDEX_SCHEMA_V2 = "c07-offsets-v2"
+INDEX_SCHEMAS = (INDEX_SCHEMA_V1, INDEX_SCHEMA_V2)
+#: Little-endian uint16 canonical UTF-8 byte length of every token ID, in ID order.
+TOKEN_BYTES_FILE = "token_bytes.u16"
+#: A v2 table covers at most a uint16 vocabulary plus headroom for uint32 shards.
+MAX_TOKEN_BYTES_TABLE = 2 * 1024**2
+
+
+def token_byte_lengths(tokenizer: BaseTokenizer) -> bytes:
+    """The v2 table: ``len(token_to_bytes(id_to_token(id)))`` for every ID, as ``<u2``.
+
+    Exactly the per-token byte length :meth:`ByteLevelBPETokenizer.encode_with_offsets`
+    accumulates into its spans (special tokens have length 0).
+    """
+    to_bytes = getattr(tokenizer, "token_to_bytes", None)
+    if to_bytes is None:
+        raise ValueError("index schema v2 requires a byte-level tokenizer")
+    lengths = [len(to_bytes(tokenizer.id_to_token(i))) for i in range(tokenizer.actual_vocab_size)]
+    if max(lengths, default=0) > 65535:
+        raise ValueError("token byte length exceeds the uint16 table")
+    table = struct.pack(f"<{len(lengths)}H", *lengths)
+    if len(table) > MAX_TOKEN_BYTES_TABLE:
+        raise ValueError("token byte table exceeds its bound")
+    return table
+
+
+def derived_byte_spans(token_ids: Any, lengths: npt.NDArray[np.int64]) -> list[list[int]]:
+    """Half-open canonical byte spans of one document's tokens (v1 ``token_byte_spans``).
+
+    Spans are contiguous from 0; BOS/EOS have length 0, so they become ``[0, 0]`` and
+    ``[n, n]``. The result has the exact shape and types ``json.loads`` gives a v1 line.
+    """
+    ids = np.asarray(token_ids, dtype=np.int64)
+    if ids.size and (int(ids.min()) < 0 or int(ids.max()) >= len(lengths)):
+        raise ValueError("token ID outside the shard's token byte table")
+    sizes = lengths[ids]
+    ends = np.cumsum(sizes)
+    spans: list[list[int]] = np.column_stack((ends - sizes, ends)).tolist()
+    return spans
 
 
 @dataclass(frozen=True)
@@ -351,6 +399,63 @@ class TokenShardReader:
         self.manifest = TokenShardManifest(**data)
         self.pack_char = "<H" if self.manifest.token_dtype == "uint16" else "<I"
         self.token_bytes_size = 2 if self.manifest.token_dtype == "uint16" else 4
+        self._schema: str | None = None
+        self._byte_lengths: npt.NDArray[np.int64] | None = None
+
+    @property
+    def index_schema(self) -> str:
+        """``c07-offsets-v1`` unless the counters declare a later index schema."""
+        if self._schema is None:
+            schema = self.counters.get("index_schema", INDEX_SCHEMA_V1)
+            if schema not in INDEX_SCHEMAS:
+                raise ValueError(f"unknown C07 index schema in shard '{self.manifest.shard_id}'")
+            self._schema = str(schema)
+        return self._schema
+
+    def token_byte_table(self) -> npt.NDArray[np.int64]:
+        """The v2 per-ID canonical byte lengths, verified against the counters' SHA-256."""
+        if self.index_schema != INDEX_SCHEMA_V2:
+            raise ValueError("only a v2 shard carries a token byte table")
+        if self._byte_lengths is None:
+            path = self.directory / TOKEN_BYTES_FILE
+            if not path.is_file() or path.stat().st_size > MAX_TOKEN_BYTES_TABLE:
+                raise FileNotFoundError("Missing or oversized shard token byte table")
+            raw = path.read_bytes()
+            if (
+                not raw
+                or len(raw) % 2
+                or hashlib.sha256(raw).hexdigest() != self.counters.get("token_bytes_sha256")
+            ):
+                raise ValueError(f"Token byte table mismatch for shard '{self.manifest.shard_id}'")
+            self._byte_lengths = np.frombuffer(raw, dtype="<u2").astype(np.int64)
+        return self._byte_lengths
+
+    def with_byte_spans(
+        self, record: dict[str, Any], physical_start: int | None = None
+    ) -> dict[str, Any]:
+        """Return ``record`` with its v1 ``token_byte_spans``, re-derived for a v2 shard.
+
+        v1 records (and records already carrying spans) are returned unchanged.
+        ``physical_start`` is the record's ``tokens.bin`` start when a caller has
+        rebased ``token_start`` (ordered views).
+        """
+        if "token_byte_spans" in record or self.index_schema == INDEX_SCHEMA_V1:
+            return record
+        start = int(record["token_start"]) if physical_start is None else int(physical_start)
+        count = int(record["token_count"])
+        if start < 0 or count < 0 or start + count > self.manifest.num_tokens:
+            raise ValueError("document index entry lies outside tokens.bin")
+        code = "<u2" if self.manifest.token_dtype == "uint16" else "<u4"
+        ids = np.fromfile(
+            self.directory / "tokens.bin",
+            dtype=code,
+            count=count,
+            offset=start * self.token_bytes_size,
+        )
+        if len(ids) != count:
+            raise ValueError("tokens.bin is shorter than its document index")
+        record["token_byte_spans"] = derived_byte_spans(ids, self.token_byte_table())
+        return record
 
     def verify_integrity(self) -> None:
         """Verify binary and index files against manifest checksums."""
@@ -359,6 +464,9 @@ class TokenShardReader:
 
         if not bin_path.is_file() or not idx_path.is_file():
             raise FileNotFoundError("Missing shard tokens.bin or offsets.jsonl")
+        if self.index_schema == INDEX_SCHEMA_V2:
+            self._byte_lengths = None  # Re-read and re-verify, never a cached table.
+            self.token_byte_table()
 
         with bin_path.open("rb") as stream:
             actual_bin_hash = hashlib.file_digest(stream, "sha256").hexdigest()

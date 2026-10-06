@@ -146,6 +146,8 @@ class OrderedSourceIndex:
         record: dict[str, Any] = json.loads(raw)
         if int(record["token_start"]) != self._physical_starts[ordinal]:
             raise OrderManifestError("document index changed while in use")
+        # C07 v2: document-local spans re-derived from the physical token span.
+        record = self.reader.with_byte_spans(record)
         record["physical_token_start"] = record["token_start"]
         record["token_start"] = self._virtual_starts[k]
         self._records[k] = record
