@@ -1,0 +1,20 @@
+C05 policy v2 - focused regression evidence (authored fixtures only), 2026-10-06
+Environment: Windows 11, 5700X3D, Python 3.12.13 (uv, offline, locked), OMP/MKL/OPENBLAS/NUMEXPR=1, TOKENIZERS_PARALLELISM=false.
+
+1. Load comparison, identical command, nothing else running, -n 16 --dist=worksteal:
+   files: tests/test_c05_forensics_fast.py tests/test_c06_fast.py tests/test_c06_fast_hardening.py
+          tests/test_c05_cleaned_rerun.py tests/test_select_fast.py
+   base f8832100 (temporary detached worktree): 242 passed in 189.50s, exit 0
+   v2 branch:                                  242 passed in 192.80s, exit 0
+   (Earlier -n 16 runs with failures/errors had concurrent mypy, benchmark and pytest jobs on
+   the same machine: the authored flow fixture's resume-check refuses under that contention.)
+
+2. Final related selection on the final v2 code, -n 16, nothing else running:
+   tests/test_c05_*.py tests/test_c06_fast.py tests/test_c06_fast_hardening.py tests/test_c06_tokenizer_fit.py
+   tests/test_count_tokens_fast.py tests/test_count_tokens_lifecycle.py tests/test_minhash_fast_kernel.py
+   tests/test_select_fast.py  -m "not serial_exclusive and not performance and not network and not cuda"
+   result: 816 passed, 1 failed in 265.30s, exit 1
+   failed: tests/test_c06_fast_hardening.py::test_a1_stubborn_descendants_are_killed_and_reaped
+           (known load-sensitive process-kill timing test; -n 0: passed on v2 and passed on base)
+
+3. Not run: serial_exclusive-marked tests, the full offline acceptance suite, any production or X: command.

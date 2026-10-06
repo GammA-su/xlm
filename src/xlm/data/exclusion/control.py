@@ -34,7 +34,13 @@ from xlm.data.exclusion.artifacts import (
 from xlm.data.exclusion.capacity import probe_geometry
 from xlm.data.exclusion.identity import implementation_identity
 from xlm.data.exclusion.inputs import read_metadata, verify_input_manifest
-from xlm.data.exclusion.policy import C05Error, FrozenModel, ProductionPolicy, Resources
+from xlm.data.exclusion.policy import (
+    C05Error,
+    FrozenModel,
+    ProductionPolicy,
+    Resources,
+    production_policy,
+)
 from xlm.data.exclusion.preparation import benchmark_requirements
 from xlm.data.exclusion.runner import resume_check, run, verify_completion
 
@@ -78,7 +84,7 @@ def decision_value(purpose: str, value: dict[str, Any]) -> dict[str, Any]:
         if set(value) != set(Resources.model_fields):
             raise C05Error("reviewed resources must explicitly specify every ceiling")
         return Resources.model_validate(value).model_dump(mode="json")
-    policy = ProductionPolicy.model_validate(value)
+    policy = production_policy(value)
     policy.identity()
     return policy.model_dump(mode="json")
 
@@ -141,7 +147,7 @@ def create_plan(args: argparse.Namespace, trust: dict[str, bytes]) -> ExecutionP
             ("policy", args.policy),
         )
     }
-    policy = ProductionPolicy.model_validate(decisions["policy"].value)
+    policy = production_policy(decisions["policy"].value)
     chosen = decisions["lineage-policy"].value["choice"]
     expected = "known_groups_only" if chosen == "KNOWN_GROUP_ONLY" else "require_book_ids"
     if policy.gutenberg != expected:
@@ -1067,7 +1073,7 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         trust = trust_from_file(args.trust)
         if args.command == "benchmark-receipt":
-            policy = ProductionPolicy.model_validate(read_metadata(args.policy, digested=False))
+            policy = production_policy(read_metadata(args.policy, digested=False))
             receipt = verify_benchmark(
                 load_envelope(args.receipt),
                 trust,

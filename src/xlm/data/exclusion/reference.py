@@ -32,7 +32,7 @@ from xlm.data.exclusion.compact import (
 from xlm.data.exclusion.disk import DiskGroups
 from xlm.data.exclusion.inputs import contained, read_metadata
 from xlm.data.exclusion.isolation import VolumeInspector
-from xlm.data.exclusion.policy import C05Error, require_engine_acceptance
+from xlm.data.exclusion.policy import C05Error, require_engine_acceptance, scoped
 from xlm.data.exclusion.reference_capacity import (
     COMPLETION_BYTES,
     STATE_BYTES,
@@ -225,6 +225,8 @@ def run(
     """
     identity = plan.identity()
     require_engine_acceptance(plan.mode)
+    if scoped(plan.policy):
+        raise C05Error("the reference engine implements c05-production-v2 only")
     auth = verify_signed(authorization, trusted)
     if (auth.get("kind"), auth.get("plan_digest"), auth.get("mode")) != (
         "c05_authorization_v2",

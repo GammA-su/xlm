@@ -24,6 +24,198 @@ proof (and anything fitted from them) become historical. Cleaning can create new
 duplicates, so it needs a NEW input manifest and a NEW global C05 run. Do not modify
 or delete p0002.
 
+## Contamination policy v2 (`c05-production-v3`, 2026-10-06): operator sequence
+
+C05 over the SAME cleaned corpus (`G:/XLM-clean-v1`, manifest `eda4f994…`, admission
+`84e401ba…`) with corrected contamination semantics. Design, evidence and refusals:
+[report](../implementation/reports/C05-CONTAMINATION-POLICY-V2.md).
+
+* Matcher: the protected index is generated UNCHANGED (c05-matcher-v4,
+  `c053e711…`). `c05-trigger-floors-v1` decides which of its patterns exclude:
+  * prompt and item fallback need 8 tokens / 40 characters / 5 distinct;
+  * sentence (3/12/3), answer (8/40/5) and combined (8/40/5) are unchanged;
+  * production review: 821 benchmark items have no active pattern.
+* Exclusion family (`query-seed-derivation-family-v1`): duplicates, existing
+  parents and every known-lineage-v3 key except keys only a SYNTH
+  `additional_seed_url` contributes.
+* Split family (`known-lineage-v3`, unchanged): only split families without an
+  excluded member may be diagnostic/audit.
+* Membership/decision rows carry `split_group` and `exclusion_group`
+  (`c05_membership_v3`); the completion kind is `c05_completion_v3`.
+
+Fresh roots (never reuse or overwrite the clean-v1 roots, which stay historical):
+
+| role | path |
+|---|---|
+| plan root (values, decisions, admission copy, receipt export, plan, proof) | `G:/XLM/c05-policy-v2/` |
+| C05 output | `G:/C05-output-policy-v2/` |
+| C05 scratch (protected volume) | `X:/C05-Scratch-policy-v2/` |
+| protected preparation (write-once) | `X:/C05-Protected/prepared-policy-v2/` |
+| recall-gate scratch (protected volume, empty) | `X:/C05-Scratch-policy-v2-recall/` |
+| proof lookup scratch | `C:/XLM-scratch/c05-policy-v2-lookup/` |
+
+Every command below is one line, run in order from `F:\Project\xlm-c05-policy-v2` at the
+final commit with a clean tree. `GammA` / `XLM_C05_OPERATOR_KEY` are your trusted issuer
+and key environment variable. `<plan_digest>` is the digest printed by `plan`.
+
+**A. Verify the code (X: detached, no key)**
+
+```powershell
+Set-Location F:\Project\xlm-c05-policy-v2
+git status --short
+git rev-parse HEAD
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m pytest tests/test_c05_policy_v2.py tests/test_c05_policy_v2_flow.py -n 0 -q -p no:cacheprovider --basetemp=C:/t/policy-v2-verify
+```
+
+`git status --short` must print nothing (code identity hashes `src/`).
+
+**B. Fresh plan root and reviewed values (no key)**
+
+```powershell
+New-Item -ItemType Directory G:/XLM/c05-policy-v2 | Out-Null
+Copy-Item G:/XLM/c05-clean-v1/trust.json G:/XLM/c05-policy-v2/trust.json
+Copy-Item G:/XLM/c05-clean-v1/admission.json G:/XLM/c05-policy-v2/admission.json
+Copy-Item G:/XLM/c05-clean-v1/lineage-policy-value.json G:/XLM/c05-policy-v2/lineage-policy-value.json
+Copy-Item G:/XLM/c05-clean-v1/resources-value.json G:/XLM/c05-policy-v2/resources-value.json
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m scripts.c05_policy_v2_value --base G:/XLM/c05-clean-v1/policy-value.json --reviewed-items-without-active-trigger 821 --output G:/XLM/c05-policy-v2/policy-value.json --matcher-output G:/XLM/c05-policy-v2/matcher-policy.json
+```
+
+The last command must print:
+
+* `policy_digest` `572c0a1eea8a31358ee43573cb89c69825b998bf4d4bb6786cc726e50285f0bb`;
+* `trigger_policy_digest` `946cec19cacbc890d97eb2d5ea42471fd00fb41d27afcdbefd21916184b3c7cc`;
+* `generation_matcher_digest` `c053e711496c1974e6593b3628c9ce9e73fd8243863592c0523a92ffbd111df7`.
+
+The admission is re-derived from its own evidence at plan time. Downstream requires the
+copy beside the plan.
+
+**C. Fresh signed decisions (key)**
+
+```powershell
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator lineage-policy record --value G:/XLM/c05-policy-v2/lineage-policy-value.json --input-manifest-digest eda4f99499c87b2a404ee544547d26dca2be05a9012d417914a95d36167e1389 --evidence-digest 84e401ba95bd641351193e55e4821d890daea08d1d6a315c53821d5b25627533 --operator $env:USERNAME --output G:/XLM/c05-policy-v2/lineage-policy.json --trust G:/XLM/c05-policy-v2/trust.json --issuer GammA --key-env XLM_C05_OPERATOR_KEY
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator resources record --value G:/XLM/c05-policy-v2/resources-value.json --input-manifest-digest eda4f99499c87b2a404ee544547d26dca2be05a9012d417914a95d36167e1389 --evidence-digest 84e401ba95bd641351193e55e4821d890daea08d1d6a315c53821d5b25627533 --operator $env:USERNAME --output G:/XLM/c05-policy-v2/resources.json --trust G:/XLM/c05-policy-v2/trust.json --issuer GammA --key-env XLM_C05_OPERATOR_KEY
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator policy freeze --value G:/XLM/c05-policy-v2/policy-value.json --input-manifest-digest eda4f99499c87b2a404ee544547d26dca2be05a9012d417914a95d36167e1389 --evidence-digest 84e401ba95bd641351193e55e4821d890daea08d1d6a315c53821d5b25627533 --operator $env:USERNAME --output G:/XLM/c05-policy-v2/policy.json --trust G:/XLM/c05-policy-v2/trust.json --issuer GammA --key-env XLM_C05_OPERATOR_KEY
+```
+
+**D. Attach X:** with your usual method, then confirm:
+
+```powershell
+Test-Path X:/C05-Protected/material
+```
+
+**E. Protected preparation rebuild (X: attached, key)**
+
+The code identity changed, so `plan` refuses the clean-v1 receipt. The generation
+policy is unchanged, so the rebuilt index must be byte-identical to clean-v1's.
+
+```powershell
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator protected-root describe --root X:/C05-Protected --operator $env:USERNAME --attestation-sha256 577d0e71bf20cbdbeaa9b332c5d814c610c53420096557dbc16da77693d68df0 --repository F:/Project/xlm-c05-policy-v2 --data-root G:/XLM-clean-v1 --c05-scratch X:/C05-Scratch-policy-v2 --c05-output G:/C05-output-policy-v2 | Set-Content -Encoding ascii G:/XLM/c05-policy-v2/protected-root-describe.json
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m scripts.c05_material_spec_isolation --spec X:/C05-Protected/material-spec-clean-v1.json --describe G:/XLM/c05-policy-v2/protected-root-describe.json --output X:/C05-Protected/material-spec-policy-v2.json
+$id = uv run --offline --locked --no-sync --extra cpu --extra eval python -c "import json; from xlm.data.exclusion.identity import implementation_identity as i; print(json.dumps(i()))" | ConvertFrom-Json
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator build-local --spec X:/C05-Protected/material-spec-policy-v2.json --material-root X:/C05-Protected/material --output X:/C05-Protected/prepared-policy-v2 --policy G:/XLM/c05-policy-v2/matcher-policy.json --resources G:/XLM/c05-policy-v2/resources-value.json --issuer GammA --key-env XLM_C05_OPERATOR_KEY --code-commit $($id.code_commit) --code-identity $($id.code_identity) --dependency-sha256 $($id.dependency_sha256) --receipt-export G:/XLM/c05-policy-v2/benchmark-preparation.receipt.json --progress-interval 5
+(Get-Content -Raw G:/XLM/c05-policy-v2/benchmark-preparation.receipt.json | ConvertFrom-Json).payload.index_sha256
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator benchmark-receipt verify --receipt G:/XLM/c05-policy-v2/benchmark-preparation.receipt.json --policy G:/XLM/c05-policy-v2/policy-value.json --trust G:/XLM/c05-policy-v2/trust.json
+```
+
+* Attestation: `577d0e71…` is the clean-v1 attestation. Use a new one if your
+  attestation changed.
+* The `index_sha256` line must print
+  `5c9f777d75ba07eadc0888bf9a2bc7567e30fd643ae73a255ae5a3cc87a57696` (the clean-v1
+  index). If it differs, STOP: the generation changed.
+
+**F. Benchmark-recall acceptance gate (X: attached, no key; BLOCKING)**
+
+```powershell
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator trigger-recall-local --receipt G:/XLM/c05-policy-v2/benchmark-preparation.receipt.json --policy G:/XLM/c05-policy-v2/policy-value.json --index X:/C05-Protected/prepared-policy-v2/index.jsonl --material-root X:/C05-Protected/material --scratch X:/C05-Scratch-policy-v2-recall --expect-items-without-active-trigger 821 --expect-whole-item-detected 152361 --expect-blimp-single-sentence-detected 66472 | Set-Content -Encoding ascii G:/XLM/c05-policy-v2/trigger-recall.json
+$LASTEXITCODE
+```
+
+* Exit 0 is required.
+* Exit 2 means an unexpected recall regression. STOP; the mismatches are in
+  `expectation_mismatches`.
+* The gate compiles exactly the C05 run's filtered matcher. The values are the
+  production audit's:
+  * whole items 152,361 / 153,182;
+  * BLiMP single sentence 66,472 / 67,000;
+  * 821 uncovered items.
+
+**G. Plan, verify, authorize (X: attached)**
+
+```powershell
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator plan --mode protected --manifest G:/XLM/quality/clean-production-v1/cleaned-input-manifest.json --admission G:/XLM/c05-policy-v2/admission.json --benchmark-receipt G:/XLM/c05-policy-v2/benchmark-preparation.receipt.json --index X:/C05-Protected/prepared-policy-v2/index.jsonl --lineage-policy G:/XLM/c05-policy-v2/lineage-policy.json --resources G:/XLM/c05-policy-v2/resources.json --policy G:/XLM/c05-policy-v2/policy.json --plan-root G:/XLM/c05-policy-v2 --scratch X:/C05-Scratch-policy-v2 --output G:/C05-output-policy-v2 --trust G:/XLM/c05-policy-v2/trust.json
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator status --plan G:/XLM/c05-policy-v2/p0001.json --trust G:/XLM/c05-policy-v2/trust.json
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator authorize --plan G:/XLM/c05-policy-v2/p0001.json --plan-digest <plan_digest> --output G:/XLM/c05-policy-v2/p0001.authorization.json --trust G:/XLM/c05-policy-v2/trust.json --issuer GammA --key-env XLM_C05_OPERATOR_KEY
+```
+
+Review the plan before authorizing:
+
+* `policy.version` `c05-production-v3`;
+* `output_contract` `c05_membership_v3`;
+* `resources.workers` 16.
+
+**H. Run with the 16-worker compact engine; resume if interrupted; verify (X: attached)**
+
+```powershell
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator run --plan G:/XLM/c05-policy-v2/p0001.json --authorization G:/XLM/c05-policy-v2/p0001.authorization.json --benchmark-receipt G:/XLM/c05-policy-v2/benchmark-preparation.receipt.json --index X:/C05-Protected/prepared-policy-v2/index.jsonl --trust G:/XLM/c05-policy-v2/trust.json --issuer GammA --key-env XLM_C05_OPERATOR_KEY --progress-interval 5
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator resume-check --plan G:/XLM/c05-policy-v2/p0001.json --authorization G:/XLM/c05-policy-v2/p0001.authorization.json --benchmark-receipt G:/XLM/c05-policy-v2/benchmark-preparation.receipt.json --index X:/C05-Protected/prepared-policy-v2/index.jsonl --trust G:/XLM/c05-policy-v2/trust.json
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator resume --plan G:/XLM/c05-policy-v2/p0001.json --authorization G:/XLM/c05-policy-v2/p0001.authorization.json --benchmark-receipt G:/XLM/c05-policy-v2/benchmark-preparation.receipt.json --index X:/C05-Protected/prepared-policy-v2/index.jsonl --trust G:/XLM/c05-policy-v2/trust.json --issuer GammA --key-env XLM_C05_OPERATOR_KEY --progress-interval 5
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator verify --plan G:/XLM/c05-policy-v2/p0001.json --trust G:/XLM/c05-policy-v2/trust.json
+(Get-Content -Raw G:/C05-output-policy-v2/<plan_digest>/completion.json | ConvertFrom-Json).payload | Select-Object kind,documents,kept,excluded,duplicates,output_contract
+```
+
+* Use `resume-check`/`resume` only after an interruption.
+* The trigger coverage is re-checked before any corpus row is read.
+* Expected completion (exactly the audited `prompt8 x query_seed_family` decisions):
+  * `c05_completion_v3`, 15,087,207 documents;
+  * kept 14,927,848, excluded 38,364, duplicates 120,995;
+  * `trigger.items_without_active_trigger` 821.
+* Per-allocation train counts can differ slightly from the audit's projection, because
+  splits use the (broader) split families.
+
+**I. Detach X:** with your usual method.
+
+**J. Fresh proof (X: detached, key)**
+
+```powershell
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator proof --plan G:/XLM/c05-policy-v2/p0001.json --manifest G:/XLM/quality/clean-production-v1/cleaned-input-manifest.json --scratch C:/XLM-scratch/c05-policy-v2-lookup --output G:/XLM/c05-policy-v2/policy-v2-p0001.proof.json --trust G:/XLM/c05-policy-v2/trust.json --signer GammA --signer-key-env XLM_C05_OPERATOR_KEY
+```
+
+Historical artifacts are never valid for policy v2. These remain verifiable and
+historical:
+
+* the clean-v1 plan `046381…`;
+* completion `225b33…`;
+* `clean-v1-p0001.proof.json`;
+* tokenizer `8ef1a2dd…`;
+* `counts/mix01-clean-v1`;
+* `mix01-clean-v1.deficit.json`.
+
+Mixing them with the v2 chain refuses (completion digest binding):
+
+* a tokenizer fitted on clean-v1 is refused for the v2 proof;
+* clean-v1 counts are refused for the v2 proof.
+
+**Downstream after the v2 proof (documented; run only after review, X: detached)**
+
+```text
+fresh C05 policy-v2 -> fresh C06 fit bound to the new completion -> fresh kept index
+-> fast count-tokens -> fast select -> verify exact 6B quotas
+```
+
+```powershell
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator fit-tokenizer --c05-proof G:/XLM/c05-policy-v2/policy-v2-p0001.proof.json --fit-shares recipes/tokenizer/mix01_fit_shares_v1.yaml --quotas recipes/mixtures/mix01_quotas_6b.yaml --ifm-split G:/XLM/calib/requirement_splits/ifm_behaviors_general_planning.json --scratch C:/XLM-scratch/c06-fit-policy-v2 --output G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2 --deficit-report G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2.deficit.json --workers 8 --bpe-threads 16 --deadline-seconds 1200 --rss-ceiling-gib 24 --free-reserve-gib 16 --plan-only
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator fit-tokenizer --c05-proof G:/XLM/c05-policy-v2/policy-v2-p0001.proof.json --fit-shares recipes/tokenizer/mix01_fit_shares_v1.yaml --quotas recipes/mixtures/mix01_quotas_6b.yaml --ifm-split G:/XLM/calib/requirement_splits/ifm_behaviors_general_planning.json --scratch C:/XLM-scratch/c06-fit-policy-v2 --output G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2 --deficit-report G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2.deficit.json --workers 8 --bpe-threads 16 --deadline-seconds 1200 --rss-ceiling-gib 24 --free-reserve-gib 16 --resource-plan-digest <reviewed digest> --issuer GammA --key-env XLM_C05_OPERATOR_KEY
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator verify-kept-index --c05-proof G:/XLM/c05-policy-v2/policy-v2-p0001.proof.json --fit-shares recipes/tokenizer/mix01_fit_shares_v1.yaml --quotas recipes/mixtures/mix01_quotas_6b.yaml --ifm-split G:/XLM/calib/requirement_splits/ifm_behaviors_general_planning.json --index G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2/kept-index --membership --workers 8
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator count-tokens --c05-proof G:/XLM/c05-policy-v2/policy-v2-p0001.proof.json --tokenizer G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2/tokenizer --scratch C:/XLM-scratch/count-tokens-policy-v2 --output G:/XLM/counts/mix01-policy-v2 --issuer GammA --key-env XLM_C05_OPERATOR_KEY --workers 16 --progress-interval 5
+uv run --offline --locked --no-sync --extra cpu --extra eval python -m xlm.data.exclusion.operator select --c05-proof G:/XLM/c05-policy-v2/policy-v2-p0001.proof.json --tokenizer G:/XLM/tokfit/mix01-fit-shares-v1-policy-v2/tokenizer --scratch C:/XLM-scratch/select-policy-v2 --counts G:/XLM/counts/mix01-policy-v2 --quotas recipes/mixtures/mix01_quotas_6b.yaml --ifm-split G:/XLM/calib/requirement_splits/ifm_behaviors_general_planning.json --deficit-report G:/XLM/selection/mix01-policy-v2.deficit.json --output G:/XLM/selection/mix01-policy-v2 --issuer GammA --key-env XLM_C05_OPERATOR_KEY --workers 8 --progress-interval 5
+```
+
+* `select` exit 0 means every frozen 6B quota is met exactly.
+* Exit 2 is a deficit; read the deficit report.
+* The audit's `prompt8 x query_seed_family` projection (old tokenizer) met every quota;
+  it is not a guarantee for the new tokenizer.
+* Cleaning and acquisition are reused unchanged.
+
 ## Cleaned-corpus C05 rerun (`clean-v1`, 2026-10-04): operator sequence
 
 The Phase-C cleaned corpus (`G:/XLM-clean-v1`, 2,035 files, 15,087,207 documents,

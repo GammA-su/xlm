@@ -32,7 +32,7 @@ from typing import Any, Final, Protocol
 
 import psutil
 
-from xlm.data.exclusion.policy import C05Error, ProductionPolicy
+from xlm.data.exclusion.policy import C05Error, production_policy
 from xlm.data.exclusion.scanprep import FileContext, PreparedBatch, Preparer
 
 POLL_SECONDS: Final = 0.2
@@ -55,6 +55,7 @@ class MatcherSpec:
     index_bytes: int
     max_records: int | None
     max_logical_nodes: int | None
+    trigger: str | None = None  # trigger-policy digest of a c05-production-v3 compile
 
 
 @dataclass(frozen=True)
@@ -93,9 +94,10 @@ class ScanRole:
                 index_bytes=spec.index_bytes,
                 max_records=spec.max_records,
                 max_logical_nodes=spec.max_logical_nodes,
+                trigger=spec.trigger,
             )
         self.matcher = matcher
-        self.preparer = Preparer(ProductionPolicy.model_validate(init.policy), matcher, init.review)
+        self.preparer = Preparer(production_policy(init.policy), matcher, init.review)
 
     def __call__(self, job: Task) -> PreparedBatch:
         return self.preparer.batch(job.context, job.sequence, job.first_row, job.lines)

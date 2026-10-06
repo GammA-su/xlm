@@ -279,15 +279,15 @@ def resources() -> Resources:
     )
 
 
-def decide_and_plan(paths: dict[str, Any]) -> Path:
+def decide_and_plan(paths: dict[str, Any], policy: ProductionPolicy | None = None) -> Path:
+    """``policy``: the frozen production policy (default: the authored v2 policy)."""
     root, trust = paths["root"], paths["trust"]
     manifest = canonical.loads_bytes_strict((root / "manifest.json").read_bytes())
+    frozen = policy or ProductionPolicy(diagnostic_bytes=4096, quick_bytes=0, audit_bytes=0)
     values = {
         "lineage-policy": {"choice": "KNOWN_GROUP_ONLY"},
         "resources": resources().model_dump(mode="json"),
-        "policy": ProductionPolicy(diagnostic_bytes=4096, quick_bytes=0, audit_bytes=0).model_dump(
-            mode="json"
-        ),
+        "policy": frozen.model_dump(mode="json"),
     }
     signing = ["--trust", str(trust), "--issuer", ISSUER, "--key-env", KEY_ENV]
     for purpose, value in values.items():

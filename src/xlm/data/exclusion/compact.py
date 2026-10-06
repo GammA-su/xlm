@@ -33,6 +33,15 @@ time only. A match ending at ``e`` has its anchor at ``t <= e``, so after the be
 verified ``(end, -length)`` is known, anchors beyond that end cannot improve it and
 the scan stops: the returned pattern is the historical one.
 
+Trigger filter (c05-production-v3 only). With a :class:`~xlm.data.exclusion.policy.
+TriggerPolicy`, a distinct pattern is compiled only when it is ACTIVE: for at least one
+of its index records (all records with the same tokens), the record's provenance kind
+floor is met. Every index record is still read and hashed. A benchmark item is covered
+when at least one of its records belongs to an active pattern. The manifest's
+``trigger`` section binds the policy identity and the record/pattern/item counts, and a
+verified open refuses any other trigger binding. Without a trigger the manifest has no
+such section (historical artifacts verify unchanged).
+
 ``automaton_nodes`` keeps its historical meaning as the exact logical trie size
 (root plus every distinct non-empty pattern prefix) that ``StreamingMatcher`` would
 allocate. It is derived without a trie: over lexicographically sorted unique
@@ -55,7 +64,7 @@ import numpy as np
 import numpy.typing as npt
 
 from xlm.data.evidence_v2 import canonical
-from xlm.data.exclusion.policy import C05Error
+from xlm.data.exclusion.policy import C05Error, TriggerPolicy
 from xlm.data.exclusion.streaming import index_record
 
 BACKEND: Final = "c05-compact-exact-v1"
@@ -171,8 +180,14 @@ def _encode(
     max_records: int | None,
     check: Callable[[], None],
     report: Report = _no_report,
+    trigger: TriggerPolicy | None = None,
+    marks: dict[str, Any] | None = None,
 ) -> tuple[list[str], U32, I64]:
-    """One streaming pass: provisional ids, then a remap to sorted vocabulary ids."""
+    """One streaming pass: provisional ids, then a remap to sorted vocabulary ids.
+
+    With ``trigger``, ``marks`` receives per record whether its own provenance kind
+    floor is met (``active``) and its benchmark items (``item_owner``/``item_id``).
+    """
     if array("I").itemsize != 4:
         raise C05Error("platform lacks a 4-byte unsigned array type")
     provisional: dict[str, int] = {}
@@ -180,11 +195,24 @@ def _encode(
     lengths = array("I")
     digest = hashlib.sha256()
     size = 0
+    records = 0
+    active: list[bool] = []
+    item_owner: list[int] = []
+    item_id: list[int] = []
+    items: dict[str, int] = {}
     with index.open("rb") as stream:
         while raw := stream.readline(max_record + 1):
             digest.update(raw)
             size += len(raw)
-            tokens = index_record(raw, max_record).tokens
+            records += 1
+            entry = index_record(raw, max_record)
+            tokens = entry.tokens
+            if trigger is not None:
+                refs = [ref.rpartition(":") for ref in entry.provenance]
+                active.append(trigger.active(tokens, [kind for _, _, kind in refs]))
+                for item, _, _ in refs:
+                    item_owner.append(len(lengths))
+                    item_id.append(items.setdefault(item, len(items)))
             if max_records is not None and len(lengths) >= max_records:
                 raise CeilingExceeded("benchmark_patterns", {"index_records_over": max_records})
             if len(lengths) % 256 == 0:
@@ -201,6 +229,13 @@ def _encode(
         raise C05Error("benchmark index changed during matcher compilation")
     if not lengths:
         raise C05Error("benchmark index has no patterns")
+    if marks is not None:
+        marks.update(
+            records=records,
+            active=np.asarray(active, dtype=bool),
+            item_owner=np.asarray(item_owner, dtype=np.int64),
+            item_id=np.asarray(item_id, dtype=np.int64),
+        )
     report("encode", size, index_bytes)
     report("vocabulary remap", 0, None)
     vocabulary = sorted(provisional)  # code point order is UTF-8 byte order
@@ -227,7 +262,9 @@ def _common(first: tuple[int, ...], second: tuple[int, ...]) -> int:
     return shared
 
 
-def _unique_sorted(flat: U32, lengths: I64, check: Callable[[], None]) -> tuple[I64, I64, int]:
+def _unique_sorted(
+    flat: U32, lengths: I64, check: Callable[[], None], groups: list[I64] | None = None
+) -> tuple[I64, I64, int]:
     """Lexicographic order of distinct patterns, their starts and the logical nodes.
 
     Rows are sorted on the first ``SORT_COLUMNS`` ids (zero padding sorts a prefix
@@ -285,6 +322,11 @@ def _unique_sorted(flat: U32, lengths: I64, check: Callable[[], None]) -> tuple[
     keep[1:] = ~duplicate
     unique = order[keep]
     nodes = 1 + int(lengths[unique].sum()) - int(lcp[keep[1:]].sum())
+    if groups is not None:
+        # Unique-pattern number (an index into ``unique``) of every input record.
+        group = np.empty(count, np.int64)
+        group[order] = np.cumsum(keep) - 1
+        groups.append(group)
     return unique, starts, nodes
 
 
@@ -446,6 +488,7 @@ def compile_index(
     max_bucket: int = MAX_ANCHOR_BUCKET,
     hash_mask: int = FULL_MASK,
     report: Report = _no_report,
+    trigger: TriggerPolicy | None = None,
 ) -> dict[str, Any]:
     """Write the packed arrays, then the manifest last, into empty ``destination``.
 
@@ -458,6 +501,7 @@ def compile_index(
         raise C05Error("unsupported compact matcher parameters")
     if any(destination.iterdir()):
         raise C05Error("compact matcher destination is not empty")
+    marks: dict[str, Any] = {}
     vocabulary, flat, lengths = _encode(
         index,
         index_sha256=index_sha256,
@@ -466,18 +510,40 @@ def compile_index(
         max_records=max_records,
         check=check,
         report=report,
+        trigger=trigger,
+        marks=marks,
     )
     records = int(lengths.size)
     report("unique sort", 0, records)
-    unique, starts, nodes = _unique_sorted(flat, lengths, check)
+    groups: list[I64] = []
+    unique, starts, nodes = _unique_sorted(
+        flat, lengths, check, groups if trigger is not None else None
+    )
     report("unique sort", records, records)
+    activity: dict[str, int] = {}
+    if trigger is not None:
+        # A pattern is active when ANY of its records meets its own kind's floor.
+        group = groups[0]
+        live = np.bincount(group, weights=marks["active"], minlength=unique.size) > 0
+        covered = live[group][marks["item_owner"]]
+        activity = {
+            "index_records": records,
+            "active_records": int(np.count_nonzero(live[group])),
+            "unique_patterns": int(unique.size),
+            "active_patterns": int(np.count_nonzero(live)),
+            "benchmark_item_refs": int(np.unique(marks["item_id"]).size),
+            "active_items": int(np.unique(marks["item_id"][covered]).size),
+        }
+        unique = unique[live]  # still in lexicographic order
+        if not unique.size:
+            raise C05Error("trigger policy leaves no active benchmark pattern")
     counts: dict[str, int] = {
         "index_records": records,
         "unique_patterns": int(unique.size),
         "vocabulary_tokens": len(vocabulary),
         "logical_trie_nodes": nodes,
     }
-    if max_logical_nodes is not None and nodes > max_logical_nodes:
+    if trigger is None and max_logical_nodes is not None and nodes > max_logical_nodes:
         raise CeilingExceeded("automaton_nodes", counts)
     if unique.size > UINT32_MAX:
         raise C05Error("compact matcher pattern ids exceed uint32")
@@ -493,6 +559,11 @@ def compile_index(
         source = np.repeat(starts[unique[c0:c1]] - local, size[c0:c1])
         tokens[offsets[c0] : offsets[c1]] = flat[source + np.arange(source.size)]
     del flat, lengths, starts, unique
+    if trigger is not None:
+        # The logical trie of the compiled (active) subset only.
+        counts["logical_trie_nodes"] = sorted_logical_nodes(tokens, offsets, check)
+        if max_logical_nodes is not None and counts["logical_trie_nodes"] > max_logical_nodes:
+            raise CeilingExceeded("automaton_nodes", counts)
     hashes, anchor_length, anchor_key, anchor_offset = _anchors(
         tokens, offsets, len(vocabulary), q=q, mask=hash_mask, check=check, report=report
     )
@@ -554,6 +625,8 @@ def compile_index(
         "files": files,
         "compiled_bytes": sum(int(f["bytes"]) for f in files.values()),
     }
+    if trigger is not None:
+        manifest["trigger"] = {"policy_digest": trigger.identity(), **activity}
     # Self-digest: catches accidental edits of fields the arrays cannot re-derive.
     manifest["digest"] = canonical.digest(manifest)
     raw = canonical.canonical_bytes(manifest)
@@ -603,8 +676,13 @@ class CompactExactMatcher:
         hash_mask: int = FULL_MASK,
         check: Callable[[], None] = _noop,
         report: Report = _no_report,
+        trigger: str | None = None,
     ) -> None:
-        """Verify every binding and file hash before the first lookup is possible."""
+        """Verify every binding and file hash before the first lookup is possible.
+
+        ``trigger`` is the expected trigger-policy digest (``None``: an unfiltered,
+        historical compile whose manifest has no ``trigger`` section).
+        """
         self._maps: list[tuple[Any, mmap.mmap]] = []
         try:
             self._open(
@@ -618,6 +696,7 @@ class CompactExactMatcher:
                 hash_mask=hash_mask,
                 check=check,
                 report=report,
+                trigger=trigger,
             )
         except BaseException:
             self.close()
@@ -636,9 +715,16 @@ class CompactExactMatcher:
         hash_mask: int,
         check: Callable[[], None],
         report: Report = _no_report,
+        trigger: str | None = None,
     ) -> None:
         self.directory = directory
         manifest = read_manifest(directory)
+        section = manifest.get("trigger")
+        _expect(
+            (section is None and trigger is None)
+            or (isinstance(section, dict) and section.get("policy_digest") == trigger),
+            "trigger policy binding",
+        )
         _expect(
             (manifest.get("kind"), manifest.get("backend")) == (MANIFEST_KIND, BACKEND),
             "backend version",
@@ -975,6 +1061,7 @@ def prepare(
     max_bucket: int = MAX_ANCHOR_BUCKET,
     hash_mask: int = FULL_MASK,
     report: Report = _no_report,
+    trigger: TriggerPolicy | None = None,
 ) -> CompactExactMatcher:
     """Reuse a fully verified published matcher, or compile it staging-then-rename.
 
@@ -1000,10 +1087,18 @@ def prepare(
             max_record=max_record,
             check=check,
             report=report,
+            trigger=trigger,
             **binding,
             **parameters,
         )
         before_publish()
         os.rename(staging, directory)
     report("verify open", 0, None)
-    return CompactExactMatcher(directory, check=check, report=report, **binding, **parameters)
+    return CompactExactMatcher(
+        directory,
+        check=check,
+        report=report,
+        trigger=None if trigger is None else trigger.identity(),
+        **binding,
+        **parameters,
+    )

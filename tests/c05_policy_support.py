@@ -82,7 +82,8 @@ MATERIAL: dict[str, list[dict[str, Any]]] = {
 }
 
 
-def prepare_benchmark(root: Path) -> None:
+def prepare_benchmark(root: Path, matcher: Any = None) -> None:
+    """``matcher``: the index generation policy (default: the flow's c05-matcher-v3)."""
     material = root / "material"
     material.mkdir()
     pins = benchmark_requirements(Path("manifests/eval_dataset_pins.yaml"))["tasks"]
@@ -122,7 +123,7 @@ def prepare_benchmark(root: Path) -> None:
         spec,
         material,
         root / "prepared",
-        policy=MatcherPolicy(),
+        policy=matcher or MatcherPolicy(),
         resources=resources(),
         issuer=ISSUER,
         key=KEY.encode(),
@@ -141,7 +142,10 @@ def allocation_of_numbers(allocations: list[tuple[str, str, str, str | None, int
     return out
 
 
-def build_run(root: Path) -> dict[str, Any]:
+def build_run(
+    root: Path, *, matcher: Any = None, policy: Any = None, require_deficit: bool = True
+) -> dict[str, Any]:
+    """The authored C05 run (default: v3 matcher, v2 production policy) + C06/count/select."""
     monkey = pytest.MonkeyPatch()
     monkey.setenv(KEY_ENV, KEY)
     original = flow_module.doc
@@ -183,10 +187,10 @@ def build_run(root: Path) -> dict[str, Any]:
     monkey.setattr(flow_module, "TOTAL", sum(finals.values()))
     monkey.setattr(flow_module, "doc", doc)
     monkey.setattr(flow_module, "ALLOCATIONS", allocations)
-    monkey.setattr(flow_module, "prepare_benchmark", prepare_benchmark)
+    monkey.setattr(flow_module, "prepare_benchmark", lambda r: prepare_benchmark(r, matcher))
     try:
         paths = prepare(root)
-        plan_path = decide_and_plan(paths)
+        plan_path = decide_and_plan(paths, policy)
         c05 = run_c05(paths, plan_path)
         tokenizer = root / "tokenizer"
         fit_tokenizer(c05["proof"], tokenizer)
@@ -215,12 +219,20 @@ def build_run(root: Path) -> dict[str, Any]:
                 *signing,
             ]
         )
-        if not (root / "deficit.json").is_file():
+        if require_deficit and not (root / "deficit.json").is_file():
             raise RuntimeError("authored selection was expected to report a SYNTH deficit")
     finally:
         monkey.undo()
         os.environ.pop(KEY_ENV, None)
-    return {"root": root, "plan": plan_path, "planted": dict(planted), "tokenizer": tokenizer}
+    return {
+        "root": root,
+        "plan": plan_path,
+        "planted": dict(planted),
+        "tokenizer": tokenizer,
+        "proof": c05["proof"],
+        "completion": c05["completion"],
+        "quotas": paths["quotas"],
+    }
 
 
 # -- independent oracle ------------------------------------------------------------------------

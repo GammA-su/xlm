@@ -12,6 +12,12 @@ is "minimum dense number" and every ``ORDER BY id`` is ascending dense order.
 * family components: duplicate components, equal lineage keys and parent edges
   whose parent document exists.
 
+c05-production-v3 (``scoped``) keeps two families apart. The SPLIT family is the
+family above (every lineage key). The EXCLUSION family is the same closure without
+split-only keys (keys only a SYNTH ``additional_seed_url`` contributes): a benchmark hit
+excludes its exclusion family, and only split families without any excluded member are
+eligible for diagnostic/audit. Both come from ONE external lineage sort.
+
 Near candidates are replayed exactly, document by document in id order: band keys
 in ``MinHasher.band_keys`` order; a bucket (all documents sharing the key) larger
 than ``max_bucket_size`` is skipped and counted (against the ceiling) each time a
@@ -39,7 +45,7 @@ import numpy.typing as npt
 from xlm.data.evidence_v2 import canonical
 from xlm.data.exclusion.extsort import ExternalSorter
 from xlm.data.exclusion.factstore import IndexLedger, Unit, open_unit, tree_bytes
-from xlm.data.exclusion.policy import C05Error, ProductionPolicy, Resources
+from xlm.data.exclusion.policy import C05Error, ProductionPolicy, Resources, scoped
 from xlm.data.exclusion.progress import NullProgress, Progress
 from xlm.data.exclusion.scanpool import Pool, ordered_jobs, run_jobs
 from xlm.data.exclusion.scanprep import PERMUTATIONS, FileContext
@@ -57,6 +63,7 @@ LINEAGE: Final = np.dtype(
         ("dense", "<u4"),
         ("unit", "<u4"),
         ("key", "<u8"),
+        ("scope", "u1"),  # 1 = split-only key (c05-production-v3); always 0 otherwise
     ]
 )
 LINEAGE_KEYS: Final = ("w0", "w1", "w2", "w3", "dense")
@@ -75,6 +82,19 @@ SEALED: Final = (
     "fam_split.u8",
     "fam_quick.u8",
 )
+#: c05-production-v3 group files: exclusion families and per-document exclusion are
+#: explicit; ``fam_excluded`` (split family holds an excluded member) replaces the
+#: v2 ``fam_hit`` so no file means two things.
+SEALED_V3: Final = (
+    *(name for name in SEALED if name != "fam_hit.u8"),
+    "excl.u32",
+    "excluded.u8",
+    "fam_excluded.u8",
+)
+
+
+def sealed_names(scoped: bool) -> tuple[str, ...]:
+    return SEALED_V3 if scoped else SEALED
 
 
 @dataclass(frozen=True)
@@ -116,6 +136,7 @@ class GroupInit:
     permutations: int
     bands: int
     contexts: tuple[FileContext, ...]
+    scoped: bool = False
 
 
 def _band_payload_keys(signature: Sequence[int], bands: Sequence[int], rows: int) -> bytes:
@@ -212,6 +233,14 @@ class GroupRole:
         ids = self.arrays.id_strings(dense)
         dups = self.arrays.id_strings(dup)
         fams = self.arrays.id_strings(fam)
+        if self.init.scoped:
+            excl = self.arrays.id_strings(np.asarray(self.arrays.get("excl.u32", "<u4")[lo:hi]))
+            excluded = np.asarray(self.arrays.get("excluded.u8", np.uint8)[lo:hi]).tolist()
+            scoped_rows = [
+                canonical.canonical_bytes([a, b, c, x, s, e])
+                for a, b, c, x, s, e in zip(ids, dups, fams, excl, survivor, excluded, strict=True)
+            ]
+            return index, b"".join(scoped_rows)
         rows = [
             canonical.canonical_bytes([a, b, c, s])
             for a, b, c, s in zip(ids, dups, fams, survivor, strict=True)
@@ -222,7 +251,8 @@ class GroupRole:
         families = np.asarray(self.arrays.get("families.u32", "<u4")[lo:hi])
         ordering = np.asarray(self.arrays.get("fam_ordering.b32", np.uint8)).reshape(-1, 32)
         sizes = self.arrays.get("fam_bytes.i64", "<i8")[lo:hi].tolist()
-        hits = self.arrays.get("fam_hit.u8", np.uint8)[lo:hi].tolist()
+        flag = "fam_excluded.u8" if self.init.scoped else "fam_hit.u8"
+        hits = self.arrays.get(flag, np.uint8)[lo:hi].tolist()
         splits = self.arrays.get("fam_split.u8", np.uint8)[lo:hi].tolist()
         quick = self.arrays.get("fam_quick.u8", np.uint8)[lo:hi].tolist()
         ids = self.arrays.id_strings(families)
@@ -330,6 +360,7 @@ class Grouper:
         if self.n > U32_LIMIT or self.n > resources.records:
             raise C05Error("document count exceeds the dense uint32 / records ceiling")
         self.memory = MemoryPlan.derive(resources, self.n)
+        self.scoped = scoped(policy)
         self.metrics: dict[str, Any] = {"memory_plan": self.memory.__dict__.copy()}
         self.arrays = _Arrays(directory)
 
@@ -361,7 +392,7 @@ class Grouper:
         where, dense_of = self.prepare()
         exact_left, exact_right = self.exact(dense_of)
         near_left, near_right, stats = self.near(where, dense_of)
-        lineage_left, lineage_right = self.lineage(dense_of)
+        lineage_left, lineage_right, exclusion_left, exclusion_right = self.lineage(dense_of)
         parent_left, parent_right = self.parents(dense_of)
         self.progress.stage("GROUP: FAMILY PROPAGATION", self.n, "docs")
         dup = components(
@@ -378,13 +409,25 @@ class Grouper:
         )
         self.progress.update(self.n, edges=int(lineage_left.size + parent_left.size))
         self.progress.stage("GROUP: PATH COMPRESSION", self.n, "docs")
+        excl = None
+        if self.scoped:
+            # Contamination families: no split-only key; duplicates and parents kept.
+            excl = components(
+                self.n,
+                np.concatenate([exclusion_left, parent_left]),
+                np.concatenate([exclusion_right, parent_right]),
+                initial=dup,
+            )
+            self.metrics["exclusion_edges"] = int(exclusion_left.size + parent_left.size)
         self._write("dup.u32", dup)
         self._write("fam.u32", fam)
+        if excl is not None:
+            self._write("excl.u32", excl)
         self.progress.update(self.n)
         survivor = self.survivors(dup, where)
-        families = self.families(fam, survivor, where)
+        families = self.families(fam, survivor, where, excl)
         digest = self.digest(stats)
-        files = {name: _binding(self.directory / name) for name in SEALED}
+        files = {name: _binding(self.directory / name) for name in sealed_names(self.scoped)}
         self.metrics["group_bytes"] = tree_bytes(self.directory)
         return GroupResult(stats=stats, digest=digest, files=files, metrics=self.metrics | families)
 
@@ -658,7 +701,8 @@ class Grouper:
         self.metrics["near_edges"] = len(left)
         return np.array(left, dtype=np.int64), np.array(right, dtype=np.int64), stats
 
-    def lineage(self, dense_of: npt.NDArray[np.uint32]) -> tuple[Any, Any]:
+    def lineage(self, dense_of: npt.NDArray[np.uint32]) -> tuple[Any, Any, Any, Any]:
+        """(split-family edges a, b, exclusion-family edges a, b); exclusion empty for v2."""
         total = sum(int(np.asarray(u.strings("lineage")[2]).sum()) for u in self.units)
         self.progress.stage("GROUP: LINEAGE INDEX BUILD", total, "keys")
         sorter = ExternalSorter(
@@ -683,6 +727,8 @@ class Grouper:
             records["dense"] = dense_of[int(self.offsets[u]) + rows]
             records["unit"] = u
             records["key"] = np.arange(keys, dtype=np.uint64)
+            if self.scoped:
+                records["scope"] = np.asarray(unit.lineage_scope(), dtype=np.uint8)
             sorter.add(records)
             done += keys
             self.progress.update(done, runs=sorter.total_runs)
@@ -692,6 +738,7 @@ class Grouper:
         self.progress.stage("GROUP: LINEAGE", total, "keys")
         left: list[npt.NDArray[Any]] = []
         right: list[npt.NDArray[Any]] = []
+        exclusion: tuple[list[npt.NDArray[Any]], list[npt.NDArray[Any]]] = ([], [])
         carry: npt.NDArray[Any] | None = None
         done = 0
         verified = 0
@@ -700,20 +747,39 @@ class Grouper:
             words = np.stack([data[f"w{c}"] for c in range(4)], axis=1)
             tail = _tail_start(words)
             body, carry = data[:tail], data[tail:]
-            verified += self._lineage_runs(body, left, right)
+            verified += self._lineage_runs(body, left, right, exclusion)
             done += chunk.shape[0]
             self.progress.update(done, edges=sum(x.size for x in left))
         if carry is not None and carry.shape[0]:
-            verified += self._lineage_runs(carry, left, right)
+            verified += self._lineage_runs(carry, left, right, exclusion)
         self.metrics["lineage_verified_members"] = verified
-        joined_left = np.concatenate(left) if left else np.zeros(0, np.int64)
-        joined_right = np.concatenate(right) if right else np.zeros(0, np.int64)
-        self._remove_tree("sort")
-        return joined_left, joined_right
 
-    def _lineage_runs(self, data: npt.NDArray[Any], left: list[Any], right: list[Any]) -> int:
+        def joined(parts: list[Any]) -> Any:
+            return np.concatenate(parts) if parts else np.zeros(0, np.int64)
+
+        self._remove_tree("sort")
+        return joined(left), joined(right), joined(exclusion[0]), joined(exclusion[1])
+
+    def _lineage_runs(
+        self,
+        data: npt.NDArray[Any],
+        left: list[Any],
+        right: list[Any],
+        exclusion: tuple[list[Any], list[Any]],
+    ) -> int:
         if not data.shape[0]:
             return 0
+        if self.scoped:
+            # Exclusion edges: the same equal-key runs without split-only incidences.
+            # Rows stay sorted by (key words, dense), so runs remain contiguous.
+            kept = data[data["scope"] == 0]
+            if kept.shape[0]:
+                xa, xb = _equal_runs(
+                    np.stack([kept[f"w{c}"] for c in range(4)], axis=1),
+                    kept["dense"].astype(np.int64),
+                )
+                exclusion[0].append(xa)
+                exclusion[1].append(xb)
         words = np.stack([data[f"w{c}"] for c in range(4)], axis=1)
         a, b = _equal_runs(words, data["dense"].astype(np.int64))
         if not a.size:
@@ -807,6 +873,7 @@ class Grouper:
         fam: npt.NDArray[np.uint32],
         survivor: npt.NDArray[np.uint8],
         where: npt.NDArray[np.uint32],
+        excl: npt.NDArray[np.uint32] | None = None,
     ) -> dict[str, Any]:
         self.progress.stage("GROUP: FAMILY BUILD", self.n, "docs")
         roots = np.flatnonzero(fam == np.arange(self.n, dtype=np.uint32)).astype(np.uint32)
@@ -817,12 +884,23 @@ class Grouper:
             rows = np.asarray(unit.hits()["row"], dtype=np.int64)
             hit_g[int(self.offsets[u]) + rows] = 1
         hit = np.zeros(self.n, dtype=np.uint8)
-        np.maximum.at(hit, fam.astype(np.int64), hit_g[where])
+        exclusion_families = 0
+        if excl is None:
+            np.maximum.at(hit, fam.astype(np.int64), hit_g[where])
+        else:
+            # A hit excludes its exclusion family; a split family is ineligible for
+            # diagnostic/audit when any member is excluded.
+            excl_hit = np.zeros(self.n, dtype=np.uint8)
+            np.maximum.at(excl_hit, excl.astype(np.int64), hit_g[where])
+            excluded = excl_hit[excl.astype(np.int64)]
+            self._write("excluded.u8", excluded)
+            np.maximum.at(hit, fam.astype(np.int64), excluded)
+            exclusion_families = int(np.count_nonzero(excl == np.arange(self.n, dtype=np.uint32)))
         fam_bytes = total[roots]
         fam_hit = hit[roots]
         self._write("families.u32", roots)
         self._write("fam_bytes.i64", fam_bytes.astype("<i8"))
-        self._write("fam_hit.u8", fam_hit)
+        self._write("fam_excluded.u8" if excl is not None else "fam_hit.u8", fam_hit)
         self.progress.update(self.n // 2, families=int(roots.size))
         ordering = np.zeros((roots.size, 32), dtype=np.uint8)
         step = self.memory.job_docs
@@ -845,11 +923,14 @@ class Grouper:
         split, quick = self.splits(roots, ordering, fam_bytes, fam_hit)
         self._write("fam_split.u8", split)
         self._write("fam_quick.u8", quick)
-        return {
+        result = {
             "families": int(roots.size),
             "diagnostic_families": int((split == 1).sum()),
             "audit_families": int((split == 2).sum()),
         }
+        if excl is not None:
+            result["exclusion_families"] = exclusion_families
+        return result
 
     def splits(
         self,
@@ -965,11 +1046,12 @@ def _binding(path: Path) -> dict[str, Any]:
     return {"bytes": path.stat().st_size, "sha256": value.hexdigest()}
 
 
-def verify_group_files(directory: Path, files: dict[str, Any]) -> None:
-    if set(files) != set(SEALED):
+def verify_group_files(directory: Path, files: dict[str, Any], *, scoped: bool = False) -> None:
+    names = set(sealed_names(scoped))
+    if set(files) != names:
         raise C05Error("group seal file table")
     present = {p.name for p in directory.iterdir()}
-    if present != set(SEALED):
+    if present != names:
         raise C05Error("group directory has unexpected entries")
     for name, entry in files.items():
         if _binding(directory / name) != entry:

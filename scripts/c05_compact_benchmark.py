@@ -57,7 +57,9 @@ def zipf_sampler(size: int) -> np.ndarray:
     return cumulative / cumulative[-1]
 
 
-def generate(out: Path, docs: int, seed: int, files: int | None, patterns: int) -> dict[str, Any]:
+def generate(
+    out: Path, docs: int, seed: int, files: int | None, patterns: int, kind: str | None = None
+) -> dict[str, Any]:
     from xlm.data.evidence_v2 import canonical
 
     rng = np.random.default_rng(seed)
@@ -73,7 +75,9 @@ def generate(out: Path, docs: int, seed: int, files: int | None, patterns: int) 
     # Authored protected-pattern index: 13-token windows of synthetic items.
     index_rows = []
     for n in range(patterns):
-        index_rows.append({"tokens": sample(13), "provenance": [f"authored:{n}"]})
+        # ``kind``: a real provenance kind (c05-production-v3 triggers need one).
+        reference = f"authored-{n}:{kind}" if kind else f"authored:{n}"
+        index_rows.append({"tokens": sample(13), "provenance": [reference]})
     index = out / "index.jsonl"
     with index.open("wb") as stream:
         for row in index_rows:
@@ -191,9 +195,9 @@ def _sha(path: Path) -> str:
 def build_plan(
     corpus: Path, work: Path, workers: int, ram_gib: float, policy_json: dict[str, Any] | None
 ) -> tuple[Any, Path, dict[str, Any]]:
-    from xlm.data.exclusion.artifacts import ExecutionPlan, InputFile, signed
+    from xlm.data.exclusion.artifacts import ExecutionPlan, InputFile, output_contract, signed
     from xlm.data.exclusion.capacity import probe_geometry
-    from xlm.data.exclusion.policy import ProductionPolicy, Resources
+    from xlm.data.exclusion.policy import ProductionPolicy, Resources, production_policy
 
     manifest = json.loads((corpus / "manifest.json").read_text(encoding="utf-8"))
     index = corpus / "index.jsonl"
@@ -202,6 +206,8 @@ def build_plan(
             "index_sha256": manifest["index_sha256"],
             "index_bytes": manifest["index_bytes"],
             "isolation": {"mode": "authored"},
+            "items": manifest["patterns"],
+            "patterns": manifest["patterns"],
         },
         "bench",
         KEY,
@@ -243,7 +249,11 @@ def build_plan(
         overall_seconds=259200,
         workers=workers,
     )
-    policy = ProductionPolicy.model_validate(policy_json or {})
+    policy = (
+        production_policy(policy_json)
+        if (policy_json or {}).get("version")
+        else ProductionPolicy.model_validate(policy_json or {})
+    )
     plan = ExecutionPlan(
         sequence=1,
         mode="authored",
@@ -261,6 +271,7 @@ def build_plan(
         code_commit="3" * 40,
         code_identity="4" * 64,
         dependency_sha256="5" * 64,
+        output_contract=output_contract(policy),
     )
     return plan, index, receipt
 
@@ -568,6 +579,7 @@ def main() -> int:
     gen.add_argument("--seed", type=int, default=20261003)
     gen.add_argument("--files", type=int)
     gen.add_argument("--patterns", type=int, default=200_000)
+    gen.add_argument("--provenance-kind", choices=["prompt", "sentence", "answer", "combined"])
     runner = sub.add_parser("run")
     runner.add_argument("--corpus", type=Path, required=True)
     runner.add_argument("--work", type=Path, required=True)
@@ -591,7 +603,9 @@ def main() -> int:
     os.environ.setdefault("OMP_NUM_THREADS", "1")
     if args.command == "generate":
         started = time.perf_counter()
-        report = generate(args.out, args.docs, args.seed, args.files, args.patterns)
+        report = generate(
+            args.out, args.docs, args.seed, args.files, args.patterns, args.provenance_kind
+        )
         report["generate_seconds"] = round(time.perf_counter() - started, 1)
     elif args.command == "run":
         report = run_once(args)

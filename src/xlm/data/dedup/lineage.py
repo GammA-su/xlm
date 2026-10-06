@@ -13,6 +13,7 @@ honest "unknown", not a claim that the document has no relatives.
 from __future__ import annotations
 
 import re
+from dataclasses import replace
 from urllib.parse import urlsplit, urlunsplit
 
 from xlm.core.contracts import CanonicalDocument
@@ -139,3 +140,20 @@ def lineage_keys_v3(doc: CanonicalDocument) -> tuple[str, ...]:
         elif not key.startswith("parent-doc:"):
             keys.add(f"metadata:{namespace}:{key}")
     return tuple(sorted(keys))
+
+
+ADDITIONAL_SEED_URL = "additional_seed_url"
+
+
+def split_only_keys_v1(doc: CanonicalDocument) -> frozenset[str]:
+    """known-lineage-v3 keys that ONLY a SYNTH row's ``additional_seed_url`` contributes.
+
+    ``query-seed-derivation-family-v1`` keeps them for split-leakage grouping but never
+    lets them merge contamination families. A key that another field also produces
+    (e.g. the same URL as ``query_seed_url``) is not split-only.
+    """
+    if doc.source_id != "synth" or ADDITIONAL_SEED_URL not in doc.source_metadata:
+        return frozenset()
+    metadata = {k: v for k, v in doc.source_metadata.items() if k != ADDITIONAL_SEED_URL}
+    reduced = lineage_keys_v3(replace(doc, source_metadata=metadata))
+    return frozenset(lineage_keys_v3(doc)) - frozenset(reduced)

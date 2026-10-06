@@ -6,7 +6,7 @@ import hashlib
 import hmac
 from collections.abc import Mapping
 from pathlib import Path
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, Final, Literal
 
 from pydantic import Field
 
@@ -23,12 +23,30 @@ from xlm.data.exclusion.isolation import (
     verify_separation,
 )
 from xlm.data.exclusion.policy import (
+    AnyProductionPolicy,
     C05Error,
     FrozenModel,
     ProductionPolicy,
     Resources,
     require_engine_acceptance,
+    scoped,
 )
+
+#: Membership/decision row contract per production-policy version. v3 rows carry
+#: ``split_group`` and ``exclusion_group``; v2 rows carry ``lineage_group``.
+CONTRACT_V2: Final = "c05_membership_v2"
+CONTRACT_V3: Final = "c05_membership_v3"
+
+
+def output_contract(
+    policy: ProductionPolicy,
+) -> Literal["c05_membership_v2", "c05_membership_v3"]:
+    return CONTRACT_V3 if scoped(policy) else CONTRACT_V2
+
+
+def completion_kind(policy: ProductionPolicy) -> str:
+    return "c05_completion_v3" if scoped(policy) else "c05_completion_v2"
+
 
 Sha = Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
 Revision = Annotated[str, Field(pattern=r"^[0-9a-f]{40}$")]
@@ -135,7 +153,7 @@ class ExecutionPlan(FrozenModel):
     files: tuple[InputFile, ...]
     benchmark_receipt_digest: Sha
     index_sha256: Sha
-    policy: ProductionPolicy
+    policy: AnyProductionPolicy
     resources: Resources
     storage: StorageGeometry
     data_root: str
@@ -144,7 +162,7 @@ class ExecutionPlan(FrozenModel):
     code_commit: Revision
     code_identity: Sha
     dependency_sha256: Sha
-    output_contract: Literal["c05_membership_v2"] = "c05_membership_v2"
+    output_contract: Literal["c05_membership_v2", "c05_membership_v3"] = "c05_membership_v2"
     review_decisions: dict[str, Sha] = Field(default_factory=dict)
     authorization_contract: Literal["signed-plan-digest-v2"] = "signed-plan-digest-v2"
     isolation: PlanIsolation | None = None
@@ -153,6 +171,8 @@ class ExecutionPlan(FrozenModel):
 
     def identity(self) -> str:
         self.policy.identity()
+        if self.output_contract != output_contract(self.policy):
+            raise C05Error("membership contract does not match the production policy version")
         # Deterministic worst-case storage must fit the reviewed ceilings.
         admit_plan(
             self.resources,
@@ -333,6 +353,7 @@ def make_plan(
         code_commit=code_commit,
         code_identity=code_identity,
         dependency_sha256=dependency_sha256,
+        output_contract=output_contract(policy),
         isolation=detached_binding(
             receipt, index, manifest["data_root"], scratch, output, inspector
         ),

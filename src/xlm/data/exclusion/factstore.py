@@ -39,7 +39,7 @@ import numpy.typing as npt
 from xlm.data.evidence_v2 import canonical
 from xlm.data.exclusion.artifacts import verify_signed
 from xlm.data.exclusion.policy import C05Error
-from xlm.data.exclusion.scanprep import FORMAT, PERMUTATIONS, RECORD, PreparedBatch
+from xlm.data.exclusion.scanprep import FORMAT, FORMAT_V3, PERMUTATIONS, RECORD, PreparedBatch
 
 FACTS_DIR: Final = "facts"
 GROUP_DIR: Final = "group"
@@ -62,6 +62,14 @@ SECTIONS: Final = (
     "hits",
 )
 REVIEW_SECTION: Final = "review"
+#: c05-facts-v3 only: uint8 per lineage key, in key order (1 = split-only key).
+SCOPE_SECTION: Final = "lineage_scope"
+
+
+def section_names(*, review: bool, scoped: bool = False) -> list[str]:
+    return (
+        list(SECTIONS) + ([SCOPE_SECTION] if scoped else []) + ([REVIEW_SECTION] if review else [])
+    )
 
 
 class IndexLedger:
@@ -160,15 +168,17 @@ class _Sink:
 class UnitWriter:
     """Streams prepared batches of one plan file, then publishes one unit file."""
 
-    def __init__(self, facts: Path, ordinal: int, ledger: IndexLedger, *, review: bool) -> None:
+    def __init__(
+        self, facts: Path, ordinal: int, ledger: IndexLedger, *, review: bool, scoped: bool = False
+    ) -> None:
         self.final = facts / f"{ordinal:05d}{UNIT_SUFFIX}"
         self.staging = facts / f"{ordinal:05d}{STAGING_SUFFIX}"
         self.assembled = facts / f"{ordinal:05d}{UNIT_SUFFIX}{STAGING_SUFFIX}"
-        self.ordinal, self.ledger, self.review = ordinal, ledger, review
+        self.ordinal, self.ledger, self.review, self.scoped = ordinal, ledger, review, scoped
         for leftover in (self.staging, self.assembled):
             discard(leftover, ledger)
         self.buffered = 0
-        names = list(SECTIONS) + ([REVIEW_SECTION] if review else [])
+        names = section_names(review=review, scoped=scoped)
         self.sinks = {name: _Sink(name, self) for name in names}
         self.rows = 0
         self.bases = {"ids": 0, "lineage": 0, "parents": 0}
@@ -195,6 +205,13 @@ class UnitWriter:
             sinks[f"{name}_off"].write(self._rebased(name, strings.offsets))
             sinks[f"{name}_cnt"].write(strings.counts)
             sinks[f"{name}_dig"].write(strings.digests)
+        if self.scoped:
+            keys = int(np.frombuffer(batch.lineage.counts, "<u4").sum())
+            if len(batch.lineage_scope) != keys:
+                raise C05Error("lineage scope does not cover every lineage key")
+            sinks[SCOPE_SECTION].write(batch.lineage_scope)
+        elif batch.lineage_scope:
+            raise C05Error("lineage scope in an unscoped fact unit")
         if batch.hits:
             hits = np.frombuffer(batch.hits, dtype=HIT).copy()
             hits["row"] += self.rows
@@ -221,7 +238,7 @@ class UnitWriter:
             if self.ids[left] == self.ids[right]:
                 raise C05Error("duplicate canonical document id")
         self.sinks["id_order"].write(np.array(order, dtype="<u4").tobytes())
-        names = list(SECTIONS) + ([REVIEW_SECTION] if self.review else [])
+        names = section_names(review=self.review, scoped=self.scoped)
         layout: dict[str, dict[str, Any]] = {}
         position = 0
         padding = 0
@@ -294,10 +311,11 @@ def unit_body(
     canonical_bytes: int,
     facts: str,
     sections: Mapping[str, Any],
+    scoped: bool = False,
 ) -> dict[str, Any]:
     return {
         "kind": UNIT_KIND,
-        "format": FORMAT,
+        "format": FORMAT_V3 if scoped else FORMAT,
         "plan": plan,
         "ordinal": ordinal,
         "file": file,
@@ -386,6 +404,12 @@ class Unit:
     def hits(self) -> Any:
         return self.section("hits", HIT)
 
+    def lineage_scope(self) -> Any:
+        """uint8 per lineage key (1 = split-only); all zero for an unscoped unit."""
+        if SCOPE_SECTION in self.sections:
+            return self.section(SCOPE_SECTION, np.uint8)
+        return np.zeros(int(np.asarray(self.strings("lineage")[2]).sum()), dtype=np.uint8)
+
     def review_lines(self) -> bytes:
         return (
             bytes(self.section(REVIEW_SECTION, np.uint8))
@@ -411,6 +435,7 @@ def load_unit(
     *,
     review: bool,
     verify_sections: bool = True,
+    scoped: bool = False,
 ) -> Unit:
     """Verify the signed header, its bindings, the layout and (optionally) every hash."""
     if not path.is_file() or path.is_symlink():
@@ -420,10 +445,10 @@ def load_unit(
     for name, value in expected.items():
         if body.get(name) != value:
             raise C05Error("reusable fact unit binding changed: " + name)
-    if body.get("kind") != UNIT_KIND or body.get("format") != FORMAT:
+    if body.get("kind") != UNIT_KIND or body.get("format") != (FORMAT_V3 if scoped else FORMAT):
         raise C05Error("reusable fact unit format")
     sections = body.get("sections")
-    names = list(SECTIONS) + ([REVIEW_SECTION] if review else [])
+    names = section_names(review=review, scoped=scoped)
     if not isinstance(sections, dict) or set(sections) != set(names):
         raise C05Error("reusable fact unit section table")
     position = 0
@@ -465,13 +490,14 @@ def verify_units_parallel(
     review: bool,
     threads: int,
     check: Callable[[], None],
+    scoped: bool = False,
 ) -> list[Unit]:
     """Verify many units; SHA-256 releases the GIL so hashing overlaps on threads."""
     if not jobs:
         return []
     with ThreadPoolExecutor(max_workers=max(1, threads)) as pool:
         futures = [
-            pool.submit(load_unit, path, trusted, expected, review=review)
+            pool.submit(load_unit, path, trusted, expected, review=review, scoped=scoped)
             for path, expected in jobs
         ]
         units = []

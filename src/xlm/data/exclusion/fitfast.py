@@ -588,6 +588,7 @@ def membership_tables(
         fit_document_cap=policy.max_document_bytes,
         line_ceiling=view.plan.resources.document_bytes,
         rank_tag=RANK_TAG,
+        contract=view.plan.output_contract,
     )
 
 

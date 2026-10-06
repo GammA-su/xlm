@@ -34,7 +34,7 @@ import numpy as np
 from filelock import FileLock
 
 from xlm.data.evidence_v2 import canonical
-from xlm.data.exclusion.artifacts import ExecutionPlan, signed, verify_signed
+from xlm.data.exclusion.artifacts import ExecutionPlan, completion_kind, signed, verify_signed
 from xlm.data.exclusion.capacity import (
     COMPLETION_BYTES,
     FACTS_DIR,
@@ -66,7 +66,7 @@ from xlm.data.exclusion.factstore import (
 )
 from xlm.data.exclusion.inputs import contained, read_metadata
 from xlm.data.exclusion.isolation import VolumeInspector
-from xlm.data.exclusion.policy import C05Error, require_engine_acceptance
+from xlm.data.exclusion.policy import C05Error, require_engine_acceptance, scoped, trigger_of
 from xlm.data.exclusion.progress import NullProgress, Progress, RollingRate
 from xlm.data.exclusion.review import ReviewQueue, queue_digest
 from xlm.data.exclusion.scanpool import (
@@ -81,6 +81,7 @@ from xlm.data.exclusion.scanpool import (
 )
 from xlm.data.exclusion.scanprep import (
     FORMAT,
+    FORMAT_V3,
     RECORD,
     FileContext,
     PreparedBatch,
@@ -261,6 +262,32 @@ def matcher_directory(
         if (inspector or os_volume)(directory) != protected.volume:
             raise C05Error("compiled matcher must stay on the protected volume")
     return directory
+
+
+def facts_format(plan: ExecutionPlan) -> str:
+    """Fact-unit/group-seal format of a plan: c05-facts-v3 for c05-production-v3."""
+    return FORMAT_V3 if scoped(plan.policy) else FORMAT
+
+
+def check_trigger_coverage(plan: ExecutionPlan, receipt: Mapping[str, Any], matcher: Any) -> None:
+    """c05-production-v3: the compiled trigger set must leave exactly the reviewed
+    number of benchmark items without any active pattern (content-free counts)."""
+    trigger = trigger_of(plan.policy)
+    section = matcher.manifest.get("trigger")
+    if trigger is None:
+        if section is not None:
+            raise C05Error("unfiltered plan reuses a trigger-filtered compiled matcher")
+        return
+    if not isinstance(section, dict) or section.get("policy_digest") != trigger.identity():
+        raise C05Error("compiled matcher trigger binding differs from the plan")
+    if section.get("index_records") != receipt["patterns"]:
+        raise C05Error("compiled matcher did not read every protected index record")
+    inactive = int(receipt["items"]) - int(section["active_items"])
+    if inactive != trigger.reviewed_items_without_active_trigger:
+        raise C05Error(
+            "benchmark items without an active trigger differ from the reviewed count: "
+            f"{inactive} != {trigger.reviewed_items_without_active_trigger}"
+        )
 
 
 def isolation_check(
@@ -475,6 +502,7 @@ class _Engine:
         self.issuer, self.key, self.checkpoint = issuer, key, checkpoint
         self.compiled, self.progress = compiled, progress
         self.review_enabled = plan.policy.review.enabled
+        self.scoped = scoped(plan.policy)
         self.workers = effective_workers(plan)
         self.contexts = tuple(
             FileContext(
@@ -657,7 +685,10 @@ class _Engine:
             check=self.check,
             before_publish=lambda: self.checkpoint("matcher_staged"),
             report=report,
+            trigger=trigger_of(plan.policy),
         )
+        # Before any corpus row is read: the reviewed trigger coverage must hold.
+        check_trigger_coverage(plan, self.benchmark, self.matcher)
 
     # -- scan -------------------------------------------------------------------------
 
@@ -724,6 +755,7 @@ class _Engine:
                 self.trusted,
                 self._unit_expectation(ordinal),
                 review=self.review_enabled,
+                scoped=self.scoped,
             )
 
         units: dict[int, Unit] = {}
@@ -798,6 +830,7 @@ class _Engine:
             index_bytes=self.benchmark["index_bytes"],
             max_records=plan.resources.benchmark_patterns,
             max_logical_nodes=plan.resources.automaton_nodes,
+            trigger=None if trigger_of(plan.policy) is None else trigger_of(plan.policy).identity(),  # type: ignore[union-attr]
         )
         init = ScanInit(plan.policy.model_dump(mode="json"), spec, self.review_enabled)
         matcher = self.matcher
@@ -886,7 +919,11 @@ class _Engine:
             self.open = _Open(
                 item.file,
                 UnitWriter(
-                    self.work / FACTS_DIR, item.file, self.ledger, review=self.review_enabled
+                    self.work / FACTS_DIR,
+                    item.file,
+                    self.ledger,
+                    review=self.review_enabled,
+                    scoped=self.scoped,
                 ),
                 hashlib.sha256(),
             )
@@ -930,7 +967,13 @@ class _Engine:
         if self.open is None:
             self.open = _Open(
                 ordinal,
-                UnitWriter(self.work / FACTS_DIR, ordinal, self.ledger, review=self.review_enabled),
+                UnitWriter(
+                    self.work / FACTS_DIR,
+                    ordinal,
+                    self.ledger,
+                    review=self.review_enabled,
+                    scoped=self.scoped,
+                ),
                 hashlib.sha256(),
             )
         state = self.open
@@ -955,6 +998,7 @@ class _Engine:
                     canonical_bytes=frozen.canonical_bytes,
                     facts=facts,
                     sections=sections,
+                    scoped=self.scoped,
                 ),
                 self.issuer,
                 self.key,
@@ -972,6 +1016,7 @@ class _Engine:
             self._unit_expectation(ordinal),
             review=self.review_enabled,
             verify_sections=False,
+            scoped=self.scoped,
         )
         self.committed_docs += frozen.documents
         self.committed_files += 1
@@ -993,6 +1038,7 @@ class _Engine:
             permutations=self.plan.policy.permutations,
             bands=self.plan.policy.bands,
             contexts=self.contexts,
+            scoped=self.scoped,
         )
         pool = make_pool(self.workers, "group", init, lambda: GroupRole(init))
         self.pools.append(pool)
@@ -1037,7 +1083,7 @@ class _Engine:
                 "plan": self.identity,
                 "groups": result.digest,
                 "review_queue_digest": self._review_digest(),
-                "format": FORMAT,
+                "format": facts_format(self.plan),
                 "stats": result.stats,
                 "files": result.files,
             },
@@ -1064,11 +1110,11 @@ class _Engine:
         if (
             body.get("plan") != self.identity
             or body.get("issuer") != self.issuer
-            or body.get("format") != FORMAT
+            or body.get("format") != facts_format(self.plan)
             or body.get("review_queue_digest") != self._review_digest()
         ):
             raise C05Error("group journal changed")
-        verify_group_files(self.work / GROUP_DIR, body["files"])
+        verify_group_files(self.work / GROUP_DIR, body["files"], scoped=self.scoped)
         return body
 
     # -- publication ----------------------------------------------------------------
@@ -1146,7 +1192,7 @@ class _Engine:
         )
         result = signed(
             {
-                "kind": "c05_completion_v2",
+                "kind": completion_kind(plan.policy),
                 "mode": plan.mode,
                 "plan_digest": self.identity,
                 "input_manifest_digest": plan.input_manifest_digest,
@@ -1176,6 +1222,7 @@ class _Engine:
                 "spent_work_reservations": {
                     name: int(self.state.get("spent_" + name, 0)) for name in self.credits
                 },
+                **self._scoped_summary(),
             },
             self.issuer,
             self.key,
@@ -1188,6 +1235,26 @@ class _Engine:
         self.checkpoint("before_publication")
         os.rename(staging, self.output / self.identity)
         return result
+
+    def _scoped_summary(self) -> dict[str, Any]:
+        """c05-production-v3 completion fields (absent for v2: historical bodies)."""
+        trigger = trigger_of(self.plan.policy)
+        if trigger is None:
+            return {}
+        assert self.matcher is not None
+        section = dict(self.matcher.manifest["trigger"])
+        return {
+            "output_contract": self.plan.output_contract,
+            "trigger": {
+                **section,
+                "benchmark_items": int(self.benchmark["items"]),
+                "items_without_active_trigger": int(self.benchmark["items"])
+                - int(section["active_items"]),
+            },
+            "exclusion_lineage": self.plan.policy.exclusion_lineage,  # type: ignore[attr-defined]
+            "split_lineage": self.plan.policy.lineage,
+            "exclusion_families": int(self.group_metrics.get("exclusion_families", -1)),
+        }
 
     def _review_summary(self) -> dict[str, int | str | bool]:
         if self.review is not None:
@@ -1223,11 +1290,20 @@ def verify_completion_envelope(
     envelope = read_metadata(directory / "completion.json", digested=False)
     body = verify_signed(envelope, trusted)
     if (body.get("kind"), body.get("plan_digest"), body.get("mode")) != (
-        "c05_completion_v2",
+        completion_kind(plan.policy),
         plan.identity(),
         plan.mode,
     ):
         raise C05Error("completion plan/mode mismatch")
+    trigger = trigger_of(plan.policy)
+    if trigger is not None and (
+        body.get("output_contract") != plan.output_contract
+        or not isinstance(body.get("trigger"), dict)
+        or body["trigger"].get("policy_digest") != trigger.identity()
+        or body["trigger"].get("items_without_active_trigger")
+        != trigger.reviewed_items_without_active_trigger
+    ):
+        raise C05Error("completion trigger/contract binding mismatch")
     membership = directory / "membership.jsonl"
     for name, expected in {
         "input_manifest_digest": plan.input_manifest_digest,
@@ -1297,14 +1373,17 @@ def resume_check(
         compiled = matcher_directory(plan, work, inspector)
         compiled_matcher = "absent; compiled before scanning"
         if compiled.exists():
-            CompactExactMatcher(
+            trigger = trigger_of(plan.policy)
+            with CompactExactMatcher(
                 compiled,
                 index_sha256=plan.index_sha256,
                 index_bytes=receipt["index_bytes"],
                 max_records=plan.resources.benchmark_patterns,
                 max_logical_nodes=plan.resources.automaton_nodes,
                 check=budget.check,
-            ).close()
+                trigger=None if trigger is None else trigger.identity(),
+            ) as reused:
+                check_trigger_coverage(plan, receipt, reused)
             compiled_matcher = "verified"
         verified = 0
         documents = 0
@@ -1354,6 +1433,7 @@ def resume_check(
                         "canonical_bytes": item.canonical_bytes,
                     },
                     review=review,
+                    scoped=scoped(plan.policy),
                 ).close()
             except C05Error as exc:
                 raise C05Error("resume reusable facts changed") from exc
@@ -1376,10 +1456,14 @@ def resume_check(
                     db.close()
             else:
                 digest = EMPTY_QUEUE_DIGEST
-            if body.get("plan") != identity or body.get("review_queue_digest") != digest:
+            if (
+                body.get("plan") != identity
+                or body.get("review_queue_digest") != digest
+                or body.get("format") != facts_format(plan)
+            ):
                 raise C05Error("resume group seal changed")
             try:
-                verify_group_files(work / GROUP_DIR, body["files"])
+                verify_group_files(work / GROUP_DIR, body["files"], scoped=scoped(plan.policy))
             except C05Error as exc:
                 raise C05Error("resume group seal changed") from exc
         final = Path(plan.output_root) / identity

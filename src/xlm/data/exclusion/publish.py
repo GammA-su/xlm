@@ -4,6 +4,10 @@ Rows are produced in ``ORDER BY id`` (ascending dense) with exactly the historic
 entry dictionary, canonical bytes and decision rule: ``excluded`` when the
 document's family has a benchmark hit, else ``kept`` for the duplicate-group
 survivor, else ``duplicate``. Aggregates are order-independent sums.
+
+c05_membership_v3 (c05-production-v3): ``excluded`` comes from the document's
+EXCLUSION family (``excluded.u8``); rows carry ``split_group`` (split-leakage family)
+and ``exclusion_group`` (contamination family) instead of ``lineage_group``.
 """
 
 from __future__ import annotations
@@ -35,7 +39,12 @@ def publish_rows(
     survivor = arrays.get("survivor.u8", np.uint8)[lo:hi].tolist()
     families = np.asarray(arrays.get("families.u32", "<u4"))
     rank = np.searchsorted(families, fam)
-    hits = np.asarray(arrays.get("fam_hit.u8", np.uint8))[rank].tolist()
+    scoped = bool(role.init.scoped)
+    if scoped:
+        hits = np.asarray(arrays.get("excluded.u8", np.uint8)[lo:hi]).tolist()
+        excl_ids = arrays.id_strings(np.asarray(arrays.get("excl.u32", "<u4")[lo:hi]))
+    else:
+        hits = np.asarray(arrays.get("fam_hit.u8", np.uint8))[rank].tolist()
     splits = np.asarray(arrays.get("fam_split.u8", np.uint8))[rank].tolist()
     quick = np.asarray(arrays.get("fam_quick.u8", np.uint8))[rank].tolist()
     unit_of = (np.searchsorted(offsets, where, side="right") - 1).tolist()
@@ -68,12 +77,16 @@ def publish_rows(
             "content": bytes(record["content"][row]).hex(),
             "bytes": size,
             "duplicate_group": dup_ids[position],
-            "lineage_group": fam_ids[position],
             "decision": decision,
             "split": split,
             "quick": bool(quick[position]),
             "upstream_component": context.upstream,
         }
+        if scoped:
+            entry["split_group"] = fam_ids[position]
+            entry["exclusion_group"] = excl_ids[position]
+        else:
+            entry["lineage_group"] = fam_ids[position]
         raw = canonical.canonical_bytes(entry) + b"\n"
         decisions.append(raw)
         if decision == "kept":

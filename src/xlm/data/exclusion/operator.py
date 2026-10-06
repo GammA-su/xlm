@@ -208,6 +208,20 @@ def main(argv: list[str] | None = None) -> int:
     matcher_parser.add_argument("--backend", choices=["compact", "streaming"], default="compact")
     matcher_parser.add_argument("--mode", choices=["protected", "authored"], default="protected")
     matcher_parser.add_argument("--self-check", type=int, default=1000)
+    # c05-production-v3 acceptance: injected-copy recall of the trigger-filtered matcher.
+    recall_parser = sub.add_parser("trigger-recall-local")
+    recall_parser.add_argument("--receipt", type=Path, required=True)
+    recall_parser.add_argument("--policy", type=Path, required=True)
+    recall_parser.add_argument("--index", type=Path, required=True)
+    recall_parser.add_argument("--material-root", type=Path, required=True)
+    recall_parser.add_argument("--scratch", type=Path, required=True)
+    recall_parser.add_argument("--mode", choices=["protected", "authored"], default="protected")
+    for name in (
+        "items-without-active-trigger",
+        "whole-item-detected",
+        "blimp-single-sentence-detected",
+    ):
+        recall_parser.add_argument("--expect-" + name, type=int)
     root_parser = sub.add_parser("protected-root")
     root_parser.add_argument("action", choices=["init", "describe"])
     root_parser.add_argument("--root", type=Path, required=True)
@@ -274,6 +288,26 @@ def main(argv: list[str] | None = None) -> int:
             if report.get("refused"):
                 return 1
             return 0 if report.get("all_fit", True) else 2
+        if args.command == "trigger-recall-local":
+            from xlm.data.exclusion.trigger_audit import EXPECT_KEYS, recall
+
+            envelope = read_metadata(args.receipt, digested=False)
+            expect = {
+                key: getattr(args, "expect_" + key)
+                for key in EXPECT_KEYS
+                if getattr(args, "expect_" + key) is not None
+            }
+            result = recall(
+                envelope.get("payload", envelope),
+                read_metadata(args.policy, digested=False),
+                args.index,
+                args.material_root,
+                args.scratch,
+                mode=args.mode,
+                expect=expect,
+            )
+            print(json.dumps(result, sort_keys=True))
+            return 0 if result["accepted"] else 2
         spec = MaterialSpec.model_validate(read_metadata(args.spec, digested=False))
         if args.command == "inspect-local":
             inspection = inspect(spec, args.material_root)

@@ -80,11 +80,15 @@ GROUP_FILES = frozenset(
         "fam_hit.u8",
         "fam_split.u8",
         "fam_quick.u8",
+        # c05-production-v3 only: exclusion families (grouping.SEALED_V3).
+        "excl.u32",
+        "excluded.u8",
+        "fam_excluded.u8",
     }
 )
 GROUP_WORK_DIRS = frozenset({"near", "sort"})
 NEAR_FILES = frozenset({"postings.bin", "members.bin"})
-UNIT_SECTIONS: Final = 18  # 17 sections + optional review, staged before assembly
+UNIT_SECTIONS: Final = 19  # 17 sections + optional lineage scope and review, staged
 _UNIT = re.compile(r"^\d{5}\.unit$")
 _UNIT_STAGING = re.compile(r"^\d{5}\.(staging|unit\.staging)$")
 _RUN = re.compile(r"^run-\d{5}\.bin$")

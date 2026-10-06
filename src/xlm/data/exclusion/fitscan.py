@@ -54,6 +54,16 @@ MEMBERSHIP_KEYS = frozenset(
         "upstream_component",
     }
 )
+#: c05_membership_v3 (c05-production-v3): the split-leakage and contamination families
+#: are separate fields; no ``lineage_group``.
+MEMBERSHIP_KEYS_V3 = (MEMBERSHIP_KEYS - {"lineage_group"}) | {"split_group", "exclusion_group"}
+MEMBERSHIP_SCHEMAS = {
+    "c05_membership_v2": (MEMBERSHIP_KEYS, ("duplicate_group", "lineage_group")),
+    "c05_membership_v3": (
+        MEMBERSHIP_KEYS_V3,
+        ("duplicate_group", "split_group", "exclusion_group"),
+    ),
+}
 SOURCE_BLOCK_BYTES = 8 * 1024**2
 POLL_SECONDS = 0.05
 HEX = frozenset("0123456789abcdef")
@@ -86,6 +96,7 @@ class MembershipTables:
     fit_document_cap: int
     line_ceiling: int
     rank_tag: str
+    contract: str = "c05_membership_v2"  # the plan's output contract (row schema)
 
 
 @dataclass
@@ -146,6 +157,10 @@ def parse_membership_chunk(chunk: bytes) -> MembershipChunk:
     allocations: list[int] = []
     ranks: list[bytes] = []
     previous: bytes | None = None
+    schema = MEMBERSHIP_SCHEMAS.get(tables.contract)
+    if schema is None:
+        raise C05Error("unknown C05 membership contract")
+    expected_keys, group_fields = schema
     zero = bytes(32)
     start = 0
     end_of_chunk = len(chunk)
@@ -158,7 +173,7 @@ def parse_membership_chunk(chunk: bytes) -> MembershipChunk:
         start = stop
         if len(ids) % 4096 == 4095:
             _cancel_check()
-        if type(row) is not dict or row.keys() != MEMBERSHIP_KEYS:
+        if type(row) is not dict or row.keys() != expected_keys:
             raise C05Error("membership record schema")
         doc_id, content, size = row["doc_id"], row["content"], row["bytes"]
         number, split = row["row"], row["split"]
@@ -171,7 +186,7 @@ def parse_membership_chunk(chunk: bytes) -> MembershipChunk:
         if type(size) is not int or size < 0 or type(number) is not int or number < 1:
             raise C05Error("membership size or row value")
         if type(row["quick"]) is not bool or not all(
-            type(row[name]) is str for name in ("duplicate_group", "lineage_group")
+            type(row[name]) is str for name in group_fields
         ):
             raise C05Error("membership group field type")
         ref = tables.files.get(row["file"]) if type(row["file"]) is str else None

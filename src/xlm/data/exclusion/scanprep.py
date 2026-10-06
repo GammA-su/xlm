@@ -22,13 +22,15 @@ import numpy as np
 import numpy.typing as npt
 
 from xlm.core.contracts import CanonicalDocument
-from xlm.data.dedup.lineage import lineage_keys_v3
+from xlm.data.dedup.lineage import lineage_keys_v3, split_only_keys_v1
 from xlm.data.dedup.matchview import match_normalize
 from xlm.data.dedup.minhash import MinHasher, signature_from_array
 from xlm.data.evidence_v2 import canonical
-from xlm.data.exclusion.policy import C05Error, ProductionPolicy
+from xlm.data.exclusion.policy import C05Error, ProductionPolicy, scoped
 
 FORMAT: Final = "c05-facts-v2"
+#: c05-production-v3 units add one ``lineage_scope`` byte per lineage key (1 = split-only).
+FORMAT_V3: Final = "c05-facts-v3"
 PERMUTATIONS: Final = 128
 #: Fixed-width per-document record: canonical byte count, exact normalized-content
 #: SHA-256, canonical content digest, document-id SHA-256 (lookup key only).
@@ -91,6 +93,8 @@ class PreparedBatch:
     fragment_offsets: bytes
     review: tuple[tuple[int, tuple[str, ...]], ...] | None
     error: tuple[int, str] | None = None
+    # c05-facts-v3 only: one byte per lineage key, in key order (1 = split-only key).
+    lineage_scope: bytes = b""
 
 
 def shingle_hashes(normalized: str, size: int) -> npt.NDArray[np.uint64]:
@@ -166,6 +170,7 @@ class Preparer:
         self.matcher = matcher
         self.review = review
         self.hasher = MinHasher(policy.minhash())
+        self.scoped = scoped(policy)
         if policy.permutations != PERMUTATIONS:
             raise C05Error("compact facts store 128 MinHash permutations")
 
@@ -176,6 +181,7 @@ class Preparer:
         signatures = np.empty((len(lines), PERMUTATIONS), dtype="<u8")
         ids: list[bytes] = []
         lineage: list[tuple[str, ...]] = []
+        scope = bytearray()
         parents: list[tuple[str, ...]] = []
         hits: list[bytes] = []
         fragments: list[bytes] = []
@@ -187,8 +193,11 @@ class Preparer:
             except Exception as exc:  # noqa: BLE001 - the whole file fails closed
                 return self._failed(context, sequence, first_row, row, exc)
             doc_bytes, exact, content, identity, signature, keys, unique, hit, piece, tokens = (
-                prepared
+                prepared[:10]
             )
+            if self.scoped:
+                split_only = prepared[10]
+                scope.extend(1 if key in split_only else 0 for key in keys)
             signatures[index] = signature
             record = records[index]
             record["bytes"] = doc_bytes
@@ -222,6 +231,7 @@ class Preparer:
             fragments=b"".join(fragments),
             fragment_offsets=fragment_offsets.tobytes(),
             review=tuple(review) if self.review else None,
+            lineage_scope=bytes(scope),
         )
 
     def _one(self, raw: bytes, context: FileContext, row: int) -> tuple[Any, ...]:
@@ -234,6 +244,7 @@ class Preparer:
         exact = _SHA256(normalized.encode("utf-8")).digest()
         content = canonical.digest(doc.to_dict())
         keys = lineage_keys_v3(doc)
+        split_only = split_only_keys_v1(doc) if self.scoped else frozenset()
         unique = tuple(sorted({p for p in doc.parent_ids if p}))
         if hit is not None and (len(hit) != 64 or hit != hit.lower()):
             raise C05Error("matcher identity is not a SHA-256 digest")
@@ -249,6 +260,7 @@ class Preparer:
             self.hasher.band_keys(best),
             keys,
             unique,
+            split_only if self.scoped else None,
         )
         return (
             doc.utf8_byte_count,
@@ -261,6 +273,7 @@ class Preparer:
             None if hit is None else bytes.fromhex(hit),
             piece,
             tokens,
+            split_only,
         )
 
     def _parse(
@@ -322,6 +335,7 @@ def fragment(
     bands: Sequence[str],
     lineage: Sequence[str],
     parents: Sequence[str],
+    split_only: frozenset[str] | None = None,
 ) -> bytes:
     """The bytes the historical ``DiskGroups.facts_digest`` hashed for one document.
 
@@ -349,6 +363,11 @@ def fragment(
     parts.extend(b'["bands","' + key.encode("ascii") + b'"]' for key in sorted(bands))
     parts.extend(canonical.canonical_bytes(["lineage", key]) for key in _utf8_sorted(lineage))
     parts.extend(canonical.canonical_bytes(["parent", key]) for key in _utf8_sorted(parents))
+    if split_only is not None:
+        # c05-facts-v3: split-only lineage keys are part of the attested facts.
+        parts.extend(
+            canonical.canonical_bytes(["split_only", key]) for key in _utf8_sorted(list(split_only))
+        )
     return b"".join(parts)
 
 

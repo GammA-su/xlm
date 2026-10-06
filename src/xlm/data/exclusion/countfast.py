@@ -429,6 +429,7 @@ def count_tables(view: StreamedC05) -> tuple[MembershipTables, list[str]]:
         fit_document_cap=-1,  # No row is ranked: counting needs no fit order.
         line_ceiling=view.plan.resources.document_bytes,
         rank_tag="count-tokens-no-rank",
+        contract=view.plan.output_contract,
     )
     return tables, keys
 
