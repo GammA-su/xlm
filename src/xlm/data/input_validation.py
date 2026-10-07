@@ -4,10 +4,48 @@ from __future__ import annotations
 
 import json
 from collections.abc import Callable
+from typing import Any
 
 import numpy as np
 
-from xlm.data.tokens import INDEX_SCHEMA_V2, TokenShardReader
+from xlm.data.tokens import (
+    INDEX_SCHEMA_V2,
+    TokenShardReader,
+    check_normalized_coverage,
+    framing_positions,
+)
+
+
+def validate_v1_spans(record: dict[str, Any], tokens: int) -> None:
+    """Self-consistency of explicit v1 spans, in normalized-text byte coordinates.
+
+    Spans are the producer's cumulative token payloads: contiguous half-open intervals
+    from 0 whose final end is ``covered_bytes``, zero-length at BOS/EOS. They are not
+    bounded by the original ``byte_count`` (NFC can grow UTF-8); that relation is
+    :func:`check_normalized_coverage`'s.
+    """
+    spans = record["token_byte_spans"]
+    if type(spans) is not list or len(spans) != tokens:
+        raise ValueError("invalid per-token canonical byte spans")
+    end = 0
+    for span in spans:
+        if (
+            type(span) is not list
+            or len(span) != 2
+            or type(span[0]) is not int
+            or type(span[1]) is not int
+            or span[0] != end
+            or span[1] < end
+        ):
+            raise ValueError("invalid per-token canonical byte spans")
+        end = span[1]
+    covered = record.get("covered_bytes")
+    if type(covered) is not int or covered != end:
+        raise ValueError("v1 canonical byte coverage mismatch")
+    bos, eos = framing_positions(record, tokens)
+    if (bos and spans[0][1] != 0) or (eos and spans[-1][0] != end):
+        raise ValueError("v1 structural byte spans are not zero-length framing")
+    check_normalized_coverage(record.get("byte_count"), end, eos)
 
 
 def validate_training_index(
@@ -39,18 +77,8 @@ def validate_training_index(
                 dtype = "<u2" if reader.token_bytes_size == 2 else "<u4"
                 ids = np.frombuffer(raw_ids, dtype=dtype)
                 reader.validate_v2_ids(record, ids)
-            else:
-                spans = record.get("token_byte_spans")
-                if spans is not None and (
-                    len(spans) != tokens
-                    or any(
-                        len(span) != 2
-                        or any(type(n) is not int for n in span)
-                        or not 0 <= span[0] <= span[1] <= record["byte_count"]
-                        for span in spans
-                    )
-                ):
-                    raise ValueError("invalid per-token canonical byte spans")
+            elif record.get("token_byte_spans") is not None:
+                validate_v1_spans(record, tokens)
             cursor += tokens
             count += 1
             if count % 4096 == 0 and check is not None:

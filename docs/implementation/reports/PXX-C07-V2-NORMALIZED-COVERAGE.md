@@ -1,5 +1,8 @@
 # C07-v2 normalized coverage: targeted repair blocked by a second invariant
 
+Superseded 2026-10-07 by [PXX-C07-NORMALIZED-BYTE-CONTRACT](PXX-C07-NORMALIZED-BYTE-CONTRACT.md),
+which replaces the retained upper bound. This report remains the historical record.
+
 2026-10-07. **BLOCKED**, not production ready. The requested EOS-only repair is
 implemented and passes its authored regressions, but complete real validation cannot
 pass while retaining the explicitly required `covered_bytes <= byte_count` check.

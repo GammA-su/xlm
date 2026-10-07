@@ -1,4 +1,17 @@
-> **C07-V2 NORMALIZED COVERAGE (2026-10-07): BLOCKED AFTER TARGETED EOS REPAIR.**
+> **C07 NORMALIZED-BYTE CONTRACT (2026-10-07): READY FOR OPERATOR VALIDATION; 11-SHARD VALIDATION NOT RUN.**
+>
+> `byte_count` (original UTF-8) and `covered_bytes`/spans (`canonical_normalize` UTF-8)
+> are different coordinates. v1 and v2 training validation now require exact internal
+> consistency (v2 table reconstruction, v1 contiguous spans, int `covered_bytes`, framed
+> zero-length BOS/EOS) plus the proven bound `0 <= covered <= 3 * byte_count`; removed
+> `covered <= byte_count` and v1 `span <= byte_count`. 65 authored cases pass; bounded
+> read-only probe validates `common_pile_prose` records 0..8191 incl. ordinals 46 and 2332.
+> Source-only (class A): no shard regeneration, freeze re-signing or policy identity change.
+> [Report, commands and next operator command](reports/PXX-C07-NORMALIZED-BYTE-CONTRACT.md).
+> Next: operator runs `scripts/c07_normalized_coverage_probe.py validate`, then production
+> `input_preflight`, from `F:/Project/xlm-c07-normalized-contract`.
+>
+> **Superseded C07-V2 NORMALIZED COVERAGE (2026-10-07): BLOCKED AFTER TARGETED EOS REPAIR.**
 >
 > Real record 46 confirms the EOS/raw-byte equality bug. Removing only that comparison
 > passes 24 authored regression cases. Real record 2332 then fails the retained upper

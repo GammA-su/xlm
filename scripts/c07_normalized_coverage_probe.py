@@ -6,6 +6,7 @@ import argparse
 import hashlib
 import json
 import time
+from collections.abc import Callable
 from pathlib import Path
 
 import numpy as np
@@ -21,10 +22,60 @@ from xlm.data.input_validation import validate_training_index
 from xlm.data.tokens import TokenShardReader
 
 
+def bounded(reader: TokenShardReader, records: int, check: Callable[[], None]) -> None:
+    """Validate a record prefix; print only counts and the known ordinals' numbers."""
+    began = time.monotonic()
+    relations = {"<": 0, "==": 0, ">": 0}
+    known: dict[int, dict[str, object]] = {}
+    cursor = 0
+    with (reader.directory / "tokens.bin").open("rb") as payload:
+        for ordinal, record in enumerate(reader.iter_document_offsets()):
+            if ordinal >= records:
+                break
+            count = record["token_count"]
+            if record["token_start"] != cursor:
+                raise ValueError("document token index must be contiguous")
+            reader.check_read_window(count)
+            ids = np.frombuffer(payload.read(count * 2), dtype="<u2")
+            reader.validate_v2_ids(record, ids)
+            cursor += count
+            covered, nbytes = record["covered_bytes"], record["byte_count"]
+            relations["<" if covered < nbytes else "==" if covered == nbytes else ">"] += 1
+            if ordinal in (46, 2332):
+                known[ordinal] = {
+                    "token_count": count,
+                    "byte_count": nbytes,
+                    "covered_bytes": covered,
+                    "bos_positions": record["bos_positions"],
+                    "eos_positions": record["eos_positions"],
+                    "validated": True,
+                }
+            if ordinal % 4096 == 0:
+                check()
+    print(
+        json.dumps(
+            {
+                "component": "common_pile_prose",
+                "records_validated": sum(relations.values()),
+                "covered_vs_byte_count": relations,
+                "known_ordinals": known,
+                "seconds": time.monotonic() - began,
+            },
+            sort_keys=True,
+        ),
+        flush=True,
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("mode", choices=("reproduce", "validate", "snapshot"))
+    parser.add_argument("mode", choices=("reproduce", "bounded", "validate", "snapshot"))
+    parser.add_argument(
+        "--records", type=int, default=8192, help="bounded mode: common_pile_prose prefix"
+    )
     args = parser.parse_args()
+    if not 1 <= args.records <= 65536:
+        raise ValueError("--records must be 1..65536")
     root = Path("G:/XLM/shards/mix01-policy-v2")
     sources = {p.name: p for p in root.iterdir() if p.is_dir()}
     policy = TrainingInputPolicy()
@@ -53,6 +104,9 @@ def main() -> None:
                 with path.open("rb") as stream:
                     item["sha256"] = hashlib.file_digest(stream, "sha256").hexdigest()
             print(json.dumps(item, sort_keys=True), flush=True)
+        return
+    if args.mode == "bounded":
+        bounded(TokenShardReader(sources["common_pile_prose"]), args.records, check)
         return
     names = ["common_pile_prose"] if args.mode == "reproduce" else sorted(sources)
     for name in names:

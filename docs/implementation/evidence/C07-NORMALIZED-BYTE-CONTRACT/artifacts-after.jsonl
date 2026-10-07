@@ -1,0 +1,68 @@
+{"bytes": 591, "mtime_ns": 1791320134703243300, "path": "G:\\XLM\\shards\\mix01-policy-v2\\common_pile_prose\\c05-attestation.json", "sha256": "c100e24093e0c9173aca184ab5478d30d11dfbbdb129c2b36800cb680d23c4af"}
+{"bytes": 114666974, "mtime_ns": 1791320133933145400, "path": "G:\\XLM\\shards\\mix01-policy-v2\\common_pile_prose\\offsets.jsonl"}
+{"bytes": 444, "mtime_ns": 1791320134701236700, "path": "G:\\XLM\\shards\\mix01-policy-v2\\common_pile_prose\\shard_counters.json", "sha256": "2cb997273dd09574cfc82f2d8ce40c9f20b08251a06a961a2c6d87aa09322ba4"}
+{"bytes": 594, "mtime_ns": 1791320134703243300, "path": "G:\\XLM\\shards\\mix01-policy-v2\\common_pile_prose\\shard_manifest.json", "sha256": "92a9a22053dd09fc9930de82c5079f914467c1365aa12fb5dbe7a1af197e7d0e"}
+{"bytes": 65536, "mtime_ns": 1791320134699219100, "path": "G:\\XLM\\shards\\mix01-policy-v2\\common_pile_prose\\token_bytes.u16", "sha256": "8527d59938ff3d32abffa682b3fb338c4aa99caebc220acc276f014b64b39342"}
+{"bytes": 600324506, "mtime_ns": 1791320133933145400, "path": "G:\\XLM\\shards\\mix01-policy-v2\\common_pile_prose\\tokens.bin"}
+{"bytes": 591, "mtime_ns": 1791320255576101300, "path": "G:\\XLM\\shards\\mix01-policy-v2\\essential_practical\\c05-attestation.json", "sha256": "7f7968509026180fbbc32659ebb6e3b768fc960cd7ae3d43cdf6c718dd875a68"}
+{"bytes": 328391048, "mtime_ns": 1791320254744325900, "path": "G:\\XLM\\shards\\mix01-policy-v2\\essential_practical\\offsets.jsonl"}
+{"bytes": 448, "mtime_ns": 1791320255574094200, "path": "G:\\XLM\\shards\\mix01-policy-v2\\essential_practical\\shard_counters.json", "sha256": "4ece165a516e3bee9c07620d1374436e977eebbac319df250dbcdcc377610153"}
+{"bytes": 598, "mtime_ns": 1791320255578108700, "path": "G:\\XLM\\shards\\mix01-policy-v2\\essential_practical\\shard_manifest.json", "sha256": "9878fe7ed78f19525c224ba339d7df2f8f46fa46b3c4d27d149b018fef512706"}
+{"bytes": 65536, "mtime_ns": 1791320255572088200, "path": "G:\\XLM\\shards\\mix01-policy-v2\\essential_practical\\token_bytes.u16", "sha256": "8527d59938ff3d32abffa682b3fb338c4aa99caebc220acc276f014b64b39342"}
+{"bytes": 1200916792, "mtime_ns": 1791320254744325900, "path": "G:\\XLM\\shards\\mix01-policy-v2\\essential_practical\\tokens.bin"}
+{"bytes": 591, "mtime_ns": 1791320324241202200, "path": "G:\\XLM\\shards\\mix01-policy-v2\\essential_prose\\c05-attestation.json", "sha256": "ae63ab923fd97f71310c5cd7d802dac6d7b773bf614c599d1435842204c32780"}
+{"bytes": 191086661, "mtime_ns": 1791320323819323200, "path": "G:\\XLM\\shards\\mix01-policy-v2\\essential_prose\\offsets.jsonl"}
+{"bytes": 440, "mtime_ns": 1791320324239185300, "path": "G:\\XLM\\shards\\mix01-policy-v2\\essential_prose\\shard_counters.json", "sha256": "a75d15e068b97d1a49342ddd3de15caf389d663df6c5d09d54b099bad65bbb3c"}
+{"bytes": 589, "mtime_ns": 1791320324243208900, "path": "G:\\XLM\\shards\\mix01-policy-v2\\essential_prose\\shard_manifest.json", "sha256": "dcb919e5558bea5533a9def2db8cd48ff4b927e382dfcb37e4d3119946e4855f"}
+{"bytes": 65536, "mtime_ns": 1791320324239185300, "path": "G:\\XLM\\shards\\mix01-policy-v2\\essential_prose\\token_bytes.u16", "sha256": "8527d59938ff3d32abffa682b3fb338c4aa99caebc220acc276f014b64b39342"}
+{"bytes": 600537318, "mtime_ns": 1791320323813299400, "path": "G:\\XLM\\shards\\mix01-policy-v2\\essential_prose\\tokens.bin"}
+{"bytes": 591, "mtime_ns": 1791320457195427900, "path": "G:\\XLM\\shards\\mix01-policy-v2\\essential_science\\c05-attestation.json", "sha256": "948fccf7459209929a7afe7d076daee22360cb4ca3cc43313a1c2aa84c17b2ff"}
+{"bytes": 213412698, "mtime_ns": 1791320454740978300, "path": "G:\\XLM\\shards\\mix01-policy-v2\\essential_science\\offsets.jsonl"}
+{"bytes": 444, "mtime_ns": 1791320456998058000, "path": "G:\\XLM\\shards\\mix01-policy-v2\\essential_science\\shard_counters.json", "sha256": "16b49ff39022ccc2075b35e1bfd88606960d3eb264997dccb072a18176f24907"}
+{"bytes": 594, "mtime_ns": 1791320457389483200, "path": "G:\\XLM\\shards\\mix01-policy-v2\\essential_science\\shard_manifest.json", "sha256": "28e00973e869f1a1a8984f1becf1fe5933e449645fc5f198e392a35ad169d979"}
+{"bytes": 65536, "mtime_ns": 1791320456866868800, "path": "G:\\XLM\\shards\\mix01-policy-v2\\essential_science\\token_bytes.u16", "sha256": "8527d59938ff3d32abffa682b3fb338c4aa99caebc220acc276f014b64b39342"}
+{"bytes": 1200597000, "mtime_ns": 1791320454740978300, "path": "G:\\XLM\\shards\\mix01-policy-v2\\essential_science\\tokens.bin"}
+{"bytes": 591, "mtime_ns": 1791320659931816200, "path": "G:\\XLM\\shards\\mix01-policy-v2\\finepdfs_en\\c05-attestation.json", "sha256": "b1ffc3bea143fa9349ada046f0c16bbea6d838eb9fdb2b31ce0602ed53eeb503"}
+{"bytes": 217532827, "mtime_ns": 1791320659317077800, "path": "G:\\XLM\\shards\\mix01-policy-v2\\finepdfs_en\\offsets.jsonl"}
+{"bytes": 432, "mtime_ns": 1791320659929807800, "path": "G:\\XLM\\shards\\mix01-policy-v2\\finepdfs_en\\shard_counters.json", "sha256": "09dceca2e0a5d3207b51a191728aeaf92b9ed31d5a762c75f06dc3b4b4469a1e"}
+{"bytes": 582, "mtime_ns": 1791320659931816200, "path": "G:\\XLM\\shards\\mix01-policy-v2\\finepdfs_en\\shard_manifest.json", "sha256": "8b5f727c55ce9930289c73962c84c24a44026b328ef41b5a5012a7d34dc4f394"}
+{"bytes": 65536, "mtime_ns": 1791320659927799900, "path": "G:\\XLM\\shards\\mix01-policy-v2\\finepdfs_en\\token_bytes.u16", "sha256": "8527d59938ff3d32abffa682b3fb338c4aa99caebc220acc276f014b64b39342"}
+{"bytes": 1800616832, "mtime_ns": 1791320659317077800, "path": "G:\\XLM\\shards\\mix01-policy-v2\\finepdfs_en\\tokens.bin"}
+{"bytes": 591, "mtime_ns": 1791320724185055400, "path": "G:\\XLM\\shards\\mix01-policy-v2\\finewiki_en\\c05-attestation.json", "sha256": "83d3a022948f44125dbcb2ff884601091315494c2f631365d731c07e8616032a"}
+{"bytes": 171238378, "mtime_ns": 1791320723690568400, "path": "G:\\XLM\\shards\\mix01-policy-v2\\finewiki_en\\offsets.jsonl"}
+{"bytes": 432, "mtime_ns": 1791320724183548500, "path": "G:\\XLM\\shards\\mix01-policy-v2\\finewiki_en\\shard_counters.json", "sha256": "600320681d4b8fa11408d7998eccb5930c22f563e78b52854b4fb19e14137e8e"}
+{"bytes": 582, "mtime_ns": 1791320724187066400, "path": "G:\\XLM\\shards\\mix01-policy-v2\\finewiki_en\\shard_manifest.json", "sha256": "bf9a0d3359664a32b6d7aa461df54ce32146bd08a05a16d2c660208790770608"}
+{"bytes": 65536, "mtime_ns": 1791320724181542400, "path": "G:\\XLM\\shards\\mix01-policy-v2\\finewiki_en\\token_bytes.u16", "sha256": "8527d59938ff3d32abffa682b3fb338c4aa99caebc220acc276f014b64b39342"}
+{"bytes": 600491368, "mtime_ns": 1791320723688560900, "path": "G:\\XLM\\shards\\mix01-policy-v2\\finewiki_en\\tokens.bin"}
+{"bytes": 591, "mtime_ns": 1791320788814793200, "path": "G:\\XLM\\shards\\mix01-policy-v2\\ifm_behaviors_general_planning\\c05-attestation.json", "sha256": "af10a31e05eacc39eb78cd20045e4b6962e763f3dafab58a7bd4ccd504706812"}
+{"bytes": 66228932, "mtime_ns": 1791320788033094700, "path": "G:\\XLM\\shards\\mix01-policy-v2\\ifm_behaviors_general_planning\\offsets.jsonl"}
+{"bytes": 468, "mtime_ns": 1791320788813760900, "path": "G:\\XLM\\shards\\mix01-policy-v2\\ifm_behaviors_general_planning\\shard_counters.json", "sha256": "aab5d167243cda5c04d87be848ba755f892d67c2fe8ce095425bbdcfd720b126"}
+{"bytes": 617, "mtime_ns": 1791320788835982900, "path": "G:\\XLM\\shards\\mix01-policy-v2\\ifm_behaviors_general_planning\\shard_manifest.json", "sha256": "1487a44c15d462cdf4eaf1c1fec16dedb9bd66c1b830fc64a7406e4bcc4c71c5"}
+{"bytes": 65536, "mtime_ns": 1791320788811756000, "path": "G:\\XLM\\shards\\mix01-policy-v2\\ifm_behaviors_general_planning\\token_bytes.u16", "sha256": "8527d59938ff3d32abffa682b3fb338c4aa99caebc220acc276f014b64b39342"}
+{"bytes": 600178910, "mtime_ns": 1791320788033094700, "path": "G:\\XLM\\shards\\mix01-policy-v2\\ifm_behaviors_general_planning\\tokens.bin"}
+{"bytes": 591, "mtime_ns": 1791320882776211100, "path": "G:\\XLM\\shards\\mix01-policy-v2\\nemotron_wiki_rewrite\\c05-attestation.json", "sha256": "6f03e54990033cd1256962fdc9452ae5a61a8d9cba8e1e5591d8a10d6822da10"}
+{"bytes": 342141178, "mtime_ns": 1791320881941875700, "path": "G:\\XLM\\shards\\mix01-policy-v2\\nemotron_wiki_rewrite\\offsets.jsonl"}
+{"bytes": 452, "mtime_ns": 1791320882776211100, "path": "G:\\XLM\\shards\\mix01-policy-v2\\nemotron_wiki_rewrite\\shard_counters.json", "sha256": "ccfe7b59ffa4b80a85e266186d6707c207fe344ffd7662723acc04a2ef4b99e7"}
+{"bytes": 602, "mtime_ns": 1791320882778219500, "path": "G:\\XLM\\shards\\mix01-policy-v2\\nemotron_wiki_rewrite\\shard_manifest.json", "sha256": "92762e9b459b2bc29f7c80a26b66cbd718ca42c51db7e9c1e80f10a98cf9cf47"}
+{"bytes": 65536, "mtime_ns": 1791320882774460400, "path": "G:\\XLM\\shards\\mix01-policy-v2\\nemotron_wiki_rewrite\\token_bytes.u16", "sha256": "8527d59938ff3d32abffa682b3fb338c4aa99caebc220acc276f014b64b39342"}
+{"bytes": 960945074, "mtime_ns": 1791320881939866900, "path": "G:\\XLM\\shards\\mix01-policy-v2\\nemotron_wiki_rewrite\\tokens.bin"}
+{"bytes": 591, "mtime_ns": 1791320909870905100, "path": "G:\\XLM\\shards\\mix01-policy-v2\\simple_stories\\c05-attestation.json", "sha256": "86485ed2e5ede3aa07a6f7c8af7ef6955a684422dde00e03b18d23569564286d"}
+{"bytes": 299436612, "mtime_ns": 1791320909233065700, "path": "G:\\XLM\\shards\\mix01-policy-v2\\simple_stories\\offsets.jsonl"}
+{"bytes": 436, "mtime_ns": 1791320909870905100, "path": "G:\\XLM\\shards\\mix01-policy-v2\\simple_stories\\shard_counters.json", "sha256": "d0b8d95268652c558f58a61ccad73bfc547176d90094ec053f95ef07b62c8e0b"}
+{"bytes": 588, "mtime_ns": 1791320909872910900, "path": "G:\\XLM\\shards\\mix01-policy-v2\\simple_stories\\shard_manifest.json", "sha256": "d8df027c3539b757169856ac3f6da01889b625e5746f26c7f89b73e0f785702f"}
+{"bytes": 65536, "mtime_ns": 1791320909868900300, "path": "G:\\XLM\\shards\\mix01-policy-v2\\simple_stories\\token_bytes.u16", "sha256": "8527d59938ff3d32abffa682b3fb338c4aa99caebc220acc276f014b64b39342"}
+{"bytes": 240844192, "mtime_ns": 1791320909231059300, "path": "G:\\XLM\\shards\\mix01-policy-v2\\simple_stories\\tokens.bin"}
+{"bytes": 591, "mtime_ns": 1791321089936658400, "path": "G:\\XLM\\shards\\mix01-policy-v2\\synth_en_explanations\\c05-attestation.json", "sha256": "68a6338e8bfd3c24d0a4f3a56e4ec3788d901f174603d925b2c94756007a6714"}
+{"bytes": 1172987852, "mtime_ns": 1791321089113411700, "path": "G:\\XLM\\shards\\mix01-policy-v2\\synth_en_explanations\\offsets.jsonl"}
+{"bytes": 454, "mtime_ns": 1791321089934651400, "path": "G:\\XLM\\shards\\mix01-policy-v2\\synth_en_explanations\\shard_counters.json", "sha256": "0124ad37ca4e4a384890388d8e738fdf7940b930f2d29927c43192c945654564"}
+{"bytes": 603, "mtime_ns": 1791321089936658400, "path": "G:\\XLM\\shards\\mix01-policy-v2\\synth_en_explanations\\shard_manifest.json", "sha256": "8b91ba8f6f30cb650f5d0ff4a5949c787da0b8dd5cfe7e919b69e31104740372"}
+{"bytes": 65536, "mtime_ns": 1791321089930634100, "path": "G:\\XLM\\shards\\mix01-policy-v2\\synth_en_explanations\\token_bytes.u16", "sha256": "8527d59938ff3d32abffa682b3fb338c4aa99caebc220acc276f014b64b39342"}
+{"bytes": 1803341758, "mtime_ns": 1791321089113411700, "path": "G:\\XLM\\shards\\mix01-policy-v2\\synth_en_explanations\\tokens.bin"}
+{"bytes": 591, "mtime_ns": 1791321333372956800, "path": "G:\\XLM\\shards\\mix01-policy-v2\\ultrax_ultrafineweb\\c05-attestation.json", "sha256": "6c5809d7635a49dba2a14bb2553726b32ded783360af1b4a368d75ab7de7cbbb"}
+{"bytes": 1040544475, "mtime_ns": 1791321332623442100, "path": "G:\\XLM\\shards\\mix01-policy-v2\\ultrax_ultrafineweb\\offsets.jsonl"}
+{"bytes": 453, "mtime_ns": 1791321333372956800, "path": "G:\\XLM\\shards\\mix01-policy-v2\\ultrax_ultrafineweb\\shard_counters.json", "sha256": "4696b3347adf01288989d48194d3253db7541d1574c950f5d89387f3baffa860"}
+{"bytes": 600, "mtime_ns": 1791321333375471400, "path": "G:\\XLM\\shards\\mix01-policy-v2\\ultrax_ultrafineweb\\shard_manifest.json", "sha256": "be823f52a81ae20bf5b680b5722ba5863581f76b8469d59ed3cde6fcebdf8555"}
+{"bytes": 65536, "mtime_ns": 1791321333370030900, "path": "G:\\XLM\\shards\\mix01-policy-v2\\ultrax_ultrafineweb\\token_bytes.u16", "sha256": "8527d59938ff3d32abffa682b3fb338c4aa99caebc220acc276f014b64b39342"}
+{"bytes": 2402855572, "mtime_ns": 1791321332623442100, "path": "G:\\XLM\\shards\\mix01-policy-v2\\ultrax_ultrafineweb\\tokens.bin"}
+{"bytes": 18472, "mtime_ns": 1791362828516085200, "path": "G:\\XLM\\freeze\\mix01-policy-v2\\freeze.json", "sha256": "769cc891b5621866ba0ea1459fe42580fd94d240cb9224806b7f739e027ff4d5"}
+{"bytes": 8418, "mtime_ns": 1791362828517089800, "path": "G:\\XLM\\freeze\\mix01-policy-v2\\training-data.json", "sha256": "d73945d20e8c0e5d05db8487a75ad2ec12cc07d9446b759392b253bc9dc516cb"}

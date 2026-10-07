@@ -38,6 +38,50 @@ INDEX_SCHEMAS = (INDEX_SCHEMA_V1, INDEX_SCHEMA_V2)
 TOKEN_BYTES_FILE = "token_bytes.u16"
 #: A v2 table covers at most a uint16 vocabulary plus headroom for uint32 shards.
 MAX_TOKEN_BYTES_TABLE = 2 * 1024**2
+#: Most UTF-8 bytes ``canonical_normalize`` yields per original UTF-8 byte. NFC never
+#: exceeds NFD in bytes (no canonical composite is longer than its two-code-point
+#: decomposition), NFD grows one code point at most 3x (U+0390: 2 -> 6 bytes) and
+#: newline normalization never grows. Proven exhaustively for the pinned Unicode
+#: database by ``tests/test_c07_normalized_coverage.py``.
+MAX_NORMALIZED_UTF8_GROWTH = 3
+
+
+def check_normalized_coverage(byte_count: Any, covered: Any, complete: bool) -> None:
+    """Relate an index record's two byte coordinates without equating them.
+
+    ``byte_count`` is the original ``CanonicalDocument.utf8_byte_count``;
+    ``covered_bytes`` sums emitted token payloads of ``canonical_normalize(text)``. NFC
+    can grow or shrink UTF-8 and CRLF shrinks it, so neither is an exact bound on the
+    other. What does hold is ``0 <= covered <= 3 * byte_count`` for every emitted
+    prefix, and a complete framed document (EOS emitted) covers some bytes exactly when
+    its original text is nonempty.
+    """
+    if type(byte_count) is not int or byte_count < 0:
+        raise ValueError("original byte_count must be a nonnegative integer")
+    if type(covered) is not int or covered < 0:
+        raise ValueError("covered_bytes must be a nonnegative integer")
+    if covered > MAX_NORMALIZED_UTF8_GROWTH * byte_count:
+        raise ValueError("normalized coverage exceeds the canonical normalization bound")
+    if complete and byte_count and not covered:
+        raise ValueError("complete nonempty document has no normalized coverage")
+
+
+def framing_positions(record: dict[str, Any], count: int) -> tuple[bool, bool]:
+    """Whether a record frames BOS at 0 and EOS at its last token (C07 structural prefix).
+
+    Reserved IDs never come from ordinary text, so a structural token can only be the
+    framing BOS at position 0 or the framing EOS at position ``count - 1``.
+    """
+    bos, eos = record.get("bos_positions"), record.get("eos_positions")
+    if (
+        type(bos) is not list
+        or type(eos) is not list
+        or any(type(p) is not int for p in (*bos, *eos))
+        or bos not in ([], [0])
+        or eos not in ([], [count - 1])
+    ):
+        raise ValueError("structural positions are not a protected token prefix")
+    return bool(bos), bool(eos)
 
 
 def token_byte_lengths(tokenizer: BaseTokenizer) -> bytes:
@@ -488,19 +532,15 @@ class TokenShardReader:
             raise ValueError("invalid v2 token IDs or explicit spans")
         sizes = lengths[ids]
         covered = int(sizes.sum())
-        nbytes = record.get("byte_count")
-        if (
-            type(nbytes) is not int
-            or not 0 <= covered <= nbytes
-            or record.get("covered_bytes") != covered
-        ):
+        stored = record.get("covered_bytes")
+        if type(stored) is not int or stored != covered:
             raise ValueError("v2 canonical byte coverage mismatch")
-        bos, eos = record.get("bos_positions"), record.get("eos_positions")
-        if bos not in ([], [0]) or eos not in ([], [count - 1]):
-            raise ValueError("v2 structural positions are not a protected token prefix")
-        # v1 EOS is at normalized coverage; NFC/CRLF can reduce the original byte count.
+        bos, eos = framing_positions(record, count)
+        # Zero-length framing puts v1 BOS at [0, 0] and EOS at [covered, covered].
         if (bos and sizes[0] != 0) or (eos and sizes[-1] != 0):
             raise ValueError("v2 structural byte spans differ from v1 framing")
+        # Normalized coverage and the original byte count are different coordinates.
+        check_normalized_coverage(record.get("byte_count"), covered, eos)
 
     def verify_integrity(self) -> None:
         """Verify binary and index files against manifest checksums."""

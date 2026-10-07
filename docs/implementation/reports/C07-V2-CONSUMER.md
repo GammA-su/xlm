@@ -1,10 +1,12 @@
 # Mix-01 C07-v2 training consumer review and fix
 
-2026-10-07 correction: production consumer acceptance is **BLOCKED**. The EOS/raw
-byte-count equality was incorrect; its targeted repair exposes a second record
-with normalized coverage greater than the original byte count. See
-[normalized-coverage investigation](PXX-C07-V2-NORMALIZED-COVERAGE.md).
-The readiness statement below is the historical 2026-10-06 result.
+2026-10-07 correction: the EOS/raw byte-count equality and the `covered <= byte_count`
+bound compared different coordinates and were incorrect (see the
+[normalized-coverage investigation](PXX-C07-V2-NORMALIZED-COVERAGE.md)). They are
+replaced by exact internal checks and `0 <= covered <= 3 * byte_count` in
+[PXX-C07-NORMALIZED-BYTE-CONTRACT](PXX-C07-NORMALIZED-BYTE-CONTRACT.md); production
+11-shard validation is awaiting the operator. The readiness statement below is the
+historical 2026-10-06 result.
 
 2026-10-06. **C07-OFFSETS-V2: SAFE for the exact frozen tokenizer. Consumer engineering readiness: YES.**
 This permits the operator to run the reviewed chain; it is not a claim that production

@@ -2,10 +2,11 @@
 
 **2026-10-07: production shards and freeze already exist and are immutable. Do not
 repeat the historical generation/signing steps below for the coverage repair.**
-The repair worktree is `F:/Project/xlm-training-input-v2-coverage-fix`, branch
-`fix/c07-v2-normalized-coverage`. Production admission is currently **BLOCKED**:
-the EOS-only correction exposes normalized coverage exceeding original text bytes.
-See [diagnostics and next prompt](../implementation/reports/PXX-C07-V2-NORMALIZED-COVERAGE.md).
+The repair worktree is `F:/Project/xlm-c07-normalized-contract`, branch
+`fix/c07-normalized-byte-contract`. It corrects v1/v2 validation to compare original
+`byte_count` and normalized `covered_bytes` only through the proven 3x NFC bound; the
+earlier blocker is superseded. Run the two read-only operator commands in
+[PXX-C07-NORMALIZED-BYTE-CONTRACT](../implementation/reports/PXX-C07-NORMALIZED-BYTE-CONTRACT.md).
 No signing key, regeneration, re-signing or training is authorized for this repair.
 The commands below document the earlier generation procedure, not current next actions.
 
