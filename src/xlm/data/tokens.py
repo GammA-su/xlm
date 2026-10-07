@@ -62,7 +62,8 @@ def derived_byte_spans(token_ids: Any, lengths: npt.NDArray[np.int64]) -> list[l
     """Half-open canonical byte spans of one document's tokens (v1 ``token_byte_spans``).
 
     Spans are contiguous from 0; BOS/EOS have length 0, so they become ``[0, 0]`` and
-    ``[n, n]``. The result has the exact shape and types ``json.loads`` gives a v1 line.
+    ``[n, n]``, where n is normalized ``covered_bytes``, not the original text's
+    ``byte_count``. The result has the exact shape and types ``json.loads`` gives a v1 line.
     """
     ids = np.asarray(token_ids, dtype=np.int64)
     if ids.size and (int(ids.min()) < 0 or int(ids.max()) >= len(lengths)):
@@ -497,7 +498,8 @@ class TokenShardReader:
         bos, eos = record.get("bos_positions"), record.get("eos_positions")
         if bos not in ([], [0]) or eos not in ([], [count - 1]):
             raise ValueError("v2 structural positions are not a protected token prefix")
-        if (bos and sizes[0] != 0) or (eos and (sizes[-1] != 0 or covered != nbytes)):
+        # v1 EOS is at normalized coverage; NFC/CRLF can reduce the original byte count.
+        if (bos and sizes[0] != 0) or (eos and sizes[-1] != 0):
             raise ValueError("v2 structural byte spans differ from v1 framing")
 
     def verify_integrity(self) -> None:

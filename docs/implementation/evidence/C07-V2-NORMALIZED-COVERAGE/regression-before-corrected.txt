@@ -1,0 +1,31 @@
+.FF.F...................                                                 [100%]
+================================== FAILURES ===================================
+_________ test_original_text_v1_v2_training_equivalence[full-eos-nfc] _________
+tests\test_c07_normalized_coverage.py:81: in test_original_text_v1_v2_training_equivalence
+    validate_training_index(second)
+src\xlm\data\input_validation.py:41: in validate_training_index
+    reader.validate_v2_ids(record, ids)
+src\xlm\data\tokens.py:501: in validate_v2_ids
+    raise ValueError("v2 structural byte spans differ from v1 framing")
+E   ValueError: v2 structural byte spans differ from v1 framing
+________ test_original_text_v1_v2_training_equivalence[full-eos-crlf] _________
+tests\test_c07_normalized_coverage.py:81: in test_original_text_v1_v2_training_equivalence
+    validate_training_index(second)
+src\xlm\data\input_validation.py:41: in validate_training_index
+    reader.validate_v2_ids(record, ids)
+src\xlm\data\tokens.py:501: in validate_v2_ids
+    raise ValueError("v2 structural byte spans differ from v1 framing")
+E   ValueError: v2 structural byte spans differ from v1 framing
+______ test_original_text_v1_v2_training_equivalence[full-eos-combined] _______
+tests\test_c07_normalized_coverage.py:81: in test_original_text_v1_v2_training_equivalence
+    validate_training_index(second)
+src\xlm\data\input_validation.py:41: in validate_training_index
+    reader.validate_v2_ids(record, ids)
+src\xlm\data\tokens.py:501: in validate_v2_ids
+    raise ValueError("v2 structural byte spans differ from v1 framing")
+E   ValueError: v2 structural byte spans differ from v1 framing
+=========================== short test summary info ===========================
+FAILED tests/test_c07_normalized_coverage.py::test_original_text_v1_v2_training_equivalence[full-eos-nfc]
+FAILED tests/test_c07_normalized_coverage.py::test_original_text_v1_v2_training_equivalence[full-eos-crlf]
+FAILED tests/test_c07_normalized_coverage.py::test_original_text_v1_v2_training_equivalence[full-eos-combined]
+3 failed, 21 passed in 3.06s

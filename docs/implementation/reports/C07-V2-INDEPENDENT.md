@@ -7,7 +7,10 @@ inspected or ported during this review.
 The representation is exact for the frozen protected ByteLevel BPE. For content
 IDs t_i and byte lengths L(t_i), v1 defines span i as [sum(j<i)L(t_j), sum(j<=i)L(t_j)].
 It does not use backend character offsets. BOS contributes [0,0]. V1 appends EOS
-at [N,N], where N is the normalized UTF-8 byte count. The fast producer explicitly
+at [N,N], where N is the tokenizer-normalized UTF-8 byte count, equal to full-record
+`covered_bytes`. It is not the original stored text's `CanonicalDocument.utf8_byte_count`
+or shard `byte_count`. NFC may shrink or expand UTF-8 length; CRLF shrinks, while lone
+CR changes the byte without changing length. The fast producer explicitly
 requires sum L == N before truncation. Thus cumulative reconstruction also puts EOS
 at N. Keeping a prefix of chosen+1 tokens preserves every prefix sum; it does not
 relocate EOS to the truncated byte count. A crossing prefix normally excludes EOS.

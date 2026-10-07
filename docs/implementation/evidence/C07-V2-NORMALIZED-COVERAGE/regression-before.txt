@@ -1,0 +1,589 @@
+.FF.F.FFFFFF............                                                 [100%]
+================================== FAILURES ===================================
+_________ test_original_text_v1_v2_training_equivalence[full-eos-nfc] _________
+
+tmp_path = WindowsPath('C:/XLM-scratch/c07cov-before/test_original_text_v1_v2_train1')
+tokenizer = <xlm.tokenizers.bpe.ByteLevelBPETokenizer object at 0x000001F1DF43CB00>
+text = 'e\u0301', normalized = '\xe9', prefix = False
+
+    @pytest.mark.parametrize("text,normalized", [*CASES, pytest.param("", "", id="empty")])
+    @pytest.mark.parametrize("prefix", [False, True], ids=["full-eos", "selected-prefix"])
+    def test_original_text_v1_v2_training_equivalence(
+        tmp_path: Path, tokenizer: ByteLevelBPETokenizer, text: str, normalized: str, prefix: bool
+    ) -> None:
+        # Do not use the shared helper's normalized text or its byte count as this oracle.
+        raw = text.encode("utf-8")
+        digest = hashlib.sha256(raw).hexdigest()
+        doc = replace(
+            document(""), text=text, utf8_byte_count=len(raw), raw_hash=digest, clean_hash=digest
+        )
+        assert doc.text == text and doc.utf8_byte_count == len(raw)
+        assert canonical_normalize(text) == normalized
+        full_ids, full_spans = tokenizer.encode_with_offsets(doc.text, True)
+        writer = TokenShardWriter(tmp_path / "v1", "fixture", "fixture", tokenizer)
+        selected_count = len(full_ids)
+        if prefix:
+            # Authored selection lookup only; exercise the existing v1 writer's real slicing.
+            # Empty framed text has no positive-target proper prefix, so remains full EOS.
+            selected_count = max(2, len(full_ids) - 2)
+            selection = Mock(spec=SelectionGate)
+            selection.expect.return_value = (len(full_ids) - 1, selected_count - 1)
+            writer.selection = selection
+        writer.write_documents([doc], True)
+        first = TokenShardReader(tmp_path / "v1")
+        second = convert_v2(first.directory, tmp_path / "v2", tokenizer)
+        old = next(first.iter_document_offsets())
+        compact = next(second.iter_document_offsets())
+        assert first.read_tokens() == second.read_tokens() == full_ids[:selected_count]
+        assert old["byte_count"] == compact["byte_count"] == len(raw)
+        expected_spans = [list(span) for span in full_spans[:selected_count]]
+        assert old["token_byte_spans"] == expected_spans
+        covered = sum(end - start for start, end in expected_spans)
+        assert old["covered_bytes"] == compact["covered_bytes"] == covered
+        if selected_count == len(full_ids):
+            assert covered == len(normalized.encode("utf-8"))
+            assert old["eos_positions"] == [selected_count - 1]
+            assert expected_spans[-1] == [covered, covered]
+        else:
+            assert not old["eos_positions"]
+            assert covered <= len(normalized.encode("utf-8"))
+        if not text:
+            assert expected_spans == [[0, 0], [0, 0]]
+        # This full NFC/CRLF/combined path fails on source commit 947002d.
+        validate_training_index(first)
+>       validate_training_index(second)
+
+tests\test_c07_normalized_coverage.py:80:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\xlm\data\input_validation.py:41: in validate_training_index
+    reader.validate_v2_ids(record, ids)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <xlm.data.tokens.TokenShardReader object at 0x000001F1E0C26CF0>
+record = {'doc_id': '0', 'source_id': 'fixture', 'token_start': 0, 'token_count': 4, ...}
+ids = array([  1, 131, 106,   2], dtype=uint16)
+
+    def validate_v2_ids(self, record: dict[str, Any], ids: Any) -> None:
+        """Validate v2 coverage without building Python spans (streaming startup)."""
+        lengths = self.token_byte_table()
+        count = record.get("token_count")
+        if type(count) is not int or not 1 <= count <= V2_DOCUMENT_TOKENS or len(ids) != count:
+            raise ValueError("v2 document token ceiling or count mismatch")
+        if "token_byte_spans" in record or int(ids.max()) >= len(lengths) or int(ids.min()) < 0:
+            raise ValueError("invalid v2 token IDs or explicit spans")
+        sizes = lengths[ids]
+        covered = int(sizes.sum())
+        nbytes = record.get("byte_count")
+        if (
+            type(nbytes) is not int
+            or not 0 <= covered <= nbytes
+            or record.get("covered_bytes") != covered
+        ):
+            raise ValueError("v2 canonical byte coverage mismatch")
+        bos, eos = record.get("bos_positions"), record.get("eos_positions")
+        if bos not in ([], [0]) or eos not in ([], [count - 1]):
+            raise ValueError("v2 structural positions are not a protected token prefix")
+        if (bos and sizes[0] != 0) or (eos and (sizes[-1] != 0 or covered != nbytes)):
+>           raise ValueError("v2 structural byte spans differ from v1 framing")
+E           ValueError: v2 structural byte spans differ from v1 framing
+
+src\xlm\data\tokens.py:501: ValueError
+________ test_original_text_v1_v2_training_equivalence[full-eos-crlf] _________
+
+tmp_path = WindowsPath('C:/XLM-scratch/c07cov-before/test_original_text_v1_v2_train2')
+tokenizer = <xlm.tokenizers.bpe.ByteLevelBPETokenizer object at 0x000001F1DF43CB00>
+text = 'a\r\nb', normalized = 'a\nb', prefix = False
+
+    @pytest.mark.parametrize("text,normalized", [*CASES, pytest.param("", "", id="empty")])
+    @pytest.mark.parametrize("prefix", [False, True], ids=["full-eos", "selected-prefix"])
+    def test_original_text_v1_v2_training_equivalence(
+        tmp_path: Path, tokenizer: ByteLevelBPETokenizer, text: str, normalized: str, prefix: bool
+    ) -> None:
+        # Do not use the shared helper's normalized text or its byte count as this oracle.
+        raw = text.encode("utf-8")
+        digest = hashlib.sha256(raw).hexdigest()
+        doc = replace(
+            document(""), text=text, utf8_byte_count=len(raw), raw_hash=digest, clean_hash=digest
+        )
+        assert doc.text == text and doc.utf8_byte_count == len(raw)
+        assert canonical_normalize(text) == normalized
+        full_ids, full_spans = tokenizer.encode_with_offsets(doc.text, True)
+        writer = TokenShardWriter(tmp_path / "v1", "fixture", "fixture", tokenizer)
+        selected_count = len(full_ids)
+        if prefix:
+            # Authored selection lookup only; exercise the existing v1 writer's real slicing.
+            # Empty framed text has no positive-target proper prefix, so remains full EOS.
+            selected_count = max(2, len(full_ids) - 2)
+            selection = Mock(spec=SelectionGate)
+            selection.expect.return_value = (len(full_ids) - 1, selected_count - 1)
+            writer.selection = selection
+        writer.write_documents([doc], True)
+        first = TokenShardReader(tmp_path / "v1")
+        second = convert_v2(first.directory, tmp_path / "v2", tokenizer)
+        old = next(first.iter_document_offsets())
+        compact = next(second.iter_document_offsets())
+        assert first.read_tokens() == second.read_tokens() == full_ids[:selected_count]
+        assert old["byte_count"] == compact["byte_count"] == len(raw)
+        expected_spans = [list(span) for span in full_spans[:selected_count]]
+        assert old["token_byte_spans"] == expected_spans
+        covered = sum(end - start for start, end in expected_spans)
+        assert old["covered_bytes"] == compact["covered_bytes"] == covered
+        if selected_count == len(full_ids):
+            assert covered == len(normalized.encode("utf-8"))
+            assert old["eos_positions"] == [selected_count - 1]
+            assert expected_spans[-1] == [covered, covered]
+        else:
+            assert not old["eos_positions"]
+            assert covered <= len(normalized.encode("utf-8"))
+        if not text:
+            assert expected_spans == [[0, 0], [0, 0]]
+        # This full NFC/CRLF/combined path fails on source commit 947002d.
+        validate_training_index(first)
+>       validate_training_index(second)
+
+tests\test_c07_normalized_coverage.py:80:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\xlm\data\input_validation.py:41: in validate_training_index
+    reader.validate_v2_ids(record, ids)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <xlm.data.tokens.TokenShardReader object at 0x000001F1E0C49760>
+record = {'doc_id': '0', 'source_id': 'fixture', 'token_start': 0, 'token_count': 5, ...}
+ids = array([  1,  68, 202,  69,   2], dtype=uint16)
+
+    def validate_v2_ids(self, record: dict[str, Any], ids: Any) -> None:
+        """Validate v2 coverage without building Python spans (streaming startup)."""
+        lengths = self.token_byte_table()
+        count = record.get("token_count")
+        if type(count) is not int or not 1 <= count <= V2_DOCUMENT_TOKENS or len(ids) != count:
+            raise ValueError("v2 document token ceiling or count mismatch")
+        if "token_byte_spans" in record or int(ids.max()) >= len(lengths) or int(ids.min()) < 0:
+            raise ValueError("invalid v2 token IDs or explicit spans")
+        sizes = lengths[ids]
+        covered = int(sizes.sum())
+        nbytes = record.get("byte_count")
+        if (
+            type(nbytes) is not int
+            or not 0 <= covered <= nbytes
+            or record.get("covered_bytes") != covered
+        ):
+            raise ValueError("v2 canonical byte coverage mismatch")
+        bos, eos = record.get("bos_positions"), record.get("eos_positions")
+        if bos not in ([], [0]) or eos not in ([], [count - 1]):
+            raise ValueError("v2 structural positions are not a protected token prefix")
+        if (bos and sizes[0] != 0) or (eos and (sizes[-1] != 0 or covered != nbytes)):
+>           raise ValueError("v2 structural byte spans differ from v1 framing")
+E           ValueError: v2 structural byte spans differ from v1 framing
+
+src\xlm\data\tokens.py:501: ValueError
+______ test_original_text_v1_v2_training_equivalence[full-eos-combined] _______
+
+tmp_path = WindowsPath('C:/XLM-scratch/c07cov-before/test_original_text_v1_v2_train4')
+tokenizer = <xlm.tokenizers.bpe.ByteLevelBPETokenizer object at 0x000001F1DF43CB00>
+text = 'e\u0301\\r\\na\\rb', normalized = '\xe9\\na\\nb', prefix = False
+
+    @pytest.mark.parametrize("text,normalized", [*CASES, pytest.param("", "", id="empty")])
+    @pytest.mark.parametrize("prefix", [False, True], ids=["full-eos", "selected-prefix"])
+    def test_original_text_v1_v2_training_equivalence(
+        tmp_path: Path, tokenizer: ByteLevelBPETokenizer, text: str, normalized: str, prefix: bool
+    ) -> None:
+        # Do not use the shared helper's normalized text or its byte count as this oracle.
+        raw = text.encode("utf-8")
+        digest = hashlib.sha256(raw).hexdigest()
+        doc = replace(
+            document(""), text=text, utf8_byte_count=len(raw), raw_hash=digest, clean_hash=digest
+        )
+        assert doc.text == text and doc.utf8_byte_count == len(raw)
+        assert canonical_normalize(text) == normalized
+        full_ids, full_spans = tokenizer.encode_with_offsets(doc.text, True)
+        writer = TokenShardWriter(tmp_path / "v1", "fixture", "fixture", tokenizer)
+        selected_count = len(full_ids)
+        if prefix:
+            # Authored selection lookup only; exercise the existing v1 writer's real slicing.
+            # Empty framed text has no positive-target proper prefix, so remains full EOS.
+            selected_count = max(2, len(full_ids) - 2)
+            selection = Mock(spec=SelectionGate)
+            selection.expect.return_value = (len(full_ids) - 1, selected_count - 1)
+            writer.selection = selection
+        writer.write_documents([doc], True)
+        first = TokenShardReader(tmp_path / "v1")
+        second = convert_v2(first.directory, tmp_path / "v2", tokenizer)
+        old = next(first.iter_document_offsets())
+        compact = next(second.iter_document_offsets())
+        assert first.read_tokens() == second.read_tokens() == full_ids[:selected_count]
+        assert old["byte_count"] == compact["byte_count"] == len(raw)
+        expected_spans = [list(span) for span in full_spans[:selected_count]]
+        assert old["token_byte_spans"] == expected_spans
+        covered = sum(end - start for start, end in expected_spans)
+        assert old["covered_bytes"] == compact["covered_bytes"] == covered
+        if selected_count == len(full_ids):
+            assert covered == len(normalized.encode("utf-8"))
+            assert old["eos_positions"] == [selected_count - 1]
+            assert expected_spans[-1] == [covered, covered]
+        else:
+            assert not old["eos_positions"]
+            assert covered <= len(normalized.encode("utf-8"))
+        if not text:
+            assert expected_spans == [[0, 0], [0, 0]]
+        # This full NFC/CRLF/combined path fails on source commit 947002d.
+        validate_training_index(first)
+>       validate_training_index(second)
+
+tests\test_c07_normalized_coverage.py:80:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\xlm\data\input_validation.py:41: in validate_training_index
+    reader.validate_v2_ids(record, ids)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <xlm.data.tokens.TokenShardReader object at 0x000001F1E0C5D7F0>
+record = {'doc_id': '0', 'source_id': 'fixture', 'token_start': 0, 'token_count': 8, ...}
+ids = array([  1, 131, 106, 202,  68, 202,  69,   2], dtype=uint16)
+
+    def validate_v2_ids(self, record: dict[str, Any], ids: Any) -> None:
+        """Validate v2 coverage without building Python spans (streaming startup)."""
+        lengths = self.token_byte_table()
+        count = record.get("token_count")
+        if type(count) is not int or not 1 <= count <= V2_DOCUMENT_TOKENS or len(ids) != count:
+            raise ValueError("v2 document token ceiling or count mismatch")
+        if "token_byte_spans" in record or int(ids.max()) >= len(lengths) or int(ids.min()) < 0:
+            raise ValueError("invalid v2 token IDs or explicit spans")
+        sizes = lengths[ids]
+        covered = int(sizes.sum())
+        nbytes = record.get("byte_count")
+        if (
+            type(nbytes) is not int
+            or not 0 <= covered <= nbytes
+            or record.get("covered_bytes") != covered
+        ):
+            raise ValueError("v2 canonical byte coverage mismatch")
+        bos, eos = record.get("bos_positions"), record.get("eos_positions")
+        if bos not in ([], [0]) or eos not in ([], [count - 1]):
+            raise ValueError("v2 structural positions are not a protected token prefix")
+        if (bos and sizes[0] != 0) or (eos and (sizes[-1] != 0 or covered != nbytes)):
+>           raise ValueError("v2 structural byte spans differ from v1 framing")
+E           ValueError: v2 structural byte spans differ from v1 framing
+
+src\xlm\data\tokens.py:501: ValueError
+__ test_original_text_v1_v2_training_equivalence[selected-prefix-normalized] __
+
+tmp_path = WindowsPath('C:/XLM-scratch/c07cov-before/test_original_text_v1_v2_train6')
+tokenizer = <xlm.tokenizers.bpe.ByteLevelBPETokenizer object at 0x000001F1DF43CB00>
+text = 'caf\xe9\\n', normalized = 'caf\xe9\\n', prefix = True
+
+    @pytest.mark.parametrize("text,normalized", [*CASES, pytest.param("", "", id="empty")])
+    @pytest.mark.parametrize("prefix", [False, True], ids=["full-eos", "selected-prefix"])
+    def test_original_text_v1_v2_training_equivalence(
+        tmp_path: Path, tokenizer: ByteLevelBPETokenizer, text: str, normalized: str, prefix: bool
+    ) -> None:
+        # Do not use the shared helper's normalized text or its byte count as this oracle.
+        raw = text.encode("utf-8")
+        digest = hashlib.sha256(raw).hexdigest()
+        doc = replace(
+            document(""), text=text, utf8_byte_count=len(raw), raw_hash=digest, clean_hash=digest
+        )
+        assert doc.text == text and doc.utf8_byte_count == len(raw)
+        assert canonical_normalize(text) == normalized
+        full_ids, full_spans = tokenizer.encode_with_offsets(doc.text, True)
+        writer = TokenShardWriter(tmp_path / "v1", "fixture", "fixture", tokenizer)
+        selected_count = len(full_ids)
+        if prefix:
+            # Authored selection lookup only; exercise the existing v1 writer's real slicing.
+            # Empty framed text has no positive-target proper prefix, so remains full EOS.
+            selected_count = max(2, len(full_ids) - 2)
+            selection = Mock(spec=SelectionGate)
+            selection.expect.return_value = (len(full_ids) - 1, selected_count - 1)
+            writer.selection = selection
+>       writer.write_documents([doc], True)
+
+tests\test_c07_normalized_coverage.py:58:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\xlm\data\tokens.py:147: in write_documents
+    manifest = self._write_documents(screened, add_special_tokens, stage)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src\xlm\data\tokens.py:198: in _write_documents
+    "c05_selection": self.selection.digest,
+                     ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <Mock spec='SelectionGate' id='2138369736192'>, name = 'digest'
+
+    def __getattr__(self, name):
+        if name in {'_mock_methods', '_mock_unsafe'}:
+            raise AttributeError(name)
+        elif self._mock_methods is not None:
+            if name not in self._mock_methods or name in _all_magics:
+>               raise AttributeError("Mock object has no attribute %r" % name)
+E               AttributeError: Mock object has no attribute 'digest'
+
+C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\unittest\mock.py:660: AttributeError
+_____ test_original_text_v1_v2_training_equivalence[selected-prefix-nfc] ______
+
+tmp_path = WindowsPath('C:/XLM-scratch/c07cov-before/test_original_text_v1_v2_train7')
+tokenizer = <xlm.tokenizers.bpe.ByteLevelBPETokenizer object at 0x000001F1DF43CB00>
+text = 'e\u0301', normalized = '\xe9', prefix = True
+
+    @pytest.mark.parametrize("text,normalized", [*CASES, pytest.param("", "", id="empty")])
+    @pytest.mark.parametrize("prefix", [False, True], ids=["full-eos", "selected-prefix"])
+    def test_original_text_v1_v2_training_equivalence(
+        tmp_path: Path, tokenizer: ByteLevelBPETokenizer, text: str, normalized: str, prefix: bool
+    ) -> None:
+        # Do not use the shared helper's normalized text or its byte count as this oracle.
+        raw = text.encode("utf-8")
+        digest = hashlib.sha256(raw).hexdigest()
+        doc = replace(
+            document(""), text=text, utf8_byte_count=len(raw), raw_hash=digest, clean_hash=digest
+        )
+        assert doc.text == text and doc.utf8_byte_count == len(raw)
+        assert canonical_normalize(text) == normalized
+        full_ids, full_spans = tokenizer.encode_with_offsets(doc.text, True)
+        writer = TokenShardWriter(tmp_path / "v1", "fixture", "fixture", tokenizer)
+        selected_count = len(full_ids)
+        if prefix:
+            # Authored selection lookup only; exercise the existing v1 writer's real slicing.
+            # Empty framed text has no positive-target proper prefix, so remains full EOS.
+            selected_count = max(2, len(full_ids) - 2)
+            selection = Mock(spec=SelectionGate)
+            selection.expect.return_value = (len(full_ids) - 1, selected_count - 1)
+            writer.selection = selection
+>       writer.write_documents([doc], True)
+
+tests\test_c07_normalized_coverage.py:58:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\xlm\data\tokens.py:147: in write_documents
+    manifest = self._write_documents(screened, add_special_tokens, stage)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src\xlm\data\tokens.py:198: in _write_documents
+    "c05_selection": self.selection.digest,
+                     ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <Mock spec='SelectionGate' id='2138369729712'>, name = 'digest'
+
+    def __getattr__(self, name):
+        if name in {'_mock_methods', '_mock_unsafe'}:
+            raise AttributeError(name)
+        elif self._mock_methods is not None:
+            if name not in self._mock_methods or name in _all_magics:
+>               raise AttributeError("Mock object has no attribute %r" % name)
+E               AttributeError: Mock object has no attribute 'digest'
+
+C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\unittest\mock.py:660: AttributeError
+_____ test_original_text_v1_v2_training_equivalence[selected-prefix-crlf] _____
+
+tmp_path = WindowsPath('C:/XLM-scratch/c07cov-before/test_original_text_v1_v2_train8')
+tokenizer = <xlm.tokenizers.bpe.ByteLevelBPETokenizer object at 0x000001F1DF43CB00>
+text = 'a\r\nb', normalized = 'a\nb', prefix = True
+
+    @pytest.mark.parametrize("text,normalized", [*CASES, pytest.param("", "", id="empty")])
+    @pytest.mark.parametrize("prefix", [False, True], ids=["full-eos", "selected-prefix"])
+    def test_original_text_v1_v2_training_equivalence(
+        tmp_path: Path, tokenizer: ByteLevelBPETokenizer, text: str, normalized: str, prefix: bool
+    ) -> None:
+        # Do not use the shared helper's normalized text or its byte count as this oracle.
+        raw = text.encode("utf-8")
+        digest = hashlib.sha256(raw).hexdigest()
+        doc = replace(
+            document(""), text=text, utf8_byte_count=len(raw), raw_hash=digest, clean_hash=digest
+        )
+        assert doc.text == text and doc.utf8_byte_count == len(raw)
+        assert canonical_normalize(text) == normalized
+        full_ids, full_spans = tokenizer.encode_with_offsets(doc.text, True)
+        writer = TokenShardWriter(tmp_path / "v1", "fixture", "fixture", tokenizer)
+        selected_count = len(full_ids)
+        if prefix:
+            # Authored selection lookup only; exercise the existing v1 writer's real slicing.
+            # Empty framed text has no positive-target proper prefix, so remains full EOS.
+            selected_count = max(2, len(full_ids) - 2)
+            selection = Mock(spec=SelectionGate)
+            selection.expect.return_value = (len(full_ids) - 1, selected_count - 1)
+            writer.selection = selection
+>       writer.write_documents([doc], True)
+
+tests\test_c07_normalized_coverage.py:58:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\xlm\data\tokens.py:147: in write_documents
+    manifest = self._write_documents(screened, add_special_tokens, stage)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src\xlm\data\tokens.py:198: in _write_documents
+    "c05_selection": self.selection.digest,
+                     ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <Mock spec='SelectionGate' id='2138369729856'>, name = 'digest'
+
+    def __getattr__(self, name):
+        if name in {'_mock_methods', '_mock_unsafe'}:
+            raise AttributeError(name)
+        elif self._mock_methods is not None:
+            if name not in self._mock_methods or name in _all_magics:
+>               raise AttributeError("Mock object has no attribute %r" % name)
+E               AttributeError: Mock object has no attribute 'digest'
+
+C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\unittest\mock.py:660: AttributeError
+______ test_original_text_v1_v2_training_equivalence[selected-prefix-cr] ______
+
+tmp_path = WindowsPath('C:/XLM-scratch/c07cov-before/test_original_text_v1_v2_train9')
+tokenizer = <xlm.tokenizers.bpe.ByteLevelBPETokenizer object at 0x000001F1DF43CB00>
+text = 'a\rb', normalized = 'a\nb', prefix = True
+
+    @pytest.mark.parametrize("text,normalized", [*CASES, pytest.param("", "", id="empty")])
+    @pytest.mark.parametrize("prefix", [False, True], ids=["full-eos", "selected-prefix"])
+    def test_original_text_v1_v2_training_equivalence(
+        tmp_path: Path, tokenizer: ByteLevelBPETokenizer, text: str, normalized: str, prefix: bool
+    ) -> None:
+        # Do not use the shared helper's normalized text or its byte count as this oracle.
+        raw = text.encode("utf-8")
+        digest = hashlib.sha256(raw).hexdigest()
+        doc = replace(
+            document(""), text=text, utf8_byte_count=len(raw), raw_hash=digest, clean_hash=digest
+        )
+        assert doc.text == text and doc.utf8_byte_count == len(raw)
+        assert canonical_normalize(text) == normalized
+        full_ids, full_spans = tokenizer.encode_with_offsets(doc.text, True)
+        writer = TokenShardWriter(tmp_path / "v1", "fixture", "fixture", tokenizer)
+        selected_count = len(full_ids)
+        if prefix:
+            # Authored selection lookup only; exercise the existing v1 writer's real slicing.
+            # Empty framed text has no positive-target proper prefix, so remains full EOS.
+            selected_count = max(2, len(full_ids) - 2)
+            selection = Mock(spec=SelectionGate)
+            selection.expect.return_value = (len(full_ids) - 1, selected_count - 1)
+            writer.selection = selection
+>       writer.write_documents([doc], True)
+
+tests\test_c07_normalized_coverage.py:58:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\xlm\data\tokens.py:147: in write_documents
+    manifest = self._write_documents(screened, add_special_tokens, stage)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src\xlm\data\tokens.py:198: in _write_documents
+    "c05_selection": self.selection.digest,
+                     ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <Mock spec='SelectionGate' id='2138369728560'>, name = 'digest'
+
+    def __getattr__(self, name):
+        if name in {'_mock_methods', '_mock_unsafe'}:
+            raise AttributeError(name)
+        elif self._mock_methods is not None:
+            if name not in self._mock_methods or name in _all_magics:
+>               raise AttributeError("Mock object has no attribute %r" % name)
+E               AttributeError: Mock object has no attribute 'digest'
+
+C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\unittest\mock.py:660: AttributeError
+___ test_original_text_v1_v2_training_equivalence[selected-prefix-combined] ___
+
+tmp_path = WindowsPath('C:/XLM-scratch/c07cov-before/test_original_text_v1_v2_train10')
+tokenizer = <xlm.tokenizers.bpe.ByteLevelBPETokenizer object at 0x000001F1DF43CB00>
+text = 'e\u0301\\r\\na\\rb', normalized = '\xe9\\na\\nb', prefix = True
+
+    @pytest.mark.parametrize("text,normalized", [*CASES, pytest.param("", "", id="empty")])
+    @pytest.mark.parametrize("prefix", [False, True], ids=["full-eos", "selected-prefix"])
+    def test_original_text_v1_v2_training_equivalence(
+        tmp_path: Path, tokenizer: ByteLevelBPETokenizer, text: str, normalized: str, prefix: bool
+    ) -> None:
+        # Do not use the shared helper's normalized text or its byte count as this oracle.
+        raw = text.encode("utf-8")
+        digest = hashlib.sha256(raw).hexdigest()
+        doc = replace(
+            document(""), text=text, utf8_byte_count=len(raw), raw_hash=digest, clean_hash=digest
+        )
+        assert doc.text == text and doc.utf8_byte_count == len(raw)
+        assert canonical_normalize(text) == normalized
+        full_ids, full_spans = tokenizer.encode_with_offsets(doc.text, True)
+        writer = TokenShardWriter(tmp_path / "v1", "fixture", "fixture", tokenizer)
+        selected_count = len(full_ids)
+        if prefix:
+            # Authored selection lookup only; exercise the existing v1 writer's real slicing.
+            # Empty framed text has no positive-target proper prefix, so remains full EOS.
+            selected_count = max(2, len(full_ids) - 2)
+            selection = Mock(spec=SelectionGate)
+            selection.expect.return_value = (len(full_ids) - 1, selected_count - 1)
+            writer.selection = selection
+>       writer.write_documents([doc], True)
+
+tests\test_c07_normalized_coverage.py:58:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\xlm\data\tokens.py:147: in write_documents
+    manifest = self._write_documents(screened, add_special_tokens, stage)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src\xlm\data\tokens.py:198: in _write_documents
+    "c05_selection": self.selection.digest,
+                     ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <Mock spec='SelectionGate' id='2138369814320'>, name = 'digest'
+
+    def __getattr__(self, name):
+        if name in {'_mock_methods', '_mock_unsafe'}:
+            raise AttributeError(name)
+        elif self._mock_methods is not None:
+            if name not in self._mock_methods or name in _all_magics:
+>               raise AttributeError("Mock object has no attribute %r" % name)
+E               AttributeError: Mock object has no attribute 'digest'
+
+C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\unittest\mock.py:660: AttributeError
+____ test_original_text_v1_v2_training_equivalence[selected-prefix-empty] _____
+
+tmp_path = WindowsPath('C:/XLM-scratch/c07cov-before/test_original_text_v1_v2_train11')
+tokenizer = <xlm.tokenizers.bpe.ByteLevelBPETokenizer object at 0x000001F1DF43CB00>
+text = '', normalized = '', prefix = True
+
+    @pytest.mark.parametrize("text,normalized", [*CASES, pytest.param("", "", id="empty")])
+    @pytest.mark.parametrize("prefix", [False, True], ids=["full-eos", "selected-prefix"])
+    def test_original_text_v1_v2_training_equivalence(
+        tmp_path: Path, tokenizer: ByteLevelBPETokenizer, text: str, normalized: str, prefix: bool
+    ) -> None:
+        # Do not use the shared helper's normalized text or its byte count as this oracle.
+        raw = text.encode("utf-8")
+        digest = hashlib.sha256(raw).hexdigest()
+        doc = replace(
+            document(""), text=text, utf8_byte_count=len(raw), raw_hash=digest, clean_hash=digest
+        )
+        assert doc.text == text and doc.utf8_byte_count == len(raw)
+        assert canonical_normalize(text) == normalized
+        full_ids, full_spans = tokenizer.encode_with_offsets(doc.text, True)
+        writer = TokenShardWriter(tmp_path / "v1", "fixture", "fixture", tokenizer)
+        selected_count = len(full_ids)
+        if prefix:
+            # Authored selection lookup only; exercise the existing v1 writer's real slicing.
+            # Empty framed text has no positive-target proper prefix, so remains full EOS.
+            selected_count = max(2, len(full_ids) - 2)
+            selection = Mock(spec=SelectionGate)
+            selection.expect.return_value = (len(full_ids) - 1, selected_count - 1)
+            writer.selection = selection
+>       writer.write_documents([doc], True)
+
+tests\test_c07_normalized_coverage.py:58:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\xlm\data\tokens.py:147: in write_documents
+    manifest = self._write_documents(screened, add_special_tokens, stage)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src\xlm\data\tokens.py:198: in _write_documents
+    "c05_selection": self.selection.digest,
+                     ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <Mock spec='SelectionGate' id='2138369813984'>, name = 'digest'
+
+    def __getattr__(self, name):
+        if name in {'_mock_methods', '_mock_unsafe'}:
+            raise AttributeError(name)
+        elif self._mock_methods is not None:
+            if name not in self._mock_methods or name in _all_magics:
+>               raise AttributeError("Mock object has no attribute %r" % name)
+E               AttributeError: Mock object has no attribute 'digest'
+
+C:\Users\gamma\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\unittest\mock.py:660: AttributeError
+=========================== short test summary info ===========================
+FAILED tests/test_c07_normalized_coverage.py::test_original_text_v1_v2_training_equivalence[full-eos-nfc]
+FAILED tests/test_c07_normalized_coverage.py::test_original_text_v1_v2_training_equivalence[full-eos-crlf]
+FAILED tests/test_c07_normalized_coverage.py::test_original_text_v1_v2_training_equivalence[full-eos-combined]
+FAILED tests/test_c07_normalized_coverage.py::test_original_text_v1_v2_training_equivalence[selected-prefix-normalized]
+FAILED tests/test_c07_normalized_coverage.py::test_original_text_v1_v2_training_equivalence[selected-prefix-nfc]
+FAILED tests/test_c07_normalized_coverage.py::test_original_text_v1_v2_training_equivalence[selected-prefix-crlf]
+FAILED tests/test_c07_normalized_coverage.py::test_original_text_v1_v2_training_equivalence[selected-prefix-cr]
+FAILED tests/test_c07_normalized_coverage.py::test_original_text_v1_v2_training_equivalence[selected-prefix-combined]
+FAILED tests/test_c07_normalized_coverage.py::test_original_text_v1_v2_training_equivalence[selected-prefix-empty]
+9 failed, 15 passed in 11.76s

@@ -1,5 +1,14 @@
 # Mix-01 C07-v2 consumer operator runbook
 
+**2026-10-07: production shards and freeze already exist and are immutable. Do not
+repeat the historical generation/signing steps below for the coverage repair.**
+The repair worktree is `F:/Project/xlm-training-input-v2-coverage-fix`, branch
+`fix/c07-v2-normalized-coverage`. Production admission is currently **BLOCKED**:
+the EOS-only correction exposes normalized coverage exceeding original text bytes.
+See [diagnostics and next prompt](../implementation/reports/PXX-C07-V2-NORMALIZED-COVERAGE.md).
+No signing key, regeneration, re-signing or training is authorized for this repair.
+The commands below document the earlier generation procedure, not current next actions.
+
 Use the locally committed `fix/training-input-policy-v2` worktree, not the Opus source
 or earlier conservative audit worktree. These are **operator commands; production was
 not run by the agent**. Stop on any nonzero exit. Each code block is one independently

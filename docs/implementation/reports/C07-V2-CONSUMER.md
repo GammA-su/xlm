@@ -1,5 +1,11 @@
 # Mix-01 C07-v2 training consumer review and fix
 
+2026-10-07 correction: production consumer acceptance is **BLOCKED**. The EOS/raw
+byte-count equality was incorrect; its targeted repair exposes a second record
+with normalized coverage greater than the original byte count. See
+[normalized-coverage investigation](PXX-C07-V2-NORMALIZED-COVERAGE.md).
+The readiness statement below is the historical 2026-10-06 result.
+
 2026-10-06. **C07-OFFSETS-V2: SAFE for the exact frozen tokenizer. Consumer engineering readiness: YES.**
 This permits the operator to run the reviewed chain; it is not a claim that production
 shards, a production freeze, training, or a full-scale timing test have been completed.
@@ -22,7 +28,9 @@ the UTF-8 bytes decoded from its vocabulary spelling, not backend character offs
 For ordered token IDs `t_i`, let `L(t_i)` be their exact byte lengths and
 `S_i = sum(j < i, L(t_j))`. Then its span is uniquely `[S_i, S_i + L(t_i)]`.
 BOS has span `[0,0]`. EOS has span `[N,N]`, where N is the canonical normalized
-document byte count. The producer checks the **full** content-length sum equals N
+document byte count (`covered_bytes` for a full record), not the original
+`CanonicalDocument.utf8_byte_count` retained in shard `byte_count`. The producer checks
+the **full** content-length sum equals N
 before applying a selected prefix of `chosen + 1` IDs. Therefore cumulative
 reconstruction places EOS at N and preserves every truncated-prefix coordinate.
 The original document byte count is retained; crossing truncation does not renumber

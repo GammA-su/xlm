@@ -1,4 +1,15 @@
-> **C07-V2 TRAINING CONSUMER (2026-10-06): READY UNDER THE EXPLICIT SIGNED POLICY; PRODUCTION NOT RUN.**
+> **C07-V2 NORMALIZED COVERAGE (2026-10-07): BLOCKED AFTER TARGETED EOS REPAIR.**
+>
+> Real record 46 confirms the EOS/raw-byte equality bug. Removing only that comparison
+> passes 24 authored regression cases. Real record 2332 then fails the retained upper
+> bound: stored/reconstructed coverage 4629 > original byte count 4602. Stopped under
+> the requested contradiction condition; no further validation relaxation, production
+> writes, signing, tokenization or training. Complete 11-shard acceptance is BLOCKED;
+> production input_preflight and the eight-module consumer selection are NOT RUN.
+> [Evidence, commands and next prompt](reports/PXX-C07-V2-NORMALIZED-COVERAGE.md).
+> Next: review NFC expansion and raw-byte upper-bound semantics before continuing.
+>
+> **Historical C07-V2 TRAINING CONSUMER (2026-10-06): READY UNDER THE EXPLICIT SIGNED POLICY; PRODUCTION NOT RUN.**
 >
 > Independent frozen-tokenizer proof: 10,150 strings / 100,215 prefixes, zero mismatches.
 > `training-input-policy-v2` admits the reviewed 6B v2 corpus with finite file, aggregate,

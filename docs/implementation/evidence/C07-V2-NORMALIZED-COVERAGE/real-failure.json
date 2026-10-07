@@ -1,0 +1,1 @@
+{"bos_positions": [0], "byte_count": 86722, "byte_count_minus_covered_bytes": 1, "covered_bytes": 86721, "eos_positions": [30788], "error": "v2 structural byte spans differ from v1 framing", "first_token_byte_length": 0, "first_token_id": 1, "last_token_byte_length": 0, "last_token_id": 2, "reconstructed_covered_sum": 86721, "record_ordinal_zero_based": 46, "token_count": 30789}

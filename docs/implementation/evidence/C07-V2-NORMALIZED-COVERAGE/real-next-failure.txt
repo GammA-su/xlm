@@ -1,0 +1,13 @@
+{"bos_positions": [0], "byte_count": 4602, "byte_count_minus_covered_bytes": -27, "covered_bytes": 4629, "eos_positions": [1389], "error": "v2 canonical byte coverage mismatch", "first_token_byte_length": 0, "first_token_id": 1, "last_token_byte_length": 0, "last_token_id": 2, "reconstructed_covered_sum": 4629, "record_ordinal_zero_based": 2332, "token_count": 1390}
+uv : Traceback (most recent call last):
+発生場所 行:2 文字:1
++ uv run --offline --locked --extra cpu --extra eval python scripts/c07 ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+  File "F:\Project\xlm-training-input-v2-coverage-fix\scripts\c07_normalized_coverage_probe.py", line 111, in <module>
+    main()
+  File "F:\Project\xlm-training-input-v2-coverage-fix\scripts\c07_normalized_coverage_probe.py", line 88, in main
+    raise RuntimeError("hypothesis contradicted") from None
+RuntimeError: hypothesis contradicted
